@@ -5,9 +5,8 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.lib.mongodb.MongoDBAdaptor;
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,12 +34,12 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
     }
 
     @Override
-    public QueryResponse getAllById(String id, QueryOptions options) {
-        return getAllByIdList(Arrays.asList(id), options);
+    public QueryResult getAllById(String id, QueryOptions options) {
+        return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByIdList(List<String> idList, QueryOptions options) {
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("name").is(id);
@@ -52,12 +51,12 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
     }
 
     @Override
-    public QueryResponse getAllByPosition(Position position, QueryOptions options) {
-        return getAllByPositionList(Arrays.asList(position), options);
+    public QueryResult getAllByPosition(Position position, QueryOptions options) {
+        return getAllByPositionList(Arrays.asList(position), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByPositionList(List<Position> positionList, QueryOptions options) {
+    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
         //  db.regulatory_region.find({"chunkIds": {$in:["1_200", "1_300"]}, "start": 601156})
 
         String featureType = options.getString("featureType", null);
@@ -69,10 +68,10 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
             BasicDBList chunksId = new BasicDBList();
             chunksId.add(chunkId);
             QueryBuilder builder = QueryBuilder.start("chunkIds").in(chunksId).and("start").is(position.getPosition());
-            if(featureType!=null){
+            if (featureType != null) {
                 builder.and("featureType").is(featureType);
             }
-            if(featureClass!=null){
+            if (featureClass != null) {
                 builder.and("featureClass").is(featureClass);
             }
 
@@ -88,18 +87,17 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
 
     @Override
-    public QueryResponse getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
-        Region region = new Region(chromosome, start, end);
-        return getAllByRegionList(Arrays.asList(region), options);
+    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
+        return getAllByRegion(new Region(chromosome, start, end), options);
     }
 
     @Override
-    public QueryResponse getAllByRegion(Region region, QueryOptions options) {
-        return getAllByRegionList(Arrays.asList(region), options);
+    public QueryResult getAllByRegion(Region region, QueryOptions options) {
+        return getAllByRegionList(Arrays.asList(region), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByRegionList(List<Region> regionList, QueryOptions options) {
+    public List<QueryResult> getAllByRegionList(List<Region> regionList, QueryOptions options) {
         //  db.regulatory_region.find({"chunkIds": {$in:["1_200", "1_300"]}, "start": 601156})
 
         String featureType = options.getString("featureType", null);
@@ -111,16 +109,16 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
             int firstChunkId = getChunkId(region.getStart(), CHUNKSIZE);
             int lastChunkId = getChunkId(region.getEnd(), CHUNKSIZE);
             BasicDBList chunksId = new BasicDBList();
-            for(int j=firstChunkId; j<=lastChunkId; j++) {
-                String chunkId = region.getChromosome()+"_"+j;
+            for (int j = firstChunkId; j <= lastChunkId; j++) {
+                String chunkId = region.getChromosome() + "_" + j;
                 chunksId.add(chunkId);
             }
 
             QueryBuilder builder = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(region.getEnd()).and("end").greaterThanEquals(region.getStart());
-            if(featureType!=null){
+            if (featureType != null) {
                 builder.and("featureType").is(featureType);
             }
-            if(featureClass!=null){
+            if (featureClass != null) {
                 builder.and("featureClass").is(featureClass);
             }
 
@@ -133,7 +131,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
     }
 
     @Override
-    public QueryResponse next(String chromosome, int position, QueryOptions options) {
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
 
         String featureType = options.getString("featureType", null);
         String featureClass = options.getString("featureClass", null);
@@ -146,21 +144,21 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         // db.regulatory_region.find({ "chromosome" : "19" , "start" : { "$gt" : 62005} , "featureType" : "TF_binding_site_motif"}).sort({start:1}).limit(1)
 
         QueryBuilder builder;
-        if(options.getString("strand") == null || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
+        if (options.getString("strand") == null || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
             // db.core.find({chromosome: "1", start: {$gt: 1000000}}).sort({start: 1}).limit(1)
             builder = QueryBuilder.start("chunkIds").in(chunksId).and("chromosome").is(chromosome).and("start").greaterThan(position);
-            options.put("sort", new BasicDBObject("start",1));
+            options.put("sort", new BasicDBObject("start", 1));
             options.put("limit", 1);
-        }else {
+        } else {
             builder = QueryBuilder.start("chunkIds").in(chunksId).and("chromosome").is(chromosome).and("end").lessThan(position);
-            options.put("sort", new BasicDBObject("end",-1));
+            options.put("sort", new BasicDBObject("end", -1));
             options.put("limit", 1);
         }
 
-        if(featureType!=null){
+        if (featureType != null) {
             builder.and("featureType").is(featureType);
         }
-        if(featureClass!=null){
+        if (featureClass != null) {
             builder.and("featureClass").is(featureClass);
         }
         System.out.println(builder.get());
@@ -169,7 +167,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
 
     @Override
-    public QueryResponse getAll(QueryOptions options) {
+    public QueryResult getAll(QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

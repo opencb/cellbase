@@ -8,9 +8,7 @@ import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
 
     @Override
-    public QueryResponse getAllById(String id, QueryOptions options) {
+    public QueryResult getAllById(String id, QueryOptions options) {
         //        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.id": "ENST00000343281"}})
 
         DBObject[] commands = new DBObject[3];
@@ -38,61 +36,61 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         commands[1] = unwind;
         commands[2] = match;
 
-        QueryResponse q = executeAggregation(id, commands, options);
+        QueryResult queryResult = executeAggregation(id, commands, options);
 
         System.out.print(commands[0].toString()+",");
         System.out.print(commands[1].toString()+",");
         System.out.print(commands[2].toString());
         System.out.println("");
 
-        System.out.println(">>"+((QueryResult)q.get(id)).getResult());
+        System.out.println(">>"+((QueryResult)queryResult.get(id)).getResult());
 
-        return executeAggregation(id, commands, options);
+        return queryResult;
     }
     
     
 
     @Override
-    public QueryResponse getAllByIdList(List<String> idList, QueryOptions options) {
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-	public QueryResponse getAllByPosition(String chromosome, int position,
+	public QueryResult getAllByPosition(String chromosome, int position,
 			QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public QueryResponse getAllByPosition(Position position,
+	public QueryResult getAllByPosition(Position position,
 			QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public QueryResponse getAllByPositionList(List<Position> positionList,
+	public List<QueryResult> getAllByPositionList(List<Position> positionList,
 			QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public QueryResponse getAllByRegion(String chromosome, int start, int end,
+	public QueryResult getAllByRegion(String chromosome, int start, int end,
 			QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	@Override
-	public QueryResponse getAllByRegion(Region region, QueryOptions options) {
+	public QueryResult getAllByRegion(Region region, QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public QueryResponse getAllByRegionList(List<Region> regions,
+	public List<QueryResult> getAllByRegionList(List<Region> regions,
 			QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
@@ -100,14 +98,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 	
 	
 	@Override
-	public QueryResponse getAllByEnsemblExonId(String ensemblExonId,
+	public QueryResult getAllByEnsemblExonId(String ensemblExonId,
 			QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public QueryResponse getAllByEnsemblExonIdList(
+	public List<QueryResult> getAllByEnsemblExonIdList(
 			List<String> ensemblExonIdList, QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
@@ -115,13 +113,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
 	
 	@Override
-	public QueryResponse getAllByTFBSId(String tfbsId, QueryOptions options) {
+	public QueryResult getAllByTFBSId(String tfbsId, QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public QueryResponse getAllByTFBSIdList(List<String> tfbsIdList,
+	public List<QueryResult> getAllByTFBSIdList(List<String> tfbsIdList,
 			QueryOptions options) {
 		// TODO Auto-generated method stub
 		return null;
@@ -208,17 +206,17 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 	}
 
     @Override
-    public QueryResponse getAll(QueryOptions options) {
+    public QueryResult getAll(QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse next(String id, QueryOptions options) {
+    public QueryResult next(String id, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse next(String chromosome, int position, QueryOptions options) {
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

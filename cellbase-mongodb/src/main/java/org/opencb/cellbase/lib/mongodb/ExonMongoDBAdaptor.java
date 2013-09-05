@@ -11,9 +11,7 @@ import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,17 +88,17 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
     }
 
     @Override
-    public QueryResponse getAll(QueryOptions options) {
+    public QueryResult getAll(QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse next(String id, QueryOptions options) {
+    public QueryResult next(String id, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse next(String chromosome, int position, QueryOptions options) {
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

@@ -4,7 +4,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.Exon;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public interface ExonDBAdaptor extends FeatureDBAdaptor {
 	public List<List<Exon>> getByEnsemblGeneIdList(List<String> geneIdList);
 
 
-    public QueryResponse next(String id, QueryOptions options);
+    public QueryResult next(String id, QueryOptions options);
 	
 	
 	public List<Exon> getAllByPosition(String chromosome, int position);
