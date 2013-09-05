@@ -73,17 +73,19 @@ my $seq_fasta = Bio::SeqIO->new(
 foreach my $gene_id(@genes) {
 print $gene_id."\n";
 	$gene = $gene_adaptor->fetch_by_stable_id($gene_id);
-	foreach my $trans(@{$gene->get_all_Transcripts}) {
-		print $trans->stable_id."\t".$trans->seq_region_start."\t".$trans->seq_region_end."\t".$trans->coding_region_start."\t".$trans->coding_region_end."\t".$trans->strand."\n";
-		$id =  $trans->stable_id;
-		$desc = $gene->stable_id."@".$trans->biotype."@".$trans->seq_region_name."@".$trans->seq_region_start."@".$trans->seq_region_end."@".$trans->strand."@".$trans->status;
-		$trans_seq = Bio::PrimarySeq->new (
-			-seq => $trans->seq->seq,
-			-id => $id."@".$desc,
-#				-desc => $desc
-		);
+	if(defined $gene) {
+        foreach my $trans(@{$gene->get_all_Transcripts}) {
+            print $trans->stable_id."\t".$trans->seq_region_start."\t".$trans->seq_region_end."\t".$trans->coding_region_start."\t".$trans->coding_region_end."\t".$trans->strand."\n";
+            $id =  $trans->stable_id;
+            $desc = $gene->stable_id."@".$trans->biotype."@".$trans->seq_region_name."@".$trans->seq_region_start."@".$trans->seq_region_end."@".$trans->strand."@".$trans->status;
+            $trans_seq = Bio::PrimarySeq->new (
+                -seq => $trans->seq->seq,
+                -id => $id."@".$desc,
+    #				-desc => $desc
+            );
 
-		$seq_fasta->write_seq($trans_seq);
+            $seq_fasta->write_seq($trans_seq);
+        }
 	}
 }
 close (\*OUTFILE);
