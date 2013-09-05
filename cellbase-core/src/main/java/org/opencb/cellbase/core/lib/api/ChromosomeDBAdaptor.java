@@ -1,22 +1,22 @@
 package org.opencb.cellbase.core.lib.api;
 
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
 
 public interface ChromosomeDBAdaptor {
 
-	public QueryResponse getAll(QueryOptions options);
+	public QueryResult getAll(QueryOptions options);
 
-	public QueryResponse getById(String id, QueryOptions options);
+	public QueryResult getById(String id, QueryOptions options);
 
-	public QueryResponse getAllByIdList(List<String> idList, QueryOptions options);
+	public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
-    public QueryResponse getAllCytobandsById(String id, QueryOptions options);
+    public QueryResult getAllCytobandsById(String id, QueryOptions options);
 
-    public QueryResponse getAllCytobandsByIdList(List<String> id, QueryOptions options);
+    public List<QueryResult> getAllCytobandsByIdList(List<String> id, QueryOptions options);
     
 //	List<Cytoband> getCytobandByName(String name);
 //	List<List<Cytoband>> getCytobandByNameList(List<String> nameList);

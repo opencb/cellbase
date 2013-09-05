@@ -5,7 +5,6 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
@@ -17,10 +16,10 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
 //	public QueryResult getAll(List<String> biotype, Boolean id);
 	
-	public QueryResponse getAll(QueryOptions options);
+	public QueryResult getAll(QueryOptions options);
 
 
-    public QueryResponse next(String id, QueryOptions options);
+    public QueryResult next(String id, QueryOptions options);
 
 
 //	public QueryResult getAllEnsemblIds();
@@ -57,15 +56,15 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
 //	public List<Gene> getAllByPosition(String chromosome, int position);
 	
-	public QueryResponse getAllByPosition(String chromosome, int position, QueryOptions options);
+	public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
 
 //	public List<Gene> getAllByPosition(Position position);
 	
-	public QueryResponse getAllByPosition(Position position, QueryOptions options);
+	public QueryResult getAllByPosition(Position position, QueryOptions options);
 
 //	public List<List<Gene>> getAllByPositionList(List<Position> positionList);
 	
-	public QueryResponse getAllByPositionList(List<Position> positionList, QueryOptions options);
+	public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
 
 //	public List<Gene> getAllByRegion(String chromosome);
 //
@@ -75,19 +74,19 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
 //	public QueryResult getAllByRegion(String chromosome, int start, int end, List<String> biotypeList, boolean fetchTranscripts);
 	
-	public QueryResponse getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+	public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
 
 //	public QueryResult getAllByRegion(Region region, boolean fetchTranscripts);
 //
 //	public QueryResult getAllByRegion(Region region, List<String> biotypeList, boolean fetchTranscripts);
 	
-	public QueryResponse getAllByRegion(Region region, QueryOptions options);
+	public QueryResult getAllByRegion(Region region, QueryOptions options);
 
 //	public QueryResult getAllByRegionList(List<Region> regionList, boolean fetchTranscripts);
 //
 //	public QueryResult getAllByRegionList(List<Region> regions, List<String> biotypeList, boolean fetchTranscripts);
 	
-	public QueryResponse getAllByRegionList(List<Region> regions, QueryOptions options);
+	public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
 	public List<Gene> getAllByCytoband(String chromosome, String cytoband);
 

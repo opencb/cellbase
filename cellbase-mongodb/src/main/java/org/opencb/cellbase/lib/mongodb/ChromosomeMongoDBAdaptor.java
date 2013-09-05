@@ -5,7 +5,7 @@ import com.mongodb.DB;
 import com.mongodb.DBObject;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,28 +14,28 @@ import java.util.List;
 
 public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements ChromosomeDBAdaptor {
 
-	public ChromosomeMongoDBAdaptor(DB db) {
-		super(db);
-	}
+    public ChromosomeMongoDBAdaptor(DB db) {
+        super(db);
+    }
 
-	public ChromosomeMongoDBAdaptor(DB db, String species, String version) {
-		super(db, species, version);
-		mongoDBCollection = db.getCollection("info_stats");
-	}
+    public ChromosomeMongoDBAdaptor(DB db, String species, String version) {
+        super(db, species, version);
+        mongoDBCollection = db.getCollection("info_stats");
+    }
 
 
     @Override
-    public QueryResponse getAll(QueryOptions options) {
+    public QueryResult getAll(QueryOptions options) {
         return executeQuery("result", new BasicDBObject(), options);
     }
 
     @Override
-    public QueryResponse getById(String id, QueryOptions options) {
-        return getAllByIdList(Arrays.asList(id),options);
+    public QueryResult getById(String id, QueryOptions options) {
+        return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByIdList(List<String> idList, QueryOptions options) {
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         List<DBObject[]> commandList = new ArrayList<>();
         for (String id : idList) {
             DBObject[] commands = new DBObject[3];
@@ -46,7 +46,7 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
             commands[2] = match;
             commandList.add(commands);
         }
-        if(idList != null && idList.size() == 1){
+        if (idList != null && idList.size() == 1) {
             idList = Arrays.asList("result");
         }
         return executeAggregationList(idList, commandList, options);
@@ -54,12 +54,12 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
     }
 
     @Override
-    public QueryResponse getAllCytobandsById(String id, QueryOptions options) {
+    public QueryResult getAllCytobandsById(String id, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse getAllCytobandsByIdList(List<String> id, QueryOptions options) {
+    public List<QueryResult> getAllCytobandsByIdList(List<String> id, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
