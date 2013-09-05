@@ -3,7 +3,7 @@ package org.opencb.cellbase.core.lib.api.regulatory;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -16,14 +16,14 @@ public interface TfbsDBAdaptor extends RegulatoryRegionDBAdaptor {
 //
 //	public List<List<Tfbs>> getAllByTfGeneNameList(List<String> tfGeneNameList, String celltype, int start, int end);
 
-	public QueryResponse getAllByTargetGeneId(String targetGeneId, QueryOptions options);
+	public QueryResult getAllByTargetGeneId(String targetGeneId, QueryOptions options);
 
-	public QueryResponse getAllByTargetGeneIdList(List<String> targetGeneIdList, QueryOptions options);
+	public List<QueryResult> getAllByTargetGeneIdList(List<String> targetGeneIdList, QueryOptions options);
 	
 	
-	public QueryResponse getAllByJasparId(String jasparId, QueryOptions options);
+	public QueryResult getAllByJasparId(String jasparId, QueryOptions options);
 
-	public QueryResponse getAllByJasparIdList(List<String> jasparIdList, QueryOptions options);
+	public List<QueryResult> getAllByJasparIdList(List<String> jasparIdList, QueryOptions options);
 	
 	
 //	public List<Protein> getTfInfoByTfGeneName(String tfGeneName);

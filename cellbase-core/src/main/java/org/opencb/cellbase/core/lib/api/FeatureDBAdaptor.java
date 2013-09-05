@@ -2,7 +2,7 @@ package org.opencb.cellbase.core.lib.api;
 
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 import java.util.Map;
@@ -11,12 +11,12 @@ import java.util.Map;
 public interface FeatureDBAdaptor {
 
 	
-	public QueryResponse getAll(QueryOptions options);
+	public QueryResult getAll(QueryOptions options);
 	
 	
 
 
-	public QueryResponse next(String chromosome, int position, QueryOptions options);
+	public QueryResult next(String chromosome, int position, QueryOptions options);
 
 
 	

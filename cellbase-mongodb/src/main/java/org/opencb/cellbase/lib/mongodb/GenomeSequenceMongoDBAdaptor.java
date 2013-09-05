@@ -6,7 +6,6 @@ import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.lib.api.GenomeSequenceDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.ArrayList;
@@ -16,48 +15,46 @@ import java.util.List;
 @Deprecated
 public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements GenomeSequenceDBAdaptor {
 
-	public GenomeSequenceMongoDBAdaptor(DB db) {
-		super(db);
-	}
+    public GenomeSequenceMongoDBAdaptor(DB db) {
+        super(db);
+    }
 
-	public GenomeSequenceMongoDBAdaptor(DB db, String species, String version) {
-		super(db, species, version);
-		mongoDBCollection = db.getCollection("genome_sequence");
-	}
+    public GenomeSequenceMongoDBAdaptor(DB db, String species, String version) {
+        super(db, species, version);
+        mongoDBCollection = db.getCollection("genome_sequence");
+    }
 
-	private int getChunk(int position) {
-		return (position / applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase()
-				+ ".GENOME_SEQUENCE.CHUNK_SIZE", 2000));
-	}
+    private int getChunk(int position) {
+        return (position / applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase()
+                + ".GENOME_SEQUENCE.CHUNK_SIZE", 2000));
+    }
 
-	private int getOffset(int position) {
-		return ((position) % applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase()
-				+ ".GENOME_SEQUENCE.CHUNK_SIZE", 2000));
-	}
+    private int getOffset(int position) {
+        return ((position) % applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase()
+                + ".GENOME_SEQUENCE.CHUNK_SIZE", 2000));
+    }
 
-	public static String getComplementarySequence(String sequence) {
-		sequence = sequence.replace("A", "1");
-		sequence = sequence.replace("T", "2");
-		sequence = sequence.replace("C", "3");
-		sequence = sequence.replace("G", "4");
-		sequence = sequence.replace("1", "T");
-		sequence = sequence.replace("2", "A");
-		sequence = sequence.replace("3", "G");
-		sequence = sequence.replace("4", "C");
-		return sequence;
-	}
-
+    public static String getComplementarySequence(String sequence) {
+        sequence = sequence.replace("A", "1");
+        sequence = sequence.replace("T", "2");
+        sequence = sequence.replace("C", "3");
+        sequence = sequence.replace("G", "4");
+        sequence = sequence.replace("1", "T");
+        sequence = sequence.replace("2", "A");
+        sequence = sequence.replace("3", "G");
+        sequence = sequence.replace("4", "C");
+        return sequence;
+    }
 
 
     @Override
-    public QueryResponse getByRegion(String chromosome, int start, int end, QueryOptions options) {
+    public QueryResult getByRegion(String chromosome, int start, int end, QueryOptions options) {
         Region region = new Region(chromosome, start, end);
-        return getAllByRegionList(Arrays.asList(region),options);
+        return getAllByRegionList(Arrays.asList(region), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByRegionList(List<Region> regions, QueryOptions options) {
-
+    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
 
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
@@ -77,32 +74,33 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
             ids.add(region.toString());
         }
 
-        QueryResponse queryResponse = executeQueryList(ids,queries,options);
+        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
 
 
-        for (Region region : regions) {
-            QueryResult queryResult = (QueryResult) queryResponse.get(region.toString());
+        for (int i = 0; i < regions.size(); i++) {
+            Region region = regions.get(i);
+            QueryResult queryResult = queryResults.get(i);
+
             BasicDBList list = (BasicDBList) queryResult.get("result");
 
-		    StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < list.size(); i++) {
-                BasicDBObject chunk = (BasicDBObject) list.get(i);
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < list.size(); j++) {
+                BasicDBObject chunk = (BasicDBObject) list.get(j);
                 sb.append(chunk.get("sequence"));
             }
 
             int startStr = getOffset(region.getStart());
-		    int endStr = getOffset(region.getStart()) + (region.getEnd() - region.getStart()) + 1;
+            int endStr = getOffset(region.getStart()) + (region.getEnd() - region.getStart()) + 1;
 
-		    String subStr = "";
+            String subStr = "";
 
             if (getChunk(region.getEnd()) > 0) {
                 if (sb.toString().length() > 0 && sb.toString().length() >= endStr) {
                     subStr = sb.toString().substring(startStr, endStr);
-                    System.out.println();
                 }
             } else {
                 if (sb.toString().length() > 0 && sb.toString().length() + 1 >= endStr) {
-                    subStr = sb.toString().substring(startStr-1, endStr - 1);
+                    subStr = sb.toString().substring(startStr - 1, endStr - 1);
                 }
             }
             GenomeSequenceFeature genomeSequenceFeature = new GenomeSequenceFeature(region.getChromosome(), region.getStart(), region.getEnd(), subStr);
@@ -110,20 +108,13 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
             queryResult.setResult(genomeSequenceFeature);
         }
 
-        return queryResponse;
+        return queryResults;
     }
 
     @Override
     public String getRevComp(String sequence) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
-
-
-
-
-
-
-
 
 
     private List<GenomeSequenceChunk> executeQuery(DBObject query) {

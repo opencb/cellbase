@@ -4,7 +4,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.FeatureDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -18,9 +18,9 @@ import java.util.List;
 
 public interface RegulatoryRegionDBAdaptor extends FeatureDBAdaptor {
 
-    public QueryResponse getAllById(String id, QueryOptions options);
+    public QueryResult getAllById(String id, QueryOptions options);
 
-    public QueryResponse getAllByIdList(List<String> idList, QueryOptions options);
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
 
@@ -59,16 +59,16 @@ public interface RegulatoryRegionDBAdaptor extends FeatureDBAdaptor {
 
 //	public QueryResponse getAllByPosition(String chromosome, int position, QueryOptions options);
 
-    public QueryResponse getAllByPosition(Position position, QueryOptions options);
+    public QueryResult getAllByPosition(Position position, QueryOptions options);
 
-    public QueryResponse getAllByPositionList(List<Position> positionList, QueryOptions options);
+    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
 
 
-    public QueryResponse getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
 
-    public QueryResponse getAllByRegion(Region region, QueryOptions options);
+    public QueryResult getAllByRegion(Region region, QueryOptions options);
 
-    public QueryResponse getAllByRegionList(List<Region> regions, QueryOptions options);
+    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
 
 //	public List<Tfbs> getAllByInternalIdList(List<String> idList);
