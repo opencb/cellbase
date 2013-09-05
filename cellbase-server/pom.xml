@@ -10,7 +10,7 @@
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>cellbase-ws</artifactId>
+    <artifactId>cellbase-server</artifactId>
     <packaging>war</packaging>
 
     <dependencies>

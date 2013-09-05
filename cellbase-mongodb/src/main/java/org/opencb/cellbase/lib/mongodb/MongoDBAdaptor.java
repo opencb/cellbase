@@ -188,6 +188,7 @@ public class MongoDBAdaptor extends DBAdaptor {
 
 	protected QueryResponse executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options, DBCollection dbCollection) {
 		QueryResponse queryResponse = new QueryResponse();
+        List<QueryResult> queryResults = new ArrayList<>(ids.size());
 
 		// Select which fields are excluded and included in MongoDB query
 		BasicDBObject returnFields = getReturnFields(options);
@@ -204,10 +205,15 @@ public class MongoDBAdaptor extends DBAdaptor {
 			dbTimeEnd = System.currentTimeMillis();
 
 			// setting queryResult fields
+            queryResult.setId(ids.get(i).toString());
 			queryResult.setDBTime((dbTimeEnd - dbTimeStart));
 			queryResult.setNumResults(list.size());
 			queryResult.setResult(list);
 
+            queryResults.add(queryResult);
+
+
+            //TODO
 			// Save QueryResult into QueryResponse object
 			if(ids.get(i) != null && !ids.get(i).equals("")) {
 				queryResponse.put(ids.get(i).toString(), queryResult);				
@@ -219,7 +225,7 @@ public class MongoDBAdaptor extends DBAdaptor {
 		}
 		long timeEnd = System.currentTimeMillis();
 
-
+        //TODO
 		// Check if 'metadata' field must be returned
 		if (options != null && options.getBoolean("metadata", true)) {
 			queryResponse.getMetadata().put("queryIds", ids);

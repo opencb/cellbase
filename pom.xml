@@ -11,8 +11,8 @@
     <modules>
         <module>cellbase-build</module>
         <module>cellbase-core</module>
-        <module>cellbase-lib-mongodb</module>
-        <module>cellbase-ws</module>
+        <module>cellbase-mongodb</module>
+        <module>cellbase-server</module>
     </modules>
 
     <properties>

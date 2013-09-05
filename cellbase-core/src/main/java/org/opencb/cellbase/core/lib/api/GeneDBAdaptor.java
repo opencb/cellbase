@@ -6,6 +6,7 @@ import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -29,9 +30,9 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 //
 //	public List<Gene> getAllByEnsemblIdList(List<String> ensemblIdList);
 	
-	public QueryResponse getAllById(String id, QueryOptions options);
+	public QueryResult getAllById(String id, QueryOptions options);
 
-	public QueryResponse getAllByIdList(List<String> idList, QueryOptions options);
+	public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 //	public Gene getByEnsemblId(String ensemblId, boolean fetchTranscriptsAndExons);
 //
