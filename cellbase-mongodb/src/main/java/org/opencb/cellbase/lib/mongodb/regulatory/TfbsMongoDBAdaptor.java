@@ -6,7 +6,6 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.ArrayList;
@@ -35,18 +34,18 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     }
 
     @Override
-    public QueryResponse getAllByPosition(Position position, QueryOptions options) {
-        return getAllByPositionList(Arrays.asList(position), options);
+    public QueryResult getAllByPosition(Position position, QueryOptions options) {
+        return getAllByPositionList(Arrays.asList(position), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByPositionList(List<Position> positionList, QueryOptions options) {
+    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
         options.put("featureType", "TF_binding_site_motif");
         return super.getAllByPositionList(positionList, options);
     }
 
     @Override
-    public QueryResponse next(String chromosome, int position, QueryOptions options) {
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
         options.put("featureType", "TF_binding_site_motif");
         return super.next(chromosome, position, options);
     }
@@ -57,26 +56,26 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
 //    }
 
     @Override
-    public QueryResponse getAllByRegion(Region region, QueryOptions options) {
-        return getAllByRegionList(Arrays.asList(region), options);
+    public QueryResult getAllByRegion(Region region, QueryOptions options) {
+        return getAllByRegionList(Arrays.asList(region), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByRegionList(List<Region> regionList, QueryOptions options) {
+    public List<QueryResult> getAllByRegionList(List<Region> regionList, QueryOptions options) {
         options.put("featureType", "TF_binding_site_motif");
         return super.getAllByRegionList(regionList, options);
     }
 
     @Override
-    public QueryResponse getAllById(String id, QueryOptions options) {
-        return getAllByIdList(Arrays.asList(id), options);
+    public QueryResult getAllById(String id, QueryOptions options) {
+        return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
     /**
      * PARTICULAR METHODS FOR TFBS CLASS
      */
     @Override
-    public QueryResponse getAllByIdList(List<String> idList, QueryOptions options) {
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("name").is(id).and("featureType").is("TF_binding_site_motif");
@@ -88,12 +87,12 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     }
 
     @Override
-    public QueryResponse getAllByTargetGeneId(String targetGeneId, QueryOptions options) {
-        return getAllByTargetGeneIdList(Arrays.asList(targetGeneId), options);
+    public QueryResult getAllByTargetGeneId(String targetGeneId, QueryOptions options) {
+        return getAllByTargetGeneIdList(Arrays.asList(targetGeneId), options).get(0);
     }
 
     @Override
-    public QueryResponse getAllByTargetGeneIdList(List<String> targetGeneIdList, QueryOptions options) {
+    public List<QueryResult> getAllByTargetGeneIdList(List<String> targetGeneIdList, QueryOptions options) {
         DBCollection coreMongoDBCollection = db.getCollection("core");
 
         List<DBObject[]> commandList = new ArrayList<>();
@@ -111,15 +110,15 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
             commandList.add(commands);
         }
 
-        QueryResponse queryResponse = executeAggregationList(targetGeneIdList, commandList, options, coreMongoDBCollection);
+        List<QueryResult> queryResults = executeAggregationList(targetGeneIdList, commandList, options, coreMongoDBCollection);
 
-
-        for (String targetGeneId : targetGeneIdList) {
-            QueryResult queryResult = (QueryResult) queryResponse.get(targetGeneId);
+        for (int i = 0; i < targetGeneIdList.size(); i++) {
+            String targetGeneId = targetGeneIdList.get(0);
+            QueryResult queryResult = queryResults.get(0);
             BasicDBList list = (BasicDBList) queryResult.get("result");
 
-            for (int i = 0; i < list.size(); i++) {
-                BasicDBObject gene = (BasicDBObject) list.get(i);
+            for (int j = 0; j < list.size(); j++) {
+                BasicDBObject gene = (BasicDBObject) list.get(j);
                 BasicDBObject transcript = (BasicDBObject) gene.get("transcripts");
                 String transcriptId = transcript.getString("id");
                 if (transcriptId.toUpperCase().equals(targetGeneId)) {
@@ -130,16 +129,16 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
             }
         }
 
-        return queryResponse;
+        return queryResults;
     }
 
     @Override
-    public QueryResponse getAllByJasparId(String jasparId, QueryOptions options) {
+    public QueryResult getAllByJasparId(String jasparId, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse getAllByJasparIdList(List<String> jasparIdList, QueryOptions options) {
+    public List<QueryResult> getAllByJasparIdList(List<String> jasparIdList, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -159,7 +158,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     }
 
     @Override
-    public QueryResponse getAll(QueryOptions options) {
+    public QueryResult getAll(QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
