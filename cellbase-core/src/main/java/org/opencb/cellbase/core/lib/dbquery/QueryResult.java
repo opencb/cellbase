@@ -23,6 +23,7 @@ public class QueryResult extends DBObjectMap {
 	
 
 	private void initialize() {
+        this.put("id", "");
 		this.put("dbTime", "");
 		this.put("time", "");
 		this.put("numResults", "");
@@ -38,6 +39,15 @@ public class QueryResult extends DBObjectMap {
 	 * Some shortcuts methods for most common attributes
 	 * 
 	 */
+    public String getId() {
+        return this.getString("id");
+    }
+
+    public void setId(String id) {
+        this.put("id", id);
+    }
+
+
 	public Object getDBTime() {
 		return this.get("dbTime");
 	}
