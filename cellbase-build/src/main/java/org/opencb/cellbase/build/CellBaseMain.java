@@ -3,6 +3,7 @@ package org.opencb.cellbase.build;
 import org.apache.commons.cli.*;
 import org.opencb.cellbase.build.transform.*;
 import org.bioinfo.formats.exception.FileFormatException;
+import org.opencb.cellbase.build.transform.serializers.JsonSerializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,7 +73,7 @@ public class CellBaseMain {
 				String indir = commandLine.getOptionValue("indir");
 				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_sequence.json");
 				if(indir != null) {
-					GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser();
+					GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(new JsonSerializer(new File(outfile)));
 					genomeSequenceFastaParser.parseFastaGzipFilesToJson(new File(indir), new File(outfile));
 				}
 			}
@@ -88,7 +89,7 @@ public class CellBaseMain {
 				String outfile = commandLine.getOptionValue("outfile", "/tmp/gene.json");
 				if(gtfFile != null) {
 					try {
-						GeneParser geneParser = new GeneParser();
+						GeneParser geneParser = new GeneParser(new JsonSerializer(new File(outfile)));
 						geneParser.parse(new File(gtfFile), new File(geneDescriptionFile), new File(xrefFile), new File(tfbsFile), new File(mirnaFile), new File(genomeSequenceDir), new File(outfile));
 					} catch (SecurityException | NoSuchMethodException | FileFormatException e) {
 						e.printStackTrace();

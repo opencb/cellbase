@@ -1,5 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.opencb.cellbase.build.transform.serializers.Serializer;
 import org.opencb.cellbase.core.common.core.Chromosome;
 import org.opencb.cellbase.core.common.core.Cytoband;
@@ -22,7 +24,7 @@ public class GenomeSequenceFastaParser {
 
 	private int chunkSize = 2000;
 
-//	Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
+	Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
 
 	public GenomeSequenceFastaParser(Serializer serializer) {
         this.serializer = serializer;

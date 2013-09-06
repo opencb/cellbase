@@ -2,8 +2,8 @@ package org.opencb.cellbase.build.transform;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.bioinfo.cellbase.common.variation.Variation;
-import org.bioinfo.cellbase.common.variation.Xref;
+import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.cellbase.core.common.variation.Xref;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -108,8 +108,7 @@ public class VariationParser_old {
 									String[] fields;
 									for (int z = 0; z < dbxref.length; z++) {
 										fields = dbxref[z].split(":");
-										variation[i].setXrefs(new Xref(
-												fields[0], fields[1]));
+										variation[i].setXrefs(new Xref(fields[0], fields[1]));
 									}
 								}
 
