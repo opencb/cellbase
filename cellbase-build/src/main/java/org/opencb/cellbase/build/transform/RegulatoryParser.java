@@ -377,7 +377,8 @@ public class RegulatoryParser {
 
 		genericFeature.setName(groupFields.get("name"));
 		genericFeature.setAlias(groupFields.get("alias"));
-		genericFeature.setClassStr(groupFields.get("class"));
+        // TODO
+//		genericFeature.setClassStr(groupFields.get("class"));
 		genericFeature.getCellTypes().add(groupFields.get("cell_type"));
 
 		return genericFeature;

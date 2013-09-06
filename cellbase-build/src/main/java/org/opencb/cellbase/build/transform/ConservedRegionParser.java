@@ -87,7 +87,8 @@ public class ConservedRegionParser {
                 chromosome = attributes.get("chrom").replace("chr", "");
 
                 values = new ArrayList<>();
-                conservedRegion = new ConservedRegion(chromosome, start, 0, conservedType, values);
+                // TODO
+//                conservedRegion = new ConservedRegion(chromosome, start, 0, conservedType, values);
                 System.out.println(start);
 
             } else {
