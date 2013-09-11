@@ -2,7 +2,7 @@ package org.opencb.cellbase.build.transform;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.opencb.cellbase.build.transform.serializers.Serializer;
+import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.core.Chromosome;
 import org.opencb.cellbase.core.common.core.Cytoband;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
@@ -20,14 +20,57 @@ import java.util.zip.GZIPInputStream;
 
 public class GenomeSequenceFastaParser {
 
-    private Serializer serializer;
+    private CellbaseSerializer serializer;
 
 	private int chunkSize = 2000;
 
-	Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
+//	Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
 
-	public GenomeSequenceFastaParser(Serializer serializer) {
+	public GenomeSequenceFastaParser(CellbaseSerializer serializer) {
         this.serializer = serializer;
+	}
+
+	public void parse(File genomeReferenceFastaFile) {
+		try {
+            System.out.println("en parse");
+			String chromosome = "";
+			String line;
+			StringBuilder sequenceStringBuilder = new StringBuilder();
+
+            // Preparing input and output files
+            BufferedReader br;
+            if(genomeReferenceFastaFile.getName().endsWith(".gz")) {
+                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(genomeReferenceFastaFile))));
+            }else {
+			    br = Files.newBufferedReader(Paths.get(genomeReferenceFastaFile.getAbsolutePath()), Charset.defaultCharset());
+            }
+//			BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(), StandardOpenOption.CREATE);
+
+			while ((line = br.readLine()) != null) {
+				if (!line.startsWith(">")) {
+					sequenceStringBuilder.append(line);
+				} else {
+					// new chromosome, save data
+					if (sequenceStringBuilder.length() > 0) {
+						System.out.println(chromosome);
+//						writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+						writeGenomeChunks(chromosome, sequenceStringBuilder.toString());
+					}
+
+					// initialize data structures
+					chromosome = line.replace(">", "").split(" ")[0];
+					sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
+				}
+			}
+			// Last chromosome must be processed
+//			writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+			writeGenomeChunks(chromosome, sequenceStringBuilder.toString());
+
+			br.close();
+//			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void parseFastaGzipFilesToJson(File genomeReferenceFastaDir, File outJsonFile) {
@@ -52,7 +95,8 @@ public class GenomeSequenceFastaParser {
 							// save data
 							if (sequenceStringBuilder.length() > 0) {
 								System.out.println(chromosome);
-								writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+//								writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+								writeGenomeChunks(chromosome, sequenceStringBuilder.toString());
 							}
 
 							// initialize data structures
@@ -61,7 +105,8 @@ public class GenomeSequenceFastaParser {
 						}
 					}
 					// Last chromosome must be processed
-					writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+//					writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+					writeGenomeChunks(chromosome, sequenceStringBuilder.toString());
 					br.close();
 				}
 			}
@@ -72,38 +117,59 @@ public class GenomeSequenceFastaParser {
 		}
 	}
 
-	public void parse(File genomeReferenceFastaFile, File outJsonFile) {
-		try {
-			String chromosome = "";
-			String line;
-			StringBuilder sequenceStringBuilder = new StringBuilder();
-			// Java 7 IO code
-			BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(), StandardOpenOption.CREATE);
-			BufferedReader br = Files.newBufferedReader(Paths.get(genomeReferenceFastaFile.toURI()), Charset.defaultCharset());
-			while ((line = br.readLine()) != null) {
-				if (!line.startsWith(">")) {
-					sequenceStringBuilder.append(line);
-				} else {
-					// new chromosome
-					// save data
-					if (sequenceStringBuilder.length() > 0) {
-						System.out.println(chromosome);
-						writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
-					}
 
-					// initialize data structures
-					chromosome = line.replace(">", "").split(" ")[0];
-					sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
-				}
-			}
-			// Last chromosome must be processed
-			writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
-			br.close();
-			bw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    private void writeGenomeChunks(String chromosome, String sequence) throws IOException {
+        int chunk = 0;
+        int start = 1;
+        int end = chunkSize - 1;
+        String chunkSequence;
+
+        GenomeSequenceChunk genomeSequenceChunk;
+
+        if (sequence.length() < chunkSize) {//chromosome sequence length can be less than chunkSize
+            chunkSequence = sequence;
+            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, 0, start, sequence.length() - 1, chunkSequence);
+//            bw.write(gson.toJson(genomeSequenceChunk) + "\n");
+            serializer.serialize(genomeSequenceChunk);
+            start += chunkSize - 1;
+        } else {
+            while (start < sequence.length()) {
+                if (chunk % 10000 == 0) {
+                    System.out.println("Chr:" + chromosome + " chunkId:" + chunk);
+                }
+                // First chunk of the chromosome
+                if (start == 1) {
+                    // First chunk contains chunkSize-1 nucleotides as index start at position 1 but must end at 1999
+                    chunkSequence = sequence.substring(start - 1, chunkSize - 1);
+                    genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chunk, start, end, chunkSequence);
+//                    bw.write(gson.toJson(genomeSequenceChunk) + "\n");
+                    serializer.serialize(genomeSequenceChunk);
+                    start += chunkSize - 1;
+
+                } else {
+                    // Regular chunk
+                    if ((start + chunkSize) < sequence.length()) {
+                        chunkSequence = sequence.substring(start - 1, start + chunkSize - 1);
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chunk, start, end, chunkSequence);
+//                        bw.write(gson.toJson(genomeSequenceChunk) + "\n");
+                        serializer.serialize(genomeSequenceChunk);
+                        start += chunkSize;
+
+                    } else {
+                        // Last chunk of the chromosome
+                        chunkSequence = sequence.substring(start - 1, sequence.length());
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chunk, start, sequence.length(), chunkSequence);
+//                        bw.write(gson.toJson(genomeSequenceChunk) + "\n");
+                        serializer.serialize(genomeSequenceChunk);
+                        start = sequence.length();
+                    }
+                }
+                end = start + chunkSize - 1;
+                chunk++;
+            }
+        }
+    }
+
 
 	public void parseToJsonCclementina(File genomeReferenceFastaFile, File outJsonFile) {
 		/*infoStats*/
@@ -127,7 +193,8 @@ public class GenomeSequenceFastaParser {
 					// new chromosome
 					// save data
 					if (sequenceStringBuilder.length() > 0) {
-						writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+//						writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+						writeGenomeChunks(chromosome, sequenceStringBuilder.toString());
 
 						/*infoStats*/
 						int len = sequenceStringBuilder.length();
@@ -153,12 +220,13 @@ public class GenomeSequenceFastaParser {
 				}
 			}
 			// Last chromosome must be processed
-			writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+//			writeGenomeChunks(chromosome, sequenceStringBuilder.toString(), bw);
+			writeGenomeChunks(chromosome, sequenceStringBuilder.toString());
 			br.close();
 			bw.close();
 
 			/*info_stats*/
-			bw_stats.write(gson.toJson(infoStats));
+//			bw_stats.write(gson.toJson(infoStats));
 			bw_stats.flush();
 			bw_stats.close();
 			/*info_stats*/
@@ -166,93 +234,6 @@ public class GenomeSequenceFastaParser {
 			e.printStackTrace();
 		}
 
-	}
-
-
-//	public void parseToJsonWithConservedRegions(File genomeReferenceFastaFile, File outJsonFile, Path phastConsFolderPath, Path phylopConsFolderPath) {
-//		try {
-//			String chromosome = "";
-//			String line;
-//			StringBuilder sequenceStringBuilder = new StringBuilder();
-//			// Java 7 IO code
-//			BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(), StandardOpenOption.CREATE);
-//			BufferedReader br = Files.newBufferedReader(Paths.get(genomeReferenceFastaFile.toURI()), Charset.defaultCharset());
-//			while ((line = br.readLine()) != null) {
-//				if (!line.startsWith(">")) {
-//					sequenceStringBuilder.append(line);
-//				} else {
-//					// new chromosome
-//					// save data
-//					if (sequenceStringBuilder.length() > 0) {
-//						System.out.println(chromosome);
-//
-//						if(!chromosome.equalsIgnoreCase("mt")){
-//							writeGenomeChunksWithConservedRegions(chromosome, sequenceStringBuilder.toString(), bw, phastConsFolderPath, phylopConsFolderPath);
-//						}
-//					}
-//
-//					// initialize data structures
-//					chromosome = line.replace(">", "").split(" ")[0];
-//					sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
-//				}
-//			}
-//			// Last chromosome must be processed
-//			if(!chromosome.equalsIgnoreCase("mt")){
-//				writeGenomeChunksWithConservedRegions(chromosome, sequenceStringBuilder.toString(), bw, phastConsFolderPath, phylopConsFolderPath);
-//			}
-//			br.close();
-//			bw.close();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//	}
-
-
-	private void writeGenomeChunks(String chromosome, String sequence, BufferedWriter bw) throws IOException {
-		int chunkId = 0;
-		int start = 1;
-		int end = chunkSize - 1;
-		String chunkSequence;
-
-		if (sequence.length() < chunkSize) {//chromosome sequence length can be less than chunkSize
-			chunkSequence = sequence;
-			GenomeSequenceChunk chunk = new GenomeSequenceChunk(chromosome, 0, start, sequence.length() - 1, chunkSequence);
-			bw.write(gson.toJson(chunk) + "\n");
-			start += chunkSize - 1;
-		} else {
-			while (start < sequence.length()) {
-				if (chunkId % 10000 == 0) {
-					System.out.println("Chr:" + chromosome + " chunkId:" + chunkId);
-				}
-				// First chunk of the chromosome
-				if (start == 1) {
-					// First chunk contains chunkSize-1 nucleotides as index start at position 1 but must end at 1999
-					chunkSequence = sequence.substring(start - 1, chunkSize - 1);
-					GenomeSequenceChunk chunk = new GenomeSequenceChunk(chromosome, chunkId, start, end, chunkSequence);
-					bw.write(gson.toJson(chunk) + "\n");
-					start += chunkSize - 1;
-
-				} else {
-					// Regular chunk
-					if ((start + chunkSize) < sequence.length()) {
-						chunkSequence = sequence.substring(start - 1, start + chunkSize - 1);
-						GenomeSequenceChunk chunk = new GenomeSequenceChunk(chromosome, chunkId, start, end, chunkSequence);
-						bw.write(gson.toJson(chunk) + "\n");
-						start += chunkSize;
-
-					} else {
-						// Last chunk of the chromosome
-						chunkSequence = sequence.substring(start - 1, sequence.length());
-						GenomeSequenceChunk chunk = new GenomeSequenceChunk(chromosome, chunkId, start, sequence.length(), chunkSequence);
-						bw.write(gson.toJson(chunk) + "\n");
-						start = sequence.length();
-					}
-				}
-				end = start + chunkSize - 1;
-				chunkId++;
-			}
-		}
 	}
 
 //	private void writeGenomeChunksWithConservedRegions(String chromosome, String sequence, BufferedWriter bw, Path phastConsFolderPath, Path phylopConsFolderPath) throws IOException {

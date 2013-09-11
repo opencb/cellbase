@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform.serializers;
 
 import org.opencb.cellbase.core.common.core.Gene;
+import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.variation.Variation;
 
 import java.io.IOException;
@@ -12,11 +13,13 @@ import java.io.IOException;
  * Time: 5:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface Serializer {
+public interface CellbaseSerializer {
 
     public void serialize(Gene gene);
 
     public void serialize(Variation variation);
+
+    public void serialize(GenomeSequenceChunk genomeSequenceChunk);
 
     public void close();
 }

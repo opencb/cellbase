@@ -74,7 +74,8 @@ public class CellBaseMain {
 				String outfile = commandLine.getOptionValue("outfile", "/tmp/genome_sequence.json");
 				if(indir != null) {
 					GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(new JsonSerializer(new File(outfile)));
-					genomeSequenceFastaParser.parseFastaGzipFilesToJson(new File(indir), new File(outfile));
+//					genomeSequenceFastaParser.parseFastaGzipFilesToJson(new File(indir), new File(outfile));
+					genomeSequenceFastaParser.parse(new File(indir));
 				}
 			}
 

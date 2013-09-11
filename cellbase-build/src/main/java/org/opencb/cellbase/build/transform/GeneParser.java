@@ -7,7 +7,7 @@ import org.bioinfo.commons.io.utils.IOUtils;
 import org.bioinfo.formats.core.feature.Gtf;
 import org.bioinfo.formats.core.feature.io.GtfReader;
 import org.bioinfo.formats.exception.FileFormatException;
-import org.opencb.cellbase.build.transform.serializers.Serializer;
+import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.core.*;
 
 import java.io.*;
@@ -27,10 +27,10 @@ public class GeneParser {
 	private static final int CHUNK_SIZE = 4000;
 
     private ObjectMapper gson = new ObjectMapper();
-    private Serializer serializer;
+    private CellbaseSerializer serializer;
 
 
-    public GeneParser(Serializer serializer) {
+    public GeneParser(CellbaseSerializer serializer) {
         this.serializer = serializer;
         init();
     }
