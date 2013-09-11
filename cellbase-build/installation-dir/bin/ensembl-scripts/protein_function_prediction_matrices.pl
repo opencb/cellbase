@@ -223,8 +223,9 @@ foreach my $chr(@chromosomes) {
 		}
 	}
 	close(FILE);
+
 	## GZip output to save space in Amazon AWS
-	exec("gzip output_chr_".$chrom->seq_region_name);
+#	exec("gzip prot_func_pred_chr_".$chrom->seq_region_name);
 }
 
 
