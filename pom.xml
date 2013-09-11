@@ -29,6 +29,11 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-mongodb</artifactId>
+                <version>${cellbase.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.bioinfo</groupId>
                 <artifactId>bioinfo-formats</artifactId>
                 <version>0.4.0</version>
