@@ -30,7 +30,7 @@ public class JsonSerializer implements CellbaseSerializer {
     private Path outdirPath;
     private Path outfilePath;
 
-    private Map<String, BufferedWriter> bufferedWriterrMap;
+    private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
 
@@ -51,7 +51,7 @@ public class JsonSerializer implements CellbaseSerializer {
             outfilePath = file.toPath();
         }
 
-        bufferedWriterrMap = new Hashtable<>(50);
+        bufferedWriterMap = new Hashtable<>(50);
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectWriter = jsonObjectMapper.writer();
@@ -74,11 +74,11 @@ public class JsonSerializer implements CellbaseSerializer {
     @Override
     public void serialize(Gene gene) {
         try {
-            if(bufferedWriterrMap.get("gene") == null) {
-                bufferedWriterrMap.put("gene", Files.newBufferedWriter(outdirPath.resolve("gene.json"), Charset.defaultCharset()));
+            if(bufferedWriterMap.get("gene") == null) {
+                bufferedWriterMap.put("gene", Files.newBufferedWriter(outdirPath.resolve("gene.json"), Charset.defaultCharset()));
             }
-            bufferedWriterrMap.get("gene").write(jsonObjectWriter.writeValueAsString(gene));
-            bufferedWriterrMap.get("gene").newLine();
+            bufferedWriterMap.get("gene").write(jsonObjectWriter.writeValueAsString(gene));
+            bufferedWriterMap.get("gene").newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -102,12 +102,12 @@ public class JsonSerializer implements CellbaseSerializer {
         }
         ;
 
-        Iterator<String> iter = bufferedWriterrMap.keySet().iterator();
+        Iterator<String> iter = bufferedWriterMap.keySet().iterator();
         while(iter.hasNext()) {
             id = iter.next();
-            if(bufferedWriterrMap.get(id) != null) {
+            if(bufferedWriterMap.get(id) != null) {
                 try {
-                    bufferedWriterrMap.get(id).close();
+                    bufferedWriterMap.get(id).close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

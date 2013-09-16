@@ -55,7 +55,8 @@ for sp in species:
     logging.info("Processing species \'"+sp+"\'")
     
     ## preparing some variables
-    sp_short = sp.lower().replace(' ', '_')
+    sp_short = sp.lower().replace('.', '').replace('=', '').replace(')', '').replace('-', ' ').replace('(', ' ').replace('/', ' ').replace('  ', ' ').replace(' ', '_')
+    logging.debug(sp_short)
     sp_folder = outdir+"/{0}".format(sp_short)
 
     ## Creating the directory for the species
@@ -63,10 +64,10 @@ for sp in species:
     if not os.path.exists(sp_folder):
         os.makedirs(sp_folder)
     
-    cmd = "./info_stats.pl --species '{0}' > {1}/{2}/info_stats.json".format(sp, outdir, sp_short)
+    cmd = "./genome_info.pl --species '{0}' > {1}/{2}/genome_info.json".format(sp, outdir, sp_short)
     logging.debug(cmd)
     os.system(cmd)
     
-    cmd = "./extra_core_cellbase_v3.pl --species '{0}' --outdir {1}/{2}".format(sp, outdir, sp_short)
+    cmd = "./gene_extra_info_cellbase.pl --species '{0}' --outdir {1}/{2}/gene/".format(sp, outdir, sp_short)
     logging.debug(cmd)
     os.system(cmd)
