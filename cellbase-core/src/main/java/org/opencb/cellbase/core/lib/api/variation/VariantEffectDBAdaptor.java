@@ -2,7 +2,7 @@ package org.opencb.cellbase.core.lib.api.variation;
 
 import org.opencb.cellbase.core.common.GenomicVariant;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -10,14 +10,14 @@ import java.util.List;
 public interface VariantEffectDBAdaptor {
 
 	
-	public QueryResponse getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options);
+	public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options);
 	
-	public QueryResponse getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options);
+	public List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options);
 	
 
-	public QueryResponse getAllEffectsByVariant(GenomicVariant variant, QueryOptions options);
+	public QueryResult getAllEffectsByVariant(GenomicVariant variant, QueryOptions options);
 	
-	public QueryResponse getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options);
+	public  List<QueryResult> getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options);
 	
 //	public List<GenomicVariantConsequenceType> getAllConsequenceTypeByVariant(GenomicVariant variant);
 //	
