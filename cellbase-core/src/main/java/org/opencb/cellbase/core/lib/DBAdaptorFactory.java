@@ -30,7 +30,7 @@ public abstract class DBAdaptorFactory {
 		speciesAlias = new HashMap<String, String>(20);
 		
 		// reading application.properties file
-		cellbaseResourceBundle = ResourceBundle.getBundle("org.bioinfo.cellbase.lib.impl.cellbase");
+		cellbaseResourceBundle = ResourceBundle.getBundle("cellbase");
 		try {
 			cellbaseProperties = new Config(cellbaseResourceBundle);
 			String[] speciesArray = cellbaseProperties.getProperty("SPECIES").split(",");

@@ -35,7 +35,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 		mongoDBFactory = new HashMap<String, DB>(10);
 
 		// reading application.properties file
-		resourceBundle = ResourceBundle.getBundle("org.bioinfo.cellbase.lib.impl.mongodb.conf.application");
+		resourceBundle = ResourceBundle.getBundle("mongodb");
 		try {
 			applicationProperties = new Config(resourceBundle);
 		} catch (IOException e) {
