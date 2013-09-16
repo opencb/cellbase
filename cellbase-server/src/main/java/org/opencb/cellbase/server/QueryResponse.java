@@ -1,4 +1,6 @@
-package org.opencb.cellbase.core.lib.dbquery;
+package org.opencb.cellbase.server;
+
+import org.opencb.cellbase.core.lib.dbquery.DBObjectMap;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -4,7 +4,7 @@ import com.mongodb.DB;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -24,17 +24,15 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
         mongoDBCollection = db.getCollection("conservation");
     }
 
-
     @Override
-    public QueryResponse getAllByRegion(Region region, QueryOptions options) {
+    public QueryResult getAllByRegion(Region region, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse getAllByRegionList(List<Region> regions, QueryOptions options) {
+    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
-
 
 
 //    private List<ConservedRegion> executeQuery(DBObject query) {

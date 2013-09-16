@@ -4,7 +4,7 @@ import com.mongodb.DB;
 import org.opencb.cellbase.core.common.GenomicVariant;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResponse;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -27,23 +27,24 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
         mongoDBCollection = db.getCollection("core");
     }
 
+
     @Override
-    public QueryResponse getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
+    public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options) {
+    public List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse getAllEffectsByVariant(GenomicVariant variant, QueryOptions options) {
+    public QueryResult getAllEffectsByVariant(GenomicVariant variant, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public QueryResponse getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options) {
+    public List<QueryResult> getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
