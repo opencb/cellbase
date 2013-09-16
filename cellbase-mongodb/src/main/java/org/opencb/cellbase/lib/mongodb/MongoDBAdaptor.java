@@ -28,7 +28,7 @@ public class MongoDBAdaptor extends DBAdaptor {
 
     static {
         // reading application.properties file
-        resourceBundle = ResourceBundle.getBundle("org.bioinfo.cellbase.lib.impl.mongodb.conf.application");
+        resourceBundle = ResourceBundle.getBundle("mongodb");
         try {
             if (applicationProperties == null) {
                 applicationProperties = new Config(resourceBundle);

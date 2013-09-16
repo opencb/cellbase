@@ -17,7 +17,7 @@ public abstract class DBAdaptor {
 	
 	static {
 		// reading application.properties file
-		resourceBundle = ResourceBundle.getBundle("org.bioinfo.cellbase.lib.impl.cellbase");
+		resourceBundle = ResourceBundle.getBundle("cellbase");
 		try {
 			applicationProperties = new Config(resourceBundle);
 		} catch (IOException e) {
