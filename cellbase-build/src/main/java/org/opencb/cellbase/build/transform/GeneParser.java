@@ -20,13 +20,13 @@ import java.util.zip.GZIPInputStream;
 public class GeneParser {
 
 	// List<Gene> genes;
-	private Map<String, Integer> geneDict;
+//	private Map<String, Integer> geneDict;
 	private Map<String, Integer> transcriptDict;
 	private Map<String, Exon> exonDict;
 
 	private static final int CHUNK_SIZE = 4000;
 
-    private ObjectMapper gson = new ObjectMapper();
+//    private ObjectMapper gson = new ObjectMapper();
     private CellbaseSerializer serializer;
 
 
@@ -42,7 +42,7 @@ public class GeneParser {
 		exonDict = new HashMap<>(8000000);
 	}
 
-	public void parse(File gtfFile, File geneDescriptionFile, File xrefsFile, File tfbsFile, File mirnaFile, File genomeSequenceDir, File outJsonFile)
+	public void parse(File gtfFile, File geneDescriptionFile, File xrefsFile, File tfbsFile, File mirnaFile, File genomeSequenceDir)
 			throws IOException, SecurityException, NoSuchMethodException, FileFormatException {
 		FileUtils.checkFile(gtfFile);
 		init();
@@ -61,7 +61,7 @@ public class GeneParser {
 		int cds = 1;
 		String[] fields;
 
-		Map<String, String> geneDescriptionMap = new HashMap<String, String>();
+		Map<String, String> geneDescriptionMap = new HashMap<>();
 		if (geneDescriptionFile != null && geneDescriptionFile.exists()) {
 			List<String> lines = IOUtils.readLines(geneDescriptionFile);
 			for (String line : lines) {
@@ -70,7 +70,7 @@ public class GeneParser {
 			}
 		}
 
-		Map<String, ArrayList<Xref>> xrefMap = new HashMap<String, ArrayList<Xref>>();
+		Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
 		if (xrefsFile != null && xrefsFile.exists()) {
 			List<String> lines = IOUtils.readLines(xrefsFile);
 			for (String line : lines) {
@@ -726,14 +726,14 @@ public class GeneParser {
 		System.out.println("START WRITE");
 		for (String geneId : genes.keySet()) {
 			Gene gene = genes.get(geneId);
-			tfw.writeStringToFile(gson.writeValueAsString(gene));
-			tfw.writeStringToFile("\n");
+//			tfw.writeStringToFile(gson.writeValueAsString(gene));
+//			tfw.writeStringToFile("\n");
 		}
 		tfw.close();
 
 //		System.out.println(gson.toJson(genes.get("Ciclev10007224m.g")));
-		System.out.println(gson.writeValueAsString(genes.get("Ciclev10008515m.g")));
-		System.out.println(gson.writeValueAsString(genes.get("Ciclev10007219m.g")));
+//		System.out.println(gson.writeValueAsString(genes.get("Ciclev10008515m.g")));
+//		System.out.println(gson.writeValueAsString(genes.get("Ciclev10007219m.g")));
 		System.out.println("END WRITE");
 	}
 
