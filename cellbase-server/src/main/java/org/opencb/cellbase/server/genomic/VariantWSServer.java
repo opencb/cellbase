@@ -9,6 +9,7 @@ import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -60,7 +61,7 @@ public class VariantWSServer extends GenericRestWSServer {
 		String[] excludeArray = null;
 		Set<String> excludeSet = null;
 //		List<GenomicVariantConsequenceType> genomicVariantConsequenceTypes = null;
-		QueryResponse genomicVariantConsequenceTypes = null;
+		List<QueryResult> genomicVariantConsequenceTypes = null;
 		VariantEffectDBAdaptor gv = null;
 		try {
 			checkVersionAndSpecies();
