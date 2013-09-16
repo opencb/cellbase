@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.common.core.Gene;
+import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.variation.Variation;
 
 import java.io.BufferedWriter;
@@ -23,24 +24,31 @@ import java.util.Map;
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class JsonSerializer implements Serializer {
+public class JsonSerializer implements CellbaseSerializer {
 
-    private File outdir;
+    private File file;
     private Path outdirPath;
+    private Path outfilePath;
 
     private Map<String, BufferedWriter> bufferedWriterrMap;
+
+    private BufferedWriter genomeSequenceBufferedWriter;
 
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
 
-    public JsonSerializer(File outdir) throws IOException {
-        this.outdir = outdir;
+    private int chunkSize = 2000;
+
+    public JsonSerializer(File file) throws IOException {
+        this.file = file;
         init();
     }
 
     private void init() throws IOException {
-        if(outdir.exists() && outdir.isDirectory() && outdir.canWrite()) {
-            outdirPath = outdir.toPath();
+        if(file.exists() && file.isDirectory() && file.canWrite()) {
+            outdirPath = file.toPath();
+        }else {
+            outfilePath = file.toPath();
         }
 
         bufferedWriterrMap = new Hashtable<>(50);
@@ -49,6 +57,19 @@ public class JsonSerializer implements Serializer {
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 
+
+    @Override
+    public void serialize(GenomeSequenceChunk genomeSequenceChunk) {
+        try {
+            if(genomeSequenceBufferedWriter == null) {
+                genomeSequenceBufferedWriter = Files.newBufferedWriter(outfilePath, Charset.defaultCharset());
+            }
+            genomeSequenceBufferedWriter.write(jsonObjectWriter.writeValueAsString(genomeSequenceChunk));
+            genomeSequenceBufferedWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        };
+    }
 
     @Override
     public void serialize(Gene gene) {
@@ -70,9 +91,17 @@ public class JsonSerializer implements Serializer {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+
     @Override
     public void close() {
         String id;
+        try {
+            genomeSequenceBufferedWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        ;
+
         Iterator<String> iter = bufferedWriterrMap.keySet().iterator();
         while(iter.hasNext()) {
             id = iter.next();
