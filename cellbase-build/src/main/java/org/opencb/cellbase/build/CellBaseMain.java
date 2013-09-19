@@ -101,7 +101,7 @@ public class CellBaseMain {
                 System.out.println("In core...");
 
                 String gtfFile = commandLine.getOptionValue("gtf-file");
-                String geneDescriptionFile = commandLine.getOptionValue("gene-description", "");
+                String geneDescriptionFile = commandLine.getOptionValue("gene-description-file", "");
                 String xrefFile = commandLine.getOptionValue("xref-file", "");
                 String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
                 String mirnaFile = commandLine.getOptionValue("mirna-file", "");
