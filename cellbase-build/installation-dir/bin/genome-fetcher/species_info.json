@@ -25,7 +25,6 @@
                     {"text": "Loxodonta africana", "assembly": "loxAfr3", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-73/fasta/"},
                     {"text": "Callithrix jacchus", "assembly": "C_jacchus3.2.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-73/fasta/"},
                     {"text": "Nomascus leucogenys", "assembly": "Nleu1.0", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-73/fasta/"},
-                    {"text": "Cricetulus griseus", "assembly": "CriGRi_1.0", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-73/fasta/"},
                     {"text": "Anas platyrhynchos", "assembly": "BGI_duck_1.0", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-73/fasta/"},
                     {"text": "Ficedula albicollis", "assembly": "FicAlb_1.4", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-73/fasta/"}
 
@@ -105,7 +104,7 @@
             {
                 "text": "Bacteria",
                 "items": [
-                    {"text": "Escherichia coli str. K-12 substr. MG1655", "assembly": "GCA_000005845.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
+                    {"text": "Escherichia coli str. K-12 substr. MG1655", "assembly": "GCA_000005845.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_22_collection/"},
                     {"text": "Streptococcus pneumoniae 70585", "assembly": "GCA_000018965.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_22_collection/"},
                     {"text": "Streptococcus agalactiae NEM316", "assembly": "GCA_000196055.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_1_collection/"},
                     {"text": "Staphylococcus aureus subsp. aureus ST398", "assembly": "GCA_000009585.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_18_collection/"},
@@ -115,48 +114,31 @@
                     {"text": "Salmonella enterica subsp. enterica serovar Typhi str. CT18", "assembly": "GCA_000195995.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
                     {"text": "Salmonella enterica subsp. enterica serovar Typhimurium str. LT2", "assembly": "GCA_000006945.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
                     {"text": "Photorhabdus luminescens subsp. laumondii TTO1", "assembly": "GCA_000196155.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Neisseria meningitidis Z2491", "assembly": "GCA_000009105.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Mycoplasma genitalium G37", "assembly": "GCA_000027325.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
+                    {"text": "Neisseria meningitidis Z2491", "assembly": "GCA_000009105.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_18_collection/"},
+                    {"text": "Mycoplasma genitalium G37", "assembly": "GCA_000027325.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_13_collection/"},
                     {"text": "Mycobacterium tuberculosis H37Rv (ASM19595v2)", "assembly": "GCA_000195955.2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_27_collection/"},
                     {"text": "Mycobacterium avium 104", "assembly": "GCA_000014985.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_8_collection/"},
-                    {"text": "Listeria monocytogenes EGD-e", "assembly": "GCA_000196035.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Lactobacillus plantarum WCFS1", "assembly": "GCA_000203855.2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Haemophilus influenzae Rd KW20", "assembly": "GCA_000027305.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
+                    {"text": "Listeria monocytogenes EGD-e", "assembly": "GCA_000196035.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_7_collection/"},
+                    {"text": "Lactobacillus plantarum WCFS1", "assembly": "GCA_000203855.2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_2_collection/"},
+                    {"text": "Haemophilus influenzae Rd KW20", "assembly": "GCA_000027305.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_23_collection/"},
                     {"text": "Corynebacterium glutamicum ATCC 13032 (ASM19633v1)", "assembly": "GCA_000196335.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Clostridium botulinum A str. Hall", "assembly": "GCA_000017045.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Chlamydia trachomatis D/UW-3/CX", "assembly": "GCA_000008725.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Bifidobacterium longum NCC2705", "assembly": "GCA_000007525.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Bacillus subtilis subsp. subtilis str. 168", "assembly": "GCA_000009045.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
+                    {"text": "Clostridium botulinum A str. Hall", "assembly": "GCA_000017045.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_3_collection/"},
+                    {"text": "Chlamydia trachomatis D/UW-3/CX", "assembly": "GCA_000008725.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_7_collection/"},
+                    {"text": "Bifidobacterium longum NCC2705", "assembly": "GCA_000007525.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_24_collection/"},
+                    {"text": "Bacillus subtilis subsp. subtilis str. 168", "assembly": "GCA_000009045.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_18_collection/"},
                     {"text": "Bacillus licheniformis DSM 13 = ATCC 14580 (ASM1164v1)", "assembly": "GCA_000011645.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Acinetobacter baumannii AYE", "assembly": "GCA_000069245.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
+                    {"text": "Acinetobacter baumannii AYE", "assembly": "GCA_000069245.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_5_collection/"},
                     {"text": "Pseudomonas aeruginosa PA7", "assembly": "GCA_000017205.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_9_collection/"},
                     {"text": "Pseudomonas aeruginosa PA14", "assembly": "GCA_000404265.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_35_collection/"},
                     {"text": "Pseudomonas aeruginosa MPAO1/P1", "assembly": "GCA_000247435.2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_4_collection/"},
                     {"text": "Pseudomonas aeruginosa MPAO1/P2", "assembly": "GCA_000247455.2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_12_collection/"},
-                    {"text": "Chlamydophila pneumoniae CWL029", "assembly": "GCA_000008745.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Parachlamydia acanthamoebae UV-7", "assembly": "GCA_000253035.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Waddlia chondrophila WSU 86-1044", "assembly": "GCA_000092785.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Candidatus Protochlamydia amoebophila UWE25", "assembly": "GCA_000011565.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"},
-                    {"text": "Simkania negevensis Z", "assembly": "GCA_000237205.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/"}
+                    {"text": "Chlamydophila pneumoniae CWL029", "assembly": "GCA_000008745.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_21_collection/"},
+                    {"text": "Parachlamydia acanthamoebae UV-7", "assembly": "GCA_000253035.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_3_collection/"},
+                    {"text": "Waddlia chondrophila WSU 86-1044", "assembly": "GCA_000092785.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_14_collection/"},
+                    {"text": "Candidatus Protochlamydia amoebophila UWE25", "assembly": "GCA_000011565.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_12_collection/"},
+                    {"text": "Simkania negevensis Z", "assembly": "GCA_000237205.1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-20/fasta/bacteria_13_collection/"}
                 ]
             }
         ]
 }
-128K    acinetobacter_baumannii_aye
-128K    bacillus_subtilis_subsp_subtilis_str_168
-128K    bifidobacterium_longum_ncc2705
-128K    candidatus_protochlamydia_amoebophila_uwe25
-128K    chlamydia_trachomatis_d_uw_3_cx
-128K    chlamydophila_pneumoniae_cwl029
-128K    clostridium_botulinum_a_str_hall
-128K    cricetulus_griseus
-128K    escherichia_coli_str_k_12_substr_mg1655
-128K    haemophilus_influenzae_rd_kw20
-128K    lactobacillus_plantarum_wcfs1
-128K    listeria_monocytogenes_egd_e
-128K    mycoplasma_genitalium_g37
-128K    neisseria_meningitidis_z2491
-128K    parachlamydia_acanthamoebae_uv_7
-128K    simkania_negevensis_z
-128K    waddlia_chondrophila_wsu_86_1044
 

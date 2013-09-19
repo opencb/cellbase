@@ -116,7 +116,7 @@ for sp in species:
         logging.debug(command)
         os.system(command)
         ## download files for gene descriptions and xref
-        gene_files =  ['gene.txt.gz', 'xref.txt.gz', 'external_db.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz']
+        # gene_files =  ['gene.txt.gz', 'xref.txt.gz', 'external_db.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz']
 
 
 
