@@ -114,5 +114,7 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
 	public List<List<Gene>> getAllTargetsByMiRnaMatureList(List<String> mirbaseIds);
 
-	public String getAllIntervalFrequencies(Region region, int interval);
+	public QueryResult getAllIntervalFrequencies(Region region, QueryOptions options);
+
+    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 }

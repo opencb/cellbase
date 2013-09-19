@@ -341,119 +341,126 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     }
 
     @Override
-    public String getAllIntervalFrequencies(Region region, int interval) {
-
-        BasicDBObject start = new BasicDBObject("$gt", region.getStart());
-        start.append("$lt", region.getEnd());
-
-        BasicDBList andArr = new BasicDBList();
-        andArr.add(new BasicDBObject("chromosome", region.getChromosome()));
-        andArr.add(new BasicDBObject("start", start));
-
-        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", andArr));
-
-
-        BasicDBList divide1 = new BasicDBList();
-        divide1.add("$start");
-        divide1.add(interval);
-
-        BasicDBList divide2 = new BasicDBList();
-        divide2.add(new BasicDBObject("$mod", divide1));
-        divide2.add(interval);
-
-        BasicDBList subtractList = new BasicDBList();
-        subtractList.add(new BasicDBObject("$divide", divide1));
-        subtractList.add(new BasicDBObject("$divide", divide2));
-
-
-        BasicDBObject substract = new BasicDBObject("$subtract", subtractList);
-
-        DBObject totalCount = new BasicDBObject("$sum", 1);
-
-        BasicDBObject g = new BasicDBObject("_id", substract);
-        g.append("features_count", totalCount);
-        BasicDBObject group = new BasicDBObject("$group", g);
-
-        BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("_id", 1));
-
-        AggregationOutput output = mongoDBCollection.aggregate(match, group, sort);
-
-        System.out.println(output.getCommand());
-
-        HashMap<Long, DBObject> ids = new HashMap<>();
-        BasicDBList resultList = new BasicDBList();
-
-        for (DBObject intervalObj : output.results()) {
-            Long _id = Math.round((Double) intervalObj.get("_id"));//is double
-
-            DBObject intervalVisited = ids.get(_id);
-            if (intervalVisited == null) {
-                intervalObj.put("_id", _id);
-                intervalObj.put("start", getChunkStart(_id.intValue(), interval));
-                intervalObj.put("end", getChunkEnd(_id.intValue(), interval));
-                intervalObj.put("features_count", Math.log((int) intervalObj.get("features_count")));
-                ids.put(_id, intervalObj);
-                resultList.add(intervalObj);
-            } else {
-                Double sum = (Double) intervalVisited.get("features_count") + Math.log((int) intervalObj.get("features_count"));
-                intervalVisited.put("features_count", sum.intValue());
-            }
-        }
-        return resultList.toString();
-
-        //		QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
-        //				.greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
-        //
-        //		int numIntervals = (region.getEnd() - region.getStart()) / interval + 1;
-        //		int[] intervalCount = new int[numIntervals];
-        //
-        //		List<Gene> genes = executeQuery(builder.get(),
-        //				Arrays.asList("transcripts,id,name,biotype,status,chromosome,end,strand,source,description"));
-        //
-        //		System.out.println("GENES index");
-        //		System.out.println("numIntervals: " + numIntervals);
-        //		for (Gene gene : genes) {
-        //			System.out.print("gs:" + gene.getStart() + " ");
-        //			if (gene.getStart() >= region.getStart() && gene.getStart() <= region.getEnd()) {
-        //				int intervalIndex = (gene.getStart() - region.getStart()) / interval; // truncate
-        //				System.out.print(intervalIndex + " ");
-        //				intervalCount[intervalIndex]++;
-        //			}
-        //		}
-        //		System.out.println("GENES index");
-        //
-        //		int intervalStart = region.getStart();
-        //		int intervalEnd = intervalStart + interval - 1;
-        //		BasicDBList intervalList = new BasicDBList();
-        //		for (int i = 0; i < numIntervals; i++) {
-        //			BasicDBObject intervalObj = new BasicDBObject();
-        //			intervalObj.put("start", intervalStart);
-        //			intervalObj.put("end", intervalEnd);
-        //			intervalObj.put("interval", i);
-        //			intervalObj.put("value", intervalCount[i]);
-        //			intervalList.add(intervalObj);
-        //			intervalStart = intervalEnd + 1;
-        //			intervalEnd = intervalStart + interval - 1;
-        //		}
-        //
-        //		System.out.println(region.getChromosome());
-        //		System.out.println(region.getStart());
-        //		System.out.println(region.getEnd());
-        //		return intervalList.toString();
-
+    public QueryResult getAllIntervalFrequencies(Region region, QueryOptions queryOptions) {
+        return super.getAllIntervalFrequencies(region, queryOptions);
     }
 
-    private int getChunkId(int position, int chunksize) {
-        return position / chunksize;
+    @Override
+    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
+        return super.getAllIntervalFrequencies(regions, queryOptions);
     }
 
-    private int getChunkStart(int id, int chunksize) {
-        return (id == 0) ? 1 : id * chunksize;
-    }
-
-    private int getChunkEnd(int id, int chunksize) {
-        return (id * chunksize) + chunksize - 1;
-    }
+//    @Override
+//    public QueryResult getAllIntervalFrequencies(Region region, int interval) {
+//
+//        BasicDBObject start = new BasicDBObject("$gt", region.getStart());
+//        start.append("$lt", region.getEnd());
+//
+//        BasicDBList andArr = new BasicDBList();
+//        andArr.add(new BasicDBObject("chromosome", region.getChromosome()));
+//        andArr.add(new BasicDBObject("start", start));
+//
+//        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", andArr));
+//
+//
+//        BasicDBList divide1 = new BasicDBList();
+//        divide1.add("$start");
+//        divide1.add(interval);
+//
+//        BasicDBList divide2 = new BasicDBList();
+//        divide2.add(new BasicDBObject("$mod", divide1));
+//        divide2.add(interval);
+//
+//        BasicDBList subtractList = new BasicDBList();
+//        subtractList.add(new BasicDBObject("$divide", divide1));
+//        subtractList.add(new BasicDBObject("$divide", divide2));
+//
+//
+//        BasicDBObject substract = new BasicDBObject("$subtract", subtractList);
+//
+//        DBObject totalCount = new BasicDBObject("$sum", 1);
+//
+//        BasicDBObject g = new BasicDBObject("_id", substract);
+//        g.append("features_count", totalCount);
+//        BasicDBObject group = new BasicDBObject("$group", g);
+//
+//        BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("_id", 1));
+//
+//        AggregationOutput output = mongoDBCollection.aggregate(match, group, sort);
+//
+//        System.out.println(output.getCommand());
+//
+//        HashMap<Long, DBObject> ids = new HashMap<>();
+//        BasicDBList resultList = new BasicDBList();
+//
+//        for (DBObject intervalObj : output.results()) {
+//            Long _id = Math.round((Double) intervalObj.get("_id"));//is double
+//
+//            DBObject intervalVisited = ids.get(_id);
+//            if (intervalVisited == null) {
+//                intervalObj.put("_id", _id);
+//                intervalObj.put("start", getChunkStart(_id.intValue(), interval));
+//                intervalObj.put("end", getChunkEnd(_id.intValue(), interval));
+//                intervalObj.put("features_count", Math.log((int) intervalObj.get("features_count")));
+//                ids.put(_id, intervalObj);
+//                resultList.add(intervalObj);
+//            } else {
+//                Double sum = (Double) intervalVisited.get("features_count") + Math.log((int) intervalObj.get("features_count"));
+//                intervalVisited.put("features_count", sum.intValue());
+//            }
+//        }
+//        return BasicDBList;
+//
+//        //		QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//        //				.greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
+//        //
+//        //		int numIntervals = (region.getEnd() - region.getStart()) / interval + 1;
+//        //		int[] intervalCount = new int[numIntervals];
+//        //
+//        //		List<Gene> genes = executeQuery(builder.get(),
+//        //				Arrays.asList("transcripts,id,name,biotype,status,chromosome,end,strand,source,description"));
+//        //
+//        //		System.out.println("GENES index");
+//        //		System.out.println("numIntervals: " + numIntervals);
+//        //		for (Gene gene : genes) {
+//        //			System.out.print("gs:" + gene.getStart() + " ");
+//        //			if (gene.getStart() >= region.getStart() && gene.getStart() <= region.getEnd()) {
+//        //				int intervalIndex = (gene.getStart() - region.getStart()) / interval; // truncate
+//        //				System.out.print(intervalIndex + " ");
+//        //				intervalCount[intervalIndex]++;
+//        //			}
+//        //		}
+//        //		System.out.println("GENES index");
+//        //
+//        //		int intervalStart = region.getStart();
+//        //		int intervalEnd = intervalStart + interval - 1;
+//        //		BasicDBList intervalList = new BasicDBList();
+//        //		for (int i = 0; i < numIntervals; i++) {
+//        //			BasicDBObject intervalObj = new BasicDBObject();
+//        //			intervalObj.put("start", intervalStart);
+//        //			intervalObj.put("end", intervalEnd);
+//        //			intervalObj.put("interval", i);
+//        //			intervalObj.put("value", intervalCount[i]);
+//        //			intervalList.add(intervalObj);
+//        //			intervalStart = intervalEnd + 1;
+//        //			intervalEnd = intervalStart + interval - 1;
+//        //		}
+//        //
+//        //		System.out.println(region.getChromosome());
+//        //		System.out.println(region.getStart());
+//        //		System.out.println(region.getEnd());
+//        //		return intervalList.toString();
+//
+//    }
+//
+//    @Override
+//    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
+//        List<QueryResult> queryResult = new ArrayList<>(regions.size());
+//        for (Region region :regions){
+//            queryResult.add(getAllIntervalFrequencies(region, queryOptions));
+//        }
+//        return queryResult;
+//    }
 
 
     //	@Override

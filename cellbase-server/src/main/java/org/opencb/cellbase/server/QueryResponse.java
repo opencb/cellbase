@@ -7,46 +7,28 @@ import java.util.Map;
 
 public class QueryResponse extends DBObjectMap {
 
-	private static final long serialVersionUID = -2978952531219554024L;
+    private static final long serialVersionUID = -2978952531219554024L;
 
-	private Map<String, Object> metadata;
+    public QueryResponse() {
+        initialize();
+    }
 
-	public QueryResponse() {
-		initialize();
-	}
+    public QueryResponse(int size) {
+        super(size);
+        initialize();
+    }
 
-	public QueryResponse(int size) {
-		super(size);
-		initialize();
-	}
+    public QueryResponse(String key, Object value) {
+        super(key, value);
+        initialize();
+    }
 
-	public QueryResponse(String key, Object value) {
-		super(key, value);
-		initialize();
-	}
+    private void initialize() {
+        this.put("dbVersion", "v3");
+        this.put("apiVersion", "v2");
+        this.put("time", "");
+        this.put("warningMsg", "");
+        this.put("errorMsg", "");
+    }
 
-	
-
-	private void initialize() {
-		metadata = new HashMap<String, Object>();
-		metadata.put("dbVersion", "v3");
-		metadata.put("apiVersion", "v2");
-		metadata.put("time", "");
-		metadata.put("warningMsg", "");
-		metadata.put("errorMsg", "");
-		this.put("metadata", metadata);
-		
-//		this.put("result", "");
-	}
-	
-	
-	public Map<String, Object> getMetadata() {
-		return metadata;
-	}
-
-	public void setMetadata(Map<String, Object> metadata) {
-		this.metadata = metadata;
-	}
-	
-	
 }

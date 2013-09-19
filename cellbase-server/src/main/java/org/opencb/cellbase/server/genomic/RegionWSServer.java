@@ -12,6 +12,7 @@ import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -98,7 +99,8 @@ public class RegionWSServer extends GenericRestWSServer {
 				// getHistogramByFeatures(dbAdaptor.getAllByRegionList(regions)));
 //				Response resp = generateResponse(chregionId,
 //						geneDBAdaptor.getAllIntervalFrequencies(regions.get(0), getHistogramIntervalSize()));
-				String res = geneDBAdaptor.getAllIntervalFrequencies(regions.get(0), getHistogramIntervalSize());
+                queryOptions.put("interval", getHistogramIntervalSize());
+				List<QueryResult> res = geneDBAdaptor.getAllIntervalFrequencies(regions, queryOptions);
 //				logger.info("Old histogram: " + (System.currentTimeMillis() - t1) + ",  resp: " + res.toString());
 				return createOkResponse(res);
 			} else {
@@ -179,7 +181,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
             if (hasHistogramQueryParam()) {
             	queryOptions.put("interval", getHistogramIntervalSize());
-                return createOkResponse(variationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions));
+                return createOkResponse(variationDBAdaptor.getAllIntervalFrequencies(regions, queryOptions));
             } else {
                 if (consequenceTypes.equals("")) {
                 	queryOptions.put("consequence_type", consequenceTypes);

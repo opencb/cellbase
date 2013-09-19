@@ -10,121 +10,116 @@ import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor {
 
-	public TranscriptMongoDBAdaptor(DB db) {
-		super(db);
-	}
+    public TranscriptMongoDBAdaptor(DB db) {
+        super(db);
+    }
 
-	public TranscriptMongoDBAdaptor(DB db, String species, String version) {
-		super(db, species, version);
-		mongoDBCollection = db.getCollection("core");
-	}
+    public TranscriptMongoDBAdaptor(DB db, String species, String version) {
+        super(db, species, version);
+        mongoDBCollection = db.getCollection("core");
+    }
 
 
     @Override
     public QueryResult getAllById(String id, QueryOptions options) {
-        //        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.id": "ENST00000343281"}})
+        return getAllByIdList(Arrays.asList(id), options).get(0);
 
-        DBObject[] commands = new DBObject[3];
-        DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.id", id) );
-        DBObject unwind = new BasicDBObject("$unwind", "$transcripts" );
-        commands[0] = match;
-        commands[1] = unwind;
-        commands[2] = match;
-
-        QueryResult queryResult = executeAggregation(id, commands, options);
-
-        System.out.print(commands[0].toString()+",");
-        System.out.print(commands[1].toString()+",");
-        System.out.print(commands[2].toString());
-        System.out.println("");
-
-        System.out.println(">>"+((QueryResult)queryResult.get(id)).getResult());
-
-        return queryResult;
     }
-    
-    
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+//        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.id": "ENST00000343281"}})
+
+        List<DBObject[]> commandsList = new ArrayList<>(idList.size());
+        for (String id : idList) {
+            DBObject[] commands = new DBObject[3];
+            DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.id", id));
+            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
+            commands[0] = match;
+            commands[1] = unwind;
+            commands[2] = match;
+            commandsList.add(commands);
+        }
+        return executeAggregationList(idList, commandsList, options);
     }
 
     @Override
-	public QueryResult getAllByPosition(String chromosome, int position,
-			QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public QueryResult getAllByPosition(String chromosome, int position,
+                                        QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public QueryResult getAllByPosition(Position position,
-			QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public QueryResult getAllByPosition(Position position,
+                                        QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<QueryResult> getAllByPositionList(List<Position> positionList,
-			QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<QueryResult> getAllByPositionList(List<Position> positionList,
+                                                  QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public QueryResult getAllByRegion(String chromosome, int start, int end,
-			QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public QueryResult getAllByRegion(Region region, QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public QueryResult getAllByRegion(String chromosome, int start, int end,
+                                      QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<QueryResult> getAllByRegionList(List<Region> regions,
-			QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	
-	@Override
-	public QueryResult getAllByEnsemblExonId(String ensemblExonId,
-			QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public QueryResult getAllByRegion(Region region, QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<QueryResult> getAllByEnsemblExonIdList(
-			List<String> ensemblExonIdList, QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<QueryResult> getAllByRegionList(List<Region> regions,
+                                                QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	
-	@Override
-	public QueryResult getAllByTFBSId(String tfbsId, QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	@Override
-	public List<QueryResult> getAllByTFBSIdList(List<String> tfbsIdList,
-			QueryOptions options) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
+    @Override
+    public QueryResult getAllByEnsemblExonId(String ensemblExonId,
+                                             QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<QueryResult> getAllByEnsemblExonIdList(
+            List<String> ensemblExonIdList, QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public QueryResult getAllByTFBSId(String tfbsId, QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<QueryResult> getAllByTFBSIdList(List<String> tfbsIdList,
+                                                QueryOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 //	private List<List<Transcript>> executeQuery(DBObject query) {
 //		List<List<Transcript>> result = null;
 //
@@ -151,7 +146,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //		return result;
 //	}
 
-	
+
 //	@Override
 //	public List<List<Transcript>> getAllByName(String name, List<String> exclude) {
 //		BasicDBObject query = new BasicDBObject("transcripts.xrefs.id", name.toUpperCase());
@@ -181,29 +176,29 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //	}
 
 
-	@Override
-	public List<Transcript> getAllByProteinName(String proteinName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<Transcript> getAllByProteinName(String proteinName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<List<Transcript>> getAllByProteinNameList(List<String> proteinNameList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<List<Transcript>> getAllByProteinNameList(List<String> proteinNameList) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<Transcript> getAllByMirnaMature(String mirnaID) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<Transcript> getAllByMirnaMature(String mirnaID) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     @Override
     public QueryResult getAll(QueryOptions options) {
@@ -221,57 +216,57 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-	public List<String> getAllIds() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    public List<String> getAllIds() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public Map<String, Object> getInfo(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Map<String, Object> getInfo(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<Map<String, Object>> getInfoByIdList(List<String> idList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<Map<String, Object>> getInfoByIdList(List<String> idList) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public Map<String, Object> getFullInfo(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Map<String, Object> getFullInfo(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<Map<String, Object>> getFullInfoByIdList(List<String> idList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<Map<String, Object>> getFullInfoByIdList(List<String> idList) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public Region getRegionById(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Region getRegionById(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<Region> getAllRegionsByIdList(List<String> idList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<Region> getAllRegionsByIdList(List<String> idList) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public String getSequenceById(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public String getSequenceById(String id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<String> getAllSequencesByIdList(List<String> idList) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<String> getAllSequencesByIdList(List<String> idList) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }
