@@ -11,20 +11,20 @@ public abstract class DBAdaptor {
 
 	protected Logger logger= Logger.getLogger(this.getClass().getSimpleName());
 	
-	protected static ResourceBundle resourceBundle;
-	protected static Config applicationProperties;
-	
-	
-	static {
-		// reading application.properties file
-		resourceBundle = ResourceBundle.getBundle("cellbase");
-		try {
-			applicationProperties = new Config(resourceBundle);
-		} catch (IOException e) {
-			applicationProperties = new Config();
-			e.printStackTrace();
-		}
-	}
+//	protected static ResourceBundle resourceBundle;
+//	protected static Config applicationProperties;
+//
+//
+//	static {
+//		// reading application.properties file
+//		resourceBundle = ResourceBundle.getBundle("cellbase");
+//		try {
+//			applicationProperties = new Config(resourceBundle);
+//		} catch (IOException e) {
+//			applicationProperties = new Config();
+//			e.printStackTrace();
+//		}
+//	}
 	
 	public DBAdaptor() {
 		logger= Logger.getLogger(this.getClass().getSimpleName());

@@ -122,13 +122,23 @@ if species != '':
     ## ie: Homo sapiens for cellbase  version '3' and 
     ## assembly GRCh37.p10 is converted to 'hsapiens_cdb_v3_3710'
     species_arr = sp.split(" ")
-    database_sp_name = species_arr[0].lower()[0]+species_arr[1]
-    database_assembly = re.sub('[a-z._]', '', sp_obj["assembly"].lower(), 0)
+
+    # if(pair.length < 3){
+    #     name = (pair[0].substring(0,1)+pair[1]).toLowerCase();
+    # }else{
+    #     name = (pair[0].substring(0,1)+pair[1]+pair[pair.length-1].replaceAll("[/_().-]", "")).toLowerCase();
+    # }
+    if len(species_arr) < 3:
+        database_sp_name = species_arr[0].lower()[0]+species_arr[1]
+    else:
+        database_sp_name = (species_arr[0]+species_arr[1]+re.sub('[/_().-]','',species_arr[-1])).lower()
+    # database_assembly = re.sub('[a-z._]', '', sp_obj["assembly"].lower(), 0)
     ## if not digits exist then assembly is the lower case
-    if database_assembly == '':
-        database_assembly = sp_obj["assembly"].lower()
-    database = database_sp_name+"_cdb_v"+cellbase_version+"_"+database_assembly
-    
+    # if database_assembly == '':
+    #     database_assembly = sp_obj["assembly"].lower()
+    # database = database_sp_name+"_cdb_v"+cellbase_version+"_"+database_assembly
+    database = database_sp_name+"_cdb_v"+cellbase_version
+
     logging.debug(database)
 
     for collection in mongodb_collections:
