@@ -29,6 +29,10 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 	private static Map<String, DB> mongoDBFactory;
 	// private static Config applicationProperties;
 	private static ResourceBundle resourceBundle;
+	protected static Config applicationProperties;
+
+	protected static Map<String, String> speciesAlias;
+
 
 	static {
 		// mongoDBFactory = new HashMap<String, HibernateDBAdaptor>(20);
@@ -38,6 +42,23 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 		resourceBundle = ResourceBundle.getBundle("mongodb");
 		try {
 			applicationProperties = new Config(resourceBundle);
+
+            String[] speciesArray = applicationProperties.getProperty("SPECIES").split(",");
+            String[] alias = null;
+            String version;
+            for(String species: speciesArray) {
+                species = species.toUpperCase();
+                version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
+                alias = applicationProperties.getProperty(species +"."+version+".ALIAS").split(",");
+
+                for(String al: alias) {
+                    speciesAlias.put(al, species);
+                }
+                // For to recognize the species code
+                speciesAlias.put(species, species);
+            }
+
+
 		} catch (IOException e) {
 			applicationProperties = new Config();
 			e.printStackTrace();
@@ -84,6 +105,23 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 		}
 
 		return db;
+	}
+
+    protected String getSpeciesVersionPrefix(String species, String version) {
+		String speciesPrefix = null;
+		if(species != null && !species.equals("")) {
+			// coding an alias to application code species
+			species = speciesAlias.get(species);
+			// if 'version' parameter has not been provided the default version is selected
+			if(version == null || version.trim().equals("")) {
+				version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
+//				logger.debug("HibernateDBAdaptorFactory in createSessionFactory(): 'version' parameter is null or empty, it's been set to: '"+version+"'");
+			}
+
+			// setting database configuration for the 'species.version'
+			speciesPrefix = species.toUpperCase() + "." + version.toUpperCase();
+		}
+		return speciesPrefix;
 	}
 
 	@Override
