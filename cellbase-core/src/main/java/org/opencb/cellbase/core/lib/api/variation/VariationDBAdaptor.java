@@ -30,7 +30,9 @@ public interface VariationDBAdaptor {
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
     public QueryResult getAllIntervalFrequencies(Region region, QueryOptions options);
-    
+
+    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
+
 //    public List<Variation> getById(String id, List<String> exclude);
 //
 //    List<List<Variation>> getByIdList(List<String> idList, List<String> exclude);
