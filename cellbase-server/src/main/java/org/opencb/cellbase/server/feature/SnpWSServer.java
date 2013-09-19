@@ -1,7 +1,7 @@
 package org.opencb.cellbase.server.feature;
 
-import com.sun.jersey.multipart.FormDataParam;
 
+import com.sun.jersey.multipart.FormDataParam;
 import org.bioinfo.commons.utils.StringUtils;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
@@ -31,6 +31,7 @@ public class SnpWSServer extends GenericRestWSServer {
                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
 		super(version, species, uriInfo, hsr);
         this.exclude = Arrays.asList(exclude.trim().split(","));
+
 	}
 
 	@GET
