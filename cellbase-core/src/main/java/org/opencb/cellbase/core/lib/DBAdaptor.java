@@ -30,7 +30,7 @@ public abstract class DBAdaptor {
 		logger= Logger.getLogger(this.getClass().getSimpleName());
 		logger.setLevel(Level.DEBUG);
 		
-		logger.info(applicationProperties.toString());
+//		logger.info(applicationProperties.toString());
 		
 	}
 	

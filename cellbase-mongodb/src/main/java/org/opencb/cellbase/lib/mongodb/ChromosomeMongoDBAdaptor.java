@@ -1,5 +1,6 @@
 package org.opencb.cellbase.lib.mongodb;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -26,7 +27,10 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
 
     @Override
     public QueryResult getAll(QueryOptions options) {
-        return executeQuery("result", new BasicDBObject(), options);
+        QueryResult qr = executeQuery("result", new BasicDBObject(), options);
+        BasicDBList list = (BasicDBList)qr.getResult();
+        qr.setResult(list.get(0));
+        return qr;
     }
 
     @Override
@@ -46,10 +50,13 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
             commands[2] = match;
             commandList.add(commands);
         }
-        if (idList != null && idList.size() == 1) {
-            idList = Arrays.asList("result");
+
+        List<QueryResult> qrList = executeAggregationList(idList, commandList, options);
+        for (QueryResult qr : qrList) {
+            BasicDBList list = (BasicDBList)qr.getResult();
+            qr.setResult(list.get(0));
         }
-        return executeAggregationList(idList, commandList, options);
+        return qrList;
 
     }
 
