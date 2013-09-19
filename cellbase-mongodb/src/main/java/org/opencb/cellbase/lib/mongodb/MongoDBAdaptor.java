@@ -26,27 +26,37 @@ public class MongoDBAdaptor extends DBAdaptor {
 
     protected ObjectMapper jsonObjectMapper;
 
+    protected static ResourceBundle resourceBundle;
+    protected static Config applicationProperties;
+
+
     static {
         // reading application.properties file
         resourceBundle = ResourceBundle.getBundle("mongodb");
         try {
-            if (applicationProperties == null) {
-                applicationProperties = new Config(resourceBundle);
-            } else {
-                // applicationProperties object must have been filled in DBAdpator class,
-                // then just append MongoDB properties
-                String key;
-                Set<String> keys = resourceBundle.keySet();
-                Iterator<String> keysIter = keys.iterator();
-                while (keysIter.hasNext()) {
-                    key = keysIter.next();
-                    applicationProperties.put(key, resourceBundle.getObject(key));
-                }
-            }
-        } catch (IOException e) {
-            applicationProperties = new Config();
-            e.printStackTrace();
-        }
+			applicationProperties = new Config(resourceBundle);
+		} catch (IOException e) {
+			applicationProperties = new Config();
+			e.printStackTrace();
+		}
+//        try {
+//            if (applicationProperties == null) {
+//                applicationProperties = new Config(resourceBundle);
+//            } else {
+//                // applicationProperties object must have been filled in DBAdpator class,
+//                // then just append MongoDB properties
+//                String key;
+//                Set<String> keys = resourceBundle.keySet();
+//                Iterator<String> keysIter = keys.iterator();
+//                while (keysIter.hasNext()) {
+//                    key = keysIter.next();
+//                    applicationProperties.put(key, resourceBundle.getObject(key));
+//                }
+//            }
+//        } catch (IOException e) {
+//            applicationProperties = new Config();
+//            e.printStackTrace();
+//        }
     }
 
     //	public MongoDBAdaptor(String species, String version) {
