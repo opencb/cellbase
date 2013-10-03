@@ -1,10 +1,13 @@
 package org.opencb.cellbase.server.genomic;
 
+import com.sun.jersey.multipart.FormDataParam;
 import org.bioinfo.commons.utils.StringUtils;
 import org.opencb.cellbase.core.common.Position;
+import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.server.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -94,21 +97,24 @@ public class PositionWSServer extends GenericRestWSServer {
 	}
 	
 	@GET
-	@Path("/{geneId}/snp")
-	public Response getSNPByPosition(@PathParam("geneId") String query) {
+	@Path("/{position}/snp")
+	public Response getSNPByPosition(@PathParam("position") String query) {
 		try {
 			checkVersionAndSpecies();
 			List<Position> positionList = Position.parsePositions(query);
-			SnpDBAdaptor snpAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.version);
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+
+            return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));
+//			SnpDBAdaptor snpAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.version);
 //			return  generateResponse(query,  snpAdaptor.getAllByPositionList(positionList));
-			return  null;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getSNPByPosition", e.toString());
 		}
 	}
-	
-	
+
+
+
 	@GET
 	@Path("/{positionId}/consequence_type")
 	public Response getConsequenceTypeByPositionGet(@PathParam("positionId") String positionId) {
