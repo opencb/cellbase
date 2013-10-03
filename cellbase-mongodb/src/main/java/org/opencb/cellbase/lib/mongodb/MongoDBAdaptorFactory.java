@@ -19,10 +19,7 @@ import org.opencb.cellbase.lib.mongodb.regulatory.TfbsMongoDBAdaptor;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
@@ -36,6 +33,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 	static {
 		// mongoDBFactory = new HashMap<String, HibernateDBAdaptor>(20);
+        speciesAlias = new HashMap<String, String>();
 		mongoDBFactory = new HashMap<String, DB>(10);
 
 		// reading application.properties file
@@ -51,9 +49,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
                 alias = applicationProperties.getProperty(species +"."+version+".ALIAS").split(",");
 
+                System.out.println("");
+                System.out.println(species);
                 for(String al: alias) {
+                    System.out.print(al+' ');
                     speciesAlias.put(al, species);
                 }
+                System.out.println("");
                 // For to recognize the species code
                 speciesAlias.put(species, species);
             }
