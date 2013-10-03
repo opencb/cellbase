@@ -98,21 +98,54 @@ public class PositionWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{position}/snp")
-	public Response getSNPByPosition(@PathParam("position") String query) {
-		try {
-			checkVersionAndSpecies();
-			List<Position> positionList = Position.parsePositions(query);
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
-
-            return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));
-//			SnpDBAdaptor snpAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.version);
-//			return  generateResponse(query,  snpAdaptor.getAllByPositionList(positionList));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getSNPByPosition", e.toString());
-		}
+	public Response getSNPByPositionByGet(@PathParam("position") String query) {
+        return this.getSNPByPosition(query);
 	}
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+    @Path("/snp")
+    public Response getSNPByPositionByPost(@FormDataParam("position") String query) {
+        return this.getSNPByPosition(query);
+    }
 
+    private Response getSNPByPosition(String query) {
+        try {
+            checkVersionAndSpecies();
+            List<Position> positionList = Position.parsePositions(query);
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getSNPByPosition", e.toString());
+        }
+    }
+
+
+
+//
+//    @GET
+//    @Path("/{variants}/consequence_type")
+//    public Response getConsequenceTypeByPositionByGet(@PathParam("variants") String variants,
+//                                                      @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
+//        try {
+//            //			return getConsequenceTypeByPosition(query, features, variation, regulatory, diseases);
+//            return getConsequenceTypeByPosition(variants, excludeSOTerms);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getConsequenceTypeByPositionByGet", e.toString());
+//        }
+//    }
+//
+//    @POST
+//    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+//    @Path("/consequence_type")
+//    public Response getConsequenceTypeByPositionByPost(@FormDataParam("of") String outputFormat,
+//                                                       @FormDataParam("variants") String postQuery,
+//                                                       @DefaultValue("") @FormDataParam("exclude") String excludeSOTerms) {
+//        //		return getConsequenceTypeByPosition(postQuery, features, variation, regulatory, diseases);
+//        return getConsequenceTypeByPosition(postQuery, excludeSOTerms);
+//    }
 
 
 	@GET
