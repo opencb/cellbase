@@ -71,6 +71,9 @@ for sp in species:
         for j in phylo['items']:
             if j['text'] == sp:
                 sp_obj = j
+                sp_obj['phylo'] = phylo['text']
+                sp_obj['databaseHost'] = phylo['databaseHost']
+                sp_obj['databasePort'] = phylo['databasePort']
 
     logging.debug(sp_obj)
 
@@ -108,17 +111,32 @@ for sp in species:
     if args.gene is not None and args.gene == '1':
         if not os.path.exists(gene_folder):
             os.makedirs(gene_folder)
-        ## preparing URL for download 
-        url_gtf = sp_obj['sequence_url']+"gtf/{0}".format(sp_short)
+        ## preparing URL for download
+        # We have to change the param 'fasta' by 'gtf' in the URL
+        url_gtf = sp_obj['sequence_url'].replace("fasta", "gtf")+"{0}".format(sp_short)
         logging.debug(url_gtf)
         outfile = gene_folder+"/"+sp_short+".gtf.gz"
         command = "wget --tries=10 " + url_gtf+"/*.gtf.gz -O '"+outfile+"' -o "+outfile+".log"
         logging.debug(command)
         os.system(command)
-        ## download files for gene descriptions and xref
-        # gene_files =  ['gene.txt.gz', 'xref.txt.gz', 'external_db.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz']
-
-
+        if sp_obj['phylo'] is not 'Bacteria':
+            # Gene description
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select g.stable_id, g.description from gene g\" > " + gene_folder+"/description.txt")
+            # Gene Xrefs
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, x.display_label, edb.db_name, edb.db_display_name from gene g, transcript t, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.master_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Gene' and ox.ensembl_id=g.gene_id and g.gene_id=t.gene_id\" > " + gene_folder+"/xrefs_dup.txt")
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, x.display_label, edb.db_name, edb.db_display_name from gene g, transcript t, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.dependent_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Gene' and ox.ensembl_id=g.gene_id and g.gene_id=t.gene_id\" >> " + gene_folder+"/xrefs_dup.txt")
+            # Transcript Xrefs
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, x.display_label, edb.db_name, edb.db_display_name from transcript t, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.master_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Transcript' and ox.ensembl_id=t.transcript_id\" >> " + gene_folder+"/xrefs_dup.txt")
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, x.display_label, edb.db_name, edb.db_display_name from transcript t, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.dependent_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Transcript' and ox.ensembl_id=t.transcript_id\" >> " + gene_folder+"/xrefs_dup.txt")
+            # Translation Xrefs
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select tr.stable_id, x.display_label, edb.db_name, edb.db_display_name from translation t, transcript tr, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.master_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Translation' and ox.ensembl_id=t.translation_id and t.transcript_id=tr.transcript_id\" >> " + gene_folder+"/xrefs_dup.txt")
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select tr.stable_id, x.display_label, edb.db_name, edb.db_display_name from translation t, transcript tr, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.dependent_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Translation' and ox.ensembl_id=t.translation_id and t.transcript_id=tr.transcript_id\" >> " + gene_folder+"/xrefs.txt")
+            # Ensembl gene and transcript ID
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, g.stable_id from transcript t, gene g where t.gene_id=g.gene_id\" >> " + gene_folder+"/xrefs_dup.txt")
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, t.stable_id from transcript t\" >> " + gene_folder+"/xrefs_dup.txt")
+            # Remove duplicates
+            os.system("sort " + gene_folder+"/xrefs_dup.txt | uniq > " + gene_folder+"/xrefs.txt")
+            os.system("rm " + gene_folder+"/xrefs_dup.txt")
 
     if args.variation is not None and args.variation == '1':
         if not os.path.exists(variation_folder):
