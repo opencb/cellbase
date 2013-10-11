@@ -49,13 +49,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
                 alias = applicationProperties.getProperty(species +"."+version+".ALIAS").split(",");
 
-                System.out.println("");
-                System.out.println(species);
+//                System.out.println("");
+//                System.out.println(species);
                 for(String al: alias) {
                     System.out.print(al+' ');
                     speciesAlias.put(al, species);
                 }
-                System.out.println("");
+//                System.out.println("");
                 // For to recognize the species code
                 speciesAlias.put(species, species);
             }
