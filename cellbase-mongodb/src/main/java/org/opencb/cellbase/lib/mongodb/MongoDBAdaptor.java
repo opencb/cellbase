@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.mongodb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
+
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.DBAdaptor;

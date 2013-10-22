@@ -38,6 +38,7 @@ public class VariationParser {
 		Map<String, BufferedWriter> chromFiles = new HashMap<>(50);
 		BufferedWriter bwLog = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+".log"), Charset.defaultCharset());
 //		Gson gson = new Gson();
+
 		Map<String, List<String>> queryMap = null;
 		String[] variationFields = null;
 		String[] variationFeatureFields = null;
@@ -179,7 +180,6 @@ public class VariationParser {
 						chromFiles.put(chromosome, bw);
 					}
 
-
 //					chromFiles.get(chromosome).write(gson.toJson(variation)+ "\n");
                     serializer.serialize(variation);
 
@@ -216,7 +216,7 @@ public class VariationParser {
 		rafvariationFeature = new RandomAccessFile(variationFilePath.resolve("variation_feature.txt.gz").toFile(), "r");
 		rafTranscriptVariation = new RandomAccessFile(variationFilePath.resolve("transcript_variation.txt.gz").toFile(), "r");
 		rafvariationSynonym = new RandomAccessFile(variationFilePath.resolve("variation_synonym.txt.gz").toFile(), "r");
-		
+
 		psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
 		psTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
 		psVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
@@ -245,7 +245,7 @@ public class VariationParser {
 				createTable(5, variationFilePath.resolve("variation_feature.txt.gz"), "variation_feature");
 				createTable(1, variationFilePath.resolve("transcript_variation.txt.gz"), "transcript_variation");
 				createTable(1, variationFilePath.resolve("variation_synonym.txt.gz"), "variation_synonym");
-				
+
 //				psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
 
 //				sqlConn.close();		

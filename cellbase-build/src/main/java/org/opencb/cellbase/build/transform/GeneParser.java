@@ -1,5 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
+
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.core.*;
 import org.opencb.commons.bioformats.commons.exception.FileFormatException;
@@ -94,7 +95,7 @@ public class GeneParser {
 		// Loading MiRNAGene file
 		Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
 		if(mirnaFile != null && Files.exists(mirnaFile)) {
-			mirnaGeneMap = getmiRNAGeneMap(mirnaFile);			
+			mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
 		}
 		
 //		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
@@ -112,7 +113,11 @@ public class GeneParser {
 
 			/*
 			 * If chromosome is changed (or it's the first chromosome
+<<<<<<< HEAD
 			 * we load the new chromosome sequence.
+=======
+			 * we load the chromosome sequence.
+>>>>>>> b39626b1ae6fee8b3f382eeaf0cb28270bb97cf0
 			 */
 			if(!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
 				currentChromosome = gtf.getSequenceName();
@@ -390,6 +395,7 @@ public class GeneParser {
 //				break;
 //			}
 //		}
+
 		StringBuilder sb = new StringBuilder(100000);
 		if(file != null) {
 	//		BufferedReader br = Files.newBufferedReader(files[0].toPath(), Charset.defaultCharset());
@@ -729,6 +735,7 @@ public class GeneParser {
 //		Gson gson = new Gson();
 //		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
         BufferedWriter bw = Files.newBufferedWriter(outJsonFile.toPath(), Charset.defaultCharset());
+
 		System.out.println("");
 		System.out.println("START WRITE");
 		for (String geneId : genes.keySet()) {
@@ -737,6 +744,7 @@ public class GeneParser {
 //			tfw.writeStringToFile("\n");
 		}
 		bw.close();
+
 
 //		System.out.println(gson.toJson(genes.get("Ciclev10007224m.g")));
 //		System.out.println(gson.writeValueAsString(genes.get("Ciclev10008515m.g")));

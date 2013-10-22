@@ -2,11 +2,19 @@ package org.opencb.cellbase.server.feature;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+<<<<<<< HEAD
 import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.MirnaDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
+=======
+import com.mongodb.DBObject;
+import org.bioinfo.commons.utils.StringUtils;
+import org.opencb.cellbase.core.common.core.Exon;
+import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
+import org.opencb.cellbase.core.lib.api.*;
+>>>>>>> b39626b1ae6fee8b3f382eeaf0cb28270bb97cf0
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;

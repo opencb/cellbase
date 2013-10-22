@@ -19,6 +19,7 @@ public class GenomeSequenceFastaParser {
 
     private CellbaseSerializer serializer;
 
+
     private int CHUNK_SIZE = 2000;
 
 
@@ -99,7 +100,6 @@ public class GenomeSequenceFastaParser {
                         genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, chunkSequence);
                         serializer.serialize(genomeSequenceChunk);
                         start += CHUNK_SIZE;
-
                     } else {
                         // Last chunk of the chromosome
                         chunkSequence = sequence.substring(start - 1, sequence.length());
@@ -227,6 +227,7 @@ public class GenomeSequenceFastaParser {
 
     }
 
+
 //	private void writeGenomeChunksWithConservedRegions(String chromosome, String sequence, BufferedWriter bw, Path phastConsFolderPath, Path phylopConsFolderPath) throws IOException {
 //
 //		//        conservedRegionsSQLite(phastConsFolderPath, "phastCons", chromosome);
@@ -257,6 +258,7 @@ public class GenomeSequenceFastaParser {
 //					/*conserved region*/
 //					Map<Integer, Float> phastConsMap = queryConservedRegions(phastConsFolderPath, "phastCons", chromosome, start - 1, CHUNK_SIZE - 1);
 //					Map<Integer, Float> phylopMap = queryConservedRegions(phylopConsFolderPath, "phylop", chromosome, start - 1, CHUNK_SIZE - 1);
+
 //					/*
 //					Float[] phastConsArray = chunk.getPhastCons();
 //					Float[] phylopArray = chunk.getPhylop();

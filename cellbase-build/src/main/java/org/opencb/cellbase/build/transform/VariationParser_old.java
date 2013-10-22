@@ -1,5 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
+
 import org.opencb.cellbase.core.common.variation.Variation;
 import org.opencb.cellbase.core.common.variation.Xref;
 
@@ -122,6 +123,7 @@ public class VariationParser_old {
 					}
 					for (Variation var : variation) {
 //						bw.write(gson.toJson(var) + "\n");
+
 					}
 				}
 				contador++;

@@ -18,6 +18,7 @@ public class ProteinParser {
 		Files.exists(uniprotPath);
 
 //		Gson gson = new Gson();
+
 		UniprotParser up = new UniprotParser();
 		PrintWriter pw = new PrintWriter(Files.newOutputStream(Paths.get(outputFile.toURI())));
 		try {
@@ -34,7 +35,7 @@ public class ProteinParser {
 //					}
 //				}
 //			}
-		
+
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		} finally {

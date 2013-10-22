@@ -169,7 +169,6 @@ for sp in species:
                 os.system(command)
 
 
-
     ## Download CHECKSUMS files to interrogate which files to download
 #     urllib.urlretrieve(url_seq+"/CHECKSUMS", "CHECKSUMS")
 # pattern = re.compile("\w*.dna.chromosome.(\w+).fa.gz")

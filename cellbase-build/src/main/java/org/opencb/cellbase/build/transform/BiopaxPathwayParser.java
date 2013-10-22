@@ -1,5 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
+
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.opencb.cellbase.core.common.pathway.BiopaxPathway;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -222,7 +224,6 @@ public class BiopaxPathwayParser {
 
                 // TODO
 //				dbObjList.add((DBObject)JSON.parse(gson.toJson(p)));
-
 			}
 //			System.out.println(gson.toJson(pathwayList));
 //			String json = g.toJson(pathwayList);

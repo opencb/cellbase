@@ -135,6 +135,7 @@ public class RegulatoryParser {
 				for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
 //					bw.write(gson.toJson(result.getValue()) + "\n");
 					serializer.serialize(result.getValue());
+
 				}
 				
 			}
