@@ -17,6 +17,7 @@ parser.add_argument("-c", "--compress", help="Whether downloaded data must be co
 parser.add_argument("-q", "--sequence", help="Whether downloaded data must be compressed [true]")
 parser.add_argument("-g", "--gene", help="Whether downloaded data must be compressed [true]")
 parser.add_argument("-v", "--variation", help="Whether downloaded data must be compressed [true]")
+parser.add_argument("-r", "--regulation", help="Whether downloaded data must be compressed [true]")
 args = parser.parse_args()
 
 
@@ -84,7 +85,8 @@ for sp in species:
     sequence_folder = outdir+"/{0}/sequence".format(sp_short)
     gene_folder = outdir+"/{0}/gene".format(sp_short)
     variation_folder = outdir+"/{0}/variation".format(sp_short)
-    
+    regulation_folder = outdir+"/{0}/regulation".format(sp_short)
+
     ## Creating the directory for the species
     ## this creates 'species' folder
     if not os.path.exists(sp_folder):
@@ -101,7 +103,9 @@ for sp in species:
         command = "wget --tries=10 " + url_seq +" -O '"+outfile+"' -o "+outfile+".log"
         logging.debug(command)
         os.system(command)
-
+        cmd = "./genome_info.pl --species '{0}' -o {1}/genome_info.json".format(sp, sequence_folder)
+        logging.debug(cmd)
+        os.system(cmd)
         # for i in sp_obj['chromosomes']:
         #     outfile = seq_folder+"/chrom_"+i+".fa.gz"
         #     command = "wget --tries=10 " + url_seq+"/*.dna.chromosome."+i+".fa.gz -O '"+outfile+"' -o "+outfile+".log"
@@ -141,7 +145,7 @@ for sp in species:
     if args.variation is not None and args.variation == '1':
         if not os.path.exists(variation_folder):
             os.makedirs(variation_folder)
-        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz']
+        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz', 'attrib.txt.gz', 'seq_region.txt.gz', 'structural_variation_feature.txt.gz', 'study.txt.gz', 'phenotype.txt.gz', 'phenotype_feature.txt.gz', 'motif_feature_variation.txt.gz']
         ## preparing URL for download
         if 'variation_url' in sp_obj and sp_obj['variation_url'] != '':
             variation_url = sp_obj['variation_url']
@@ -150,6 +154,20 @@ for sp in species:
                 command = "wget --tries=10 " + variation_url+"/"+file+" -O '"+outfile+"' -o "+outfile+".log"
                 logging.debug(command)
                 os.system(command)
+
+    if args.regulation is not None and args.regulation == '1':
+        if not os.path.exists(regulation_folder):
+            os.makedirs(regulation_folder)
+        regulation_files =  ['AnnotatedFeatures.gff.gz', 'MotifFeatures.gff.gz', 'RegulatoryFeatures_MultiCell.gff.gz']
+        ## preparing URL for download
+        if 'regulation_url' in sp_obj and sp_obj['regulation_url'] != '':
+            regulation_url = sp_obj['regulation_url']+sp_short
+            for file in regulation_files:
+                outfile = regulation_folder+"/"+file
+                command = "wget --tries=10 " + regulation_url+"/"+file+" -O '"+outfile+"' -o "+outfile+".log"
+                logging.debug(command)
+                os.system(command)
+
 
 
     ## Download CHECKSUMS files to interrogate which files to download

@@ -1,6 +1,5 @@
 package org.opencb.cellbase.build.transform;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bioinfo.commons.io.TextFileWriter;
 import org.bioinfo.commons.io.utils.FileUtils;
 import org.bioinfo.commons.io.utils.IOUtils;
@@ -24,7 +23,7 @@ public class GeneParser {
 	private Map<String, Integer> transcriptDict;
 	private Map<String, Exon> exonDict;
 
-	private static final int CHUNK_SIZE = 4000;
+	private static final int CHUNK_SIZE = 5000;
 
 //    private ObjectMapper gson = new ObjectMapper();
     private CellbaseSerializer serializer;
@@ -103,6 +102,7 @@ public class GeneParser {
 //		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
 
 		// BasicBSONList list = new BasicBSONList();
+        String chunkIdSuffix = CHUNK_SIZE/1000+"k";
 		int cont = 0;
 //		Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
 		GtfReader gtfReader = new GtfReader(gtfFile);
@@ -114,7 +114,7 @@ public class GeneParser {
 
 			/*
 			 * If chromosome is changed (or it's the first chromosome
-			 * we load the chromosome sequence.
+			 * we load the new chromosome sequence.
 			 */
 			if(!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
 				currentChromosome = gtf.getSequenceName();
@@ -135,12 +135,10 @@ public class GeneParser {
 					int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
 					int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
 					for(int i=chunkStart; i<=chunkEnd; i++) {
-						gene.getChunkIds().add(gene.getChromosome()+"_"+i);
+						gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
 					}
                     serializer.serialize(gene);
 
-//					tfw.writeStringToFile(gson.toJson(gene));
-//					tfw.writeStringToFile(gson.writeValueAsString(gene));
 //					first = true;
 				}
 
@@ -306,7 +304,7 @@ public class GeneParser {
 						}
 					}
 
-					// no strand deppendent
+					// no strand dependent
 					transcript.setProteinID(gtf.getAttributes().get("protein_id"));
 				}
 
@@ -344,16 +342,10 @@ public class GeneParser {
 		int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
 		int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
 		for(int i=chunkStart; i<=chunkEnd; i++) {
-			gene.getChunkIds().add(gene.getChromosome()+"_"+i);
+			gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
 		}
 		// last gene must be written
         serializer.serialize(gene);
-
-        // tfw.writeStringToFile("\n");
-        // tfw.writeStringToFile(gson.writeValueAsString(gene));
-		// tfw.writeStringToFile("]");
-		// tfw.writeLine("\n");
-        // tfw.close();
 
 		gtfReader.close();
         serializer.close();
@@ -373,6 +365,12 @@ public class GeneParser {
 			gene.setEnd(gtf.getEnd());
 		}
 	}
+
+    public Map<String, String> readGenomeSequence(File genomeSequence) {
+        Map<String, String> genomeSequenceMap = new HashMap<>();
+
+        return genomeSequenceMap;
+    }
 
 	public String getSequenceByChromosomeName(String chrom, File genomeSequenceDir) throws IOException {
 		File[] files = genomeSequenceDir.listFiles();

@@ -1,10 +1,13 @@
-package org.opencb.cellbase.build.transform.serializers;
+package org.opencb.cellbase.build.transform.serializers.mongodb;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.cellbase.build.transform.MutationParser;
+import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
+import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
 
 import java.io.BufferedWriter;
@@ -24,7 +27,7 @@ import java.util.Map;
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class JsonSerializer implements CellbaseSerializer {
+public class MongoDBSerializer implements CellbaseSerializer {
 
     private File file;
     private Path outdirPath;
@@ -33,13 +36,14 @@ public class JsonSerializer implements CellbaseSerializer {
     private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
+    private BufferedWriter mutationBufferedWriter;
 
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
 
     private int chunkSize = 2000;
 
-    public JsonSerializer(File file) throws IOException {
+    public MongoDBSerializer(File file) throws IOException {
         this.file = file;
         init();
     }
@@ -72,6 +76,19 @@ public class JsonSerializer implements CellbaseSerializer {
     }
 
     @Override
+    public void serialize(Mutation mutation) {
+        try {
+            if(mutationBufferedWriter == null) {
+                mutationBufferedWriter = Files.newBufferedWriter(outfilePath, Charset.defaultCharset());
+            }
+            mutationBufferedWriter.write(jsonObjectWriter.writeValueAsString(mutation));
+            mutationBufferedWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        };
+    }
+
+    @Override
     public void serialize(Gene gene) {
         try {
             if(bufferedWriterMap.get("gene") == null) {
@@ -96,7 +113,9 @@ public class JsonSerializer implements CellbaseSerializer {
     public void close() {
         String id;
         try {
-            genomeSequenceBufferedWriter.close();
+
+            closeBufferedWriter(genomeSequenceBufferedWriter);
+            closeBufferedWriter(mutationBufferedWriter);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -112,6 +131,12 @@ public class JsonSerializer implements CellbaseSerializer {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private void closeBufferedWriter(BufferedWriter bufferedWriter) throws IOException {
+        if(bufferedWriter != null) {
+            bufferedWriter.close();
         }
     }
 }

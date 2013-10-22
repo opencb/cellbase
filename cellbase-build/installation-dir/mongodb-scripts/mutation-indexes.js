@@ -1,0 +1,11 @@
+
+db.getCollection('mutation').ensureIndex({'chunkIds': 1})
+db.getCollection('mutation').ensureIndex({'chromosome': 1, "start": 1, "end": 1})
+db.getCollection('mutation').ensureIndex({'geneName': 1})
+db.getCollection('mutation').ensureIndex({'ensemblTranscriptId': 1})
+db.getCollection('mutation').ensureIndex({'sampleName': 1})
+db.getCollection('mutation').ensureIndex({'primarySite': 1})
+db.getCollection('mutation').ensureIndex({'siteSubtype': 1})
+db.getCollection('mutation').ensureIndex({'primaryHistology': 1})
+db.getCollection('mutation').ensureIndex({'histologySubtype': 1})
+db.getCollection('mutation').ensureIndex({'mutationDescription': 1})

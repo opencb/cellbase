@@ -147,7 +147,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 //            end = 1;
 //        }
 //		QueryBuilder builder = QueryBuilder.start("chromosome").is(chromosome.trim()).and("chunkId")
-//				.greaterThanEquals(getChunk(start)).lessThanEquals(getChunk(end));
+//				.greaterThanEquals(getChunkId(start)).lessThanEquals(getChunkId(end));
 //
 //		System.out.println(builder.get().toString());
 //		List<GenomeSequenceChunk> chunkList = executeQuery(builder.get());
@@ -159,7 +159,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 //		int startStr = getOffset(start);
 //		int endStr = getOffset(start) + (end - start) + 1;
 //		String subStr = "";
-//		if (getChunk(end) > 0) {
+//		if (getChunkId(end) > 0) {
 //			if (sb.toString().length() > 0 && sb.toString().length() >= endStr) {
 //				subStr = sb.toString().substring(startStr, endStr);
 //			}

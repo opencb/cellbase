@@ -4,15 +4,13 @@ import org.apache.commons.cli.*;
 import org.opencb.cellbase.build.transform.*;
 import org.bioinfo.formats.exception.FileFormatException;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
-import org.opencb.cellbase.build.transform.serializers.JsonSerializer;
+import org.opencb.cellbase.build.transform.serializers.mongodb.MongoDBSerializer;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class CellBaseMain {
@@ -45,6 +43,7 @@ public class CellBaseMain {
         options.addOption(OptionFactory.createOption("xref-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("tfbs-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("mirna-file", "Output directory to save the JSON result", false));
+        options.addOption(OptionFactory.createOption("cosmic-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
 
         options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
@@ -138,6 +137,19 @@ public class CellBaseMain {
                 }
             }
 
+            if(buildOption.equals("mutation")) {
+                System.out.println("In mutation");
+
+                String filePath = commandLine.getOptionValue("cosmic-file");
+                String outfile = commandLine.getOptionValue("output", "/tmp/mutation.json");
+                if(filePath != null) {
+                    serializer = getSerializer(serializationOutput, commandLine);
+                    MutationParser vp = new MutationParser(serializer);
+                    vp.parse(new File(filePath));
+                    serializer.close();
+                }
+            }
+
             if(buildOption.equals("regulation")) {
                 System.out.println("In regulation");
                 String indir = commandLine.getOptionValue("indir");
@@ -193,7 +205,7 @@ public class CellBaseMain {
         CellbaseSerializer serializer = null;
         switch(serializationOutput) {
             case "json":
-                serializer = new JsonSerializer(new File(commandLine.getOptionValue("output")));
+                serializer = new MongoDBSerializer(new File(commandLine.getOptionValue("output")));
                 break;
         }
 

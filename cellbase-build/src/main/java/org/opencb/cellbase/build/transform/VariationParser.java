@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import com.google.gson.Gson;
+import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.variation.TranscriptVariation;
 import org.opencb.cellbase.core.common.variation.Variation;
 import org.opencb.cellbase.core.common.variation.Xref;
@@ -29,7 +30,7 @@ public class VariationParser {
 	}
 
 	public void parseVariationToJson(String species, String assembly, String source, String version, Path variationFilePath, Path outfileJson) throws IOException, SQLException {
-		BufferedReader br = Files.newBufferedReader(variationFilePath.resolve("variation.txt"), Charset.defaultCharset());
+		BufferedReader br = FileUtils.newBufferedReader(variationFilePath.resolve("variation.txt.gz"), Charset.defaultCharset());
 //		BufferedWriter bw = Files.newBufferedWriter(outfileJson, Charset.defaultCharset());
 		// We need a different file for each chromosome
 		Map<String, BufferedWriter> chromFiles = new HashMap<>(50);
@@ -205,9 +206,9 @@ public class VariationParser {
 //		sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
 		//sqlConn.setAutoCommit(false);
 		
-		rafvariationFeature =new RandomAccessFile(variationFilePath.resolve("variation_feature.txt").toFile(), "r"); 
-		rafTranscriptVariation =new RandomAccessFile(variationFilePath.resolve("transcript_variation.txt").toFile(), "r");
-		rafvariationSynonym =new RandomAccessFile(variationFilePath.resolve("variation_synonym.txt").toFile(), "r");
+		rafvariationFeature = new RandomAccessFile(variationFilePath.resolve("variation_feature.txt.gz").toFile(), "r");
+		rafTranscriptVariation = new RandomAccessFile(variationFilePath.resolve("transcript_variation.txt.gz").toFile(), "r");
+		rafvariationSynonym = new RandomAccessFile(variationFilePath.resolve("variation_synonym.txt.gz").toFile(), "r");
 		
 		psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
 		psTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
@@ -234,9 +235,9 @@ public class VariationParser {
 				
 				sqlConn.setAutoCommit(false);
 
-				createTable(5, variationFilePath.resolve("variation_feature.txt"), "variation_feature");
-				createTable(1, variationFilePath.resolve("transcript_variation.txt"), "transcript_variation");
-				createTable(1, variationFilePath.resolve("variation_synonym.txt"), "variation_synonym");
+				createTable(5, variationFilePath.resolve("variation_feature.txt.gz"), "variation_feature");
+				createTable(1, variationFilePath.resolve("transcript_variation.txt.gz"), "transcript_variation");
+				createTable(1, variationFilePath.resolve("variation_synonym.txt.gz"), "variation_synonym");
 				
 //				psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
 
@@ -338,7 +339,7 @@ public class VariationParser {
 			String line = null;
 			List<String> results = new ArrayList<>();
 			if(offsets.size() > 0) {
-				RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve(table+".txt").toFile(), "r");
+				RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve(table+".txt.gz").toFile(), "r");
 				for(Long offset: offsets){
 					if(offset >= 0) {
 						raf.seek(offset);
@@ -368,7 +369,7 @@ public class VariationParser {
 		int count = 0;
 		String[] fields = null;
 		String line = null;
-		BufferedReader br = Files.newBufferedReader(variationFilePath, Charset.defaultCharset());
+		BufferedReader br = FileUtils.newBufferedReader(variationFilePath, Charset.defaultCharset());
 		while ((line = br.readLine()) != null) {
 			fields = line.split("\t");
 
@@ -400,7 +401,7 @@ public class VariationParser {
 			File seqRegionFile = variationFilePath.resolve("seq_region.txt").toFile();
 			if(seqRegionFile.exists()) {
 //				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(seqRegionFile))));
-				BufferedReader br = Files.newBufferedReader(seqRegionFile.toPath(), Charset.defaultCharset());
+				BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
 					String[] readLineFields = readLine.split("\t");
@@ -418,7 +419,7 @@ public class VariationParser {
 	private Map<String, String> loadHashSource(Path variationFilePath) {
 		Map<String, String> sourceMap = new HashMap<String, String>();
 		try {
-			File sourceFile = variationFilePath.resolve("source.txt").toFile();
+			File sourceFile = variationFilePath.resolve("source.txt.gz").toFile();
 			if(sourceFile.exists()) {
 //				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(sourceFile))));
 				BufferedReader br = Files.newBufferedReader(sourceFile.toPath(), Charset.defaultCharset());

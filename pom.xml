@@ -7,6 +7,30 @@
     <artifactId>cellbase</artifactId>
     <version>3.0.0</version>
     <packaging>pom</packaging>
+    <name>CellBase project</name>
+    <description>CellBase projects integrates several biological databases into a NoSQL database plus many WS to query</description>
+    <url>http://www.opencb.org/subprojects/cellbase</url>
+    <licenses>
+        <license>
+            <name>GNU GENERAL PUBLIC LICENSE Version 2</name>
+            <url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/opencb/cellbase</url>
+    </scm>
+    <developers>
+        <developer>
+            <id>imedina</id>
+            <name>Nacho</name>
+            <email>igmecas@gmail.com</email>
+        </developer>
+        <developer>
+            <id>frasator</id>
+            <name>Francisco</name>
+            <email>frasator@gmail.com</email>
+        </developer>
+    </developers>
 
     <modules>
         <module>cellbase-build</module>
@@ -34,9 +58,9 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.bioinfo</groupId>
-                <artifactId>bioinfo-formats</artifactId>
-                <version>0.4.0</version>
+                <groupId>org.opencb.commons</groupId>
+                <artifactId>bioformats</artifactId>
+                <version>1.0.0</version>
             </dependency>
 
             <!-- General dependencies -->
@@ -93,6 +117,19 @@
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
