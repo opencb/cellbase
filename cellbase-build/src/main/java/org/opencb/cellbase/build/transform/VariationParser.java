@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import com.google.gson.Gson;
+import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.variation.TranscriptVariation;
 import org.opencb.cellbase.core.common.variation.Variation;
@@ -25,8 +25,10 @@ public class VariationParser {
 	
 	private int LIMITROWS = 100000;
 
-	public VariationParser() {
+    private CellbaseSerializer serializer;
 
+	public VariationParser(CellbaseSerializer serializer) {
+        this.serializer = serializer;
 	}
 
 	public void parseVariationToJson(String species, String assembly, String source, String version, Path variationFilePath, Path outfileJson) throws IOException, SQLException {
@@ -35,7 +37,7 @@ public class VariationParser {
 		// We need a different file for each chromosome
 		Map<String, BufferedWriter> chromFiles = new HashMap<>(50);
 		BufferedWriter bwLog = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+".log"), Charset.defaultCharset());
-		Gson gson = new Gson();
+//		Gson gson = new Gson();
 		Map<String, List<String>> queryMap = null;
 		String[] variationFields = null;
 		String[] variationFeatureFields = null;
@@ -176,7 +178,12 @@ public class VariationParser {
 						BufferedWriter bw = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+"_chr"+chromosome), Charset.defaultCharset());
 						chromFiles.put(chromosome, bw);
 					}
-					chromFiles.get(chromosome).write(gson.toJson(variation)+ "\n");
+
+
+//					chromFiles.get(chromosome).write(gson.toJson(variation)+ "\n");
+                    serializer.serialize(variation);
+
+
 					// old code
 //					bw.write(gson.toJson(variation)+ "\n");
 				}catch(Exception e) {

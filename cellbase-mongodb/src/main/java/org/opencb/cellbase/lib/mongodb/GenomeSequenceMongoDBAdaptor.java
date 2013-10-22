@@ -25,13 +25,13 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
     }
 
     private int getChunk(int position) {
-        return (position / applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase()
-                + ".GENOME_SEQUENCE.CHUNK_SIZE", 2000));
+        return (position / Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
+                + ".GENOME_SEQUENCE.CHUNK_SIZE", "2000")));
     }
 
     private int getOffset(int position) {
-        return ((position) % applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase()
-                + ".GENOME_SEQUENCE.CHUNK_SIZE", 2000));
+        return ((position) % Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
+                + ".GENOME_SEQUENCE.CHUNK_SIZE", "2000")));
     }
 
     public static String getComplementarySequence(String sequence) {

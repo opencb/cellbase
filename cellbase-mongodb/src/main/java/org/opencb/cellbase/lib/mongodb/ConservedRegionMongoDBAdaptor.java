@@ -20,7 +20,7 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
 
     public ConservedRegionMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        CHUNKSIZE = applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase() + ".REGULATION.CHUNK_SIZE", 2000);
+        CHUNKSIZE = Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase() + ".REGULATION.CHUNK_SIZE", "2000"));
         mongoDBCollection = db.getCollection("conservation");
     }
 

@@ -1,7 +1,5 @@
 package org.opencb.cellbase.core.common;
 
-import org.bioinfo.commons.utils.ListUtils;
-
 import java.util.*;
 
 public class XRefs {
@@ -36,8 +34,19 @@ public class XRefs {
 	}
 
 	public XRefs(String id, String dbname, List<String> displayName) {
-		this(id, dbname, displayName, ListUtils.initialize(displayName.size(), ""));
+//		this(id, dbname, displayName, ListUtils.initialize(displayName.size(), ""));
+        List<String> description = new ArrayList<>(displayName.size());
+        for(int i=0; i<displayName.size(); i++)   description.add("");
+//        this(id, dbname, displayName, description);
+        this.id = id;
+
+        // create structures
+        xrefItems = new HashMap<>();
+        dbNames = new ArrayList<>();
+
+        addXRefItem(dbname, displayName, description);
 	}
+
 
 	public XRefs(String id, String dbname, String displayName, String description) {
 		this(id, dbname, Arrays.asList(displayName), Arrays.asList(description));
@@ -47,8 +56,8 @@ public class XRefs {
 		this.id = id;
 
 		// create structures
-		xrefItems = new HashMap<String, List<XRefItem>>();
-		dbNames = new ArrayList<String>();
+		xrefItems = new HashMap<>();
+		dbNames = new ArrayList<>();
 
 		addXRefItem(dbname, displayName, description);
 	}

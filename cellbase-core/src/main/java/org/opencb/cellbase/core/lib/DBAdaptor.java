@@ -2,10 +2,6 @@ package org.opencb.cellbase.core.lib;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.bioinfo.commons.Config;
-
-import java.io.IOException;
-import java.util.ResourceBundle;
 
 public abstract class DBAdaptor {
 

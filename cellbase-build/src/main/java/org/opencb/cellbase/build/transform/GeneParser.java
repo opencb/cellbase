@@ -1,16 +1,14 @@
 package org.opencb.cellbase.build.transform;
 
-import org.bioinfo.commons.io.TextFileWriter;
-import org.bioinfo.commons.io.utils.FileUtils;
-import org.bioinfo.commons.io.utils.IOUtils;
-import org.bioinfo.formats.core.feature.Gtf;
-import org.bioinfo.formats.core.feature.io.GtfReader;
-import org.bioinfo.formats.exception.FileFormatException;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.core.*;
+import org.opencb.commons.bioformats.commons.exception.FileFormatException;
+import org.opencb.commons.bioformats.feature.gtf.Gtf;
+import org.opencb.commons.bioformats.feature.gtf.io.GtfReader;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -41,9 +39,9 @@ public class GeneParser {
 		exonDict = new HashMap<>(8000000);
 	}
 
-	public void parse(File gtfFile, File geneDescriptionFile, File xrefsFile, File tfbsFile, File mirnaFile, File genomeSequenceDir)
+	public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceDir)
 			throws IOException, SecurityException, NoSuchMethodException, FileFormatException {
-		FileUtils.checkFile(gtfFile);
+		Files.exists(gtfFile);
 		init();
 
 		String geneId;
@@ -61,8 +59,8 @@ public class GeneParser {
 		String[] fields;
 
 		Map<String, String> geneDescriptionMap = new HashMap<>();
-		if (geneDescriptionFile != null && geneDescriptionFile.exists()) {
-			List<String> lines = IOUtils.readLines(geneDescriptionFile);
+		if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
+			List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
 			for (String line : lines) {
 				fields = line.split("\t", -1);
 				geneDescriptionMap.put(fields[0], fields[1]);
@@ -70,8 +68,8 @@ public class GeneParser {
 		}
 
 		Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
-		if (xrefsFile != null && xrefsFile.exists()) {
-			List<String> lines = IOUtils.readLines(xrefsFile);
+		if (xrefsFile != null && Files.exists(xrefsFile)) {
+			List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
 			for (String line : lines) {
 				fields = line.split("\t", -1);
 				if (!xrefMap.containsKey(fields[0])) {
@@ -82,8 +80,8 @@ public class GeneParser {
 		}
 
 		Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
-		if(tfbsFile != null && tfbsFile.exists()) {
-			List<String> lines = IOUtils.readLines(tfbsFile);
+		if(tfbsFile != null && Files.exists(tfbsFile)) {
+			List<String> lines = Files.readAllLines(tfbsFile, Charset.defaultCharset());
 			for (String line : lines) {
 				fields = line.split("\t", -1);
 				if (!tfbsMap.containsKey(fields[0])) {
@@ -95,7 +93,7 @@ public class GeneParser {
 		
 		// Loading MiRNAGene file
 		Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
-		if(mirnaFile != null && mirnaFile.exists()) {
+		if(mirnaFile != null && Files.exists(mirnaFile)) {
 			mirnaGeneMap = getmiRNAGeneMap(mirnaFile);			
 		}
 		
@@ -372,16 +370,26 @@ public class GeneParser {
         return genomeSequenceMap;
     }
 
-	public String getSequenceByChromosomeName(String chrom, File genomeSequenceDir) throws IOException {
-		File[] files = genomeSequenceDir.listFiles();
-		File file = null;
-		for(File f: files) {
-			if(f.getName().endsWith("_"+chrom+".fa.gz") || f.getName().endsWith("."+chrom+".fa.gz")) {
-				System.out.println(f.getAbsolutePath());
-				file = f;
-				break;
-			}
-		}
+	public String getSequenceByChromosomeName(String chrom, Path genomeSequenceDir) throws IOException {
+//		File[] files = genomeSequenceDir.listFiles();
+        File file = null;
+        DirectoryStream<Path> ds = Files.newDirectoryStream(genomeSequenceDir);
+        for(Path p: ds) {
+            if(p.toFile().getName().endsWith("_"+chrom+".fa.gz") || p.toFile().getName().endsWith("."+chrom+".fa.gz")) {
+                System.out.println(p.toAbsolutePath());
+                file = p.toFile();
+                break;
+            }
+        }
+
+//		File file = null;
+//		for(File f: files) {
+//			if(f.getName().endsWith("_"+chrom+".fa.gz") || f.getName().endsWith("."+chrom+".fa.gz")) {
+//				System.out.println(f.getAbsolutePath());
+//				file = f;
+//				break;
+//			}
+//		}
 		StringBuilder sb = new StringBuilder(100000);
 		if(file != null) {
 	//		BufferedReader br = Files.newBufferedReader(files[0].toPath(), Charset.defaultCharset());
@@ -426,9 +434,9 @@ public class GeneParser {
 		return sb.toString();
 	}
 	
-	private Map<String, MiRNAGene> getmiRNAGeneMap(File mirnaGeneFile) throws IOException {
+	private Map<String, MiRNAGene> getmiRNAGeneMap(Path mirnaGeneFile) throws IOException {
 		Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>(3000);
-		BufferedReader br = Files.newBufferedReader(mirnaGeneFile.toPath(), Charset.defaultCharset());
+		BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
 		String line = "";
 		String[] fields, mirnaMatures, mirnaMaturesFields;
 		List<String> aliases;
@@ -719,7 +727,8 @@ public class GeneParser {
 		}
 
 //		Gson gson = new Gson();
-		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
+//		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
+        BufferedWriter bw = Files.newBufferedWriter(outJsonFile.toPath(), Charset.defaultCharset());
 		System.out.println("");
 		System.out.println("START WRITE");
 		for (String geneId : genes.keySet()) {
@@ -727,7 +736,7 @@ public class GeneParser {
 //			tfw.writeStringToFile(gson.writeValueAsString(gene));
 //			tfw.writeStringToFile("\n");
 		}
-		tfw.close();
+		bw.close();
 
 //		System.out.println(gson.toJson(genes.get("Ciclev10007224m.g")));
 //		System.out.println(gson.writeValueAsString(genes.get("Ciclev10008515m.g")));

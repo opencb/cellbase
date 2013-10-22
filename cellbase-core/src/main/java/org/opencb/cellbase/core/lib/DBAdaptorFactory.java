@@ -7,14 +7,10 @@ import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.bioinfo.commons.Config;
-import org.bioinfo.commons.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 public abstract class DBAdaptorFactory {
 
@@ -66,8 +62,8 @@ public abstract class DBAdaptorFactory {
 //	}
 	
 	public DBAdaptorFactory() {
-		logger = new Logger();
-		logger.setLevel(Logger.ERROR_LEVEL);
+		logger = LoggerFactory.getLogger(DBAdaptorFactory.class);
+//		logger.setLevel(Logger.ERROR_LEVEL);
 	}
 
 //	protected String getSpeciesVersionPrefix(String species, String version) {

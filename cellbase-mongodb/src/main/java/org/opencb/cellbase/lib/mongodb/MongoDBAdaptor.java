@@ -2,14 +2,12 @@ package org.opencb.cellbase.lib.mongodb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
-import org.bioinfo.commons.Config;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.DBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -27,36 +25,23 @@ public class MongoDBAdaptor extends DBAdaptor {
     protected ObjectMapper jsonObjectMapper;
 
     protected static ResourceBundle resourceBundle;
-    protected static Config applicationProperties;
+    protected static Properties applicationProperties;
 
 
     static {
         // reading application.properties file
         resourceBundle = ResourceBundle.getBundle("mongodb");
-        try {
-			applicationProperties = new Config(resourceBundle);
-		} catch (IOException e) {
-			applicationProperties = new Config();
-			e.printStackTrace();
-		}
-//        try {
-//            if (applicationProperties == null) {
-//                applicationProperties = new Config(resourceBundle);
-//            } else {
-//                // applicationProperties object must have been filled in DBAdpator class,
-//                // then just append MongoDB properties
-//                String key;
-//                Set<String> keys = resourceBundle.keySet();
-//                Iterator<String> keysIter = keys.iterator();
-//                while (keysIter.hasNext()) {
-//                    key = keysIter.next();
-//                    applicationProperties.put(key, resourceBundle.getObject(key));
-//                }
-//            }
-//        } catch (IOException e) {
-//            applicationProperties = new Config();
-//            e.printStackTrace();
-//        }
+//            applicationProperties = new Config(resourceBundle);
+        applicationProperties = new Properties();
+        if(resourceBundle != null) {
+            Set<String> keys = resourceBundle.keySet();
+            Iterator<String> iterator = keys.iterator();
+            String nextKey;
+            while(iterator.hasNext()) {
+                nextKey = iterator.next();
+                applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
+            }
+        }
     }
 
     //	public MongoDBAdaptor(String species, String version) {

@@ -1,6 +1,6 @@
 package org.opencb.cellbase.server.feature;
 
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.core.Exon;
 import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
@@ -34,7 +34,7 @@ public class ExonWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
-			return  generateResponse(query,exonDBAdaptor.getAllByEnsemblIdList(StringUtils.toList(query, ",")));
+			return  generateResponse(query,exonDBAdaptor.getAllByEnsemblIdList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getByEnsemblId", e.toString());
@@ -47,7 +47,7 @@ public class ExonWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
-			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllBySnpIdList(StringUtils.toList(query, ","))));
+			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllBySnpIdList(Splitter.on(",").splitToList(query))));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getAllBySnpIdList", e.toString());
@@ -60,15 +60,15 @@ public class ExonWSServer extends GenericRestWSServer {
 		try{
 			checkVersionAndSpecies();
 			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
-			List<Exon> exons = exonDBAdaptor.getAllByEnsemblIdList(StringUtils.toList(query, ","));
+			List<Exon> exons = exonDBAdaptor.getAllByEnsemblIdList(Splitter.on(",").splitToList(query));
 			List<String> sequenceList = null;
 			if(exons != null) {
 				sequenceList = new ArrayList<String>(exons.size());
 				for(Exon exon : exons) {
 					if(exon != null && "-1".equals(exon.getStrand())) {
-						sequenceList = exonDBAdaptor.getAllSequencesByIdList(StringUtils.toList(query, ","), -1);
+						sequenceList = exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query), -1);
 					}else {
-						sequenceList = exonDBAdaptor.getAllSequencesByIdList(StringUtils.toList(query, ","), 1);
+						sequenceList = exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query), 1);
 					}
 				}
 			}
@@ -102,7 +102,7 @@ public class ExonWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
-			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllSequencesByIdList(StringUtils.toList(query, ","))));
+			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query))));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getSequencesByIdList", e.toString());
@@ -116,7 +116,7 @@ public class ExonWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
-			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllRegionsByIdList(StringUtils.toList(query, ","))));
+			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query))));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getRegionsByIdList", e.toString());
@@ -129,7 +129,7 @@ public class ExonWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
-			return createOkResponse(transcriptDBAdaptor.getAllByEnsemblExonIdList(StringUtils.toList(query, ","), queryOptions));
+			return createOkResponse(transcriptDBAdaptor.getAllByEnsemblExonIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getTranscriptsByEnsemblId", e.toString());

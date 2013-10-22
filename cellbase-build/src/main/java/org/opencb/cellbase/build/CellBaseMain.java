@@ -2,9 +2,9 @@ package org.opencb.cellbase.build;
 
 import org.apache.commons.cli.*;
 import org.opencb.cellbase.build.transform.*;
-import org.bioinfo.formats.exception.FileFormatException;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.build.transform.serializers.mongodb.MongoDBSerializer;
+import org.opencb.commons.bioformats.commons.exception.FileFormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,7 +109,7 @@ public class CellBaseMain {
                 if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
                     serializer = getSerializer(serializationOutput, commandLine);
                     GeneParser geneParser = new GeneParser(serializer);
-                    geneParser.parse(new File(gtfFile), new File(geneDescriptionFile), new File(xrefFile), new File(tfbsFile), new File(mirnaFile), new File(genomeSequenceDir));
+                    geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeSequenceDir));
                     serializer.close();
                 }
             }
@@ -122,7 +122,8 @@ public class CellBaseMain {
                 System.out.println("chunksize: "+chunksize);
                 String outfile = commandLine.getOptionValue("output", "/tmp/variation.json");
                 if(indir != null) {
-                    VariationParser vp = new VariationParser();
+                    serializer = getSerializer(outfile, commandLine);
+                    VariationParser vp = new VariationParser(serializer);
                     vp.createVariationDatabase(Paths.get(indir));
 
                     vp.connect(Paths.get(indir));
@@ -158,7 +159,9 @@ public class CellBaseMain {
                 String outfile = commandLine.getOptionValue("output", "/tmp/regulations.json");
                 if(indir != null) {
                     try {
-                        RegulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
+                        serializer = getSerializer(serializationOutput, commandLine);
+                        RegulatoryParser regulatoryParser = new RegulatoryParser(serializer);
+                        regulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
                     } catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
                         e.printStackTrace();
                     }

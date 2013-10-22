@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import com.google.gson.Gson;
+import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 
@@ -25,11 +25,17 @@ import java.util.zip.GZIPInputStream;
 
 public class RegulatoryParser {
 
+    private CellbaseSerializer serializer;
+
 	static int CHUNKSIZE = 2000;
+//	private static Gson gson = new Gson();
 
-	private static Gson gson = new Gson();
+    public RegulatoryParser(CellbaseSerializer serializer) {
+        this.serializer = serializer;
+    }
 
-	public static void createSQLiteRegulatoryFiles(Path regulatoryRegionPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
+
+	public void createSQLiteRegulatoryFiles(Path regulatoryRegionPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
 		List<String> GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "group");
 		List<String> GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT", "TEXT");
 
@@ -56,7 +62,7 @@ public class RegulatoryParser {
 
 	}
 
-	public static void parseRegulatoryGzipFilesToJson(Path regulatoryRegionPath, int chunksize, Path outputRegulatoryRegionJsonPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
+	public void parseRegulatoryGzipFilesToJson(Path regulatoryRegionPath, int chunksize, Path outputRegulatoryRegionJsonPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
 		// Create the SQLite databases
 		createSQLiteRegulatoryFiles(regulatoryRegionPath);
 
@@ -127,7 +133,8 @@ public class RegulatoryParser {
 					}
 				}
 				for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-					bw.write(gson.toJson(result.getValue()) + "\n");
+//					bw.write(gson.toJson(result.getValue()) + "\n");
+					serializer.serialize(result.getValue());
 				}
 				
 			}

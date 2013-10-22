@@ -1,7 +1,5 @@
 package org.opencb.cellbase.build.transform;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.opencb.cellbase.core.common.variation.Variation;
 import org.opencb.cellbase.core.common.variation.Xref;
 
@@ -15,7 +13,7 @@ import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 public class VariationParser_old {
-	Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
+//	Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
 
 	public VariationParser_old() {
 
@@ -123,7 +121,7 @@ public class VariationParser_old {
 
 					}
 					for (Variation var : variation) {
-						bw.write(gson.toJson(var) + "\n");
+//						bw.write(gson.toJson(var) + "\n");
 					}
 				}
 				contador++;

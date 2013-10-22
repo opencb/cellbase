@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.build.transform.MutationParser;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.variation.Mutation;
@@ -106,6 +107,21 @@ public class MongoDBSerializer implements CellbaseSerializer {
     @Override
     public void serialize(Variation variation) {
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void serialize(GenericFeatureChunk genericFeatureChunk) {
+        try {
+            if(bufferedWriterMap.get("regulatory") == null) {
+                bufferedWriterMap.put("regulatory", Files.newBufferedWriter(outdirPath.resolve("regulatory_region.json"), Charset.defaultCharset()));
+            }
+            bufferedWriterMap.get("regulatory").write(jsonObjectWriter.writeValueAsString(genericFeatureChunk));
+            bufferedWriterMap.get("regulatory").newLine();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
 

@@ -25,8 +25,8 @@ public class RegulatoryRegionMongoDBAdaptorOld extends MongoDBAdaptor implements
     }
 
     private int getChunk(int position) {
-        return (position / applicationProperties.getIntProperty("CELLBASE." + version.toUpperCase()
-                + ".REGULATION.CHUNK_SIZE", 2000));
+        return (position / Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
+                + ".REGULATION.CHUNK_SIZE", "2000")));
     }
 
     private List<GenericFeatureChunk> executeQuery(DBObject query) {

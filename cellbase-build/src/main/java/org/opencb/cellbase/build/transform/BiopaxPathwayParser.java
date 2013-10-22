@@ -1,20 +1,19 @@
 package org.opencb.cellbase.build.transform;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import org.bioinfo.commons.io.utils.IOUtils;
-import org.bioinfo.formats.exception.FileFormatException;
-import org.bioinfo.formats.parser.biopax.BioPax;
-import org.bioinfo.formats.parser.biopax.BioPaxParser;
 import org.opencb.cellbase.core.common.pathway.BiopaxPathway;
 import org.opencb.cellbase.core.common.pathway.Interaction;
 import org.opencb.cellbase.core.common.pathway.PhysicalEntity;
 import org.opencb.cellbase.core.common.pathway.SubPathway;
+import org.opencb.commons.bioformats.commons.exception.FileFormatException;
+import org.opencb.commons.bioformats.network.biopax.BioPax;
+import org.opencb.commons.bioformats.network.biopax.BioPaxParser;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ public class BiopaxPathwayParser {
 //		String json = "";
 		List<BiopaxPathway> pathwayList = new ArrayList<BiopaxPathway>();
 		List<DBObject> dbObjList = new ArrayList<DBObject>();
-		Gson gson = new GsonBuilder().create();
+//		Gson gson = new GsonBuilder().create();
 
 		try {
 			BioPaxParser parser = new BioPaxParser(filename);
@@ -220,7 +219,10 @@ public class BiopaxPathwayParser {
 				p.addedEntities = null;
 				p.addedInteractions = null;
 				pathwayList.add(p);
-				dbObjList.add((DBObject)JSON.parse(gson.toJson(p)));
+
+                // TODO
+//				dbObjList.add((DBObject)JSON.parse(gson.toJson(p)));
+
 			}
 //			System.out.println(gson.toJson(pathwayList));
 //			String json = g.toJson(pathwayList);
@@ -562,7 +564,7 @@ public class BiopaxPathwayParser {
 	
 	public void loadECNumbers(String filename) {
 		try {
-			List<String> lines = IOUtils.readLines(new File(filename));
+			List<String> lines = Files.readAllLines(Paths.get(filename), Charset.defaultCharset());
 			for(String line: lines) {
 				String[] fields = line.split("\t");
 				
