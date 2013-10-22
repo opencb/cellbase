@@ -20,10 +20,9 @@ public abstract class DBAdaptorFactory {
 
 	protected Logger logger;
 	
-//	protected static ResourceBundle cellbaseResourceBundle;
+//	protected static ResourceBundle resourceBundle;
 //	protected static Config applicationProperties;
-//	protected static Config cellbaseProperties;
-	
+
 //	protected static Map<String, String> speciesAlias;
 	
 //	static {

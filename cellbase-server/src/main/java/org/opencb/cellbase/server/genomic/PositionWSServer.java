@@ -1,10 +1,13 @@
 package org.opencb.cellbase.server.genomic;
 
+import com.sun.jersey.multipart.FormDataParam;
 import org.bioinfo.commons.utils.StringUtils;
 import org.opencb.cellbase.core.common.Position;
+import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.server.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -94,21 +97,57 @@ public class PositionWSServer extends GenericRestWSServer {
 	}
 	
 	@GET
-	@Path("/{geneId}/snp")
-	public Response getSNPByPosition(@PathParam("geneId") String query) {
-		try {
-			checkVersionAndSpecies();
-			List<Position> positionList = Position.parsePositions(query);
-			SnpDBAdaptor snpAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.version);
-//			return  generateResponse(query,  snpAdaptor.getAllByPositionList(positionList));
-			return  null;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getSNPByPosition", e.toString());
-		}
+	@Path("/{position}/snp")
+	public Response getSNPByPositionByGet(@PathParam("position") String query) {
+        return this.getSNPByPosition(query);
 	}
-	
-	
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+    @Path("/snp")
+    public Response getSNPByPositionByPost(@FormDataParam("position") String query) {
+        return this.getSNPByPosition(query);
+    }
+
+    private Response getSNPByPosition(String query) {
+        try {
+            checkVersionAndSpecies();
+            List<Position> positionList = Position.parsePositions(query);
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getSNPByPosition", e.toString());
+        }
+    }
+
+
+
+//
+//    @GET
+//    @Path("/{variants}/consequence_type")
+//    public Response getConsequenceTypeByPositionByGet(@PathParam("variants") String variants,
+//                                                      @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
+//        try {
+//            //			return getConsequenceTypeByPosition(query, features, variation, regulatory, diseases);
+//            return getConsequenceTypeByPosition(variants, excludeSOTerms);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getConsequenceTypeByPositionByGet", e.toString());
+//        }
+//    }
+//
+//    @POST
+//    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+//    @Path("/consequence_type")
+//    public Response getConsequenceTypeByPositionByPost(@FormDataParam("of") String outputFormat,
+//                                                       @FormDataParam("variants") String postQuery,
+//                                                       @DefaultValue("") @FormDataParam("exclude") String excludeSOTerms) {
+//        //		return getConsequenceTypeByPosition(postQuery, features, variation, regulatory, diseases);
+//        return getConsequenceTypeByPosition(postQuery, excludeSOTerms);
+//    }
+
+
 	@GET
 	@Path("/{positionId}/consequence_type")
 	public Response getConsequenceTypeByPositionGet(@PathParam("positionId") String positionId) {
