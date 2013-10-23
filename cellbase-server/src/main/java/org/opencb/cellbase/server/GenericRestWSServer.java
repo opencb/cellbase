@@ -3,17 +3,15 @@ package org.opencb.cellbase.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
-import org.bioinfo.commons.Config;
-import org.bioinfo.commons.utils.ListUtils;
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.lib.mongodb.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.utils.Species;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -22,12 +20,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.zip.ZipOutputStream;
 
 @Path("/{version}")
 @Produces("text/plain")
@@ -75,7 +71,8 @@ public class GenericRestWSServer implements IWSServer {
     protected static ObjectWriter jsonObjectWriter;
 
     // protected Logger logger;
-    protected Logger logger = Logger.getLogger(this.getClass());
+//    protected Logger logger = Logger.getLogger(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String NEW_LINE = "newline";
     private static final String TAB = "tab";
@@ -93,7 +90,7 @@ public class GenericRestWSServer implements IWSServer {
     protected static DBAdaptorFactory dbAdaptorFactory;
 
     static {
-        BasicConfigurator.configure();
+//        BasicConfigurator.configure();
 
         // dbAdaptorFactory = new HibernateDBAdaptorFactory();
         dbAdaptorFactory = new MongoDBAdaptorFactory();
@@ -109,27 +106,26 @@ public class GenericRestWSServer implements IWSServer {
      * will check parameters so to avoid extra operations this config can load
      * versions and species
      */
-    protected static Config config;
+    protected static Properties properties;
     protected static Map<String, Set<String>> availableVersionSpeciesMap; // stores
 
-    // species
-    // for
-    // each
-    // version
+    /** species for each version**/
     static {
+        InputStream is = GenericRestWSServer.class.getClassLoader().getResourceAsStream("application.properties");
+        properties = new Properties();
+        availableVersionSpeciesMap = new HashMap<>();
         try {
-            config = new Config(ResourceBundle.getBundle("application"));
-            availableVersionSpeciesMap = new HashMap<String, Set<String>>();
-            if (config != null && config.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
+            properties.load(is);
+            if (properties != null && properties.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
                 // read all versions available
-                List<String> versionList = config.getListProperty("CELLBASE.AVAILABLE.VERSIONS", ",");
+                List<String> versionList = Splitter.on(",").splitToList(properties.getProperty("CELLBASE.AVAILABLE.VERSIONS"));
                 if (versionList != null) {
                     for (String version : versionList) {
                         availableVersionSpeciesMap.put(version.trim(), new HashSet<String>());
-                        if (config.containsKey("CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES")) {
+                        String versionKey = "CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES";
+                        if (properties.containsKey(versionKey)) {
                             // read the species available for each version
-                            List<String> speciesList = config.getListProperty("CELLBASE." + version.toUpperCase()
-                                    + ".AVAILABLE.SPECIES", ",");
+                            List<String> speciesList = Splitter.on(",").splitToList(properties.getProperty(versionKey));
                             if (speciesList != null) {
                                 for (String species : speciesList) {
                                     availableVersionSpeciesMap.get(version.trim()).add(species.trim());
@@ -139,11 +135,14 @@ public class GenericRestWSServer implements IWSServer {
                     }
                 }
             }
-            // System.out.println("static2: "+availableVersions.toString());
-            System.out.println("static2: " + availableVersionSpeciesMap.toString());
+
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+
+
+        // System.out.println("static2: "+availableVersions.toString());
+        System.out.println("static2: " + availableVersionSpeciesMap.toString());
     }
 
     /**
@@ -227,7 +226,6 @@ public class GenericRestWSServer implements IWSServer {
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
 
 
-
         this.version = version;
         this.species = species;
         this.uriInfo = uriInfo;
@@ -235,7 +233,7 @@ public class GenericRestWSServer implements IWSServer {
 
         init(version, species, uriInfo);
 
-        logger.debug("GenericrestWSServer: in 'constructor'");
+        logger.info("GenericrestWSServer: in 'constructor'");
 
         // if(version != null && species != null) {
         // }
@@ -257,7 +255,7 @@ public class GenericRestWSServer implements IWSServer {
         queryOptions = new QueryOptions();
         // logger = new Logger();
         // logger.setLevel(Logger.DEBUG_LEVEL);
-        logger.debug("GenericrestWSServer: in 'init' method");
+        logger.info("GenericrestWSServer: in 'init' method");
 
         /**
          * Check version parameter, must be: v1, v2, ... If 'latest' then is
@@ -354,10 +352,11 @@ public class GenericRestWSServer implements IWSServer {
          * Check version parameter, must be: v1, v2, ... If 'latest' then is
          * converted to appropriate version
          */
-        if (version != null && version.equals("latest") && config.getProperty("CELLBASE.LATEST.VERSION") != null) {
-            version = config.getProperty("CELLBASE.LATEST.VERSION");
-            System.out.println("version: " + version);
-        }
+//        // TODO uncomment
+//        if (version != null && version.equals("latest") && config.getProperty("CELLBASE.LATEST.VERSION") != null) {
+//            version = config.getProperty("CELLBASE.LATEST.VERSION");
+//            System.out.println("version: " + version);
+//        }
 
         if (availableVersionSpeciesMap.containsKey(version)) {
             if (!availableVersionSpeciesMap.get(version).contains(species)) {
@@ -463,150 +462,174 @@ public class GenericRestWSServer implements IWSServer {
     @GET
     @Path("/{species}/chromosomes")
     public Response getChromosomes(@PathParam("species") String species) {
-        return createOkResponse(config.getProperty("CELLBASE." + species.toUpperCase() + ".CHROMOSOMES"),
-                MediaType.valueOf("text/plain"));
+        return null;
+//        // TODO uncomment
+//        return createOkResponse(config.getProperty("CELLBASE." + species.toUpperCase() + ".CHROMOSOMES"),
+//                MediaType.valueOf("text/plain"));
     }
 
-    @SuppressWarnings("unchecked")
+    @GET
+    @Path("/echo/{msg}")
+    public Response echo(@PathParam("msg") String msg) {
+        logger.info(msg);
+        logger.warn(msg);
+        logger.debug(msg);
+        logger.error(msg);
+        return createOkResponse(msg);
+    }
+
+
+    @Deprecated
     protected Response generateResponse(String queryString, List features) throws IOException {
-        return generateResponse(queryString, null, features);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-        logger.debug("CellBase - GenerateResponse, QueryString: "
-                + ((queryString.length() > 50) ? queryString.substring(0, 49) + "..." : queryString));
-
-        // default mediaType
-        MediaType mediaType = MediaType.valueOf("text/plain");
-        String response = "outputformat 'of' parameter not valid: " + outputFormat;
-
-        switch (outputFormat.toLowerCase()) {
-            case "txt":
-            case "text":
-                // TODO
-                break;
-            case "xml":
-                mediaType = MediaType.TEXT_XML_TYPE;
-                response = ListUtils.toString(features, resultSeparator);
-            case "das":
-                mediaType = MediaType.TEXT_XML_TYPE;
-                response = ListUtils.toString(features, resultSeparator);
-            case "json":
-                //			mediaType = MediaType.valueOf("application/json");
-                //			response = gson.toJson(features);
-                createJsonResponse(queryString);
-                break;
-        }
-
-        // if (outputFormat != null) {
-        // // if((outputFormat.equalsIgnoreCase("json") ||
-        // // outputFormat.equalsIgnoreCase("jsonp"))) {
-        // if (outputFormat.equalsIgnoreCase("json")) {
-        // // mediaType = MediaType.APPLICATION_JSON_TYPE;
-        // mediaType = MediaType.valueOf("application/javascript");
-        // response = gson.toJson(features);
-        // // if(features != null && features.size() > 0) {
-        // // response = gson.toJson(features);
-        // // o:
-        // // JsonWriter jsonWriter = new JsonWriter(new
-        // // FeatureExclusionStrategy());
-        // // response = jsonWriter.serialize(features);
-        // // }
-        //
-        // // if(outputFormat.equals("jsonp")) {
-        // // mediaType = MediaType.valueOf("application/javascript");
-        // // response = convertToJson(response);
-        // // }GENE
-        // } else {
-        // if (outputFormat.equalsIgnoreCase("txt") ||
-        // outputFormat.equalsIgnoreCase("text")) { // ||
-        // // outputFormat.equalsIgnoreCase("jsontext")
-        // // if(outputFormat.equalsIgnoreCase("jsontext")) {
-        // // mediaType = MediaType.valueOf("application/javascript");
-        // // response = convertToJsonText(response);
-        // // }else {
-        // // mediaType = MediaType.TEXT_PLAIN_TYPE;
-        //
-        // // CONCATENAR el nombre de la query
-        // // String[] query.split(",");
-        // mediaType = MediaType.valueOf("text/plain");
-        // if (headerTag != null && headers.containsKey(headerTag) &&
-        // outputHeader != null
-        // && outputHeader.equalsIgnoreCase("true")) {
-        // // response = "#" + headers.get(headerTag) + "\n" +
-        // // StringWriter.serialize(features);
-        // } else {
-        // // response = StringWriter.serialize(features);
-        // }
-        // // }
-        // }
-        //
-        // if (outputFormat.equalsIgnoreCase("xml")) {
-        // mediaType = MediaType.TEXT_XML_TYPE;
-        // response = ListUtils.toString(features, resultSeparator);
-        // }
-        //
-        // if (outputFormat.equalsIgnoreCase("das")) {
-        // mediaType = MediaType.TEXT_XML_TYPE;
-        // response = ListUtils.toString(features, resultSeparator);
-        // }
-        // }
-        // }
-
-        return createResponse(response, mediaType);
+        return createOkResponse("TODO: generateResponse is drepecated");
     }
 
     @Deprecated
-    protected Response createResponse(String response, MediaType mediaType) throws IOException {
-        logger.debug("CellBase - CreateResponse, QueryParams: FileFormat => " + fileFormat + ", OutputFormat => " + outputFormat + ", Compress => " + outputCompress);
-        logger.debug("CellBase - CreateResponse, Inferred media type: " + mediaType.toString());
-        logger.debug("CellBase - CreateResponse, Response: " + ((response.length() > 50) ? response.substring(0, 49) + "..." : response));
-
-        if (fileFormat == null || fileFormat.equalsIgnoreCase("")) {
-            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")
-                    && !outputFormat.equalsIgnoreCase("jsonp") && !outputFormat.equalsIgnoreCase("jsontext")) {
-                response = Arrays.toString(StringUtils.gzipToBytes(response)).replace(" ", "");
-            }
-        } else {
-            mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
-            logger.debug("\t\t - Creating byte stream ");
-
-            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")) {
-                OutputStream bos = new ByteArrayOutputStream();
-                bos.write(response.getBytes());
-
-                ZipOutputStream zipstream = new ZipOutputStream(bos);
-                zipstream.setLevel(9);
-
-                logger.debug("CellBase - CreateResponse, zipping... Final media Type: " + mediaType.toString());
-
-                return this.createOkResponse(zipstream, mediaType, filename + ".zip");
-
-            } else {
-                if (fileFormat.equalsIgnoreCase("xml")) {
-                    // mediaType = MediaType.valueOf("application/xml");
-                }
-
-                if (fileFormat.equalsIgnoreCase("excel")) {
-                    // mediaType =
-                    // MediaType.valueOf("application/vnd.ms-excel");
-                }
-                if (fileFormat.equalsIgnoreCase("txt") || fileFormat.equalsIgnoreCase("text")) {
-                    logger.debug("\t\t - text File ");
-
-                    byte[] streamResponse = response.getBytes();
-                    // return Response.ok(streamResponse,
-                    // mediaType).header("content-disposition","attachment; filename = "+
-                    // filename + ".txt").build();
-                    return this.createOkResponse(streamResponse, mediaType, filename + ".txt");
-                }
-            }
-        }
-        logger.debug("CellBase - CreateResponse, Final media Type: " + mediaType.toString());
-        // return Response.ok(response, mediaType).build();
-        return this.createOkResponse(response, mediaType);
+    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is drepecated");
     }
+//    @SuppressWarnings("unchecked")
+//    protected Response generateResponse(String queryString, List features) throws IOException {
+//        return generateResponse(queryString, null, features);
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
+//        logger.debug("CellBase - GenerateResponse, QueryString: "
+//                + ((queryString.length() > 50) ? queryString.substring(0, 49) + "..." : queryString));
+//
+//        // default mediaType
+//        MediaType mediaType = MediaType.valueOf("text/plain");
+//        String response = "outputformat 'of' parameter not valid: " + outputFormat;
+//
+//        switch (outputFormat.toLowerCase()) {
+//            case "txt":
+//            case "text":
+//                // TODO
+//                break;
+//            case "xml":
+//                mediaType = MediaType.TEXT_XML_TYPE;
+////                response = ListUtils.toString(features, resultSeparator);
+//                response = Joiner.on(resultSeparator).join(features);
+//            case "das":
+//                mediaType = MediaType.TEXT_XML_TYPE;
+////                response = ListUtils.toString(features, resultSeparator);
+//                response = Joiner.on(resultSeparator).join(features);
+//            case "json":
+//                //			mediaType = MediaType.valueOf("application/json");
+//                //			response = gson.toJson(features);
+//                createJsonResponse(queryString);
+//                break;
+//        }
+//
+//        // if (outputFormat != null) {
+//        // // if((outputFormat.equalsIgnoreCase("json") ||
+//        // // outputFormat.equalsIgnoreCase("jsonp"))) {
+//        // if (outputFormat.equalsIgnoreCase("json")) {
+//        // // mediaType = MediaType.APPLICATION_JSON_TYPE;
+//        // mediaType = MediaType.valueOf("application/javascript");
+//        // response = gson.toJson(features);
+//        // // if(features != null && features.size() > 0) {
+//        // // response = gson.toJson(features);
+//        // // o:
+//        // // JsonWriter jsonWriter = new JsonWriter(new
+//        // // FeatureExclusionStrategy());
+//        // // response = jsonWriter.serialize(features);
+//        // // }
+//        //
+//        // // if(outputFormat.equals("jsonp")) {
+//        // // mediaType = MediaType.valueOf("application/javascript");
+//        // // response = convertToJson(response);
+//        // // }GENE
+//        // } else {
+//        // if (outputFormat.equalsIgnoreCase("txt") ||
+//        // outputFormat.equalsIgnoreCase("text")) { // ||
+//        // // outputFormat.equalsIgnoreCase("jsontext")
+//        // // if(outputFormat.equalsIgnoreCase("jsontext")) {
+//        // // mediaType = MediaType.valueOf("application/javascript");
+//        // // response = convertToJsonText(response);
+//        // // }else {
+//        // // mediaType = MediaType.TEXT_PLAIN_TYPE;
+//        //
+//        // // CONCATENAR el nombre de la query
+//        // // String[] query.split(",");
+//        // mediaType = MediaType.valueOf("text/plain");
+//        // if (headerTag != null && headers.containsKey(headerTag) &&
+//        // outputHeader != null
+//        // && outputHeader.equalsIgnoreCase("true")) {
+//        // // response = "#" + headers.get(headerTag) + "\n" +
+//        // // StringWriter.serialize(features);
+//        // } else {
+//        // // response = StringWriter.serialize(features);
+//        // }
+//        // // }
+//        // }
+//        //
+//        // if (outputFormat.equalsIgnoreCase("xml")) {
+//        // mediaType = MediaType.TEXT_XML_TYPE;
+//        // response = ListUtils.toString(features, resultSeparator);
+//        // }
+//        //
+//        // if (outputFormat.equalsIgnoreCase("das")) {
+//        // mediaType = MediaType.TEXT_XML_TYPE;
+//        // response = ListUtils.toString(features, resultSeparator);
+//        // }
+//        // }
+//        // }
+//
+//        return createResponse(response, mediaType);
+//    }
+
+    @Deprecated
+//    protected Response createResponse(String response, MediaType mediaType) throws IOException {
+//        logger.debug("CellBase - CreateResponse, QueryParams: FileFormat => " + fileFormat + ", OutputFormat => " + outputFormat + ", Compress => " + outputCompress);
+//        logger.debug("CellBase - CreateResponse, Inferred media type: " + mediaType.toString());
+//        logger.debug("CellBase - CreateResponse, Response: " + ((response.length() > 50) ? response.substring(0, 49) + "..." : response));
+//
+//        if (fileFormat == null || fileFormat.equalsIgnoreCase("")) {
+//            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")
+//                    && !outputFormat.equalsIgnoreCase("jsonp") && !outputFormat.equalsIgnoreCase("jsontext")) {
+//                response = Arrays.toString(StringUtils.gzipToBytes(response)).replace(" ", "");
+//            }
+//        } else {
+//            mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+//            logger.debug("\t\t - Creating byte stream ");
+//
+//            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")) {
+//                OutputStream bos = new ByteArrayOutputStream();
+//                bos.write(response.getBytes());
+//
+//                ZipOutputStream zipstream = new ZipOutputStream(bos);
+//                zipstream.setLevel(9);
+//
+//                logger.debug("CellBase - CreateResponse, zipping... Final media Type: " + mediaType.toString());
+//
+//                return this.createOkResponse(zipstream, mediaType, filename + ".zip");
+//
+//            } else {
+//                if (fileFormat.equalsIgnoreCase("xml")) {
+//                    // mediaType = MediaType.valueOf("application/xml");
+//                }
+//
+//                if (fileFormat.equalsIgnoreCase("excel")) {
+//                    // mediaType =
+//                    // MediaType.valueOf("application/vnd.ms-excel");
+//                }
+//                if (fileFormat.equalsIgnoreCase("txt") || fileFormat.equalsIgnoreCase("text")) {
+//                    logger.debug("\t\t - text File ");
+//
+//                    byte[] streamResponse = response.getBytes();
+//                    // return Response.ok(streamResponse,
+//                    // mediaType).header("content-disposition","attachment; filename = "+
+//                    // filename + ".txt").build();
+//                    return this.createOkResponse(streamResponse, mediaType, filename + ".txt");
+//                }
+//            }
+//        }
+//        logger.debug("CellBase - CreateResponse, Final media Type: " + mediaType.toString());
+//        // return Response.ok(response, mediaType).build();
+//        return this.createOkResponse(response, mediaType);
+//    }
 
     protected Response createErrorResponse(String method, String errorMessage) {
         if (!errorMessage.contains("Species") && !errorMessage.contains("Version")) {

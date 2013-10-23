@@ -1,7 +1,6 @@
 package org.opencb.cellbase.server.genomic;
 
-import com.sun.jersey.multipart.FormDataParam;
-import org.bioinfo.commons.utils.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opencb.cellbase.core.common.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.core.Transcript;
@@ -46,11 +45,12 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @POST
-    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+    @Consumes("application/x-www-form-urlencoded")
+//    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
     @Path("/consequence_type")
-    public Response getConsequenceTypeByPositionByPost(@FormDataParam("of") String outputFormat,
-                                                       @FormDataParam("variants") String postQuery,
-                                                       @DefaultValue("") @FormDataParam("exclude") String excludeSOTerms) {
+    public Response getConsequenceTypeByPositionByPost(@FormParam("of") String outputFormat,
+                                                       @FormParam("variants") String postQuery,
+                                                       @DefaultValue("") @FormParam("exclude") String excludeSOTerms) {
         //		return getConsequenceTypeByPosition(postQuery, features, variation, regulatory, diseases);
         return getConsequenceTypeByPosition(postQuery, excludeSOTerms);
     }
@@ -88,7 +88,7 @@ public class VariantWSServer extends GenericRestWSServer {
             e.printStackTrace();
 //			System.out.println("VariantWSServer: response.status => "+Response.status(Status.INTERNAL_SERVER_ERROR));
 //			System.out.println("ERROR: getConsequenceTypeByPosition: VARIANTS: "+variants);
-            System.out.println("ERROR: getConsequenceTypeByPosition: " + StringUtils.getStackTrace(e));
+//            System.out.println("ERROR: getConsequenceTypeByPosition: " + StringUtils.getStackTrace(e));
             if (genomicVariantList != null && excludes != null) {
                 gv = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(species, this.version);
                 excludeArray = excludes.split(",");
@@ -110,10 +110,10 @@ public class VariantWSServer extends GenericRestWSServer {
         return getSnpPhenotypesByPosition(variants, outputFormat);
     }
 
-    @POST
-    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+    @Consumes("application/x-www-form-urlencoded")
+//    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
     @Path("/snp_phenotype")
-    public Response getSnpPhenotypesByPositionByPost(@FormDataParam("of") String outputFormat, @FormDataParam("variants") String variants) {
+    public Response getSnpPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
         return getSnpPhenotypesByPosition(variants, outputFormat);
     }
 
@@ -142,9 +142,10 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @POST
-    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+    @Consumes("application/x-www-form-urlencoded")
+//    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
     @Path("/mutation_phenotype")
-    public Response getMutationPhenotypesByPositionByPost(@FormDataParam("of") String outputFormat, @FormDataParam("variants") String variants) {
+    public Response getMutationPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
         return getMutationPhenotypesByPosition(variants, outputFormat);
     }
 

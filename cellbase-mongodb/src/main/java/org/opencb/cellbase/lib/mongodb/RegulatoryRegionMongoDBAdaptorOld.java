@@ -31,7 +31,7 @@ public class RegulatoryRegionMongoDBAdaptorOld extends MongoDBAdaptor implements
 
     private List<GenericFeatureChunk> executeQuery(DBObject query) {
         List<GenericFeatureChunk> result = null;
-        logger.info(query);
+//        logger.info(query);
         DBCursor cursor = mongoDBCollection.find(query);
         try {
             if (cursor != null) {

@@ -1,8 +1,8 @@
 package org.opencb.cellbase.server.feature;
 
 
-import com.sun.jersey.multipart.FormDataParam;
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.GenericRestWSServer;
@@ -40,7 +40,7 @@ public class SnpWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
-			return createOkResponse(variationDBAdaptor.getAllByIdList(StringUtils.toList(query, ","), queryOptions));
+			return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getByEnsemblId", e.toString());
@@ -192,9 +192,10 @@ public class SnpWSServer extends GenericRestWSServer {
 	}
 
 	@POST
-	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA, 
+    @Consumes("application/x-www-form-urlencoded")
+//	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
 	@Path("/phenotype")
-	public Response getSnpPhenotypesByNameByPost(@FormDataParam("of") String outputFormat, @FormDataParam("snps") String snps) {
+	public Response getSnpPhenotypesByNameByPost(@FormParam("of") String outputFormat, @FormParam("snps") String snps) {
 		return getSnpPhenotypesByName(snps, outputFormat);
 	}
 	

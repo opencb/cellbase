@@ -60,7 +60,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //                System.out.println("");
 //                System.out.println(species);
             for(String al: alias) {
-                System.out.print(al+' ');
+//                System.out.print(al+' ');
                 speciesAlias.put(al, species);
             }
 //                System.out.println("");

@@ -1,6 +1,6 @@
 package org.opencb.cellbase.server.feature;
 
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.CytobandDBAdaptor;
 import org.opencb.cellbase.server.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -31,7 +31,7 @@ public class KaryotypeWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.version);
-			return generateResponse(chromosome, dbAdaptor.getAllByChromosomeList(StringUtils.toList(chromosome, ",")));
+			return generateResponse(chromosome, dbAdaptor.getAllByChromosomeList(Splitter.on(",").splitToList(chromosome)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getByChromosomeName", e.toString());
