@@ -1,9 +1,6 @@
 package org.opencb.cellbase.server.regulatory;
 
-import org.bioinfo.commons.utils.StringUtils;
-import org.bioinfo.formats.parser.uniprot.v140jaxb.DbReferenceType;
-import org.bioinfo.formats.parser.uniprot.v140jaxb.FeatureType;
-import org.bioinfo.formats.parser.uniprot.v140jaxb.Protein;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
@@ -11,6 +8,9 @@ import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.DbReferenceType;
+import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.FeatureType;
+import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.Protein;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -39,7 +39,7 @@ public class TfWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-			return generateResponse(query, adaptor.getAllByGeneNameList(StringUtils.toList(query, ",")));
+			return generateResponse(query, adaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getTfInfo", e.toString());
@@ -57,7 +57,7 @@ public class TfWSServer extends RegulatoryWSServer {
 			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
 			TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.version);
 			
-			List<List<Gene>> geneListList = geneDBAdaptor.getAllByTfNameList(StringUtils.toList(query, ","));
+			List<List<Gene>> geneListList = geneDBAdaptor.getAllByTfNameList(Splitter.on(",").splitToList(query));
 			List<String> ensemblGeneList = new ArrayList<String>();
 			List<String> externalNameList = new ArrayList<String>();
 			for(List<Gene> geneList : geneListList) {
@@ -72,8 +72,8 @@ public class TfWSServer extends RegulatoryWSServer {
 			
 			List<List<Protein>> proteinList = proteinDBAdaptor.getAllByGeneNameList(externalNameList);
 			List<List<Transcript>> transcriptList = transcriptDBAdaptor.getAllByProteinNameList(externalNameList);
-			List<List<Gene>> targetGeneList = geneDBAdaptor.getAllByTfList(StringUtils.toList(query, ","));
-//			List<List<Pwm>> pwmGeneList =  tfbsDBAdaptor.getAllPwmByTfGeneNameList(StringUtils.toList(query, ","));
+			List<List<Gene>> targetGeneList = geneDBAdaptor.getAllByTfList(Splitter.on(",").splitToList(query));
+//			List<List<Pwm>> pwmGeneList =  tfbsDBAdaptor.getAllPwmByTfGeneNameList(Splitter.on(",").splitToList(query)));
 			
 			List<List<DbReferenceType>> proteinXrefList = proteinDBAdaptor.getAllProteinXrefsByProteinNameList(externalNameList);
 			List<List<FeatureType>> proteinFeature = proteinDBAdaptor.getAllProteinFeaturesByProteinXrefList(externalNameList);
@@ -127,9 +127,9 @@ public class TfWSServer extends RegulatoryWSServer {
 				e.printStackTrace();
 				return createErrorResponse("getAllByTfbs", e.toString());
 			}
-//			return createOkResponse(adaptor.getAllByIdList(StringUtils.toList(query, ","), celltype, iStart, iEnd));
-			return createOkResponse(adaptor.getAllByIdList(StringUtils.toList(query, ","), queryOptions));
-//			return generateResponse(query, adaptor.getAllByTfGeneNameList(StringUtils.toList(query, ",")));
+//			return createOkResponse(adaptor.getAllByIdList(Splitter.on(",").splitToList(query)), celltype, iStart, iEnd));
+			return createOkResponse(adaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+//			return generateResponse(query, adaptor.getAllByTfGeneNameList(Splitter.on(",").splitToList(query))));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getAllByTfbs", e.toString());
@@ -143,7 +143,7 @@ public class TfWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
-			return  generateResponse(query, "GENE", geneDBAdaptor.getAllByTfList(StringUtils.toList(query, ",")));
+			return  generateResponse(query, "GENE", geneDBAdaptor.getAllByTfList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getEnsemblGenes", e.toString());
@@ -156,7 +156,7 @@ public class TfWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
-			return  generateResponse(query, "GENE", geneDBAdaptor.getAllTargetsByTfList(StringUtils.toList(query, ",")));
+			return  generateResponse(query, "GENE", geneDBAdaptor.getAllTargetsByTfList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getEnsemblGenes", e.toString());
@@ -169,7 +169,7 @@ public class TfWSServer extends RegulatoryWSServer {
 //		try {
 //			checkVersionAndSpecies();
 //			TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.version);
-//			return generateResponse(query, tfbsDBAdaptor.getAllPwmByTfGeneNameList(StringUtils.toList(query, ",")));
+//			return generateResponse(query, tfbsDBAdaptor.getAllPwmByTfGeneNameList(Splitter.on(",").splitToList(query))));
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //			return createErrorResponse("getAllPwms", e.toString());
@@ -188,7 +188,7 @@ public class TfWSServer extends RegulatoryWSServer {
 				results = tfbsDBAdaptor.getAllAnnotation();
 			}
 			else{
-				results = tfbsDBAdaptor.getAllAnnotationByCellTypeList(StringUtils.toList(celltype, ","));
+				results = tfbsDBAdaptor.getAllAnnotationByCellTypeList(Splitter.on(",").splitToList(celltype));
 			}
 			List<String> lista = new ArrayList<String>();			
 			

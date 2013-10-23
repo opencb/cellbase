@@ -1,6 +1,6 @@
 package org.opencb.cellbase.server.genomic;
 
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.server.GenericRestWSServer;
@@ -59,7 +59,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
-			return createOkResponse(dbAdaptor.getAllByIdList(StringUtils.toList(query, ","), queryOptions));
+			return createOkResponse(dbAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("/{chromosomeName}/info", e.toString());
@@ -87,7 +87,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
-			return createOkResponse(dbAdaptor.getAllCytobandsByIdList(StringUtils.toList(query, ","), queryOptions));
+			return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("/{chromosomeName}/cytoband", e.toString());

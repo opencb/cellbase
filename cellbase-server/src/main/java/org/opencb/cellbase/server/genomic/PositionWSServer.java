@@ -1,11 +1,9 @@
 package org.opencb.cellbase.server.genomic;
 
-import com.sun.jersey.multipart.FormDataParam;
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
@@ -74,7 +72,7 @@ public class PositionWSServer extends GenericRestWSServer {
 			List<Position> positionList = Position.parsePositions(query);
 			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
 			QueryOptions queryOptions = new QueryOptions("exclude", null);
-			return createOkResponse(geneDBAdaptor.getAllByIdList(StringUtils.toList(query, ","), queryOptions));
+			return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 //			return generateResponse(query, geneDBAdaptor.getAllByPositionList(positionList));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -102,9 +100,10 @@ public class PositionWSServer extends GenericRestWSServer {
         return this.getSNPByPosition(query);
 	}
     @POST
-    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+    @Consumes("application/x-www-form-urlencoded")
+//    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
     @Path("/snp")
-    public Response getSNPByPositionByPost(@FormDataParam("position") String query) {
+    public Response getSNPByPositionByPost(@FormParam("position") String query) {
         return this.getSNPByPosition(query);
     }
 

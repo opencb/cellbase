@@ -1,11 +1,12 @@
 package org.opencb.cellbase.core.lib;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class DBAdaptor {
 
-	protected Logger logger= Logger.getLogger(this.getClass().getSimpleName());
+    protected org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+//	protected Logger logger= Logger.getLogger(this.getClass().getSimpleName());
 	
 //	protected static ResourceBundle resourceBundle;
 //	protected static Config applicationProperties;
@@ -23,8 +24,8 @@ public abstract class DBAdaptor {
 //	}
 	
 	public DBAdaptor() {
-		logger= Logger.getLogger(this.getClass().getSimpleName());
-		logger.setLevel(Level.DEBUG);
+		logger= LoggerFactory.getLogger(this.getClass().getSimpleName());
+//		logger.setLevel(Level.DEBUG);
 		
 //		logger.info(applicationProperties.toString());
 		

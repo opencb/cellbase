@@ -1,6 +1,6 @@
 package org.opencb.cellbase.server.regulatory;
 
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.MirnaDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -26,7 +26,7 @@ public class MiRnaGeneWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(StringUtils.toList(query, ",")));
+			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMiRnaMatureInfo", e.toString());
@@ -43,7 +43,7 @@ public class MiRnaGeneWSServer extends RegulatoryWSServer {
 			// mirnaDiseases
 			// mirnaTargets
 			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(StringUtils.toList(query, ",")));
+			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMiRnaMatureFullInfo", e.toString());
@@ -56,7 +56,7 @@ public class MiRnaGeneWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaTargetsByMiRnaGeneList(StringUtils.toList(query, ","), StringUtils.toList(source, ",")));
+			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaTargetsByMiRnaGeneList(Splitter.on(",").splitToList(query), Splitter.on(",").splitToList(source)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMirnaTargets", e.toString());
@@ -69,7 +69,7 @@ public class MiRnaGeneWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-			return  generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaGeneList(StringUtils.toList(query, ",")));
+			return  generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaGeneList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMinaDisease", e.toString());

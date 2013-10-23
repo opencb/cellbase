@@ -1,6 +1,6 @@
 package org.opencb.cellbase.server.feature;
 
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.server.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -26,7 +26,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-			return generateResponse(query, "PROTEIN", adaptor.getAllByGeneNameList(StringUtils.toList(query, ",")));
+			return generateResponse(query, "PROTEIN", adaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getByEnsemblId", e.toString());
@@ -72,7 +72,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-			return generateResponse(query, "PROTEIN_FEATURE", adaptor.getAllProteinFeaturesByProteinXrefList(StringUtils.toList(query, ",")));
+			return generateResponse(query, "PROTEIN_FEATURE", adaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getFeatures", e.toString());
@@ -91,7 +91,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-			return generateResponse(proteinId, "XREF", adaptor.getAllProteinXrefsByProteinNameList(StringUtils.toList(proteinId, ",")));
+			return generateResponse(proteinId, "XREF", adaptor.getAllProteinXrefsByProteinNameList(Splitter.on(",").splitToList(proteinId)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getXrefs", e.toString());
@@ -111,9 +111,9 @@ public class ProteinWSServer extends GenericRestWSServer {
 			checkVersionAndSpecies();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
 			if(source != null && !source.equals("")) {
-				return generateResponse(query, "PROTEIN_INTERACTION", adaptor.getAllProteinInteractionsByProteinNameList(StringUtils.toList(query, ","), source));				
+				return generateResponse(query, "PROTEIN_INTERACTION", adaptor.getAllProteinInteractionsByProteinNameList(Splitter.on(",").splitToList(query), source));
 			}else{
-				return generateResponse(query, "PROTEIN_INTERACTION", adaptor.getAllProteinInteractionsByProteinNameList(StringUtils.toList(query, ",")));
+				return generateResponse(query, "PROTEIN_INTERACTION", adaptor.getAllProteinInteractionsByProteinNameList(Splitter.on(",").splitToList(query)));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

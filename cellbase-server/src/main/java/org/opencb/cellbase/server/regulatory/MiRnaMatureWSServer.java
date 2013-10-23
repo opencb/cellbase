@@ -1,6 +1,6 @@
 package org.opencb.cellbase.server.regulatory;
 
-import org.bioinfo.commons.utils.StringUtils;
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.common.regulatory.MirnaDisease;
@@ -40,7 +40,7 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 			// mirnaTargets
 			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
 			logger.debug("En getMiRnaMatureInfo: "+query);
-			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaMaturesByNameList(StringUtils.toList(query, ",")));
+			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaMaturesByNameList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMiRnaMatureInfo", e.toString());
@@ -56,14 +56,14 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
 			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
 			
-			List<List<MirnaMature>> mirnaMature = mirnaDBAdaptor.getAllMiRnaMaturesByNameList(StringUtils.toList(query, ","));
-			List<List<MirnaGene>> mirnaGenes = mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(StringUtils.toList(query, ","));
+			List<List<MirnaMature>> mirnaMature = mirnaDBAdaptor.getAllMiRnaMaturesByNameList(Splitter.on(",").splitToList(query));
+			List<List<MirnaGene>> mirnaGenes = mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(Splitter.on(",").splitToList(query));
 			
-			List<List<Gene>> genes = geneDBAdaptor.getAllByMiRnaMatureList(StringUtils.toList(query, ","));
-			List<List<Transcript>> transcripts = transcriptDBAdaptor.getAllByMirnaMatureList(StringUtils.toList(query, ","));
+			List<List<Gene>> genes = geneDBAdaptor.getAllByMiRnaMatureList(Splitter.on(",").splitToList(query));
+			List<List<Transcript>> transcripts = transcriptDBAdaptor.getAllByMirnaMatureList(Splitter.on(",").splitToList(query));
 			
-			List<List<Gene>> targetGenes = geneDBAdaptor.getAllTargetsByMiRnaMatureList(StringUtils.toList(query, ","));
-			List<List<MirnaDisease>> mirnaDiseases = mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(StringUtils.toList(query, ""));
+			List<List<Gene>> targetGenes = geneDBAdaptor.getAllTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query));
+			List<List<MirnaDisease>> mirnaDiseases = mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(Splitter.on("").splitToList(query));
 			
 			StringBuilder response = new StringBuilder();
 			response.append("[");
@@ -100,7 +100,7 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			GeneDBAdaptor adaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
-			return  generateResponse(query, adaptor.getAllByMiRnaMatureList(StringUtils.toList(query, ",")));
+			return  generateResponse(query, adaptor.getAllByMiRnaMatureList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getEnsemblGene", e.toString());
@@ -113,8 +113,8 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(StringUtils.toList(query, ",")));
-//			return  generateResponse(query, mirnaDBAdaptor.getAllByMiRnaList(StringUtils.toList(query, ",")));
+			return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(Splitter.on(",").splitToList(query)));
+//			return  generateResponse(query, mirnaDBAdaptor.getAllByMiRnaList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMiRnaGene", e.toString());
@@ -127,7 +127,7 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			GeneDBAdaptor adaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
-			return  generateResponse(query, adaptor.getAllTargetsByMiRnaMatureList(StringUtils.toList(query, ","))); // Renombrar a getAllTargetGenesByMiRnaList
+			return  generateResponse(query, adaptor.getAllTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query))); // Renombrar a getAllTargetGenesByMiRnaList
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getEnsemblTargetGenes", e.toString());
@@ -140,7 +140,7 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			MirnaDBAdaptor adaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-			return  generateResponse(query, adaptor.getAllMiRnaTargetsByMiRnaMatureList(StringUtils.toList(query, ","), StringUtils.toList(source, ",")));
+			return  generateResponse(query, adaptor.getAllMiRnaTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query), Splitter.on(",").splitToList(source)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMirnaTargets", e.toString());
@@ -153,7 +153,7 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 		try {
 			checkVersionAndSpecies();
 			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-			return  generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(StringUtils.toList(query, ",")));
+			return  generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getMinaDisease", e.toString());
@@ -171,7 +171,7 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 			if(source.equals("")){
 				results = adaptor.getAllAnnotation();
 			}else{
-				results = adaptor.getAllAnnotationBySourceList(StringUtils.toList(source, ","));
+				results = adaptor.getAllAnnotationBySourceList(Splitter.on(",").splitToList(source));
 			}
 
 			List<String> lista = new ArrayList<String>();
