@@ -209,8 +209,8 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     @Deprecated
-    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, IOException {
+    public GenericRestWSServer(@PathParam("version") String version,
+                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         this.version = version;
         this.species = "";
         this.uriInfo = uriInfo;
@@ -222,7 +222,8 @@ public class GenericRestWSServer implements IWSServer {
         // System.out.println("constructor");
     }
 
-    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
+    public GenericRestWSServer(@PathParam("version") String version,
+                               @PathParam("species") String species,
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
 
 
@@ -475,7 +476,7 @@ public class GenericRestWSServer implements IWSServer {
         logger.warn(msg);
         logger.debug(msg);
         logger.error(msg);
-        return createOkResponse(msg);
+        return createStringResponse(msg);
     }
 
 
@@ -698,6 +699,9 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createOkResponse(Object obj, MediaType mediaType, String fileName) {
         return buildResponse(Response.ok(obj, mediaType).header("content-disposition", "attachment; filename =" + fileName));
+    }
+    protected Response createStringResponse(String str) {
+        return buildResponse(Response.ok(str));
     }
 
     private Response buildResponse(ResponseBuilder responseBuilder) {
