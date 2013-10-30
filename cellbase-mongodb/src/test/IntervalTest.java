@@ -1,6 +1,8 @@
 import org.junit.Test;
 import org.opencb.cellbase.core.common.Position;
+import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
+import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -9,7 +11,7 @@ import org.opencb.cellbase.lib.mongodb.MongoDBAdaptorFactory;
 import java.io.IOException;
 import java.util.List;
 
-public class VariationMongoDBAdaptorTest {
+public class IntervalTest {
     protected static DBAdaptorFactory dbAdaptorFactory;
 
     static {
@@ -21,12 +23,13 @@ public class VariationMongoDBAdaptorTest {
         System.out.println("works");
 
         QueryOptions queryOptions = new QueryOptions();
+        queryOptions.put("interval","100000");
 
-        List<Position> positionList = Position.parsePositions("13:32931667");
-        VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "V3");
+        List<Region> regions = Region.parseRegions("13:32000000-32999999");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "V3");
 
-        List<QueryResult> a = variationDBAdaptor.getAllByPositionList(positionList, queryOptions);
-        System.out.println(a);
+        List<QueryResult> res = geneDBAdaptor.getAllIntervalFrequencies(regions, queryOptions);
+        System.out.println(res);
     }
 }
 

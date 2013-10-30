@@ -34,11 +34,11 @@ public class MongoDBAdaptor extends DBAdaptor {
         resourceBundle = ResourceBundle.getBundle("mongodb");
 //            applicationProperties = new Config(resourceBundle);
         applicationProperties = new Properties();
-        if(resourceBundle != null) {
+        if (resourceBundle != null) {
             Set<String> keys = resourceBundle.keySet();
             Iterator<String> iterator = keys.iterator();
             String nextKey;
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 nextKey = iterator.next();
                 applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
             }
@@ -289,18 +289,16 @@ public class MongoDBAdaptor extends DBAdaptor {
     }
 
 
-
-
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         List<QueryResult> queryResult = new ArrayList<>(regions.size());
-        for (Region region :regions){
+        for (Region region : regions) {
             queryResult.add(getAllIntervalFrequencies(region, queryOptions));
         }
         return queryResult;
     }
 
     public QueryResult getAllIntervalFrequencies(Region region, QueryOptions options) {
-
+        //  MONGO QUERY TO IMPLEMENT
         //    db.variation.aggregate({$match: {$and: [{chromosome: "1"}, {start: {$gt: 251391, $lt: 2701391}}]}}, {$group: {_id: {$subtract: [{$divide: ["$start", 40000]}, {$divide: [{$mod: ["$start", 40000]}, 40000]}]}, totalCount: {$sum: 1}}})
         //        {
         //            $match: {
@@ -334,6 +332,7 @@ public class MongoDBAdaptor extends DBAdaptor {
         //            }
         //        }
 
+        int interval = options.getInt("interval");
 
         BasicDBObject start = new BasicDBObject("$gt", region.getStart());
         start.append("$lt", region.getEnd());
@@ -347,11 +346,11 @@ public class MongoDBAdaptor extends DBAdaptor {
 
         BasicDBList divide1 = new BasicDBList();
         divide1.add("$start");
-        divide1.add(options.getInt("interval"));
+        divide1.add(interval);
 
         BasicDBList divide2 = new BasicDBList();
         divide2.add(new BasicDBObject("$mod", divide1));
-        divide2.add(options.getInt("interval"));
+        divide2.add(interval);
 
         BasicDBList subtractList = new BasicDBList();
         subtractList.add(new BasicDBObject("$divide", divide1));
@@ -380,24 +379,40 @@ public class MongoDBAdaptor extends DBAdaptor {
         System.out.println(output.getCommand());
 
         Map<Long, DBObject> ids = new HashMap<>();
-        BasicDBList resultList = new BasicDBList();
-
         for (DBObject intervalObj : output.results()) {
             Long _id = Math.round((Double) intervalObj.get("_id"));//is double
 
             DBObject intervalVisited = ids.get(_id);
             if (intervalVisited == null) {
                 intervalObj.put("_id", _id);
-                intervalObj.put("start", getChunkStart(_id.intValue(), options.getInt("interval")));
-                intervalObj.put("end", getChunkEnd(_id.intValue(), options.getInt("interval")));
+                intervalObj.put("start", getChunkStart(_id.intValue(), interval));
+                intervalObj.put("end", getChunkEnd(_id.intValue(), interval));
                 intervalObj.put("features_count", Math.log((int) intervalObj.get("features_count")));
                 ids.put(_id, intervalObj);
-                resultList.add(intervalObj);
             } else {
                 Double sum = (Double) intervalVisited.get("features_count") + Math.log((int) intervalObj.get("features_count"));
                 intervalVisited.put("features_count", sum.intValue());
             }
         }
+
+        /****/
+        BasicDBList resultList = new BasicDBList();
+        int firstChunkId = getChunkId(region.getStart(), interval);
+        int lastChunkId = getChunkId(region.getEnd(), interval);
+        DBObject intervalObj;
+        for (int chunkId = firstChunkId; chunkId <= lastChunkId; chunkId++) {
+            intervalObj = ids.get((long) chunkId);
+            if (intervalObj == null) {
+                intervalObj = new BasicDBObject();
+                intervalObj.put("_id", chunkId);
+                intervalObj.put("start", getChunkStart(chunkId, interval));
+                intervalObj.put("end", getChunkEnd(chunkId, interval));
+                intervalObj.put("features_count", 0);
+            }
+            resultList.add(intervalObj);
+        }
+        /****/
+
         QueryResult queryResult = new QueryResult();
         queryResult.setResult(resultList);
         queryResult.setId(region.toString());
@@ -447,7 +462,6 @@ public class MongoDBAdaptor extends DBAdaptor {
     }
 
 
-
     private int getChunkId(int position, int chunksize) {
         return position / chunksize;
     }
@@ -459,9 +473,6 @@ public class MongoDBAdaptor extends DBAdaptor {
     private int getChunkEnd(int id, int chunksize) {
         return (id * chunksize) + chunksize - 1;
     }
-
-
-
 
 
     //	protected List<?> execute(Criteria criteria){
