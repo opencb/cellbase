@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server.genomic;
+package org.opencb.cellbase.server.ws.genomic;
 
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;

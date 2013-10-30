@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server.regulatory;
+package org.opencb.cellbase.server.ws.regulatory;
 
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.MirnaDBAdaptor;

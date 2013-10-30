@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server.genomic;
+package org.opencb.cellbase.server.ws.genomic;
 
 @Deprecated
 public class Interval {

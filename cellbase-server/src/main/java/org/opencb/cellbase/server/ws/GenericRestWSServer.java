@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server;
+package org.opencb.cellbase.server.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,9 +7,10 @@ import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.lib.mongodb.MongoDBAdaptorFactory;
+import org.opencb.cellbase.server.QueryResponse;
+import org.opencb.cellbase.server.Species;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.cellbase.server.utils.Species;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -700,6 +701,7 @@ public class GenericRestWSServer implements IWSServer {
     protected Response createOkResponse(Object obj, MediaType mediaType, String fileName) {
         return buildResponse(Response.ok(obj, mediaType).header("content-disposition", "attachment; filename =" + fileName));
     }
+
     protected Response createStringResponse(String str) {
         return buildResponse(Response.ok(str));
     }

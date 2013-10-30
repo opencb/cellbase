@@ -1,8 +1,8 @@
-package org.opencb.cellbase.server.feature;
+package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
-import org.opencb.cellbase.server.GenericRestWSServer;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;

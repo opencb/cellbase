@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server;
+package org.opencb.cellbase.server.ws;
 
 
 import org.opencb.cellbase.server.exception.SpeciesException;

@@ -1,6 +1,6 @@
-package org.opencb.cellbase.server.network;
+package org.opencb.cellbase.server.ws.network;
 
-import org.opencb.cellbase.server.GenericRestWSServer;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;

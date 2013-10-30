@@ -7,18 +7,23 @@
     <display-name>CellBase Server</display-name>
 
     <servlet>
-        <servlet-name>GenericRestWSServer</servlet-name>
+        <servlet-name>CellbaseServer</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>org.opencb.cellbase.server</param-value>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>org.opencb.cellbase.server.CellbaseServer</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>GenericRestWSServer</servlet-name>
+        <servlet-name>CellbaseServer</servlet-name>
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
+
+    <!-- General configuration -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
 
 </web-app>

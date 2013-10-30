@@ -1,9 +1,9 @@
-package org.opencb.cellbase.server.genomic;
+package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.server.GenericRestWSServer;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;

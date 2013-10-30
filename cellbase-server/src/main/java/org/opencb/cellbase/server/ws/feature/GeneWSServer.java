@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server.feature;
+package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
 import com.mongodb.BasicDBList;
@@ -12,7 +12,7 @@ import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.cellbase.server.GenericRestWSServer;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;

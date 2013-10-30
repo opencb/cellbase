@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server.genomic;
+package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -7,7 +7,7 @@ import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.server.GenericRestWSServer;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
