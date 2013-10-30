@@ -1,0 +1,67 @@
+<div class="panel panel-info">
+    <div class="panel-heading " style="text-align:center">Summary Panel</div>
+
+    <div class="panel-body">
+
+
+        <strong style="color:#006ffb">Specie: </strong> {{specie}}
+        <strong style="color:#006ffb">Chromosomes: </strong> {{chromosomes.join()}}
+        <div class="input-group">
+            <input type="text" ng-model="newChrom" class="form-control">
+            <span    class="input-group-btn">
+                <button class="btn btn-default btn-xs"  ng-click="addChrom(newChrom)" type="button">Add</button>
+            </span>
+        </div>
+        <!-- /input-group -->
+
+        20:32850000-33500000
+        <p></p><strong style="color:#006ffb"> Regions: </strong></p>  {{regions.join()}}
+
+        <!---------------------------------------------->
+        <!--como el css de paginator cambia el formato del textarea, lo cambiamos por ahora por otro -->
+
+        <!--<div class="input-group">-->
+            <!--<div class="input" >-->
+                <!--<textarea ng-model="newRegions" rows="2" cols="8"></textarea>-->
+            <!--</div>-->
+            <!--<span class="input-group-btn">-->
+                <!--<button class="btn btn-default btn-xs"  ng-click="addRegion(newRegions)" type="button">Add</button>-->
+            <!--</span>-->
+        <!--</div>-->
+
+
+
+
+        <div class="input">
+            <textarea type="text" ng-model="newRegions" rows="3" class="form-control"></textarea>
+            <span    class="input-group-btn">
+                <button class="btn btn-default btn-xs"  ng-click="addRegion(newRegions)" type="button">Add</button>
+            </span>
+        </div>
+
+        <!-------------------------------------------------->
+
+        <button type="button" class="btn btn-default btn-primary btn-sm"  ng-click="newResults()">RESULTS</button>
+
+        <strong style="color:#006ffb">FILTERS: </strong></p>
+
+        <a style="color:#00b3ee" href="" ng-click="genesToggle = !genesToggle"><strong> - Genes:</strong></a>
+        <ul ng-show="genesToggle">
+            <li ng-repeat="gene in genesFilters">
+                {{ gene }}
+            </li>
+        </ul>
+        </p>
+        <a style="color:#00b3ee" href="" ng-click="biotypesToggle = !biotypesToggle"><strong> - Biotypes:</strong></a>
+        <ul ng-show="biotypesToggle">
+            <li ng-repeat="biotype in biotypeFilters">
+                {{ biotype }}
+            </li>
+        </ul>
+
+
+         <!--<label for="textarea">textarea</label>-->
+
+
+    </div>
+</div>

@@ -1,0 +1,99 @@
+<div class="row">
+    <div class="col-md-3" style="background-color:lavenderblush">
+
+
+        <button type="button" class="btn btn-primary btn-xs" ng-click="showAllGenes()">Add all</button>
+
+
+
+
+
+        <!--<div ng-repeat="gene in prueba">-->
+        <div ng-repeat="gene in paginationData">
+            <a href="#"  ng-click="genesToggle = !genesToggle"  class="list-group-item active">  {{gene.name}} ( {{gene.id}} )
+
+                <a ng-show="genesToggle" ng-click="transcriptsToggle = !transcriptsToggle" href="#" class="list-group-item">Transcripts </a>
+                <a ng-show="transcriptsToggle && genesToggle" ng-click="moreInfoToggle = !moreInfoToggle" href="#" ng-repeat="transcript in gene.transcripts" class="list-group-item">Transcript: {{transcript.name}}
+
+                    <button type="button" class="btn btn-primary btn-xs">More info</button>
+                </a>
+
+                <!--<a ng-show="transcriptsToggle" ng-click="moreInfoToggle = !moreInfoToggle" href="#" ng-repeat="gene in prueba" class="list-group-item">transcript:{{gene.transcripts[$index].name}} {{$index}} </a>-->
+                <!--<a ng-show="transcriptsToggle" ng-click="moreInfoToggle = !moreInfoToggle" href="#" ng-repeat="gene in prueba" class="list-group-item">transcript: {{getTranscriptName($index)}} </a>-->
+                    <!--no me deja profundizar mas ¿?¿?-->
+            </a>
+        </div>
+
+
+
+        <!--cuando clickamos sobre una pagina de pagination, como no es un evento de angular, las variables-->
+        <!--scope que se modifican con este evento no se actualizan en el html, de forma que hay que lanzar un evento-->
+        <!--de angularjs para que lo actualice. Ponemos el evento donde se encuentra el paginado y de paso calculamos-->
+        <!--lo que hay que mostrar&ndash;&gt;-->
+        <div id="pagination" ng-click="getDataInPaginationLimits()"></div>
+
+                    <!--<a href="#" ng-show="moreInfoToggle" class="list-group-item">More information</a>-->
+
+
+
+        <!-----------------------paso 4----------------------->
+        <!--<div ng-repeat="gene in prueba">-->
+            <!--<a href="#"  ng-click="genesToggle = !genesToggle" class="list-group-item active"> {{gene}}-->
+
+                <!--<a ng-show="genesToggle" ng-click="transcriptsToggle = !transcriptsToggle" href="#" class="list-group-item">Transcripts</a>-->
+
+                <!--<a ng-show="transcriptsToggle" ng-click="moreInfoToggle = !moreInfoToggle" href="#" ng-repeat="gene in prueba" class="list-group-item">transcript: {{gene}}</a>-->
+                <!--&lt;!&ndash;no me deja profundizar mas&ndash;&gt;-->
+            <!--</a>-->
+        <!--</div>-->
+
+        <!--------------paso 3------------------------>
+        <!--<div ng-repeat="gene in prueba">-->
+            <!--<a href="#"  ng-click="genesToggle = !genesToggle" class="list-group-item active"> {{gene}}-->
+
+                <!--<a ng-show="genesToggle" ng-click="transcriptsToggle = !transcriptsToggle" href="#" class="list-group-item">Transcripts</a>-->
+
+                <!--<a ng-show="transcriptsToggle" href="#" ng-repeat="gene in prueba" class="list-group-item">{{gene}} </a>-->
+            <!--</a>-->
+        <!--</div>-->
+
+        <!----------paso 2------------------------->
+        <!--<div ng-repeat="gene in prueba">-->
+            <!--<a href="#"  ng-click="genesToggle = !genesToggle" class="list-group-item active"> {{gene}}-->
+                <!--<a ng-show="genesToggle" href="#" ng-repeat="gene in prueba" class="list-group-item">{{gene}} </a>-->
+            <!--</a>-->
+        <!--</div>-->
+
+
+
+
+
+        <!-----------------paso 1------------>
+        <!--<a href="#" ng-click="genesToggle = !genesToggle" class="list-group-item active">Genes List </a>-->
+        <!--<div class="list-group">-->
+            <!--<ul ng-show="genesToggle">-->
+                <!--<a href="#" ng-repeat="gene in prueba" class="list-group-item">{{gene}} </a>-->
+            <!--</ul>-->
+        <!--</div>-->
+
+
+
+    </div>
+
+    <div class="col-md-9" style="background-color:lightcoral">
+
+
+
+
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+

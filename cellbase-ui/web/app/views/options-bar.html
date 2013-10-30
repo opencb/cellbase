@@ -1,0 +1,18 @@
+<div class="btn-group btn-group-xs">
+    <button type="button"  ng-click="handleClick('hola')" class="btn btn-default btn-primary">New</button>
+    <button type="button" class="btn btn-default btn-primary">Filter</button>
+
+    <div class="btn-group btn-group-xs">
+        <button type="button" class="btn btn-default dropdown-toggle btn-primary" data-toggle="dropdown">
+            Select specie:
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href = "#" ng-repeat="specie in species.longName" ng-click="setSelectedSpecie(specie)">
+                {{ specie}}
+            </a> </li>
+
+        </ul>
+        <!--<span>{{selectedSpecie}}</span>-->
+    </div>
+</div>
