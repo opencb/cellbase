@@ -2,7 +2,7 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 //myApp.controller('summaryPanelControl', ['$scope' , function ($scope, mySharedService, Server) {
 //function summaryPanelController($scope,mySharedService, Server) {
 
-    $scope.specie = "";
+    $scope.species = "";
     $scope.chromosomes = [];
     $scope.regions = [];
 
@@ -112,7 +112,7 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 
 
     $scope.$on('specieBroadcast', function () {   //obtener la especie elegida en optionsBar
-        $scope.specie = mySharedService.selectedSpecie;
+        $scope.species = mySharedService.selectedSpecies;
     });
 
     //----------------ejemplo---------------------

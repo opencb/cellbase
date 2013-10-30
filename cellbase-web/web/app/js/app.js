@@ -10,7 +10,7 @@ myApp.factory('mySharedService', function($rootScope){
 
     sharedService.message = '';
 
-    sharedService.selectedSpecie= "";
+    sharedService.selectedSpecies= "";
     sharedService.selectedRegions= "";
 
 
@@ -40,7 +40,7 @@ myApp.factory('mySharedService', function($rootScope){
 
     //comunicar la especie de optionsBar a SummaryPanel
     sharedService.broadcastSpecie = function(specie){
-        this.selectedSpecie = specie;
+        this.selectedSpecies = specie;
 
         this.broadcastSpecieItem();
     };
@@ -48,7 +48,7 @@ myApp.factory('mySharedService', function($rootScope){
     //comunicar un nuevo resultado de summaryPanel a resultPanel
     sharedService.newResults = function(specie, regions){
 
-        this.selectedSpecie= specie;
+        this.selectedSpecies= specie;
         this.selectedRegions= regions;
 
         this.broadcastResultsItem();

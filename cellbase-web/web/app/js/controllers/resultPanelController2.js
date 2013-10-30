@@ -46,12 +46,12 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
         return mySharedService.species;
     };
 
-    $scope.selectedSpecie = "";
+    $scope.selectedSpecies = "";
 
     $scope.setSelectedSpecie = function (specie) {
 
-        $scope.selectedSpecie = specie;
-        console.log( $scope.selectedSpecie);
+        $scope.selectedSpecies = species;
+        console.log( $scope.selectedSpecies);
     };
 
     //indicara los datos que va a mostrar dependiendo del numero de la paginacion
@@ -69,7 +69,7 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
 
     $scope.$on('resultsBroadcast', function () {
 
-        $scope.data = Server.get(mySharedService.selectedSpecie,mySharedService.selectedRegions);
+        $scope.data = Server.get(mySharedService.selectedSpecies, mySharedService.selectedRegions);
 //        console.log($scope.data);
 
 
@@ -107,15 +107,15 @@ resultPanelControl.$inject = ['$scope','mySharedService'];
 
 myApp.factory('Server', function ($http) {
     return {
-        get: function(specie, regions) {
+        get: function(species, regions) {
 
             var dataGet;
-            var host = 'http://ws-beta.bioinfo.cipf.es/cellbasebeta2/rest/v3/'
+            var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/'
 
             $.ajax({
 //                url: url,
 //                url: host + specie + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
-                url: host + specie + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
                 async: false,
                 dataType: 'json',
                 success: function (data, textStatus, jqXHR) {
