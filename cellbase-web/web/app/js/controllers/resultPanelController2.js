@@ -1,8 +1,4 @@
-//myApp.controller('resultPanelControl', ['$scope',function ($scope) {
 var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
-
-//function resultPanelController($scope,mySharedService){
-
 
     $scope.data=[];
     $scope.paginationData=[];
@@ -15,10 +11,6 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
     //--------------------------------------------------------
 
     $scope.showAllGenes = function (index) {
-    };
-    $scope.getTranscriptName = function (index) {
-        console.log(index);
-
     };
 
     //obtener los datos que hay en el rango establecido por el paginado, es mas rapido que aplicar un filtro
@@ -36,42 +28,16 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
     };
 
 
-
-
-    $scope.species = ["Homo sapiens ","Mus musculus ","Rattus norvegicus ", "Danio rerio ","Drosophila melanogaster ","Caenorhabditis elegans ","Saccharomyces cerevisiae ","Canis familiaris ","Sus scrofa ","Anopheles gambiae ","Plasmodium falciparum"];
-//    $scope.species = ["hsapiens","mmusculus","rnorvegicus","drerio","dmelanogaster","celegans","scerevisiae","cfamiliaris","sscrofa","agambiae","pfalciparum"]
-
-
-    $scope.getSpecies = function () {
-        return mySharedService.species;
-    };
-
-    $scope.selectedSpecies = "";
-
-    $scope.setSelectedSpecie = function (specie) {
-
-        $scope.selectedSpecies = species;
-        console.log( $scope.selectedSpecies);
-    };
-
     //indicara los datos que va a mostrar dependiendo del numero de la paginacion
     $scope.setLimits = function (firstData) {
-
         $scope.firstData = firstData;
         $scope.lastData = firstData + $scope.numeroDatosMostrar;
-
     };
 
-    $scope.$on('handleBroadcast', function () {
-        $scope.message = mySharedService.message;
-        console.log("result:   " + $scope.message);
-    });
 
     $scope.$on('resultsBroadcast', function () {
 
-        $scope.data = Server.get(mySharedService.selectedSpecies, mySharedService.selectedRegions);
-//        console.log($scope.data);
-
+        $scope.data = Server.get(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
 
         //indicamos que los primeros datos a mostrar son los de la pagina 1
         for (i=0; i<$scope.numeroDatosMostrar; i++){
@@ -81,6 +47,7 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
         }
 
 
+        //definimos el pagination
         var numeroDatos = $scope.data.length;  //21
         var numeroDePaginas = Math.ceil(numeroDatos / $scope.numeroDatosMostrar);
 
@@ -113,21 +80,18 @@ myApp.factory('Server', function ($http) {
             var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/'
 
             $.ajax({
-//                url: url,
-//                url: host + specie + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
                 url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
                 async: false,
                 dataType: 'json',
                 success: function (data, textStatus, jqXHR) {
-                    dataGet=data[regions].result;
+
+                    dataGet=data.response[0].result;
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                 }
             });
 
             return dataGet;
-//            return $http.get(url);
-
         }
     };
 });

@@ -10,7 +10,7 @@ myApp.factory('mySharedService', function($rootScope){
 
     sharedService.message = '';
 
-    sharedService.selectedSpecies= "";
+    sharedService.selectedSpecies=  {longName: "Homo sapiens", shortName:"hsapiens"};
     sharedService.selectedRegions= "";
 
 
@@ -33,32 +33,22 @@ myApp.factory('mySharedService', function($rootScope){
 
 
 
-    sharedService.prepForBroadcast = function(msg){
-        this.message = msg;
-        this.broadcastItem();
-    };
-
     //comunicar la especie de optionsBar a SummaryPanel
     sharedService.broadcastSpecie = function(specie){
+
         this.selectedSpecies = specie;
 
         this.broadcastSpecieItem();
     };
 
     //comunicar un nuevo resultado de summaryPanel a resultPanel
-    sharedService.newResults = function(specie, regions){
-
-        this.selectedSpecies= specie;
+    sharedService.newResults = function(regions){
         this.selectedRegions= regions;
 
         this.broadcastResultsItem();
     };
 
 
-    //con esta funcion hacemos el trigger para quien tenga el on
-    sharedService.broadcastItem = function () {
-        $rootScope.$broadcast('handleBroadcast');
-    }
     sharedService.broadcastSpecieItem = function () {
         $rootScope.$broadcast('specieBroadcast');
     }
