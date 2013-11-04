@@ -1,5 +1,5 @@
 <div class="panel panel-info">
-    <div class="panel-heading " style="text-align:center">Summary Panel</div>
+    <!--<div class="panel-heading " style="text-align:center">Summary Panel</div>-->
 
     <div class="panel-body">
 
@@ -7,9 +7,13 @@
         <strong style="color:#006ffb">Specie: </strong> {{specie.longName}}
 
 
-        <strong style="color:#006ffb">Chromosomes: </strong> {{chromosomes.join()}}
-        <textarea type="text" ng-model="chromosomes" rows="2" class="form-control"></textarea>
+        <strong style="color:#006ffb">Chromosomes: </strong>
+        <textarea type="text" ng-model="chromosomes" rows="1" class="form-control"></textarea>
 
+        <!-- Button trigger modal -->
+        <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal">
+            Select
+        </button>
 
         <strong style="color:#006ffb"> Regions: </strong></p>
         <textarea type="text" ng-model="regions" rows="3" class="form-control"></textarea>
@@ -34,5 +38,44 @@
         </ul>
 
 
-    </div>
+
+
+
+
+        <!-- Modal -->
+        <div class="modal" id="myModal" >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Select chromosomes</h4>
+                    </div>
+                    <div class="modal-body">
+                            <div class="input-group" >
+                                <span ng-repeat="chrom in chromosomesPerSpecie[specie.shortName]">
+                                     <input type="checkbox" ng-click="addChrom(chrom)"> {{chrom}} &nbsp
+                                 </span>
+                            </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+
+
+
+
+
 </div>
+
+
+
+</div>
+
+
+
