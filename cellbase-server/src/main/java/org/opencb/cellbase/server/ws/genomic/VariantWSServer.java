@@ -1,13 +1,15 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opencb.cellbase.core.common.GenomicVariant;
+import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.core.Transcript;
+import org.opencb.cellbase.core.common.variation.GenomicVariantEffect;
 import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -30,6 +32,24 @@ public class VariantWSServer extends GenericRestWSServer {
     public VariantWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
     }
+    @GET
+    @Path("/{variants}/effect")
+    public Response getEffectByPositionByGet(@PathParam("variants") String variants,
+                                                      @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
+        try {
+            VariantEffectDBAdaptor variationMongoDBAdaptor = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(this.species, this.version);
+            System.out.println("variants = [" + variationMongoDBAdaptor+ "], excludeSOTerms = [" + excludeSOTerms + "]");
+            return createOkResponse(variationMongoDBAdaptor.getAllEffectsByVariantList(GenomicVariant.parseVariants(variants), queryOptions));
+//            return getConsequenceTypeByPosition(variants, excludeSOTerms);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getConsequenceTypeByPositionByGet", e.toString());
+        }
+    }
+
+
+
+
 
     @GET
     @Path("/{variants}/consequence_type")
@@ -59,7 +79,7 @@ public class VariantWSServer extends GenericRestWSServer {
         List<GenomicVariant> genomicVariantList = null;
         String[] excludeArray = null;
         Set<String> excludeSet = null;
-//		List<GenomicVariantConsequenceType> genomicVariantConsequenceTypes = null;
+//		List<GenomicVariantEffect> genomicVariantConsequenceTypes = null;
         List<QueryResult> genomicVariantConsequenceTypes = null;
         VariantEffectDBAdaptor gv = null;
         try {

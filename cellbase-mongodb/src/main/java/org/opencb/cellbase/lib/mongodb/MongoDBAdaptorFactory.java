@@ -227,14 +227,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species) {
-        // TODO Auto-generated method stub
-        return null;
+        return getGenomicVariantEffectDBAdaptor(species, null);
     }
 
     @Override
     public VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species, String version) {
-        // TODO Auto-generated method stub
-        return null;
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return (VariantEffectDBAdaptor) new VariantEffectMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
     }
 
     @Override

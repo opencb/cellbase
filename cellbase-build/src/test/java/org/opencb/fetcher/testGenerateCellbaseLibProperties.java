@@ -47,11 +47,11 @@ public class testGenerateCellbaseLibProperties {
 
             for (JsonNode species : phyloSpecies) {
                 String speciesText = species.get("text").asText();
-//                String speciesAssembly = species.get("assembly").asText();
-//                String speciesAssemblyCode = speciesAssembly.replaceAll("[a-zA-Z_.-]", "");
-//                if(speciesAssemblyCode.equals("")){
-//                    speciesAssemblyCode = speciesAssembly.toLowerCase();
-//                }
+                String speciesAssembly = species.get("assembly").asText();
+                String speciesAssemblyCode = speciesAssembly.replaceAll("[a-zA-Z_.-]", "");
+                if(speciesAssemblyCode.equals("")){
+                    speciesAssemblyCode = speciesAssembly.toLowerCase();
+                }
 
                 String[] pair = speciesText.split(" ");
                 String name;
@@ -78,7 +78,7 @@ public class testGenerateCellbaseLibProperties {
                 dbprop.append(upperName + "." + version + ".ALIAS = " + sbAlias + "\n");
                 dbprop.append(upperName + "." + version + ".DB = " + "PRIMARY_DB" + "\n");
 //                dbprop.append(upperName+".V3.DATABASE = "+name+"_cdb_v3_"+speciesAssemblyCode+"\n");
-                dbprop.append(upperName + "." + version + ".DATABASE = " + name + "_cdb_" + version.toLowerCase() + "\n");
+                dbprop.append(upperName + "." + version + ".DATABASE = " + name + "_cdb_" + version.toLowerCase() + "_" + speciesAssemblyCode + "\n");
 //                dbprop.append(upperName+"."+version+".MAX_POOL_SIZE = "+"10"+"\n");
 //                dbprop.append(upperName+"."+version+".TIMEOUT = "+"10"+"\n");
                 dbprop.append("\n");

@@ -1,7 +1,7 @@
 package org.opencb.cellbase.core.lib.api;
 
 
-import org.opencb.cellbase.core.common.GenomicVariant;
+import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Region;
 
 import java.util.List;
@@ -31,9 +31,9 @@ public interface GenomicRegionFeatureDBAdaptor {
 	
 //	public List<FeatureMap> getFeatureMapsByRegion(Region region);
 
-//	public HashMap<String, List<String>> getConsequenceType(String chromosome, int position);
+//	public HashMap<String, List<String>> getConsequenceTypeSoAccession(String chromosome, int position);
 //
-//	HashMap<String, List<String>> getConsequenceType(String chromosome,int position, String alternativeAllele);
+//	HashMap<String, List<String>> getConsequenceTypeSoAccession(String chromosome,int position, String alternativeAllele);
 	
 	
 //	public GenomicRegionFeatures getAllByRegion(Region region, List<String> featureTypes); // types: variation, regulatory, core, ...

@@ -108,7 +108,7 @@ public class SnpWSServer extends GenericRestWSServer {
 ////					String aux = gson.toJson(snpToTranscript.get(i));
 //////					System.out.println(aux);
 ////					for (int k = 0; k < snpToTranscript.get(i).size(); k++) {
-////						aux = aux.replace("\"snpToTranscriptId\":"+snpToTranscript.get(i).get(k).getSnpToTranscriptId(), "\"transcript\":"+gson.toJson(snpToTranscript.get(i).get(k).getTranscript())+", \"consequenceType\":"+gson.toJson(snpToTranscript.get(i).get(k).getConsequenceType()));
+////						aux = aux.replace("\"snpToTranscriptId\":"+snpToTranscript.get(i).get(k).getSnpToTranscriptId(), "\"transcript\":"+gson.toJson(snpToTranscript.get(i).get(k).getTranscript())+", \"consequenceTypeSoAccession\":"+gson.toJson(snpToTranscript.get(i).get(k).getConsequenceTypeSoAccession()));
 ////					}
 ////					response.append("\"snptotranscript\":"+aux+",");
 ////					System.out.println(aux);
