@@ -231,7 +231,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
 
-        List<Object> biotypes = options.getList("biotypes", null);
+        List<Object> biotypes = options.getList("biotype", null);
         BasicDBList biotypeIds = new BasicDBList();
         if (biotypes != null && biotypes.size() > 0) {
             biotypeIds.addAll(biotypes);

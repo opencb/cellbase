@@ -1,5 +1,6 @@
 package org.opencb.cellbase.server.ws.genomic;
 
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.CpGIsland;
@@ -105,7 +106,8 @@ public class RegionWSServer extends GenericRestWSServer {
 				return createOkResponse(res);
 			} else {
 //				QueryOptions queryOptions = new QueryOptions("biotypes", StringUtils.toList(biotype, ","));
-				queryOptions.put("biotype", biotype);
+//				queryOptions.put("biotype", biotype);
+				queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
 //				queryOptions.put("transcripts", transcripts.equalsIgnoreCase("true"));
 				addExcludeReturnFields("transcripts.exons.sequence", queryOptions);
 //				return createOkResponse(chregionId, "GENE",	geneDBAdaptor.getAllByRegionList(regions, queryOptions));
