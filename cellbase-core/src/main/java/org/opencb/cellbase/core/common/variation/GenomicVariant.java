@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.common;
+package org.opencb.cellbase.core.common.variation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,33 +47,43 @@ public class GenomicVariant {
 		List<GenomicVariant> genomicVariants = null;
 		if(variantsString != null && !variantsString.equals("")) {
 			String[] variantItems = variantsString.split(",");
-			genomicVariants = new ArrayList<GenomicVariant>(variantItems.length);
-			String[] fields;
+			genomicVariants = new ArrayList<>(variantItems.length);
+//			String[] fields;
 			for(String variantString: variantItems) {
 				//	if(regionString.indexOf(':') != -1) {
-				fields = variantString.split(":", -1);
-				if(fields.length == 3) {
-					genomicVariants.add(new GenomicVariant(fields[0], Integer.parseInt(fields[1]), fields[2]));
-				}else {
-					if(fields.length == 4) {
-						genomicVariants.add(new GenomicVariant(fields[0], Integer.parseInt(fields[1]), fields[2], fields[3]));
-					}else {
-						genomicVariants.add(null);							
-					}
-				}
-				//	}else {
-				//		genomicVariants.add(new GenomicVariant(regionString, 0, new String()));
-				//	}
+
+                genomicVariants.add(parseVariant(variantString));
+
+//				fields = variantString.split(":", -1);
+//				if(fields.length == 3) {
+//					genomicVariants.add(new GenomicVariant(fields[0], Integer.parseInt(fields[1]), fields[2]));
+//				}else {
+//					if(fields.length == 4) {
+//						genomicVariants.add(new GenomicVariant(fields[0], Integer.parseInt(fields[1]), fields[2], fields[3]));
+//					}else {
+//						genomicVariants.add(null);
+//					}
+//				}
+
 			}	
 		}
 		return genomicVariants;
 	}
+
+    public boolean isIndel() {
+        return this.getReference().length() > 1 || this.getAlternative().length() > 1 || this.getReference().equals("-") || this.getAlternative().equals("-");
+    }
+
+    public boolean isStructuralVariation() {
+        return this.getReference().length() > 50 || this.getAlternative().length() > 50 || this.getReference().equals("INS") || this.getAlternative().equals("INS") || this.getReference().equals("DEL") || this.getAlternative().equals("DEL");
+    }
 
 	/**
 	 * 
 	 * @param variantList
 	 * @return A comma separated string with all the regions. If parameter is null then a null objects is returned, an empty string is returned if parameter size list is 0 
 	 */
+    @Deprecated
 	public static String parseRegionList(List<GenomicVariant> variantList) {
 		if(variantList == null) {
 			return null;

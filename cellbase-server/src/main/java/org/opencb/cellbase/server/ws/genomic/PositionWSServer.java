@@ -52,7 +52,7 @@ public class PositionWSServer extends GenericRestWSServer {
 ////			todo.addAll(maps.getSnp());
 //			
 //			Gson gson = new Gson();
-//			todo.add(adaptor.getConsequenceType(chromosome, position));
+//			todo.add(adaptor.getConsequenceTypeSoAccession(chromosome, position));
 //			return generateResponse(positionId, todo);
 //			
 //			
