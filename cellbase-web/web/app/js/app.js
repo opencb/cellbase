@@ -62,41 +62,41 @@ myApp.factory('mySharedService', function($rootScope){
 })
 
 
-myApp.config(function($routeProvider) {
-
-  $routeProvider.
-      when('/', {
-        controller: 'optionsBarController',
-        templateUrl: 'views/options-bar.html'
-      }).
-      when('/', {
-        controller: 'summaryPanelController',
-        templateUrl: 'views/summary-panel.html'
-      }).
-      when('/', {
-        controller: 'resultPanelController',
-        templateUrl: 'views/result-panel.html'
-      });
-//      .
-//      when('/checkout', {
-//        controller: 'CheckoutController',
-//        templateUrl: 'views/checkout.html'
+//myApp.config(function($routeProvider) {
+//
+//  $routeProvider.
+//      when('/', {
+//        controller: 'optionsBarController',
+//        templateUrl: 'views/options-bar.html'
 //      }).
-//      when('/thank-you', {
-//        controller: 'ThankYouController',
-//        templateUrl: 'views/thank-you.html'
+//      when('/', {
+//        controller: 'summaryPanelController',
+//        templateUrl: 'views/summary-panel.html'
 //      }).
-//      when('/customer', {
-//        controller: 'CustomerController',
-//        templateUrl: 'views/customer.html'
-//      }).
-//      when('/who-we-are', {
-//        templateUrl: 'views/who-we-are.html'
-//      }).
-//      when('/how-it-works', {
-//        templateUrl: 'views/how-it-works.html'
-//      }).
-//      when('/help', {
-//        templateUrl: 'views/help.html'
+//      when('/', {
+//        controller: 'resultPanelController',
+//        templateUrl: 'views/result-panel.html'
 //      });
-});
+////      .
+////      when('/checkout', {
+////        controller: 'CheckoutController',
+////        templateUrl: 'views/checkout.html'
+////      }).
+////      when('/thank-you', {
+////        controller: 'ThankYouController',
+////        templateUrl: 'views/thank-you.html'
+////      }).
+////      when('/customer', {
+////        controller: 'CustomerController',
+////        templateUrl: 'views/customer.html'
+////      }).
+////      when('/who-we-are', {
+////        templateUrl: 'views/who-we-are.html'
+////      }).
+////      when('/how-it-works', {
+////        templateUrl: 'views/how-it-works.html'
+////      }).
+////      when('/help', {
+////        templateUrl: 'views/help.html'
+////      });
+//});

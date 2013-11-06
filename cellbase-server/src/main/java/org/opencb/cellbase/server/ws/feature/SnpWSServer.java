@@ -2,11 +2,10 @@ package org.opencb.cellbase.server.ws.feature;
 
 
 import com.google.common.base.Splitter;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
