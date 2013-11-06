@@ -6,8 +6,12 @@ public class Xref {
 	private String dbNameShort;
 	private String dbName;
 	private String description;
-	
-	public Xref(String id, String dbNameShort, String dbName, String description) {
+
+    public Xref() {
+
+    }
+
+    public Xref(String id, String dbNameShort, String dbName, String description) {
 		this.id = id;
 		this.dbNameShort = dbNameShort;
 		this.dbName = dbName;

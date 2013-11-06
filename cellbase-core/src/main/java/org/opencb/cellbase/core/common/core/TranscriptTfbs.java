@@ -10,8 +10,12 @@ public class TranscriptTfbs {
 	private int relativeStart;
 	private int relativeEnd;
 	private float score;
-	
-	public TranscriptTfbs(String tfName, String pwm, String chromosome,
+
+    public TranscriptTfbs() {
+
+    }
+
+    public TranscriptTfbs(String tfName, String pwm, String chromosome,
 			Integer start, Integer end, String strand, Integer relativeStart,
 			Integer relativeEnd, Float score) {
 		super();
