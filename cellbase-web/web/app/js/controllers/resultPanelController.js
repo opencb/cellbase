@@ -1,7 +1,6 @@
-var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
+var resultPanelControl = myApp.controller('resultPanelController', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
 
-    $scope.genesAndTranscriptsData=[];
-    $scope.genesData=[];
+    $scope.data=[];
     $scope.paginationData=[];
 
     //------------------para el pagination--------------------
@@ -11,6 +10,8 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
     $scope.lastData = $scope.numeroDatosMostrar;
     //--------------------------------------------------------
 
+    $scope.showAllGenes = function (index) {
+    };
 
     //obtener los datos que hay en el rango establecido por el paginado, es mas rapido que aplicar un filtro
     $scope.getDataInPaginationLimits = function () {
@@ -19,8 +20,8 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
 
         for (i=$scope.firstData; i<$scope.lastData; i++){
 
-            if($scope.genesAndTranscriptsData[i] != null){
-                 $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
+            if($scope.data[i] != null){
+                 $scope.paginationData.push($scope.data[i]);
             }
         }
 
@@ -36,22 +37,18 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
 
     $scope.$on('resultsBroadcast', function () {
 
-        $scope.genesAndTranscriptsData = Server.getGenesAndTranscripts(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
-        $scope.genesData = Server.getGenes(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
-
-//        console.log($scope.genesAndTranscriptsData);
-//        console.log($scope.genesData);
+        $scope.data = Server.getGenesAndTranscripts(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
 
         //indicamos que los primeros datos a mostrar son los de la pagina 1
         for (i=0; i<$scope.numeroDatosMostrar; i++){
-            if($scope.genesAndTranscriptsData[i] != null){
-                $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
+            if($scope.data[i] != null){
+                $scope.paginationData.push($scope.data[i]);
             }
         }
 
 
         //definimos el pagination
-        var numeroDatos = $scope.genesAndTranscriptsData.length;  //21
+        var numeroDatos = $scope.data.length;  //21
         var numeroDePaginas = Math.ceil(numeroDatos / $scope.numeroDatosMostrar);
 
 
@@ -86,7 +83,6 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
 
     };
 
-//-------------------------------------------------
     $scope.lastDataShow;
 
     $scope.showGenesTable = false;
@@ -108,7 +104,7 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
     $scope.geneSelected = function (geneId) {
 
 
-         if($scope.lastDataShow != geneId){
+        if($scope.lastDataShow != geneId){
 
             $scope.lastDataShow = geneId;   //nuevo gen
             $scope.showGenePanel = true;    //mostrar panel
@@ -120,13 +116,13 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
             $scope.showMoreInfoPanel = false;
         }
         else
-         {
-             if(!$scope.showGenePanel){  //para que no se muestre cuando ya lo esta
-                 $scope.showGenePanel = true;    //mostrar panel
-                 $scope.selectedGen = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0];  //obtener los datos
-             }
-         }
-            $scope.showGenesTable = false;
+        {
+            if(!$scope.showGenePanel){  //para que no se muestre cuando ya lo esta
+                $scope.showGenePanel = true;    //mostrar panel
+                $scope.selectedGen = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0];  //obtener los datos
+            }
+        }
+        $scope.showGenesTable = false;
     };
 
 
@@ -208,20 +204,22 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
         }
         $scope.showGenesTable = false;
 
-            $scope.showMoreInfoPanel = true;
-            transcripts = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0].transcripts;
+        $scope.showMoreInfoPanel = true;
+        transcripts = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0].transcripts;
 
-            for(var i in transcripts)
-            {
-                if(transcripts[i].name == transcriptName ){
+        for(var i in transcripts)
+        {
+            if(transcripts[i].name == transcriptName ){
 
-                    $scope.selectedExons = transcripts[i].exons;
-                    $scope.selectedTFBS = transcripts[i].tfbs;
-                    $scope.selectedXrefs = transcripts[i].xrefs;
+                $scope.selectedExons = transcripts[i].exons;
+                $scope.selectedTFBS = transcripts[i].tfbs;
+                $scope.selectedXrefs = transcripts[i].xrefs;
 
-                }
             }
+        }
     };
+
+
 
 //}
 }]);
@@ -238,25 +236,6 @@ myApp.factory('Server', function ($http) {
 
             $.ajax({
                 url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
-                async: false,
-                dataType: 'json',
-                success: function (data, textStatus, jqXHR) {
-
-                    dataGet=data.response[0].result;
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                }
-            });
-
-            return dataGet;
-        },
-        getGenes: function(species, regions) {
-
-            var dataGet;
-            var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/'
-
-            $.ajax({
-                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
                 async: false,
                 dataType: 'json',
                 success: function (data, textStatus, jqXHR) {
