@@ -7,7 +7,8 @@
 
     <!--jQuery-->
     <script type="text/javascript" src="../vendor/jquery.min.js"></script>
-    <script type="text/javascript" src="http://jsapi.bioinfo.cipf.es/ext-libs/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript"
+            src="http://jsapi.bioinfo.cipf.es/ext-libs/jquery/1.7.1/jquery-1.7.1.min.js"></script>
 
     <!--AngularJS-->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
@@ -26,28 +27,26 @@
 
     <!--Bootstrap-->
     <link href="../vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link href="../vendor/bootstrap-paginator-master/css/bootstrap.css" rel="stylesheet">
-    <link href="../vendor/bootstrap-modal-master/css/bootstrap-modal.css" rel="stylesheet">
+    <!--<link href="../vendor/bootstrap-paginator-master/css/bootstrap.css" rel="stylesheet">-->
+    <!--<link href="../vendor/bootstrap-modal-master/css/bootstrap-modal.css" rel="stylesheet">-->
 
     <!--<link href="../vendor/bootstrap_3.0.0/css/bootstrap.css" rel="stylesheet">-->
 
     <script type="text/javascript" src="../vendor/bootstrap/js/bootstrap.js"></script>
 
     <!--el css del paginator de bootstrap cambia el css del bootstrap normal-->
-    <script type="text/javascript" src="../vendor/bootstrap-paginator-master/src/bootstrap-paginator.js"></script>
+    <!--<script type="text/javascript" src="../vendor/bootstrap-paginator-master/src/bootstrap-paginator.js"></script>-->
 
-    <script type="text/javascript" src="../vendor/bootstrap-modal-master/js/bootstrap-modalmanager.js"></script>
-    <script type="text/javascript" src="../vendor/bootstrap-modal-master/js/bootstrap-modal.js"></script>
-    <!--<script type="text/javascript" src="../vendor/bootstrap_3.0.0/js/bootstrap.js"></script>-->
-
-
+    <!--<script type="text/javascript" src="../vendor/bootstrap-modal-master/js/bootstrap-modalmanager.js"></script>-->
+    <!--<script type="text/javascript" src="../vendor/bootstrap-modal-master/js/bootstrap-modal.js"></script>-->
+    <!--<script type="text/javascript" src="../vendor/bootstrap_3.0.0/js/bootstrap.js">s</script>-->
 
 
     <!------------------------------------->
 
     <script src="js/app.js"></script>
 
-    <link href="css/bootstrap_rewrites.css" rel="stylesheet">
+    <!--<link href="css/bootstrap_rewrites.css" rel="stylesheet">-->
 
     <script src="js/directives/optionsBarDirective.js"></script>
     <script src="js/directives/summaryPanelDirective.js"></script>
@@ -71,25 +70,22 @@
             overflow: auto;
             position: relative;
         }
+
+
     </style>
 </head>
-<!--<body style="margin-left:15px; margin-right: 15px;">-->
+<!--<body style="margin-left:30px; margin-right: 15px;">-->
 <body>
 
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-12" style="background-color: lightskyblue">
-                <div id="title" style="text-align:center">C E L L B A S E - V I E W E R</div>
-        </div>
+<div>
+    <div class="" style="background-color: #ffffff">
+        <h1 style="text-align:center">Cellbase Viewer</h1>
     </div>
 
-    <div class="row">
-        <div class="col-md-12"  ng-controller="optionsBarController" style="background-color:blanchedalmond">
-                <div options-bar></div>
-        </div>
+    <div class="" ng-controller="optionsBarController" style="">
+        <div options-bar></div>
     </div>
-
 
 
     <ul class="nav nav-tabs" id="myTab">
@@ -100,39 +96,36 @@
     <div class="tab-content" style="margin:4px">
         <div class="tab-pane active" id="genes">
 
-
-
-    <div class="row">
-        <div class="col-md-2" ng-controller="summaryPanelController" style="background-color:lemonchiffon">
-                <div summary-panel ></div>
-        </div>
-        <div class="col-md-10" ng-controller="resultPanelController" style="background-color:aliceblue">
-                <div result-panel ></div>
-
-
-        </div>
-    </div>
+            <div class="pull-left" ng-controller="summaryPanelController"
+                 style="background-color:aliceblue;width:210px;">
+                <div summary-panel></div>
+            </div>
+            <div class="pull-left" ng-controller="resultPanelController" style="background-color:lavender;">
+                <div result-panel></div>
+            </div>
 
 
         </div>
         <div class="tab-pane" id="variants">Another tab</div>
     </div>
+
+    <!--<div style="background-color: lightgrey;height:20px"></div>    -->
 </div>
 
 </div>
 
-    <script>
+<script>
 
-        $(function () {
-            $('#myTab a:first').tab('show')
-        })
+    $(function () {
+        $('#myTab a:first').tab('show')
+    })
 
-        $('#myTab a').click(function (e) {
-            e.preventDefault()
-            $(this).tab('show')
-        })
+    $('#myTab a').click(function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    })
 
-    </script>
+</script>
 
 
 </body>

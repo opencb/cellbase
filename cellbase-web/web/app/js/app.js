@@ -48,12 +48,41 @@ myApp.factory('mySharedService', function($rootScope){
         this.broadcastResultsItem();
     };
 
+    //para pasarlo a optionsBar y se filtre
+    sharedService.genesIdAndBiotypes = function(genesId, biotypes){
+        this.genesId= genesId;
+        this.biotypes= biotypes;
+
+        this.broadcastgenesIdAndBiotypes();
+    };
+
+    //comunicar el filtro a optionsBar y SummaryPanel
+    sharedService.broadcastFilter = function(genesIdFilter, biotypesFilter){
+
+        this.genesIdFilter = genesIdFilter;
+        this.biotypesFilter = biotypesFilter;
+
+
+        console.log(this.genesIdFilter);
+        console.log(this.biotypesFilter);
+
+        this.broadcastFilterItem();
+    };
+
+
+
 
     sharedService.broadcastSpecieItem = function () {
         $rootScope.$broadcast('specieBroadcast');
     }
     sharedService.broadcastResultsItem = function () {
         $rootScope.$broadcast('resultsBroadcast');
+    }
+    sharedService.broadcastgenesIdAndBiotypes = function () {
+        $rootScope.$broadcast('genesIdAndBiotypes');
+    }
+    sharedService.broadcastFilterItem = function () {
+        $rootScope.$broadcast('filter');
     }
 
 

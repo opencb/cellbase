@@ -39,6 +39,9 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope','my
         $scope.genesAndTranscriptsData = Server.getGenesAndTranscripts(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
         $scope.genesData = Server.getGenes(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
 
+        $scope.getgenesIdAndBiotypes();
+
+
 //        console.log($scope.genesAndTranscriptsData);
 //        console.log($scope.genesData);
 
@@ -69,6 +72,33 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope','my
 
 
     });
+
+
+
+    $scope.$on('filter', function () {   //obtener la especie elegida en optionsBar
+
+        $scope.genesFilters=mySharedService.genesIdFilter;
+        $scope.biotypeFilters = mySharedService.biotypesFilter;
+
+    });
+
+    $scope.genesId = [];
+    $scope.biotypes = [];
+
+    $scope.getgenesIdAndBiotypes = function () {
+
+        for(var i in $scope.genesData)
+        {
+            $scope.genesId.push($scope.genesData[i].id);
+            if($scope.biotypes.indexOf($scope.genesData[i].biotype) == -1){
+                $scope.biotypes.push($scope.genesData[i].biotype);
+
+            }
+        }
+
+        mySharedService.genesIdAndBiotypes($scope.genesId, $scope.biotypes);
+    };
+
 
 
 

@@ -1,11 +1,11 @@
-<div class="row">
-    <div class="col-md-3" style="background-color:lavenderblush">
+<div class="">
+    <div class="pull-left" style="background-color:floralwhite; width:250px;">
 
-        <button type="button" class="btn btn-primary btn-xs" ng-click="showAllGenes()">All genes</button>
+        <button type="button" class="btn btn-primary btn-ms" ng-click="showAllGenes()" style="margin:10px">All genes</button>
 
         <div ng-repeat="gene in paginationData">
             <a href="#" ng-click="genesToggle = !genesToggle" ng-Dblclick="geneSelected(gene.id)"
-               class="list-group-item active"> <small>{{gene.name}} ({{gene.id}} )</small>
+               class="list-group-item active" style="margin:1px"> <small>{{gene.name}} ({{gene.id}} )</small>
 
                 <a ng-show="genesToggle" ng-click="transcriptsToggle = !transcriptsToggle"
                    ng-Dblclick="transcriptsSelected(gene.id)" href="#"
@@ -22,11 +22,13 @@
 
     </div>
 
-    <div class="col-md-9" style="background-color:lavender">
+    <div2 class="pull-left" style="margin:10px">
         <div genes-grid ng-show="showGenesTable"></div>
         <div gene-panel ng-show="showGenePanel"></div>
         <div transcripts-grid ng-show="showTranscriptsTable"></div>
         <div transcript-panel  ng-show="showTranscriptPanel"></div>
         <div more-info-grid ng-show="showMoreInfoPanel"></div>
-    </div>
+    </div2>
 </div>
+
+
