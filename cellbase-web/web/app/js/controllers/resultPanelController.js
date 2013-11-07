@@ -1,6 +1,7 @@
 var resultPanelControl = myApp.controller('resultPanelController', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
 
-    $scope.data=[];
+    $scope.genesAndTranscriptsData=[];
+    $scope.genesData=[];
     $scope.paginationData=[];
 
     //------------------para el pagination--------------------
@@ -10,8 +11,6 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope','my
     $scope.lastData = $scope.numeroDatosMostrar;
     //--------------------------------------------------------
 
-    $scope.showAllGenes = function (index) {
-    };
 
     //obtener los datos que hay en el rango establecido por el paginado, es mas rapido que aplicar un filtro
     $scope.getDataInPaginationLimits = function () {
@@ -20,8 +19,8 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope','my
 
         for (i=$scope.firstData; i<$scope.lastData; i++){
 
-            if($scope.data[i] != null){
-                 $scope.paginationData.push($scope.data[i]);
+            if($scope.genesAndTranscriptsData[i] != null){
+                $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
             }
         }
 
@@ -37,18 +36,22 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope','my
 
     $scope.$on('resultsBroadcast', function () {
 
-        $scope.data = Server.getGenesAndTranscripts(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
+        $scope.genesAndTranscriptsData = Server.getGenesAndTranscripts(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
+        $scope.genesData = Server.getGenes(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
+
+//        console.log($scope.genesAndTranscriptsData);
+//        console.log($scope.genesData);
 
         //indicamos que los primeros datos a mostrar son los de la pagina 1
         for (i=0; i<$scope.numeroDatosMostrar; i++){
-            if($scope.data[i] != null){
-                $scope.paginationData.push($scope.data[i]);
+            if($scope.genesAndTranscriptsData[i] != null){
+                $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
             }
         }
 
 
         //definimos el pagination
-        var numeroDatos = $scope.data.length;  //21
+        var numeroDatos = $scope.genesAndTranscriptsData.length;  //21
         var numeroDePaginas = Math.ceil(numeroDatos / $scope.numeroDatosMostrar);
 
 
@@ -83,6 +86,7 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope','my
 
     };
 
+//-------------------------------------------------
     $scope.lastDataShow;
 
     $scope.showGenesTable = false;
@@ -219,8 +223,6 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope','my
         }
     };
 
-
-
 //}
 }]);
 
@@ -236,6 +238,25 @@ myApp.factory('Server', function ($http) {
 
             $.ajax({
                 url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+                async: false,
+                dataType: 'json',
+                success: function (data, textStatus, jqXHR) {
+
+                    dataGet=data.response[0].result;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                }
+            });
+
+            return dataGet;
+        },
+        getGenes: function(species, regions) {
+
+            var dataGet;
+            var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/'
+
+            $.ajax({
+                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
                 async: false,
                 dataType: 'json',
                 success: function (data, textStatus, jqXHR) {
@@ -275,4 +296,3 @@ myApp.factory('Server', function ($http) {
 
 
 //----------tabs-----------------
-
