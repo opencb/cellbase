@@ -55,23 +55,31 @@ public class QueryResult extends DBObjectMap {
 	public void setDBTime(Object value) {
 		this.put("dbTime", value);
 	}
-	
-	
-	public Object getResult() {
-		return this.get("result");
-	}
-	
-	public void setResult(Object value) {
-		this.put("result", value);
-	}
-	
-	
+
+
 	public int getNumResults() {
 		return this.getInt("numResults");
 	}
-	
+
 	public void setNumResults(int value) {
 		this.put("numResults", value);
 	}
-	
+
+
+    public int getResultType() {
+        return this.getInt("resultType");
+    }
+
+    public void setResultType(String value) {
+        this.put("resultType", value);
+    }
+
+
+	public Object getResult() {
+		return this.get("result");
+	}
+
+	public void setResult(Object value) {
+		this.put("result", value);
+	}
 }
