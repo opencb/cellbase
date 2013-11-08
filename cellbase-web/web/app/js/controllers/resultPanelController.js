@@ -1,4 +1,4 @@
-var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
+var resultPanelControl = myApp.controller('resultPanelController', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
 
     $scope.genesAndTranscriptsData=[];
     $scope.genesData=[];
@@ -20,7 +20,7 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
         for (i=$scope.firstData; i<$scope.lastData; i++){
 
             if($scope.genesAndTranscriptsData[i] != null){
-                 $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
+                $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
             }
         }
 
@@ -38,6 +38,9 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
 
         $scope.genesAndTranscriptsData = Server.getGenesAndTranscripts(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
         $scope.genesData = Server.getGenes(mySharedService.selectedSpecies.shortName, mySharedService.selectedRegions);
+
+        $scope.getgenesIdAndBiotypes();
+
 
 //        console.log($scope.genesAndTranscriptsData);
 //        console.log($scope.genesData);
@@ -69,6 +72,33 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
 
 
     });
+
+
+
+    $scope.$on('filter', function () {   //obtener la especie elegida en optionsBar
+
+        $scope.genesFilters=mySharedService.genesIdFilter;
+        $scope.biotypeFilters = mySharedService.biotypesFilter;
+
+    });
+
+    $scope.genesId = [];
+    $scope.biotypes = [];
+
+    $scope.getgenesIdAndBiotypes = function () {
+
+        for(var i in $scope.genesData)
+        {
+            $scope.genesId.push($scope.genesData[i].id);
+            if($scope.biotypes.indexOf($scope.genesData[i].biotype) == -1){
+                $scope.biotypes.push($scope.genesData[i].biotype);
+
+            }
+        }
+
+        mySharedService.genesIdAndBiotypes($scope.genesId, $scope.biotypes);
+    };
+
 
 
 
@@ -108,7 +138,7 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
     $scope.geneSelected = function (geneId) {
 
 
-         if($scope.lastDataShow != geneId){
+        if($scope.lastDataShow != geneId){
 
             $scope.lastDataShow = geneId;   //nuevo gen
             $scope.showGenePanel = true;    //mostrar panel
@@ -120,13 +150,13 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
             $scope.showMoreInfoPanel = false;
         }
         else
-         {
-             if(!$scope.showGenePanel){  //para que no se muestre cuando ya lo esta
-                 $scope.showGenePanel = true;    //mostrar panel
-                 $scope.selectedGen = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0];  //obtener los datos
-             }
-         }
-            $scope.showGenesTable = false;
+        {
+            if(!$scope.showGenePanel){  //para que no se muestre cuando ya lo esta
+                $scope.showGenePanel = true;    //mostrar panel
+                $scope.selectedGen = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0];  //obtener los datos
+            }
+        }
+        $scope.showGenesTable = false;
     };
 
 
@@ -208,19 +238,19 @@ var resultPanelControl = myApp.controller('resultPanelController2', ['$scope','m
         }
         $scope.showGenesTable = false;
 
-            $scope.showMoreInfoPanel = true;
-            transcripts = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0].transcripts;
+        $scope.showMoreInfoPanel = true;
+        transcripts = Server.getGene(mySharedService.selectedSpecies.shortName, geneId).result[0].transcripts;
 
-            for(var i in transcripts)
-            {
-                if(transcripts[i].name == transcriptName ){
+        for(var i in transcripts)
+        {
+            if(transcripts[i].name == transcriptName ){
 
-                    $scope.selectedExons = transcripts[i].exons;
-                    $scope.selectedTFBS = transcripts[i].tfbs;
-                    $scope.selectedXrefs = transcripts[i].xrefs;
+                $scope.selectedExons = transcripts[i].exons;
+                $scope.selectedTFBS = transcripts[i].tfbs;
+                $scope.selectedXrefs = transcripts[i].xrefs;
 
-                }
             }
+        }
     };
 
 //}
@@ -296,4 +326,3 @@ myApp.factory('Server', function ($http) {
 
 
 //----------tabs-----------------
-

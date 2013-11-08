@@ -5,8 +5,8 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
     $scope.regions = "20:32850000-33500000";
 
     //------------ejemplo----------------
-    $scope.genesFilters=["ASIP", "ASIP-002"];
-    $scope.biotypeFilters=["protein_coding"];
+    $scope.genesFilters=[];
+    $scope.biotypeFilters=[];
     //------------ejemplo----------------
 
 
@@ -98,6 +98,14 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 
     $scope.$on('specieBroadcast', function () {   //obtener la especie elegida en optionsBar
         $scope.specie = mySharedService.selectedSpecies;
+    });
+
+
+    $scope.$on('filter', function () {   //obtener la especie elegida en optionsBar
+
+        $scope.genesFilters=mySharedService.genesIdFilter;
+        $scope.biotypeFilters = mySharedService.biotypesFilter;
+
     });
 
 
