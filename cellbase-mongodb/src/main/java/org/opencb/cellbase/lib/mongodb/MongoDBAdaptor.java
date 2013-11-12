@@ -415,6 +415,7 @@ public class MongoDBAdaptor extends DBAdaptor {
         QueryResult queryResult = new QueryResult();
         queryResult.setResult(resultList);
         queryResult.setId(region.toString());
+        queryResult.setResultType("frequencies");
 
         return queryResult;
 

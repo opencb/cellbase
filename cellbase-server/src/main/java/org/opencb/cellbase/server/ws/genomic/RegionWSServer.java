@@ -1,5 +1,6 @@
 package org.opencb.cellbase.server.ws.genomic;
 
+import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.CpGIsland;
@@ -105,7 +106,10 @@ public class RegionWSServer extends GenericRestWSServer {
 				return createOkResponse(res);
 			} else {
 //				QueryOptions queryOptions = new QueryOptions("biotypes", StringUtils.toList(biotype, ","));
-				queryOptions.put("biotype", biotype);
+//				queryOptions.put("biotype", biotype);
+                if(biotype != null && !biotype.equals("")) {
+				    queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
+                }
 //				queryOptions.put("transcripts", transcripts.equalsIgnoreCase("true"));
 				addExcludeReturnFields("transcripts.exons.sequence", queryOptions);
 //				return createOkResponse(chregionId, "GENE",	geneDBAdaptor.getAllByRegionList(regions, queryOptions));
@@ -139,7 +143,7 @@ public class RegionWSServer extends GenericRestWSServer {
 			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,	this.version);
 			List<Region> regions = Region.parseRegions(chregionId);
 			if (biotype != null && !biotype.equals("")) {
-				queryOptions.put("biotype", biotype);
+				queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
 			}
 			return createOkResponse(transcriptDBAdaptor.getAllByRegionList(regions, queryOptions));
 		} catch (Exception e) {
@@ -183,7 +187,7 @@ public class RegionWSServer extends GenericRestWSServer {
             	queryOptions.put("interval", getHistogramIntervalSize());
                 return createOkResponse(variationDBAdaptor.getAllIntervalFrequencies(regions, queryOptions));
             } else {
-                if (consequenceTypes.equals("")) {
+                if(!consequenceTypes.equals("")) {
                 	queryOptions.put("consequence_type", consequenceTypes);
                 }
                 return createOkResponse(variationDBAdaptor.getAllByRegionList(regions, queryOptions));
