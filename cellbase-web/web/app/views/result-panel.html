@@ -3,8 +3,8 @@
 
         <button type="button" class="btn btn-primary btn-ms" ng-click="showAllGenes()" style="margin:10px">All genes</button>
 
-        <div ng-repeat="gene in genesAndTranscriptsData">
-        <!--<div ng-repeat="gene in paginationData">-->
+        <!--<div ng-repeat="gene in genesAndTranscriptsData">-->
+        <div ng-repeat="gene in paginationData">
             <a href="#" ng-click="genesToggle = !genesToggle" ng-Dblclick="geneSelected(gene.id)"
                class="list-group-item active" style="margin:1px"> <small>{{gene.name}} ({{gene.id}} )</small>
 
@@ -23,13 +23,13 @@
 
 
         <div class="btn-group">
-            <button  ng-show="firstThreePages" type="button" class="btn btn-default btn-ms" style="color:#006ffb"><<</button>
-            <button ng-show="firstThreePages" type="button" class="btn btn-default btn-ms" style="color:#006ffb"><</button>
-            <button type="button" class="btn btn-default btn-ms" style="color:#006ffb">1</button>
-            <button type="button" class="btn btn-default btn-ms" style="color:#006ffb">2</button>
-            <button type="button" class="btn btn-default btn-ms" style="color:#006ffb">3</button>
-            <button ng-show="lastThreePages" type="button" class="btn btn-default btn-ms" style="color:#006ffb">></button>
-            <button ng-show="lastThreePages" type="button" class="btn btn-default btn-ms" style="color:#006ffb">>></button>
+            <button  ng-show="firstPages" type="button" class="btn btn-default btn-ms" ng-click="paginationClick('<<')" style="color:#006ffb"><<</button>
+            <button ng-show="previousPage" type="button" class="btn btn-default btn-ms" ng-click="paginationClick('<')" style="color:#006ffb"><</button>
+            <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableFirstNumber}" ng-click="paginationClick(paginationNumbers[0])" style="color:#006ffb">{{paginationNumbers[0]}}</button>
+            <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableSecondNumber}" ng-click="paginationClick(paginationNumbers[1])" style="color:#006ffb">{{paginationNumbers[1]}}</button>
+            <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableThirdNumber}" ng-click="paginationClick(paginationNumbers[2])" style="color:#006ffb">{{paginationNumbers[2]}}</button>
+            <button ng-show="nextPage" type="button" class="btn btn-default btn-ms" ng-click="paginationClick('>')"  style="color:#006ffb">></button>
+            <button ng-show="lastPages" type="button" class="btn btn-default btn-ms"  ng-click="paginationClick('>>')"  style="color:#006ffb">>></button>
         </div>
 
     </div>

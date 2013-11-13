@@ -17,6 +17,139 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
     //--------------------------------------------------------
 
 
+    //--------my pagination--------------
+    $scope.firstPages = false;
+    $scope.previousPage = false;
+    $scope.nextPage = true;
+    $scope.lastPages = true;
+
+    $scope.paginationNumbers = [1, 2, 3];
+
+    $scope.maxNumberPagination;
+    $scope.numDataPerPage = 4;
+    $scope.showPagination = false;
+    $scope.lastPage = 1;
+
+    $scope.disableFirstNumber = true;
+    $scope.disableSecondNumber = false;
+    $scope.disableThirdNumber = false;
+
+
+
+
+
+
+    $scope.paginationClick = function (selection) {
+
+        var page;
+
+        switch(selection)
+        {
+            case "<<":
+                page = 1;
+
+                $scope.paginationNumbers[0] = 1;
+                $scope.paginationNumbers[1] = 2;
+                $scope.paginationNumbers[2] = 3;
+
+                $scope.firstPages = false;
+                $scope.previousPage = false;
+                $scope.nextPage = true;
+                $scope.lastPages = true;
+
+                break
+            case ">>":
+                page = $scope.maxNumberPagination;
+
+                $scope.paginationNumbers[0] = $scope.maxNumberPagination-2;
+                $scope.paginationNumbers[1] = $scope.maxNumberPagination-1;
+                $scope.paginationNumbers[2] = $scope.maxNumberPagination;
+
+                $scope.firstPages = true;
+                $scope.previousPage = true;
+                $scope.nextPage = false;
+                $scope.lastPages = false;
+
+
+                break
+            case "<":
+                page = $scope.lastPage - 1;
+
+                $scope.firstPages = true;
+                $scope.previousPage = true;
+                $scope.nextPage = true;
+                $scope.lastPages = true;
+
+                if($scope.paginationNumbers[0] == page){//si pasa a ser el primer numero  que aparece
+                    //si el elemento es el primero de todos
+                    if(page == 1){
+                        $scope.firstPages = false;
+                        $scope.previousPage = false;
+                    }
+
+                }
+                else if($scope.paginationNumbers[0] != page && $scope.paginationNumbers[1] != page && $scope.paginationNumbers[2] != page){
+                    $scope.paginationNumbers[0] = page-2;
+                    $scope.paginationNumbers[1] = page-1;
+                    $scope.paginationNumbers[2] = page;
+                }
+
+                break
+            case ">":
+                page = $scope.lastPage + 1;
+
+
+                $scope.firstPages = true;
+                $scope.previousPage = true;
+                $scope.nextPage = true;
+                $scope.lastPages = true;
+
+                if($scope.paginationNumbers[2] == page){//si pasa a ser el ultimo numero  que aparece
+                    if(page == $scope.maxNumberPagination){
+                        $scope.nextPage = false;
+                        $scope.lastPages = false;
+                    }
+
+                }
+                else if($scope.paginationNumbers[0] != page && $scope.paginationNumbers[1] != page && $scope.paginationNumbers[2] != page){
+                    $scope.paginationNumbers[0] = page;
+                    $scope.paginationNumbers[1] = page+1;
+                    $scope.paginationNumbers[2] = page+2;
+                }
+
+                break
+            default:
+                page = selection;
+
+        }
+
+        if($scope.paginationNumbers[0] == page){
+            $scope.disableFirstNumber = true;
+            $scope.disableSecondNumber = false;
+            $scope.disableThirdNumber = false;
+        }
+        else  if($scope.paginationNumbers[1] == page){
+            $scope.disableSecondNumber = true;
+            $scope.disableFirstNumber = false;
+            $scope.disableThirdNumber = false;
+        }
+        else{
+            $scope.disableThirdNumber = true;
+            $scope.disableSecondNumber = false;
+            $scope.disableFirstNumber = false;
+        }
+
+        $scope.lastPage = page;
+
+        $scope.paginationData = [];
+        for (var i=page-1;i<page+$scope.numDataPerPage-1;i++){
+            $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
+        }
+    };
+
+
+
+
     //obtener los datos que hay en el rango establecido por el paginado, es mas rapido que aplicar un filtro
     $scope.getDataInPaginationLimits = function () {
 
@@ -46,6 +179,13 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
 
         $scope.getgenesIdAndBiotypes();
 
+        $scope.maxNumberPagination = Math.ceil($scope.genesData.length / $scope.numDataPerPage);
+
+//        if($scope.genesData.length <= $scope.numDataPerPage * 3){
+//            //aqui se mostraria el pagination de otra forma
+//
+//        }
+
 
 //        console.log($scope.genesAndTranscriptsData);
 //        console.log($scope.genesData);
@@ -56,8 +196,8 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
                 $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
             }
         }
-
-
+//
+//
 //        //definimos el pagination
 //        var numeroDatos = $scope.genesAndTranscriptsData.length;  //21
 //        var numeroDePaginas = Math.ceil(numeroDatos / $scope.numeroDatosMostrar);
