@@ -1,7 +1,13 @@
 <div class="panel panel-info">
-    <div class="panel-heading " style="text-align:center">Transcript information</div>
+    <div class="panel-heading " style="text-align:center">Transcript information
+        <button type="button" class="btn btn-primary btn-xs" ng-Click="showTranscriptPanel = false" style="float:right">x</button>
+    </div>
     <div class="panel-body">
-        <h5> {{selectedTranscript.name}} ( {{selectedTranscript.id}} )</h5>
+        <!--<h5><a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Transcript/Transcript?t={{selectedTranscript.id}};">-->
+        <h5><a ng-Click="moreInfoSelectedFromPanel(selectedTranscript.name)">{{selectedTranscript.name}} ( {{selectedTranscript.id}} )</a>
+        <a style="color:palevioletred"target="_blank" href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Transcript/Transcript?t={{selectedTranscript.id}};">
+                Go Ensembl</a> </h5>
+
         <h5>Biotype:
             <small>{{selectedTranscript.biotype}}</small>
         </h5>

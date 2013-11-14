@@ -1,6 +1,6 @@
-var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
+var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','mySharedService','Cellbase', function ($scope, mySharedService, Cellbase) {
 
-    $scope.specie =  {longName: "Homo sapiens", shortName:"hsapiens"};
+    $scope.specie =  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
     $scope.chromosomes = "";
     $scope.regions = "20:32850000-33500000";
 
@@ -25,6 +25,22 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
         pfalciparum: ["01","02","03","04","05","06","07","08","09","10","11","12","13","14"]
     };
 
+
+    $scope.chromNames = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"];
+
+
+
+    $scope.obtainChromosomeNames = function (chrom){
+
+        var chromNames = [];
+        for (var i in chrom)
+        {
+            chromNames.push(chrom[i].name);
+        }
+        return chromNames;
+    };
+
+
     $scope.newResults = function () {
         mySharedService.newResults($scope.getRegions());
     };
@@ -37,7 +53,7 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 //            $scope.chromosomes.concat(chrom);
             if($scope.chromosomes.length == 0)
             {
-                $scope.chromosomes = chrom + ",";
+                $scope.chromosomes = chrom;
             }
             else{
 
@@ -46,7 +62,7 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 //                    $scope.chromosomes = chrom + ",";
 //                }
 //                else{
-                $scope.chromosomes = $scope.chromosomes + chrom + ",";
+                $scope.chromosomes = $scope.chromosomes  + "," + chrom;
 //                }
             }
         }
@@ -109,9 +125,58 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
     }
 
 
+//    var sortfunction = function (a, b) {
+//        var IsNumber = true;
+//        for (var i = 0; i < a.name.length && IsNumber == true; i++) {
+//            if (isNaN(a.name[i])) {
+//                IsNumber = false;
+//            }
+//        }
+//        if (!IsNumber) return 1;
+//        return (a.name - b.name);
+//    };
+
+    $scope.sortChromosomes = function () {
+
+        for (var i in $scope.chromNames){
+            if(!isNaN($scope.chromNames[i])){  //es un numero
+                if($scope.chromNames[i].length == 1)
+                {
+                    $scope.chromNames[i] = 0 +  $scope.chromNames[i];
+                }
+            }
+        }
+
+//        console.log($scope.chromNames);
+        $scope.chromNames = $scope.chromNames.sort();
+//        console.log($scope.chromNames);
+
+    };
+
+
+
+
     $scope.$on('specieBroadcast', function () {   //obtener la especie elegida en optionsBar
         $scope.specie = mySharedService.selectedSpecies;
+
+        var chrom = Cellbase.getSpecieChromosomes($scope.specie.shortName);
+        $scope.chromNames = $scope.obtainChromosomeNames(chrom);
+
+        //para ordanarlos ponemos un 0 a los numero con un digito para que la funcion sort de javascript
+        //lo ordene bien, luego se quitan los ceros
+        $scope.sortChromosomes();
+
+        //se quitan los ceros
+        for (var i in $scope.chromNames){
+            if($scope.chromNames[i][0] == "0"){
+                $scope.chromNames[i] = $scope.chromNames[i].replace("0","");
+            }
+        }
+
     });
+
+
+
 
 
     $scope.$on('filter', function () {   //obtener la especie elegida en optionsBar
@@ -128,3 +193,32 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 
 summaryPanelControl.$inject = ['$scope','mySharedService'];
 //summaryPanelController.$inject = ['$scope','mySharedService'];
+
+
+myApp.factory('Cellbase', function ($http) {
+    return {
+        getSpecieChromosomes: function (specie) {
+
+            var dataGet;
+            var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/'
+            var url;
+
+
+
+            $.ajax({
+                url: host + specie + '/genomic/chromosome/all?of=json',
+//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+                async: false,
+                dataType: 'json',
+                success: function (data, textStatus, jqXHR) {
+                    dataGet = data.response.result.chromosomes;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                }
+            });
+
+            return dataGet;
+        }
+    };
+
+});

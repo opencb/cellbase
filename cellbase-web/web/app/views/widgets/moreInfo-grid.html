@@ -1,4 +1,8 @@
 <div class="panel panel-info">
+
+    <div class="panel-heading " style="text-align:center">More information
+        <button type="button" class="btn btn-primary btn-xs" ng-Click="showMoreInfoPanel = false" style="float:right">x</button>
+    </div>
     <div class="panel-body">
 
         <ul class="nav nav-tabs" id="myTab">
@@ -67,7 +71,7 @@
                     <thead>
                     <th>Id</th>
                     <th>Name</th>
-                    <th>Description</th>
+                    <!--<th>Description</th>-->
                     </thead>
 
                     <tbody ng-repeat="xref in selectedXrefs">
@@ -77,9 +81,9 @@
                     <td>
                         <small>{{xref.dbName}}</small>
                     </td>
-                    <td>
-                        <small>{{xref.Description}}</small>
-                    </td>
+                    <!--<td>-->
+                        <!--<small>{{xref.Description}}</small>-->
+                    <!--</td>-->
                     </tbody>
                 </table>
             </div>

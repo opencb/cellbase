@@ -1,4 +1,4 @@
-<div class="">
+<div class="" ng-show="showAll">
     <div class="pull-left" style="background-color:floralwhite; width:300px;">
 
         <button type="button" class="btn btn-primary btn-ms" ng-click="showAllGenes()" style="margin:10px">All genes</button>
@@ -22,7 +22,7 @@
         <!--<div id="pagination" ng-click="getDataInPaginationLimits()"></div>-->
 
 
-        <div class="btn-group">
+        <div ng-show="showPagination" class="btn-group" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px">
             <button  ng-show="firstPages" type="button" class="btn btn-default btn-ms" ng-click="paginationClick('<<')" style="color:#006ffb"><<</button>
             <button ng-show="previousPage" type="button" class="btn btn-default btn-ms" ng-click="paginationClick('<')" style="color:#006ffb"><</button>
             <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableFirstNumber}" ng-click="paginationClick(paginationNumbers[0])" style="color:#006ffb">{{paginationNumbers[0]}}</button>
@@ -38,13 +38,14 @@
 
 
 
-    <div2 class="pull-left" style="margin:10px">
+    <!--<div class="pull-left" style="margin:10px; background-color:lightgray" >-->
+    <div class="pull-left" style="margin:10px; background-color:lightgray" ng-style="getWidth()" >
         <div genes-grid ng-show="showGenesTable"></div>
         <div gene-panel ng-show="showGenePanel"></div>
         <div transcripts-grid ng-show="showTranscriptsTable"></div>
         <div transcript-panel  ng-show="showTranscriptPanel"></div>
         <div more-info-grid ng-show="showMoreInfoPanel"></div>
-    </div2>
+    </div>
 </div>
 
 

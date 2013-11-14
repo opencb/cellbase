@@ -1,19 +1,18 @@
-var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
+var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySharedService','CellbaseSpecies', function ($scope, mySharedService, CellbaseSpecies) {
 
     $scope.species = [
-        {longName: "Homo sapiens", shortName:"hsapiens"},
-        {longName: "Mus musculus", shortName:"mmusculus"},
+        {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"},
+        {longName: "Mus musculus", shortName:"mmusculus", ensemblName: "Mus_musculus"},
         {longName: "Rattus norvegicus", shortName:"rnorvegicus"},
-        {longName: "Danio rerio", shortName:"drerio"},
-        {longName: "Drosophila melanogaster", shortName:"dmelanogaster"},
-        {longName: "Caenorhabditis elegans", shortName:"celegans"},
-        {longName: "Saccharomyces cerevisiae", shortName:"scerevisiae"},
-        {longName: "Canis familiaris", shortName:"cfamiliaris"},
-        {longName: "Sus scrofa", shortName:"sscrofa"},
+        {longName: "Danio rerio", shortName:"drerio", ensembleName:"Danio_rerio"},
+        {longName: "Drosophila melanogaster", shortName:"dmelanogaster", ensembleName:"Drosophila_melanogaster"},
+        {longName: "Caenorhabditis elegans", shortName:"celegans", ensembleName:"Caenorhabditis_elegans"},
+        {longName: "Saccharomyces cerevisiae", shortName:"scerevisiae", ensembleName:"Saccharomyces_cerevisiae"},
+        {longName: "Canis familiaris", shortName:"cfamiliaris", ensembleName:"Canis_familiaris"},
+        {longName: "Sus scrofa", shortName:"sscrofa", ensembleName:"Sus_scrofa", ensembleName:"Sus_scrofa"},
         {longName: "Anopheles gambiae", shortName:"agambiae"},
         {longName: "Plasmodium falciparum", shortName:"pfalciparum"}
     ];
-
 
 
     $scope.genesId = [];
@@ -64,7 +63,6 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
 
     };
 
-
     $scope.setSelectedSpecie = function (specie) {
         mySharedService.broadcastSpecie(specie);
     };
@@ -84,3 +82,25 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
 
 optionsBarControl.$inject = ['$scope','mySharedService'];
 
+
+//Not implemeneted yet
+myApp.factory('CellbaseSpecies', function ($http) {
+    return {
+        getSpecies: function () {
+            var dataGet;
+
+            $.ajax({
+                url: 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/?of=json',
+                async: false,
+                dataType: 'json',
+                success: function (data, textStatus, jqXHR) {
+                    dataGet = data;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                }
+            });
+            return dataGet;
+        }
+    };
+
+});
