@@ -11,7 +11,8 @@
             <!--<th>Description</th>-->
             </thead>
 
-            <tbody ng-repeat="gene in genesData">
+            <tbody ng-repeat="gene in genesAndTranscriptsData">
+            <!--<tbody ng-repeat="gene in genesData">-->
             <td><a><small>{{gene.name}} ( {{gene.id}} )</small></a></td>
             <td>
                 <small>{{gene.biotype}}</small>

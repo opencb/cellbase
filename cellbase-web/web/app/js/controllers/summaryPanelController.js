@@ -37,10 +37,17 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 //            $scope.chromosomes.concat(chrom);
             if($scope.chromosomes.length == 0)
             {
-                $scope.chromosomes = chrom;
+                $scope.chromosomes = chrom + ",";
             }
             else{
-                $scope.chromosomes = $scope.chromosomes + "," + chrom;
+
+//                si es el primero no empieza en coma
+//                if($scope.chromosomes.search(",") == -1){ //si hay solo un elemento
+//                    $scope.chromosomes = chrom + ",";
+//                }
+//                else{
+                $scope.chromosomes = $scope.chromosomes + chrom + ",";
+//                }
             }
         }
         else
@@ -88,7 +95,13 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
                 completeChromosome = true;
             }
 
-            completeRegion = totalChromosomes.join() + "," + $scope.regions;
+            if(totalChromosomes.length == 0){
+                completeRegion = $scope.regions;
+            }
+            else{
+                completeRegion = totalChromosomes.join() + "," + $scope.regions;
+            }
+
 
         }
 
