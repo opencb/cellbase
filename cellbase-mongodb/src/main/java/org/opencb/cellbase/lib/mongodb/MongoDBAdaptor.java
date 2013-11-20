@@ -386,6 +386,7 @@ public class MongoDBAdaptor extends DBAdaptor {
                 intervalObj.put("_id", _id);
                 intervalObj.put("start", getChunkStart(_id.intValue(), interval));
                 intervalObj.put("end", getChunkEnd(_id.intValue(), interval));
+                intervalObj.put("chromosome", region.getChromosome());
                 intervalObj.put("features_count", Math.log((int) intervalObj.get("features_count")));
                 ids.put(_id, intervalObj);
             } else {
@@ -406,6 +407,7 @@ public class MongoDBAdaptor extends DBAdaptor {
                 intervalObj.put("_id", chunkId);
                 intervalObj.put("start", getChunkStart(chunkId, interval));
                 intervalObj.put("end", getChunkEnd(chunkId, interval));
+                intervalObj.put("chromosome", region.getChromosome());
                 intervalObj.put("features_count", 0);
             }
             resultList.add(intervalObj);
