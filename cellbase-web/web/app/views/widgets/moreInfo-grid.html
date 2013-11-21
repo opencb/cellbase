@@ -1,10 +1,15 @@
-<div class="panel panel-info">
-    <div class="panel-body">
+<div class="list-group">
+    <a href="#" class="list-group-item active" style="text-align: center" ng-click="moreInfo = !moreInfo">Exons, TFBS and Xrefs information
+        <button type="button" class="btn btn-default btn-xs" ng-Click="showMoreInfoPanel = false" style="float:right">x</button>
+        </button>
+    </a>
+
+    <div ng-show="!moreInfo" style="border:1px solid #006ffb">
 
         <ul class="nav nav-tabs" id="myTab">
-            <li class="active"><a href="#exons">exons</a></li>
-            <li><a href="#tfbs" ng-click="goToTab()">tfbs</a></li>
-            <li><a href="#xrefs" ng-click="goToTab()">xrefs</a></li>
+            <li class="active"><a href="#exons">Exons</a></li>
+            <li><a href="#tfbs" ng-click="goToTab()">TFBS</a></li>
+            <li><a href="#xrefs" ng-click="goToTab()">Xrefs</a></li>
         </ul>
 
         <div class="tab-content" style="margin:4px">
@@ -67,7 +72,7 @@
                     <thead>
                     <th>Id</th>
                     <th>Name</th>
-                    <th>Description</th>
+                    <!--<th>Description</th>-->
                     </thead>
 
                     <tbody ng-repeat="xref in selectedXrefs">
@@ -77,12 +82,13 @@
                     <td>
                         <small>{{xref.dbName}}</small>
                     </td>
-                    <td>
-                        <small>{{xref.Description}}</small>
-                    </td>
+                    <!--<td>-->
+                    <!--<small>{{xref.Description}}</small>-->
+                    <!--</td>-->
                     </tbody>
                 </table>
             </div>
         </div>
+
     </div>
 </div>

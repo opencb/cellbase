@@ -10,25 +10,24 @@ myApp.factory('mySharedService', function($rootScope){
 
     sharedService.message = '';
 
-    sharedService.selectedSpecies=  {longName: "Homo sapiens", shortName:"hsapiens"};
+    sharedService.selectedSpecies=  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
     sharedService.selectedRegions= "";
 
+//    sharedService.chromosomesPerSpecie = {
+//        hsapiens: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"],
+//        mmusculus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","X","Y","MT"],
+//        rnorvegicus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","X","Y","MT"],
+//        drerio: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","X","Y","MT"],
+//        dmelanogaster: ["2L", "2LHet", "2R", "2RHet","3L", "3LHet", "3R", "3RHet","4", "U", "Uextra", "X","XHet", "YHet", "dmel_mitochondrion_genome"],
+//        celegans : ["I", "II", "III","IV","V","X","MtDNA"],
+//        scerevisiae: ["I", "II", "III","IV","V","VI", "VII", "VIII", "IX", "X","XI", "XII", "XIII", "XIV", "XV", "XVI", "Mito"],
+//        cfamiliaris: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","X","MT"],
+//        sscrofa: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","X","Y","MT"],
+//        agambiae: ["2L", "2R", "3L", "3R", "X"],
+//        pfalciparum: ["01","02","03","04","05","06","07","08","09","10","11","12","13","14"]
+//    };
 
-    sharedService.chromosomesPerSpecie = {
-        hsapiens: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"],
-        mmusculus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","X","Y","MT"],
-        rnorvegicus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","X","Y","MT"],
-        drerio: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","X","Y","MT"],
-        dmelanogaster: ["2L", "2LHet", "2R", "2RHet","3L", "3LHet", "3R", "3RHet","4", "U", "Uextra", "X","XHet", "YHet", "dmel_mitochondrion_genome"],
-        celegans : ["I", "II", "III","IV","V","X","MtDNA"],
-        scerevisiae: ["I", "II", "III","IV","V","VI", "VII", "VIII", "IX", "X","XI", "XII", "XIII", "XIV", "XV", "XVI", "Mito"],
-        cfamiliaris: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","X","MT"],
-        sscrofa: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","X","Y","MT"],
-        agambiae: ["2L", "2R", "3L", "3R", "X"],
-        pfalciparum: ["01","02","03","04","05","06","07","08","09","10","11","12","13","14"]
-    };
-
-    sharedService.species = ["Homo sapiens ","Mus musculus ","Rattus norvegicus ", "Danio rerio ","Drosophila melanogaster ","Caenorhabditis elegans ","Saccharomyces cerevisiae ","Canis familiaris ","Sus scrofa ","Anopheles gambiae ","Plasmodium falciparum"];
+//    sharedService.species = ["Homo sapiens ","Mus musculus ","Rattus norvegicus ", "Danio rerio ","Drosophila melanogaster ","Caenorhabditis elegans ","Saccharomyces cerevisiae ","Canis familiaris ","Sus scrofa ","Anopheles gambiae ","Plasmodium falciparum"];
 //    $scope.species = ["hsapiens","mmusculus","rnorvegicus","drerio","dmelanogaster","celegans","scerevisiae","cfamiliaris","sscrofa","agambiae","pfalciparum"]
 
 
@@ -49,24 +48,22 @@ myApp.factory('mySharedService', function($rootScope){
     };
 
     //para pasarlo a optionsBar y se filtre
-    sharedService.genesIdAndBiotypes = function(genesId, biotypes){
-        this.genesId= genesId;
+    sharedService.biotypesNames = function(biotypes){
         this.biotypes= biotypes;
 
-        this.broadcastgenesIdAndBiotypes();
+        this.broadcastbiotypes();
     };
 
-    //comunicar el filtro a optionsBar y SummaryPanel
-    sharedService.broadcastFilter = function(genesIdFilter, biotypesFilter){
+    sharedService.broadcastShowAllGenes = function(){
+
+        this.broadcastToShowAllGenes();
+    };
+    sharedService.newFilter = function(genesIdFilter,biotypeFilter){
 
         this.genesIdFilter = genesIdFilter;
-        this.biotypesFilter = biotypesFilter;
+        this.biotypeFilter = biotypeFilter;
 
-
-        console.log(this.genesIdFilter);
-        console.log(this.biotypesFilter);
-
-        this.broadcastFilterItem();
+        this.broadcastFilter();
     };
 
 
@@ -76,12 +73,17 @@ myApp.factory('mySharedService', function($rootScope){
         $rootScope.$broadcast('specieBroadcast');
     }
     sharedService.broadcastResultsItem = function () {
-        $rootScope.$broadcast('resultsBroadcast');
+        $rootScope.$broadcast('result');
     }
-    sharedService.broadcastgenesIdAndBiotypes = function () {
-        $rootScope.$broadcast('genesIdAndBiotypes');
+    sharedService.broadcastbiotypes = function () {
+        $rootScope.$broadcast('biotypes');
     }
-    sharedService.broadcastFilterItem = function () {
+
+    sharedService.broadcastToShowAllGenes = function () {
+        $rootScope.$broadcast('showAllGenes');
+    }
+
+    sharedService.broadcastFilter = function () {
         $rootScope.$broadcast('filter');
     }
 
@@ -89,6 +91,161 @@ myApp.factory('mySharedService', function($rootScope){
 
     return sharedService;
 })
+
+myApp.service('CellbaseService', function () {
+    ////Not implemeneted yet
+
+    var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/';
+
+    this.getSpecies = function () {
+        var dataGet;
+
+        $.ajax({
+            url: 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/?of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+                dataGet = data;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+        return dataGet;
+    };
+
+
+    //obtener los chromosomas de una especie
+    this.getSpecieChromosomes = function (specie) {
+
+        var dataGet;
+
+        $.ajax({
+            url: host + specie + '/genomic/chromosome/all?of=json',
+//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+                dataGet = data.response.result.chromosomes;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+
+
+    this.getGenesAndTranscripts = function (species, regions, biotypesFilter) {
+
+        var dataGet;
+        var url;
+
+        if (biotypesFilter.length == 0) {
+            url = host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
+        }
+        else {
+            url = host + species + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
+        }
+
+        $.ajax({
+            url: url,
+//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                dataGet = data.response[0];
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+
+        return dataGet;
+    };
+    this.getGenesAllData = function (species, regions, biotypesFilter) {
+
+        var dataGet;
+        var url;
+
+        if (biotypesFilter.length == 0) {
+            url = host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json';
+        }
+        else {
+            url = host + species + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts&of=json';
+        }
+
+        $.ajax({
+            url: url,
+//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                dataGet = data.response[0].result;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+    this.getGenesAndTranscriptsById = function (species, geneId) {
+
+        var dataGet = [];
+        var url;
+
+
+        $.ajax({
+//                url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
+            url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+
+                for (var i in data.response) {
+                    dataGet.push(data.response[i].result[0]);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+    this.getGenesAllDataById = function (species, geneId) {
+
+        var dataGet = [];
+        var url;
+
+
+        $.ajax({
+            url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
+//                url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+//                    for(var i in data.response)
+//                    {
+//                        dataGet.push(data.response[i].result[0]);
+//                    }
+                dataGet = data.response;
+//                    dataGet = data.response[0];
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+
+
+
+});
 
 
 //myApp.config(function($routeProvider) {

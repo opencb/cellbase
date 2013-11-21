@@ -1,19 +1,19 @@
-var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySharedService','Server', function ($scope, mySharedService, Server) {
+var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySharedService','CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
+    //todas las especies, cuando este implementado se obtendran de cellbase
     $scope.species = [
-        {longName: "Homo sapiens", shortName:"hsapiens"},
-        {longName: "Mus musculus", shortName:"mmusculus"},
+        {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"},
+        {longName: "Mus musculus", shortName:"mmusculus", ensemblName: "Mus_musculus"},
         {longName: "Rattus norvegicus", shortName:"rnorvegicus"},
-        {longName: "Danio rerio", shortName:"drerio"},
-        {longName: "Drosophila melanogaster", shortName:"dmelanogaster"},
-        {longName: "Caenorhabditis elegans", shortName:"celegans"},
-        {longName: "Saccharomyces cerevisiae", shortName:"scerevisiae"},
-        {longName: "Canis familiaris", shortName:"cfamiliaris"},
-        {longName: "Sus scrofa", shortName:"sscrofa"},
+        {longName: "Danio rerio", shortName:"drerio", ensembleName:"Danio_rerio"},
+        {longName: "Drosophila melanogaster", shortName:"dmelanogaster", ensembleName:"Drosophila_melanogaster"},
+        {longName: "Caenorhabditis elegans", shortName:"celegans", ensembleName:"Caenorhabditis_elegans"},
+        {longName: "Saccharomyces cerevisiae", shortName:"scerevisiae", ensembleName:"Saccharomyces_cerevisiae"},
+        {longName: "Canis familiaris", shortName:"cfamiliaris", ensembleName:"Canis_familiaris"},
+        {longName: "Sus scrofa", shortName:"sscrofa", ensembleName:"Sus_scrofa", ensembleName:"Sus_scrofa"},
         {longName: "Anopheles gambiae", shortName:"agambiae"},
         {longName: "Plasmodium falciparum", shortName:"pfalciparum"}
     ];
-
 
 
     $scope.genesId = [];
@@ -21,6 +21,7 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
     $scope.genesIdFilter = [];
     $scope.biotypesFilter = [];
 
+    //----------gestion de pestañas---------
     $scope.goToTab = function () {
 
         $(function () {
@@ -37,7 +38,6 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
 
     //--------Filtros---------------
     $scope.addGeneIdFilter = function (geneId) {
-
 
         var pos = $scope.genesIdFilter.indexOf(geneId);
 
@@ -64,21 +64,14 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
 
     };
 
-
+    //-----------obtener nueva especie seleccionada y comunicarlo a los demas-----------
     $scope.setSelectedSpecie = function (specie) {
         mySharedService.broadcastSpecie(specie);
     };
 
-    $scope.newFilter = function () {
-        mySharedService.broadcastFilter($scope.genesIdFilter, $scope.biotypesFilter);
-    };
 
 
-    //-----------Obtener genesId y biotypes para filtrar--------------
-    $scope.$on('genesIdAndBiotypes', function () {   //obtener la especie elegida en optionsBar
-        $scope.genesId = mySharedService.genesId;
-        $scope.biotypes = mySharedService.biotypes;
-     });
+
 
 }]);
 
