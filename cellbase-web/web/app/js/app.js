@@ -48,24 +48,22 @@ myApp.factory('mySharedService', function($rootScope){
     };
 
     //para pasarlo a optionsBar y se filtre
-    sharedService.genesIdAndBiotypes = function(genesId, biotypes){
-        this.genesId= genesId;
+    sharedService.biotypesNames = function(biotypes){
         this.biotypes= biotypes;
 
-        this.broadcastgenesIdAndBiotypes();
+        this.broadcastbiotypes();
     };
 
-    //comunicar el filtro a optionsBar y SummaryPanel
-    sharedService.broadcastFilter = function(genesIdFilter, biotypesFilter){
+    sharedService.broadcastShowAllGenes = function(){
+
+        this.broadcastToShowAllGenes();
+    };
+    sharedService.newFilter = function(genesIdFilter,biotypeFilter){
 
         this.genesIdFilter = genesIdFilter;
-        this.biotypesFilter = biotypesFilter;
+        this.biotypeFilter = biotypeFilter;
 
-
-//        console.log(this.genesIdFilter);
-//        console.log(this.biotypesFilter);
-
-        this.broadcastFilterItem();
+        this.broadcastFilter();
     };
 
 
@@ -75,12 +73,17 @@ myApp.factory('mySharedService', function($rootScope){
         $rootScope.$broadcast('specieBroadcast');
     }
     sharedService.broadcastResultsItem = function () {
-        $rootScope.$broadcast('resultsBroadcast');
+        $rootScope.$broadcast('result');
     }
-    sharedService.broadcastgenesIdAndBiotypes = function () {
-        $rootScope.$broadcast('genesIdAndBiotypes');
+    sharedService.broadcastbiotypes = function () {
+        $rootScope.$broadcast('biotypes');
     }
-    sharedService.broadcastFilterItem = function () {
+
+    sharedService.broadcastToShowAllGenes = function () {
+        $rootScope.$broadcast('showAllGenes');
+    }
+
+    sharedService.broadcastFilter = function () {
         $rootScope.$broadcast('filter');
     }
 
@@ -88,6 +91,161 @@ myApp.factory('mySharedService', function($rootScope){
 
     return sharedService;
 })
+
+myApp.service('CellbaseService', function () {
+    ////Not implemeneted yet
+
+    var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/';
+
+    this.getSpecies = function () {
+        var dataGet;
+
+        $.ajax({
+            url: 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/?of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+                dataGet = data;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+        return dataGet;
+    };
+
+
+    //obtener los chromosomas de una especie
+    this.getSpecieChromosomes = function (specie) {
+
+        var dataGet;
+
+        $.ajax({
+            url: host + specie + '/genomic/chromosome/all?of=json',
+//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+                dataGet = data.response.result.chromosomes;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+
+
+    this.getGenesAndTranscripts = function (species, regions, biotypesFilter) {
+
+        var dataGet;
+        var url;
+
+        if (biotypesFilter.length == 0) {
+            url = host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
+        }
+        else {
+            url = host + species + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
+        }
+
+        $.ajax({
+            url: url,
+//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                dataGet = data.response[0];
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+
+        return dataGet;
+    };
+    this.getGenesAllData = function (species, regions, biotypesFilter) {
+
+        var dataGet;
+        var url;
+
+        if (biotypesFilter.length == 0) {
+            url = host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json';
+        }
+        else {
+            url = host + species + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts&of=json';
+        }
+
+        $.ajax({
+            url: url,
+//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                dataGet = data.response[0].result;
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+    this.getGenesAndTranscriptsById = function (species, geneId) {
+
+        var dataGet = [];
+        var url;
+
+
+        $.ajax({
+//                url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
+            url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+
+                for (var i in data.response) {
+                    dataGet.push(data.response[i].result[0]);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+    this.getGenesAllDataById = function (species, geneId) {
+
+        var dataGet = [];
+        var url;
+
+
+        $.ajax({
+            url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
+//                url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+//                    for(var i in data.response)
+//                    {
+//                        dataGet.push(data.response[i].result[0]);
+//                    }
+                dataGet = data.response;
+//                    dataGet = data.response[0];
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+
+
+
+});
 
 
 //myApp.config(function($routeProvider) {

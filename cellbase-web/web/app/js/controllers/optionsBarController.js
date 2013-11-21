@@ -1,5 +1,6 @@
-var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySharedService','CellbaseSpecies', function ($scope, mySharedService, CellbaseSpecies) {
+var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySharedService','CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
+    //todas las especies, cuando este implementado se obtendran de cellbase
     $scope.species = [
         {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"},
         {longName: "Mus musculus", shortName:"mmusculus", ensemblName: "Mus_musculus"},
@@ -20,6 +21,7 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
     $scope.genesIdFilter = [];
     $scope.biotypesFilter = [];
 
+    //----------gestion de pestañas---------
     $scope.goToTab = function () {
 
         $(function () {
@@ -36,7 +38,6 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
 
     //--------Filtros---------------
     $scope.addGeneIdFilter = function (geneId) {
-
 
         var pos = $scope.genesIdFilter.indexOf(geneId);
 
@@ -63,44 +64,16 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope','mySh
 
     };
 
+    //-----------obtener nueva especie seleccionada y comunicarlo a los demas-----------
     $scope.setSelectedSpecie = function (specie) {
         mySharedService.broadcastSpecie(specie);
     };
 
-    $scope.newFilter = function () {
-        mySharedService.broadcastFilter($scope.genesIdFilter, $scope.biotypesFilter);
-    };
 
 
-    //-----------Obtener genesId y biotypes para filtrar--------------
-    $scope.$on('genesIdAndBiotypes', function () {   //obtener la especie elegida en optionsBar
-        $scope.genesId = mySharedService.genesId;
-        $scope.biotypes = mySharedService.biotypes;
-     });
+
 
 }]);
 
 optionsBarControl.$inject = ['$scope','mySharedService'];
 
-
-//Not implemeneted yet
-myApp.factory('CellbaseSpecies', function ($http) {
-    return {
-        getSpecies: function () {
-            var dataGet;
-
-            $.ajax({
-                url: 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/?of=json',
-                async: false,
-                dataType: 'json',
-                success: function (data, textStatus, jqXHR) {
-                    dataGet = data;
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                }
-            });
-            return dataGet;
-        }
-    };
-
-});

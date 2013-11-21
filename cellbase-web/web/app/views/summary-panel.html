@@ -1,100 +1,76 @@
-<div class="">
-    <!--<div class="panel-heading " style="text-align:center">Summary Panel</div>-->
+<div style="margin-left:20px; margin-right: 20px; margin-top:10px; margin-bottom: 10px">
 
-    <div class="panel-body">
+    <strong style="color:#006ffb">Specie: </strong> {{specie.longName}}
 
+    <strong style="color:#006ffb">Chromosomes: </strong>
 
-        <strong style="color:#006ffb">Specie: </strong> {{specie.longName}}
-
-
-        <strong style="color:#006ffb">Chromosomes: </strong>
-
-        <textarea type="text" ng-model="chromosomes" rows="1" class="form-control" style="width:180px"></textarea>
-
-        <button class="btn btn-primary btn-ms" data-toggle="modal" data-target="#myModal" style="margin:5px">
-            Select
-        </button>
-
-        <div><strong style="color:#006ffb"> Regions: </strong></p>
-        <textarea type="text" ng-model="regions" rows="2" class="form-control" style="width:180px"></textarea>
-
+    <div>
+        <div>
+            <select class="medium" size="4" multiple="multiple" name="miltiSelect" id="multiSelect" style="max-width: 150px">
+                <option ng-repeat="chrom in chromNames" ng-style="getChromosomesColor(chrom)"
+                        ng-click="addChrom(chrom)"> {{chrom}}
+                </option>
+            </select>
         </div>
-        <button type="button" class="btn btn-default btn-primary btn-sm" ng-click="newResults()" style="margin:5px">RESULTS</button>
+
+        <div>
+            <button type="button" class="btn btn-info btn-xs" ng-click="selectAllChrom()"
+                    style="margin:5px;">Select all
+            </button>
+            <button type="button" class="btn btn-info btn-xs" ng-click="deselectAllChrom()"
+                    style="margin:5px;">Deselect all
+            </button>
+        </div>
+    </div>
 
 
-        <div><strong style="color:#006ffb">FILTERS: </strong></p></div>
-        <a style="color:#00b3ee" href="" ng-click="genesToggle = !genesToggle"><strong> - Genes:</strong></a>
-        <ul ng-show="genesToggle">
-            <li ng-repeat="gene in genesFilters">
-                {{ gene }}
-            </li>
-        </ul>
-        </p>
-        <a style="color:#00b3ee" href="" ng-click="biotypesToggle = !biotypesToggle"><strong> - Biotypes:</strong></a>
-        <ul ng-show="biotypesToggle">
-            <li ng-repeat="biotype in biotypeFilters">
-                {{ biotype }}
-            </li>
-        </ul>
-
-
-        <!--Modal -->
-        <div class="modal" id="myModal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-
-                        <h4 class="modal-title" id="myModalLabel">Select chromosomes</h4>
-                    </div>
-                    <div class="modal-body">
-                        <div class="input-group">
-        <!--<span ng-repeat="chrom in chromosomesPerSpecie[specie.shortName]">-->
-        <span ng-repeat="chrom in chromNames">
-        <input type="checkbox" ng-click="addChrom(chrom)"> {{chrom}} &nbsp
-        </span>
-                        </div>
-
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
-                    </div>
-                </div>
-            </div>
-            hola-->
-
-            </div>
-
-            <!--<div class="input-group" >-->
-        <!--<span ng-repeat="chrom in chromosomesPerSpecie[specie.shortName]">-->
-        <!--<input type="checkbox" ng-click="addChrom(chrom)"> {{chrom}} &nbsp-->
-        <!--</span>-->
-        <!--</div>-->
-        <!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
-
-
-        <!--&lt;!&ndash; Modal &ndash;&gt;-->
-        <!--<div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">-->
-            <!--<div class="modal-dialog">-->
-                <!--<div class="modal-content">-->
-                    <!--<div class="modal-header">-->
-                        <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>-->
-                        <!--<h4 class="modal-title" id="myModalLabel">Modal title</h4>-->
-                    <!--</div>-->
-                    <!--<div class="modal-body">-->
-                        <!--...-->
-                    <!--</div>-->
-                    <!--<div class="modal-footer">-->
-                        <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-                        <!--<button type="button" class="btn btn-primary">Save changes</button>-->
-                    <!--</div>-->
-                <!--</div>&lt;!&ndash; /.modal-content &ndash;&gt;-->
-            <!--</div>&lt;!&ndash; /.modal-dialog &ndash;&gt;-->
-        <!--</div>&lt;!&ndash; /.modal &ndash;&gt;-->
-
-
-        <!--</div>-->
-
+    <div style="margin-top:4px"><strong style="color:#006ffb"> Regions: </strong><span class="text-muted"><b>chom:start-end</b></span>
+        <textarea type="text" ng-model="regions" rows="2" class="form-control"
+                  style="width:180px; max-width:180px; max-height: 54px;"></textarea>
 
     </div>
+    <button type="button" class="btn btn-default btn-primary btn-sm" ng-click="newResults()"
+            style="margin:5px; width:170px">RESULTS
+    </button>
+
+
+    <div style="font-weight: bold; color:#006ffb">Filter per Genes ID:<textarea type="text" ng-model="genesIdFilter"rows="1" class="form-control"style="width:180px; max-width:180px; max-height: 34px;"></textarea>
     </div>
+
+    <div style="font-weight: bold; color:#006ffb"> Filter per Biotypes:</div>
+
+    <!--<div ng-repeat="biotype in biotypesFilter">-->
+    <!--<p>{{biotype}}</p>-->
+    <!--</div>-->
+
+    <div>
+        <div>
+            <select class="medium" size="4" multiple="multiple" name="miltiSelect" id="multiSelect2"
+                    style=" width:180; max-width: 180px">
+                <option ng-repeat="biotype in listOfbiotypeFilters" ng-click="addBiotypeFilter(biotype)"
+                        ng-style="getBiotypesColor(biotype)" style="background-color: lightblue"> {{biotype}}
+                </option>
+            </select>
+        </div>
+
+        <div>
+            <button type="button" class="btn btn-info btn-xs" ng-click="selectAllBiotypeFilter()"
+                    style="margin:5px;">Select all
+            </button>
+            <button type="button" class="btn btn-info btn-xs" ng-click="deselectAllBiotypeFilter()"
+                    style="margin:5px;">Deselect all
+            </button>
+        </div>
+    </div>
+
+    <div>
+        <button type="button" class="btn btn-primary btn-sm" ng-click="newFilters()"
+                style="margin:5px; width:170px">FILTER
+        </button>
+    </div>
+
+    <button type="button" class="btn btn-info btn-ms" ng-click="showAllGenes()" style="margin:10px">All genes
+    </button>
+
+
+</div>

@@ -1,23 +1,37 @@
-<div class="panel panel-info">
-    <div class="panel-heading " style="text-align:center">Transcript information
-        <button type="button" class="btn btn-primary btn-xs" ng-Click="showTranscriptPanel = false" style="float:right">x</button>
-    </div>
-    <div class="panel-body">
-        <!--<h5><a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Transcript/Transcript?t={{selectedTranscript.id}};">-->
-        <h5><a ng-Click="moreInfoSelectedFromPanel(selectedTranscript.name)">{{selectedTranscript.name}} ( {{selectedTranscript.id}} )</a>
-        <a style="color:palevioletred"target="_blank" href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Transcript/Transcript?t={{selectedTranscript.id}};">
-                Go Ensembl</a> </h5>
 
-        <h5>Biotype:
-            <small>{{selectedTranscript.biotype}}</small>
-        </h5>
-        <h5>Location:
-            <small>{{selectedTranscript.chromosome}} : {{selectedTranscript.start}} -
+<div class="list-group">
+    <a href="#" class="list-group-item active" style="text-align: center" ng-click="transcriptInfo = !transcriptInfo">Transcript information
+        <button type="button" class="btn btn-default btn-xs" ng-Click="showTranscriptPanel = false" style="float:right">x</button>
+        </button>
+    </a>
+
+    <div ng-show="!transcriptInfo" style="border:1px solid #006ffb">
+        <h5 style="margin-right: 5px; margin-left: 5px">
+            <p><a ng-Click="moreInfoSelectedFromPanel(selectedTranscript.name)">{{selectedTranscript.name}} ( {{selectedTranscript.id}} )</a>
+            <a style="color:palevioletred"target="_blank" href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Transcript/Transcript?t={{selectedTranscript.id}};">
+                Go Ensembl</a>
+            </p>
+            <p>Biotype:
+                <span class="text-muted">{{selectedTranscript.biotype}}</span>
+            </p>
+
+            <p>
+                Location:
+            <span class="text-muted">{{selectedTranscript.chromosome}} : {{selectedTranscript.start}} -
                 {{selectedTranscript.end}}
-            </small>
-        </h5>
-        <h5>Description:
-            <small>{{selectedTranscript.description}}</small>
+                </span>
+            </p>
+
+            <p>
+                Description:
+                <span class="text-muted">{{selectedTranscript.description}}</span>
+            </p>
         </h5>
     </div>
 </div>
+
+
+
+
+
+
