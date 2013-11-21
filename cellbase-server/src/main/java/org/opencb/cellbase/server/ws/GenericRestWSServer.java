@@ -309,6 +309,7 @@ public class GenericRestWSServer implements IWSServer {
 
 //		queryOptions.put("exclude", (multivaluedMap.get("exclude") != null) ? Arrays.asList(multivaluedMap.get("exclude").get(0).split(",")) : new ArrayList<String>());
 //		queryOptions.put("include", (multivaluedMap.get("include") != null) ? Arrays.asList(multivaluedMap.get("include").get(0).split(",")) : new ArrayList<String>());
+        queryOptions.put("limit", (multivaluedMap.get("limit") != null) ? multivaluedMap.get("limit").get(0) : 0);
         queryOptions.put("exclude", (multivaluedMap.get("exclude") != null) ? multivaluedMap.get("exclude").get(0) : "");
         queryOptions.put("include", (multivaluedMap.get("include") != null) ? multivaluedMap.get("include").get(0) : "");
         queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
