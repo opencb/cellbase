@@ -42,7 +42,7 @@ species_info_file = ''
 if args.species_info_file is not None:
     species_info_file = args.species_info_file
     
-mongodb_collections = ['info_stats', 'genome_sequence', 'core', 'regulation', 'variation', 'protein', 'conserved_region']
+mongodb_collections = ['info_stats', 'genome_sequence', 'core', 'regulation', 'variation', 'mutation', 'protein', 'conserved_region']
 if args.mongodb_collections is not None:
     mongodb_collections = args.mongodb_collections.split(',')
 

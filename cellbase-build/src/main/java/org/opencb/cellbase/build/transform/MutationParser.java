@@ -1,15 +1,15 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.variation.Mutation;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,20 +54,22 @@ public class MutationParser {
     // 23 Tumour origin***
     // 24 Comments
 
-    public void parse(File mutationFile) {
+    public void parse(Path mutationFile) {
         try {
-            BufferedReader br;
-            if(mutationFile.getName().endsWith(".gz")) {
-                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(mutationFile))));
-            }else {
-                br = Files.newBufferedReader(Paths.get(mutationFile.getAbsolutePath()), Charset.defaultCharset());
-            }
+//            BufferedReader br;
+//            if(mutationFile.getName().endsWith(".gz")) {
+//                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(mutationFile))));
+//            }else {
+//                br = Files.newBufferedReader(Paths.get(mutationFile.getAbsolutePath()), Charset.defaultCharset());
+//            }
+
+            BufferedReader br = FileUtils.newBufferedReader(mutationFile, Charset.defaultCharset());
 
             String chunkIdSuffix = CHUNK_SIZE/1000+"k";
             MutationMongoDB mutation;
             String line;
             String[] fields, regionFields;
-            // First line is a header, we read and lose it
+            // First line is a header, we read and discard it
             br.readLine();
             while ((line = br.readLine()) != null) {
                 fields = line.split("\t", -1);

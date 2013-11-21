@@ -5,40 +5,45 @@ import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.variation.TranscriptVariation;
 import org.opencb.cellbase.core.common.variation.Variation;
 import org.opencb.cellbase.core.common.variation.Xref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 
 public class VariationParser {
 
-	private Connection sqlConn = null;
+	private RandomAccessFile raf, rafvariationFeature, rafTranscriptVariation, rafvariationSynonym;
 
-//	private PreparedStatement psVariationFeature, psTranscriptVariation, psVariationSynonym;
-	private PreparedStatement psVariationFeature, psTranscriptVariation, psVariationSynonym;
-	
-	private RandomAccessFile raf,rafvariationFeature,rafTranscriptVariation,rafvariationSynonym;
-	
+	private Connection sqlConn = null;
+	private PreparedStatement prepStmVariationFeature, prepStmTranscriptVariation, prepStmVariationSynonym;
+
 	private int LIMITROWS = 100000;
 
     private CellbaseSerializer serializer;
+
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public VariationParser(CellbaseSerializer serializer) {
         this.serializer = serializer;
 	}
 
-	public void parseVariationToJson(String species, String assembly, String source, String version, Path variationFilePath, Path outfileJson) throws IOException, SQLException {
-		BufferedReader br = FileUtils.newBufferedReader(variationFilePath.resolve("variation.txt.gz"), Charset.defaultCharset());
+//	public void parse(String species, String assembly, String source, String version, Path variationDirectoryPath, Path outfileJson) throws IOException, SQLException {
+	public void parse(String species, String assembly, String source, String version, Path variationDirectoryPath) throws IOException, SQLException, ClassNotFoundException {
+        if(!Files.exists(variationDirectoryPath) || !Files.isDirectory(variationDirectoryPath) || !Files.isReadable(variationDirectoryPath)) {
+            throw new IOException("Variation directory whether does not exist, is not a directory or cannot be read");
+        }
+
 //		BufferedWriter bw = Files.newBufferedWriter(outfileJson, Charset.defaultCharset());
-		// We need a different file for each chromosome
-		Map<String, BufferedWriter> chromFiles = new HashMap<>(50);
-		BufferedWriter bwLog = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+".log"), Charset.defaultCharset());
+//      We need a different file for each chromosome
 //		Gson gson = new Gson();
 
+//		Map<String, BufferedWriter> chromFiles = new HashMap<>(50);
+		BufferedWriter bwLog = Files.newBufferedWriter(variationDirectoryPath.resolve("variation.log"), Charset.defaultCharset());
 		Map<String, List<String>> queryMap = null;
 		String[] variationFields = null;
 		String[] variationFeatureFields = null;
@@ -46,27 +51,36 @@ public class VariationParser {
 		String[] variationSynonymFields = null;
 //		StringBuffer sb = new StringBuffer();
 		String chromosome;
-		
+
 		Variation variation = null;
 		String[] allelesArray = null;
 		String displayConsequenceType = null;
 		List<String> consequenceTypes = null;
 		List<TranscriptVariation> transcriptVariation = null;
 		List<Xref> xrefs = null;
-		
-		Map<String, String> seqRegionMap = loadHashSeqRegion(variationFilePath);
-		Map<String, String> sourceMap = loadHashSource(variationFilePath); 
-		
+
+
+        // Open variation file
+		BufferedReader bufferedReaderVariation = FileUtils.newBufferedReader(variationDirectoryPath.resolve("variation.txt.gz"), Charset.defaultCharset());
+
+
+        createVariationDatabases(variationDirectoryPath);
+        connect(variationDirectoryPath);
+
+		Map<String, String> seqRegionMap = loadSeqRegionMap(variationDirectoryPath);
+		Map<String, String> sourceMap = loadSourceMap(variationDirectoryPath);
+
+
 		int countprocess = 0;
 		int variationId = 0;
 		String line = null;
-		while((line = br.readLine()) != null) {
+		while((line = bufferedReaderVariation.readLine()) != null) {
 			variationFields = line.split("\t");
 			variationId = Integer.parseInt(variationFields[0]);
 			
-//			queryMap = queryAllByVariationId(variationId, variationFilePath);
+//			queryMap = queryAllByVariationId(variationId, variationDirectoryPath);
 //			long start = System.currentTimeMillis();
-			List<String> resultVariationFeature = queryByVariationId(variationId, "variation_feature", variationFilePath);
+			List<String> resultVariationFeature = queryByVariationId(variationId, "variation_feature", variationDirectoryPath);
 			
 //			System.out.println("\t"+queryMap.get("variation_feature"));
 //			System.out.println("\t"+queryMap.get("transcript_variation"));
@@ -76,10 +90,10 @@ public class VariationParser {
 			
 			if(resultVariationFeature != null && resultVariationFeature.size() > 0) {
 				transcriptVariation = new ArrayList<>();
-				variationFeatureFields = resultVariationFeature.get(0).split("\t");
+				variationFeatureFields = resultVariationFeature.get(0).split("\t", -1);
 
 				// Note the ID used, TranscriptVariation references to VariationFeature no Variation !!!
-				List<String> resultTranscriptVariations = queryByVariationId(Integer.parseInt(variationFeatureFields[0]), "transcript_variation", variationFilePath);
+				List<String> resultTranscriptVariations = queryByVariationId(Integer.parseInt(variationFeatureFields[0]), "transcript_variation", variationDirectoryPath);
 				if(resultTranscriptVariations != null && resultTranscriptVariations.size() > 0) {
 					for(String rtv: resultTranscriptVariations) {
 						transcriptVariationFields = rtv.split("\t");
@@ -109,7 +123,7 @@ public class VariationParser {
 				}
 			
 				// Reading XRefs
-				List<String> resultVariationSynonym = queryByVariationId(variationId, "variation_synonym", variationFilePath);
+				List<String> resultVariationSynonym = queryByVariationId(variationId, "variation_synonym", variationDirectoryPath);
 				xrefs = new ArrayList<>();
 				if(resultVariationSynonym != null && resultVariationSynonym.size() > 0) {
 					String arr[];
@@ -148,7 +162,8 @@ public class VariationParser {
 							}
 						}
 					}
-					
+
+//                    System.out.println(Arrays.toString(variationFeatureFields)+":"+variationFeatureFields.length);
 					// we have all the necessary to construct the 'variation' object
 					variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" ,
 							chromosome, "SNV", 
@@ -169,16 +184,16 @@ public class VariationParser {
 
 					// sb.append(gson.toJson(variation)).append("\n");
 					countprocess++;
-					if(countprocess % 10000 == 0 && countprocess != 0){
+					if(countprocess % 10000 == 0 && countprocess != 0) {
 						System.out.println("Processed variations: " + countprocess);
 					}
 					
 					// Each variation is stored in a different file
 					// for MongoImport optimization, chrom files names end with '_chr1'
-					if(!chromFiles.containsKey(chromosome)) {
-						BufferedWriter bw = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+"_chr"+chromosome), Charset.defaultCharset());
-						chromFiles.put(chromosome, bw);
-					}
+//					if(!chromFiles.containsKey(chromosome)) {
+//						BufferedWriter bw = Files.newBufferedWriter(Paths.get(outfileJson.toFile().getAbsolutePath()+"_chr"+chromosome), Charset.defaultCharset());
+//						chromFiles.put(chromosome, bw);
+//					}
 
 //					chromFiles.get(chromosome).write(gson.toJson(variation)+ "\n");
                     serializer.serialize(variation);
@@ -196,15 +211,15 @@ public class VariationParser {
 //			System.out.println(count+" "+line);
 //			long end = System.currentTimeMillis();
 //			System.out.println("Tiempo: " + (end-start));
-			
-			
 		}
-		br.close();
+
+        bwLog.close();
+		bufferedReaderVariation.close();
+
 		// We need to close all chromosomes files
-		for(BufferedWriter bw: chromFiles.values()) {
-			bw.close();			
-		}
-		bwLog.close();
+//		for(BufferedWriter bw: chromFiles.values()) {
+//			bw.close();
+//		}
 	}
 	
 	public void connect(Path variationFilePath) throws SQLException, ClassNotFoundException, FileNotFoundException {
@@ -213,76 +228,46 @@ public class VariationParser {
 //		sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
 		//sqlConn.setAutoCommit(false);
 		
-		rafvariationFeature = new RandomAccessFile(variationFilePath.resolve("variation_feature.txt.gz").toFile(), "r");
-		rafTranscriptVariation = new RandomAccessFile(variationFilePath.resolve("transcript_variation.txt.gz").toFile(), "r");
-		rafvariationSynonym = new RandomAccessFile(variationFilePath.resolve("variation_synonym.txt.gz").toFile(), "r");
+		rafvariationFeature = new RandomAccessFile(variationFilePath.resolve("variation_feature.txt").toFile(), "r");
+		rafTranscriptVariation = new RandomAccessFile(variationFilePath.resolve("transcript_variation.txt").toFile(), "r");
+		rafvariationSynonym = new RandomAccessFile(variationFilePath.resolve("variation_synonym.txt").toFile(), "r");
 
-		psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
-		psTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
-		psVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
+		prepStmVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
+		prepStmTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
+		prepStmVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
 	}
 
 	public void disconnect() throws SQLException {
 		if(sqlConn != null && !sqlConn.isClosed()) {
-			psVariationFeature.close();
-			psTranscriptVariation.close();
-			psVariationSynonym.close();
+			prepStmVariationFeature.close();
+			prepStmTranscriptVariation.close();
+			prepStmVariationSynonym.close();
 
 			sqlConn.close();		
 		}
 	}
 
-	public void createVariationDatabase(Path variationFilePath) {
-		try {
-
-			Class.forName("org.sqlite.JDBC");
-			sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-//			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
-			if(!Files.exists(variationFilePath.resolve("variation_tables.db"))) {
-				
-				sqlConn.setAutoCommit(false);
-
-				createTable(5, variationFilePath.resolve("variation_feature.txt.gz"), "variation_feature");
-				createTable(1, variationFilePath.resolve("transcript_variation.txt.gz"), "transcript_variation");
-				createTable(1, variationFilePath.resolve("variation_synonym.txt.gz"), "variation_synonym");
-
-//				psVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
-
-//				sqlConn.close();		
-			}
-
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-
-	}
-
 	public List<String> queryByVariationId(int variationId, String tableName, Path variationFilePath) throws IOException, SQLException {
 		// First query SQLite to get offset position
-		List<Long> offsets = new ArrayList<Long>();
+		List<Long> offsets = new ArrayList<>();
 		//		PreparedStatement pst = sqlConn.statement(sql)
 		//		ResultSet rs = pst.executeQuery("select offset from "+tableName+" where variation_id = " + variationId + "");
 		ResultSet rs = null;
 //		long start = System.currentTimeMillis();
 		switch(tableName) {
 		case "variation_feature":
-			psVariationFeature.setInt(1, variationId);
-			rs = psVariationFeature.executeQuery();
+			prepStmVariationFeature.setInt(1, variationId);
+			rs = prepStmVariationFeature.executeQuery();
 			raf = rafvariationFeature; 
 			break;
 		case "transcript_variation":
-			psTranscriptVariation.setInt(1, variationId);
-			rs = psTranscriptVariation.executeQuery();
+			prepStmTranscriptVariation.setInt(1, variationId);
+			rs = prepStmTranscriptVariation.executeQuery();
 			raf = rafTranscriptVariation;
 			break;
 		case "variation_synonym":
-			psVariationSynonym.setInt(1, variationId);
-			rs = psVariationSynonym.executeQuery();
+			prepStmVariationSynonym.setInt(1, variationId);
+			rs = prepStmVariationSynonym.executeQuery();
 			raf = rafvariationSynonym;
 			break;
 		}
@@ -314,7 +299,7 @@ public class VariationParser {
 	public Map<String, List<String>> queryAllByVariationId(int variationId, Path variationFilePath) throws IOException, SQLException {
 		
 		List<String> tables = Arrays.asList("variation_feature", "transcript_variation", "variation_synonym");
-		Map<String, List<String>> resultMap = new HashMap<String, List<String>>();
+		Map<String, List<String>> resultMap = new HashMap<>();
 		List<Long> offsets;
 		for(String table: tables) {
 
@@ -325,16 +310,16 @@ public class VariationParser {
 			ResultSet rs = null;
 			switch(table) {
 			case "variation_feature":
-				psVariationFeature.setInt(1, variationId);
-				rs = psVariationFeature.executeQuery();
+				prepStmVariationFeature.setInt(1, variationId);
+				rs = prepStmVariationFeature.executeQuery();
 				break;
 			case "transcript_variation":
-				psTranscriptVariation.setInt(1, variationId);
-				rs = psTranscriptVariation.executeQuery();
+				prepStmTranscriptVariation.setInt(1, variationId);
+				rs = prepStmTranscriptVariation.executeQuery();
 				break;
 			case "variation_synonym":
-				psVariationSynonym.setInt(1, variationId);
-				rs = psVariationSynonym.executeQuery();
+				prepStmVariationSynonym.setInt(1, variationId);
+				rs = prepStmVariationSynonym.executeQuery();
 				break;
 			}
 			
@@ -362,14 +347,55 @@ public class VariationParser {
 		}
 		return resultMap;
 	}
-	
-	
+
+
+    public void createVariationDatabases(Path variationDirectoryPath) {
+        try {
+            Class.forName("org.sqlite.JDBC");
+            sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
+//			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
+            if(!Files.exists(variationDirectoryPath.resolve("variation_tables.db"))) {
+
+                sqlConn.setAutoCommit(false);
+                if(Files.exists(variationDirectoryPath.resolve("variation_feature.txt.gz"))) {
+                    Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("variation_feature.txt.gz").toAbsolutePath());
+                    process.waitFor();
+                }
+                createTable(5, variationDirectoryPath.resolve("variation_feature.txt"), "variation_feature");
+
+                if(Files.exists(variationDirectoryPath.resolve("transcript_variation.txt.gz"))) {
+                    Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("transcript_variation.txt.gz").toAbsolutePath());
+                    process.waitFor();
+                }
+                createTable(1, variationDirectoryPath.resolve("transcript_variation.txt"), "transcript_variation");
+
+                if(Files.exists(variationDirectoryPath.resolve("variation_synonym.txt.gz"))) {
+                    Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("variation_synonym.txt.gz").toAbsolutePath());
+                    process.waitFor();
+                }
+                createTable(1, variationDirectoryPath.resolve("variation_synonym.txt"), "variation_synonym");
+
+//				prepStmVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
+//				sqlConn.close();
+            }
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+
+    }
 	private void createTable(int columnIndex, Path variationFilePath, String tableName) throws SQLException, IOException {
 		Statement createTables = sqlConn.createStatement();
 		
 		// A table containing offset for files
 		createTables.executeUpdate("CREATE TABLE if not exists "+tableName+"(" + "variation_id INT , offset BIGINT)");
-
 		PreparedStatement ps = sqlConn.prepareStatement("INSERT INTO "+tableName+"(variation_id, offset) values (?, ?)");
 
 		long offset = 0;
@@ -388,6 +414,8 @@ public class VariationParser {
 			if (count % LIMITROWS == 0 && count != 0) {
 				ps.executeBatch();
 				sqlConn.commit();
+                logger.info("Inserting in " + tableName + ": " + count);
+                if(count > 10000000) break;
 			}
 
 			offset += line.length() + 1;
@@ -401,20 +429,19 @@ public class VariationParser {
 		stm.executeUpdate("CREATE INDEX "+tableName+"_idx on "+tableName+"(variation_id)");
 		sqlConn.commit();
 	}
+
 	
-	private Map<String, String> loadHashSeqRegion(Path variationFilePath) {
-		Map<String, String> seqRegion = new HashMap<String, String>();
+	private Map<String, String> loadSeqRegionMap(Path variationDirectoryPath) {
+		Map<String, String> seqRegion = new HashMap<>();
 		try {
-			File seqRegionFile = variationFilePath.resolve("seq_region.txt").toFile();
+			File seqRegionFile = variationDirectoryPath.resolve("seq_region.txt.gz").toFile();
 			if(seqRegionFile.exists()) {
-//				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(seqRegionFile))));
 				BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
 					String[] readLineFields = readLine.split("\t");
 					seqRegion.put(readLineFields[0], readLineFields[1]);
 				}
-//				System.out.println("loadHashSeqRegion: " + seqRegion.size());
 				br.close();
 			}
 		} catch (IOException e) {
@@ -423,12 +450,11 @@ public class VariationParser {
 		return seqRegion;
 	}
 	
-	private Map<String, String> loadHashSource(Path variationFilePath) {
-		Map<String, String> sourceMap = new HashMap<String, String>();
+	private Map<String, String> loadSourceMap(Path variationDirectoryPath) {
+		Map<String, String> sourceMap = new HashMap<>();
 		try {
-			File sourceFile = variationFilePath.resolve("source.txt.gz").toFile();
+			File sourceFile = variationDirectoryPath.resolve("source.txt.gz").toFile();
 			if(sourceFile.exists()) {
-//				BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(sourceFile))));
 				BufferedReader br = Files.newBufferedReader(sourceFile.toPath(), Charset.defaultCharset());
 				String readLine;
 				while ((readLine = br.readLine()) != null) {
@@ -439,8 +465,6 @@ public class VariationParser {
 						sourceMap.put(readLineFields[0], readLineFields[1] + "," + readLineFields[2]);
 					}
 				}
-
-//				System.out.println("loadHashSource: " + sourceMap.size());
 				br.close();
 			}
 		} catch (IOException e) {

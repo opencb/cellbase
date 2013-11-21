@@ -142,6 +142,8 @@ for sp in species:
             os.system("sort " + gene_folder+"/xrefs_dup.txt | uniq > " + gene_folder+"/xrefs.txt")
             os.system("rm " + gene_folder+"/xrefs_dup.txt")
 
+
+    ## Download VARIATION data
     if args.variation is not None and args.variation == '1':
         if not os.path.exists(variation_folder):
             os.makedirs(variation_folder)

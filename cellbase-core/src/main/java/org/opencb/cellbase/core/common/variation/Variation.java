@@ -24,11 +24,11 @@ public class Variation {
 	private String version;
  
 	private List<String> consequenceTypes;
-	private List<TranscriptVariation> transcriptVariations = new ArrayList<TranscriptVariation>();
+	private List<TranscriptVariation> transcriptVariations = new ArrayList<>();
 	private Phenotype phenotype;
-	private List<SampleGenotype> samples = new ArrayList<SampleGenotype>();
+	private List<SampleGenotype> samples = new ArrayList<>();
 	private List<PopulationFrequency> populationFrequencies;
-	private List<Xref> xrefs = new ArrayList<Xref>();
+	private List<Xref> xrefs = new ArrayList<>();
 	
 	// Required
 	private String featureId;
@@ -46,9 +46,9 @@ public class Variation {
 	public Variation() {
 		consequenceTypes = new ArrayList<>();
 		transcriptVariations = new ArrayList<>();
-		samples = new ArrayList<SampleGenotype>();
+		samples = new ArrayList<>();
 		populationFrequencies = new ArrayList<>();
-		xrefs = new ArrayList<Xref>();
+		xrefs = new ArrayList<>();
 	}
 
 	public Variation(String id, String chromosome, String type, int start, int end, String strand, String reference,
@@ -188,27 +188,27 @@ public class Variation {
 		this.featureId = featureId;
 	}
 
-	public String getFeatureAlias() {
+	public String getMinorAllele() {
 		return minorAllele;
 	}
 
-	public void setFeatureAlias(String featureAlias) {
-		this.minorAllele = featureAlias;
+	public void setMinorAllele(String minorAllele) {
+		this.minorAllele = minorAllele;
 	}
 
-	public String getVariantFreq() {
+	public String getMinorAlleleFreq() {
 		return minorAlleleFreq;
 	}
 
-	public void setVariantFreq(String variantFreq) {
+	public void setMinorAlleleFreq(String variantFreq) {
 		this.minorAlleleFreq = variantFreq;
 	}
 
-	public String getValidationStates() {
+	public String getValidationStatus() {
 		return validationStatus;
 	}
 
-	public void setValidationStates(String validationStatus) {
+	public void setValidationStatus(String validationStatus) {
 		this.validationStatus = validationStatus;
 	}
 

@@ -115,25 +115,25 @@ public class CellBaseMain {
             }
 
             if(buildOption.equals("variation")) {
-                System.out.println("In variation");
+                System.out.println("In variation...");
 
                 String indir = commandLine.getOptionValue("indir");
                 int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
                 System.out.println("chunksize: "+chunksize);
                 String outfile = commandLine.getOptionValue("output", "/tmp/variation.json");
                 if(indir != null) {
-                    serializer = getSerializer(outfile, commandLine);
+                    serializer = getSerializer(serializationOutput, commandLine);
                     VariationParser vp = new VariationParser(serializer);
-                    vp.createVariationDatabase(Paths.get(indir));
+//                    vp.createVariationDatabases(Paths.get(indir));
+//                    vp.connect(Paths.get(indir));
 
-                    vp.connect(Paths.get(indir));
 //					List<String> res = vp.queryByVariationId(13, "variation_synonym", Paths.get(indir));
 //					System.out.println("a");
 //					 res = vp.queryByVariationId(4, "variation_synonym", Paths.get(indir));
 //					System.out.println("b");
 //					res = vp.queryByVariationId(8, "variation_synonym", Paths.get(indir));
 //					System.out.println("c");
-                    vp.parseVariationToJson("", "", "", "", Paths.get(indir), Paths.get(outfile));
+                    vp.parse("", "", "", "", Paths.get(indir)); //, Paths.get(outfile)
                     vp.disconnect();
                 }
             }
@@ -141,12 +141,15 @@ public class CellBaseMain {
             if(buildOption.equals("mutation")) {
                 System.out.println("In mutation");
 
+                /**
+                 * File from Cosmic: CosmicCompleteExport_XXX.tsv
+                 */
                 String filePath = commandLine.getOptionValue("cosmic-file");
                 String outfile = commandLine.getOptionValue("output", "/tmp/mutation.json");
                 if(filePath != null) {
                     serializer = getSerializer(serializationOutput, commandLine);
                     MutationParser vp = new MutationParser(serializer);
-                    vp.parse(new File(filePath));
+                    vp.parse(Paths.get(filePath));
                     serializer.close();
                 }
             }
