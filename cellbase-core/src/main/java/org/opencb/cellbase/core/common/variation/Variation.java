@@ -67,12 +67,12 @@ public class Variation {
 		this.alleleString = alleleString;
 		this.ancestralAllele = ancestralAllele;
 		this.displayConsequenceType = displayConsequenceType;
-		
+
 		this.species = species;
 		this.assembly = assembly;
 		this.source = source;
 		this.version = version;
-		
+
 		this.consequenceTypes = consequencesTypes;
 		this.transcriptVariations = transcriptVariations;
 		this.phenotype = phenotype;
