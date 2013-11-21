@@ -31,7 +31,7 @@
             </tbody>
         </table>
 
-        <div class="btn-group btn-group-ms" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px">
+        <div ng-show="showPaginationGenesTables" class="btn-group btn-group-ms" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px">
             <button ng-show="firstPagesGenesTable" type="button" class="btn btn-default btn-ms" ng-click="goToFirstPageGenesTable()"style="color:#006ffb"><<</button>
             <button ng-show="previousPageGenesTable" type="button" class="btn btn-default btn-ms" ng-click="goPreviousPageGenesTable()"style="color:#006ffb"><</button>
             <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableFirstNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[0])" style="color:#006ffb">{{paginationNumbersGenesTables[0]}}</button>

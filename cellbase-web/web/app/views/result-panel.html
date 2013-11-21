@@ -12,7 +12,7 @@
                class="list-group-item active " style="margin:1px;" id="{{gene.id}}" >
                 <small>{{gene.name}} ({{gene.id}} )</small>
 
-                <!--<a ng-show="genesToggle || firstGeneId == gene.id" ng-click="transcriptsToggle = !transcriptsToggle "-->
+                <!--<a ng-show="genesToggle || firstGeneId == gene.id" ng-click="transcriptsToggle = !transcriptsToggle" ng-click="firstGeneId = &quot;&quot; "-->
                 <a ng-show="genesToggle"  ng-click="transcriptsToggle = !transcriptsToggle "
                    ng-Dblclick="transcriptsSelected(gene.id)" href="#"
                    class="list-group-item" style="margin-left:15px" id="{{gene.id}}-transcripts">Transcripts </a>
@@ -29,7 +29,7 @@
         </div>
         <!--<div id="pagination" ng-click="getDataInPaginationLimits()"></div>-->
 
-        <div ng-show="showPagination" class="btn-group btn-group-xs" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px">
+        <div ng-show="showPagination" class="btn-group btn-group-ms" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px">
             <button ng-show="firstPages" type="button" class="btn btn-default btn-ms" ng-click="goToFirstPage()"style="color:#006ffb"><<</button>
             <button ng-show="previousPage" type="button" class="btn btn-default btn-ms" ng-click="goPreviousPage()"style="color:#006ffb"><</button>
             <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableFirstNumber}"ng-click="goToNumberPage(paginationNumbers[0])" style="color:#006ffb">{{paginationNumbers[0]}}</button>

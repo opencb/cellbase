@@ -35,7 +35,6 @@ var allGenesPagination = myApp.controller('allGenesPagination', ['$scope', 'mySh
     };
     $scope.goToLastPageGenesTable = function () {
 
-        console.log( $scope.maxNumberPaginationGenesTable);
 
         $scope.paginationNumbersGenesTables[0] = $scope.maxNumberPaginationGenesTable - 2;
         $scope.paginationNumbersGenesTables[1] = $scope.maxNumberPaginationGenesTable - 1;
@@ -124,7 +123,6 @@ var allGenesPagination = myApp.controller('allGenesPagination', ['$scope', 'mySh
                 $scope.lastPagesGenesTable = true;
             }
         }
-        console.log("selected page" + selectedPage);
         $scope.disableAndEnablePaginationButtonsGenesTable(selectedPage);
         $scope.obtainPaginationLimitsGenesTable(selectedPage);
 
@@ -173,8 +171,13 @@ var allGenesPagination = myApp.controller('allGenesPagination', ['$scope', 'mySh
         $scope.paginationDataGeneTable = [];
         $scope.maxNumberPaginationGenesTable = Math.ceil(Object.keys($scope.genesAndTranscriptsData).length / $scope.numDataPerPageGeneTable);
 
+
+
         //  0 --> 10
         if (Object.keys($scope.genesAndTranscriptsData).length <= $scope.numDataPerPageGeneTable) {
+
+            console.log("de 0 a 10");
+
             for (var i in $scope.genesAndTranscriptsData){
               $scope.paginationDataGeneTable.push($scope.genesAndTranscriptsData[i]);
             }
@@ -183,6 +186,8 @@ var allGenesPagination = myApp.controller('allGenesPagination', ['$scope', 'mySh
         }
         // 11 --> 20
         else if(Object.keys($scope.genesAndTranscriptsData).length <= ($scope.numDataPerPageGeneTable * 2)){
+
+            console.log("de 11 a 20");
 
             $scope.simplePaginationGenesTable = true;
 
@@ -212,7 +217,8 @@ var allGenesPagination = myApp.controller('allGenesPagination', ['$scope', 'mySh
         }
         // 21 --> ...
         else {
-            console.log("en el else");
+
+            console.log("de 21 a ...");
             $scope.simplePaginationGenesTable = false;
             var geneId;
 

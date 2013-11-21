@@ -1,30 +1,52 @@
-
 <div class="list-group">
-    <a href="#" class="list-group-item active" style="text-align: center" ng-click="transcriptInfo = !transcriptInfo">Transcript information
-        <button type="button" class="btn btn-default btn-xs" ng-Click="showTranscriptPanel = false" style="float:right">x</button>
+    <a href="#" class="list-group-item active" style="text-align: center" ng-click="transcriptInfo = !transcriptInfo">Transcript
+        information
+        <button type="button" class="btn btn-default btn-xs" ng-Click="showTranscriptPanel = false" style="float:right">
+            x
+        </button>
         </button>
     </a>
 
     <div ng-show="!transcriptInfo" style="border:1px solid #006ffb">
+        <button type="button" class="btn btn-primary btn-xs" style="float:left; margin:3px"
+                ng-click="moreTranscriptPanel()">{{moreAndLessTranscript}}
+        </button>
         <h5 style="margin-right: 5px; margin-left: 5px">
-            <p><a ng-Click="moreInfoSelectedFromPanel(selectedTranscript.name)">{{selectedTranscript.name}} ( {{selectedTranscript.id}} )</a>
-            <a style="color:palevioletred"target="_blank" href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Transcript/Transcript?t={{selectedTranscript.id}};">
-                Go Ensembl</a>
-            </p>
-            <p>Biotype:
-                <span class="text-muted">{{selectedTranscript.biotype}}</span>
-            </p>
-
-            <p>
-                Location:
-            <span class="text-muted">{{selectedTranscript.chromosome}} : {{selectedTranscript.start}} -
-                {{selectedTranscript.end}}
-                </span>
+            <p><a ng-Click="moreInfoSelectedFromPanel(selectedTranscript.name)">{{selectedTranscript.name}} (
+                {{selectedTranscript.id}} )</a>
+                <a style="color:palevioletred" target="_blank"
+                   href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Transcript/Transcript?t={{selectedTranscript.id}};">
+                    Go Ensembl</a>
             </p>
 
-            <p>
-                Description:
-                <span class="text-muted">{{selectedTranscript.description}}</span>
+            <p>Biotype:<span class="text-muted">{{selectedTranscript.biotype}}</span>
+            </p>
+            <p>Location:<span class="text-muted">{{selectedTranscript.chromosome}} : {{selectedTranscript.start}} -{{selectedTranscript.end}}</span>
+            </p>
+            <p>Description:<span class="text-muted">{{selectedTranscript.description}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">Status:<span class="text-muted">{{selectedTranscript.status}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">Strand:<span class="text-muted">{{selectedTranscript.strand}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">Source:<span class="text-muted">{{selectedTranscript.source}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">Status: <span class="text-muted">{{selectedTranscript.status}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">Strand:<span class="text-muted">{{selectedTranscript.strand}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">Genomic Coding Start:<span class="text-muted">{{selectedTranscript.genomicCodingStart}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">Genomic Coding End:<span class="text-muted">{{selectedTranscript.genomicCodingStart}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">CDNA Coding Start:<span class="text-muted">{{selectedTranscript.cdnaCodingStart}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">CDNA Coding End:<span class="text-muted">{{selectedTranscript.cdnaCodingEnd}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">CDS Length:<span class="text-muted">{{selectedTranscript.cdsLength}}</span>
+            </p>
+            <p ng-show="transcriptPanelMore">
+                Protein ID:<span class="text-muted">{{selectedTranscript.proteinID}}</span>
             </p>
         </h5>
     </div>
