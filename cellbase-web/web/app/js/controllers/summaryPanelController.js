@@ -91,6 +91,12 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
     };
 
 
+    $scope.newResult = function(){
+
+        mySharedService.newResult( $scope.getRegions(), $scope.genesIdFilter, $scope.biotypesFilter);
+    };
+
+
 
 
 
@@ -169,9 +175,6 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 
 
     //-----avisar a resultpanel que muestre todos los genes
-    $scope.showAllGenes = function () {
-        mySharedService.broadcastShowAllGenes();
-    };
 //
 //    $scope.selectAllChrom = function () {
 //        mySharedService.broadcastShowAllGenes();
@@ -230,10 +233,24 @@ var summaryPanelControl = myApp.controller('summaryPanelController', ['$scope','
 
         if($scope.biotypesFilter.indexOf(biotype) != -1){
           return  {"background-color": "lightblue"};
+//          return  {"background-color": "lightblue",  "font-weight": "bold" };
         }
         else{
             return  {"background-color": "white"};
         }
+    };
+
+
+    $scope.goToTab = function () {
+
+        $(function () {
+            $('#myTab a:first').tab('show')
+        })
+
+        $('#myTab a').click(function (e) {
+            e.preventDefault()
+            $(this).tab('show')
+        })
     };
 
 }]);

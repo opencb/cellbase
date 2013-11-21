@@ -41,10 +41,13 @@ myApp.factory('mySharedService', function($rootScope){
     };
 
     //comunicar un nuevo resultado de summaryPanel a resultPanel
-    sharedService.newResults = function(regions){
-        this.selectedRegions= regions;
+    sharedService.newResult = function(regions, genesIdFilter,biotypeFilter){
 
-        this.broadcastResultsItem();
+        this.selectedRegions= regions;
+        this.genesIdFilter = genesIdFilter;
+        this.biotypeFilter = biotypeFilter;
+
+        this.broadcastResult();
     };
 
     //para pasarlo a optionsBar y se filtre
@@ -54,39 +57,16 @@ myApp.factory('mySharedService', function($rootScope){
         this.broadcastbiotypes();
     };
 
-    sharedService.broadcastShowAllGenes = function(){
-
-        this.broadcastToShowAllGenes();
-    };
-    sharedService.newFilter = function(genesIdFilter,biotypeFilter){
-
-        this.genesIdFilter = genesIdFilter;
-        this.biotypeFilter = biotypeFilter;
-
-        this.broadcastFilter();
-    };
-
-
-
 
     sharedService.broadcastSpecieItem = function () {
         $rootScope.$broadcast('specieBroadcast');
     }
-    sharedService.broadcastResultsItem = function () {
-        $rootScope.$broadcast('result');
-    }
     sharedService.broadcastbiotypes = function () {
         $rootScope.$broadcast('biotypes');
     }
-
-    sharedService.broadcastToShowAllGenes = function () {
-        $rootScope.$broadcast('showAllGenes');
+    sharedService.broadcastResult = function () {
+        $rootScope.$broadcast('newResult');
     }
-
-    sharedService.broadcastFilter = function () {
-        $rootScope.$broadcast('filter');
-    }
-
 
 
     return sharedService;
