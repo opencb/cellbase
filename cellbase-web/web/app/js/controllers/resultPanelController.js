@@ -11,8 +11,20 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
 
     $scope.numResults;
 
+//------------pruebas------------------
     $scope.prueba2 = "adios";
 
+    $scope.prueba = [{id: "id1", data: {idData: [{id:"id1-uno"}, {id:"id1-dos"},{id: "id1-tres"}]}}, {id: "id2", data: {idData:[{id:"id2-uno"},{id:"id2-dos"}, {id:"id2-tres"}]}}];
+    $scope.prueba2 = [{id:"id1-uno"}, {id:"id1-dos"},{id: "id1-tres"}];
+
+    $scope.show = false;
+    $scope.click = function () {
+         $scope.show = !$scope.show;
+
+    };
+
+
+    //--------------------------------
 
     //------------------para el pagination--------------------
     $scope.numeroDatosMostrar = 4;
@@ -268,10 +280,8 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
         $scope.showMoreInfoPanel = false;
     };
     //------------obtener nuevos resultados------------
-    $scope.$on('result', function () {
-        $scope.newResults();
-    });
     $scope.newResults = function () {
+
         $scope.showAll = true;
         var arrayOfGenes = [];
         $scope.selectedSpecie = mySharedService.selectedSpecies;
@@ -299,6 +309,8 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
         //para abrir la lista de primer gen
         $scope.firstGeneId = Object.keys($scope.genesAndTranscriptsData)[0];
 
+        $scope.initPaginationGenesTable();
+
 
         //-----------------------------------------------------------------
 //        $( '#'+ Object.keys($scope.genesAndTranscriptsData)[0]).attr("ng-show", true);
@@ -322,12 +334,11 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
 
         //--------------------------------------------------------------------
 
-        $scope.initPaginationGenesTable();
+
     };
 
-    //------------obtener el resultado de los filtros---------------
-    //dejar para un futuro!!!!!!!
-    $scope.$on('filter', function () {   //obtener la especie elegida en optionsBar
+
+    $scope.$on('newResult', function () {   //obtener la especie elegida en optionsBar
 
         $scope.genesFilters = mySharedService.genesIdFilter;
 //        $scope.genesFilters = mySharedService.genesIdFilter.split(",");
@@ -370,6 +381,13 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
 
 
         $scope.initPaginationGenesTable();
+
+
+        //mostramos el panel del del primer gen y los trancritos
+        $scope.geneSelected( Object.keys($scope.genesAndTranscriptsData)[0]);
+        $scope.transcriptsSelected( Object.keys($scope.genesAndTranscriptsData)[0]);
+
+
     });
 
     $scope.$on('showAllGenes', function () {
@@ -381,6 +399,19 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
         $scope.showTranscriptsTable = false;
         $scope.showMoreInfoPanel = false;
     });
+
+    $scope.showAllGenes = function () {
+
+        console.log("hola");
+        $scope.showGenesTable = true;
+
+        $scope.showGenePanel = false;
+        $scope.showTranscriptPanel = false;
+        $scope.showTranscriptsTable = false;
+        $scope.showMoreInfoPanel = false;
+    };
+
+
 
 
     $scope.biotypes = [];
@@ -438,16 +469,20 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
             //cuando cambiamos de gen expandimos la inforacion de cada pae
             $scope.expandAllPanels();
 
+            //mostramos tambien la tabla de grids
+
         }
         else {
             if (!$scope.showGenePanel) {  //para que no se muestre cuando ya lo esta
                 $scope.showGenePanel = true;    //mostrar panel
+
             }
         }
+            $scope.selectedTranscripts = $scope.selectedGen.transcripts;
+            $scope.showTranscriptsTable = true;
         $scope.showGenesTable = false;
     };
 
-    $scope.showTranscriptsTable = false;
 
 
     //mostrat tabla de transcripts desde el el panel de un gene
@@ -601,41 +636,23 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
 
     $scope.expandAllPanels = function () {
 
-        if ($scope.showGenePanel) {
             $scope.geneInfo = false;
-        }
-        if ($scope.showTranscriptsTable) {
             $scope.transcriptsInfo = false;
-        }
-        if ($scope.showTranscriptPanel) {
             $scope.transcriptInfo = false;
-        }
-        if ($scope.showMoreInfoPanel) {
             $scope.moreInfo = false;
-        }
     };
     $scope.collapseAllPanels = function () {
 
-        if ($scope.showGenePanel) {
             $scope.geneInfo = true;
-        }
-        if ($scope.showTranscriptsTable) {
             $scope.transcriptsInfo = true;
-        }
-        if ($scope.showTranscriptPanel) {
             $scope.transcriptInfo = true;
-        }
-        if ($scope.showMoreInfoPanel) {
             $scope.moreInfo = true;
-        }
     };
 
     $scope.expandAllGenesTree = function () {
-        $scope.genesToggle = true;
         $scope.transcriptsToggle = true;
     };
     $scope.collapseAllGenesTree = function () {
-        $scope.genesToggle = false;
         $scope.transcriptsToggle = false;
     };
 
