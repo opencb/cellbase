@@ -14,12 +14,12 @@
             <a href="#" ng-click="transcriptsToggle = !transcriptsToggle; geneSelected(gene.id); firstGeneId=&quot;&quot;"
                class="list-group-item active " style="margin:1px; background-color: #e6e6e6; color:black; border:1px solid #808080"><small>{{gene.name}} ({{gene.id}})</small>
 
-                <a ng-show="transcriptsToggle || firstGeneId==gene.id" ng-click="transcriptSelected(gene.id, transcript.name)" href="#"
-                   ng-repeat="transcript in gene.transcripts" class="list-group-item" ng-click="transcriptSelected(gene.id, transcript.name)"
-                    style="margin-left:30px">{{transcript.name}}
+                <a ng-show="transcriptsToggle || firstGeneId==gene.id" ng-click="transcriptSelected(gene.id, transcriptId.name)" href="#"
+                   ng-repeat="transcriptId in gene.transcripts" class="list-group-item" ng-click="transcriptSelected(gene.id, transcriptId.name)"
+                    style="margin-left:30px">{{transcriptId.name}}
 
                     <button type="button" class="btn btn-primary btn-xs"
-                            ng-click="moreInfoSelected(gene.id, transcript.name)">More info
+                            ng-click="moreInfoSelected(gene.id, transcriptId.name)">More info
                     </button>
                 </a>
             </a>
@@ -46,10 +46,17 @@
     <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs" ng-click="collapseAllPanels()"style="margin-bottom:8px;">Collapse all</button>
         <div ng-controller="allGenesPagination" genes-grid ng-show="showGenesTable"></div>
         <!--<div genes-grid ng-show="showGenesTable" style="background-color:#ffffff; "></div>-->
+<<<<<<< HEAD
         <div gene-panel style="margin-bottom: 5px"ng-show="showGenePanel"></div>
         <div transcripts-grid style="margin-bottom: 5px" ng-show="showTranscriptsTable"></div>
         <div transcript-panel style="margin-bottom: 5px" ng-show="showTranscriptPanel"></div>
         <div more-info-grid style="margin-bottom: 5px" ng-show="showMoreInfoPanel"></div>
+=======
+        <div gene-panel ng-show="showGenePanel"></div>
+        <div transcripts-grid ng-show="showTranscriptsTable"></div>
+        <div transcriptId-panel ng-show="showTranscriptPanel"></div>
+        <div more-info-grid ng-show="showMoreInfoPanel"></div>
+>>>>>>> 88bc1b0bdabf82ca053d4a7f893405fb32349433
     </div>
 
     <!--<div ng-repeat="data in a" style="margin:2px">-->

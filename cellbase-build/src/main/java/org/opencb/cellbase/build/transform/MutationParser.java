@@ -1,15 +1,15 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.variation.Mutation;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,30 +54,35 @@ public class MutationParser {
     // 23 Tumour origin***
     // 24 Comments
 
-    public void parse(File mutationFile) {
+    public void parse(Path mutationFile) {
         try {
-            BufferedReader br;
-            if(mutationFile.getName().endsWith(".gz")) {
-                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(mutationFile))));
-            }else {
-                br = Files.newBufferedReader(Paths.get(mutationFile.getAbsolutePath()), Charset.defaultCharset());
-            }
+//            BufferedReader br;
+//            if(mutationFile.getName().endsWith(".gz")) {
+//                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(mutationFile))));
+//            }else {
+//                br = Files.newBufferedReader(Paths.get(mutationFile.getAbsolutePath()), Charset.defaultCharset());
+//            }
+
+            BufferedReader br = FileUtils.newBufferedReader(mutationFile, Charset.defaultCharset());
 
             String chunkIdSuffix = CHUNK_SIZE/1000+"k";
             MutationMongoDB mutation;
             String line;
             String[] fields, regionFields;
-            // First line is a header, we read and lose it
+            // First line is a header, we read and discard it
             br.readLine();
             while ((line = br.readLine()) != null) {
                 fields = line.split("\t", -1);
                 if(!fields[18].equals("")) {
                     regionFields = fields[18].split("[:-]");
                     if(regionFields.length == 3) {
-                        mutation = new MutationMongoDB(regionFields[0], Integer.parseInt(regionFields[1]), Integer.parseInt(regionFields[2]),
-                                fields[19], fields[0], fields[1], fields[2], fields[3], fields[4], fields[5],
-                                fields[6], fields[7], fields[8], fields[9], fields[10], fields[11], fields[12],
-                                fields[13], fields[14], fields[15], fields[20], fields[21], fields[22], fields[23], fields[24]);
+                        String proteinStartString = fields[13].replaceAll("\\D", "");
+//                        System.out.println(fields[13]+" =>"+proteinStartString+"<=");
+                        int proteinStart = (proteinStartString.length() > 0 && proteinStartString.length() < 8) ? Integer.parseInt(proteinStartString) : 0;
+                        mutation = new MutationMongoDB("COSM"+fields[11], regionFields[0], Integer.parseInt(regionFields[1]), Integer.parseInt(regionFields[2]),
+                                fields[19], "", proteinStart, 0, fields[0], fields[1], fields[2], fields[4], fields[3], fields[22], fields[5],
+                                fields[6], fields[7], fields[8], fields[9], fields[10], fields[12],
+                                fields[13], fields[15], fields[20], fields[21], fields[23], fields[14]);
                         int chunkStart = (mutation.getStart()) / CHUNK_SIZE;
                         int chunkEnd = (mutation.getEnd()) / CHUNK_SIZE;
                         for(int i=chunkStart; i<=chunkEnd; i++) {
@@ -102,8 +107,8 @@ public class MutationParser {
             chunkIds = new ArrayList<>(2);
         }
 
-        public MutationMongoDB(String chromosome, int start, int end, String strand, String geneName, String ensemblTranscriptId, String hgncId, String sampleName, String sampleId, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationID, String mutationCDS, String mutationAA, String mutationDescription, String mutationZygosity, String mutationSomaticStatus, String pubmedPMID, String sampleSource, String tumourOrigin, String comments) {
-            super(chromosome, start, end, strand, geneName, ensemblTranscriptId, hgncId, sampleName, sampleId, tumourId, primarySite, siteSubtype, primaryHistology, histologySubtype, genomeWideScreen, mutationID, mutationCDS, mutationAA, mutationDescription, mutationZygosity, mutationSomaticStatus, pubmedPMID, sampleSource, tumourOrigin, comments);
+        public MutationMongoDB(String mutationID, String chromosome, int start, int end, String strand, String protein, int proteinStart, int proteinEnd, String geneName, String ensemblTranscriptId, String hgncId, String sampleName, String sampleId, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity, String mutationSomaticStatus, String pubmedPMID, String sampleSource, String tumourOrigin, String description) {
+            super(mutationID, chromosome, start, end, strand, protein, proteinStart, proteinEnd, geneName, ensemblTranscriptId, hgncId, sampleName, sampleId, tumourId, primarySite, siteSubtype, primaryHistology, histologySubtype, genomeWideScreen, mutationCDS, mutationAA, mutationZygosity, mutationSomaticStatus, pubmedPMID, sampleSource, tumourOrigin, description);
             chunkIds = new ArrayList<>(2);
         }
 

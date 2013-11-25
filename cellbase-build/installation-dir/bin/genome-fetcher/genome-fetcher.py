@@ -142,10 +142,12 @@ for sp in species:
             os.system("sort " + gene_folder+"/xrefs_dup.txt | uniq > " + gene_folder+"/xrefs.txt")
             os.system("rm " + gene_folder+"/xrefs_dup.txt")
 
+
+    ## Download VARIATION data
     if args.variation is not None and args.variation == '1':
         if not os.path.exists(variation_folder):
             os.makedirs(variation_folder)
-        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz', 'attrib.txt.gz', 'seq_region.txt.gz', 'structural_variation_feature.txt.gz', 'study.txt.gz', 'phenotype.txt.gz', 'phenotype_feature.txt.gz', 'motif_feature_variation.txt.gz']
+        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz', 'attrib.txt.gz', 'attrib_type.txt.gz', 'seq_region.txt.gz', 'structural_variation_feature.txt.gz', 'study.txt.gz', 'phenotype.txt.gz', 'phenotype_feature.txt.gz', 'phenotype_feature_attrib.txt.gz', 'motif_feature_variation.txt.gz']
         ## preparing URL for download
         if 'variation_url' in sp_obj and sp_obj['variation_url'] != '':
             variation_url = sp_obj['variation_url']

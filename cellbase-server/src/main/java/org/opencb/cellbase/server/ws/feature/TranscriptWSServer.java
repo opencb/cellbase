@@ -8,6 +8,7 @@ import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.FeatureType;
@@ -300,9 +301,11 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
-            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor
-                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
-            return generateResponse(query, "MUTATION", geneList);
+//            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor
+//                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
+            List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
+//            return generateResponse(query, "MUTATION", queryResults);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getMutationByGene", e.toString());

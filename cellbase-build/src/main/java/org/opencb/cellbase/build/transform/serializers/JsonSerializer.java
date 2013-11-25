@@ -26,6 +26,7 @@ import java.util.Map;
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class JsonSerializer implements CellbaseSerializer {
 
     private File file;

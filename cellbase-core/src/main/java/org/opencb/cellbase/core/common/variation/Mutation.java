@@ -9,61 +9,66 @@ package org.opencb.cellbase.core.common.variation;
  */
 public class Mutation {
 
+    private String id;
     private String chromosome;
     private int start;
     private int end;
     private String strand;
-    private String geneName;
-    private String ensemblTranscriptId;
+    private String protein;
+    private int proteinStart;
+    private int proteinEnd;
+    private String gene;
+    private String transcriptId;
     private String hgncId;
-    private String sampleName;
     private String sampleId;
+    private String sampleName;
+    private String sampleSource;
     private String tumourId;
     private String primarySite;
     private String siteSubtype;
     private String primaryHistology;
     private String histologySubtype;
     private String genomeWideScreen;
-    private String mutationID;
     private String mutationCDS;
     private String mutationAA;
-    private String mutationDescription;
     private String mutationZygosity;
-    private String mutationSomaticStatus;
-    private String pubmedPMID;
-    private String sampleSource;
+    private String status;
+    private String pubmed;
     private String tumourOrigin;
-    private String comments;
+    private String description;
+//    private String comments;
 
     public Mutation() {
     }
 
-    public Mutation(String chromosome, int start, int end, String strand, String geneName, String ensemblTranscriptId, String hgncId, String sampleName, String sampleId, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationID, String mutationCDS, String mutationAA, String mutationDescription, String mutationZygosity, String mutationSomaticStatus, String pubmedPMID, String sampleSource, String tumourOrigin, String comments) {
+    public Mutation(String id, String chromosome, int start, int end, String strand, String protein, int proteinStart, int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName, String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity, String status, String pubmed, String tumourOrigin, String description) {
+        this.id = id;
         this.chromosome = chromosome;
         this.start = start;
         this.end = end;
         this.strand = strand;
-        this.geneName = geneName;
-        this.ensemblTranscriptId = ensemblTranscriptId;
+        this.protein = protein;
+        this.proteinStart = proteinStart;
+        this.proteinEnd = proteinEnd;
+        this.gene = gene;
+        this.transcriptId = transcriptId;
         this.hgncId = hgncId;
-        this.sampleName = sampleName;
         this.sampleId = sampleId;
+        this.sampleName = sampleName;
+        this.sampleSource = sampleSource;
         this.tumourId = tumourId;
         this.primarySite = primarySite;
         this.siteSubtype = siteSubtype;
         this.primaryHistology = primaryHistology;
         this.histologySubtype = histologySubtype;
         this.genomeWideScreen = genomeWideScreen;
-        this.mutationID = mutationID;
         this.mutationCDS = mutationCDS;
         this.mutationAA = mutationAA;
-        this.mutationDescription = mutationDescription;
         this.mutationZygosity = mutationZygosity;
-        this.mutationSomaticStatus = mutationSomaticStatus;
-        this.pubmedPMID = pubmedPMID;
-        this.sampleSource = sampleSource;
+        this.status = status;
+        this.pubmed = pubmed;
         this.tumourOrigin = tumourOrigin;
-        this.comments = comments;
+        this.description = description;
     }
 
 
@@ -99,20 +104,44 @@ public class Mutation {
         this.strand = strand;
     }
 
-    public String getGeneName() {
-        return geneName;
+    public String getProtein() {
+        return protein;
     }
 
-    public void setGeneName(String geneName) {
-        this.geneName = geneName;
+    public void setProtein(String protein) {
+        this.protein = protein;
     }
 
-    public String getEnsemblTranscriptId() {
-        return ensemblTranscriptId;
+    public int getProteinStart() {
+        return proteinStart;
     }
 
-    public void setEnsemblTranscriptId(String ensemblTranscriptId) {
-        this.ensemblTranscriptId = ensemblTranscriptId;
+    public void setProteinStart(int proteinStart) {
+        this.proteinStart = proteinStart;
+    }
+
+    public int getProteinEnd() {
+        return proteinEnd;
+    }
+
+    public void setProteinEnd(int proteinEnd) {
+        this.proteinEnd = proteinEnd;
+    }
+
+    public String getGene() {
+        return gene;
+    }
+
+    public void setGene(String gene) {
+        this.gene = gene;
+    }
+
+    public String getTranscriptId() {
+        return transcriptId;
+    }
+
+    public void setTranscriptId(String transcriptId) {
+        this.transcriptId = transcriptId;
     }
 
     public String getHgncId() {
@@ -187,12 +216,12 @@ public class Mutation {
         this.genomeWideScreen = genomeWideScreen;
     }
 
-    public String getMutationID() {
-        return mutationID;
+    public String getId() {
+        return id;
     }
 
-    public void setMutationID(String mutationID) {
-        this.mutationID = mutationID;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getMutationCDS() {
@@ -211,14 +240,6 @@ public class Mutation {
         this.mutationAA = mutationAA;
     }
 
-    public String getMutationDescription() {
-        return mutationDescription;
-    }
-
-    public void setMutationDescription(String mutationDescription) {
-        this.mutationDescription = mutationDescription;
-    }
-
     public String getMutationZygosity() {
         return mutationZygosity;
     }
@@ -227,21 +248,24 @@ public class Mutation {
         this.mutationZygosity = mutationZygosity;
     }
 
-    public String getMutationSomaticStatus() {
-        return mutationSomaticStatus;
+
+    public String getStatus() {
+        return status;
     }
 
-    public void setMutationSomaticStatus(String mutationSomaticStatus) {
-        this.mutationSomaticStatus = mutationSomaticStatus;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public String getPubmedPMID() {
-        return pubmedPMID;
+
+    public String getPubmed() {
+        return pubmed;
     }
 
-    public void setPubmedPMID(String pubmedPMID) {
-        this.pubmedPMID = pubmedPMID;
+    public void setPubmed(String pubmed) {
+        this.pubmed = pubmed;
     }
+
 
     public String getSampleSource() {
         return sampleSource;
@@ -251,6 +275,7 @@ public class Mutation {
         this.sampleSource = sampleSource;
     }
 
+
     public String getTumourOrigin() {
         return tumourOrigin;
     }
@@ -259,11 +284,13 @@ public class Mutation {
         this.tumourOrigin = tumourOrigin;
     }
 
-    public String getComments() {
-        return comments;
+
+    public String getDescription() {
+        return description;
     }
 
-    public void setComments(String comments) {
-        this.comments = comments;
+    public void setDescription(String description) {
+        this.description = description;
     }
+
 }

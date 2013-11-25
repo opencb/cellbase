@@ -76,7 +76,7 @@ public class SnpWSServer extends GenericRestWSServer {
 //			for (int i = 0; i < snpToTranscript.size(); i++) {
 //				List<Transcript> transcript = new ArrayList<Transcript>();
 //				for (int j = 0; j < snpToTranscript.get(i).size(); j++) {
-//					transcript.add(snpToTranscript.get(i).get(j).getTranscript());
+//					transcript.add(snpToTranscript.get(i).get(j).getTranscriptId());
 //				}
 //				transcripts.add(transcript);
 //			}
@@ -107,7 +107,7 @@ public class SnpWSServer extends GenericRestWSServer {
 ////					String aux = gson.toJson(snpToTranscript.get(i));
 //////					System.out.println(aux);
 ////					for (int k = 0; k < snpToTranscript.get(i).size(); k++) {
-////						aux = aux.replace("\"snpToTranscriptId\":"+snpToTranscript.get(i).get(k).getSnpToTranscriptId(), "\"transcript\":"+gson.toJson(snpToTranscript.get(i).get(k).getTranscript())+", \"consequenceTypeSoAccession\":"+gson.toJson(snpToTranscript.get(i).get(k).getConsequenceTypeSoAccession()));
+////						aux = aux.replace("\"snpToTranscriptId\":"+snpToTranscript.get(i).get(k).getSnpToTranscriptId(), "\"transcript\":"+gson.toJson(snpToTranscript.get(i).get(k).getTranscriptId())+", \"consequenceTypeSoAccession\":"+gson.toJson(snpToTranscript.get(i).get(k).getConsequenceTypeSoAccession()));
 ////					}
 ////					response.append("\"snptotranscript\":"+aux+",");
 ////					System.out.println(aux);

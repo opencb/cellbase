@@ -3,6 +3,10 @@ package org.opencb.cellbase.build.transform.serializers.mongodb;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import org.opencb.cellbase.build.transform.MutationParser;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
@@ -17,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,6 +42,9 @@ public class MongoDBSerializer implements CellbaseSerializer {
     private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
+    // Variation data is too big to be stored in a single file,
+    // data is split in different files
+    private Map<String, BufferedWriter> variationBufferedWriter;
     private BufferedWriter mutationBufferedWriter;
 
     private ObjectMapper jsonObjectMapper;
@@ -57,9 +65,21 @@ public class MongoDBSerializer implements CellbaseSerializer {
         }
 
         bufferedWriterMap = new Hashtable<>(50);
+        variationBufferedWriter = new HashMap<>(40);
 
         jsonObjectMapper = new ObjectMapper();
+//        jsonObjectMapper.setPropertyNamingStrategy(new GeneNamingStrategy());
+
         jsonObjectWriter = jsonObjectMapper.writer();
+
+//        PropertyNamingStrategy propertyNamingStrategy = new PropertyNamingStrategy() {
+//            @Override
+//            public String nameForField(MapperConfig<?> mapperConfig, AnnotatedField annotatedField, String s) {
+//                return super.nameForField(mapperConfig, annotatedField, s);    //To change body of overridden methods use File | Settings | File Templates.
+//            }
+//        };
+
+
     }
 
 
@@ -71,19 +91,6 @@ public class MongoDBSerializer implements CellbaseSerializer {
             }
             genomeSequenceBufferedWriter.write(jsonObjectWriter.writeValueAsString(genomeSequenceChunk));
             genomeSequenceBufferedWriter.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        };
-    }
-
-    @Override
-    public void serialize(Mutation mutation) {
-        try {
-            if(mutationBufferedWriter == null) {
-                mutationBufferedWriter = Files.newBufferedWriter(outfilePath, Charset.defaultCharset());
-            }
-            mutationBufferedWriter.write(jsonObjectWriter.writeValueAsString(mutation));
-            mutationBufferedWriter.newLine();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         };
@@ -106,7 +113,30 @@ public class MongoDBSerializer implements CellbaseSerializer {
 
     @Override
     public void serialize(Variation variation) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        try {
+            if(variationBufferedWriter.get(variation.getChromosome()) == null) {
+                variationBufferedWriter.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
+            }
+            variationBufferedWriter.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
+            variationBufferedWriter.get(variation.getChromosome()).newLine();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
+    public void serialize(Mutation mutation) {
+        try {
+            if(mutationBufferedWriter == null) {
+                mutationBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("mutation.json"), Charset.defaultCharset());
+            }
+            mutationBufferedWriter.write(jsonObjectWriter.writeValueAsString(mutation));
+            mutationBufferedWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        };
     }
 
     @Override
@@ -143,6 +173,18 @@ public class MongoDBSerializer implements CellbaseSerializer {
             if(bufferedWriterMap.get(id) != null) {
                 try {
                     bufferedWriterMap.get(id).close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        iter = variationBufferedWriter.keySet().iterator();
+        while(iter.hasNext()) {
+            id = iter.next();
+            if(variationBufferedWriter.get(id) != null) {
+                try {
+                    variationBufferedWriter.get(id).close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
