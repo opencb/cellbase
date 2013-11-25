@@ -1,17 +1,18 @@
 <div class="" ng-show="showAll">
-    <div class="pull-left" style="border:1px solid darkgray; width:260px; ">
+    <div class="pull-left" style="border:1px solid darkgray; width:260px; margin-left:10px ">
 
         <div style="margin-left:5px; text-align: center">Number of results: <b>{{numResults}}</b></div>
 
+        <div style="text-align: center">
         <button  type="button" class="btn btn-info btn-xs" ng-click="expandAllGenesTree()"style="margin:5px;">Expand All</button>
         <button  type="button" class="btn btn-info btn-xs" ng-click="collapseAllGenesTree()"style="margin:5px;">Collapse all</button>
+        </div>
 
+        <button type="button" style="font-weight: bold; margin-left:5px; margin-right: 5px; margin-top: 5px; margin-bottom: 8px;  text-align:center; width:248px; background-color: #e6e6e6; color:black; border:1px solid #808080" class="btn btn-primary btn-ms" ng-click="showAllGenes()">ALL GENES </button>
 
-        <button type="button" style="font-weight: bold; margin:5px; text-align:center; width:250px" class="btn btn-primary btn-ms" ng-click="showAllGenes()">ALL GENES </button>
-
-        <div ng-repeat="gene in paginationData" style="margin:2px" ng-model="firstGeneId">
+        <div ng-repeat="gene in paginationData" style="margin:2px; " ng-model="firstGeneId">
             <a href="#" ng-click="transcriptsToggle = !transcriptsToggle; geneSelected(gene.id); firstGeneId=&quot;&quot;"
-               class="list-group-item active " style="margin:1px;"><small>{{gene.name}} ({{gene.id}})</small>
+               class="list-group-item active " style="margin:1px; background-color: #e6e6e6; color:black; border:1px solid #808080"><small>{{gene.name}} ({{gene.id}})</small>
 
                 <a ng-show="transcriptsToggle || firstGeneId==gene.id" ng-click="transcriptSelected(gene.id, transcript.name)" href="#"
                    ng-repeat="transcript in gene.transcripts" class="list-group-item" ng-click="transcriptSelected(gene.id, transcript.name)"
@@ -25,8 +26,8 @@
         </div>
 
         <!--<div id="pagination" ng-click="getDataInPaginationLimits()"></div>-->
-
-        <div ng-show="showPagination" class="btn-group btn-group-xs" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px">
+<div style="text-align: center">
+        <div ng-show="showPagination" class="btn-group btn-group-xs" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px; ">
             <button ng-show="firstPages" type="button" class="btn btn-default btn-ms" ng-click="goToFirstPage()"style="color:#006ffb"><<</button>
             <button ng-show="previousPage" type="button" class="btn btn-default btn-ms" ng-click="goPreviousPage()"style="color:#006ffb"><</button>
             <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableFirstNumber}"ng-click="goToNumberPage(paginationNumbers[0])" style="color:#006ffb">{{paginationNumbers[0]}}</button>
@@ -35,19 +36,20 @@
             <button ng-show="nextPage" type="button" class="btn btn-default btn-ms" ng-click="goNextPage()"style="color:#006ffb">></button>
             <button ng-show="lastPages" type="button" class="btn btn-default btn-ms" ng-click="goToLastPage()"style="color:#006ffb">>></button>
         </div>
+</div>
 
     </div>
 
 
     <div class="pull-left" style="margin:10px; "ng-style="getWidth()">
-    <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs" ng-click="expandAllPanels()"style="margin:5px;">Expand All</button>
-    <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs" ng-click="collapseAllPanels()"style="margin:5px;">Collapse all</button>
-        <div ng-controller="allGenesPagination" genes-grid ng-show="showGenesTable" style="background-color:#ffffff; "></div>
+    <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs" ng-click="expandAllPanels()"style="margin-bottom:8px;">Expand All</button>
+    <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs" ng-click="collapseAllPanels()"style="margin-bottom:8px;">Collapse all</button>
+        <div ng-controller="allGenesPagination" genes-grid ng-show="showGenesTable"></div>
         <!--<div genes-grid ng-show="showGenesTable" style="background-color:#ffffff; "></div>-->
-        <div gene-panel ng-show="showGenePanel"></div>
-        <div transcripts-grid ng-show="showTranscriptsTable"></div>
-        <div transcript-panel ng-show="showTranscriptPanel"></div>
-        <div more-info-grid ng-show="showMoreInfoPanel"></div>
+        <div gene-panel style="margin-bottom: 5px"ng-show="showGenePanel"></div>
+        <div transcripts-grid style="margin-bottom: 5px" ng-show="showTranscriptsTable"></div>
+        <div transcript-panel style="margin-bottom: 5px" ng-show="showTranscriptPanel"></div>
+        <div more-info-grid style="margin-bottom: 5px" ng-show="showMoreInfoPanel"></div>
     </div>
 
     <!--<div ng-repeat="data in a" style="margin:2px">-->

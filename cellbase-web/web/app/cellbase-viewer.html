@@ -43,10 +43,15 @@
 
 
     <!------------------------------------->
+    <!--<script type="text/javascript" src="../vendor/backbone-min.js"></script>-->
 
     <script src="js/app.js"></script>
 
     <!--<link href="css/bootstrap_rewrites.css" rel="stylesheet">-->
+
+
+    <script src="js/chromosome-panel.js"></script>
+    <script src="js/region.js"></script>
 
     <script src="js/directives/optionsBarDirective.js"></script>
     <script src="js/directives/summaryPanelDirective.js"></script>
@@ -59,10 +64,14 @@
     <script src="js/directives/moreInfoGridDirective.js"></script>
 
 
+
     <script src="js/controllers/optionsBarController.js"></script>
     <script src="js/controllers/summaryPanelController.js"></script>
     <script src="js/controllers/resultPanelController.js"></script>
     <script src="js/controllers/allGenesPagination.js"></script>
+    <script src="js/controllers/chromosomePanelController.js"></script>
+
+
 
 
     <style type="text/css">
@@ -89,12 +98,12 @@
     </div>
 
 
-    <ul class="nav nav-tabs" id="myTab">
+    <ul class="nav nav-tabs" id="myTab" style="border-bottom: 1px solid darkgray;">
         <li class="active"><a href="#genes">Genes</a></li>
         <li><a href="#variants">Variants</a></li>
     </ul>
 
-    <div class="tab-content" style="margin:4px">
+    <div class="tab-content" style="margin:4px;">
         <div class="tab-pane active" id="genes">
 
             <div class="pull-left" ng-controller="summaryPanelController"
@@ -110,10 +119,14 @@
         <div class="tab-pane" id="variants">Another tab</div>
     </div>
 
-    <!--<div style="background-color: lightgrey;height:20px"></div>    -->
 </div>
 
-</div>
+
+
+        <!--<footer style="background-color: lightgrey; margin-top:20px">footer</footer>-->
+    <!--<div  ng-controller="chromosomePanelController" id="chromosome-div" style="height:20px;  bottom: 0; width: 100%"> footer</div>-->
+<!--<div style="position:relative; border:1px solid lightgrey; bottom : 0; ">holaaa</div>-->
+
 
 <script>
 

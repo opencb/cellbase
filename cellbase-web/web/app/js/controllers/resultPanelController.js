@@ -388,7 +388,61 @@ var resultPanelControl = myApp.controller('resultPanelController', ['$scope', 'm
         $scope.transcriptsSelected( Object.keys($scope.genesAndTranscriptsData)[0]);
 
 
+//        //añadimos el div en el que pondremos el chromosoma
+//        var chromosomeDiv = $('#chromosome-div')[0];
+//        var chrom = $('<div id="chromosome"></div>')[0];
+//
+//        $(chromosomeDiv).append(chrom);
+//
+//
+//        $scope.drawChromosomePanel($(chrom).attr('id'));
+
     });
+
+//    $scope.drawChromosomePanel = function (targetId) {
+//
+//        console.log(targetId);
+//
+////        var _this = this;
+//
+//
+//        var chromosomePanel = new ChromosomePanel({
+//            targetId: targetId,
+//            autoRender: true,
+////            width: this.width - this.sidePanelWidth,
+//            width: '100%',
+//            height: 65,
+//            species: this.species,
+//            title: 'Chromosome',
+//            collapsed: this.chromosomePanelConfig.collapsed,
+//            collapsible: this.chromosomePanelConfig.collapsible,
+//            region: this.region
+////            handlers: {
+////                'region:change': function (event) {
+////                    _this.trigger('region:change', event);
+////                }
+////            }
+//        });
+//
+////        this.on('region:change region:move', function (event) {
+////            if (event.sender != chromosomePanel) {
+////                chromosomePanel.setRegion(event.region);
+////            }
+////        });
+////
+////        this.on('width:change', function (event) {
+////            chromosomePanel.setWidth(event.width - _this.sidePanelWidth);
+////        });
+////
+////        this.on('species:change', function (event) {
+////            chromosomePanel.setSpecies(event.species);
+////        });
+//
+//        chromosomePanel.draw();
+//
+//        return chromosomePanel;
+//    };
+
 
     $scope.$on('showAllGenes', function () {
 

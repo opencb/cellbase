@@ -1,19 +1,47 @@
 <div class="btn-toolbar">
 
-    <div class="btn-group btn-group-ms" style="margin: 5px">
-        <button type="button" ng-click="handleClick('hola')" class="btn btn-default btn-primary">New</button>
-        <div class="btn-group btn-group-ms">
-            <button type="button" class="btn btn-default dropdown-toggle btn-primary" data-toggle="dropdown">
-                Select species:
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-                <li><a href="#" ng-repeat="specie in species" ng-click="setSelectedSpecie(specie)">
-                    {{ specie.longName}}
-                </a></li>
-            </ul>
-        </div>
-    </div>
+    <!--<nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" style="background-color: lightgrey;color:#0B0B61 ;background-image: linear-gradient(#5882FA, #A0E2F3);-->
+    <!--<nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" style="background-color: #5882FA;-->
+    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" style="background-color: lightgrey;
+ margin-bottom: 10px">
+        <ul class="nav navbar-nav">
+            <li >
+                <a href="../getting-started" style="font-weight:bold; font-size:medium;color:#0B0B61" >New</a>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="font-weight:bold; font-size:medium; color:#0B0B61">Select Specie <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    <li><a href="#" ng-repeat="specie in species" ng-click="setSelectedSpecie(specie)">
+                        {{ specie.longName}}
+                    </a></li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li>
+                <a href="#" style="font-weight:bold; font-size:medium;color:#0B0B61">Example</a>
+            </li>
+            <li>
+                <a href="#" style="font-weight:bold; font-size:medium;color:#0B0B61">Help</a>
+            </li>
+        </ul>
+    </nav>
+
+
+    <!--<div class="btn-group btn-group-ms" style="margin: 5px">-->
+        <!--<button type="button" ng-click="handleClick('hola')" class="btn btn-default btn-primary">New</button>-->
+        <!--<div class="btn-group btn-group-ms">-->
+            <!--<button type="button" class="btn btn-default dropdown-toggle btn-primary" data-toggle="dropdown">-->
+                <!--Select species:-->
+                <!--<span class="caret"></span>-->
+            <!--</button>-->
+            <!--<ul class="dropdown-menu">-->
+                <!--<li><a href="#" ng-repeat="specie in species" ng-click="setSelectedSpecie(specie)">-->
+                    <!--{{ specie.longName}}-->
+                <!--</a></li>-->
+            <!--</ul>-->
+        <!--</div>-->
+    <!--</div>-->
 
 
 </div>

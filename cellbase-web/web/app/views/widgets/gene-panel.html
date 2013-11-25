@@ -1,10 +1,9 @@
 <div class="list-group">
-    <a href="#" class="list-group-item active" style="text-align: center" ng-click="geneInfo = !geneInfo">Gene
+    <a href="#" class="list-group-item active" style="text-align: center;" ng-click="geneInfo = !geneInfo">Gene
         information
         <button type="button" class="btn btn-default btn-xs" ng-Click="showGenePanel = false" style="float:right">x
         </button>
     </a>
-
     <div ng-show="!geneInfo" style="border:1px solid #006ffb">
         <button type="button" class="btn btn-primary btn-xs" style="float:left; margin:3px" ng-click="moreGenePanel()">
             {{moreAndLessGene}}
