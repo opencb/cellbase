@@ -206,8 +206,10 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
-            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor.getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
-            return generateResponse(query, "MUTATION", geneList);
+//            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor.getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
+            List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
+//            return generateResponse(query, "MUTATION", queryResults);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getMutationByGene", e.toString());

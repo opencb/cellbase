@@ -207,12 +207,16 @@ public class RegionWSServer extends GenericRestWSServer {
 			List<Region> regions = Region.parseRegions(query);
 
 			if (hasHistogramQueryParam()) {
-				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
-						regions.get(0), getHistogramIntervalSize());
-				return generateResponse(query, intervalList);
+//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
+//						regions.get(0), getHistogramIntervalSize());
+                QueryResult queryResult = mutationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
+//				return generateResponse(query, intervalList);
+                return createOkResponse(queryResult);
 			} else {
-				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
-				return this.generateResponse(query, "MUTATION", mutationList);
+//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
+				List<QueryResult> queryResults = mutationDBAdaptor.getAllByRegionList(regions, queryOptions);
+//				return this.generateResponse(query, "MUTATION", mutationList);
+				return createOkResponse(queryResults);
 			}
 
 		} catch (Exception e) {

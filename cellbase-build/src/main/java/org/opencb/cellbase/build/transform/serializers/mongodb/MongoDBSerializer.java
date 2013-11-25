@@ -3,6 +3,10 @@ package org.opencb.cellbase.build.transform.serializers.mongodb;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import org.opencb.cellbase.build.transform.MutationParser;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
@@ -64,7 +68,18 @@ public class MongoDBSerializer implements CellbaseSerializer {
         variationBufferedWriter = new HashMap<>(40);
 
         jsonObjectMapper = new ObjectMapper();
+//        jsonObjectMapper.setPropertyNamingStrategy(new GeneNamingStrategy());
+
         jsonObjectWriter = jsonObjectMapper.writer();
+
+//        PropertyNamingStrategy propertyNamingStrategy = new PropertyNamingStrategy() {
+//            @Override
+//            public String nameForField(MapperConfig<?> mapperConfig, AnnotatedField annotatedField, String s) {
+//                return super.nameForField(mapperConfig, annotatedField, s);    //To change body of overridden methods use File | Settings | File Templates.
+//            }
+//        };
+
+
     }
 
 

@@ -13,12 +13,12 @@
             <a href="#" ng-click="transcriptsToggle = !transcriptsToggle; geneSelected(gene.id); firstGeneId=&quot;&quot;"
                class="list-group-item active " style="margin:1px;"><small>{{gene.name}} ({{gene.id}})</small>
 
-                <a ng-show="transcriptsToggle || firstGeneId==gene.id" ng-click="transcriptSelected(gene.id, transcript.name)" href="#"
-                   ng-repeat="transcript in gene.transcripts" class="list-group-item" ng-click="transcriptSelected(gene.id, transcript.name)"
-                    style="margin-left:30px">{{transcript.name}}
+                <a ng-show="transcriptsToggle || firstGeneId==gene.id" ng-click="transcriptSelected(gene.id, transcriptId.name)" href="#"
+                   ng-repeat="transcriptId in gene.transcripts" class="list-group-item" ng-click="transcriptSelected(gene.id, transcriptId.name)"
+                    style="margin-left:30px">{{transcriptId.name}}
 
                     <button type="button" class="btn btn-primary btn-xs"
-                            ng-click="moreInfoSelected(gene.id, transcript.name)">More info
+                            ng-click="moreInfoSelected(gene.id, transcriptId.name)">More info
                     </button>
                 </a>
             </a>
@@ -46,7 +46,7 @@
         <!--<div genes-grid ng-show="showGenesTable" style="background-color:#ffffff; "></div>-->
         <div gene-panel ng-show="showGenePanel"></div>
         <div transcripts-grid ng-show="showTranscriptsTable"></div>
-        <div transcript-panel ng-show="showTranscriptPanel"></div>
+        <div transcriptId-panel ng-show="showTranscriptPanel"></div>
         <div more-info-grid ng-show="showMoreInfoPanel"></div>
     </div>
 
