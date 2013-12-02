@@ -1,82 +1,47 @@
-'use strict';
-
 var myApp = angular.module('project', []);
-//var foodMeApp = angular.module('foodMeApp', ['ngResource']);
-
 
 myApp.factory('mySharedService', function($rootScope){
 
     var sharedService = {};
 
-    sharedService.message = '';
-
     sharedService.selectedSpecies=  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
-    sharedService.selectedRegions= "";
+    //region obtained by the drawn chromosome
 
-//    sharedService.chromosomesPerSpecie = {
-//        hsapiens: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"],
-//        mmusculus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","X","Y","MT"],
-//        rnorvegicus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","X","Y","MT"],
-//        drerio: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","X","Y","MT"],
-//        dmelanogaster: ["2L", "2LHet", "2R", "2RHet","3L", "3LHet", "3R", "3RHet","4", "U", "Uextra", "X","XHet", "YHet", "dmel_mitochondrion_genome"],
-//        celegans : ["I", "II", "III","IV","V","X","MtDNA"],
-//        scerevisiae: ["I", "II", "III","IV","V","VI", "VII", "VIII", "IX", "X","XI", "XII", "XIII", "XIV", "XV", "XVI", "Mito"],
-//        cfamiliaris: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","X","MT"],
-//        sscrofa: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","X","Y","MT"],
-//        agambiae: ["2L", "2R", "3L", "3R", "X"],
-//        pfalciparum: ["01","02","03","04","05","06","07","08","09","10","11","12","13","14"]
-//    };
-
-//    sharedService.species = ["Homo sapiens ","Mus musculus ","Rattus norvegicus ", "Danio rerio ","Drosophila melanogaster ","Caenorhabditis elegans ","Saccharomyces cerevisiae ","Canis familiaris ","Sus scrofa ","Anopheles gambiae ","Plasmodium falciparum"];
-//    $scope.species = ["hsapiens","mmusculus","rnorvegicus","drerio","dmelanogaster","celegans","scerevisiae","cfamiliaris","sscrofa","agambiae","pfalciparum"]
-
-
-
-    //comunicar la especie de optionsBar a SummaryPanel
+    //comunicate specie from optionsBar to genesSelectPanel
     sharedService.broadcastSpecie = function(specie){
-
         this.selectedSpecies = specie;
-
-        this.broadcastSpecieItem();
+        $rootScope.$broadcast('newSpecie');
     };
 
-    //comunicar un nuevo resultado de summaryPanel a resultPanel
-    sharedService.newResult = function(regions, genesIdFilter,biotypeFilter){
-
-        this.selectedRegions= regions;
+    //comunicate a new result from genesSelectPanel to GenesResultPanel
+    sharedService.newResult = function(chromosomes, regionsAndChromosomes, genesIdFilter,biotypeFilter){
+        this.chromosomes = chromosomes;
+        this.regionsAndChromosomes = regionsAndChromosomes;
         this.genesIdFilter = genesIdFilter;
         this.biotypeFilter = biotypeFilter;
 
-        this.broadcastResult();
+        $rootScope.$broadcast('newResult');
     };
 
-    //para pasarlo a optionsBar y se filtre
+    //comunicate biotypes from genesResultPanel to genesSelectPanel
     sharedService.biotypesNames = function(biotypes){
         this.biotypes= biotypes;
-
-        this.broadcastbiotypes();
+        $rootScope.$broadcast('biotypes');
     };
 
-
-    sharedService.broadcastSpecieItem = function () {
-        $rootScope.$broadcast('specieBroadcast');
-    }
-    sharedService.broadcastbiotypes = function () {
-        $rootScope.$broadcast('biotypes');
-    }
-    sharedService.broadcastResult = function () {
-        $rootScope.$broadcast('newResult');
-    }
-
+    sharedService.addRegionFromChromosome = function(region){
+        this.regionFromChromosome = region;
+        $rootScope.$broadcast('newRegion');
+    };
 
     return sharedService;
 })
 
 myApp.service('CellbaseService', function () {
-    ////Not implemeneted yet
 
     var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/';
 
+    ////Not implemeneted yet
     this.getSpecies = function () {
         var dataGet;
 
@@ -93,15 +58,13 @@ myApp.service('CellbaseService', function () {
         return dataGet;
     };
 
-
-    //obtener los chromosomas de una especie
+    //obtain the chromosomes of a specie
     this.getSpecieChromosomes = function (specie) {
 
         var dataGet;
 
         $.ajax({
             url: host + specie + '/genomic/chromosome/all?of=json',
-//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
@@ -110,14 +73,14 @@ myApp.service('CellbaseService', function () {
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
-
         return dataGet;
     };
 
 
+    //obtain genes and transcripts from regions of a specie and filter by biotypes
     this.getGenesAndTranscripts = function (species, regions, biotypesFilter) {
 
-        var dataGet;
+        var dataGet = [];
         var url;
 
         if (biotypesFilter.length == 0) {
@@ -129,61 +92,36 @@ myApp.service('CellbaseService', function () {
 
         $.ajax({
             url: url,
-//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
 
-                dataGet = data.response[0];
+                if(data != null){
+    //                console.time("guardar los datos");
+                    for(var i in data.response){
+                        for(var j in data.response[i].result){
+                            dataGet.push(data.response[i].result[j]);
+                        }
+                    }
+    //                console.timeEnd("guardar los datos");
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
-
-
         return dataGet;
     };
-    this.getGenesAllData = function (species, regions, biotypesFilter) {
 
-        var dataGet;
-        var url;
-
-        if (biotypesFilter.length == 0) {
-            url = host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json';
-        }
-        else {
-            url = host + species + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts&of=json';
-        }
-
-        $.ajax({
-            url: url,
-//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
-            async: false,
-            dataType: 'json',
-            success: function (data, textStatus, jqXHR) {
-
-                dataGet = data.response[0].result;
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-            }
-        });
-
-        return dataGet;
-    };
-    this.getGenesAndTranscriptsById = function (species, geneId) {
+    //obtain genes and transcripts from a specie and filter by geneId or name
+    this.getGenesAndTranscriptsByIdOrName = function (species, geneId) {
 
         var dataGet = [];
-        var url;
-
 
         $.ajax({
-//                url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
             url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
-//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
-
 
                 for (var i in data.response) {
                     dataGet.push(data.response[i].result[0]);
@@ -192,77 +130,26 @@ myApp.service('CellbaseService', function () {
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
-
         return dataGet;
     };
+
+    //obtain all data of genes from a specie and filter by geneId or name
     this.getGenesAllDataById = function (species, geneId) {
 
         var dataGet = [];
-        var url;
-
 
         $.ajax({
             url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
-//                url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
-//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
-
-//                    for(var i in data.response)
-//                    {
-//                        dataGet.push(data.response[i].result[0]);
-//                    }
-                dataGet = data.response;
-//                    dataGet = data.response[0];
+                dataGet = data.response[0].result[0];
             },
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
-
         return dataGet;
     };
 
-
-
 });
 
-
-//myApp.config(function($routeProvider) {
-//
-//  $routeProvider.
-//      when('/', {
-//        controller: 'optionsBarController',
-//        templateUrl: 'views/options-bar.html'
-//      }).
-//      when('/', {
-//        controller: 'summaryPanelController',
-//        templateUrl: 'views/summary-panel.html'
-//      }).
-//      when('/', {
-//        controller: 'resultPanelController',
-//        templateUrl: 'views/result-panel.html'
-//      });
-////      .
-////      when('/checkout', {
-////        controller: 'CheckoutController',
-////        templateUrl: 'views/checkout.html'
-////      }).
-////      when('/thank-you', {
-////        controller: 'ThankYouController',
-////        templateUrl: 'views/thank-you.html'
-////      }).
-////      when('/customer', {
-////        controller: 'CustomerController',
-////        templateUrl: 'views/customer.html'
-////      }).
-////      when('/who-we-are', {
-////        templateUrl: 'views/who-we-are.html'
-////      }).
-////      when('/how-it-works', {
-////        templateUrl: 'views/how-it-works.html'
-////      }).
-////      when('/help', {
-////        templateUrl: 'views/help.html'
-////      });
-//});
