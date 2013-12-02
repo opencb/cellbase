@@ -74,7 +74,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
-        if (options.getString("strand") == null || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
+        if (options.getString("strand") == null || options.getString("strand").equals("") || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
             // db.core.find({chromosome: "1", start: {$gt: 1000000}}).sort({start: 1}).limit(1)
             QueryBuilder builder = QueryBuilder.start("chromosome").is(chromosome).and("start").greaterThanEquals(position);
             // options.put("sortAsc", "start");
@@ -198,7 +198,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
-        return getAllByRegion(chromosome, position, position, options);
+        return getAllByRegion(new Region(chromosome, position, position), options);
     }
 
     @Override

@@ -255,7 +255,7 @@ public class MongoDBAdaptor extends DBAdaptor {
         for (int i = 0; i < operationsList.size(); i++) {
             DBObject[] operations = operationsList.get(i);
 
-            // Mongo aggregate method signature is :public AggregationOutput aggregate( DBObject firstOp, DBObject ... additionalOps)
+            // MongoDB aggregate method signature is: public AggregationOutput aggregate( DBObject firstOp, DBObject ... additionalOps)
             // so the operations array must be decomposed, TODO check operations length
             DBObject firstOperation = operations[0];
             DBObject[] additionalOperations = Arrays.copyOfRange(operations, 1, operations.length);
