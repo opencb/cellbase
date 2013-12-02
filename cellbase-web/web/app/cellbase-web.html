@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html ng-app="project">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Proyecto</title>
+
+    <!--jQuery-->
+    <script type="text/javascript" src="../vendor/jquery.min.js"></script>
+
+    <!--AngularJS-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+
+    <!--Bootstrap-->
+    <link href="../vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script type="text/javascript" src="../vendor/bootstrap/js/bootstrap.js"></script>
+
+    <!--for chromosome panel-->
+    <script type="text/javascript" src="../vendor/underscore-min.js"></script>
+    <script type="text/javascript" src="../vendor/backbone-min.js"></script>
+
+    <!--===================================================================-->
+    <!--===================================================================-->
+
+    <!--cromosome panel-->
+    <script src="../../lib/jsorolla/src/lib/utils/utils.js"></script>
+    <script src="../../lib/jsorolla/src/lib/region.js"></script>
+    <script src="../../lib/jsorolla/src/lib/utils/svg.js"></script>
+    <script src="../../lib/jsorolla/src/lib/cellbase/cellbase-manager.js"></script>
+    <script src="../../lib/jsorolla/src/genome-viewer/chromosome-panel.js"></script>
+
+
+    <link href="css/cellbase-web.css" rel="stylesheet">
+
+    <script src="js/app.js"></script>
+
+    <!--======================DIRECTIVES======================-->
+    <script src="js/directives/optionsBarDirective.js"></script>
+    <script src="js/directives/chromosomePanelDirective.js"></script>
+    <!----------------genes directives--------------->
+    <script src="js/directives/selectDataDirective.js"></script>
+    <script src="js/directives/genesSelectPanelDirective.js"></script>
+    <script src="js/directives/genesResultPanelDirective.js"></script>
+    <!-----widgets----->
+    <script src="js/directives/genesTableDirective.js"></script>
+    <script src="js/directives/genePanelDirective.js"></script>
+    <script src="js/directives/transcriptsTableDirective.js"></script>
+    <script src="js/directives/transcriptPanelDirective.js"></script>
+    <script src="js/directives/moreInfoTablesDirective.js"></script>
+    <script src="js/directives/genesAndTranscriptsTableDirective.js"></script>
+
+    <!----------------variants directives--------------->
+    <script src="js/directives/variantsSelectPanelDirective.js"></script>
+    <script src="js/directives/variantsResultPanelDirective.js"></script>
+
+
+    <!--======================CONTROLLERS======================-->
+    <script src="js/controllers/optionsBarController.js"></script>
+    <script src="js/controllers/chromosomePanelController.js"></script>
+    <!----------------genes controllers--------------->
+    <script src="js/controllers/genesSelectPanelController.js"></script>
+    <script src="js/controllers/genesResultPanelController.js"></script>
+    <script src="js/controllers/genesTablePaginationController.js"></script>
+
+    <!----------------variants controllers--------------->
+    <script src="js/controllers/variantsSelectPanelController.js"></script>
+    <script src="js/controllers/variantsResultPanelController.js"></script>
+
+</head>
+<body>
+
+<div>
+    <div>
+        <h4 class="cw-text-center">Cellbase Web</h4>
+    </div>
+
+    <div ng-controller="optionsBarController">
+        <div options-bar></div>
+    </div>
+
+    <ul class="nav nav-tabs cw-border-b-darkgrey" id="myTab">
+        <li class="active"><a href="#genes">Genes</a></li>
+        <li><a href="#variants">Variants</a></li>
+    </ul>
+
+    <div class="tab-content cw-margin-five cw-inline-block">
+        <div class="tab-pane active" id="genes">
+
+            <div class="pull-left cw-select-panel-width" ng-controller="genesSelect">
+                <div genes-select></div>
+            </div>
+            <div class="pull-left" ng-controller="genesResult">
+                <div genes-result></div>
+            </div>
+
+        </div>
+        <div class="tab-pane" id="variants">
+            <div class="pull-left cw-select-panel-width" ng-controller="variantsSelect">
+                <div variants-select></div>
+            </div>
+            <div class="pull-left" ng-controller="variantsResult">
+                <div variants-result></div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div ng-controller="chromosomePanelController" id="chromosome-div" class="cw-inline-block cw-chrom-panel">
+    <div chromosome-panel></div>
+</div>
+
+<script>
+
+    $(function () {
+        $('#myTab a:first').tab('show')
+    })
+
+    $('#myTab a').click(function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+    })
+
+</script>
+
+
+</body>
+</html>
+
+
+

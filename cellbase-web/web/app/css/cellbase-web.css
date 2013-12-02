@@ -1,0 +1,206 @@
+.cw-text-center {
+    text-align:center;
+}
+
+.cw-border-b-darkgrey{
+    border-bottom: 1px solid darkgray;
+}
+
+.cw-margin-five{
+    margin:5px;
+}
+
+.cw-inline-block{
+    display: inline-block;
+}
+
+.cw-select-panel-width{
+    width:220px;
+}
+
+.cw-chrom-panel{
+    width:100%;
+    position:relative;
+    bottom:0;
+}
+
+.cw-text-options{
+    font-weight:bold;
+    font-size:medium;
+    color:#0B0B61;
+}
+
+/*.cw-select-panel{*/
+
+/*}*/
+
+.cw-select-panel-text{
+    color:#0B0B61;
+    font-size:medium;
+    margin-left:10px;
+}
+
+.cw-background-color-lightgrey{
+    background-color:lightgrey;
+}
+
+.cw-margin-b-ten{
+    margin-bottom:10px;
+}
+
+.cw-margin-l-ten{
+    margin-left:10px;
+}
+
+.cw-border-darkgray{
+    border:1px solid darkgray;
+}
+
+.cw-result-tree-width{
+    width:260px;
+}
+.cw-all-data-button{
+    font-weight: bold;
+    margin-left:5px;
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 8px;
+    width:248px;
+    background-color: #e6e6e6;
+    color:black;
+    border:1px solid #808080;
+}
+
+.cw-margin-two{
+    margin:2px;
+}
+.cw-pagnation-text-color{
+    color:#006ffb;
+}
+
+.cw-pagnation-tree-position{
+    margin-top: 10px;
+    margin-left:4px;
+    margin-rigth:4px;
+}
+
+.cw-margin-l-thirty{
+    margin-left:30px;
+}
+
+.cw-select-background-color{
+    background-color: #e6e6e6;
+}
+
+.cw-margin-l-r-five{
+    margin-left:5px;
+    margin-rigth:5px;
+}
+
+.cw-margin-b-five{
+    margin-bottom:5px;
+}
+
+.cw-margin-l-five{
+    margin-left:5px;
+}
+
+.cw-select-tabs{
+    border:1px solid #808080;
+    height: 440px;
+}
+
+.cw-select-first-tab{
+    margin-top:0px;
+    margin-bottom: 20px;
+}
+
+.cw-maegin-t-twenty{
+    margin-top:20px;
+}
+.cw-chrom-list{
+    max-width: 150px;
+    margin-left:20px;
+}
+
+.cw-regions-textarea{
+    width:190px;
+    max-width:190px;
+    max-height: 114px;
+}
+
+.cw-margin-b-twenty{
+    margin-bottom: 20px;
+}
+
+.cw-genes-id-textarea{
+    width:180px;
+    max-width:180px;
+    max-height: 94px;
+}
+
+.cw-margin-t-twenty-five{
+    margin-top: 25px;
+}
+
+.cw-biotypes-list{
+    width:180;
+    max-width: 180px;
+}
+
+.cw-background-color-lightblue{
+    background-color: lightblue;
+}
+
+.cw-margin-t-eigth{
+    margin-top: 8px;
+}
+
+.cw-margin-b-eigth{
+    margin-bottom: 8px;
+}
+
+.cw-margin-t-ten{
+    margin-top: 10px;
+}
+
+.cw-margin-ten{
+    margin: 10px;
+}
+
+.cw-tree-first-level{
+    color:black;
+    border:1px solid #808080;
+    background-color: #e6e6e6;
+}
+
+.cw-float-rigth{
+    float:right;
+}
+
+.cw-collapse-button{
+    float:right;
+    margin-left:3px;
+}
+
+.cw-panels-data-border{
+    border:1px solid #006ffb;
+}
+
+.cw-float-left{
+    float:left;
+}
+
+.cw-ensembl-link-color{
+    color:palevioletred;
+}
+
+.cw-text-blue{
+    font-weight: bold;
+    color: blue;
+}
+
+
+
+
+

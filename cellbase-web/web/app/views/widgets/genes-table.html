@@ -1,0 +1,62 @@
+<div class="panel panel-primary">
+    <div class="panel-heading cw-text-center">Genes information
+        <button type="button" class="btn btn-primary btn-xs cw-float-rigth" ng-Click="showGenesTable = false">x
+        </button>
+
+    </div>
+    <div class="panel-body">
+
+        <table class="table table-striped table-bordered table-condensed table-hover">
+
+            <thead>
+            <th>Name(Id)</th>
+            <th>Biotype</th>
+            <th>Location</th>
+            </thead>
+
+            <tbody ng-repeat="gene in paginationDataGeneTable">
+            <!--<tbody ng-repeat="gene in genesData">-->
+            <td><a>
+                <small>{{gene.name}} ( {{gene.id}} )</small>
+            </a></td>
+            <td>
+                <small>{{gene.biotype}}</small>
+            </td>
+
+            <td>
+                <small>{{gene.chromosome}} : {{gene.start}} - {{gene.end}}</small>
+            </td>
+            </tbody>
+        </table>
+
+        <div ng-show="showPaginationGenesTables" class="btn-group btn-group-ms cw-margin-b-ten cw-margin-t-ten cw-margin-l-r-five"
+             >
+            <button ng-show="firstPagesGenesTable" type="button" class="btn btn-default btn-ms cw-pagnation-text-color"
+                    ng-click="goToFirstPageGenesTable()"><<
+            </button>
+            <button ng-show="previousPageGenesTable" type="button" class="btn btn-default btn-ms cw-pagnation-text-color"
+                    ng-click="goPreviousPageGenesTable()"><
+            </button>
+            <button type="button" class="btn btn-default btn-ms cw-pagnation-text-color" ng-class="{'disabled': disableFirstNumberGeneTable}"
+                    ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[0])">
+                {{paginationNumbersGenesTables[0]}}
+            </button>
+            <button type="button" class="btn btn-default btn-ms cw-pagnation-text-color" ng-class="{'disabled': disableSecondNumberGeneTable}"
+                    ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[1])">
+                {{paginationNumbersGenesTables[1]}}
+            </button>
+            <button ng-show="thirdNumberGenesTable" type="button" class="btn btn-default btn-ms cw-pagnation-text-color"
+                    ng-class="{'disabled': disableThirdNumberGeneTable}"
+                    ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[2])">
+                {{paginationNumbersGenesTables[2]}}
+            </button>
+            <button ng-show="nextPageGenesTable" type="button" class="btn btn-default btn-ms cw-pagnation-text-color"
+                    ng-click="goNextPageGenesTable()">>
+            </button>
+            <button ng-show="lastPagesGenesTable" type="button" class="btn btn-default btn-ms cw-pagnation-text-color"
+                    ng-click="goToLastPageGenesTable()">>>
+            </button>
+        </div>
+
+    </div>
+</div>
