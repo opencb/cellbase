@@ -18,20 +18,20 @@
                     <p class="cw-select-background-color cw-maegin-t-twenty" ><strong class="cw-select-panel-text"
                             >CHROMOSOMES: </strong></p>
 
-                    <!--&lt;!&ndash;---------------&ndash;&gt;-->
-                    <!--<div style="overflow: scroll;height: 80px; margin:10px" >-->
-                          <!--<p ng-repeat="chrom in chromNames"> <input id="chrom:{{chrom}}" ng-click="addChrom(chrom)" type="checkbox">{{chrom}} </p>-->
-                    <!--</div>-->
-                            <!--&lt;!&ndash;---------------&ndash;&gt;-->
+                    <!------------------->
+                    <div style="overflow: scroll;height: 80px; margin:10px" id="ChromMultiSelect">
+                          <p ng-repeat="chrom in chromNames"> <input ng-click="addChrom(chrom)" type="checkbox">{{chrom}} </p>
+                    </div>
+                            <!------------------->
 
 
-                        <div>
-                            <select class="medium cw-chrom-list" size="5" multiple="multiple" name="miltiSelect" id="multiSelect">
-                                <option ng-repeat="chrom in chromNames" ng-style="getChromosomesColor(chrom)"
-                                        ng-click="addChrom(chrom)" select> {{chrom}}
-                                </option>
-                            </select>
-                        </div>
+                        <!--<div>-->
+                            <!--<select class="medium cw-chrom-list" size="5" multiple="multiple" name="miltiSelect" id="ChromMultiSelect">-->
+                                <!--<option ng-repeat="chrom in chromNames" ng-style="getChromosomesColor(chrom)"-->
+                                        <!--ng-click="addChrom(chrom)" select> {{chrom}}-->
+                                <!--</option>-->
+                            <!--</select>-->
+                        <!--</div>-->
 
                         <div class="cw-text-center">
                             <button type="button" class="btn btn-info btn-xs cw-margin-five" ng-click="selectAllChrom()"
@@ -68,7 +68,6 @@
 
 
 
-
                     <p class="text-muted cw-margin-l-ten"><b>Ex: geneID1,geneID2,...</b></p>
                     <textarea type="text" ng-model="genesIdFilter" rows="4" class="form-control cw-margin-l-ten cw-genes-id-textarea"
                              ></textarea>
@@ -78,13 +77,18 @@
                     </div>
                     <div>
                         <div class="cw-margin-l-ten">
-                            <select class="medium cw-margin-l-ten cw-biotypes-list" size="9" multiple="multiple" name="miltiSelect" id="multiSelect2"
-                                    >
-                                <option ng-repeat="biotype in listOfbiotypeFilters" ng-click="addBiotypeFilter(biotype)"
-                                        ng-style="getBiotypesColor(biotype)" class="cw-background-color-lightblue" select>
-                                    {{biotype}}
-                                </option>
-                            </select>
+
+                            <div style="overflow: scroll;height: 160px; margin:10px" id="BiotypesMultiSelect">
+                                <p ng-repeat="biotype in listOfbiotypeFilters" ng-click="addBiotypeFilter(biotype)"> <input type="checkbox" >{{biotype}} </p>
+                            </div>
+
+                            <!--<select class="medium cw-margin-l-ten cw-biotypes-list" size="9" multiple="multiple" name="miltiSelect" id="multiSelect2"-->
+                                    <!-->
+                                <!--<option ng-repeat="biotype in listOfbiotypeFilters" ng-click="addBiotypeFilter(biotype)"-->
+                                        <!--ng-style="getBiotypesColor(biotype)" class="cw-background-color-lightblue" select>-->
+                                    <!--{{biotype}}-->
+                                <!--</option>-->
+                            <!--</select>-->
                         </div>
 
                         <div class="cw-text-center">

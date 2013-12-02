@@ -46,9 +46,17 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             $scope.biotypesFilter.splice(pos, 1);
         }
 
+        console.log($scope.biotypesFilter);
+
     };
 
     $scope.selectAllChrom = function () {
+
+        var chromDiv = $('#ChromMultiSelect').children().children();
+
+        for (var i in $scope.chromNames){
+              chromDiv[i].setAttribute("checked", "checked");
+        }
 
 
         for (var i in $scope.chromNames) {
@@ -56,18 +64,55 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         }
     };
     $scope.deselectAllChrom = function () {
+
         $scope.chromosomes = [];
+
+        var chromDiv = $('#ChromMultiSelect').children().children();
+
+        for (var i in $scope.chromNames){
+            chromDiv[i].removeAttribute("checked");
+        }
+
+
     };
 
     $scope.selectAllBiotypeFilter = function () {
 
+        var biotypesDiv = $('#BiotypesMultiSelect').children().children();
+
+        console.log(biotypesDiv);
+
+        for (var i in $scope.listOfbiotypeFilters){
+            biotypesDiv[i].setAttribute("checked", "checked");
+//            biotypesDiv[i].setAttribute("checked", true);
+        }
+
         for (var i in $scope.listOfbiotypeFilters) {
             $scope.biotypesFilter.push($scope.listOfbiotypeFilters[i]);
         }
+
+        console.log($scope.biotypesFilter);
     };
 
     $scope.deselectAllBiotypeFilter = function () {
+
         $scope.biotypesFilter = [];
+
+        var biotypesDiv = $('#BiotypesMultiSelect').children().children();
+
+        console.log("antes-----------------");
+        console.log(biotypesDiv);
+
+        for (var i in $scope.listOfbiotypeFilters){
+            biotypesDiv[i].removeAttribute("checked");
+//            biotypesDiv[i].removeAttribute("checked", false);
+        }
+        console.log($scope.biotypesFilter);
+
+        console.log("despues-----------------");
+
+        console.log(biotypesDiv);
+
     };
 
     //comunicate that a is a new result
