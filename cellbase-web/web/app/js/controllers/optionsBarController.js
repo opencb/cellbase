@@ -33,6 +33,19 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
         mySharedService.broadcastSpecie(specie);
     };
 
+
+    $scope.example = function () {
+        var specie = {longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"};
+        mySharedService.broadcastExample(specie);
+    };
+    $scope.new = function () {
+        var specie = {longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"};
+        mySharedService.broadcastNew(specie);
+    };
+
+
+
+
 }]);
 
 optionsBarControl.$inject = ['$scope', 'mySharedService'];

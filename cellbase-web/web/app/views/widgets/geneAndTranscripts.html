@@ -1,0 +1,55 @@
+<div>
+
+    <h5 class="ocb-margin-l-r-five">
+        <p>
+        {{data.name}} ( {{data.id}} )
+        <a class="ocb-ensembl-link-color" target="_blank"
+        href="http://www.ensembl.org/{{specieName.ensemblName}}/Location/View?g={{data.id}};">
+        Go Ensembl</a>
+        </p>
+
+
+        <p>Biotype:<span class="text-muted">{{data.biotype}}</span>
+        </p>
+
+        <p> Location:<span
+        class="text-muted">{{data.chromosome}} : {{data.start}} - {{data.end}}</span>
+        </p>
+
+        <p>Description:<span class="text-muted">{{data.description}}</span>
+        </p>
+
+        <p ng-show="showMore">Status:<span class="text-muted">{{data.status}}</span>
+        </p>
+
+        <p ng-show="showMore">Strand:<span class="text-muted">{{data.strand}}</span>
+        </p>
+
+        <p ng-show="showMore">Source:<span class="text-muted">{{data.source}}</span>
+        </p>
+
+        <p>Transcripts:</p>
+        </h5>
+
+    <table class="table table-striped table-bordered table-condensed table-hover">
+
+        <thead>
+        <th>Name(Id)</th>
+        <th>Biotype</th>
+        <th>Location</th>
+        </thead>
+
+        <tbody ng-repeat="transc in data.transcripts">
+        <td ng-click="functionDirective(transc.name)"><a>
+            <small>{{transc.name}} ( {{transc.id}} )</small>
+        </a></td>
+        <td>
+            <small>{{transc.biotype}}</small>
+        </td>
+        <td>
+            <small>{{transc.chromosome}} : {{transc.start}} -{{transc.end}}</small>
+        </td>
+        </tbody>
+    </table>
+
+</div>

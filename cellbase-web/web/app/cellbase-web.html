@@ -38,16 +38,12 @@
     <script src="js/directives/optionsBarDirective.js"></script>
     <script src="js/directives/chromosomePanelDirective.js"></script>
     <!----------------genes directives--------------->
-    <script src="js/directives/selectDataDirective.js"></script>
     <script src="js/directives/genesSelectPanelDirective.js"></script>
     <script src="js/directives/genesResultPanelDirective.js"></script>
     <!-----widgets----->
     <script src="js/directives/genesTableDirective.js"></script>
-    <script src="js/directives/genePanelDirective.js"></script>
-    <script src="js/directives/transcriptsTableDirective.js"></script>
-    <script src="js/directives/transcriptPanelDirective.js"></script>
-    <script src="js/directives/moreInfoTablesDirective.js"></script>
-    <script src="js/directives/genesAndTranscriptsTableDirective.js"></script>
+    <script src="js/directives/geneAndTranscriptsDirective.js"></script>
+    <script src="js/directives/transcriptsDirective.js"></script>
 
     <!----------------variants directives--------------->
     <script src="js/directives/variantsSelectPanelDirective.js"></script>
@@ -71,22 +67,22 @@
 
 <div>
     <div>
-        <h4 class="cw-text-center">Cellbase Web</h4>
+        <h4 class="ocb-text-center">Cellbase Web</h4>
     </div>
 
     <div ng-controller="optionsBarController">
         <div options-bar></div>
     </div>
 
-    <ul class="nav nav-tabs cw-border-b-darkgrey" id="myTab">
+    <ul class="nav nav-tabs ocb-border-b-darkgrey" id="myTab">
         <li class="active"><a href="#genes">Genes</a></li>
         <li><a href="#variants">Variants</a></li>
     </ul>
 
-    <div class="tab-content cw-margin-five cw-inline-block">
+    <div class="tab-content ocb-margin-five ocb-inline-block">
         <div class="tab-pane active" id="genes">
 
-            <div class="pull-left cw-select-panel-width" ng-controller="genesSelect">
+            <div class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
                 <div genes-select></div>
             </div>
             <div class="pull-left" ng-controller="genesResult">
@@ -95,7 +91,7 @@
 
         </div>
         <div class="tab-pane" id="variants">
-            <div class="pull-left cw-select-panel-width" ng-controller="variantsSelect">
+            <div class="pull-left ocb-select-panel-width" ng-controller="variantsSelect">
                 <div variants-select></div>
             </div>
             <div class="pull-left" ng-controller="variantsResult">
@@ -107,7 +103,7 @@
 
 </div>
 
-<div ng-controller="chromosomePanelController" id="chromosome-div" class="cw-inline-block cw-chrom-panel">
+<div ng-controller="chromosomePanelController" id="chromosome-div" class="ocb-inline-block ocb-chrom-panel">
     <div chromosome-panel></div>
 </div>
 

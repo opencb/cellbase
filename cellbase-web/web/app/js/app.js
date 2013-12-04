@@ -4,6 +4,7 @@ myApp.factory('mySharedService', function($rootScope){
 
     var sharedService = {};
 
+    sharedService.selectedSpeciesInit=  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
     sharedService.selectedSpecies=  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
     //region obtained by the drawn chromosome
 
@@ -11,6 +12,17 @@ myApp.factory('mySharedService', function($rootScope){
     sharedService.broadcastSpecie = function(specie){
         this.selectedSpecies = specie;
         $rootScope.$broadcast('newSpecie');
+    };
+    //comunicate a new result
+    sharedService.broadcastNew = function(specie){
+        this.selectedSpecies = specie;
+        $rootScope.$broadcast('new');
+    };
+
+    //comunicate to make an example
+    sharedService.broadcastExample = function(specie){
+        this.selectedSpecies = specie;
+        $rootScope.$broadcast('example');
     };
 
     //comunicate a new result from genesSelectPanel to GenesResultPanel

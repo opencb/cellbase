@@ -1,14 +1,14 @@
 <div class="list-group">
-    <a class="list-group-item active cw-text-center">Exons, TFBS and Xrefs information
-        <button type="button" class="btn btn-default btn-xs cw-collapse-button" ng-Click="showMoreInfoPanel = false">x
+    <a class="list-group-item active ocb-text-center">Exons, TFBS and Xrefs information
+        <button type="button" class="btn btn-default btn-xs ocb-collapse-button" ng-Click="showMoreInfoPanel = false">x
         </button>
         </button>
-        <button type="button" class="btn btn-default btn-xs cw-float-rigth" ng-click="moreInfo = !moreInfo; openCloseMoreInfoGrid()"
+        <button type="button" class="btn btn-default btn-xs ocb-float-rigth" ng-click="moreInfo = !moreInfo; openCloseMoreInfoGrid()"
                >{{moreInfoGridStatus}}
         </button>
     </a>
 
-    <div ng-show="!moreInfo" class="cw-panels-data-border">
+    <div ng-show="!moreInfo" class="ocb-panels-data-border">
 
         <ul class="nav nav-tabs" id="myTab">
             <li class="active"><a href="#exons">Exons</a></li>

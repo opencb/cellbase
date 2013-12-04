@@ -1,22 +1,22 @@
 <div class="list-group">
-    <a class="list-group-item active cw-text-center">Transcript
+    <a class="list-group-item active ocb-text-center">Transcript
         information
-        <button type="button" class="btn btn-default btn-xs cw-collapse-button" ng-Click="showTranscriptPanel = false">x
+        <button type="button" class="btn btn-default btn-xs ocb-collapse-button" ng-Click="showTranscriptPanel = false">x
         </button>
-        <button type="button" class="btn btn-default btn-xs cw-float-rigth"
+        <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
                 ng-click="transcriptInfo = !transcriptInfo; openCloseTranscriptPanel()">
             {{transcriptPanelStatus}}
         </button>
     </a>
 
-    <div ng-show="!transcriptInfo" class="cw-panels-data-border">
-        <button type="button" class="btn btn-primary btn-xs cw-margin-five cw-float-left"
+    <div ng-show="!transcriptInfo" class="ocb-panels-data-border">
+        <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
                 ng-click="moreTranscriptPanel()">{{moreAndLessTranscript}}
         </button>
-        <h5 class="cw-margin-l-r-five">
+        <h5 class="ocb-margin-l-r-five">
             <p><a ng-Click="moreInfoSelectedFromPanel(selectedTranscript.name)">{{selectedTranscript.name}} (
                 {{selectedTranscript.id}})</a>
-                <a class="cw-ensembl-link-color" target="_blank"
+                <a class="ocb-ensembl-link-color" target="_blank"
                    href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Transcript/Transcript?t={{selectedTranscript.id}};">
                     Go Ensembl</a>
             </p>

@@ -1,22 +1,22 @@
 <div class="list-group">
-    <a class="list-group-item active cw-text-center">Gene
+    <a class="list-group-item active ocb-text-center">Gene
         information
-        <button type="button" class="btn btn-default btn-xs cw-collapse-button" ng-Click="showGenePanel = false">&times;
+        <button type="button" class="btn btn-default btn-xs ocb-collapse-button" ng-Click="showGenePanel = false">&times;
         </button>
-        <button type="button" class="btn btn-default btn-xs cw-float-rigth" ng-click="geneInfo = !geneInfo; openCloseGenePanel()"
+        <button type="button" class="btn btn-default btn-xs ocb-float-rigth" ng-click="geneInfo = !geneInfo; openCloseGenePanel()"
                 >{{genePanelStatus}}
         </button>
 
     </a>
 
-    <div class="cw-panels-data-border" ng-show="!geneInfo">
-        <button type="button" class="btn btn-primary btn-xs cw-margin-five cw-float-left" ng-click="moreGenePanel()">
+    <div class="ocb-panels-data-border" ng-show="!geneInfo">
+        <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left" ng-click="moreGenePanel()">
             {{moreAndLessGene}}
         </button>
-        <h5 class="cw-margin-l-r-five"><a ng-Click="transcriptsSelectedFromGenesPanel(selectedGen.id)">
+        <h5 class="ocb-margin-l-r-five"><a ng-Click="transcriptsSelectedFromGenesPanel(selectedGen.id)">
             <p>
                 {{selectedGen.name}} ( {{selectedGen.id}} )</a>
-            <a class="cw-ensembl-link-color" target="_blank"
+            <a class="ocb-ensembl-link-color" target="_blank"
                href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Location/View?g={{selectedGen.id}};">
                 Go Ensembl</a>
             </p>

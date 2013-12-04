@@ -1,10 +1,10 @@
 <div ng-show="showChromosome">
 
-    <nav class="collapse navbar-collapse bs-navbar-collapse cw-background-color-lightgrey cw-margin-b-ten" role="navigation">
+    <nav class="collapse navbar-collapse bs-navbar-collapse ocb-background-color-lightgrey ocb-margin-b-ten" role="navigation">
 
         <ul class="nav navbar-nav">
             <li class="dropdown">
-                <a class="dropdown-toggle cw-text-options" data-toggle="dropdown">
+                <a class="dropdown-toggle ocb-text-options" data-toggle="dropdown">
                     Chromosome: {{selectedChromosome}} <b
                         class="caret"></b></a>
                 <ul class="dropdown-menu">
@@ -14,7 +14,7 @@
                 </ul>
             </li>
 
-            <li><a class="cw-text-options"
+            <li><a class="ocb-text-options"
                    ng-click="showRegionInInput()">Show drawn Region:</a></li>
 
             <form class="navbar-form navbar-left" role="search">
@@ -28,14 +28,14 @@
         </ul>
 
         <ul class="nav navbar-nav">
-            <li><a class="cw-text-options"
+            <li><a class="ocb-text-options"
                    ng-click="addRegion()">Add region</a></li>
         </ul>
 
     </nav>
 
     <!--div where is the chromosoma, bootstrap can't insert it in a panel or in another element -->
-    <div id="chromosome-div" class="cw-inline-block">
+    <div id="chromosome-div" class="ocb-inline-block">
     </div>
 
 </div>
