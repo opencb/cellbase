@@ -1,3 +1,18 @@
+
+
+
+/*-----rewritte bootstrap css----*/
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: 5px 6px;
+    margin-bottom: -1px;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+}
+
+/*-------------------------------*/
+
 .ocb-text-center {
     text-align:center;
 }
@@ -173,9 +188,9 @@
 }
 
 .ocb-tree-first-level{
-    color:black;
-    border:1px solid #808080;
-    background-color: #e6e6e6;
+    color:black !important;
+    border:1px solid #808080 !important;
+    background-color: #e6e6e6 !important;
 }
 
 .ocb-float-rigth{
@@ -203,9 +218,36 @@
     font-weight: bold;
     color: blue;
 }
+.ocb-chrom-scroll{
+    overflow: scroll;
+    height: 80px;
+    margin:10px
+}
+.ocb-biotypes-scroll{
+    overflow: scroll;
+    height: 160px;
+    margin:10px
+}
+.ocb-scroll{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 150px;
+    margin:10px
+}
+.ocb-scroll-tree{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 390px;
+    margin:10px
+}
 
-/*.ocb-result-panels-width{*/
 
+
+/*-------no funcionan:---------*/
+.ocb-result-panels-width{
+    width: calc(100%-220px) important!;
+}
+/*.ocb-gv-width{*/
     /*width: calc(100%-10px);*/
 /*}*/
 

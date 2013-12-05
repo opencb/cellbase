@@ -11,8 +11,6 @@ myApp.directive('genomeViewer', function () {
 
 //  genomeViewer.setRegion(new Region('13:32889542-32889680'))
 
-
-
             /* region and species configuration */
             var region = new Region({
                 chromosome: "13",
@@ -71,23 +69,23 @@ myApp.directive('genomeViewer', function () {
                 },
                 handlers:{
                     'region:change':function(event){
-
-
-                        console.log(event.region);
                         mySharedService.addRegionFromGenomeViewer(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
-
+                    },
+//                    'chromosome-button:change':function(event){
+//                    },
+                    'species:change':function(event){
+                        mySharedService.setSpecie(event.species.text);
                     }
                 }
                 //        chromosomeList:[]
                 //            trackListTitle: ''
-                //            drawNavigationBar = true;
+//                            drawNavigationBar = true;
                 //            drawKaryotypePanel: false,
-                //            drawChromosomePanel: false,
+//                            drawChromosomePanel: false,
                 //            drawRegionOverviewPanel: false
             }); //the div must exist
 
             genomeViewer.draw();
-
 
             tracks = [];
             $scope.sequence = new SequenceTrack({
@@ -135,7 +133,6 @@ myApp.directive('genomeViewer', function () {
             });
 
             tracks.push($scope.gene);
-
 
             var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
             renderer.on({
@@ -194,9 +191,7 @@ myApp.directive('genomeViewer', function () {
                     }
                 })
             });
-
             tracks.push($scope.snp);
-
 
             //    /***************************************/
             //    var geneEnsembl = new FeatureTrack({
@@ -225,7 +220,6 @@ myApp.directive('genomeViewer', function () {
             //    });
             //    tracks.push(geneEnsembl);
             //    /***************************************/
-
             genomeViewer.addTrack(tracks);
         }
     }

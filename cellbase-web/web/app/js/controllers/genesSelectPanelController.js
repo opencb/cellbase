@@ -1,20 +1,15 @@
 var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
-//    $scope.specie = {longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"};
     $scope.specie = mySharedService.selectedSpecies;
     $scope.chromosomes = [];
     $scope.chromosomesAllData = CellbaseService.getSpecieChromosomes($scope.specie.shortName);
-//    $scope.chromNames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT"];
-
-//    $scope.obtainChromosomesInfo = function () {
+//    $scope.obtainChromosomesInfo()
     $scope.chromNames = [];
     for (var i in $scope.chromosomesAllData) {
         $scope.chromNames.push($scope.chromosomesAllData[i].name);
     }
-
     $scope.chromosomes = [];
     $scope.chromosomesToShow = "";
-
 //    $scope.sortChromosomes();
     for (var i in $scope.chromNames) {
         if (!isNaN($scope.chromNames[i])) {  //es un numero
@@ -23,7 +18,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             }
         }
     }
-
     $scope.chromNames = $scope.chromNames.sort();
     //se quitan los ceros
     for (var i in $scope.chromNames) {
@@ -37,11 +31,8 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         $scope.chromNames.pop();
     }
 //    ---------------------------------
-//    ---------------------------------
-
 
     $scope.regions = "20:32850000-33500000";
-
     $scope.genesIdFilter = "";
     $scope.biotypesFilter = [];
     $scope.listOfbiotypeFilters = [];
@@ -53,7 +44,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             $scope.chromNames.push($scope.chromosomesAllData[i].name);
         }
     };
-
     $scope.addChrom = function (chrom) {
         var pos = $scope.chromosomes.indexOf(chrom);
 
@@ -64,7 +54,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             $scope.chromosomes.splice(pos, 1);
         }
     };
-
     $scope.addBiotypeFilter = function (biotype) {
         var pos = $scope.biotypesFilter.indexOf(biotype);
 
@@ -75,17 +64,10 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             $scope.biotypesFilter.splice(pos, 1);
         }
     };
-
     $scope.selectAllChrom = function () {
         var chromDiv = $('#ChromMultiSelect').children().children();
-
-
         chromDiv.prop('checked', true);
 
-//        for (var i in $scope.chromNames){
-//              chromDiv[i].setAttribute("checked", "checked");
-//            chromDiv[i].prop('checked', true);
-//        }
         for (var i in $scope.chromNames) {
             $scope.chromosomes.push($scope.chromNames[i])
         }
@@ -95,40 +77,20 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
 
         var chromDiv = $('#ChromMultiSelect').children().children();
         chromDiv.prop('checked', false);
-//        for (var i in $scope.chromNames){
-//            chromDiv[i].removeAttribute("checked");
-//        }
     };
-
     $scope.selectAllBiotypeFilter = function () {
         var biotypesDiv = $('#BiotypesMultiSelect').children().children();
-
-
         biotypesDiv.prop('checked', true);
-
-//        for (var i in $scope.listOfbiotypeFilters){
-//            biotypesDiv[i].setAttribute("checked", "checked");
-//            biotypesDiv[i].setAttribute("checked", true);
-//        }
 
         for (var i in $scope.listOfbiotypeFilters) {
             $scope.biotypesFilter.push($scope.listOfbiotypeFilters[i]);
         }
     };
-
     $scope.deselectAllBiotypeFilter = function () {
-        console.log("holaaaaa");
         $scope.biotypesFilter = [];
         var biotypesDiv = $('#BiotypesMultiSelect').children().children();
-
         biotypesDiv.prop('checked', false);
-
-//        for (var i in $scope.listOfbiotypeFilters){
-//            biotypesDiv[i].removeAttribute("checked");
-//            biotypesDiv[i].removeAttribute("checked", false);
-//        }
     };
-
     //comunicate that a is a new result
     $scope.newResult = function () {
         if($scope.genesIdFilter != ""){
@@ -141,7 +103,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             mySharedService.newResult($scope.chromNames, $scope.mergeChromosomesAndRegions(), $scope.genesIdFilter, $scope.biotypesFilter);
         }
     };
-
     $scope.removeSpaces = function (data) {
         var espacio = data.search(" ");
 
@@ -151,7 +112,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         }
         return data;
     };
-
     $scope.checkRegionInRange = function (chrom, start, end) {
         for (var i in $scope.chromosomesAllData) {
             if ($scope.chromosomesAllData[i].name == chrom) {
@@ -164,25 +124,20 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             }
         }
     };
-
     //check if the regions are correctly added
     $scope.checkRegions = function () {
         var regions = $scope.regions.split(",");
         var correctRegions = [];
         var incorrectRegions = [];
-
         var chrom, start, end;
         var posDoublePoints, posLine;
-
         var correct = true;
         var chromExist = false;
-
         var messageError = "";
 
         for (var i in regions) {
             posDoublePoints = regions[i].search(":");
             posLine = regions[i].search("-");
-
             if (posDoublePoints == -1 || posLine == -1) {
                 correct = false;
             }
@@ -240,13 +195,11 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         }
         return correctRegions.join();
     };
-
     //merge the chromosomes and the regions with an AND
     $scope.mergeChromosomesAndRegions = function () {
         var completeChromosome = true;
         var totalChromosomes = [];
         var completeRegion;
-
         $scope.regions = $scope.removeSpaces($scope.regions);
 
         if ($scope.regions != "") {
@@ -282,7 +235,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         }
         return completeRegion;
     };
-
     //sort the chromosomes, to use the function sort, it has to put a zero in the left if the number have one digit
     $scope.sortChromosomes = function () {
         for (var i in $scope.chromNames) {
@@ -300,16 +252,10 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             }
         }
     };
-
     $scope.$on('newSpecie', function () {
         $scope.init();
         $scope.newSpecie();
     });
-
-
-//    $scope.specie = mySharedService.selectedSpeciesInit;
-
-
     $scope.newSpecie = function(){
         $scope.specie = mySharedService.selectedSpecies;
         $scope.chromosomesAllData = CellbaseService.getSpecieChromosomes($scope.specie.shortName);
@@ -322,7 +268,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             $scope.chromNames.pop();
         }
     };
-
     $scope.init = function(){
         $scope.deselectAllChrom();
         $scope.deselectAllBiotypeFilter();
@@ -331,53 +276,32 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         $scope.genesIdFilter ="";
         $scope.biotypeFilters = [];
         $scope.listOfbiotypeFilters = [];
-
     };
-
     $scope.$on('biotypes', function () {   //obtener la especie elegida en optionsBar
         $scope.listOfbiotypeFilters = mySharedService.biotypes;
-    });
-
-    //put the new region obtained by the chromosome drawn
-    $scope.$on('newRegion', function () {
-
-        $scope.newRegion();
-
     });
     $scope.$on('newRegionFromGenomeViewer', function () {
 
         $scope.newRegion();
         $scope.$apply();
     });
-
     $scope.newRegion = function(){
-        console.log(mySharedService.regionFromChromosome);
-
         if ($scope.regions.search(mySharedService.regionFromChromosome) == -1) {
             if ($scope.regions.search(":") == -1) {  //if there isn't a region
                 $scope.regions = mySharedService.regionFromChromosome;
             }
             else {
-
                 $scope.regions = $scope.regions + "," + mySharedService.regionFromChromosome;
             }
         }
         else {
             alert(mySharedService.regionFromChromosome + " already exist");
         }
-
-        console.log($scope.regions);
-
         $scope.newResult();
     };
-
-
-
     $scope.$watch('regions', function() {
         // do something here
-        console.log("region changed");
     }, true);
-
     $scope.$on('example', function () {
         $scope.init();
         $scope.newSpecie();
@@ -392,32 +316,25 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
     $scope.$on('new', function () {
         $scope.init();
         $scope.newSpecie();
-
-//        $scope.newResult();
     });
-
     //if the chromosome has been selected, mark it
     $scope.getChromosomesColor = function (chrom) {
         if ($scope.chromosomes.indexOf(chrom) != -1) {
             return  {"background-color": "lightblue"};
-//          return  {"background-color": "lightblue","font-weight": "bold"};
         }
         else {
             return  {"background-color": "white"};
         }
     };
-
     //if the biotype has been selected, mark it
     $scope.getBiotypesColor = function (biotype) {
         if ($scope.biotypesFilter.indexOf(biotype) != -1) {
             return  {"background-color": "lightblue"};
-//          return  {"background-color": "lightblue",  "font-weight": "bold" };
         }
         else {
             return  {"background-color": "white"};
         }
     };
-
     //tabs
     $scope.goToTab = function () {
         $(function () {

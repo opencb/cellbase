@@ -19,7 +19,7 @@
                             >CHROMOSOMES: </strong></p>
 
                     <!------------------->
-                    <div style="overflow: scroll;height: 80px; margin:10px" id="ChromMultiSelect">
+                    <div class="ocb-chrom-scroll" id="ChromMultiSelect">
                           <p ng-repeat="chrom in chromNames" class="ocb-margin-b-0"> <input ng-click="addChrom(chrom)" type="checkbox">{{chrom}} </p>
                     </div>
                             <!------------------->
@@ -78,7 +78,7 @@
                     <div>
                         <div class="ocb-margin-l-ten">
 
-                            <div style="overflow: scroll;height: 160px; margin:10px" id="BiotypesMultiSelect">
+                            <div class="ocb-biotypes-scroll" id="BiotypesMultiSelect">
                                 <p ng-repeat="biotype in listOfbiotypeFilters" class="ocb-margin-b-0" ng-click="addBiotypeFilter(biotype)"> <input type="checkbox" >{{biotype}} </p>
                             </div>
 

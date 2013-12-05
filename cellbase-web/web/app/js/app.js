@@ -45,6 +45,10 @@ myApp.factory('mySharedService', function($rootScope){
         this.regionFromChromosome = region;
         $rootScope.$broadcast('newRegionFromGenomeViewer');
     };
+    sharedService.setSpecie = function(specie){
+        this.selectedSpecies = specie;
+        $rootScope.$broadcast('newSpecieFromGenomeViewer');
+    };
 
     return sharedService;
 })
@@ -109,13 +113,11 @@ myApp.service('CellbaseService', function () {
             success: function (data, textStatus, jqXHR) {
 
                 if(data != null){
-    //                console.time("guardar los datos");
                     for(var i in data.response){
                         for(var j in data.response[i].result){
                             dataGet.push(data.response[i].result[j]);
                         }
                     }
-    //                console.timeEnd("guardar los datos");
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {

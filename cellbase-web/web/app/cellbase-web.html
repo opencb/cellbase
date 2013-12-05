@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html ng-app="project">
-
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Proyecto</title>
@@ -14,10 +13,6 @@
     <!--Bootstrap-->
     <link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">
     <!--<script type="text/javascript" src="../vendor/bootstrap-3.0.2/js/bootstrap.js"></script>-->
-
-    <!--for chromosome panel-->
-    <!--<script type="text/javascript" src="../vendor/underscore-min.js"></script>-->
-    <!--<script type="text/javascript" src="../vendor/backbone-min.js"></script>-->
 
     <!--===================================================================-->
     <!--========================genome-viewer==============================-->
@@ -46,8 +41,6 @@
 
     <script type="text/javascript" src="genome-viewer/gv-config.js"></script>
     <script type="text/javascript" src="genome-viewer/genome-viewer-1.0.3.min.js"></script>
-
-
 
 
     <link href="css/cellbase-web.css" rel="stylesheet">
@@ -92,7 +85,7 @@
         <div options-bar></div>
     </div>
 
-    <ul class="nav nav-tabs ocb-border-b-darkgrey" id="myTab">
+    <ul class="nav nav-tabs ocb-border-b-darkgrey" id="myTab" >
         <li class="active"><a href="#genes">Genes</a></li>
         <li><a href="#variants">Variants</a></li>
     </ul>
@@ -100,16 +93,18 @@
     <div class="tab-content ocb-margin-five ocb-inline-block">
         <div class="tab-pane active" id="genes">
 
-            <div class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
+            <div id="genesSelectDiv" class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
                 <div genes-select></div>
             </div>
-            <div class="pull-left" ng-controller="genesResult">
+            <div id="genesResultDiv" class="pull-left ocb-result-panels-width" ng-controller="genesResult" >
                 <div genes-result></div>
             </div>
 
-            <!--<div class="ocb-inline-block ocb-chrom-panel">-->
-                <!--<div genome-viewer> </div>-->
-            <!--</div>-->
+            <div class="ocb-inline-block ocb-chrom-panel ocb-margin-five" >
+                <!--<div genome-viewer class="ocb-gv-width" > </div>-->
+                <div genome-viewer style="width:1380px" > </div>
+            </div>
+
 
         </div>
         <div class="tab-pane" id="variants">
@@ -124,29 +119,18 @@
     </div>
 
 </div>
-
-
-<div class="ocb-inline-block ocb-chrom-panel">
-    <div genome-viewer> </div>
-</div>
-
-
-
-
+<!--<div class="ocb-inline-block ocb-chrom-panel ocb-margin-l-r-five" style="width:98%;">-->
+    <!--<div genome-viewer> </div>-->
+<!--</div>-->
 <script>
-
     $(function () {
         $('#myTab a:first').tab('show')
     })
-
     $('#myTab a').click(function (e) {
         e.preventDefault()
         $(this).tab('show')
     })
-
 </script>
-
-
 </body>
 </html>
 
