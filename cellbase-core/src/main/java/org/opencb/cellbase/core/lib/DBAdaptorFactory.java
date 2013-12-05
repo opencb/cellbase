@@ -1,6 +1,8 @@
 package org.opencb.cellbase.core.lib;
 
 import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
+import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
@@ -179,6 +181,11 @@ public abstract class DBAdaptorFactory {
 	public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species);
 	
 	public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species, String version);
+
+
+    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
+
+    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String version);
 
 
     public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species);

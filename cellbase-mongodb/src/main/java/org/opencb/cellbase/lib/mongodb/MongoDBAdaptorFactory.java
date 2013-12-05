@@ -4,15 +4,18 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
-
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
+import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.network.PathwayMongoDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.network.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.regulatory.RegulatoryRegionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.regulatory.TfbsMongoDBAdaptor;
 
@@ -388,6 +391,24 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return (PathwayDBAdaptor) new PathwayMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
                 speciesAlias.get(species), version);
     }
+
+
+    @Override
+    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {
+        return getProteinProteinInteractionDBAdaptor(species, null);
+    }
+
+    @Override
+    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String version) {
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return (ProteinProteinInteractionDBAdaptor) new ProteinProteinInteractionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
+    }
+
 
     public RegulationDBAdaptor getRegulationDBAdaptor(String species) {
         return getRegulationDBAdaptor(species, null);

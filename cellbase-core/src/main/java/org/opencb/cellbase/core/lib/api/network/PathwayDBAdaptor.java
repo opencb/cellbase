@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.lib.api;
+package org.opencb.cellbase.core.lib.api.network;
 
 
 
