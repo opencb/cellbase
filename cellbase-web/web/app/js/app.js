@@ -41,9 +41,9 @@ myApp.factory('mySharedService', function($rootScope){
         $rootScope.$broadcast('biotypes');
     };
 
-    sharedService.addRegionFromChromosome = function(region){
+    sharedService.addRegionFromGenomeViewer = function(region){
         this.regionFromChromosome = region;
-        $rootScope.$broadcast('newRegion');
+        $rootScope.$broadcast('newRegionFromGenomeViewer');
     };
 
     return sharedService;

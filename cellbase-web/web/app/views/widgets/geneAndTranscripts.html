@@ -31,25 +31,28 @@
         <p>Transcripts:</p>
         </h5>
 
-    <table class="table table-striped table-bordered table-condensed table-hover">
+    <div style="overflow-y:scroll; overflow-x:hidden; height: 150px; margin:10px">
 
-        <thead>
-        <th>Name(Id)</th>
-        <th>Biotype</th>
-        <th>Location</th>
-        </thead>
+        <table class="table table-striped table-bordered table-condensed table-hover">
 
-        <tbody ng-repeat="transc in data.transcripts">
-        <td ng-click="functionDirective(transc.name)"><a>
-            <small>{{transc.name}} ( {{transc.id}} )</small>
-        </a></td>
-        <td>
-            <small>{{transc.biotype}}</small>
-        </td>
-        <td>
-            <small>{{transc.chromosome}} : {{transc.start}} -{{transc.end}}</small>
-        </td>
-        </tbody>
-    </table>
+            <thead>
+            <th>Name(Id)</th>
+            <th>Biotype</th>
+            <th>Location</th>
+            </thead>
+
+            <tbody ng-repeat="transc in data.transcripts">
+            <td ng-click="functionDirective(transc.name)"><a>
+                <small>{{transc.name}} ( {{transc.id}} )</small>
+            </a></td>
+            <td>
+                <small>{{transc.biotype}}</small>
+            </td>
+            <td>
+                <small>{{transc.chromosome}} : {{transc.start}} -{{transc.end}}</small>
+            </td>
+            </tbody>
+        </table>
+    </div>
 
 </div>

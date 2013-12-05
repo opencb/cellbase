@@ -6,28 +6,48 @@
     <title>Proyecto</title>
 
     <!--jQuery-->
-    <script type="text/javascript" src="../vendor/jquery.min.js"></script>
+    <!--<script type="text/javascript" src="../vendor/jquery.min.js"></script>-->
 
     <!--AngularJS-->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
 
     <!--Bootstrap-->
-    <link href="../vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script type="text/javascript" src="../vendor/bootstrap/js/bootstrap.js"></script>
+    <link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">
+    <!--<script type="text/javascript" src="../vendor/bootstrap-3.0.2/js/bootstrap.js"></script>-->
 
     <!--for chromosome panel-->
-    <script type="text/javascript" src="../vendor/underscore-min.js"></script>
-    <script type="text/javascript" src="../vendor/backbone-min.js"></script>
+    <!--<script type="text/javascript" src="../vendor/underscore-min.js"></script>-->
+    <!--<script type="text/javascript" src="../vendor/backbone-min.js"></script>-->
 
     <!--===================================================================-->
-    <!--===================================================================-->
+    <!--========================genome-viewer==============================-->
 
-    <!--cromosome panel-->
-    <script src="../../lib/jsorolla/src/lib/utils/utils.js"></script>
-    <script src="../../lib/jsorolla/src/lib/region.js"></script>
-    <script src="../../lib/jsorolla/src/lib/utils/svg.js"></script>
-    <script src="../../lib/jsorolla/src/lib/cellbase/cellbase-manager.js"></script>
-    <script src="../../lib/jsorolla/src/genome-viewer/chromosome-panel.js"></script>
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/jquery.qtip.min.css" />
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/ChemDoodleWeb.css" />
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/bootstrap-scoped-dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/typeahead.js-bootstrap.css" />
+    <!-- CSS from Genome Viewer -->
+    <link type="text/css" rel="stylesheet" href="genome-viewer/styles/css/style.css" />
+
+
+    <script type="text/javascript" src="genome-viewer/vendor/underscore-min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/backbone-min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/rawdeflate.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/jquery.min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/bootstrap-scoped-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/typeahead.min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/jquery.qtip.min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/jquery.cookie.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/jquery.sha1.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/purl.min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/jquery.mousewheel.min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/gl-matrix-min.js"></script>
+    <script type="text/javascript" src="genome-viewer/vendor/ChemDoodleWeb.js"></script>
+
+    <script type="text/javascript" src="genome-viewer/gv-config.js"></script>
+    <script type="text/javascript" src="genome-viewer/genome-viewer-1.0.3.min.js"></script>
+
+
 
 
     <link href="css/cellbase-web.css" rel="stylesheet">
@@ -36,7 +56,7 @@
 
     <!--======================DIRECTIVES======================-->
     <script src="js/directives/optionsBarDirective.js"></script>
-    <script src="js/directives/chromosomePanelDirective.js"></script>
+    <script src="js/directives/genomeViewerDirective.js"></script>
     <!----------------genes directives--------------->
     <script src="js/directives/genesSelectPanelDirective.js"></script>
     <script src="js/directives/genesResultPanelDirective.js"></script>
@@ -52,11 +72,9 @@
 
     <!--======================CONTROLLERS======================-->
     <script src="js/controllers/optionsBarController.js"></script>
-    <script src="js/controllers/chromosomePanelController.js"></script>
     <!----------------genes controllers--------------->
     <script src="js/controllers/genesSelectPanelController.js"></script>
     <script src="js/controllers/genesResultPanelController.js"></script>
-    <script src="js/controllers/genesTablePaginationController.js"></script>
 
     <!----------------variants controllers--------------->
     <script src="js/controllers/variantsSelectPanelController.js"></script>
@@ -89,6 +107,10 @@
                 <div genes-result></div>
             </div>
 
+            <!--<div class="ocb-inline-block ocb-chrom-panel">-->
+                <!--<div genome-viewer> </div>-->
+            <!--</div>-->
+
         </div>
         <div class="tab-pane" id="variants">
             <div class="pull-left ocb-select-panel-width" ng-controller="variantsSelect">
@@ -103,9 +125,13 @@
 
 </div>
 
-<div ng-controller="chromosomePanelController" id="chromosome-div" class="ocb-inline-block ocb-chrom-panel">
-    <div chromosome-panel></div>
+
+<div class="ocb-inline-block ocb-chrom-panel">
+    <div genome-viewer> </div>
 </div>
+
+
+
 
 <script>
 

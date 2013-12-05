@@ -34,12 +34,12 @@
             <tbody ng-repeat="gene in data">
             <!--<tbody ng-repeat="gene in genesData">-->
             <td>
-                <!--<a ng-click="functionDirective(gene.id)">-->
-                    <!--<small>{{gene.name}} ( {{gene.id}} )</small>-->
-                <!--</a>-->
                 <a ng-click="functionDirective(gene.id)">
                     <small>{{gene.name}} ( {{gene.id}} )</small>
                 </a>
+                <!--<a ng-click="aFn(gene.id)" geneId="gene.id">-->
+                    <!--<small>{{gene.name}} ( {{gene.id}} )</small>-->
+                <!--</a>-->
             </td>
             <td>
                 <small>{{gene.biotype}}</small>

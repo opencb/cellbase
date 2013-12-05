@@ -79,29 +79,37 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
     $scope.selectAllChrom = function () {
         var chromDiv = $('#ChromMultiSelect').children().children();
 
-        for (var i in $scope.chromNames){
-              chromDiv[i].setAttribute("checked", "checked");
-        }
+
+        chromDiv.prop('checked', true);
+
+//        for (var i in $scope.chromNames){
+//              chromDiv[i].setAttribute("checked", "checked");
+//            chromDiv[i].prop('checked', true);
+//        }
         for (var i in $scope.chromNames) {
             $scope.chromosomes.push($scope.chromNames[i])
         }
     };
     $scope.deselectAllChrom = function () {
         $scope.chromosomes = [];
-        var chromDiv = $('#ChromMultiSelect').children().children();
 
-        for (var i in $scope.chromNames){
-            chromDiv[i].removeAttribute("checked");
-        }
+        var chromDiv = $('#ChromMultiSelect').children().children();
+        chromDiv.prop('checked', false);
+//        for (var i in $scope.chromNames){
+//            chromDiv[i].removeAttribute("checked");
+//        }
     };
 
     $scope.selectAllBiotypeFilter = function () {
         var biotypesDiv = $('#BiotypesMultiSelect').children().children();
 
-        for (var i in $scope.listOfbiotypeFilters){
-            biotypesDiv[i].setAttribute("checked", "checked");
+
+        biotypesDiv.prop('checked', true);
+
+//        for (var i in $scope.listOfbiotypeFilters){
+//            biotypesDiv[i].setAttribute("checked", "checked");
 //            biotypesDiv[i].setAttribute("checked", true);
-        }
+//        }
 
         for (var i in $scope.listOfbiotypeFilters) {
             $scope.biotypesFilter.push($scope.listOfbiotypeFilters[i]);
@@ -109,19 +117,16 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
     };
 
     $scope.deselectAllBiotypeFilter = function () {
+        console.log("holaaaaa");
         $scope.biotypesFilter = [];
         var biotypesDiv = $('#BiotypesMultiSelect').children().children();
 
-        console.log("antes-----------------");
-        console.log(biotypesDiv);
+        biotypesDiv.prop('checked', false);
 
-        for (var i in $scope.listOfbiotypeFilters){
-            biotypesDiv[i].removeAttribute("checked");
+//        for (var i in $scope.listOfbiotypeFilters){
+//            biotypesDiv[i].removeAttribute("checked");
 //            biotypesDiv[i].removeAttribute("checked", false);
-        }
-        console.log($scope.biotypesFilter);
-        console.log("despues-----------------");
-        console.log(biotypesDiv);
+//        }
     };
 
     //comunicate that a is a new result
@@ -320,11 +325,13 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
 
     $scope.init = function(){
         $scope.deselectAllChrom();
+        $scope.deselectAllBiotypeFilter();
         $scope.regions = "";
         $scope.chromosomes = [];
         $scope.genesIdFilter ="";
         $scope.biotypeFilters = [];
-        $scope.selectAllBiotypeFilter();
+        $scope.listOfbiotypeFilters = [];
+
     };
 
     $scope.$on('biotypes', function () {   //obtener la especie elegida en optionsBar
@@ -333,18 +340,43 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
 
     //put the new region obtained by the chromosome drawn
     $scope.$on('newRegion', function () {
+
+        $scope.newRegion();
+
+    });
+    $scope.$on('newRegionFromGenomeViewer', function () {
+
+        $scope.newRegion();
+        $scope.$apply();
+    });
+
+    $scope.newRegion = function(){
+        console.log(mySharedService.regionFromChromosome);
+
         if ($scope.regions.search(mySharedService.regionFromChromosome) == -1) {
-            if ($scope.regions.search(":") == -1) {
+            if ($scope.regions.search(":") == -1) {  //if there isn't a region
                 $scope.regions = mySharedService.regionFromChromosome;
             }
             else {
+
                 $scope.regions = $scope.regions + "," + mySharedService.regionFromChromosome;
             }
         }
         else {
             alert(mySharedService.regionFromChromosome + " already exist");
         }
-    });
+
+        console.log($scope.regions);
+
+        $scope.newResult();
+    };
+
+
+
+    $scope.$watch('regions', function() {
+        // do something here
+        console.log("region changed");
+    }, true);
 
     $scope.$on('example', function () {
         $scope.init();

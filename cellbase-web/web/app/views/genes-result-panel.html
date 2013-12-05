@@ -1,223 +1,267 @@
 <div class="" ng-show="showAll">
-    <div class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree-width">
+<div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree-width">
 
-        <div class="ocb-text-center">Number of results: <b>{{numResults}}</b></div>
+    <div class="ocb-text-center">Number of results: <b>{{numResults}}</b></div>
 
-        <div class="ocb-text-center">
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllGenesTree()">Expand
-                All
-            </button>
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllGenesTree()">
-                Collapse all
-            </button>
-        </div>
-
-        <button type="button"
-                class="btn btn-primary btn-ms ocb-text-center ocb-all-data-button" ng-click="showAllGenes()">ALL GENES
+    <div class="ocb-text-center">
+        <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllGenesTree()">Expand
+            All
         </button>
+        <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllGenesTree()">
+            Collapse all
+        </button>
+    </div>
 
-        <div ng-repeat="gene in paginationData" class="ocb-margin-two" ng-model="firstGeneId" >
-            <a ng-click="transcriptsToggle = !transcriptsToggle; firstGeneId=&quot;&quot;; geneSelected(gene.id) "
-               class="list-group-item active ocb-margin-two ocb-tree-first-level" style=" color:black;border:1px solid #808080;background-color: #e6e6e6;" >
-                <small >{{gene.name}} ({{gene.id}})</small>
-
-            <!--<button type="button" class="btn btn-default btn-xs"   ng-click="transcriptsToggle = !transcriptsToggle; firstGeneId=&quot;&quot;">-/+</button>-->
-            <!--<button type="button" class="btn btn-default btn-xs"  ng-click="geneSelected(gene.id)">See</button>-->
+    <button type="button"
+            class="btn btn-primary btn-ms ocb-text-center ocb-all-data-button" ng-click="showAllGenes()">ALL GENES
+    </button>
 
 
-                <a ng-show="(transcriptsToggle || firstGeneId==gene.id)"
-                   ng-click="transcriptSelected(gene.id, transcriptId.name)"
-                   ng-repeat="transcriptId in gene.transcripts" class="list-group-item ocb-margin-l-thirty"
-                   ng-click="transcriptSelected(gene.id, transcriptId.name)">{{transcriptId.name}}
+    <!------------------------------------------->
+    <div ng-repeat="gene in paginationData" class="ocb-margin-two" ng-model="firstGeneId">
+        <a ng-click="transcriptsToggle = !transcriptsToggle; firstGeneId=&quot;&quot;; geneSelected(gene.id,0) "
+           class="list-group-item active ocb-margin-two ocb-tree-first-level"
+           style=" color:black;border:1px solid #808080;background-color: #e6e6e6;">
+            <small>{{gene.name}} ({{gene.id}})</small>
 
-                </a>
+            <a ng-show="(transcriptsToggle || firstGeneId==gene.id)"
+               ng-click="transcriptSelected(gene.id, transcriptId.name)"
+               ng-repeat="transcriptId in gene.transcripts" class="list-group-item ocb-margin-l-thirty"
+               ng-click="transcriptSelected(gene.id, transcriptId.name)">{{transcriptId.name}}
+
             </a>
-
-        </div>
-
-        <div class="ocb-text-center">
-            <div ng-show="showPagination" class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
-                <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goToFirstPage()"
-                        ><<
-                </button>
-                <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goPreviousPage()"
-                        ><
-                </button>
-                <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableFirstNumber}"
-                        ng-click="goToNumberPage(paginationNumbers[0])" >{{paginationNumbers[0]}}
-                </button>
-                <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableSecondNumber}"
-                        ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
-                </button>
-                <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
-                        >{{paginationNumbers[2]}}
-                </button>
-                <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goNextPage()"
-                        >>
-                </button>
-                <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goToLastPage()"
-                        >>>
-                </button>
-            </div>
-        </div>
-
+        </a>
     </div>
 
-    <div class="pull-left ocb-margin-ten" ng-style="getWidth()">
-        <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs ocb-margin-b-eigth" ng-click="expandAllPanels()"
-                >Expand All
-        </button>
-        <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs ocb-margin-b-eigth" ng-click="collapseAllPanels()"
-                >Collapse all
-        </button>
 
+    <!--------------------------------------->
 
-        <!--<div ng-controller="genesTablePagination" genes-grid ng-show="showGenesTable"></div>-->
+    <!-------------- prueba --------------->
+    <!--<div ng-repeat="gene in paginationData"  class="ocb-margin-two" ng-model="firstGeneId; t">-->
+        <!--<a ng-click="geneSelected(gene.id, $index); t=toggleTree[$index]"-->
+           <!--class="list-group-item active ocb-margin-two ocb-tree-first-level"-->
+           <!--style=" color:black;border:1px solid #808080;background-color: #e6e6e6;">-->
+            <!--<small>{{gene.name}} ({{gene.id}}) {{toggleTree[$index]}}</small>-->
 
+            <!--<a ng-show="t"-->
+               <!--ng-click="transcriptSelected(gene.id, transcriptId.name)"-->
+               <!--ng-repeat="transcriptId in gene.transcripts" class="list-group-item ocb-margin-l-thirty"-->
+               <!--ng-click="transcriptSelected(gene.id, transcriptId.name)">{{transcriptId.name}}-->
 
-
-
-        <!-------------------genes table------------------->
-        <div class="panel panel-primary" ng-show="showGenesTable">
-            <div class="panel-heading ocb-text-center">Genes information
-                <button type="button" class="btn btn-default btn-xs ocb-float-rigth" ng-Click="showGenesTable = false">x
-                </button>
-            </div>
-            <div class="panel-body" >
-
-                    <genes-grid  info="paginationDataGeneTable" function="geneSelected"></genes-grid>
-                    <!--<genes-grid  info="paginationDataGeneTable" function="geneSelected" on-close="prueba"></genes-grid>-->
-                <!--<div ng-controller="genesTablePagination" genes-grid ></div>-->
-
-                <div ng-show="showPaginationGenesTables" class="btn-group btn-group-ms ocb-margin-b-ten ocb-margin-t-ten ocb-margin-l-r-five"
-                        >
-                    <button ng-show="firstPagesGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                            ng-click="goToFirstPageGenesTable()"><<
-                    </button>
-                    <button ng-show="previousPageGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                            ng-click="goPreviousPageGenesTable()"><
-                    </button>
-                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableFirstNumberGeneTable}"
-                            ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[0])">
-                        {{paginationNumbersGenesTables[0]}}
-                    </button>
-                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableSecondNumberGeneTable}"
-                            ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[1])">
-                        {{paginationNumbersGenesTables[1]}}
-                    </button>
-                    <button ng-show="thirdNumberGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                            ng-class="{'disabled': disableThirdNumberGeneTable}"
-                            ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[2])">
-                        {{paginationNumbersGenesTables[2]}}
-                    </button>
-                    <button ng-show="nextPageGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                            ng-click="goNextPageGenesTable()">>
-                    </button>
-                    <button ng-show="lastPagesGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                            ng-click="goToLastPageGenesTable()">>>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-------------------------------------------------->
-
-
-        <!----------------------------genes table-------------------------->
-        <!--<genes-grid ng-controller="genesTablePagination"  ng-show="showGenesTable"></div>-->
-
-            <!-----------------------gene panel--------------------------->
-            <div class="list-group" ng-show="showGenePanel">
-                <a class="list-group-item active ocb-text-center">Gene
-                    information
-                    <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
-                            ng-Click="showGenePanel = false">&times;
-                    </button>
-                    <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
-                            ng-click="geneInfo = !geneInfo; openCloseGenePanel()"
-                            >{{genePanelStatus}}
-                    </button>
-                </a>
-                <div class="ocb-panels-data-border" ng-show="!geneInfo">
-                    <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
-                            ng-click="moreGenePanel()">
-                        {{moreAndLessGene}}
-                    </button>
-                      <!--<gene-and-transc  info="selectedGen" info-more= "genePanelMore" specie="selectedSpecie" function="transcriptSelectedFromGrid()" ></gene-and-transc>-->
-                      <!--<gene-and-transc  info="selectedGen" info-more= "genePanelMore" specie="selectedSpecie"  function="transcriptSelectedFromGrid" ></gene-and-transc>-->
-                      <gene-and-transc  info="selectedGen" info-more= "genePanelMore" specie="selectedSpecie" function="transcriptSelectedFromGrid" ></gene-and-transc>
-
-                </div>
-            </div>
-
-        <!-------------------------transcript panel---------------------------->
-
-        <!--<div>-->
-            <div class="list-group" ng-show="showTranscriptPanel">
-                <a class="list-group-item active ocb-text-center">Transcript
-                    information
-                    <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
-                            ng-Click="showTranscriptPanel = false">x
-                    </button>
-                    <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
-                            ng-click="transcriptInfo = !transcriptInfo; openCloseTranscriptPanel()">
-                        {{transcriptPanelStatus}}
-                    </button>
-                </a>
-
-                <div ng-show="!transcriptInfo" class="ocb-panels-data-border">
-                    <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
-                            ng-click="moreTranscriptPanel()">{{moreAndLessTranscript}}
-                    </button>
-                        <transcripts  info="selectedTranscript" info-more= "transcriptPanelMore" specie="selectedSpecie" tab-function="goToTab" ></transcripts>
-                </div>
-            </div>
-
-
-        <!--</div>-->
-
-
-        <!-----------------Prueba de las directivas:----------------------->
-
-        <!--<div class="panel panel-primary" >-->
-        <!--<div class="panel-heading " class="ocb-text-center">Genes information-->
-        <!--<button type="button" class="btn btn-primary btn-xs" ng-Click="showGenesTable = false" style="float:right">x</button>-->
-
-        <!--</div>-->
-        <!--<div class="panel-body">-->
-
-        <!--<genes-and-transcripts-grid info="paginationDataGeneTable" function="prueba2"></genes-and-transcripts-grid>-->
-
-        <!--<div ng-show="showPaginationGenesTables" class="btn-group btn-group-ms ocb-margin-b-ten" style="margin-top: 10px; margin-left:4px; margin-rigth:4px">-->
-        <!--<button ng-show="firstPagesGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goToFirstPageGenesTable()"><<</button>-->
-        <!--<button ng-show="previousPageGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goPreviousPageGenesTable()"><</button>-->
-        <!--<button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableFirstNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[0])" >{{paginationNumbersGenesTables[0]}}</button>-->
-        <!--<button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableSecondNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[1])">{{paginationNumbersGenesTables[1]}}</button>-->
-        <!--<button ng-show="thirdNumberGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableThirdNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[2])">{{paginationNumbersGenesTables[2]}}</button>-->
-        <!--<button ng-show="nextPageGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goNextPageGenesTable()">></button>-->
-        <!--<button ng-show="lastPagesGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goToLastPageGenesTable()">>></button>-->
-        <!--</div>-->
-
-        <!--</div>-->
-        <!--</div>-->
-
-        <!--<div class="list-group"  ng-show="showTranscriptsTable">-->
-        <!--<a  class="list-group-item active ocb-text-center"> Transcripts Information-->
-        <!--<button type="button" class="btn btn-default btn-xs" ng-Click="showTranscriptsTable = false"-->
-        <!--style="margin-left:3px; float:right">x-->
-        <!--</button>-->
-        <!--<button type="button" class="btn btn-default btn-xs"-->
-        <!--ng-click="transcriptsInfo = !transcriptsInfo; openCloseTranscriptsGrid()" style="float:right">-->
-        <!--{{transcriptsGridStatus}}-->
-        <!--</button>-->
+            <!--</a>-->
         <!--</a>-->
+    <!--</div>-->
 
-        <!--<div ng-show="!transcriptsInfo" style="border:1px solid #006ffb">-->
-        <!--<genes-and-transcripts-grid info="selectedTranscripts" function="prueba" ></genes-and-transcripts-grid>-->
-        <!--</div>-->
-        <!--</div>-->
 
+
+    <!---------------------------------------->
+
+
+
+    <div class="ocb-text-center">
+        <div ng-show="showPagination" class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
+            <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    ng-click="goToFirstPage()"
+                    ><<
+            </button>
+            <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    ng-click="goPreviousPage()"
+                    ><
+            </button>
+            <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    ng-class="{'disabled': disableFirstNumber}"
+                    ng-click="goToNumberPage(paginationNumbers[0])">{{paginationNumbers[0]}}
+            </button>
+            <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    ng-class="{'disabled': disableSecondNumber}"
+                    ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
+            </button>
+            <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
+                    >{{paginationNumbers[2]}}
+            </button>
+            <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    ng-click="goNextPage()"
+                    >>
+            </button>
+            <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    ng-click="goToLastPage()"
+                    >>>
+            </button>
+        </div>
     </div>
+
+</div>
+
+<!--<div class="pull-left ocb-margin-ten ocb-result-panels-width"  >-->
+<div id="genesResultPanels" class="pull-left ocb-margin-ten" ng-style="getWidth()">
+    <!--<div class="pull-left ocb-margin-ten" style="width:866px" >-->
+    <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
+            ng-click="expandAllPanels()"
+            >Expand All
+    </button>
+    <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
+            ng-click="collapseAllPanels()"
+            >Collapse all
+    </button>
+
+
+    <!--<div ng-controller="genesTablePagination" genes-grid ng-show="showGenesTable"></div>-->
+
+    <!-------------------genes table------------------->
+    <div class="panel panel-primary" ng-show="showGenesTable">
+        <div class="panel-heading ocb-text-center">Genes information
+            <button type="button" class="btn btn-default btn-xs ocb-float-rigth" ng-Click="showGenesTable = false">x
+            </button>
+        </div>
+        <div class="panel-body">
+
+            <genes-grid info="paginationData" function="geneSelected"></genes-grid>
+            <!--<genes-grid  info="paginationDataGeneTable" function="geneSelected(arg)"></genes-grid>-->
+            <!--<genes-grid  info="paginationDataGeneTable" function="geneSelected" on-close="prueba()"></genes-grid>-->
+            <!--<div ng-controller="genesTablePagination" genes-grid ></div>-->
+            <!-------------------------------------------->
+
+            <div class="ocb-text-center">
+                <div ng-show="showPagination"
+                     class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
+                    <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goToFirstPage()"
+                            ><<
+                    </button>
+                    <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goPreviousPage()"
+                            ><
+                    </button>
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-class="{'disabled': disableFirstNumber}"
+                            ng-click="goToNumberPage(paginationNumbers[0])">{{paginationNumbers[0]}}
+                    </button>
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-class="{'disabled': disableSecondNumber}"
+                            ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
+                    </button>
+                    <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
+                            >{{paginationNumbers[2]}}
+                    </button>
+                    <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goNextPage()"
+                            >>
+                    </button>
+                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goToLastPage()"
+                            >>>
+                    </button>
+                </div>
+            </div>
+
+
+            <!-------------------------------------------->
+        </div>
+    </div>
+    <!-------------------------------------------------->
+
+
+    <!----------------------------genes table-------------------------->
+    <!--<genes-grid ng-controller="genesTablePagination"  ng-show="showGenesTable"></div>-->
+
+    <!-----------------------gene panel--------------------------->
+    <!--<div class="list-group" ng-show="showGenePanel" ng-style="getWidth()">-->
+    <div class="list-group" ng-show="showGenePanel">
+        <a class="list-group-item active ocb-text-center">Gene
+            information
+            <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
+                    ng-Click="showGenePanel = false">&times;
+            </button>
+            <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
+                    ng-click="geneInfo = !geneInfo; openCloseGenePanel()"
+                    >{{genePanelStatus}}
+            </button>
+        </a>
+
+        <div class="ocb-panels-data-border" ng-show="!geneInfo">
+            <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
+                    ng-click="moreGenePanel()">
+                {{moreAndLessGene}}
+            </button>
+            <!--<gene-and-transc  info="selectedGen" info-more= "genePanelMore" specie="selectedSpecie" function="transcriptSelectedFromGrid()" ></gene-and-transc>-->
+            <!--<gene-and-transc  info="selectedGen" info-more= "genePanelMore" specie="selectedSpecie"  function="transcriptSelectedFromGrid" ></gene-and-transc>-->
+            <gene-and-transc info="selectedGen" info-more="genePanelMore" specie="selectedSpecie"
+                             function="transcriptSelectedFromGrid"></gene-and-transc>
+
+        </div>
+    </div>
+
+    <!-------------------------transcript panel---------------------------->
+
+    <!--<div>-->
+    <div class="list-group" ng-show="showTranscriptPanel">
+        <a class="list-group-item active ocb-text-center">Transcript
+            information
+            <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
+                    ng-Click="showTranscriptPanel = false">x
+            </button>
+            <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
+                    ng-click="transcriptInfo = !transcriptInfo; openCloseTranscriptPanel()">
+                {{transcriptPanelStatus}}
+            </button>
+        </a>
+
+        <div ng-show="!transcriptInfo" class="ocb-panels-data-border">
+            <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
+                    ng-click="moreTranscriptPanel()">{{moreAndLessTranscript}}
+            </button>
+            <transcripts info="selectedTranscript" info-more="transcriptPanelMore" specie="selectedSpecie"
+                         tab-function="goToTab"></transcripts>
+        </div>
+    </div>
+
+
+    <!--</div>-->
+
+
+    <!-----------------Prueba de las directivas:----------------------->
+
+    <!--<div class="panel panel-primary" >-->
+    <!--<div class="panel-heading " class="ocb-text-center">Genes information-->
+    <!--<button type="button" class="btn btn-primary btn-xs" ng-Click="showGenesTable = false" style="float:right">x</button>-->
+
+    <!--</div>-->
+    <!--<div class="panel-body">-->
+
+    <!--<genes-and-transcripts-grid info="paginationDataGeneTable" function="prueba2"></genes-and-transcripts-grid>-->
+
+    <!--<div ng-show="showPaginationGenesTables" class="btn-group btn-group-ms ocb-margin-b-ten" style="margin-top: 10px; margin-left:4px; margin-rigth:4px">-->
+    <!--<button ng-show="firstPagesGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goToFirstPageGenesTable()"><<</button>-->
+    <!--<button ng-show="previousPageGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goPreviousPageGenesTable()"><</button>-->
+    <!--<button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableFirstNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[0])" >{{paginationNumbersGenesTables[0]}}</button>-->
+    <!--<button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableSecondNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[1])">{{paginationNumbersGenesTables[1]}}</button>-->
+    <!--<button ng-show="thirdNumberGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-class="{'disabled': disableThirdNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[2])">{{paginationNumbersGenesTables[2]}}</button>-->
+    <!--<button ng-show="nextPageGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goNextPageGenesTable()">></button>-->
+    <!--<button ng-show="lastPagesGenesTable" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color" ng-click="goToLastPageGenesTable()">>></button>-->
+    <!--</div>-->
+
+    <!--</div>-->
+    <!--</div>-->
+
+    <!--<div class="list-group"  ng-show="showTranscriptsTable">-->
+    <!--<a  class="list-group-item active ocb-text-center"> Transcripts Information-->
+    <!--<button type="button" class="btn btn-default btn-xs" ng-Click="showTranscriptsTable = false"-->
+    <!--style="margin-left:3px; float:right">x-->
+    <!--</button>-->
+    <!--<button type="button" class="btn btn-default btn-xs"-->
+    <!--ng-click="transcriptsInfo = !transcriptsInfo; openCloseTranscriptsGrid()" style="float:right">-->
+    <!--{{transcriptsGridStatus}}-->
+    <!--</button>-->
+    <!--</a>-->
+
+    <!--<div ng-show="!transcriptsInfo" style="border:1px solid #006ffb">-->
+    <!--<genes-and-transcripts-grid info="selectedTranscripts" function="prueba" ></genes-and-transcripts-grid>-->
+    <!--</div>-->
+    <!--</div>-->
+
+</div>
 </div>
 
 
