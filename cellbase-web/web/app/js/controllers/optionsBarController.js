@@ -16,7 +16,6 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
     ];
     //tabs
     $scope.goToTab = function () {
-
         $(function () {
             $('#myTab a:first').tab('show')
         })
@@ -25,24 +24,23 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
             $(this).tab('show')
         })
     };
+    $scope.new = function () {
+        mySharedService.broadcastNew({longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"});
+    };
     //comunicate the new specie selected
     $scope.setSelectedSpecie = function (specie) {
         mySharedService.broadcastSpecie(specie);
     };
     $scope.example = function () {
-        var specie = {longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"};
-        mySharedService.broadcastExample(specie);
+        mySharedService.broadcastExample({longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"});
     };
-    $scope.new = function () {
-        var specie = {longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"};
-        mySharedService.broadcastNew(specie);
-    };
-    //obtain the specie of genome viewer and take the complete information of the specie
-    $scope.$on('newSpecieFromGenomeViewer', function () {
 
+    //------------------EVENTS-------------------
+    //obtain the specie of genome viewer and take the complete information of the specie
+    $scope.$on('genesSpecieGV', function () {
         for(var i in $scope.species){
             if($scope.species[i].longName == mySharedService.selectedSpecies){
-                mySharedService.broadcastNew($scope.species[i]);
+                mySharedService.broadcastGenesNew($scope.species[i]);
             }
         }
     });

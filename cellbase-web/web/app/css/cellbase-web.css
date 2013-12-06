@@ -75,8 +75,9 @@
     border:1px solid darkgray;
 }
 
-.ocb-result-tree-width{
+.ocb-result-tree{
     width:260px;
+    height: 538px;
 }
 .ocb-all-data-button{
     font-weight: bold;
@@ -136,10 +137,6 @@
 
 .ocb-maegin-t-twenty{
     margin-top:20px;
-}
-.ocb-chrom-list{
-    max-width: 150px;
-    margin-left:20px;
 }
 
 .ocb-regions-textarea{
@@ -237,8 +234,8 @@
 .ocb-scroll-tree{
     overflow-y:scroll;
     overflow-x:hidden;
-    height: 390px;
-    margin:10px
+    height: 440px;
+    /*margin:10px*/
 }
 
 

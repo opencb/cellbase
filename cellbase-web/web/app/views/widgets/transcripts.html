@@ -1,134 +1,81 @@
-<div>
-            <h5 class="ocb-margin-l-r-five">
-                <p>{{data.name}} (
-                    {{data.id}})
-                    <a class="ocb-ensembl-link-color" target="_blank"
-                       href="http://www.ensembl.org/{{specieName.ensemblName}}/Transcript/Transcript?t={{data.id}};">
-                        Go Ensembl</a>
-                </p>
+<div id="transcripts">
+    <h5 class="ocb-margin-l-r-five">
+        <p>{{data.name}} ({{data.id}})
+            <a class="ocb-ensembl-link-color" target="_blank"
+               href="http://www.ensembl.org/{{specieName.ensemblName}}/Transcript/Transcript?t={{data.id}};">
+                Go Ensembl</a>
+        </p>
+        <p>Biotype:<span class="text-muted">{{data.biotype}}</span></p>
+        <p>Location:<span class="text-muted">{{data.chromosome}} : {{data.start}} -{{data.end}}</span></p>
+        <p>Description:<span class="text-muted">{{data.description}}</span></p>
+        <p ng-show="showMore">Status: <span class="text-muted">{{data.status}}</span></p>
+        <p ng-show="showMore">Strand:<span class="text-muted">{{data.strand}}</span></p>
+        <p ng-show="showMore">Genomic Coding Start:<span class="text-muted">{{data.genomicCodingStart}}</span></p>
+        <p ng-show="showMore">Genomic Coding End:<span class="text-muted">{{data.genomicCodingStart}}</span></p>
+        <p ng-show="showMore">CDNA Coding Start:<span class="text-muted">{{data.cdnaCodingStart}}</span></p>
+        <p ng-show="showMore">CDNA Coding End:<span class="text-muted">{{data.cdnaCodingEnd}}</span></p>
+        <p ng-show="showMore">CDS Length:<span class="text-muted">{{data.cdsLength}}</span></p>
+        <p ng-show="showMore">Protein ID:<span class="text-muted">{{data.proteinID}}</span></p>
+    </h5>
 
-                <p>Biotype:<span class="text-muted">{{data.biotype}}</span>
-                </p>
+    <ul class="nav nav-tabs" id="myTab">
+        <li class="active"><a href="#exons">Exons</a></li>
+        <li><a href="#tfbs" ng-click="changeTab()">TFBS</a></li>
+        <li><a href="#xrefs" ng-click="changeTab()">Xrefs</a></li>
+    </ul>
 
-                <p>Location:<span class="text-muted">{{data.chromosome}} : {{data.start}} -{{data.end}}</span>
-                </p>
-
-                <p>Description:<span class="text-muted">{{data.description}}</span>
-                </p>
-
-                <p ng-show="showMore">Status: <span class="text-muted">{{data.status}}</span>
-                </p>
-
-                <p ng-show="showMore">Strand:<span class="text-muted">{{data.strand}}</span>
-                </p>
-
-                <p ng-show="showMore">Genomic Coding Start:<span class="text-muted">{{data.genomicCodingStart}}</span>
-                </p>
-
-                <p ng-show="showMore">Genomic Coding End:<span class="text-muted">{{data.genomicCodingStart}}</span>
-                </p>
-
-                <p ng-show="showMore">CDNA Coding Start:<span class="text-muted">{{data.cdnaCodingStart}}</span>
-                </p>
-
-                <p ng-show="showMore">CDNA Coding End:<span class="text-muted">{{data.cdnaCodingEnd}}</span>
-                </p>
-
-                <p ng-show="showMore">CDS Length:<span
-                        class="text-muted">{{data.cdsLength}}</span>
-                </p>
-
-                <p ng-show="showMore">
-                    Protein ID:<span class="text-muted">{{data.proteinID}}</span>
-                </p>
-            </h5>
-
-            <ul class="nav nav-tabs" id="myTab">
-                <li class="active"><a href="#exons">Exons</a></li>
-                <li><a href="#tfbs" ng-click="changeTab()">TFBS</a></li>
-                <li><a href="#xrefs" ng-click="changeTab()">Xrefs</a></li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane active" id="exons">
-
-                    <div class="ocb-scroll">
-                        <table class="table table-striped table-bordered table-condensed table-hover">
-
-                            <thead>
-                            <th>Id</th>
-                            <th>Location</th>
-                            <th>Phase</th>
-                            <th>Exon Number</th>
-                            </thead>
-
-                            <tbody ng-repeat="exon in data.exons">
-                            <td>
-                                <small>{{exon.id}}</small>
-                            </td>
-                            <td>
-                                <small>{{exon.chromosome}} : {{exon.start}} - {{exon.end}}</small>
-                            </td>
-                            <td>
-                                <small>{{exon.phase}}</small>
-                            </td>
-                            <td>
-                                <small>{{exon.exonNumber}}</small>
-                            </td>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="tab-pane" id="tfbs">
-                    <div class="ocb-scroll">
-                        <table class="table table-striped table-bordered table-condensed table-hover">
-
-                            <thead>
-                            <th>tfName</th>
-                            <th>pwm</th>
-                            <th>Location</th>
-                            <th>Strand</th>
-                            </thead>
-
-                            <tbody ng-repeat="tfbs in data.tfbs">
-                            <td>
-                                <small>{{tfbs.tfName}}</small>
-                            </td>
-                            <td>
-                                <small>{{tfbs.pwm}}</small>
-                            </td>
-                            <td>
-                                <small>{{tfbs.chromosome}} : {{tfbs.start}} - {{tfbs.end}}</small>
-                            </td>
-                            <td>
-                                <small>{{tfbs.strand}}</small>
-                            </td>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="tab-pane" id="xrefs">
-                    <div class="ocb-scroll">
-                        <table class="table table-striped table-bordered table-condensed table-hover">
-
-                            <thead>
-                            <th>Id</th>
-                            <th>Name</th>
-                            </thead>
-
-                            <tbody ng-repeat="xref in data.xrefs">
-                            <td>
-                                <small>{{xref.id}}</small>
-                            </td>
-                            <td>
-                                <small>{{xref.dbName}}</small>
-                            </td>
-                            </tbody>
-                        </table>
-                     </div>
-                </div>
+    <div class="tab-content">
+        <div class="tab-pane active" id="exons">
+            <div class="ocb-scroll">
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                    <thead>
+                        <th>Id</th>
+                        <th>Location</th>
+                        <th>Phase</th>
+                        <th>Exon Number</th>
+                    </thead>
+                    <tbody ng-repeat="exon in data.exons">
+                        <td><small>{{exon.id}}</small></td>
+                        <td><small>{{exon.chromosome}} : {{exon.start}} - {{exon.end}}</small></td>
+                        <td><small>{{exon.phase}}</small></td>
+                        <td><small>{{exon.exonNumber}}</small></td>
+                    </tbody>
+                </table>
             </div>
-
+        </div>
+        <div class="tab-pane" id="tfbs">
+            <div class="ocb-scroll">
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                    <thead>
+                        <th>tfName</th>
+                        <th>pwm</th>
+                        <th>Location</th>
+                        <th>Strand</th>
+                    </thead>
+                    <tbody ng-repeat="tfbs in data.tfbs">
+                        <td><small>{{tfbs.tfName}}</small></td>
+                        <td><small>{{tfbs.pwm}}</small></td>
+                        <td><small>{{tfbs.chromosome}} : {{tfbs.start}} - {{tfbs.end}}</small></td>
+                        <td><small>{{tfbs.strand}}</small></td>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane" id="xrefs">
+            <div class="ocb-scroll">
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                    <thead>
+                        <th>Id</th>
+                        <th>Name</th>
+                    </thead>
+                    <tbody ng-repeat="xref in data.xrefs">
+                        <td><small>{{xref.id}}</small></td>
+                        <td><small>{{xref.dbName}}</small></td>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 

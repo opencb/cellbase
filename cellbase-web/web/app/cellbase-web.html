@@ -2,28 +2,20 @@
 <html ng-app="project">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Proyecto</title>
+    <title>Cellbase web</title>
 
-    <!--jQuery-->
-    <!--<script type="text/javascript" src="../vendor/jquery.min.js"></script>-->
-
-    <!--AngularJS-->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
-
-    <!--Bootstrap-->
     <link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">
-    <!--<script type="text/javascript" src="../vendor/bootstrap-3.0.2/js/bootstrap.js"></script>-->
 
-    <!--===================================================================-->
     <!--========================genome-viewer==============================-->
+    <!--===================================================================-->
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/jquery.qtip.min.css"/>
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/ChemDoodleWeb.css"/>
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/bootstrap-scoped-dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/typeahead.js-bootstrap.css"/>
 
-    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/jquery.qtip.min.css" />
-    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/ChemDoodleWeb.css" />
-    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/bootstrap-scoped-dist/css/bootstrap.min.css" />
-    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/typeahead.js-bootstrap.css" />
     <!-- CSS from Genome Viewer -->
-    <link type="text/css" rel="stylesheet" href="genome-viewer/styles/css/style.css" />
-
+    <link type="text/css" rel="stylesheet" href="genome-viewer/styles/css/style.css"/>
 
     <script type="text/javascript" src="genome-viewer/vendor/underscore-min.js"></script>
     <script type="text/javascript" src="genome-viewer/vendor/backbone-min.js"></script>
@@ -42,26 +34,24 @@
     <script type="text/javascript" src="genome-viewer/gv-config.js"></script>
     <script type="text/javascript" src="genome-viewer/genome-viewer-1.0.3.min.js"></script>
 
-
+    <!--========================cellbase-web==============================-->
+    <!--===================================================================-->
     <link href="css/cellbase-web.css" rel="stylesheet">
-
     <script src="js/app.js"></script>
 
     <!--======================DIRECTIVES======================-->
     <script src="js/directives/optionsBarDirective.js"></script>
-    <script src="js/directives/genomeViewerDirective.js"></script>
     <!----------------genes directives--------------->
-    <script src="js/directives/genesSelectPanelDirective.js"></script>
-    <script src="js/directives/genesResultPanelDirective.js"></script>
-    <!-----widgets----->
-    <script src="js/directives/genesTableDirective.js"></script>
-    <script src="js/directives/geneAndTranscriptsDirective.js"></script>
-    <script src="js/directives/transcriptsDirective.js"></script>
+    <script src="js/directives/genesDirectives/genesSelectPanelDirective.js"></script>
+    <script src="js/directives/genesDirectives/genesResultPanelDirective.js"></script>
+    <script src="js/directives/genesDirectives/genesgvDirective.js"></script>
+    <!---------widgets--------->
+    <script src="js/directives/genesDirectives/geneAndTranscriptsDirective.js"></script>
+    <script src="js/directives/genesDirectives/transcriptsDirective.js"></script>
 
-    <!----------------variants directives--------------->
-    <script src="js/directives/variantsSelectPanelDirective.js"></script>
-    <script src="js/directives/variantsResultPanelDirective.js"></script>
-
+    <!---------------variants directives------------->
+    <script src="js/directives/variantsDirectives/variantsSelectPanelDirective.js"></script>
+    <script src="js/directives/variantsDirectives/variantsResultPanelDirective.js"></script>
 
     <!--======================CONTROLLERS======================-->
     <script src="js/controllers/optionsBarController.js"></script>
@@ -72,41 +62,44 @@
     <!----------------variants controllers--------------->
     <script src="js/controllers/variantsSelectPanelController.js"></script>
     <script src="js/controllers/variantsResultPanelController.js"></script>
-
 </head>
 <body>
-
-<div>
-    <div>
+<div id="cellbase-web">
+    <div id="title">
         <h4 class="ocb-text-center">Cellbase Web</h4>
     </div>
 
-    <div ng-controller="optionsBarController">
+    <div id="optionsBar" ng-controller="optionsBarController">
         <div options-bar></div>
     </div>
 
-    <ul class="nav nav-tabs ocb-border-b-darkgrey" id="myTab" >
+    <ul class="nav nav-tabs ocb-border-b-darkgrey" id="myTab">
         <li class="active"><a href="#genes">Genes</a></li>
         <li><a href="#variants">Variants</a></li>
     </ul>
 
     <div class="tab-content ocb-margin-five ocb-inline-block">
-        <div class="tab-pane active" id="genes">
 
+        <div class="tab-pane active" id="genes">
             <div id="genesSelectDiv" class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
                 <div genes-select></div>
             </div>
-            <div id="genesResultDiv" class="pull-left ocb-result-panels-width" ng-controller="genesResult" >
+            <div id="genesResultDiv" class="pull-left ocb-result-panels-width" ng-controller="genesResult">
                 <div genes-result></div>
             </div>
 
-            <div class="ocb-inline-block ocb-chrom-panel ocb-margin-five" >
-                <!--<div genome-viewer class="ocb-gv-width" > </div>-->
-                <div genome-viewer style="width:1380px" > </div>
+            <div class="ocb-inline-block ocb-chrom-panel ocb-margin-five">
+                <div class="list-group">
+                    <a class="list-group-item active ocb-text-center">Genome viewer
+                    </a>
+
+                    <div class="ocb-panels-data-border" ng-show="!geneInfo">
+                        <div genes-genome-viewer style="width:1380px"></div>
+                    </div>
+                </div>
             </div>
-
-
         </div>
+
         <div class="tab-pane" id="variants">
             <div class="pull-left ocb-select-panel-width" ng-controller="variantsSelect">
                 <div variants-select></div>
@@ -114,15 +107,12 @@
             <div class="pull-left" ng-controller="variantsResult">
                 <div variants-result></div>
             </div>
-
         </div>
-    </div>
 
+    </div>
 </div>
-<!--<div class="ocb-inline-block ocb-chrom-panel ocb-margin-l-r-five" style="width:98%;">-->
-    <!--<div genome-viewer> </div>-->
-<!--</div>-->
 <script>
+
     $(function () {
         $('#myTab a:first').tab('show')
     })
