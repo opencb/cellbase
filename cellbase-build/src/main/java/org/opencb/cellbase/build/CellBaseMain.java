@@ -44,6 +44,7 @@ public class CellBaseMain {
         options.addOption(OptionFactory.createOption("tfbs-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("mirna-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("cosmic-file", "Output directory to save the JSON result", false));
+        options.addOption(OptionFactory.createOption("psimi-tab-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
 
         options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
@@ -178,6 +179,17 @@ public class CellBaseMain {
                 String outfile = commandLine.getOptionValue("output", "/tmp/conservation.json");
                 if(indir != null) {
                     ConservedRegionParser.parseConservedRegionFilesToJson(Paths.get(indir), chunksize,  Paths.get(outfile));
+                }
+            }
+
+            if(buildOption.equals("ppi")) {
+                System.out.println("In PPI");
+                String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
+                String outfile = commandLine.getOptionValue("output", "/tmp/protein_protein_interaction.json");
+                if(psimiTabFile != null) {
+                    serializer = getSerializer(serializationOutput, commandLine);
+                    InteractionParser interactionParser = new InteractionParser(serializer);
+                    interactionParser.parse(Paths.get(psimiTabFile), commandLine.getOptionValue("species").toString());
                 }
             }
 

@@ -1,15 +1,16 @@
-package org.opencb.cellbase.lib.mongodb;
+package org.opencb.cellbase.lib.mongodb.network;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
-import org.opencb.cellbase.core.lib.api.PathwayDBAdaptor;
+import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.MongoDBAdaptor;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAdaptor {
+public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAdaptor {
 
 //	private final static int CHUNK_SIZE = 2000;
 

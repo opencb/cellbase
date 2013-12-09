@@ -3,15 +3,11 @@ package org.opencb.cellbase.build.transform.serializers.mongodb;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedField;
-import org.opencb.cellbase.build.transform.MutationParser;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
+import org.opencb.cellbase.core.common.ppi.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
 
@@ -46,6 +42,7 @@ public class MongoDBSerializer implements CellbaseSerializer {
     // data is split in different files
     private Map<String, BufferedWriter> variationBufferedWriter;
     private BufferedWriter mutationBufferedWriter;
+    private BufferedWriter ppiBufferedWriter;
 
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
@@ -140,6 +137,19 @@ public class MongoDBSerializer implements CellbaseSerializer {
     }
 
     @Override
+    public void serialize(Interaction interaction) {
+        try {
+            if(ppiBufferedWriter == null) {
+                ppiBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("protein_protein_interaction.json"), Charset.defaultCharset());
+            }
+            ppiBufferedWriter.write(jsonObjectWriter.writeValueAsString(interaction));
+            ppiBufferedWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        };
+    }
+
+    @Override
     public void serialize(GenericFeatureChunk genericFeatureChunk) {
         try {
             if(bufferedWriterMap.get("regulatory") == null) {
@@ -162,6 +172,7 @@ public class MongoDBSerializer implements CellbaseSerializer {
 
             closeBufferedWriter(genomeSequenceBufferedWriter);
             closeBufferedWriter(mutationBufferedWriter);
+            closeBufferedWriter(ppiBufferedWriter);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }

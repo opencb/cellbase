@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
+import org.opencb.cellbase.core.common.ppi.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
 
@@ -76,6 +77,11 @@ public class JsonSerializer implements CellbaseSerializer {
 
     @Override
     public void serialize(Mutation mutation) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void serialize(Interaction interaction) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
