@@ -1,7 +1,10 @@
 package org.opencb.cellbase.build.transform;
 
+import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.commons.bioformats.protein.uniprot.UniprotParser;
 import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.Uniprot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
@@ -12,6 +15,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ProteinParser {
+
+    private CellbaseSerializer serializer;
+
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public ProteinParser(CellbaseSerializer serializer) {
+        this.serializer = serializer;
+    }
 
 	public static void parseUniprotToJson(File uniprotFile, String species, File outputFile) throws IOException {
 		Path uniprotPath = Paths.get(uniprotFile.toURI());
