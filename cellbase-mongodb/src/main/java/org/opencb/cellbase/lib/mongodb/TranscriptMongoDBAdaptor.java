@@ -32,7 +32,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         List<Object> biotypes = options.getList("biotypes", null);
         if (biotypes != null && biotypes.size() > 0) {
 
-            DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.biotype", id));
+            DBObject match = new BasicDBObject("$match", new BasicDBObject("chunkIds", id));
             builder = builder.and("biotype").in(biotypeIds);
 
             commands[0] = match;

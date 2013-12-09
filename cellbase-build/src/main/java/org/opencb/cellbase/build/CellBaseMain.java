@@ -37,9 +37,9 @@ public class CellBaseMain {
 
         options.addOption(OptionFactory.createOption("fasta-file", "Output directory to save the JSON result", false));
 
-        // Core options
+        // Gene options
         options.addOption(OptionFactory.createOption("gtf-file", "Output directory to save the JSON result", false));
-        options.addOption(OptionFactory.createOption("gene-description", "Output directory to save the JSON result", false));
+        options.addOption(OptionFactory.createOption("description-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("xref-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("tfbs-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("mirna-file", "Output directory to save the JSON result", false));
@@ -96,11 +96,11 @@ public class CellBaseMain {
                 }
             }
 
-            if(buildOption.equals("core")) {
-                System.out.println("In core...");
+            if(buildOption.equals("gene")) {
+                System.out.println("In gene...");
 
                 String gtfFile = commandLine.getOptionValue("gtf-file");
-                String geneDescriptionFile = commandLine.getOptionValue("gene-description-file", "");
+                String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
                 String xrefFile = commandLine.getOptionValue("xref-file", "");
                 String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
                 String mirnaFile = commandLine.getOptionValue("mirna-file", "");
