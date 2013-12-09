@@ -5,33 +5,50 @@ myApp.factory('mySharedService', function($rootScope){
     var sharedService = {};
 
     sharedService.selectedSpecies=  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
-    //region obtained by the drawn chromosome
 
-    //comunicate specie from optionsBar to genesSelectPanel
+    //------------------general events----------------------
     sharedService.broadcastSpecie = function(specie){
         this.selectedSpecies = specie;
         $rootScope.$broadcast('newSpecie');
     };
+    sharedService.broadcastNew = function(specie){
+        this.selectedSpecies = specie;
+        $rootScope.$broadcast('clear');
+    };
+    sharedService.broadcastExample = function(specie){
+        this.selectedSpecies = specie;
+        $rootScope.$broadcast('example');
+    };
 
-    //comunicate a new result from genesSelectPanel to GenesResultPanel
-    sharedService.newResult = function(chromosomes, regionsAndChromosomes, genesIdFilter,biotypeFilter){
+
+    //========================== GENES =============================
+    //from optionsBar to selectPanel
+    sharedService.broadcastGenesNew = function(specie){
+        this.selectedSpecies = specie;
+        $rootScope.$broadcast('genesClear');
+    };
+    //genesSelectPanel to GenesResultPanel
+    sharedService.broadcastGenesNewResult = function(chromosomes, regionsAndChromosomes, genesIdFilter,biotypeFilter){
         this.chromosomes = chromosomes;
         this.regionsAndChromosomes = regionsAndChromosomes;
         this.genesIdFilter = genesIdFilter;
         this.biotypeFilter = biotypeFilter;
-
-        $rootScope.$broadcast('newResult');
+        $rootScope.$broadcast('genesNewResult');
     };
-
-    //comunicate biotypes from genesResultPanel to genesSelectPanel
-    sharedService.biotypesNames = function(biotypes){
+    //genesResultPanel to genesSelectPanel
+    sharedService.broadcastGenesBiotypes = function(biotypes){
         this.biotypes= biotypes;
-        $rootScope.$broadcast('biotypes');
+        $rootScope.$broadcast('genesBiotypes');
     };
-
-    sharedService.addRegionFromChromosome = function(region){
-        this.regionFromChromosome = region;
-        $rootScope.$broadcast('newRegion');
+    //genesgvDirective to genesSelectPanel
+    sharedService.broadcastGenesRegionGV = function(region){
+        this.regionFromGV = region;
+        $rootScope.$broadcast('genesRegionGV');
+    };
+    //genesgvDirective to optionsBar
+    sharedService.broadcastGenesSpecieGV = function(specie){
+        this.selectedSpecies = specie;
+        $rootScope.$broadcast('genesSpecieGV');
     };
 
     return sharedService;
@@ -57,10 +74,8 @@ myApp.service('CellbaseService', function () {
         });
         return dataGet;
     };
-
     //obtain the chromosomes of a specie
     this.getSpecieChromosomes = function (specie) {
-
         var dataGet;
 
         $.ajax({
@@ -75,11 +90,8 @@ myApp.service('CellbaseService', function () {
         });
         return dataGet;
     };
-
-
     //obtain genes and transcripts from regions of a specie and filter by biotypes
     this.getGenesAndTranscripts = function (species, regions, biotypesFilter) {
-
         var dataGet = [];
         var url;
 
@@ -97,13 +109,11 @@ myApp.service('CellbaseService', function () {
             success: function (data, textStatus, jqXHR) {
 
                 if(data != null){
-    //                console.time("guardar los datos");
                     for(var i in data.response){
                         for(var j in data.response[i].result){
                             dataGet.push(data.response[i].result[j]);
                         }
                     }
-    //                console.timeEnd("guardar los datos");
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
@@ -111,10 +121,8 @@ myApp.service('CellbaseService', function () {
         });
         return dataGet;
     };
-
     //obtain genes and transcripts from a specie and filter by geneId or name
     this.getGenesAndTranscriptsByIdOrName = function (species, geneId) {
-
         var dataGet = [];
 
         $.ajax({
@@ -132,10 +140,8 @@ myApp.service('CellbaseService', function () {
         });
         return dataGet;
     };
-
     //obtain all data of genes from a specie and filter by geneId or name
     this.getGenesAllDataById = function (species, geneId) {
-
         var dataGet = [];
 
         $.ajax({
@@ -150,6 +156,5 @@ myApp.service('CellbaseService', function () {
         });
         return dataGet;
     };
-
 });
 

@@ -1,33 +1,39 @@
 var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
+    $scope.toggleTree = []; //array of booleans that will show of hide the elements of the tree
     $scope.genesAndTranscriptsData = {};
-    $scope.genesAllData = [];
     $scope.paginationData = [];
+    $scope.biotypes = [];
 
     $scope.firstGeneId = "";
     $scope.showAll = false;
 
-    //--------pagination--------------
+    $scope.showGenePanel = false;
+    $scope.showMoreAndLessGeneData = "+";
+    $scope.genePanelMore = false;
+    $scope.genePanelStatus = "-";
+
+    $scope.showTranscriptPanel = false;
+    $scope.showMoreAndLessTranscriptData = "+";
+    $scope.transcriptPanelMore = false;
+    $scope.transcriptPanelStatus = "-";
+
     $scope.showPagination = false;
     $scope.firstPages = false;
     $scope.previousPage = false;
     $scope.nextPage = true;
     $scope.lastPages = true;
-
     $scope.paginationNumbers = [1, 2, 3];
-
     $scope.maxNumberPagination;
     $scope.numDataPerPage = 10;
     $scope.showPagination = false;
     $scope.lastPage = 1;
-
     $scope.disableFirstNumber = true;
     $scope.disableSecondNumber = false;
     $scope.disableThirdNumber = false;
 
     //========================Pagination==================================
     $scope.goToFirstPage = function () {
-
         $scope.paginationNumbers[0] = 1;
         $scope.paginationNumbers[1] = 2;
         $scope.paginationNumbers[2] = 3;
@@ -41,7 +47,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         $scope.obtainPaginationLimits(1);
     };
     $scope.goToLastPage = function () {
-
         $scope.paginationNumbers[0] = $scope.maxNumberPagination - 2;
         $scope.paginationNumbers[1] = $scope.maxNumberPagination - 1;
         $scope.paginationNumbers[2] = $scope.maxNumberPagination;
@@ -55,7 +60,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         $scope.obtainPaginationLimits($scope.maxNumberPagination);
     };
     $scope.goPreviousPage = function () {
-
         var page = $scope.lastPage - 1;
 
         $scope.firstPages = true;
@@ -71,7 +75,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             $scope.paginationNumbers[1] = 2;
             $scope.paginationNumbers[2] = 3;
         }
-
         else if ($scope.paginationNumbers[0] != page && $scope.paginationNumbers[1] != page && $scope.paginationNumbers[2] != page) {
             $scope.paginationNumbers[0] = page - 2;
             $scope.paginationNumbers[1] = page - 1;
@@ -81,7 +84,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         $scope.obtainPaginationLimits(page);
     };
     $scope.goNextPage = function () {
-
         var page = $scope.lastPage + 1;
 
         $scope.firstPages = true;
@@ -96,7 +98,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             $scope.paginationNumbers[0] = page - 2;
             $scope.paginationNumbers[1] = page - 1;
             $scope.paginationNumbers[2] = page;
-
         }
         else if ($scope.paginationNumbers[0] != page && $scope.paginationNumbers[1] != page && $scope.paginationNumbers[2] != page) {
             $scope.paginationNumbers[0] = page;
@@ -107,7 +108,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         $scope.obtainPaginationLimits(page);
     };
     $scope.goToNumberPage = function (selectedPage) {
-
         if (!$scope.simplePagination) {
             if (selectedPage == $scope.maxNumberPagination) {
                 $scope.nextPage = false;
@@ -128,10 +128,10 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
                 $scope.lastPages = true;
             }
         }
+        $scope.collapseAllGenesTree();
         $scope.disableAndEnablePaginationButtons(selectedPage);
         $scope.obtainPaginationLimits(selectedPage);
     };
-
     $scope.disableAndEnablePaginationButtons = function (page) {
         if ($scope.paginationNumbers[0] == page) {
             $scope.disableFirstNumber = true;
@@ -149,25 +149,20 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             $scope.disableFirstNumber = false;
         }
     };
-
     $scope.obtainPaginationLimits = function (page) {
-
         $scope.lastPage = page;
         var ini = (page - 1) * $scope.numDataPerPage;
         $scope.paginationData = [];
         var geneId;
 
         for (var i = ini; i < ini + $scope.numDataPerPage; i++) {
-
             geneId = Object.keys($scope.genesAndTranscriptsData)[i];
-
             if (Object.keys($scope.genesAndTranscriptsData)[i] != null) {
                 $scope.paginationData.push($scope.genesAndTranscriptsData[geneId]);
             }
         }
     };
     $scope.initPagination = function () {
-
         $scope.paginationData = [];
         $scope.maxNumberPagination = Math.ceil(Object.keys($scope.genesAndTranscriptsData).length / $scope.numDataPerPage);
 
@@ -176,23 +171,18 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             for (var i in $scope.genesAndTranscriptsData) {
                 $scope.paginationData.push($scope.genesAndTranscriptsData[i]);
             }
-
             $scope.showPagination = false;
         }
         // 11 --> 20
         else if (Object.keys($scope.genesAndTranscriptsData).length <= ($scope.numDataPerPage * 2)) {
-
             $scope.simplePagination = true;
 
             for (var i = 0; i < $scope.numDataPerPage; i++) {
-
                 geneId = Object.keys($scope.genesAndTranscriptsData)[i];
-
                 if (Object.keys($scope.genesAndTranscriptsData)[i] != null) {
                     $scope.paginationData.push($scope.genesAndTranscriptsData[geneId]);
                 }
             }
-
             $scope.showPagination = true;
             $scope.lastPage = 1;
 
@@ -211,13 +201,10 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         // 21 --> ...
         else {
             $scope.simplePagination = false;
-            //indicamos que los primeros datos a mostrar son los de la pagina 1
             var geneId;
 
             for (var i = 0; i < $scope.numDataPerPage; i++) {
-
                 geneId = Object.keys($scope.genesAndTranscriptsData)[i];
-
                 if (Object.keys($scope.genesAndTranscriptsData)[i] != null) {
                     $scope.paginationData.push($scope.genesAndTranscriptsData[geneId]);
                 }
@@ -238,16 +225,15 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         }
     };
 
-    $scope.clearPanelsAndTables = function () {
-        $scope.showGenesTable = false;
+
+    $scope.clearAll = function(){
+        $scope.showAll = false;
+    };
+    $scope.clear = function () {
         $scope.showGenePanel = false;
         $scope.showTranscriptPanel = false;
-        $scope.showTranscriptsTable = false;
-        $scope.showMoreInfoPanel = false;
     };
-
-    $scope.$on('newResult', function () {
-
+    $scope.setResult = function(){
         $scope.genesFilters = mySharedService.genesIdFilter;
         $scope.biotypeFilters = mySharedService.biotypeFilter;
         $scope.selectedSpecie = mySharedService.selectedSpecies;
@@ -259,7 +245,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
 
         //check if there are filters
         if ($scope.biotypeFilters.length != 0) {
-
             arrayOfGenes = CellbaseService.getGenesAndTranscripts($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomes, $scope.biotypeFilters);
 
             for (var i in arrayOfGenes) {
@@ -267,53 +252,43 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             }
         }
         if ($scope.genesFilters.length != 0) {
-
             genesIdFilter = CellbaseService.getGenesAndTranscriptsByIdOrName($scope.selectedSpecie.shortName, $scope.genesFilters);  //obtener los datos
 
-            //save thee correct results and alert the incorrect
-            $scope.getCorrectDataFilterPerGene(genesIdFilter)
-
+            $scope.checkGeneFilter(genesIdFilter)
         }
         //if there aren't any filters, show all genes data
         if ($scope.biotypeFilters.length == 0 && $scope.genesFilters.length == 0) {
-
             arrayOfGenes = CellbaseService.getGenesAndTranscripts($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomes, []);
-
             //save the data in a hash table
             for (var i in arrayOfGenes) {
                 $scope.genesAndTranscriptsData[arrayOfGenes[i].id] = arrayOfGenes[i];
             }
-
             $scope.getBiotypes();
         }
-
-
         $scope.numResults = Object.keys($scope.genesAndTranscriptsData).length;
-
-            $scope.initPagination();
-            $scope.clearPanelsAndTables();
-            $scope.initPaginationGenesTable();
-
+        $scope.initPagination();
+        $scope.clear();
         if($scope.numResults != 0){
-            $scope.showAll = true;
+            $scope.toggleTree = [];
 
+            for(var i=0;i< 10; i++){
+                $scope.toggleTree.push(false);
+            }
+            $scope.showAll = true;
             $scope.firstGeneId = Object.keys($scope.genesAndTranscriptsData)[0];
             $scope.lastDataShow = Object.keys($scope.genesAndTranscriptsData)[0];
             $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, $scope.lastDataShow);
-
             //show the informtion of the first gene
-            $scope.geneSelected(Object.keys($scope.genesAndTranscriptsData)[0]);
-            $scope.transcriptsSelected(Object.keys($scope.genesAndTranscriptsData)[0]);
+            $scope.showSelectedGene(Object.keys($scope.genesAndTranscriptsData)[0], 0);
         }
         else{
-            alert("No correct data selected");
+            alert("No results with this data");
+//            alert("No correct data selected");
             $scope.paginationData = [];
         }
-
-    });
-
-    $scope.getCorrectDataFilterPerGene = function(genesIdFilter){
-
+    };
+    //save thee correct results and alert the incorrect
+    $scope.checkGeneFilter = function(genesIdFilter){
         var genesIdError = [];
         var genesFilters =  $scope.genesFilters.split(",");
         var error = false;
@@ -327,94 +302,43 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
                 $scope.genesAndTranscriptsData[genesIdFilter[i].id] = (genesIdFilter[i]);
             }
         }
-
-
         if(error){
-
         var messageError = "";
-
         if(genesIdError.length != 0){
-
             messageError = genesIdError[0];
-
-            for(var i=1;i<genesIdError.length;i++)
-            {
+            for(var i=1;i<genesIdError.length;i++){
                 messageError = messageError + ", " + genesIdError[i];
             }
         }
         messageError = messageError + " incorrect";
-
         alert(messageError);
         }
     };
-
-
-    $scope.$on('showAllGenes', function () {
-
-        $scope.showGenesTable = true;
-
-        $scope.showGenePanel = false;
-        $scope.showTranscriptPanel = false;
-        $scope.showTranscriptsTable = false;
-        $scope.showMoreInfoPanel = false;
-    });
-
-    $scope.showAllGenes = function () {
-
-        console.log("hola");
-        $scope.showGenesTable = true;
-
-        $scope.showGenePanel = false;
-        $scope.showTranscriptPanel = false;
-        $scope.showTranscriptsTable = false;
-        $scope.showMoreInfoPanel = false;
-    };
-
-    $scope.biotypes = [];
     //obtain the list of the biotypes
     $scope.getBiotypes = function () {
-
         $scope.biotypes = [];
         for (var i in $scope.genesAndTranscriptsData) {
             if ($scope.biotypes.indexOf($scope.genesAndTranscriptsData[i].biotype) == -1) {
                 $scope.biotypes.push($scope.genesAndTranscriptsData[i].biotype);
-
             }
         }
-        mySharedService.biotypesNames($scope.biotypes);
+        mySharedService.broadcastGenesBiotypes($scope.biotypes);
     };
-
-    //tabs
-    $scope.goToTab = function () {
-
-        $(function () {
-            $('#myTab a:first').tab('show')
-        })
-
-        $('#myTab a').click(function (e) {
-            e.preventDefault()
-            $(this).tab('show')
-        })
-    };
-
-//================= show panels and tables ======================
-
-    $scope.showGenesTable = false;
-    $scope.showGenePanel = false;
-
+    //===================== tree events ========================
     //show gene panel
-    $scope.geneSelected = function (geneId) {
-
+    $scope.showSelectedGene = function (geneId, index) {
+        if($scope.toggleTree[index]){
+            $scope.toggleTree[index] = false;
+        }
+        else{
+            $scope.toggleTree[index] = true;
+        }
         if ($scope.lastDataShow != geneId) {
-
             $scope.lastDataShow = geneId;
             $scope.showGenePanel = true;
             $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
 
             $scope.showTranscriptPanel = false;
-            $scope.showTranscriptsTable = false;
-            $scope.showMoreInfoPanel = false;
-
             $scope.expandAllPanels();
         }
         else {
@@ -423,81 +347,29 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             }
         }
         $scope.selectedTranscripts = $scope.selectedGen.transcripts;
-        $scope.showTranscriptsTable = true;
-        $scope.showGenesTable = false;
     };
-
-
-    //show transcripts table from genes panel
-    $scope.transcriptsSelectedFromGenesPanel = function (geneId) {
-        $scope.transcriptsInfo = false;
-        $scope.transcriptsSelected(geneId);
-    };
-
-    //show transcripts table
-    $scope.transcriptsSelected = function (geneId) {
-
-        if ($scope.lastDataShow != geneId) {
-
-            $scope.lastDataShow = geneId;
-            $scope.showTranscriptsTable = true;
-
-            $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
-            $scope.selectedTranscripts = $scope.selectedGen.transcripts;
-
-            $scope.showTranscriptPanel = false;
-            $scope.showGenePanel = false;
-            $scope.showMoreInfoPanel = false;
-
-            $scope.expandAllPanels();
-        }
-        else {
-            if (!$scope.showTranscriptsTable) {  //para que no se muestre cuando ya lo esta
-                $scope.selectedTranscripts = $scope.selectedGen.transcripts;
-                $scope.showTranscriptsTable = true;
-            }
-        }
-        $scope.showGenesTable = false;
-
-    };
-
-    $scope.showTranscriptPanel = false;
-
     //show transcripts panel
-    $scope.transcriptSelected = function (geneId, transcriptName) {
-
+    $scope.showSelectedTranscript = function (geneId, transcriptName) {
         var transcripts;
 
         if ($scope.lastDataShow != geneId) {
             $scope.lastDataShow = geneId;
-
-            $scope.showTranscriptsTable = false;
             $scope.showGenePanel = false;
-            $scope.showMoreInfoPanel = false;
-
             $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
-
             $scope.expandAllPanels();
         }
-
-        $scope.showGenesTable = false;
         $scope.showTranscriptPanel = true;
-
         transcripts = $scope.selectedGen.transcripts;
-
         for (var i in transcripts) {
             if (transcripts[i].name == transcriptName) {
                 $scope.selectedTranscript = transcripts[i];
             }
         }
-
     };
 
     //show transcripts panel from transcripts table
-    $scope.transcriptSelectedFromGrid = function (transcriptName) {
-
+    $scope.showTanscriptFromTable = function (transcriptName) {
         var transcripts = $scope.selectedGen.transcripts;
-
         for (var i in transcripts) {
             if (transcripts[i].name == transcriptName) {
                 $scope.selectedTranscript = transcripts[i];
@@ -505,110 +377,58 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         }
         $scope.transcriptInfo = false;
         $scope.showTranscriptPanel = true;
-    };
-
-    //show exons,tfbs and xrefs information from transcript panel
-    $scope.moreInfoSelectedFromPanel = function (transcriptName) {
-
-        $scope.showMoreInfoPanel = true;
-
-        $scope.selectedExons = $scope.selectedTranscript.exons;
-        $scope.selectedTFBS = $scope.selectedTranscript.tfbs;
-        $scope.selectedXrefs = $scope.selectedTranscript.xrefs;
-
-        $scope.moreInfo = false;
-    };
-
-    $scope.showMoreInfoPanel = false;
-
-    //show exons,tfbs and xrefs information
-    $scope.moreInfoSelected = function (geneId, transcriptName) {
-
-        var transcripts;
-
-        if ($scope.lastDataShow != geneId) {
-
-            $scope.lastDataShow = geneId;
-
-            $scope.showTranscriptsTable = false;
-            $scope.showTranscriptPanel = false;
-            $scope.showGenePanel = false;
-
-            $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
-
-            $scope.expandAllPanels();
-        }
-
-        transcripts = $scope.selectedGen.transcripts;
-
-        for (var i in transcripts) {
-            if (transcripts[i].name == transcriptName) {
-
-                $scope.selectedExons = transcripts[i].exons;
-                $scope.selectedTFBS = transcripts[i].tfbs;
-                $scope.selectedXrefs = transcripts[i].xrefs;
-            }
-        }
-        $scope.showGenesTable = false;
-        $scope.showMoreInfoPanel = true;
     };
 
     //Expand/collapse elements in DOM
     $scope.expandAllPanels = function () {
-
         $scope.geneInfo = false;
         $scope.transcriptsInfo = false;
         $scope.transcriptInfo = false;
         $scope.moreInfo = false;
+        $scope.genePanelStatus = "-";
+        $scope.transcriptPanelStatus = "-";
     };
     $scope.collapseAllPanels = function () {
-
         $scope.geneInfo = true;
         $scope.transcriptsInfo = true;
         $scope.transcriptInfo = true;
         $scope.moreInfo = true;
+        $scope.genePanelStatus = "+";
+        $scope.transcriptPanelStatus = "+";
     };
-
     $scope.expandAllGenesTree = function () {
-        $scope.transcriptsToggle = true;
+        for(var i in $scope.toggleTree){
+            $scope.toggleTree[i] = true;
+        }
     };
     $scope.collapseAllGenesTree = function () {
-        $scope.transcriptsToggle = false;
+        for(var i in $scope.toggleTree){
+            $scope.toggleTree[i] = false;
+        }
     };
-
-
-    $scope.moreAndLessGene = "+";
-    $scope.genePanelMore = false;
 
     //show more info in gene panel
-    $scope.moreGenePanel = function () {
+    $scope.showMoreGeneData = function () {
         $scope.genePanelMore = !$scope.genePanelMore;
-        if ($scope.moreAndLessGene == "+") {
-            $scope.moreAndLessGene = "-";
+        if ($scope.showMoreAndLessGeneData == "+") {
+            $scope.showMoreAndLessGeneData = "-";
         }
         else {
-            $scope.moreAndLessGene = "+";
+            $scope.showMoreAndLessGeneData = "+";
         }
     };
-
-
-    $scope.moreAndLessTranscript = "+";
-    $scope.transcriptPanelMore = false;
-
     //show more info in transcript panel
-    $scope.moreTranscriptPanel = function () {
+    $scope.showMoreTranscriptData = function () {
         $scope.transcriptPanelMore = !$scope.transcriptPanelMore;
-        if ($scope.moreAndLessTranscript == "+") {
-            $scope.moreAndLessTranscript = "-";
+        if ($scope.showMoreAndLessTranscriptData == "+") {
+            $scope.showMoreAndLessTranscriptData = "-";
         }
         else {
-            $scope.moreAndLessTranscript = "+";
+            $scope.showMoreAndLessTranscriptData = "+";
         }
     };
 
     //show/hide gene panel information
-    $scope.genePanelStatus = "-";
-
     $scope.openCloseGenePanel = function () {
         if ($scope.genePanelStatus == "+") {
             $scope.genePanelStatus = "-";
@@ -617,22 +437,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             $scope.genePanelStatus = "+";
         }
     };
-
-    //show/hide transcript table information
-    $scope.transcriptsGridStatus = "-";
-
-    $scope.openCloseTranscriptsGrid = function () {
-        if ($scope.transcriptsGridStatus == "+") {
-            $scope.transcriptsGridStatus = "-";
-        }
-        else {
-            $scope.transcriptsGridStatus = "+";
-        }
-    };
-
     //show/hide transcript panel information
-    $scope.transcriptPanelStatus = "-";
-
     $scope.openCloseTranscriptPanel = function () {
         if ($scope.transcriptPanelStatus == "+") {
             $scope.transcriptPanelStatus = "-";
@@ -642,30 +447,38 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         }
     };
 
-    //show/hide exons, tfbs and xrefs tables information
-    $scope.moreInfoGridStatus = "-";
-
-    $scope.openCloseMoreInfoGrid = function () {
-        if ($scope.transcriptPanelStatus == "+") {
-            $scope.transcriptPanelStatus = "-";
-        }
-        else {
-            $scope.transcriptPanelStatus = "+";
-        }
-    };
-
-    //=============== Dinamic styles ========================
-    //genesResult div width is the document less genesSelect div (fixed)
+    //genesResult div width is the rest of the document
     $scope.getWidth = function () {
-
         var resultPartWidth = $(document).width() - 220 - 260 - 60;
+
+        console.log(resultPartWidth);
         return  {width: resultPartWidth}
     };
+    //tabs
+    $scope.goToTab = function () {
+        $(function () {
+            $('#myTab a:first').tab('show')
+        })
+        $('#myTab a').click(function (e) {
+            e.preventDefault()
+            $(this).tab('show')
+        })
+    };
 
-
-
+    //--------------EVENTS-------------------
+    $scope.$on('clear', function () {
+        $scope.clearAll();
+    });
+    $scope.$on('newSpecie', function () {
+        $scope.clearAll();
+    });
+    $scope.$on('genesClear', function () {
+        $scope.clearAll();
+    });
+    $scope.$on('genesNewResult', function () {
+        $scope.setResult();
+    });
 
 }]);
 
 genesResult.$inject = ['$scope', 'mySharedService'];
-

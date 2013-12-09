@@ -1,65 +1,85 @@
-.cw-text-center {
+
+
+
+/*-----rewritte bootstrap css----*/
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: 5px 6px;
+    margin-bottom: -1px;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+}
+
+/*-------------------------------*/
+
+.ocb-text-center {
     text-align:center;
 }
 
-.cw-border-b-darkgrey{
+.ocb-border-b-darkgrey{
     border-bottom: 1px solid darkgray;
 }
 
-.cw-margin-five{
+.ocb-margin-five{
     margin:5px;
 }
 
-.cw-inline-block{
+.ocb-inline-block{
     display: inline-block;
 }
 
-.cw-select-panel-width{
+.ocb-select-panel-width{
     width:220px;
 }
 
-.cw-chrom-panel{
+.ocb-chrom-panel{
     width:100%;
     position:relative;
     bottom:0;
 }
 
-.cw-text-options{
+.ocb-text-options{
     font-weight:bold;
     font-size:medium;
     color:#0B0B61;
 }
 
-/*.cw-select-panel{*/
+/*.ocb-select-panel{*/
 
 /*}*/
 
-.cw-select-panel-text{
+.ocb-select-panel-text{
     color:#0B0B61;
     font-size:medium;
     margin-left:10px;
 }
 
-.cw-background-color-lightgrey{
+.ocb-background-color-lightgrey{
     background-color:lightgrey;
 }
 
-.cw-margin-b-ten{
+.ocb-margin-b-ten{
     margin-bottom:10px;
 }
 
-.cw-margin-l-ten{
+.ocb-margin-b-0{
+    margin-bottom:0px;
+}
+
+.ocb-margin-l-ten{
     margin-left:10px;
 }
 
-.cw-border-darkgray{
+.ocb-border-darkgray{
     border:1px solid darkgray;
 }
 
-.cw-result-tree-width{
+.ocb-result-tree{
     width:260px;
+    height: 538px;
 }
-.cw-all-data-button{
+.ocb-all-data-button{
     font-weight: bold;
     margin-left:5px;
     margin-right: 5px;
@@ -71,134 +91,162 @@
     border:1px solid #808080;
 }
 
-.cw-margin-two{
+.ocb-margin-two{
     margin:2px;
 }
-.cw-pagnation-text-color{
+.ocb-pagnation-text-color{
     color:#006ffb;
 }
 
-.cw-pagnation-tree-position{
+.ocb-pagnation-tree-position{
     margin-top: 10px;
     margin-left:4px;
     margin-rigth:4px;
 }
 
-.cw-margin-l-thirty{
+.ocb-margin-l-thirty{
     margin-left:30px;
 }
 
-.cw-select-background-color{
+.ocb-select-background-color{
     background-color: #e6e6e6;
 }
 
-.cw-margin-l-r-five{
+.ocb-margin-l-r-five{
     margin-left:5px;
     margin-rigth:5px;
 }
 
-.cw-margin-b-five{
+.ocb-margin-b-five{
     margin-bottom:5px;
 }
 
-.cw-margin-l-five{
+.ocb-margin-l-five{
     margin-left:5px;
 }
 
-.cw-select-tabs{
+.ocb-select-tabs{
     border:1px solid #808080;
     height: 440px;
 }
 
-.cw-select-first-tab{
+.ocb-select-first-tab{
     margin-top:0px;
     margin-bottom: 20px;
 }
 
-.cw-maegin-t-twenty{
+.ocb-maegin-t-twenty{
     margin-top:20px;
 }
-.cw-chrom-list{
-    max-width: 150px;
-    margin-left:20px;
-}
 
-.cw-regions-textarea{
+.ocb-regions-textarea{
     width:190px;
     max-width:190px;
     max-height: 114px;
 }
 
-.cw-margin-b-twenty{
+.ocb-margin-b-twenty{
     margin-bottom: 20px;
 }
 
-.cw-genes-id-textarea{
+.ocb-genes-id-textarea{
     width:180px;
     max-width:180px;
     max-height: 94px;
 }
 
-.cw-margin-t-twenty-five{
+.ocb-margin-t-twenty-five{
     margin-top: 25px;
 }
 
-.cw-biotypes-list{
+.ocb-biotypes-list{
     width:180;
     max-width: 180px;
 }
 
-.cw-background-color-lightblue{
+.ocb-background-color-lightblue{
     background-color: lightblue;
 }
 
-.cw-margin-t-eigth{
+.ocb-margin-t-eigth{
     margin-top: 8px;
 }
 
-.cw-margin-b-eigth{
+.ocb-margin-b-eigth{
     margin-bottom: 8px;
 }
 
-.cw-margin-t-ten{
+.ocb-margin-t-ten{
     margin-top: 10px;
 }
 
-.cw-margin-ten{
+.ocb-margin-ten{
     margin: 10px;
 }
 
-.cw-tree-first-level{
-    color:black;
-    border:1px solid #808080;
-    background-color: #e6e6e6;
+.ocb-tree-first-level{
+    color:black !important;
+    border:1px solid #808080 !important;
+    background-color: #e6e6e6 !important;
 }
 
-.cw-float-rigth{
+.ocb-float-rigth{
     float:right;
 }
 
-.cw-collapse-button{
+.ocb-collapse-button{
     float:right;
     margin-left:3px;
 }
 
-.cw-panels-data-border{
+.ocb-panels-data-border{
     border:1px solid #006ffb;
 }
 
-.cw-float-left{
+.ocb-float-left{
     float:left;
 }
 
-.cw-ensembl-link-color{
+.ocb-ensembl-link-color{
     color:palevioletred;
 }
 
-.cw-text-blue{
+.ocb-text-blue{
     font-weight: bold;
     color: blue;
 }
+.ocb-chrom-scroll{
+    overflow: scroll;
+    height: 80px;
+    margin:10px
+}
+.ocb-biotypes-scroll{
+    overflow: scroll;
+    height: 160px;
+    margin:10px
+}
+.ocb-scroll{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 150px;
+    margin:10px
+}
+.ocb-scroll-tree{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 440px;
+    /*margin:10px*/
+}
+
+
+
+/*-------no funcionan:---------*/
+.ocb-result-panels-width{
+    width: calc(100%-220px) important!;
+}
+/*.ocb-gv-width{*/
+    /*width: calc(100%-10px);*/
+/*}*/
 
 
 

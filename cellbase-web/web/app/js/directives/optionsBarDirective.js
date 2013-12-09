@@ -1,4 +1,3 @@
-
 myApp.directive('optionsBar', function () {
     return {
         restrict: 'A',

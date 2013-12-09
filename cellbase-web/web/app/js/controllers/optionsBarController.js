@@ -14,25 +14,36 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
         {longName: "Anopheles gambiae", shortName: "agambiae"},
         {longName: "Plasmodium falciparum", shortName: "pfalciparum"}
     ];
-
     //tabs
     $scope.goToTab = function () {
-
         $(function () {
             $('#myTab a:first').tab('show')
         })
-
         $('#myTab a').click(function (e) {
             e.preventDefault()
             $(this).tab('show')
         })
     };
-
+    $scope.new = function () {
+        mySharedService.broadcastNew({longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"});
+    };
     //comunicate the new specie selected
     $scope.setSelectedSpecie = function (specie) {
         mySharedService.broadcastSpecie(specie);
     };
+    $scope.example = function () {
+        mySharedService.broadcastExample({longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens"});
+    };
 
+    //------------------EVENTS-------------------
+    //obtain the specie of genome viewer and take the complete information of the specie
+    $scope.$on('genesSpecieGV', function () {
+        for(var i in $scope.species){
+            if($scope.species[i].longName == mySharedService.selectedSpecies){
+                mySharedService.broadcastGenesNew($scope.species[i]);
+            }
+        }
+    });
 }]);
 
 optionsBarControl.$inject = ['$scope', 'mySharedService'];
