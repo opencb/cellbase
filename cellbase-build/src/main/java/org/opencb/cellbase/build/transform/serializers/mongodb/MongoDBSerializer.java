@@ -10,6 +10,8 @@ import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.ppi.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.Protein;
+import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -101,6 +103,21 @@ public class MongoDBSerializer implements CellbaseSerializer {
             }
             bufferedWriterMap.get("gene").write(jsonObjectWriter.writeValueAsString(gene));
             bufferedWriterMap.get("gene").newLine();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
+    public void serialize(Entry protein) {
+        try {
+            if(bufferedWriterMap.get("protein") == null) {
+                bufferedWriterMap.put("protein", Files.newBufferedWriter(outdirPath.resolve("protein.json"), Charset.defaultCharset()));
+            }
+            bufferedWriterMap.get("protein").write(jsonObjectWriter.writeValueAsString(protein));
+            bufferedWriterMap.get("protein").newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {

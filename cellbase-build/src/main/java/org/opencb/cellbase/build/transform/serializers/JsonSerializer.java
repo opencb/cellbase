@@ -9,6 +9,7 @@ import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.ppi.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -98,6 +99,11 @@ public class JsonSerializer implements CellbaseSerializer {
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+    }
+
+    @Override
+    public void serialize(Entry gene) {
+
     }
 
     @Override

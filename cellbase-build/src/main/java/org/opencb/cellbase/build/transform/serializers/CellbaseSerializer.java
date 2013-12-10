@@ -6,6 +6,8 @@ import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.ppi.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.Protein;
+import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,6 +19,8 @@ import org.opencb.cellbase.core.common.variation.Variation;
 public interface CellbaseSerializer {
 
     public void serialize(Gene gene);
+
+    public void serialize(Entry protein);
 
     public void serialize(Variation variation);
 

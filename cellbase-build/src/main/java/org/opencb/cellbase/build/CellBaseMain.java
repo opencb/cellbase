@@ -115,6 +115,19 @@ public class CellBaseMain {
                 }
             }
 
+            if(buildOption.equals("protein")) {
+                System.out.println("In protein...");
+
+                String indir = commandLine.getOptionValue("indir");
+                String species = commandLine.getOptionValue("species");
+                if(indir != null && Files.exists(Paths.get(indir))) {
+                    serializer = getSerializer(serializationOutput, commandLine);
+                    ProteinParser proteinParser = new ProteinParser(serializer);
+                    proteinParser.parse(Paths.get(indir), species);
+                    serializer.close();
+                }
+            }
+
             if(buildOption.equals("variation")) {
                 System.out.println("In variation...");
 
