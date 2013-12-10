@@ -1,0 +1,13 @@
+
+db.getCollection('protein').ensureIndex({'accession': 1})
+db.getCollection('protein').ensureIndex({'name': 1})
+db.getCollection('protein').ensureIndex({'protein.recommendedName.fullName.value': 1})
+db.getCollection('protein').ensureIndex({'gene.name.value': 1})
+db.getCollection('protein').ensureIndex({'dbReference.id': 1})
+db.getCollection('protein').ensureIndex({'dbReference.type': 1})
+db.getCollection('protein').ensureIndex({'keyword.id': 1})
+db.getCollection('protein').ensureIndex({'keyword.value': 1})
+db.getCollection('protein').ensureIndex({'feature.id': 1})
+db.getCollection('protein').ensureIndex({'feature.type': 1})
+db.getCollection('protein').ensureIndex({'feature.location.position.position': 1})
+db.getCollection('protein').ensureIndex({'sequence.checksum': 1})
