@@ -235,7 +235,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     };
     $scope.setResult = function(){
         $scope.genesFilters = mySharedService.genesIdFilter;
-        $scope.biotypeFilters = mySharedService.biotypeFilter;
+        $scope.biotypeFilters = mySharedService.biotypesFilter;
         $scope.selectedSpecie = mySharedService.selectedSpecies;
 
         $scope.genesAndTranscriptsData = {};
@@ -277,8 +277,8 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             $scope.showAll = true;
             $scope.firstGeneId = Object.keys($scope.genesAndTranscriptsData)[0];
             $scope.lastDataShow = Object.keys($scope.genesAndTranscriptsData)[0];
-            $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, $scope.lastDataShow);
-            //show the informtion of the first gene
+            $scope.selectedGene = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, $scope.lastDataShow);
+            //show the informtion of the first gen
             $scope.showSelectedGene(Object.keys($scope.genesAndTranscriptsData)[0], 0);
         }
         else{
@@ -325,7 +325,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         mySharedService.broadcastGenesBiotypes($scope.biotypes);
     };
     //===================== tree events ========================
-    //show gene panel
+    //show gen panel
     $scope.showSelectedGene = function (geneId, index) {
         if($scope.toggleTree[index]){
             $scope.toggleTree[index] = false;
@@ -336,7 +336,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         if ($scope.lastDataShow != geneId) {
             $scope.lastDataShow = geneId;
             $scope.showGenePanel = true;
-            $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
+            $scope.selectedGene = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
 
             $scope.showTranscriptPanel = false;
             $scope.expandAllPanels();
@@ -346,7 +346,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
                 $scope.showGenePanel = true;
             }
         }
-        $scope.selectedTranscripts = $scope.selectedGen.transcripts;
+        $scope.selectedTranscripts = $scope.selectedGene.transcripts;
     };
     //show transcripts panel
     $scope.showSelectedTranscript = function (geneId, transcriptName) {
@@ -355,11 +355,11 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         if ($scope.lastDataShow != geneId) {
             $scope.lastDataShow = geneId;
             $scope.showGenePanel = false;
-            $scope.selectedGen = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
+            $scope.selectedGene = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
             $scope.expandAllPanels();
         }
         $scope.showTranscriptPanel = true;
-        transcripts = $scope.selectedGen.transcripts;
+        transcripts = $scope.selectedGene.transcripts;
         for (var i in transcripts) {
             if (transcripts[i].name == transcriptName) {
                 $scope.selectedTranscript = transcripts[i];
@@ -369,7 +369,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
 
     //show transcripts panel from transcripts table
     $scope.showTanscriptFromTable = function (transcriptName) {
-        var transcripts = $scope.selectedGen.transcripts;
+        var transcripts = $scope.selectedGene.transcripts;
         for (var i in transcripts) {
             if (transcripts[i].name == transcriptName) {
                 $scope.selectedTranscript = transcripts[i];
@@ -382,17 +382,13 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     //Expand/collapse elements in DOM
     $scope.expandAllPanels = function () {
         $scope.geneInfo = false;
-        $scope.transcriptsInfo = false;
         $scope.transcriptInfo = false;
-        $scope.moreInfo = false;
         $scope.genePanelStatus = "-";
         $scope.transcriptPanelStatus = "-";
     };
     $scope.collapseAllPanels = function () {
         $scope.geneInfo = true;
-        $scope.transcriptsInfo = true;
         $scope.transcriptInfo = true;
-        $scope.moreInfo = true;
         $scope.genePanelStatus = "+";
         $scope.transcriptPanelStatus = "+";
     };
@@ -407,7 +403,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         }
     };
 
-    //show more info in gene panel
+    //show more info in gen panel
     $scope.showMoreGeneData = function () {
         $scope.genePanelMore = !$scope.genePanelMore;
         if ($scope.showMoreAndLessGeneData == "+") {
@@ -428,7 +424,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         }
     };
 
-    //show/hide gene panel information
+    //show/hide gen panel information
     $scope.openCloseGenePanel = function () {
         if ($scope.genePanelStatus == "+") {
             $scope.genePanelStatus = "-";
@@ -457,9 +453,9 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     //tabs
     $scope.goToTab = function () {
         $(function () {
-            $('#myTab a:first').tab('show')
+            $('#transcriptsTab a:first').tab('show')
         })
-        $('#myTab a').click(function (e) {
+        $('#transcriptsTab a').click(function (e) {
             e.preventDefault()
             $(this).tab('show')
         })

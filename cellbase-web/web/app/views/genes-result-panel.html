@@ -57,10 +57,10 @@
     </div>
 
     <div id="genesResultPanels" class="pull-left ocb-margin-ten">
-        <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
+        <button type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
                 ng-click="expandAllPanels()">Expand All
         </button>
-        <button ng-show="!showGenesTable" type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
+        <button type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
                 ng-click="collapseAllPanels()">Collapse all
         </button>
         <!-----------------------gene and transcripts panel--------------------------->
@@ -78,8 +78,8 @@
                 <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
                         ng-click="showMoreGeneData()">{{showMoreAndLessGeneData}}
                 </button>
-                <gene-and-transc info="selectedGen" info-more="genePanelMore" specie="selectedSpecie"
-                                 function="showTanscriptFromTable"></gene-and-transc>
+                <gene-and-transc gene="selectedGene" gene-more-info="genePanelMore" specie="selectedSpecie"
+                                 on-click="showTanscriptFromTable"></gene-and-transc>
             </div>
         </div>
         <!-------------------------transcript panel---------------------------->
@@ -98,7 +98,7 @@
                 <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
                         ng-click="showMoreTranscriptData()">{{showMoreAndLessTranscriptData}}
                 </button>
-                <transcripts info="selectedTranscript" info-more="transcriptPanelMore" specie="selectedSpecie"
+                <transcripts transcript="selectedTranscript" transcript-more-info="transcriptPanelMore" specie="selectedSpecie"
                              tab-function="goToTab"></transcripts>
             </div>
         </div>

@@ -45,13 +45,16 @@
     <script src="js/directives/genesDirectives/genesSelectPanelDirective.js"></script>
     <script src="js/directives/genesDirectives/genesResultPanelDirective.js"></script>
     <script src="js/directives/genesDirectives/genesgvDirective.js"></script>
-    <!---------widgets--------->
+    <!---------genes widgets--------->
     <script src="js/directives/genesDirectives/geneAndTranscriptsDirective.js"></script>
     <script src="js/directives/genesDirectives/transcriptsDirective.js"></script>
 
     <!---------------variants directives------------->
     <script src="js/directives/variantsDirectives/variantsSelectPanelDirective.js"></script>
     <script src="js/directives/variantsDirectives/variantsResultPanelDirective.js"></script>
+    <!---------variants widgets--------->
+    <script src="js/directives/variantsDirectives/variantAndTranscriptsVarDirective.js"></script>
+    <script src="js/directives/variantsDirectives/transcriptsVarDirective.js"></script>
 
     <!--======================CONTROLLERS======================-->
     <script src="js/controllers/optionsBarController.js"></script>
@@ -93,7 +96,7 @@
                     <a class="list-group-item active ocb-text-center">Genome viewer
                     </a>
 
-                    <div class="ocb-panels-data-border" ng-show="!geneInfo">
+                    <div class="ocb-panels-data-border">
                         <div genes-genome-viewer style="width:1380px"></div>
                     </div>
                 </div>

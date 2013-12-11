@@ -12,7 +12,7 @@
                     <p class="ocb-margin-l-ten">{{specie.longName}}</p>
                     <p class="ocb-select-background-color ocb-maegin-t-twenty"><strong class="ocb-select-panel-text"
                             >CHROMOSOMES: </strong></p>
-                    <div class="ocb-chrom-scroll" id="ChromMultiSelect">
+                    <div class="ocb-chrom-scroll" id="genesChromMultiSelect">
                         <p ng-repeat="chrom in chromNames" class="ocb-margin-b-0"><input ng-click="addChrom(chrom)"
                                type="checkbox">{{chrom}} </p>
                     </div>
@@ -50,8 +50,8 @@
                     <div>
                         <div class="ocb-margin-l-ten">
                             <div class="ocb-biotypes-scroll" id="BiotypesMultiSelect">
-                                <p ng-repeat="biotype in listOfbiotypeFilters" class="ocb-margin-b-0"
-                                   ng-click="addBiotypeFilter(biotype)"><input type="checkbox">{{biotype}} </p>
+                                <p ng-repeat="conseqType in listOfConseqTypes" class="ocb-margin-b-0"
+                                   ng-click="addBiotypeFilter(conseqType)"><input type="checkbox">{{conseqType}} </p>
                             </div>
                         </div>
                         <div class="ocb-text-center">

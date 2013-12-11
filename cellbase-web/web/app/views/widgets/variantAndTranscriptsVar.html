@@ -1,0 +1,63 @@
+<div id="genesAndTranscripts">
+    <h5 class="ocb-margin-l-r-five">
+        <p> {{data.id}}  <a class="ocb-ensembl-link-color" target="_blank"
+               href="http://www.ensembl.org/{{specieName.ensemblName}}/Location/View?v={{data.id}};">Go Ensembl</a>
+        </p>
+        <p> Location:<span class="text-muted"> {{data.chromosome}} : {{data.start}} - {{data.end}}</span></p>
+        <p>Strand:<span class="text-muted"> {{data.strand}}</span></p>
+        <p>Type:<span class="text-muted"> {{data.type}}</span></p>
+        <p>Reference:<span class="text-muted"> {{data.reference}}</span></p>
+        <p>Alternate:<span class="text-muted"> {{data.alternate}}</span></p>
+        <p ng-show="showMore">Allele String:<span class="text-muted"> {{data.alleleString}}</span></p>
+        <p ng-show="showMore">Species:<span class="text-muted"> {{data.species}}</span></p>
+        <p ng-show="showMore">Assembly:<span class="text-muted"> {{data.assembly}}</span></p>
+        <p ng-show="showMore">Source:<span class="text-muted"> {{data.source}}</span></p>
+        <p ng-show="showMore">Version:<span class="text-muted"> {{data.version}}</span></p>
+        <p ng-show="showMore">FeatureId:<span class="text-muted"> {{data.featureId}}</span></p>
+        <p ng-show="showMore">FeatureAlias:<span class="text-muted"> {{data.featureAlias}}</span></p>
+        <p ng-show="showMore">VariantFreq:<span class="text-muted"> {{data.variantFreq}}</span></p>
+        <p ng-show="showMore">ValidationStatus:<span class="text-muted"> {{data.validationStatus}}</span></p>
+    </h5>
+
+    <ul class="nav nav-tabs" id="transcriptsVarTab">
+        <li class="active"><a href="#transVar">Transcripts Variations</a></li>
+        <li><a href="#transVarXrefs" ng-click="changeTab()">Xrefs</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="transVar">
+            <div class="ocb-scroll">
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                    <thead>
+                    <th>Id</th>
+                    <th>Distance To Transcript</th>
+                    <th>HGVS Genomic</th>
+                    </thead>
+                    <tbody ng-repeat="transc in data.transcriptVariations">
+                    <td ng-click="functionDirective(transc.transcriptId)"><a><small> {{transc.transcriptId}}</small></a></td>
+                    <td><small>{{transc.distanceToTranscript}}</small></td>
+                    <td><small>{{transc.hgvsGenomic}}</small></td>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane" id="transVarXrefs">
+            <div class="ocb-scroll">
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                    <thead>
+                    <th>Id</th>
+                    <th>Source</th>
+                    <th>Version</th>
+                    </thead>
+                    <tbody ng-repeat="xref in data.xrefs">
+                    <td><a><small> {{xref.id}}</small></a></td>
+                    <td><small>{{xref.source}}</small></td>
+                    <td><small>{{xref.version}}</small></td>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>

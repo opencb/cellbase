@@ -4,10 +4,10 @@ myApp.directive('geneAndTransc', function () {
         replace: true,
         transclude: true,
         scope: {
-            data: '=info',
-            showMore: '=infoMore',
+            data: '=gene',
+            showMore: '=geneMoreInfo',
             specieName: '=specie',
-            functionDirective: '=function'
+            functionDirective: '=onClick'
         },
         templateUrl: './views/widgets/geneAndTranscripts.html'
     };
