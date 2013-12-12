@@ -5,29 +5,21 @@
                href="http://www.ensembl.org/{{specieName.ensemblName}}/Transcript/Transcript?t={{data.transcriptId}};">
                 Go Ensembl</a>
         </p>
-        <p>alleleString:<span class="text-muted"> {{data.alleleString}}</span></p>
-        <p>somatic:<span class="text-muted"> {{data.somatic}}</span></p>
+        <p class="ocb-line-height-6">alleleString:<span class="text-muted"> {{data.alleleString}}</span></p>
+        <p class="ocb-line-height-6">somatic:<span class="text-muted"> {{data.somatic}}</span></p>
 
-        <p >consequenceTypes:
+        <p class="ocb-line-height-6">consequenceTypes:
             <span ng-repeat="ct in data.consequenceTypes" class="text-muted"> {{ct}}  </span>
         </p>
 
-        <p ng-show="showMore">cdsStart: <span class="text-muted"> {{data.cdsStart}}</span></p>
-        <p ng-show="showMore">cdsEnd:<span class="text-muted"> {{data.cdsEnd}}</span></p>
-        <p ng-show="showMore">cdnaStart:<span class="text-muted"> {{data.cdnaStart}}</span></p>
-        <p ng-show="showMore">cdnEnd:<span class="text-muted"> {{data.cdnEnd}}</span></p>
-        <p ng-show="showMore">translationStart:<span class="text-muted"> {{data.translationStart}}</span></p>
-        <p ng-show="showMore">translationEnd:<span class="text-muted"> {{data.translationEnd}}</span></p>
-        <p ng-show="showMore">distanceToTranscript:<span class="text-muted"> {{data.distanceToTranscript}}</span></p>
-        <p ng-show="showMore">codonAlleleString:<span class="text-muted"> {{data.codonAlleleString}}</span></p>
-        <p ng-show="showMore">peptideAlleleString:<span class="text-muted"> {{data.peptideAlleleString}}</span></p>
-        <p ng-show="showMore">hgvsGenomic:<span class="text-muted"> {{data.hgvsGenomic}}</span></p>
-        <p ng-show="showMore">hgvsTranscript:<span class="text-muted"> {{data.hgvsTranscript}}</span></p>
-        <p ng-show="showMore">hgvsProtein:<span class="text-muted"> {{data.hgvsProtein}}</span></p>
-        <p ng-show="showMore">polyphenPrediction:<span class="text-muted"> {{data.polyphenPrediction}}</span></p>
-        <p ng-show="showMore">polyphenScore:<span class="text-muted"> {{data.polyphenScore}}</span></p>
-        <p ng-show="showMore">siftPrediction:<span class="text-muted"> {{data.siftPrediction}}</span></p>
-        <p ng-show="showMore">siftScore:<span class="text-muted"> {{data.siftScore}}</span></p>
+        <p ng-show="showMore" class="ocb-line-height-6">cdsStart/cdsEnd: <span class="text-muted"> {{data.cdsStart}} / {{data.cdsEnd}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">cdnaStart/cdnEnd:<span class="text-muted"> {{data.cdnaStart}} / {{data.cdnEnd}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">translation Start/End:<span class="text-muted"> {{data.translationStart}} / {{data.translationEnd}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">distanceToTranscript:<span class="text-muted"> {{data.distanceToTranscript}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">codon/peptide AlleleString:<span class="text-muted"> {{data.codonAlleleString}} / {{data.peptideAlleleString}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">hgvs Genomic/Transcript/Protein:<span class="text-muted"> {{data.hgvsGenomic}} / {{data.hgvsTranscript}} / {{data.hgvsProtein}} </span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">polyphen Prediction/Score:<span class="text-muted"> {{data.polyphenPrediction}} / {{data.polyphenScore}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">sift Prediction/Score:<span class="text-muted"> {{data.siftPrediction}} / {{data.siftScore}}</span></p>
     </h5>
 
 </div>

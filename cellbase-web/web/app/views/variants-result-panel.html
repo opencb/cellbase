@@ -1,4 +1,4 @@
-<div ng-show="showAll" class="ocb-inline-block">
+<div ng-show="showAll" class="ocb-inline-block ocb-result-width">
     <div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree">
         <div class="ocb-text-center">Number of results: <b>{{numResults}}</b></div>
         <div class="ocb-text-center">
@@ -55,14 +55,20 @@
         </div>
     </div>
 
-    <div id="variantsResultPanels" class="pull-left ocb-margin-ten">
-        <button type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
-                ng-click="expandAllPanels()">Expand All
-        </button>
-        <button type="button" class="btn btn-info btn-xs ocb-margin-b-eigth"
-                ng-click="collapseAllPanels()">Collapse all
-        </button>
-        <!-----------------------variant and transcriptsVar panel--------------------------->
+    <div id="variantsResultPanels" class="pull-left ocb-margin-l-ten" >
+
+
+        <ul class="nav nav-tabs" id="variantsResultTab">
+            <li class="active"><a href="#variantsOverviewInfo">Overview Info</a></li>
+            <li><a href="#variantsGV" ng-click="changeResultTab()">Genome Viewer</a></li>
+        </ul>
+
+        <div class="tab-content">
+
+            <div class="tab-pane active ocb-width_900" id="variantsOverviewInfo">
+
+
+            <!-----------------------variant and transcriptsVar panel--------------------------->
         <!--<div class="list-group">-->
         <div class="list-group" ng-show="showVariantPanel">
             <a class="list-group-item active ocb-text-center">Variant
@@ -103,6 +109,14 @@
                              tab-function="goToTab"></transcripts-var>
             </div>
         </div>
+
+            </div>
+            <div class="tab-pane" id="variantsGV">
+                <div variants-genome-viewer class="ocb-gv"></div>
+            </div>
+        </div>
+
+
     </div>
 </div>
 

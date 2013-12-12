@@ -1,6 +1,6 @@
 var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
-    $scope.specie = mySharedService.selectedSpecies;
+    $scope.specie = mySharedService.variantsSpecie;
     $scope.chromSelected = [];
     $scope.regions = "20:32850000-32860000";
     $scope.listOfConseqTypes = [];
@@ -25,7 +25,7 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
     };
 
     $scope.setSpecie = function(){
-        $scope.specie = mySharedService.selectedSpecies;
+        $scope.specie = mySharedService.variantsSpecie;
         $scope.chromSelected = [];
         $scope.chromNames = mySharedService.chromNames;
     };
@@ -39,20 +39,7 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
             $scope.chromSelected.splice(pos, 1);
         }
     };
-//    $scope.addRegion = function(){
-//        if ($scope.regions.search(mySharedService.regionFromGV) == -1) {
-//            if ($scope.regions.search(":") == -1) {  //if there isn't a region
-//                $scope.regions = mySharedService.regionFromGV;
-//            }
-//            else {
-//                $scope.regions = $scope.regions + "," + mySharedService.regionFromGV;
-//            }
-//        }
-//        else {
-//            alert(mySharedService.regionFromChromosome + " already exist");
-//        }
-//        $scope.setResult();
-//    };
+
     $scope.addConseqTypeFilter = function (conseqType) {
         var pos = $scope.conseqTypesFilter.indexOf(conseqType);
 
@@ -104,13 +91,24 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
 //        $scope.init();
 //        $scope.setSpecie();
 //    });
+
+    $scope.$on('variantsNewSpecieGV', function () {
+        $scope.init();
+        $scope.specie = mySharedService.variantsSpecieGV;
+        $scope.chromNames = mySharedService.variantsChromNames;
+
+        $scope.$apply();
+//        $scope.setSpecie();
+    });
     $scope.$on('variantsConseqTypes', function () {
         $scope.listOfConseqTypes = mySharedService.conseqTypes;
     });
-//    $scope.$on('genesRegionGV', function () {
-//        $scope.addRegion();
-//        $scope.$apply();
-//    });
+    $scope.$on('variantsRegionGV', function () {
+        $scope.specie = mySharedService.variantsSpecieGV;
+        $scope.regions = mySharedService.regionFromGV;
+        $scope.setResult();
+        $scope.$apply();
+    });
 
     //tabs
     $scope.goToTab = function () {

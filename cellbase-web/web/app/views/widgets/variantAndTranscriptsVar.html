@@ -3,20 +3,18 @@
         <p> {{data.id}}  <a class="ocb-ensembl-link-color" target="_blank"
                href="http://www.ensembl.org/{{specieName.ensemblName}}/Location/View?v={{data.id}};">Go Ensembl</a>
         </p>
-        <p> Location:<span class="text-muted"> {{data.chromosome}} : {{data.start}} - {{data.end}}</span></p>
-        <p>Strand:<span class="text-muted"> {{data.strand}}</span></p>
-        <p>Type:<span class="text-muted"> {{data.type}}</span></p>
-        <p>Reference:<span class="text-muted"> {{data.reference}}</span></p>
-        <p>Alternate:<span class="text-muted"> {{data.alternate}}</span></p>
-        <p ng-show="showMore">Allele String:<span class="text-muted"> {{data.alleleString}}</span></p>
-        <p ng-show="showMore">Species:<span class="text-muted"> {{data.species}}</span></p>
-        <p ng-show="showMore">Assembly:<span class="text-muted"> {{data.assembly}}</span></p>
-        <p ng-show="showMore">Source:<span class="text-muted"> {{data.source}}</span></p>
-        <p ng-show="showMore">Version:<span class="text-muted"> {{data.version}}</span></p>
-        <p ng-show="showMore">FeatureId:<span class="text-muted"> {{data.featureId}}</span></p>
-        <p ng-show="showMore">FeatureAlias:<span class="text-muted"> {{data.featureAlias}}</span></p>
-        <p ng-show="showMore">VariantFreq:<span class="text-muted"> {{data.variantFreq}}</span></p>
-        <p ng-show="showMore">ValidationStatus:<span class="text-muted"> {{data.validationStatus}}</span></p>
+        <p class="ocb-line-height-6"> Location:<span class="text-muted"> {{data.chromosome}} : {{data.start}} - {{data.end}}</span></p>
+        <p class="ocb-line-height-6">Strand:<span class="text-muted"> {{data.strand}}</span></p>
+        <p class="ocb-line-height-6">Type:<span class="text-muted"> {{data.type}}</span></p>
+        <p class="ocb-line-height-6">Reference / Alternate:<span class="text-muted"> {{data.reference}} / {{data.alternate}}</span></p>
+        <p  class="ocb-line-height-6" ng-show="showMore">Allele String:<span class="text-muted"> {{data.alleleString}}</span></p>
+        <p class="ocb-line-height-6" ng-show="showMore">Species:<span class="text-muted"> {{data.species}}</span></p>
+        <p class="ocb-line-height-6" ng-show="showMore">Assembly:<span class="text-muted"> {{data.assembly}}</span></p>
+        <p class="ocb-line-height-6" ng-show="showMore">Source:<span class="text-muted"> {{data.source}}</span></p>
+        <p class="ocb-line-height-6" ng-show="showMore">Version:<span class="text-muted"> {{data.version}}</span></p>
+        <p class="ocb-line-height-6" ng-show="showMore">Feature Id/Alias:<span class="text-muted"> {{data.featureId}} / {{data.featureAlias}}</span></p>
+        <p class="ocb-line-height-6" ng-show="showMore">VariantFreq:<span class="text-muted"> {{data.variantFreq}}</span></p>
+        <p class="ocb-line-height-6" ng-show="showMore">ValidationStatus:<span class="text-muted"> {{data.validationStatus}}</span></p>
     </h5>
 
     <ul class="nav nav-tabs" id="transcriptsVarTab">
@@ -32,11 +30,18 @@
                     <th>Id</th>
                     <th>Distance To Transcript</th>
                     <th>HGVS Genomic</th>
+                    <th>Consequence Types</th>
+                    <th>Somatic</th>
                     </thead>
                     <tbody ng-repeat="transc in data.transcriptVariations">
                     <td ng-click="functionDirective(transc.transcriptId)"><a><small> {{transc.transcriptId}}</small></a></td>
                     <td><small>{{transc.distanceToTranscript}}</small></td>
                     <td><small>{{transc.hgvsGenomic}}</small></td>
+
+                    <td class="ocb-line-height-6">
+                        <small ng-repeat="ct in transc.consequenceTypes" class="text-muted"> {{ct}}   </small>
+                    </td>
+                    <td><small>{{transc.somatic}}</small></td>
                     </tbody>
                 </table>
             </div>

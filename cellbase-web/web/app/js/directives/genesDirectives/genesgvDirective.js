@@ -9,7 +9,13 @@ myApp.directive('genesGenomeViewer', function () {
             CELLBASE_HOST = "http://ws-beta.bioinfo.cipf.es/cellbase/rest";
             CELLBASE_VERSION = "v3";
 
-//  genomeViewer.setRegion(new Region('13:32889542-32889680'))
+            $scope.broadcastRegion = true;
+
+            $scope.$on('genesRegionToGV', function () {
+                $scope.broadcastRegion = false;
+                $scope.genomeViewer.setRegion(new Region(mySharedService.genesRegionToGV))
+            });
+
 
             /* region and species configuration */
             var region = new Region({
@@ -48,7 +54,7 @@ myApp.directive('genesGenomeViewer', function () {
             };
             var species = availableSpecies.items[0].items[0];
 
-            genomeViewer = new GenomeViewer({
+            $scope.genomeViewer = new GenomeViewer({
                 targetId: 'genome-viewer-div',
                 region: region,
                 availableSpecies: availableSpecies,
@@ -69,7 +75,11 @@ myApp.directive('genesGenomeViewer', function () {
                 },
                 handlers:{
                     'region:change':function(event){
-                        mySharedService.broadcastGenesRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
+
+                        if( $scope.broadcastRegion){
+                            mySharedService.broadcastGenesRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
+                        }
+                        $scope.broadcastRegion = true;
                     },
 //                    'chromosome-button:change':function(event){
 //                    },
@@ -85,7 +95,7 @@ myApp.directive('genesGenomeViewer', function () {
                 //            drawRegionOverviewPanel: false
             }); //the div must exist
 
-            genomeViewer.draw();
+            $scope.genomeViewer.draw();
 
             tracks = [];
             $scope.sequence = new SequenceTrack({
@@ -101,7 +111,7 @@ myApp.directive('genesGenomeViewer', function () {
                     category: "genomic",
                     subCategory: "region",
                     resource: "sequence",
-                    species: genomeViewer.species
+                    species:  $scope.genomeViewer.species
                 })
             });
 
@@ -122,7 +132,7 @@ myApp.directive('genesGenomeViewer', function () {
                     category: "genomic",
                     subCategory: "region",
                     resource: "gene",
-                    species: genomeViewer.species,
+                    species:  $scope.genomeViewer.species,
                     params: {
                         exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
                     },
@@ -159,13 +169,13 @@ myApp.directive('genesGenomeViewer', function () {
                     params: {
                         exclude: 'transcripts'
                     },
-                    species: genomeViewer.species,
+                    species:  $scope.genomeViewer.species,
                     cacheConfig: {
                         chunkSize: 50000
                     }
                 })
             });
-            genomeViewer.addOverviewTrack(gene);
+            $scope.genomeViewer.addOverviewTrack(gene);
 
             $scope.snp = new FeatureTrack({
                 targetId: null,
@@ -185,7 +195,7 @@ myApp.directive('genesGenomeViewer', function () {
                     params: {
                         exclude: 'transcriptVariations,xrefs,samples'
                     },
-                    species: genomeViewer.species,
+                    species:  $scope.genomeViewer.species,
                     cacheConfig: {
                         chunkSize: 10000
                     }
@@ -220,7 +230,7 @@ myApp.directive('genesGenomeViewer', function () {
             //    });
             //    tracks.push(geneEnsembl);
             //    /***************************************/
-            genomeViewer.addTrack(tracks);
+            $scope.genomeViewer.addTrack(tracks);
         }
     }
 });

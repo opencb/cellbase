@@ -235,7 +235,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     $scope.setResult = function(){
         $scope.snpFilters = mySharedService.snpIdFilter;
         $scope.conseqTypesFilters = mySharedService.conseqTypesFilter;
-        $scope.selectedSpecie = mySharedService.selectedSpecies;
+        $scope.selectedSpecie = mySharedService.variantsSpecie;
 
         $scope.snpData = {};
 
@@ -244,7 +244,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
 
         //check if there are filters
         if ($scope.conseqTypesFilters.length != 0) {
-            arrayOfSNP = CellbaseService.getAllSNPData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomes, $scope.conseqTypesFilters);
+            arrayOfSNP = CellbaseService.getAllSNPData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesVariants, $scope.conseqTypesFilters);
 
             for (var i in arrayOfSNP) {
                 $scope.snpData[arrayOfSNP[i].id] = arrayOfSNP[i];
@@ -256,7 +256,9 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
         }
         //if there aren't any filters, show all variants data
         if ($scope.conseqTypesFilters.length == 0 && $scope.snpFilters.length == 0) {
-            arrayOfSNP = CellbaseService.getAllSNPData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomes, []);
+
+
+            arrayOfSNP = CellbaseService.getAllSNPData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesVariants, []);
 
             //save the data in a hash table
             for (var i in arrayOfSNP) {
@@ -283,6 +285,9 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
 
             //show the informtion of the first variant
             $scope.showSelectedVariant(Object.keys($scope.snpData)[0], 0);
+
+            $scope.showTranscriptVarPanel = true;
+            $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations[0];
         }
         else{
             alert("No results with this data");
@@ -328,6 +333,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
                 }
             }
         }
+
         mySharedService.broadcastVariantsConseqTypes($scope.conseqTypes);
     };
     //===================== tree events ========================
@@ -345,10 +351,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
             $scope.showVariantPanel = true;
             $scope.selectedVariant = CellbaseService.getVariantsDataById($scope.selectedSpecie.shortName, variantId)[0];
 
-            console.log($scope.selectedVariant);
-
             $scope.showTranscriptVarPanel = false;
-            $scope.expandAllPanels();
         }
         else {
             if (!$scope.showVariantPanel) {
@@ -356,6 +359,8 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
             }
         }
         $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations;
+
+        mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
     };
     //show transcripts panel
     $scope.showSelectedTranscriptVar = function (variantId, transcriptId) {
@@ -365,7 +370,6 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
             $scope.lastDataShow = variantId;
             $scope.showVariantPanel = false;
             $scope.selectedVariant = CellbaseService.getVariantsDataById($scope.selectedSpecie.shortName, variantId)[0];
-            $scope.expandAllPanels();
         }
         $scope.showTranscriptVarPanel = true;
 
@@ -374,6 +378,8 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
                 $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations[i];
             }
         }
+        mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
+
     };
 
     //show transcripts panel from transcripts table
@@ -388,20 +394,6 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
         $scope.showTranscriptVarPanel = true;
     };
 
-    //Expand/collapse elements in DOM
-    $scope.expandAllPanels = function () {
-        $scope.variantInfo = false;
-        $scope.transcriptVarInfo = false;
-        $scope.variantPanelStatus = "-";
-        $scope.transcriptVarPanelStatus = "-";
-    };
-
-    $scope.collapseAllPanels = function () {
-        $scope.variantInfo = true;
-        $scope.transcriptVarInfo = true;
-        $scope.variantPanelStatus = "+";
-        $scope.transcriptVarPanelStatus = "+";
-    };
     $scope.expandAllVariantsTree = function () {
         for(var i in $scope.toggleTree){
             $scope.toggleTree[i] = true;
@@ -472,6 +464,18 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
         })
     };
 
+    $scope.changeResultTab = function () {
+        $(function () {
+            $('#variantsResultTab a:first').tab('show')
+        })
+        $('#variantsResultTab a').click(function (e) {
+            e.preventDefault()
+            $(this).tab('show')
+        })
+    };
+
+    $scope.setResult();
+
     //--------------EVENTS-------------------
     $scope.$on('clear', function () {
         $scope.clearAll();
@@ -479,7 +483,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     $scope.$on('newSpecie', function () {
         $scope.clearAll();
     });
-//    $scope.$on('genesClear', function () {
+//    $scope.$on('variantsNewSpecieGV', function () {
 //        $scope.clearAll();
 //    });
     $scope.$on('variantsNewResult', function () {

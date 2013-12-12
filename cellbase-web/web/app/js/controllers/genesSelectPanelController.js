@@ -1,14 +1,13 @@
 var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
-    $scope.specie = mySharedService.selectedSpecies;
+    $scope.specie = mySharedService.genesSpecie;
     $scope.chromSelected = [];
     $scope.regions = "20:32850000-33500000";
     $scope.listOfbiotypeFilters = [];
     $scope.genesIdFilter = "";
     $scope.biotypesFilter = [];
-
-
     $scope.chromNames = mySharedService.chromNames;
+
 
     $scope.init = function(){
         $scope.deselectAllChrom();
@@ -24,7 +23,7 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         mySharedService.broadcastGenesNewResult( $scope.chromSelected, $scope.regions, $scope.genesIdFilter, $scope.biotypesFilter);
     };
     $scope.setSpecie = function(){
-        $scope.specie = mySharedService.selectedSpecies;
+        $scope.specie = mySharedService.genesSpecie;
         $scope.chromSelected = [];
         $scope.chromNames = mySharedService.chromNames;
 
@@ -39,20 +38,7 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
             $scope.chromSelected.splice(pos, 1);
         }
     };
-    $scope.addRegion = function(){
-        if ($scope.regions.search(mySharedService.regionFromGV) == -1) {
-            if ($scope.regions.search(":") == -1) {  //if there isn't a region
-                $scope.regions = mySharedService.regionFromGV;
-            }
-            else {
-                $scope.regions = $scope.regions + "," + mySharedService.regionFromGV;
-            }
-        }
-        else {
-            alert(mySharedService.regionFromChromosome + " already exist");
-        }
-        $scope.setResult();
-    };
+
     $scope.addBiotypeFilter = function (biotype) {
         var pos = $scope.biotypesFilter.indexOf(biotype);
 
@@ -106,22 +92,33 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
 //        console.log($scope.chromNames);
 //        $scope.$apply();
 
-
-
         chromDiv[1].setAttribute("checked", "checked");
         chromDiv[19].setAttribute("checked", "checked");
     });
-    $scope.$on('genesClear', function () {
+    $scope.$on('genesNewSpecieGV', function () {
         $scope.init();
-        $scope.specie = mySharedService.genesChromNames;
+        $scope.specie = mySharedService.genesSpecieGV;
+        $scope.chromNames = mySharedService.genesChromNames;
+
+        if(!$scope.$$phase) {
+            //$digest or $apply
+            $scope.$apply();
+        }
+
 //        $scope.setSpecie();
     });
     $scope.$on('genesBiotypes', function () {
         $scope.listOfbiotypeFilters = mySharedService.biotypes;
     });
     $scope.$on('genesRegionGV', function () {
-        $scope.addRegion();
+        $scope.specie = mySharedService.genesSpecieGV;
+        $scope.regions = mySharedService.regionFromGV;
+        $scope.setResult();
+
+        if(!$scope.$$phase) {
+            //$digest or $apply
         $scope.$apply();
+        }
     });
 
     //tabs

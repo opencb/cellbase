@@ -11,6 +11,10 @@
     border: 1px solid #dddddd;
 }
 
+.list-group {
+    margin-bottom: 7px;
+    padding-left: 0;
+}
 /*-------------------------------*/
 
 .ocb-text-center {
@@ -77,7 +81,10 @@
 
 .ocb-result-tree{
     width:260px;
-    height: 538px;
+    height: 636px;
+}
+.ocb-result-width{
+    width:1190px;
 }
 .ocb-all-data-button{
     font-weight: bold;
@@ -127,7 +134,7 @@
 
 .ocb-select-tabs{
     border:1px solid #808080;
-    height: 440px;
+    height: 540px;
 }
 
 .ocb-select-first-tab{
@@ -142,17 +149,17 @@
 .ocb-regions-textarea{
     width:190px;
     max-width:190px;
-    max-height: 114px;
+    max-height: 154px;
 }
 
 .ocb-margin-b-twenty{
     margin-bottom: 20px;
 }
 
-.ocb-genes-id-textarea{
-    width:180px;
-    max-width:180px;
-    max-height: 94px;
+.ocb-filter-textarea{
+    width:190px;
+    max-width:190px;
+    max-height: 114px;
 }
 
 .ocb-margin-t-twenty-five{
@@ -217,12 +224,12 @@
 }
 .ocb-chrom-scroll{
     overflow: scroll;
-    height: 80px;
+    height: 140px;
     margin:10px
 }
 .ocb-biotypes-scroll{
     overflow: scroll;
-    height: 160px;
+    height: 230px;
     margin:10px
 }
 .ocb-scroll{
@@ -234,8 +241,26 @@
 .ocb-scroll-tree{
     overflow-y:scroll;
     overflow-x:hidden;
-    height: 440px;
+    height: 530px;
     /*margin:10px*/
+}
+.ocb-line-height-6{
+    line-height: 0.6;
+}
+.ocb-line-height-20{
+    line-height: 2.0;
+}
+.ocb-gv{
+    width:900px;
+    position:fixed;
+}
+
+.ocb-width_900{
+    width:900px;
+}
+
+.ocb-content-width{
+    width:1410px;
 }
 
 

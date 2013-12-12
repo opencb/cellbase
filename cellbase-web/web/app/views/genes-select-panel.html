@@ -29,7 +29,7 @@
                 <div class="ocb-maegin-t-twenty">
                     <p class="ocb-select-background-color"><strong class="ocb-select-panel-text">REGIONS: </strong></p>
                     <p class="text-muted ocb-margin-l-ten"><b>chom:start-end</b></p>
-                    <textarea type="text" ng-model="regions" rows="5"
+                    <textarea type="text" ng-model="regions" rows="7"
                               class="form-control ocb-margin-b-ten ocb-margin-l-ten ocb-regions-textarea"></textarea>
                 </div>
                 </p>
@@ -42,16 +42,16 @@
                         <p class="ocb-margin-l-ten ocb-text-options">Filter per Genes ID:</p>
                     </div>
                     <p class="text-muted ocb-margin-l-ten"><b>Ex: geneID1,geneID2,...</b></p>
-                    <textarea type="text" ng-model="genesIdFilter" rows="4"
-                              class="form-control ocb-margin-l-ten ocb-genes-id-textarea"></textarea>
+                    <textarea type="text" ng-model="genesIdFilter" rows="5"
+                              class="form-control ocb-margin-l-ten ocb-filter-textarea"></textarea>
                     <div class="ocb-select-background-color ocb-text-options ocb-margin-t-twenty-five">
                         <p class="ocb-margin-l-ten">Filter per Biotypes:</p>
                     </div>
                     <div>
                         <div class="ocb-margin-l-ten">
                             <div class="ocb-biotypes-scroll" id="BiotypesMultiSelect">
-                                <p ng-repeat="conseqType in listOfConseqTypes" class="ocb-margin-b-0"
-                                   ng-click="addBiotypeFilter(conseqType)"><input type="checkbox">{{conseqType}} </p>
+                                <p ng-repeat="biotype in listOfbiotypeFilters" class="ocb-margin-b-0"
+                                   ng-click="addBiotypeFilter(biotype)"><input type="checkbox">{{biotype}} </p>
                             </div>
                         </div>
                         <div class="ocb-text-center">

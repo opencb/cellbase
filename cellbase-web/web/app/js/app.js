@@ -5,45 +5,24 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
     var sharedService = {};
 
     sharedService.initSpecie =  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
-    sharedService.selectedSpecies= sharedService.initSpecie;
+    sharedService.genesSpecie= sharedService.initSpecie;
+    sharedService.variantsSpecie= sharedService.initSpecie;
+    sharedService.genesSpecieGV= sharedService.initSpecie;
+    sharedService.variantsSpecieGV= sharedService.initSpecie;
+    sharedService.regionsAndChromosomesGenes = "20:32850000-33500000";
+    sharedService.regionsAndChromosomesVariants = "20:32850000-32860000";
+    sharedService.genesIdFilter = "";
+    sharedService.biotypesFilter = [];
+    sharedService.snpIdFilter = "";
+    sharedService.conseqTypesFilter = [];
 
-    //--------------get the initial chromosomes---------------
-    sharedService.chromAllData = CellbaseService.getSpecieChromosomes(sharedService.selectedSpecies.shortName);
-    sharedService.chromNames = [];
-    for (var i in sharedService.chromAllData) {
-        sharedService.chromNames.push(sharedService.chromAllData[i].name);
-    }
-
-//    sharedService.sortChromosomes():
-    //prepare the format for the function sort
-    for (var i in sharedService.chromNames) {
-        if (!isNaN(sharedService.chromNames[i])) {
-            if (sharedService.chromNames[i].length == 1) {
-                sharedService.chromNames[i] = 0 + sharedService.chromNames[i];
-            }
-        }
-    }
-    sharedService.chromNames = sharedService.chromNames.sort();
-    //quit the format
-    for (var i in sharedService.chromNames) {
-        if (sharedService.chromNames[i][0] == "0") {
-            sharedService.chromNames[i] = sharedService.chromNames[i].replace("0", "");
-        }
-    }
-
-    //homo sapiens has two Y chromosomes, so delete the last one
-    if (sharedService.selectedSpecies.shortName == "hsapiens") {
-        sharedService.chromNames.pop();
-    }
-    //-----------------------------------------------------
-
-    sharedService.setSpecie = function(specie){
+    sharedService.getChromNamesSpecie = function(specie){
 //        $scope.specie = mySharedService.selectedSpecies;
-        var chromAllData = CellbaseService.getSpecieChromosomes(specie.shortName);
+        this.chromAllData = CellbaseService.getSpecieChromosomes(specie.shortName);
 
         var chromNames = [];
-        for (var i in chromAllData) {
-            chromNames.push(chromAllData[i].name);
+        for (var i in this.chromAllData) {
+            chromNames.push(this.chromAllData[i].name);
         }
 
         chromNames = this.sortChromosomes(chromNames);
@@ -76,32 +55,39 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
       return chromNames;
     };
 
+    //the initial chromosomes
+    sharedService.chromNames = sharedService.getChromNamesSpecie(sharedService.genesSpecie);
+
 
     //------------------general events----------------------
     sharedService.broadcastSpecie = function(specie){
-        this.selectedSpecies = specie;
-        this.chromNames = this.setSpecie(specie);
+        this.genesSpecie = specie;
+        this.variantsSpecie = specie;
+        this.chromNames = this.getChromNamesSpecie(specie);
 
         $rootScope.$broadcast('newSpecie');
     };
     sharedService.broadcastNew = function(specie){
-        this.selectedSpecies = specie;
-        this.chromNames = this.setSpecie(this.initSpecie);
+        this.genesSpecie = specie;
+        this.variantsSpecie = specie;
+        this.chromNames = this.getChromNamesSpecie(this.initSpecie);
 
         $rootScope.$broadcast('clear');
     };
     sharedService.broadcastExample = function(specie){
-        this.selectedSpecies = specie;
-        this.chromNames = this.setSpecie(this.initSpecie);
+        this.genesSpecie = specie;
+        this.variantsSpecie = specie;
+        this.chromNames = this.getChromNamesSpecie(this.initSpecie);
         $rootScope.$broadcast('example');
     };
 
     //========================== GENES =============================
     //from optionsBar to selectPanel
     sharedService.broadcastGenesNew = function(specie){
-        this.selectedSpecies = specie;
-        this.genesChromNames = this.setSpecie(this.initSpecie);
-        $rootScope.$broadcast('genesClear');
+        this.genesSpecieGV = specie;
+
+        this.genesChromNames = this.getChromNamesSpecie(specie);
+        $rootScope.$broadcast('genesNewSpecieGV');
     };
     //genesSelectPanel to GenesResultPanel
     sharedService.broadcastGenesNewResult = function(chromSelected, regions,genesIdFilter,biotypesFilters){
@@ -109,6 +95,7 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
         this.regions = regions;
         this.genesIdFilter = genesIdFilter;
         this.biotypesFilter = biotypesFilters;
+
 
         if(this.genesIdFilter != ""){
             this.genesIdFilter = this.removeSpaces(this.genesIdFilter);
@@ -121,7 +108,7 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
             alert("No data selected");
         }
         else {
-            this.regionsAndChromosomes = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
+            this.regionsAndChromosomesGenes = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
             $rootScope.$broadcast('genesNewResult');
         }
     };
@@ -139,17 +126,31 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
     };
     //genesgvDirective to optionsBar
     sharedService.broadcastGenesSpecieGV = function(specie){
-        this.selectedSpecies = specie;
+        this.genesSpecieGV = specie;
         $rootScope.$broadcast('genesSpecieGV');
+    };
+    sharedService.broadcastGenesRegionToGV = function(region){
+        this.genesRegionToGV = region;
+
+        $rootScope.$broadcast('genesRegionToGV');
     };
 
 
     //================= Variants ===================
+
+    sharedService.broadcastVariantsNew = function(specie){
+        this.variantsSpecieGV = specie;
+
+        this.variantsChromNames = this.getChromNamesSpecie(specie);
+        $rootScope.$broadcast('variantsNewSpecieGV');
+    };
     sharedService.broadcastVariantsNewResult = function(chromSelected, regions,snpIdFilter,conseqTypesFilter){
         this.chromSelected = chromSelected;
         this.regions = regions;
         this.snpIdFilter = snpIdFilter;
         this.conseqTypesFilter = conseqTypesFilter;
+
+
 
         if(this.snpIdFilter != ""){
             this.snpIdFilter = this.removeSpaces(this.snpIdFilter);
@@ -162,16 +163,31 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
             alert("No data selected");
         }
         else {
-            this.regionsAndChromosomes = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
+
+            this.regionsAndChromosomesVariants = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
+
             $rootScope.$broadcast('variantsNewResult');
         }
 
     };
 
-    //genesResultPanel to genesSelectPanel
     sharedService.broadcastVariantsConseqTypes = function(conseqTypes){
         this.conseqTypes= conseqTypes;
         $rootScope.$broadcast('variantsConseqTypes');
+    };
+    sharedService.broadcastVariantsRegionGV = function(region){
+        this.regionFromGV = region;
+        $rootScope.$broadcast('variantsRegionGV');
+    };
+    sharedService.broadcastVariantsSpecieGV = function(specie){
+        this.variantsSpecieGV = specie;
+        $rootScope.$broadcast('variantsSpecieGV');
+    };
+
+    sharedService.broadcastVariantsRegionToGV = function(region){
+        this.variantsRegionToGV = region;
+
+        $rootScope.$broadcast('variantsRegionToGV');
     };
 
     //-------------- Cheks ------------------
@@ -194,6 +210,7 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
         if (regions != "") {
             regions = this.checkCorrectRegions(regions,chromAllData);
         }
+
         if (chromSelected.length == 0) {
             completeRegion = regions;
         }
@@ -235,6 +252,7 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
         var correct = true;
         var chromExist = false;
         var messageError = "";
+
 
         for (var i in regions) {
             posDoublePoints = regions[i].search(":");

@@ -38,9 +38,18 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
     //------------------EVENTS-------------------
     //obtain the specie of genome viewer and take the complete information of the specie
     $scope.$on('genesSpecieGV', function () {
+
         for(var i in $scope.species){
-            if($scope.species[i].longName == mySharedService.selectedSpecies){
+            if($scope.species[i].longName == mySharedService.genesSpecieGV){
                 mySharedService.broadcastGenesNew($scope.species[i]);
+            }
+        }
+    });
+    $scope.$on('variantsSpecieGV', function () {
+
+        for(var i in $scope.species){
+            if($scope.species[i].longName == mySharedService.variantsSpecieGV){
+                mySharedService.broadcastVariantsNew($scope.species[i]);
             }
         }
     });
