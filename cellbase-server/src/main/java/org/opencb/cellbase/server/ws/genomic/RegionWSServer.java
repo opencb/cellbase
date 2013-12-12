@@ -333,8 +333,7 @@ public class RegionWSServer extends GenericRestWSServer {
 			checkVersionAndSpecies();
 			List<Region> regions = Region.parseRegions(chregionId);
 
-			org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(
-					this.species, this.version);
+			RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.version);
 
 			return createOkResponse(regulatoryRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
 		} catch (Exception e) {
@@ -349,8 +348,7 @@ public class RegionWSServer extends GenericRestWSServer {
 			@DefaultValue("") @QueryParam("type") String type) {
 		try {
 			checkVersionAndSpecies();
-			RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(
-                    this.species, this.version);
+			RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.version);
 			/**
 			 * type ["open chromatin", "Polymerase", "HISTONE",
 			 * "Transcription Factor"]

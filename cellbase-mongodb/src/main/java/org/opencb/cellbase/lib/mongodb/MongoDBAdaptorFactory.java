@@ -312,15 +312,19 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
-    public org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species) {
-        // TODO Auto-generated method stub
-        return null;
+    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species) {
+        return getRegulatoryRegionDBAdaptor(species, null);
     }
 
     @Override
-    public org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String version) {
-        // TODO Auto-generated method stub
-        return null;
+    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String version) {
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return (RegulatoryRegionDBAdaptor) new RegulatoryRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
     }
 
     @Override
@@ -409,19 +413,19 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
 
-    public RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species) {
-        return getRegulationDBAdaptor(species, null);
-    }
-
-    public RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species, String version) {
-        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
-        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
-            DB db = createCellBaseMongoDB(speciesVersionPrefix);
-            mongoDBFactory.put(speciesVersionPrefix, db);
-        }
-        return (RegulatoryRegionDBAdaptor) new RegulatoryRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
-    }
+//    public RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species) {
+//        return getRegulationDBAdaptor(species, null);
+//    }
+//
+//    public RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species, String version) {
+//        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+//        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+//            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+//            mongoDBFactory.put(speciesVersionPrefix, db);
+//        }
+//        return (RegulatoryRegionDBAdaptor) new RegulatoryRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+//                speciesAlias.get(species), version);
+//    }
 
     public VariationDBAdaptor getVariationDBAdaptor(String species) {
         return getVariationDBAdaptor(species, null);

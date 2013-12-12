@@ -123,25 +123,26 @@ public class MongoDBAdaptor extends DBAdaptor {
         // Select which fields are excluded and included in MongoDB query
         BasicDBObject returnFields = new BasicDBObject("_id", 0);
         if(options != null) {
-            List<Object> includeList = options.getList("include");
+//            List<Object> includeList = options.getList("include");
 
-        }
-        // Read and process 'exclude' field from 'options' object
+            // Read and process 'exclude' field from 'options' object
 //        if (options != null && options.get("include") != null && !options.getString("include").equals("")) {
-        if (options != null && options.getList("include") != null && options.getList("include").size() > 0) {
+            if (options != null && options.getList("include") != null && options.getList("include").size() > 0) {
 //            String[] includedOptionFields = options.getString("include").split(",");
 //            if (includedOptionFields != null && includedOptionFields.length > 0) {
 //            if (options.getList("include") != null && options.getList("include").size() > 0) {
-            for (Object field : options.getList("include")) {
+                for (Object field : options.getList("include")) {
 //                    returnFields.put(field, 1);
-                returnFields.put(field.toString(), 1);
-            }
-        } else {
-            if (options != null && options.get("exclude") != null && !options.getString("exclude").equals("")) {
-                String[] excludedOptionFields = options.getString("exclude").split(",");
-                if (excludedOptionFields != null && excludedOptionFields.length > 0) {
-                    for (String field : excludedOptionFields) {
-                        returnFields.put(field, 0);
+                    returnFields.put(field.toString(), 1);
+                }
+            } else {
+//                List<Object> excludeList = options.getList("exclude");
+//                if (options != null && options.get("exclude") != null && !options.getString("exclude").equals("")) {
+                if (options != null && options.getList("exclude") != null && options.getList("exclude").size() > 0) {
+//                    String[] excludedOptionFields = options.getString("exclude").split(",");
+//                    if (excludedOptionFields != null && excludedOptionFields.length > 0) {
+                    for (Object field : options.getList("exclude")) {
+                        returnFields.put(field.toString(), 0);
                     }
                 }
             }
