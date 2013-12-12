@@ -3,7 +3,6 @@ package org.opencb.cellbase.core.lib;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
-import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
@@ -153,9 +152,9 @@ public abstract class DBAdaptorFactory {
 	public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species, String version);
 
 
-	public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species);
+	public abstract org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species);
 	
-	public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String version);
+	public abstract org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String version);
 	
 	
 	public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species);
@@ -188,9 +187,9 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String version);
 
 
-    public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species);
+    public abstract RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species);
 
-    public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species, String version);
+    public abstract RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species, String version);
 
 
     public abstract VariationDBAdaptor getVariationDBAdaptor(String species);
@@ -201,4 +200,9 @@ public abstract class DBAdaptorFactory {
     public abstract ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species);
 
     public abstract ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species, String version);
+
+
+    public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species);
+
+    public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species, String version);
 }

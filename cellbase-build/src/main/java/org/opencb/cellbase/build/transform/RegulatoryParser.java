@@ -28,7 +28,6 @@ public class RegulatoryParser {
     private CellbaseSerializer serializer;
 
 	static int CHUNKSIZE = 2000;
-//	private static Gson gson = new Gson();
 
     public RegulatoryParser(CellbaseSerializer serializer) {
         this.serializer = serializer;

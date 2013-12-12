@@ -8,8 +8,8 @@ package org.opencb.cellbase.build.transform; /**
 
 
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
-import org.opencb.cellbase.core.common.ppi.*;
-import org.opencb.cellbase.core.common.ppi.Interactor;
+import org.opencb.cellbase.core.common.protein.*;
+import org.opencb.cellbase.core.common.protein.Interactor;
 import psidev.psi.mi.tab.PsimiTabReader;
 import psidev.psi.mi.tab.model.*;
 

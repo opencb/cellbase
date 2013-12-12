@@ -102,7 +102,8 @@ public class ExonWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
-			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query))));
+//			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query))));
+            return Response.ok().build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getSequencesByIdList", e.toString());
@@ -116,7 +117,8 @@ public class ExonWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
-			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query))));
+//			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query))));
+            return Response.ok().build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getRegionsByIdList", e.toString());

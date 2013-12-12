@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.common.ppi;
+package org.opencb.cellbase.core.common.protein;
 
 import java.util.List;
 

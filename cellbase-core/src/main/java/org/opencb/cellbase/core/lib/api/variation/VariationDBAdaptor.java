@@ -33,7 +33,7 @@ public interface VariationDBAdaptor {
 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 
-//    public List<Variation> getById(String id, List<String> exclude);
+//    public List<Variation> getAllById(String id, List<String> exclude);
 //
 //    List<List<Variation>> getByIdList(List<String> idList, List<String> exclude);
 //

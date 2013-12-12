@@ -158,12 +158,13 @@ public class CellBaseMain {
                 /**
                  * File from Cosmic: CosmicCompleteExport_XXX.tsv
                  */
-                String filePath = commandLine.getOptionValue("cosmic-file");
+                String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
                 String outfile = commandLine.getOptionValue("output", "/tmp/mutation.json");
-                if(filePath != null) {
+                if(cosmicFilePath != null) {
                     serializer = getSerializer(serializationOutput, commandLine);
                     MutationParser vp = new MutationParser(serializer);
-                    vp.parse(Paths.get(filePath));
+//                    vp.parse(Paths.get(cosmicFilePath));
+                    vp.parseEnsembl(Paths.get(cosmicFilePath));
                     serializer.close();
                 }
             }
@@ -195,7 +196,7 @@ public class CellBaseMain {
                 }
             }
 
-            if(buildOption.equals("ppi")) {
+            if(buildOption.equals("protein")) {
                 System.out.println("In PPI");
                 String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
                 String outfile = commandLine.getOptionValue("output", "/tmp/protein_protein_interaction.json");

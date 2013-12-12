@@ -96,6 +96,17 @@ public class MongoDBAdaptor extends DBAdaptor {
     //		return session;
     //	}
 
+    protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {
+        if (options != null && !options.getBoolean(returnField, true)) {
+            if (options.get("include") != null) {
+//                options.put("include", options.get("include") + "," + returnField);
+                options.getList("include").add(returnField);
+            } else {
+                options.put("include", Arrays.asList(returnField));
+            }
+        }
+        return options;
+    }
 
     protected QueryOptions addExcludeReturnFields(String returnField, QueryOptions options) {
         if (options != null && !options.getBoolean(returnField, true)) {
@@ -111,13 +122,19 @@ public class MongoDBAdaptor extends DBAdaptor {
     protected BasicDBObject getReturnFields(QueryOptions options) {
         // Select which fields are excluded and included in MongoDB query
         BasicDBObject returnFields = new BasicDBObject("_id", 0);
+        if(options != null) {
+            List<Object> includeList = options.getList("include");
+
+        }
         // Read and process 'exclude' field from 'options' object
-        if (options != null && options.get("include") != null && !options.getString("include").equals("")) {
-            String[] includedOptionFields = options.getString("include").split(",");
-            if (includedOptionFields != null && includedOptionFields.length > 0) {
-                for (String field : includedOptionFields) {
-                    returnFields.put(field, 1);
-                }
+//        if (options != null && options.get("include") != null && !options.getString("include").equals("")) {
+        if (options != null && options.getList("include") != null && options.getList("include").size() > 0) {
+//            String[] includedOptionFields = options.getString("include").split(",");
+//            if (includedOptionFields != null && includedOptionFields.length > 0) {
+//            if (options.getList("include") != null && options.getList("include").size() > 0) {
+            for (Object field : options.getList("include")) {
+//                    returnFields.put(field, 1);
+                returnFields.put(field.toString(), 1);
             }
         } else {
             if (options != null && options.get("exclude") != null && !options.getString("exclude").equals("")) {
@@ -166,6 +183,17 @@ public class MongoDBAdaptor extends DBAdaptor {
         return list;
     }
 
+    protected QueryResult executeDistinct(Object id, String key) {
+        QueryResult queryResult = new QueryResult();
+        long dbTimeStart = System.currentTimeMillis();
+        List<String> diseases = mongoDBCollection.distinct(key);
+        long dbTimeEnd = System.currentTimeMillis();
+        queryResult.setId(id.toString());
+        queryResult.setDBTime(dbTimeEnd - dbTimeStart);
+        queryResult.setResult(diseases);
+
+        return queryResult;
+    }
 
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
         return executeQuery(id, query, options, mongoDBCollection);

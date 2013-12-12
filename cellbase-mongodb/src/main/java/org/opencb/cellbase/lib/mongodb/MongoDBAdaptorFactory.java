@@ -8,7 +8,6 @@ import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
-import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
@@ -313,13 +312,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
-    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species) {
+    public org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String version) {
+    public org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String version) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -410,17 +409,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
 
-    public RegulationDBAdaptor getRegulationDBAdaptor(String species) {
+    public RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species) {
         return getRegulationDBAdaptor(species, null);
     }
 
-    public RegulationDBAdaptor getRegulationDBAdaptor(String species, String version) {
+    public RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species, String version) {
         String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
         if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
             DB db = createCellBaseMongoDB(speciesVersionPrefix);
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
-        return (RegulationDBAdaptor) new RegulatoryRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+        return (RegulatoryRegionDBAdaptor) new RegulatoryRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
                 speciesAlias.get(species), version);
     }
 
@@ -450,6 +449,22 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (ConservedRegionDBAdaptor) new ConservedRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
+    }
+
+    @Override
+    public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species) {
+        return getProteinFunctionPredictorDBAdaptor(species, null);
+    }
+
+    @Override
+    public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species, String version) {
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return (ProteinFunctionPredictorDBAdaptor) new ProteinFunctionPredictorMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
                 speciesAlias.get(species), version);
     }
 

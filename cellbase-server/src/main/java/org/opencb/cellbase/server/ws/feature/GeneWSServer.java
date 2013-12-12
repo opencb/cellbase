@@ -286,7 +286,7 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{geneId}/ppi")
+    @Path("/{geneId}/protein")
     public Response getPPIByEnsemblId(@PathParam("geneId") String query) {
         try {
             checkVersionAndSpecies();

@@ -1,9 +1,6 @@
 package org.opencb.cellbase.lib.mongodb;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.DB;
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.*;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
@@ -13,6 +10,7 @@ import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,16 +26,55 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
         mongoDBCollection = db.getCollection("mutation");
     }
 
+
     @Override
-    public QueryResult getById(String id, QueryOptions options) {
+    public QueryResult getAll(QueryOptions options) {
+        QueryBuilder builder = new QueryBuilder();
+
+        List<Object> biotypes = options.getList("disease", null);
+        if (biotypes != null && biotypes.size() > 0) {
+            BasicDBList biotypeIds = new BasicDBList();
+            biotypeIds.addAll(biotypes);
+            builder = builder.and("primaryHistology").in(biotypeIds);
+        }
+
+        return executeQuery("result", builder.get(), options);
+    }
+
+    @Override
+    public QueryResult getAllById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<DBObject> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("id").is(id);
+            queries.add(builder.get());
+        }
+
+        return executeQueryList(idList, queries, options);
+    }
+
+    @Override
+    public QueryResult getAllDiseases(QueryOptions options) {
+//        List<String> diseases = mongoDBCollection.distinct("primaryHistology");
+//        DBObject distinct = new BasicDBObject("distinct", "primaryHistology");
+//        System.out.println(distinct.toString());
+        return executeDistinct("distinct", "primaryHistology");
+    }
+
+    @Override
+    public QueryResult getAllByDisease(String id, QueryOptions options) {
+        return getAllByDiseaseList(Arrays.asList(id), options).get(0);
+    }
+
+    @Override
+    public List<QueryResult> getAllByDiseaseList(List<String> idList, QueryOptions options) {
+        List<DBObject> queries = new ArrayList<>(idList.size());
+        for (String id : idList) {
+            QueryBuilder builder = QueryBuilder.start("primaryHistology").is(id);
             queries.add(builder.get());
         }
 
@@ -123,4 +160,11 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
         return executeQueryList(ids, queries, options);
     }
+
+
+    @Override
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
+        return null;
+    }
+
 }

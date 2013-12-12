@@ -24,7 +24,7 @@ import java.util.List;
  * Time: 5:08 PM
  * To change this template use File | Settings | File Templates.
  */
-@Path("/{version}/{species}/network/ppi")
+@Path("/{version}/{species}/network/protein")
 @Produces(MediaType.APPLICATION_JSON)
 public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
 

@@ -3,10 +3,9 @@ package org.opencb.cellbase.build.transform.serializers;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
-import org.opencb.cellbase.core.common.ppi.Interaction;
+import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.Protein;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 /**

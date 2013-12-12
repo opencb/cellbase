@@ -2,6 +2,7 @@ package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -11,8 +12,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,8 +31,35 @@ public class MutationWSServer  extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{snpId}/info")
-    public Response getByEnsemblId(@PathParam("snpId") String query) {
+    @Path("/list")
+    public Response getMutations(@DefaultValue("") @QueryParam("disease") String disease) {
+        try {
+            checkVersionAndSpecies();
+            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
+            queryOptions.put("disease", Splitter.on(",").splitToList(disease));
+            return createOkResponse(variationDBAdaptor.getAll(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getByEnsemblId", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/diseases")
+    public Response getMutationDiseases(@PathParam("mutationId") String query) {
+        try {
+            checkVersionAndSpecies();
+            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
+            return createOkResponse(variationDBAdaptor.getAllDiseases(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getByEnsemblId", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{mutationId}/info")
+    public Response getByEnsemblId(@PathParam("mutationId") String query) {
         try {
             checkVersionAndSpecies();
             MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
