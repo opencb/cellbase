@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.lib;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
