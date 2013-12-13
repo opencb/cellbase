@@ -1,9 +1,9 @@
-myApp.directive('genesGenomeViewer', function () {
+myApp.directive('variantsGenomeViewer', function () {
     return {
         restrict: 'A',
         replace: true,
         transclude: true,
-        templateUrl: './views/genes-gv.html',
+        templateUrl: './views/variants-gv.html',
         controller: function($scope,mySharedService) {
 
             CELLBASE_HOST = "http://ws-beta.bioinfo.cipf.es/cellbase/rest";
@@ -11,11 +11,13 @@ myApp.directive('genesGenomeViewer', function () {
 
             $scope.broadcastRegion = true;
 
-            $scope.$on('genesRegionToGV', function () {
+            $scope.$on('variantsRegionToGV', function () {
                 $scope.broadcastRegion = false;
-                $scope.genomeViewer.setRegion(new Region(mySharedService.genesRegionToGV))
+                $scope.genomeViewer.setRegion(new Region(mySharedService.variantsRegionToGV))
             });
 
+
+//  genomeViewer.setRegion(new Region('13:32889542-32889680'))
 
             /* region and species configuration */
             var region = new Region({
@@ -55,7 +57,7 @@ myApp.directive('genesGenomeViewer', function () {
             var species = availableSpecies.items[0].items[0];
 
             $scope.genomeViewer = new GenomeViewer({
-                targetId: 'genome-viewer-div',
+                targetId: 'variants-gv-div',
                 region: region,
                 availableSpecies: availableSpecies,
                 species: species,
@@ -77,14 +79,15 @@ myApp.directive('genesGenomeViewer', function () {
                     'region:change':function(event){
 
                         if( $scope.broadcastRegion){
-                            mySharedService.broadcastGenesRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
+                            mySharedService.broadcastVariantsRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
                         }
                         $scope.broadcastRegion = true;
+
                     },
 //                    'chromosome-button:change':function(event){
 //                    },
                     'species:change':function(event){
-                        mySharedService.broadcastGenesSpecieGV(event.species.text);
+                        mySharedService.broadcastVariantsSpecieGV(event.species.text);
                     }
                 }
                 //        chromosomeList:[]
@@ -111,7 +114,7 @@ myApp.directive('genesGenomeViewer', function () {
                     category: "genomic",
                     subCategory: "region",
                     resource: "sequence",
-                    species:  $scope.genomeViewer.species
+                    species: $scope.genomeViewer.species
                 })
             });
 
@@ -132,7 +135,7 @@ myApp.directive('genesGenomeViewer', function () {
                     category: "genomic",
                     subCategory: "region",
                     resource: "gene",
-                    species:  $scope.genomeViewer.species,
+                    species: $scope.genomeViewer.species,
                     params: {
                         exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
                     },
@@ -169,7 +172,7 @@ myApp.directive('genesGenomeViewer', function () {
                     params: {
                         exclude: 'transcripts'
                     },
-                    species:  $scope.genomeViewer.species,
+                    species: $scope.genomeViewer.species,
                     cacheConfig: {
                         chunkSize: 50000
                     }
@@ -195,7 +198,7 @@ myApp.directive('genesGenomeViewer', function () {
                     params: {
                         exclude: 'transcriptVariations,xrefs,samples'
                     },
-                    species:  $scope.genomeViewer.species,
+                    species: $scope.genomeViewer.species,
                     cacheConfig: {
                         chunkSize: 10000
                     }

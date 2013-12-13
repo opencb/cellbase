@@ -5,8 +5,8 @@ myApp.directive('transcripts', function () {
         transclude: true,
         //the words in capital letters will change to "-" and the lower case
         scope: {
-            data: '=info',
-            showMore: '=infoMore',
+            data: '=transcript',
+            showMore: '=transcriptMoreInfo',
             specieName: '=specie',
             changeTab: '=tabFunction'
         },

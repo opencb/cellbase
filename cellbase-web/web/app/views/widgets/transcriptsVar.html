@@ -1,0 +1,31 @@
+<div id="transcripts">
+    <h5 class="ocb-margin-l-r-five">
+        <p>{{data.transcriptId}}
+            <a class="ocb-ensembl-link-color" target="_blank"
+               href="http://www.ensembl.org/{{specieName.ensemblName}}/Transcript/Transcript?t={{data.transcriptId}};">
+                Go Ensembl</a>
+        </p>
+        <p class="ocb-line-height-6">alleleString:<span class="text-muted"> {{data.alleleString}}</span></p>
+        <p class="ocb-line-height-6">somatic:<span class="text-muted"> {{data.somatic}}</span></p>
+
+        <p class="ocb-line-height-6">consequenceTypes:
+            <span ng-repeat="ct in data.consequenceTypes" class="text-muted"> {{ct}}  </span>
+        </p>
+
+        <p ng-show="showMore" class="ocb-line-height-6">cdsStart/cdsEnd: <span class="text-muted"> {{data.cdsStart}} / {{data.cdsEnd}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">cdnaStart/cdnEnd:<span class="text-muted"> {{data.cdnaStart}} / {{data.cdnEnd}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">translation Start/End:<span class="text-muted"> {{data.translationStart}} / {{data.translationEnd}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">distanceToTranscript:<span class="text-muted"> {{data.distanceToTranscript}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">codon/peptide AlleleString:<span class="text-muted"> {{data.codonAlleleString}} / {{data.peptideAlleleString}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">hgvs Genomic/Transcript/Protein:<span class="text-muted"> {{data.hgvsGenomic}} / {{data.hgvsTranscript}} / {{data.hgvsProtein}} </span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">polyphen Prediction/Score:<span class="text-muted"> {{data.polyphenPrediction}} / {{data.polyphenScore}}</span></p>
+        <p ng-show="showMore"  class="ocb-line-height-6">sift Prediction/Score:<span class="text-muted"> {{data.siftPrediction}} / {{data.siftScore}}</span></p>
+    </h5>
+
+</div>
+
+
+
+
+
+

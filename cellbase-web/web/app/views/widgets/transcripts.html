@@ -5,20 +5,19 @@
                href="http://www.ensembl.org/{{specieName.ensemblName}}/Transcript/Transcript?t={{data.id}};">
                 Go Ensembl</a>
         </p>
-        <p>Biotype:<span class="text-muted">{{data.biotype}}</span></p>
-        <p>Location:<span class="text-muted">{{data.chromosome}} : {{data.start}} -{{data.end}}</span></p>
-        <p>Description:<span class="text-muted">{{data.description}}</span></p>
-        <p ng-show="showMore">Status: <span class="text-muted">{{data.status}}</span></p>
-        <p ng-show="showMore">Strand:<span class="text-muted">{{data.strand}}</span></p>
-        <p ng-show="showMore">Genomic Coding Start:<span class="text-muted">{{data.genomicCodingStart}}</span></p>
-        <p ng-show="showMore">Genomic Coding End:<span class="text-muted">{{data.genomicCodingStart}}</span></p>
-        <p ng-show="showMore">CDNA Coding Start:<span class="text-muted">{{data.cdnaCodingStart}}</span></p>
-        <p ng-show="showMore">CDNA Coding End:<span class="text-muted">{{data.cdnaCodingEnd}}</span></p>
-        <p ng-show="showMore">CDS Length:<span class="text-muted">{{data.cdsLength}}</span></p>
-        <p ng-show="showMore">Protein ID:<span class="text-muted">{{data.proteinID}}</span></p>
+        <p class="ocb-line-height-6">Biotype:<span class="text-muted"> {{data.biotype}}</span></p>
+        <p class="ocb-line-height-6">Location:<span class="text-muted"> {{data.chromosome}} : {{data.start}} -{{data.end}}</span></p>
+        <p class="ocb-line-height-6">Description:<span class="text-muted"> {{data.description}}</span></p>
+
+        <p ng-show="showMore" class="ocb-line-height-6">Status: <span class="text-muted"> {{data.status}}</span></p>
+        <p ng-show="showMore" class="ocb-line-height-6">Strand:<span class="text-muted"> {{data.strand}}</span></p>
+        <p ng-show="showMore" class="ocb-line-height-6">Genomic Coding Start/End:<span class="text-muted"> {{data.genomicCodingStart}} / {{data.genomicCodingStart}}</span></p>
+        <p ng-show="showMore" class="ocb-line-height-6">CDNA Coding Start/End :<span class="text-muted"> {{data.cdnaCodingStart}} / {{data.cdnaCodingEnd}}</span></p>
+        <p ng-show="showMore" class="ocb-line-height-6">CDS Length:<span class="text-muted"> {{data.cdsLength}}</span></p>
+        <p ng-show="showMore" class="ocb-line-height-6">Protein ID:<span class="text-muted"> {{data.proteinID}}</span></p>
     </h5>
 
-    <ul class="nav nav-tabs" id="myTab">
+    <ul class="nav nav-tabs" id="transcriptsTab">
         <li class="active"><a href="#exons">Exons</a></li>
         <li><a href="#tfbs" ng-click="changeTab()">TFBS</a></li>
         <li><a href="#xrefs" ng-click="changeTab()">Xrefs</a></li>
@@ -31,12 +30,14 @@
                     <thead>
                         <th>Id</th>
                         <th>Location</th>
+                        <th>Strand</th>
                         <th>Phase</th>
                         <th>Exon Number</th>
                     </thead>
                     <tbody ng-repeat="exon in data.exons">
                         <td><small>{{exon.id}}</small></td>
                         <td><small>{{exon.chromosome}} : {{exon.start}} - {{exon.end}}</small></td>
+                        <td><small>{{exon.strand}}</small></td>
                         <td><small>{{exon.phase}}</small></td>
                         <td><small>{{exon.exonNumber}}</small></td>
                     </tbody>
@@ -51,12 +52,16 @@
                         <th>pwm</th>
                         <th>Location</th>
                         <th>Strand</th>
+                        <th>Relative Start/End</th>
+                        <th>Score</th>
                     </thead>
                     <tbody ng-repeat="tfbs in data.tfbs">
                         <td><small>{{tfbs.tfName}}</small></td>
                         <td><small>{{tfbs.pwm}}</small></td>
                         <td><small>{{tfbs.chromosome}} : {{tfbs.start}} - {{tfbs.end}}</small></td>
                         <td><small>{{tfbs.strand}}</small></td>
+                        <td><small>{{tfbs.relativeStart}} / {{relativeEnd}}</small></td>
+                        <td><small>{{tfbs.score}}</small></td>
                     </tbody>
                 </table>
             </div>
@@ -67,10 +72,12 @@
                     <thead>
                         <th>Id</th>
                         <th>Name</th>
+                        <th>Description</th>
                     </thead>
                     <tbody ng-repeat="xref in data.xrefs">
                         <td><small>{{xref.id}}</small></td>
                         <td><small>{{xref.dbName}}</small></td>
+                        <td><small>{{xref.description}}</small></td>
                     </tbody>
                 </table>
             </div>
