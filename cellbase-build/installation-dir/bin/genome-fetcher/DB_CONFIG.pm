@@ -112,7 +112,7 @@ BEGIN {
 our $HOME = "/mnt/mysql/infrared_dbs";
 
 my $user_home = $ENV{'HOME'};
-our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_73";
+our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_74";
 our $ENSEMBL_REGISTRY = "$user_home/appl/cellbase/cellbase-build/installation-dir/bin/ensembl-scripts/registry.conf";
 
 our $BIOMART_LIB = "/mnt/mysql/ensembl_apis/biomart-perl";
