@@ -1,5 +1,7 @@
 package org.opencb.cellbase.core.common;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,7 @@ import java.util.List;
  * Time: 12:09 PM
  */
 public class GenericFeature {
+    private String id;
     private String chromosome;
     private List<String> chunkIds;
     private String source;
@@ -20,7 +23,6 @@ public class GenericFeature {
     private String frame;
     private String itemRGB;
     private String name;
-    private String id;
     private String featureClass;
     private String alias;
     private List<String> cellTypes = new ArrayList<>();

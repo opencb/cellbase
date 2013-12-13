@@ -1,9 +1,13 @@
 package org.opencb.cellbase.build.transform.serializers.mongodb;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
@@ -66,10 +70,10 @@ public class MongoDBSerializer implements CellbaseSerializer {
         variationBufferedWriter = new HashMap<>(40);
 
         jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 //        jsonObjectMapper.setPropertyNamingStrategy(new GeneNamingStrategy());
 
         jsonObjectWriter = jsonObjectMapper.writer();
-
 //        PropertyNamingStrategy propertyNamingStrategy = new PropertyNamingStrategy() {
 //            @Override
 //            public String nameForField(MapperConfig<?> mapperConfig, AnnotatedField annotatedField, String s) {
@@ -166,12 +170,13 @@ public class MongoDBSerializer implements CellbaseSerializer {
     }
 
     @Override
-    public void serialize(GenericFeatureChunk genericFeatureChunk) {
+    public void serialize(GenericFeature genericFeature) {
         try {
             if(bufferedWriterMap.get("regulatory") == null) {
+                System.out.println(outdirPath.toString());
                 bufferedWriterMap.put("regulatory", Files.newBufferedWriter(outdirPath.resolve("regulatory_region.json"), Charset.defaultCharset()));
             }
-            bufferedWriterMap.get("regulatory").write(jsonObjectWriter.writeValueAsString(genericFeatureChunk));
+            bufferedWriterMap.get("regulatory").write(jsonObjectWriter.writeValueAsString(genericFeature));
             bufferedWriterMap.get("regulatory").newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();

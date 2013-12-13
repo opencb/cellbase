@@ -5,14 +5,12 @@ import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
@@ -23,13 +21,13 @@ import java.util.zip.GZIPInputStream;
  * Time: 10:14 AM
  */
 
-public class RegulatoryParser {
+public class RegulatoryRegionParserOld {
 
     private CellbaseSerializer serializer;
 
-	static int CHUNKSIZE = 2000;
+	private int CHUNKSIZE = 2000;
 
-    public RegulatoryParser(CellbaseSerializer serializer) {
+    public RegulatoryRegionParserOld(CellbaseSerializer serializer) {
         this.serializer = serializer;
     }
 
@@ -43,25 +41,25 @@ public class RegulatoryParser {
 		Path filePath;
 
 		filePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff.gz");
-		RegulatoryParser.createSQLiteRegulatoryFiles(filePath, "annotated_features", GFFColumnNames, GFFColumnTypes, true);
+		RegulatoryRegionParserOld.createSQLiteRegulatoryFiles(filePath, "annotated_features", GFFColumnNames, GFFColumnTypes, true);
 
 		
 		filePath = regulatoryRegionPath.resolve("MotifFeatures.gff.gz");
-		RegulatoryParser.createSQLiteRegulatoryFiles(filePath, "motif_features", GFFColumnNames, GFFColumnTypes, true);
+		RegulatoryRegionParserOld.createSQLiteRegulatoryFiles(filePath, "motif_features", GFFColumnNames, GFFColumnTypes, true);
 
 		
 		filePath = regulatoryRegionPath.resolve("RegulatoryFeatures_MultiCell.gff.gz");
-		RegulatoryParser.createSQLiteRegulatoryFiles(filePath, "regulatory_features_multicell", GFFColumnNames, GFFColumnTypes, true);
+		RegulatoryRegionParserOld.createSQLiteRegulatoryFiles(filePath, "regulatory_features_multicell", GFFColumnNames, GFFColumnTypes, true);
 
 
 //		GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame");
 //		GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT");
 		filePath = regulatoryRegionPath.resolve("mirna_uniq.gff.gz");
-		RegulatoryParser.createSQLiteRegulatoryFiles(filePath, "mirna_uniq", GFFColumnNames, GFFColumnTypes, true);
+		RegulatoryRegionParserOld.createSQLiteRegulatoryFiles(filePath, "mirna_uniq", GFFColumnNames, GFFColumnTypes, true);
 
 	}
 
-	public void parseRegulatoryGzipFilesToJson(Path regulatoryRegionPath, int chunksize, Path outputRegulatoryRegionJsonPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
+	public void parseRegulatoryGzipFilesToJson(Path regulatoryRegionPath, int chunksize) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
 		// Create the SQLite databases
 		createSQLiteRegulatoryFiles(regulatoryRegionPath);
 
@@ -75,17 +73,17 @@ public class RegulatoryParser {
 		
 		// Ouput JSON file
 		//		Path outJsonPath = regulatoryRegionPath.resolve("regulatory_region.json");
-		if(Files.exists(outputRegulatoryRegionJsonPath)) {
-			Files.delete(outputRegulatoryRegionJsonPath);
-		}
-		BufferedWriter bw = Files.newBufferedWriter(outputRegulatoryRegionJsonPath, Charset.defaultCharset(), StandardOpenOption.CREATE);
+//		if(Files.exists(outputRegulatoryRegionJsonPath)) {
+//			Files.delete(outputRegulatoryRegionJsonPath);
+//		}
+//		BufferedWriter bw = Files.newBufferedWriter(outputRegulatoryRegionJsonPath, Charset.defaultCharset(), StandardOpenOption.CREATE);
 
 		// Fetching and joining all chromosomes dounf in the different databases
 		Set<String> setChr = new HashSet<String>();
-		setChr.addAll(RegulatoryParser.getChromosomesList(annotatedFilePath, "annotated_features"));
-		setChr.addAll(RegulatoryParser.getChromosomesList(motifFilePath, "motif_features"));
-		setChr.addAll(RegulatoryParser.getChromosomesList(regulatoryFilePath, "regulatory_features_multicell"));
-		setChr.addAll(RegulatoryParser.getChromosomesList(mirnaFilePath, "mirna_uniq"));
+		setChr.addAll(RegulatoryRegionParserOld.getChromosomesList(annotatedFilePath, "annotated_features"));
+		setChr.addAll(RegulatoryRegionParserOld.getChromosomesList(motifFilePath, "motif_features"));
+		setChr.addAll(RegulatoryRegionParserOld.getChromosomesList(regulatoryFilePath, "regulatory_features_multicell"));
+		setChr.addAll(RegulatoryRegionParserOld.getChromosomesList(mirnaFilePath, "mirna_uniq"));
 		List<String> chromosomes = new ArrayList<>();
 		chromosomes.addAll(setChr);
 
@@ -110,7 +108,7 @@ public class RegulatoryParser {
 
 			for (int i=0; i<tableNames.size(); i++) {
 				genericFeatureChunks = new HashMap<>();
-				genericFeatures = RegulatoryParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
+				genericFeatures = RegulatoryRegionParserOld.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
 				int c = 0;
 				for(GenericFeature genericFeature: genericFeatures) {
 					int firstChunkId =  getChunkId(genericFeature.getStart(), chunksize);
@@ -119,8 +117,6 @@ public class RegulatoryParser {
 					// remove 'chr' prefix
 					if(genericFeature.getChromosome() != null) {
 						genericFeature.setChromosome(genericFeature.getChromosome().replace("chr", ""));						
-					}else {
-						System.out.println((++c)+" => "+genericFeature.getChromosome()+":"+genericFeature.getStart()+"   "+genericFeature.getId()+" => "+chromosome+" "+genericFeatures.size()+"  "+tableNames.get(i));
 					}
 					for(int j=firstChunkId; j<=lastChunkId; j++) {
 						if(genericFeatureChunks.get(j)==null) {
@@ -133,7 +129,7 @@ public class RegulatoryParser {
 				}
 				for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
 //					bw.write(gson.toJson(result.getValue()) + "\n");
-					serializer.serialize(result.getValue());
+//					serializer.serialize(result.getValue());
 
 				}
 				
@@ -141,7 +137,7 @@ public class RegulatoryParser {
 
 			/*Annotated feature*/
 //			genericFeatureChunks = new HashMap<>();
-//			annotatedGenericFeatures = RegulatoryParser.queryChromosomesRegulatoryDB(annotatedFilePath, "annotated_features", chromosome);
+//			annotatedGenericFeatures = RegulatoryRegionParserOld.queryChromosomesRegulatoryDB(annotatedFilePath, "annotated_features", chromosome);
 //			for(GenericFeature genericFeature :annotatedGenericFeatures){
 //				int firstChunkId =  getChunkId(genericFeature.getStart(), chunksize);
 //				int lastChunkId  = getChunkId(genericFeature.getEnd(), chunksize);
@@ -162,7 +158,7 @@ public class RegulatoryParser {
 //
 //			/*Regulatory feature*/
 //			genericFeatureChunks = new HashMap<>();
-//			regulatoryGenericFeatures = RegulatoryParser.queryChromosomesRegulatoryDB(regulatoryFilePath, "regulatory_features_multicell", chromosome);
+//			regulatoryGenericFeatures = RegulatoryRegionParserOld.queryChromosomesRegulatoryDB(regulatoryFilePath, "regulatory_features_multicell", chromosome);
 //			for(GenericFeature genericFeature :regulatoryGenericFeatures){
 //				int firstChunkId =  getChunkId(genericFeature.getStart());
 //				int lastChunkId  = getChunkId(genericFeature.getEnd());
@@ -183,7 +179,7 @@ public class RegulatoryParser {
 //
 //			/*Mirna feature*/
 //			genericFeatureChunks = new HashMap<>();
-//			mirnaGenericFeatures = RegulatoryParser.queryChromosomesRegulatoryDB(mirnaFilePath, "mirna_uniq", chromosome);
+//			mirnaGenericFeatures = RegulatoryRegionParserOld.queryChromosomesRegulatoryDB(mirnaFilePath, "mirna_uniq", chromosome);
 //			for(GenericFeature genericFeature :mirnaGenericFeatures){
 //				int firstChunkId =  getChunkId(genericFeature.getStart());
 //				int lastChunkId  = getChunkId(genericFeature.getEnd());
@@ -203,7 +199,7 @@ public class RegulatoryParser {
 			/*********/
 
 		}
-		bw.close();
+//		bw.close();
 
 	}
 
@@ -214,7 +210,8 @@ public class RegulatoryParser {
 
 		Path dbPath = Paths.get(filePath.toString() + ".db");
 		if(Files.exists(dbPath)) {
-			Files.delete(dbPath);
+//			Files.delete(dbPath);
+            return;
 		}
 		
 		BufferedReader br;
@@ -542,21 +539,21 @@ public class RegulatoryParser {
 		return sb.toString();
 	}
 
-	private static int getChunkId(int position, int chunksize){
+	private int getChunkId(int position, int chunksize){
 		if(chunksize <= 0) {
 			return position/CHUNKSIZE;    		
 		}else {
 			return position/chunksize;
 		}
 	}
-	private static int getChunkStart(int id, int chunksize){
+	private int getChunkStart(int id, int chunksize){
 		if(chunksize <= 0) {
 			return (id == 0) ? 1 : id*CHUNKSIZE;
 		}else {
 			return (id==0) ? 1 : id*chunksize;
 		}
 	}
-	private static int getChunkEnd(int id, int chunksize) {
+	private int getChunkEnd(int id, int chunksize) {
 		if(chunksize <= 0) {
 			return (id * CHUNKSIZE) + CHUNKSIZE - 1;    		
 		}else {

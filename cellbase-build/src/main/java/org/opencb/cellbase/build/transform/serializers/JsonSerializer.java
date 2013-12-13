@@ -3,6 +3,7 @@ package org.opencb.cellbase.build.transform.serializers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
@@ -112,7 +113,7 @@ public class JsonSerializer implements CellbaseSerializer {
     }
 
     @Override
-    public void serialize(GenericFeatureChunk genericFeatureChunk) {
+    public void serialize(GenericFeature genericFeatureChunk) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

@@ -31,25 +31,34 @@ public class CellBaseMain {
 
     private static void initOptions() {
         options = new Options();
-        options.addOption(OptionFactory.createOption("build", "Build values: core, genome_sequence, variation, protein"));
-        options.addOption(OptionFactory.createOption("indir", "i",  "Input directory with data files", false));
-        options.addOption(OptionFactory.createOption("output", "o",  "Output directory to save the JSON result"));
 
+        // Mandatory options
+        options.addOption(OptionFactory.createOption("build", "Build values: core, genome_sequence, variation, protein"));
+        options.addOption(OptionFactory.createOption("output", "o",  "Output file or directory (depending on the 'build') to save the result"));
+
+        // Optional parameter for some builds that accept a folder and not only one or few files
+        options.addOption(OptionFactory.createOption("indir", "i",  "Input directory with data files", false));
+
+        // Sequence and gene options
         options.addOption(OptionFactory.createOption("fasta-file", "Output directory to save the JSON result", false));
 
         // Gene options
         options.addOption(OptionFactory.createOption("gtf-file", "Output directory to save the JSON result", false));
-        options.addOption(OptionFactory.createOption("description-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("xref-file", "Output directory to save the JSON result", false));
+        options.addOption(OptionFactory.createOption("description-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("tfbs-file", "Output directory to save the JSON result", false));
         options.addOption(OptionFactory.createOption("mirna-file", "Output directory to save the JSON result", false));
+
+        // Mutation options
         options.addOption(OptionFactory.createOption("cosmic-file", "Output directory to save the JSON result", false));
-        options.addOption(OptionFactory.createOption("psimi-tab-file", "Output directory to save the JSON result", false));
-        options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
 
-        options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
-
+        // Protein options
         options.addOption(OptionFactory.createOption("species", "s",  "Sapecies...", false, true));
+        options.addOption(OptionFactory.createOption("psimi-tab-file", "Output directory to save the JSON result", false));
+
+//        options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
+//        options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
+
 
         options.addOption(OptionFactory.createOption("log-level", "DEBUG -1, INFO -2, WARNING - 3, ERROR - 4, FATAL - 5", false));
     }
@@ -60,21 +69,19 @@ public class CellBaseMain {
     public static void main(String[] args) {
         initOptions();
         try {
+
+            if(args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("cellbase-build.jar", "Some options are mandatory for all possible 'builds', while others are only mandatory for some specific 'builds':", options, "\nFor more information or reporting bugs contact me: imedina@cipf.es", true);
+                return;
+            }
+
+
             parse(args, false);
 
-            String comm = args [1];
-
             String buildOption = null;
-
-
             String serializationOutput = null;
             CellbaseSerializer serializer = null;
-
-
-            // no needed to check as 'build' arg is required in Options
-            if(!commandLine.hasOption("build") || commandLine.getOptionValue("build").equals("")) {
-
-            }
 
 
             if(commandLine.hasOption("serializer") && !commandLine.getOptionValue("serializer").equals("")) {
@@ -101,16 +108,16 @@ public class CellBaseMain {
                 System.out.println("In gene...");
 
                 String gtfFile = commandLine.getOptionValue("gtf-file");
-                String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
+                String fastaFile = commandLine.getOptionValue("fasta-file", "");
                 String xrefFile = commandLine.getOptionValue("xref-file", "");
+                String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
                 String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
                 String mirnaFile = commandLine.getOptionValue("mirna-file", "");
-                String genomeSequenceDir = commandLine.getOptionValue("genome-sequence-dir", "");
 
                 if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
                     serializer = getSerializer(serializationOutput, commandLine);
                     GeneParser geneParser = new GeneParser(serializer);
-                    geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeSequenceDir));
+                    geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(fastaFile));
                     serializer.close();
                 }
             }
@@ -133,8 +140,6 @@ public class CellBaseMain {
 
                 String indir = commandLine.getOptionValue("indir");
                 int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
-                System.out.println("chunksize: "+chunksize);
-                String outfile = commandLine.getOptionValue("output", "/tmp/variation.json");
                 if(indir != null) {
                     serializer = getSerializer(serializationOutput, commandLine);
                     VariationParser vp = new VariationParser(serializer);
@@ -159,7 +164,6 @@ public class CellBaseMain {
                  * File from Cosmic: CosmicCompleteExport_XXX.tsv
                  */
                 String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
-                String outfile = commandLine.getOptionValue("output", "/tmp/mutation.json");
                 if(cosmicFilePath != null) {
                     serializer = getSerializer(serializationOutput, commandLine);
                     MutationParser vp = new MutationParser(serializer);
@@ -173,13 +177,12 @@ public class CellBaseMain {
                 System.out.println("In regulation");
                 String indir = commandLine.getOptionValue("indir");
                 int chunksize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
-                System.out.println("chunksize: "+chunksize);
                 String outfile = commandLine.getOptionValue("output", "/tmp/regulations.json");
                 if(indir != null) {
                     try {
                         serializer = getSerializer(serializationOutput, commandLine);
-                        RegulatoryParser regulatoryParser = new RegulatoryParser(serializer);
-                        regulatoryParser.parseRegulatoryGzipFilesToJson(Paths.get(indir), chunksize, Paths.get(outfile));
+                        RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(serializer);
+                        regulatoryParser.parse(Paths.get(indir));
                     } catch (ClassNotFoundException | NoSuchMethodException	| SQLException e) {
                         e.printStackTrace();
                     }

@@ -5,6 +5,7 @@ import org.opencb.cellbase.core.common.core.*;
 import org.opencb.commons.bioformats.commons.exception.FileFormatException;
 import org.opencb.commons.bioformats.feature.gtf.Gtf;
 import org.opencb.commons.bioformats.feature.gtf.io.GtfReader;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,14 +19,12 @@ import java.util.zip.GZIPInputStream;
 
 public class GeneParser {
 
-	// List<Gene> genes;
 //	private Map<String, Integer> geneDict;
 	private Map<String, Integer> transcriptDict;
 	private Map<String, Exon> exonDict;
 
 	private static final int CHUNK_SIZE = 5000;
 
-//    private ObjectMapper gson = new ObjectMapper();
     private CellbaseSerializer serializer;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -53,7 +52,6 @@ public class GeneParser {
 		String chromSequence = "";
 		String exonSequence = "";
 		
-//		Gene gene = null;
 		GeneMongoDB gene = null;
 		Transcript transcript;
 		Exon exon = null;
@@ -102,20 +100,16 @@ public class GeneParser {
 			mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
 		}
 		
-//		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
-
 		// BasicBSONList list = new BasicBSONList();
         String chunkIdSuffix = CHUNK_SIZE/1000+"k";
 		int cont = 0;
-//		Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
 		GtfReader gtfReader = new GtfReader(gtfFile);
 		Gtf gtf;
 		boolean first = false;
 		while ((gtf = gtfReader.read()) != null) {
 			geneId = gtf.getAttributes().get("gene_id");
 			transcriptId = gtf.getAttributes().get("transcript_id");
-
-			/*
+            /*
 			 * If chromosome is changed (or it's the first chromosome)
 			 * we load the new chromosome sequence.
 			 */
@@ -125,8 +119,9 @@ public class GeneParser {
 //				chromSequence = getSequenceByChromosomeName(currentChromosome, genomeSequenceDir);
 			}
 			
-			// Check if gene exist in Map
-			if (!geneId.equals(gene.getId())) { // gene == null || !geneDict.containsKey(geneId)
+			// Gene object can only be null the first time
+            // If new geneId is different from the current then we must serialize before load new gene
+			if (gene == null || !geneId.equals(gene.getId())) {
                 // gene object can only be null the first time
 				if (gene != null) { // genes.size()>0
 //					if (first) {
@@ -420,7 +415,7 @@ public class GeneParser {
 	}
 	
 	public String getSequenceByChromosome(String chrom, Path genomeSequenceFile) throws IOException {
-		BufferedReader br = Files.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
+		BufferedReader br = FileUtils.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
 		StringBuilder sb = new StringBuilder(100000);
 		String line = "";
 		boolean found = false;
