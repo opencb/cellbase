@@ -89,7 +89,7 @@ public class MongoDBSerializer implements CellbaseSerializer {
     public void serialize(GenomeSequenceChunk genomeSequenceChunk) {
         try {
             if(genomeSequenceBufferedWriter == null) {
-                genomeSequenceBufferedWriter = Files.newBufferedWriter(outfilePath, Charset.defaultCharset());
+                genomeSequenceBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("genome_sequence.json"), Charset.defaultCharset());
             }
             genomeSequenceBufferedWriter.write(jsonObjectWriter.writeValueAsString(genomeSequenceChunk));
             genomeSequenceBufferedWriter.newLine();
