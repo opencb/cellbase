@@ -380,7 +380,7 @@
 
 /*-------no funcionan:---------*/
 .ocb-result-panels-width{
-    width: calc(100%-220px) important!;
+    width: calc(100% - 220px) !important;
 }
 /*.ocb-gv-width{*/
     /*width: calc(100%-10px);*/
