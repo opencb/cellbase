@@ -227,8 +227,10 @@
 }
 
 .ocb-regions-textarea{
-    width:190px;
-    max-width:190px;
+    width:222px;
+    max-width:222px;
+    /*width:190px;*/
+    /*max-width:190px;*/
     max-height: 154px;
 }
 
@@ -237,8 +239,10 @@
 }
 
 .ocb-filter-textarea{
-    width:190px;
-    max-width:190px;
+    width:222px;
+    max-width:222px;
+    /*width:190px;*/
+    /*max-width:190px;*/
     max-height: 114px;
 }
 
@@ -303,9 +307,14 @@
     color: blue;
 }
 .ocb-chrom-scroll{
-    overflow: scroll;
-    height: 140px;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 135px;
     margin:10px
+
+    /*overflow: scroll;*/
+    /*height: 140px;*/
+    /*margin:10px*/
 }
 .ocb-biotypes-scroll{
     overflow: scroll;
