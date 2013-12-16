@@ -5,7 +5,7 @@
     <title>Cellbase web</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
-    <link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">
+    <!--<link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">-->
 
     <!--========================genome-viewer==============================-->
     <!--===================================================================-->
@@ -78,24 +78,33 @@
     <script src="js/controllers/regulationSelectPanelController.js"></script>
     <script src="js/controllers/regulationResultPanelController.js"></script>
 
+
+
+    <style type="text/css">
+        .bootstrap{
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+        }
+    </style>
+
 </head>
 <body>
-<div id="cellbase-web"  >
-    <div id="title">
-        <h4 class="ocb-text-center">Cellbase Web</h4>
-    </div>
+<div id="cellbase-web" class="bootstrap">
 
-    <div id="optionsBar" ng-controller="optionsBarController">
+    <div id="optionsBar" ng-controller="optionsBarController" style="height:60px">
         <div options-bar></div>
     </div>
 
-    <ul class="nav nav-tabs ocb-border-b-darkgrey ocb-margin-l-r-five ocb-content-width" id="myTab">
-        <li class="active"><a href="#genes">Gen</a></li>
-        <li><a href="#variantion">Variantion</a></li>
-        <li><a href="#regulation">Regulation</a></li>
-    </ul>
+    <div class="container" style="margin-bottom:10px">
+        <!--<ul class="nav nav-pills ocb-border-b-darkgrey ocb-margin-l-r-five ocb-content-width" id="myTab">-->
+        <ul class="nav nav-pills" id="myTab">
+            <li class="active"><a href="#genes">Gen</a></li>
+            <li><a href="#variantion">Variantion</a></li>
+            <li><a href="#regulation">Regulation</a></li>
+        </ul>
+    </div>
 
-    <div class="tab-content ocb-margin-five ocb-inline-block ocb-content-width">
+    <!--<div class="tab-content ocb-margin-five ocb-inline-block ocb-content-width">-->
+    <div class="tab-content" style="margin-left:5%">
 
         <div class="tab-pane active" id="genes">
             <div id="genesSelectDiv" class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
@@ -139,6 +148,3 @@
 </script>
 </body>
 </html>
-
-
-

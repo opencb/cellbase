@@ -390,3 +390,13 @@
 
 
 
+.ocb-tree-transcript{
+padding:10px 0 10px 40px;
+/*padding:10px;*/
+/*margin-left:40px;*/
+}
+.ocb-tree-transcript:hover{
+    background-color: #EFF8FC;
+    color: #000000;
+}
+
