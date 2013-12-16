@@ -3,30 +3,34 @@ package org.opencb.cellbase.core.common.core;
 public class Xref {
 	
 	private String id;
-	private String dbNameShort;
 	private String dbName;
+	private String dbDisplayName;
 	private String description;
 
     public Xref() {
 
     }
 
-    public Xref(String id, String dbNameShort, String dbName, String description) {
+    public Xref(String id, String dbName, String dbDisplayName) {
+        this(id, dbName, dbDisplayName, "");
+    }
+
+    public Xref(String id, String dbName, String dbDisplayName, String description) {
 		this.id = id;
-		this.dbNameShort = dbNameShort;
 		this.dbName = dbName;
+		this.dbDisplayName = dbDisplayName;
 		this.description = description;
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
 		Xref xrefObj = (Xref)obj;
-		return id.equals(xrefObj.id) && dbNameShort.equals(xrefObj.dbNameShort);
+		return id.equals(xrefObj.id) && dbName.equals(xrefObj.dbName);
 	}
 	
 	@Override
 	public int hashCode() {
-		return (id+dbNameShort).hashCode();
+		return (id+ dbName).hashCode();
 	}
 	
 	
@@ -39,21 +43,21 @@ public class Xref {
 	}
 	
 	
-	public String getDbNameShort() {
-		return dbNameShort;
-	}
-	
-	public void setDbNameShort(String dbNameShort) {
-		this.dbNameShort = dbNameShort;
-	}
-	
-	
 	public String getDbName() {
 		return dbName;
 	}
 	
 	public void setDbName(String dbName) {
 		this.dbName = dbName;
+	}
+	
+	
+	public String getDbDisplayName() {
+		return dbDisplayName;
+	}
+	
+	public void setDbDisplayName(String dbDisplayName) {
+		this.dbDisplayName = dbDisplayName;
 	}
 	
 	

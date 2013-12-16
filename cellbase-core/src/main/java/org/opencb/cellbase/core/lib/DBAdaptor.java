@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DBAdaptor {
 
-    protected org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 //	protected Logger logger= Logger.getLogger(this.getClass().getSimpleName());
 	
 //	protected static ResourceBundle resourceBundle;

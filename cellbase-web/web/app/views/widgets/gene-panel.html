@@ -1,15 +1,34 @@
-<div class="panel panel-info">
-    <div class="panel-heading " style="text-align:center">Gene information</div>
-    <div class="panel-body">
-        <h5> {{selectedGen.name}} ( {{selectedGen.id}} )</h5>
-        <h5>Biotype:
-            <small>{{selectedGen.biotype}}</small>
+<div class="list-group">
+    <a href="#" class="list-group-item active" style="text-align: center;" ng-click="geneInfo = !geneInfo">Gene
+        information
+        <button type="button" class="btn btn-default btn-xs" ng-Click="showGenePanel = false" style="float:right">x
+        </button>
+    </a>
+    <div ng-show="!geneInfo" style="border:1px solid #006ffb">
+        <button type="button" class="btn btn-primary btn-xs" style="float:left; margin:3px" ng-click="moreGenePanel()">
+            {{moreAndLessGene}}
+        </button>
+        <h5 style="margin-right: 5px; margin-left: 5px"><a ng-Click="transcriptsSelectedFromGenesPanel(selectedGen.id)">
+            <p>
+                {{selectedGen.name}} ( {{selectedGen.id}} )</a>
+            <a style="color:palevioletred" target="_blank"
+               href="http://www.ensembl.org/{{selectedSpecie.ensemblName}}/Location/View?g={{selectedGen.id}};">
+                Go Ensembl</a>
+            </p>
+            <p>Biotype:<span class="text-muted">{{selectedGen.biotype}}</span>
+            </p>
+            <p> Location:<span class="text-muted">{{selectedGen.chromosome}} : {{selectedGen.start}} - {{selectedGen.end}}</span>
+            </p>
+            <p>Description:<span class="text-muted">{{selectedGen.description}}</span>
+            </p>
+            <p ng-show="genePanelMore">Status:<span class="text-muted">{{selectedGen.status}}</span>
+            </p>
+            <p ng-show="genePanelMore">Strand:<span class="text-muted">{{selectedGen.strand}}</span>
+            </p>
+            <p ng-show="genePanelMore">Source:<span class="text-muted">{{selectedGen.source}}</span>
+            </p>
         </h5>
-        <h5>Location:
-            <small>{{selectedGen.chromosome}} : {{selectedGen.start}} - {{selectedGen.end}}</small>
-        </h5>
-        <h5>Description:
-            <small>{{selectedGen.description}}</small>
-        </h5>
+
     </div>
 </div>
+

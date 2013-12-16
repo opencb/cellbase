@@ -112,7 +112,7 @@ BEGIN {
 our $HOME = "/mnt/mysql/infrared_dbs";
 
 my $user_home = $ENV{'HOME'};
-our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_73";
+our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_74";
 our $ENSEMBL_REGISTRY = "$user_home/appl/cellbase/cellbase-build/installation-dir/bin/ensembl-scripts/registry.conf";
 
 our $BIOMART_LIB = "/mnt/mysql/ensembl_apis/biomart-perl";
@@ -145,65 +145,65 @@ our $INFRARED_PASS = "biopass";
 
 
 ## Vertebrates
-our $HOMO_SAPIENS_CORE = "homo_sapiens_core_73_37";
-our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_73_37";
-our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_73_37";
-our $MUS_MUSCULUS_CORE = "mus_musculus_core_71_38";
-our $MUS_MUSCULUS_VARIATION = "mus_musculus_variation_71_38";
-our $MUS_MUSCULUS_FUNCTIONAL = "mus_musculus_funcgen_71_38";
-our $RATTUS_NORVEGICUS_CORE = "rattus_norvegicus_core_71_5";
-our $RATTUS_NORVEGICUS_VARIATION = "rattus_norvegicus_variation_71_5";
-our $RATTUS_NORVEGICUS_FUNCTIONAL = "rattus_norvegicus_funcgen_71_5";
-our $PAN_TROGLODYTES_CORE = "pan_troglodytes_core_71_214";
-our $PAN_TROGLODYTES_VARIATION = "pan_troglodytes_variation_71_214";
-our $GORILLA_GORILLA_CORE = "gorilla_gorilla_core_71_31";
-our $PONGO_ABELII_CORE = "pongo_abelii_core_71_1";
-our $MACACA_MULATTA_CORE = "macaca_mulatta_core_71_10";
-our $SUS_SCROFA_CORE = "sus_scrofa_core_71_102";
-our $SUS_SCROFA_VARIATION = "sus_scrofa_variation_71_102";
-our $CANIS_FAMILIARIS_CORE = "canis_familiaris_core_71_31";
-our $CANIS_FAMILIARIS_VARIATION = "canis_familiaris_variation_71_31";
-our $EQUUS_CABALLUS_CORE = "equus_caballus_core_71_2";
-our $ORYCTOLAGUS_CUNICULUS_CORE = "oryctolagus_cuniculus_core_71_3";
-our $GALLUS_GALLUS_CORE = "gallus_gallus_core_71_4";
-our $BOS_TAURUS_CORE = "bos_taurus_core_71_31";
-our $FELIS_CATUS_CORE = "felis_catus_core_71_62";
-our $DANIO_RERIO_CORE = "danio_rerio_core_71_9";
-our $DANIO_RERIO_VARIATION = "danio_rerio_variation_71_9";
-our $CIONA_INTESTINALIS_CORE = "ciona_intestinalis_core_71_3";
+our $HOMO_SAPIENS_CORE = "homo_sapiens_core_74_37";
+our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_74_37";
+our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_74_37";
+our $MUS_MUSCULUS_CORE = "mus_musculus_core_74_38";
+our $MUS_MUSCULUS_VARIATION = "mus_musculus_variation_74_38";
+our $MUS_MUSCULUS_FUNCTIONAL = "mus_musculus_funcgen_74_38";
+our $RATTUS_NORVEGICUS_CORE = "rattus_norvegicus_core_74_5";
+our $RATTUS_NORVEGICUS_VARIATION = "rattus_norvegicus_variation_74_5";
+our $RATTUS_NORVEGICUS_FUNCTIONAL = "rattus_norvegicus_funcgen_74_5";
+our $PAN_TROGLODYTES_CORE = "pan_troglodytes_core_74_214";
+our $PAN_TROGLODYTES_VARIATION = "pan_troglodytes_variation_74_214";
+our $GORILLA_GORILLA_CORE = "gorilla_gorilla_core_74_31";
+our $PONGO_ABELII_CORE = "pongo_abelii_core_74_1";
+our $MACACA_MULATTA_CORE = "macaca_mulatta_core_74_10";
+our $SUS_SCROFA_CORE = "sus_scrofa_core_74_102";
+our $SUS_SCROFA_VARIATION = "sus_scrofa_variation_74_102";
+our $CANIS_FAMILIARIS_CORE = "canis_familiaris_core_74_31";
+our $CANIS_FAMILIARIS_VARIATION = "canis_familiaris_variation_74_31";
+our $EQUUS_CABALLUS_CORE = "equus_caballus_core_74_2";
+our $ORYCTOLAGUS_CUNICULUS_CORE = "oryctolagus_cuniculus_core_74_3";
+our $GALLUS_GALLUS_CORE = "gallus_gallus_core_74_4";
+our $BOS_TAURUS_CORE = "bos_taurus_core_74_31";
+our $FELIS_CATUS_CORE = "felis_catus_core_74_62";
+our $DANIO_RERIO_CORE = "danio_rerio_core_74_9";
+our $DANIO_RERIO_VARIATION = "danio_rerio_variation_74_9";
+our $CIONA_INTESTINALIS_CORE = "ciona_intestinalis_core_74_3";
 
 ## Metazoa
-our $DROSOPHILA_MELANOGASTER_CORE = "drosophila_melanogaster_core_71_546";
-our $DROSOPHILA_MELANOGASTER_VARIATION = "drosophila_melanogaster_variation_71_546";
-our $DROSOPHILA_MELANOGASTER_FUNCTIONAL = "drosophila_melanogaster_funcgen_71_546";
-our $DROSOPHILA_SIMULANS_CORE = "drosophila_simulans_core_18_71_14";
-our $DROSOPHILA_YAKUBA_CORE = "drosophila_yakuba_core_18_71_13";
-our $ANOPHELES_GAMBIAE_CORE = "anopheles_gambiae_core_18_71_3";
-our $ANOPHELES_GAMBIAE_VARIATION = "anopheles_gambiae_variation_18_71_3";
-our $CAENORHABDITIS_ELEGANS_CORE = "caenorhabditis_elegans_core_71_235";
+our $DROSOPHILA_MELANOGASTER_CORE = "drosophila_melanogaster_core_74_546";
+our $DROSOPHILA_MELANOGASTER_VARIATION = "drosophila_melanogaster_variation_74_546";
+our $DROSOPHILA_MELANOGASTER_FUNCTIONAL = "drosophila_melanogaster_funcgen_74_546";
+our $DROSOPHILA_SIMULANS_CORE = "drosophila_simulans_core_18_74_14";
+our $DROSOPHILA_YAKUBA_CORE = "drosophila_yakuba_core_18_74_13";
+our $ANOPHELES_GAMBIAE_CORE = "anopheles_gambiae_core_18_74_3";
+our $ANOPHELES_GAMBIAE_VARIATION = "anopheles_gambiae_variation_18_74_3";
+our $CAENORHABDITIS_ELEGANS_CORE = "caenorhabditis_elegans_core_74_235";
 
 ## Fungi
-our $SACCHAROMYCES_CEREVISIAE_CORE = "saccharomyces_cerevisiae_core_71_4";
-our $SACCHAROMYCES_CEREVISIAE_VARIATION = "saccharomyces_cerevisiae_variation_71_4";
-our $SCHIZOSACCHAROMYCES_POMBE_CORE = "schizosaccharomyces_pombe_core_18_71_2";
-our $ASPERGILLUS_FUMIGATUS_CORE = "aspergillus_fumigatus_core_18_71_2";
-our $ASPERGILLUS_NIGER_CORE = "aspergillus_niger_core_18_71_1";
-our $ASPERGILLUS_NIDULANS_CORE = "aspergillus_nidulans_core_18_71_6";
-our $ASPERGILLUS_ORYZAE_CORE = "aspergillus_oryzae_core_18_71_2";
+our $SACCHAROMYCES_CEREVISIAE_CORE = "saccharomyces_cerevisiae_core_74_4";
+our $SACCHAROMYCES_CEREVISIAE_VARIATION = "saccharomyces_cerevisiae_variation_74_4";
+our $SCHIZOSACCHAROMYCES_POMBE_CORE = "schizosaccharomyces_pombe_core_18_74_2";
+our $ASPERGILLUS_FUMIGATUS_CORE = "aspergillus_fumigatus_core_18_74_2";
+our $ASPERGILLUS_NIGER_CORE = "aspergillus_niger_core_18_74_1";
+our $ASPERGILLUS_NIDULANS_CORE = "aspergillus_nidulans_core_18_74_6";
+our $ASPERGILLUS_ORYZAE_CORE = "aspergillus_oryzae_core_18_74_2";
 
 ## Protist
-our $PLASMODIUM_FALCIPARUM_CORE = "plasmodium_falciparum_core_18_71_3";
-our $PLASMODIUM_FALCIPARUM_VARIATION = "plasmodium_falciparum_variation_18_71_3";
-our $LEISHMANIA_MAJOR_CORE = "leishmania_major_core_18_71_2";
+our $PLASMODIUM_FALCIPARUM_CORE = "plasmodium_falciparum_core_18_74_3";
+our $PLASMODIUM_FALCIPARUM_VARIATION = "plasmodium_falciparum_variation_18_74_3";
+our $LEISHMANIA_MAJOR_CORE = "leishmania_major_core_18_74_2";
 
 ## Plants
-our $ARABIDOPSIS_THALIANA_CORE = "arabidopsis_thaliana_core_18_71_10";
-our $ARABIDOPSIS_LYRATA_CORE = "arabidopsis_lyrata_core_18_71_10";
-our $BRACHYPODIUM_DISTACHYON_CORE = "brachypodium_distachyon_core_18_71_12";
-our $ORYZA_SATIVA_CORE = "oryza_sativa_core_18_71_6";
-our $GLYCINE_MAX_CORE = "glycine_max_core_18_71_1";
-our $VITIS_VINIFERA_CORE = "vitis_vinifera_core_18_71_3";
-our $ZEA_MAYS_CORE = "zea_mays_core_18_71_6";
+our $ARABIDOPSIS_THALIANA_CORE = "arabidopsis_thaliana_core_18_74_10";
+our $ARABIDOPSIS_LYRATA_CORE = "arabidopsis_lyrata_core_18_74_10";
+our $BRACHYPODIUM_DISTACHYON_CORE = "brachypodium_distachyon_core_18_74_12";
+our $ORYZA_SATIVA_CORE = "oryza_sativa_core_18_74_6";
+our $GLYCINE_MAX_CORE = "glycine_max_core_18_74_1";
+our $VITIS_VINIFERA_CORE = "vitis_vinifera_core_18_74_3";
+our $ZEA_MAYS_CORE = "zea_mays_core_18_74_6";
 
 
 our $CAVIA_PORCELLUS_CORE = "cavia_porcellus_core_56_3a";

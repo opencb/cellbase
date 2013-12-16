@@ -176,9 +176,10 @@ public class VariantWSServer extends GenericRestWSServer {
                 positionList.add(new Position(gv.getChromosome(), gv.getPosition()));
             }
             long t0 = System.currentTimeMillis();
-            List<List<MutationPhenotypeAnnotation>> mutationPhenotypeAnnotList = mutationDBAdaptor.getAllMutationPhenotypeAnnotationByPositionList(positionList);
+            List<QueryResult> queryResults = mutationDBAdaptor.getAllByPositionList(positionList, queryOptions);
             logger.debug("getMutationPhenotypesByPosition: " + (System.currentTimeMillis() - t0) + "ms");
-            return generateResponse(variants, "MUTATION", mutationPhenotypeAnnotList);
+//            return generateResponse(variants, "MUTATION", mutationPhenotypeAnnotList);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getMutationPhenotypesByPositionByGet", e.toString());

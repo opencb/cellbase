@@ -96,6 +96,17 @@ public class MongoDBAdaptor extends DBAdaptor {
     //		return session;
     //	}
 
+    protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {
+        if (options != null && !options.getBoolean(returnField, true)) {
+            if (options.get("include") != null) {
+//                options.put("include", options.get("include") + "," + returnField);
+                options.getList("include").add(returnField);
+            } else {
+                options.put("include", Arrays.asList(returnField));
+            }
+        }
+        return options;
+    }
 
     protected QueryOptions addExcludeReturnFields(String returnField, QueryOptions options) {
         if (options != null && !options.getBoolean(returnField, true)) {
@@ -111,20 +122,27 @@ public class MongoDBAdaptor extends DBAdaptor {
     protected BasicDBObject getReturnFields(QueryOptions options) {
         // Select which fields are excluded and included in MongoDB query
         BasicDBObject returnFields = new BasicDBObject("_id", 0);
-        // Read and process 'exclude' field from 'options' object
-        if (options != null && options.get("include") != null && !options.getString("include").equals("")) {
-            String[] includedOptionFields = options.getString("include").split(",");
-            if (includedOptionFields != null && includedOptionFields.length > 0) {
-                for (String field : includedOptionFields) {
-                    returnFields.put(field, 1);
+        if(options != null) {
+//            List<Object> includeList = options.getList("include");
+
+            // Read and process 'exclude' field from 'options' object
+//        if (options != null && options.get("include") != null && !options.getString("include").equals("")) {
+            if (options != null && options.getList("include") != null && options.getList("include").size() > 0) {
+//            String[] includedOptionFields = options.getString("include").split(",");
+//            if (includedOptionFields != null && includedOptionFields.length > 0) {
+//            if (options.getList("include") != null && options.getList("include").size() > 0) {
+                for (Object field : options.getList("include")) {
+//                    returnFields.put(field, 1);
+                    returnFields.put(field.toString(), 1);
                 }
-            }
-        } else {
-            if (options != null && options.get("exclude") != null && !options.getString("exclude").equals("")) {
-                String[] excludedOptionFields = options.getString("exclude").split(",");
-                if (excludedOptionFields != null && excludedOptionFields.length > 0) {
-                    for (String field : excludedOptionFields) {
-                        returnFields.put(field, 0);
+            } else {
+//                List<Object> excludeList = options.getList("exclude");
+//                if (options != null && options.get("exclude") != null && !options.getString("exclude").equals("")) {
+                if (options != null && options.getList("exclude") != null && options.getList("exclude").size() > 0) {
+//                    String[] excludedOptionFields = options.getString("exclude").split(",");
+//                    if (excludedOptionFields != null && excludedOptionFields.length > 0) {
+                    for (Object field : options.getList("exclude")) {
+                        returnFields.put(field.toString(), 0);
                     }
                 }
             }
@@ -166,6 +184,17 @@ public class MongoDBAdaptor extends DBAdaptor {
         return list;
     }
 
+    protected QueryResult executeDistinct(Object id, String key) {
+        QueryResult queryResult = new QueryResult();
+        long dbTimeStart = System.currentTimeMillis();
+        List<String> diseases = mongoDBCollection.distinct(key);
+        long dbTimeEnd = System.currentTimeMillis();
+        queryResult.setId(id.toString());
+        queryResult.setDBTime(dbTimeEnd - dbTimeStart);
+        queryResult.setResult(diseases);
+
+        return queryResult;
+    }
 
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
         return executeQuery(id, query, options, mongoDBCollection);
@@ -255,7 +284,7 @@ public class MongoDBAdaptor extends DBAdaptor {
         for (int i = 0; i < operationsList.size(); i++) {
             DBObject[] operations = operationsList.get(i);
 
-            // Mongo aggregate method signature is :public AggregationOutput aggregate( DBObject firstOp, DBObject ... additionalOps)
+            // MongoDB aggregate method signature is: public AggregationOutput aggregate( DBObject firstOp, DBObject ... additionalOps)
             // so the operations array must be decomposed, TODO check operations length
             DBObject firstOperation = operations[0];
             DBObject[] additionalOperations = Arrays.copyOfRange(operations, 1, operations.length);

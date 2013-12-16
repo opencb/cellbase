@@ -8,6 +8,7 @@ import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.MirnaDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
+import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
@@ -206,8 +207,10 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
-            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor.getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
-            return generateResponse(query, "MUTATION", geneList);
+//            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor.getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
+            List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
+//            return generateResponse(query, "MUTATION", queryResults);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getMutationByGene", e.toString());
@@ -278,7 +281,20 @@ public class GeneWSServer extends GenericRestWSServer {
             return generateResponse(query, xRefsDBAdaptor.getAllByDBName(Splitter.on(",").splitToList(query), "reactome"));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getReactomeByEnsemblId", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{geneId}/protein")
+    public Response getPPIByEnsemblId(@PathParam("geneId") String query) {
+        try {
+            checkVersionAndSpecies();
+            ProteinProteinInteractionDBAdaptor PPIDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.version);
+            return createOkResponse(PPIDBAdaptor.getAllByInteractorIdList(Splitter.on(",").splitToList(query), queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getPPIByEnsemblId", e.toString());
         }
     }
 

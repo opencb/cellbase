@@ -171,50 +171,6 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public List<String> getAllIds() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Map<String, Object> getInfo(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public List<Map<String, Object>> getInfoByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Map<String, Object> getFullInfo(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public List<Map<String, Object>> getFullInfoByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Region getRegionById(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public List<Region> getAllRegionsByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public String getSequenceById(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public List<String> getAllSequencesByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     private static int getChunkId(int position, int chunksize) {
         if (chunksize <= 0) {

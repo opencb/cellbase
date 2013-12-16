@@ -113,7 +113,7 @@ public class VariationParser_old {
 
 								break;
 							case "validation_states":
-								variation[i].setValidationStates(aux[1]);
+								variation[i].setValidationStatus(aux[1]);
 								break;
 							default:
 								break;

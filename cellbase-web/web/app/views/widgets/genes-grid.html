@@ -1,4 +1,7 @@
-<div class="panel panel-info">
+<div class="panel panel-primary" >
+    <div class="panel-heading " style="text-align:center">Genes information
+        <button type="button" class="btn btn-primary btn-xs" ng-Click="showGenesTable = false" style="float:right">x</button>
+    </div>
     <div class="panel-body">
 
 
@@ -11,12 +14,14 @@
             <!--<th>Description</th>-->
             </thead>
 
-            <tbody ng-repeat="gene in genesAndTranscriptsData">
+            <!--<tbody ng-repeat="gene in genesAndTranscriptsData">-->
+            <tbody ng-repeat="gene in paginationDataGeneTable">
             <!--<tbody ng-repeat="gene in genesData">-->
             <td><a><small>{{gene.name}} ( {{gene.id}} )</small></a></td>
             <td>
                 <small>{{gene.biotype}}</small>
             </td>
+
             <td>
                 <small>{{gene.chromosome}} : {{gene.start}} - {{gene.end}}</small>
             </td>
@@ -25,5 +30,16 @@
             <!--</td>-->
             </tbody>
         </table>
+
+        <div ng-show="showPaginationGenesTables" class="btn-group btn-group-ms" style="margin-top: 10px; margin-bottom: 10px; margin-left:4px; margin-rigth:4px">
+            <button ng-show="firstPagesGenesTable" type="button" class="btn btn-default btn-ms" ng-click="goToFirstPageGenesTable()"style="color:#006ffb"><<</button>
+            <button ng-show="previousPageGenesTable" type="button" class="btn btn-default btn-ms" ng-click="goPreviousPageGenesTable()"style="color:#006ffb"><</button>
+            <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableFirstNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[0])" style="color:#006ffb">{{paginationNumbersGenesTables[0]}}</button>
+            <button type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableSecondNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[1])" style="color:#006ffb">{{paginationNumbersGenesTables[1]}}</button>
+            <button ng-show="thirdNumberGenesTable" type="button" class="btn btn-default btn-ms" ng-class="{'disabled': disableThirdNumberGeneTable}"ng-click="goToNumberPageGenesTable(paginationNumbersGenesTables[2])" style="color:#006ffb">{{paginationNumbersGenesTables[2]}}</button>
+            <button ng-show="nextPageGenesTable" type="button" class="btn btn-default btn-ms" ng-click="goNextPageGenesTable()"style="color:#006ffb">></button>
+            <button ng-show="lastPagesGenesTable" type="button" class="btn btn-default btn-ms" ng-click="goToLastPageGenesTable()"style="color:#006ffb">>></button>
+        </div>
+
     </div>
 </div>

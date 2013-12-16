@@ -1,0 +1,20 @@
+
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorA.id': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorA.dbName': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorA.xrefs.id': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorA.xrefs.dbName': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorB.id': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorB.dbName': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorB.xrefs.id': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'interactorB.xrefs.dbName': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'type.psimi': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'type.name': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'detectionMethod.psimi': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'detectionMethod.name': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'status': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'xrefs.id': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'xrefs.dbName': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'source.psimi': 1})
+db.getCollection('protein_protein_interaction').ensureIndex({'source.name': 1})
+
+

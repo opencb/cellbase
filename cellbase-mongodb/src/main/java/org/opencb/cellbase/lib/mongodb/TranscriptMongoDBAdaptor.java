@@ -1,8 +1,6 @@
 package org.opencb.cellbase.lib.mongodb;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBObject;
+import com.mongodb.*;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.Transcript;
@@ -10,10 +8,7 @@ import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor {
 
@@ -26,6 +21,39 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         mongoDBCollection = db.getCollection("core");
     }
 
+    @Override
+    public QueryResult getAll(QueryOptions options) {
+        QueryBuilder builder = new QueryBuilder();
+
+        DBObject[] commands = new DBObject[2];
+        DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
+        commands[0] = unwind;
+
+        List<Object> biotypes = options.getList("biotypes", null);
+        if (biotypes != null && biotypes.size() > 0) {
+
+//            DBObject match = new BasicDBObject("$match", new BasicDBObject("chunkIds", id));
+//            builder = builder.and("biotype").in(biotypeIds);
+
+//            commands[0] = match;
+            commands[1] = unwind;
+        }else {
+            commands[0] = unwind;
+        }
+
+        //		options = addExcludeReturnFields("transcripts", options);
+        return executeAggregation("result", commands, options);
+    }
+
+    @Override
+    public QueryResult next(String id, QueryOptions options) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
     @Override
     public QueryResult getAllById(String id, QueryOptions options) {
@@ -53,41 +81,81 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     @Override
     public QueryResult getAllByPosition(String chromosome, int position,
                                         QueryOptions options) {
-        // TODO Auto-generated method stub
-        return null;
+        return getAllByRegion(new Region(chromosome, position, position), options);
     }
 
     @Override
     public QueryResult getAllByPosition(Position position,
                                         QueryOptions options) {
-        // TODO Auto-generated method stub
-        return null;
+        return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
     }
 
     @Override
     public List<QueryResult> getAllByPositionList(List<Position> positionList,
                                                   QueryOptions options) {
-        // TODO Auto-generated method stub
-        return null;
+        List<Region> regions = new ArrayList<>();
+        for (Position position : positionList) {
+            regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
+        }
+        return getAllByRegionList(regions, options);
     }
 
     @Override
     public QueryResult getAllByRegion(String chromosome, int start, int end,
                                       QueryOptions options) {
-        // TODO Auto-generated method stub
-        return null;
+        return getAllByRegion(new Region(chromosome, start, end), options);
     }
 
     @Override
     public QueryResult getAllByRegion(Region region, QueryOptions options) {
-        // TODO Auto-generated method stub
-        return null;
+        return getAllByRegionList(Arrays.asList(region), options).get(0);
     }
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions,
                                                 QueryOptions options) {
-        // TODO Auto-generated method stub
+
+
+        List<DBObject[]> commandsList = new ArrayList<>(regions.size());
+        for(Region region: regions) {
+            DBObject geneMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.chromosome", region.getChromosome()));
+            DBObject regionMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.start", region.getStart()));
+            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
+            // biotype in, pero en aggregation
+
+        }
+
+//        List<DBObject> queries = new ArrayList<>();
+//
+//        List<Object> biotypes = options.getList("biotype", null);
+//        BasicDBList biotypeIds = new BasicDBList();
+//        if (biotypes != null && biotypes.size() > 0) {
+//            biotypeIds.addAll(biotypes);
+//        }
+//
+//        List<String> ids = new ArrayList<>(regions.size());
+//        for (Region region : regions) {
+//
+//            QueryBuilder builder = null;
+//            // If regions is 1 position then query can be optimize using chunks
+//            if (region.getStart() == region.getEnd()) {
+//                builder = QueryBuilder.start("chunkIds").is(region.getChromosome() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CHUNK_SIZE", "4000")))).and("end")
+//                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+//            } else {
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+//            }
+//
+//            if (biotypeIds.size() > 0) {
+//                System.out.println("regions = [" + regions + "], options = [" + options + "]");
+//                builder = builder.and("biotype").in(biotypeIds);
+//            }
+//            queries.add(builder.get());
+//            ids.add(region.toString());
+//        }
+//
+//        options = addExcludeReturnFields("transcripts", options);
+//        return executeQueryList(ids, queries, options);
         return null;
     }
 
@@ -200,73 +268,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         return null;
     }
 
-    @Override
-    public QueryResult getAll(QueryOptions options) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
-    @Override
-    public QueryResult next(String id, QueryOptions options) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public QueryResult next(String chromosome, int position, QueryOptions options) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public List<String> getAllIds() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> getInfo(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Map<String, Object>> getInfoByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> getFullInfo(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Map<String, Object>> getFullInfoByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Region getRegionById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Region> getAllRegionsByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getSequenceById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<String> getAllSequencesByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
 }

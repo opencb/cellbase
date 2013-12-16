@@ -1,6 +1,8 @@
 package org.opencb.cellbase.core.lib;
 
 import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
+import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
@@ -181,9 +183,14 @@ public abstract class DBAdaptorFactory {
 	public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species, String version);
 
 
-    public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species);
+    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
 
-    public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species, String version);
+    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String version);
+
+
+//    public abstract RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species);
+//
+//    public abstract RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species, String version);
 
 
     public abstract VariationDBAdaptor getVariationDBAdaptor(String species);
@@ -194,4 +201,9 @@ public abstract class DBAdaptorFactory {
     public abstract ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species);
 
     public abstract ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species, String version);
+
+
+    public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species);
+
+    public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species, String version);
 }

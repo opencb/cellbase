@@ -74,7 +74,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
-        if (options.getString("strand") == null || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
+        if (options.getString("strand") == null || options.getString("strand").equals("") || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
             // db.core.find({chromosome: "1", start: {$gt: 1000000}}).sort({start: 1}).limit(1)
             QueryBuilder builder = QueryBuilder.start("chromosome").is(chromosome).and("start").greaterThanEquals(position);
             // options.put("sortAsc", "start");
@@ -198,7 +198,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
-        return getAllByRegion(chromosome, position, position, options);
+        return getAllByRegion(new Region(chromosome, position, position), options);
     }
 
     @Override
@@ -243,7 +243,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             QueryBuilder builder = null;
             // If regions is 1 position then query can be optimize using chunks
             if (region.getStart() == region.getEnd()) {
-                builder = QueryBuilder.start("chunkIds").is(region.getChromosome() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CHUNK_SIZE", "4000")))).and("end")
+                builder = QueryBuilder.start("chunkIds").is(region.getChromosome() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CORE_CHUNK_SIZE", "5000")))).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             } else {
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
@@ -462,67 +462,4 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //        }
 //        return queryResult;
 //    }
-
-
-    //	@Override
-    //	public QueryResult getAll() {
-    //		BasicDBObject query = new BasicDBObject();
-    //		//		return executeQuery("result", query, Arrays.asList("_id"), null);
-    //		return null;
-    //	}
-
-    @Override
-    public List<String> getAllIds() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> getInfo(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Map<String, Object>> getInfoByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> getFullInfo(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Map<String, Object>> getFullInfoByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Region getRegionById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Region> getAllRegionsByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getSequenceById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<String> getAllSequencesByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

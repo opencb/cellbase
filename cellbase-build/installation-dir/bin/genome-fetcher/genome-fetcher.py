@@ -136,16 +136,18 @@ for sp in species:
             os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select tr.stable_id, x.display_label, edb.db_name, edb.db_display_name from translation t, transcript tr, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.master_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Translation' and ox.ensembl_id=t.translation_id and t.transcript_id=tr.transcript_id\" >> " + gene_folder+"/xrefs_dup.txt")
             os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select tr.stable_id, x.display_label, edb.db_name, edb.db_display_name from translation t, transcript tr, object_xref ox, dependent_xref dx, xref x, external_db edb    where ox.object_xref_id=dx.object_xref_id and dx.dependent_xref_id=x.xref_id and x.external_db_id=edb.external_db_id and ox.ensembl_object_type='Translation' and ox.ensembl_id=t.translation_id and t.transcript_id=tr.transcript_id\" >> " + gene_folder+"/xrefs.txt")
             # Ensembl gene and transcript ID
-            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, g.stable_id from transcript t, gene g where t.gene_id=g.gene_id\" >> " + gene_folder+"/xrefs_dup.txt")
-            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, t.stable_id from transcript t\" >> " + gene_folder+"/xrefs_dup.txt")
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, g.stable_id, 'ensembl_gene', 'Ensembl Gene' from transcript t, gene g where t.gene_id=g.gene_id\" >> " + gene_folder+"/xrefs_dup.txt")
+            os.system("mysql -u anonymous -h " + sp_obj['databaseHost'] + " -P " +sp_obj['databasePort']+ " --skip-column-names " + sp_obj['database'] + " -e \"select t.stable_id, t.stable_id, 'ensembl_transcript', 'Ensembl Transcript' from transcript t\" >> " + gene_folder+"/xrefs_dup.txt")
             # Remove duplicates
             os.system("sort " + gene_folder+"/xrefs_dup.txt | uniq > " + gene_folder+"/xrefs.txt")
             os.system("rm " + gene_folder+"/xrefs_dup.txt")
 
+
+    ## Download VARIATION data
     if args.variation is not None and args.variation == '1':
         if not os.path.exists(variation_folder):
             os.makedirs(variation_folder)
-        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz', 'attrib.txt.gz', 'seq_region.txt.gz', 'structural_variation_feature.txt.gz', 'study.txt.gz', 'phenotype.txt.gz', 'phenotype_feature.txt.gz', 'motif_feature_variation.txt.gz']
+        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz', 'attrib.txt.gz', 'attrib_type.txt.gz', 'seq_region.txt.gz', 'structural_variation_feature.txt.gz', 'study.txt.gz', 'phenotype.txt.gz', 'phenotype_feature.txt.gz', 'phenotype_feature_attrib.txt.gz', 'motif_feature_variation.txt.gz']
         ## preparing URL for download
         if 'variation_url' in sp_obj and sp_obj['variation_url'] != '':
             variation_url = sp_obj['variation_url']

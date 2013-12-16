@@ -1,11 +1,13 @@
 package org.opencb.cellbase.build.transform;
 
-
 import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
 import org.opencb.cellbase.core.common.core.*;
 import org.opencb.commons.bioformats.commons.exception.FileFormatException;
 import org.opencb.commons.bioformats.feature.gtf.Gtf;
 import org.opencb.commons.bioformats.feature.gtf.io.GtfReader;
+import org.opencb.commons.utils.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -17,16 +19,15 @@ import java.util.zip.GZIPInputStream;
 
 public class GeneParser {
 
-	// List<Gene> genes;
 //	private Map<String, Integer> geneDict;
 	private Map<String, Integer> transcriptDict;
 	private Map<String, Exon> exonDict;
 
 	private static final int CHUNK_SIZE = 5000;
 
-//    private ObjectMapper gson = new ObjectMapper();
     private CellbaseSerializer serializer;
 
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public GeneParser(CellbaseSerializer serializer) {
         this.serializer = serializer;
@@ -51,7 +52,6 @@ public class GeneParser {
 		String chromSequence = "";
 		String exonSequence = "";
 		
-//		Gene gene = null;
 		GeneMongoDB gene = null;
 		Transcript transcript;
 		Exon exon = null;
@@ -73,15 +73,17 @@ public class GeneParser {
 			List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
 			for (String line : lines) {
 				fields = line.split("\t", -1);
-				if (!xrefMap.containsKey(fields[0])) {
-					xrefMap.put(fields[0], new ArrayList<Xref>());
-				}
-				xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3], fields[4]));
+                if(fields.length >= 4) {
+                    if (!xrefMap.containsKey(fields[0])) {
+                        xrefMap.put(fields[0], new ArrayList<Xref>());
+                    }
+                    xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3]));
+                }
 			}
 		}
 
 		Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
-		if(tfbsFile != null && Files.exists(tfbsFile)) {
+        if(tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
 			List<String> lines = Files.readAllLines(tfbsFile, Charset.defaultCharset());
 			for (String line : lines) {
 				fields = line.split("\t", -1);
@@ -94,39 +96,32 @@ public class GeneParser {
 		
 		// Loading MiRNAGene file
 		Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
-		if(mirnaFile != null && Files.exists(mirnaFile)) {
+		if(mirnaFile != null && Files.exists(mirnaFile) && !Files.isDirectory(mirnaFile)) {
 			mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
 		}
 		
-//		TextFileWriter tfw = new TextFileWriter(outJsonFile.getAbsolutePath());
-
 		// BasicBSONList list = new BasicBSONList();
         String chunkIdSuffix = CHUNK_SIZE/1000+"k";
 		int cont = 0;
-//		Gson gson = new GsonBuilder().create(); // .setPrettyPrinting()
 		GtfReader gtfReader = new GtfReader(gtfFile);
 		Gtf gtf;
 		boolean first = false;
 		while ((gtf = gtfReader.read()) != null) {
 			geneId = gtf.getAttributes().get("gene_id");
 			transcriptId = gtf.getAttributes().get("transcript_id");
-
-			/*
-			 * If chromosome is changed (or it's the first chromosome
-<<<<<<< HEAD
+            /*
+			 * If chromosome is changed (or it's the first chromosome)
 			 * we load the new chromosome sequence.
-=======
-			 * we load the chromosome sequence.
->>>>>>> b39626b1ae6fee8b3f382eeaf0cb28270bb97cf0
 			 */
 			if(!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
 				currentChromosome = gtf.getSequenceName();
-//				chromSequence = getSequenceByChromosome(chromosome, genomeSequenceFile.toPath());
-				chromSequence = getSequenceByChromosomeName(currentChromosome, genomeSequenceDir);
+				chromSequence = getSequenceByChromosome(currentChromosome, genomeSequenceDir);
+//				chromSequence = getSequenceByChromosomeName(currentChromosome, genomeSequenceDir);
 			}
 			
-			// Check if gene exist in Map
-			if (!geneId.equals(gene.getId())) { // gene == null || !geneDict.containsKey(geneId)
+			// Gene object can only be null the first time
+            // If new geneId is different from the current then we must serialize before load new gene
+			if (gene == null || !geneId.equals(gene.getId())) {
                 // gene object can only be null the first time
 				if (gene != null) { // genes.size()>0
 //					if (first) {
@@ -420,7 +415,7 @@ public class GeneParser {
 	}
 	
 	public String getSequenceByChromosome(String chrom, Path genomeSequenceFile) throws IOException {
-		BufferedReader br = Files.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
+		BufferedReader br = FileUtils.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
 		StringBuilder sb = new StringBuilder(100000);
 		String line = "";
 		boolean found = false;
@@ -461,9 +456,9 @@ public class GeneParser {
 			// Second, read the miRNA matures, field #6
 			mirnaMatures = fields[6].split(",");
 			for(String s: mirnaMatures) {
-				System.out.println(s);
+//				System.out.println(s);
 				mirnaMaturesFields = s.split("\\|");
-				System.out.println("\t"+Arrays.toString(mirnaMaturesFields));
+//				System.out.println("\t"+Arrays.toString(mirnaMaturesFields));
 				// Save directly into MiRNAGene object.
 				miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2]);	
 			}

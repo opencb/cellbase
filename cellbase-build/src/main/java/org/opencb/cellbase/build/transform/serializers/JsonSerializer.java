@@ -3,11 +3,14 @@ package org.opencb.cellbase.build.transform.serializers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
+import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,6 +29,7 @@ import java.util.Map;
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class JsonSerializer implements CellbaseSerializer {
 
     private File file;
@@ -79,6 +83,11 @@ public class JsonSerializer implements CellbaseSerializer {
     }
 
     @Override
+    public void serialize(Interaction interaction) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
     public void serialize(Gene gene) {
         try {
             if(bufferedWriterMap.get("gene") == null) {
@@ -94,12 +103,17 @@ public class JsonSerializer implements CellbaseSerializer {
     }
 
     @Override
+    public void serialize(Entry gene) {
+
+    }
+
+    @Override
     public void serialize(Variation variation) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void serialize(GenericFeatureChunk genericFeatureChunk) {
+    public void serialize(GenericFeature genericFeatureChunk) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

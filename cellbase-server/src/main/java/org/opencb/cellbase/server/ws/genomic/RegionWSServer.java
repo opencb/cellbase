@@ -5,7 +5,6 @@ import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.CpGIsland;
 import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
-import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.common.variation.StructuralVariation;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
@@ -14,15 +13,14 @@ import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Path("/{version}/{species}/genomic/region")
@@ -207,12 +205,16 @@ public class RegionWSServer extends GenericRestWSServer {
 			List<Region> regions = Region.parseRegions(query);
 
 			if (hasHistogramQueryParam()) {
-				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
-						regions.get(0), getHistogramIntervalSize());
-				return generateResponse(query, intervalList);
+//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
+//						regions.get(0), getHistogramIntervalSize());
+                QueryResult queryResult = mutationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
+//				return generateResponse(query, intervalList);
+                return createOkResponse(queryResult);
 			} else {
-				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
-				return this.generateResponse(query, "MUTATION", mutationList);
+//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
+				List<QueryResult> queryResults = mutationDBAdaptor.getAllByRegionList(regions, queryOptions);
+//				return this.generateResponse(query, "MUTATION", mutationList);
+				return createOkResponse(queryResults);
 			}
 
 		} catch (Exception e) {
@@ -331,8 +333,7 @@ public class RegionWSServer extends GenericRestWSServer {
 			checkVersionAndSpecies();
 			List<Region> regions = Region.parseRegions(chregionId);
 
-			RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(
-					this.species, this.version);
+			RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.version);
 
 			return createOkResponse(regulatoryRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
 		} catch (Exception e) {
@@ -347,8 +348,7 @@ public class RegionWSServer extends GenericRestWSServer {
 			@DefaultValue("") @QueryParam("type") String type) {
 		try {
 			checkVersionAndSpecies();
-			RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(
-                    this.species, this.version);
+			RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.version);
 			/**
 			 * type ["open chromatin", "Polymerase", "HISTONE",
 			 * "Transcription Factor"]
@@ -370,7 +370,8 @@ public class RegionWSServer extends GenericRestWSServer {
 //				}
 //				return generateResponse(chregionId, "REGULATORY_REGION", results);
 //			}
-            return generateResponse(chregionId, regulationDBAdaptor.getByRegionList(regions, Arrays.asList(type.split(","))));
+//            return generateResponse(chregionId, regulatoryRegionDBAdaptor.getByRegionList(regions, Arrays.asList(type.split(","))));
+            return Response.ok().build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getRegulatoryByRegion", e.toString());
