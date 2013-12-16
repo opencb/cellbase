@@ -8,13 +8,9 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     $scope.showAll = false;
 
     $scope.showVariantPanel = false;
-    $scope.showMoreAndLessVariantData = "+";
-    $scope.variantPanelMore = false;
     $scope.variantPanelStatus = "-";
 
     $scope.showTranscriptVarPanel = false;
-    $scope.showMoreAndLessTranscriptVarData = "+";
-    $scope.transcriptVarPanelMore = false;
     $scope.transcriptVarPanelStatus = "-";
 
     $scope.showPagination = false;
@@ -402,27 +398,6 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     $scope.collapseAllVariantsTree = function () {
         for(var i in $scope.toggleTree){
             $scope.toggleTree[i] = false;
-        }
-    };
-
-    //show more info in variant panel
-    $scope.showMoreVariantData = function () {
-        $scope.variantPanelMore = !$scope.variantPanelMore;
-        if ($scope.showMoreAndLessVariantData == "+") {
-            $scope.showMoreAndLessVariantData = "-";
-        }
-        else {
-            $scope.showMoreAndLessVariantData = "+";
-        }
-    };
-    //show more info in transcript panel
-    $scope.showMoreTranscriptVarData = function () {
-        $scope.transcriptVarPanelMore = !$scope.transcriptVarPanelMore;
-        if ($scope.showMoreAndLessTranscriptVarData == "+") {
-            $scope.showMoreAndLessTranscriptVarData = "-";
-        }
-        else {
-            $scope.showMoreAndLessTranscriptVarData = "+";
         }
     };
     //show/hide variant panel information

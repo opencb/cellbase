@@ -126,7 +126,7 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         $(function () {
             $('#genesTabs a:first').tab('show')
         })
-        $('#myTab a').click(function (e) {
+        $('#genesTabs a').click(function (e) {
             e.preventDefault()
             $(this).tab('show')
         })

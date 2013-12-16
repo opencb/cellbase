@@ -12,13 +12,85 @@
 }
 
 .list-group {
-    margin-bottom: 7px;
+    margin-bottom: 4px;
     padding-left: 0;
 }
 /*-------------------------------*/
 
 .ocb-text-center {
     text-align:center;
+}
+.ocb-text-right {
+    text-align:right;
+}
+.ocb-text-width-400 {
+    display: inline-block;
+    width: 400px;
+}
+.ocb-text-width-300 {
+    display: inline-block;
+    width: 300px;
+}
+
+.ocb-text-width-80 {
+    display: inline-block;
+    width: 80px;
+}
+.ocb-text-width-70 {
+    display: inline-block;
+    width: 70px;
+}
+.ocb-text-width-60 {
+    display: inline-block;
+    width: 60px;
+}
+.ocb-text-width-50 {
+    display: inline-block;
+    width: 50px;
+}
+.ocb-text-width-85 {
+    display: inline-block;
+    width: 85px;
+}
+.ocb-text-width-180 {
+    display: inline-block;
+    width: 180px;
+}
+.ocb-text-width-165 {
+    display: inline-block;
+    width: 165px;
+}
+.ocb-text-width-160 {
+    display: inline-block;
+    width: 160px;
+}
+.ocb-text-width-150 {
+    display: inline-block;
+    width: 150px;
+}
+.ocb-text-width-135 {
+    display: inline-block;
+    width: 135px;
+}
+.ocb-text-width-130 {
+    display: inline-block;
+    width: 130px;
+}
+.ocb-text-width-200 {
+    display: inline-block;
+    width: 200px;
+}
+.ocb-text-width-100 {
+    display: inline-block;
+    width: 100px;
+}
+.ocb-text-width-300 {
+    display: inline-block;
+    width: 300px;
+}
+.ocb-text-width-350 {
+    display: inline-block;
+    width: 350px;
 }
 
 .ocb-border-b-darkgrey{
@@ -34,7 +106,8 @@
 }
 
 .ocb-select-panel-width{
-    width:220px;
+    width:250px;
+    /*width:220px;*/
 }
 
 .ocb-chrom-panel{
@@ -59,6 +132,10 @@
     margin-left:10px;
 }
 
+.ocb-font-size-13{
+    font-size:13px;
+}
+
 .ocb-background-color-lightgrey{
     background-color:lightgrey;
 }
@@ -81,10 +158,13 @@
 
 .ocb-result-tree{
     width:260px;
-    height: 636px;
+    height: 644px;
 }
 .ocb-result-width{
     width:1190px;
+}
+.ocb-bold{
+    font-weight: bold;
 }
 .ocb-all-data-button{
     font-weight: bold;
@@ -235,24 +315,42 @@
 .ocb-scroll{
     overflow-y:scroll;
     overflow-x:hidden;
-    height: 150px;
+    height: 120px;
     margin:10px
 }
+
+.ocb-scroll-transVar{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 198px;
+    margin:10px
+}
+.ocb-scroll-regulations{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height: 540px;
+    margin:10px
+}
+
+
+
+
+
+
 .ocb-scroll-tree{
     overflow-y:scroll;
     overflow-x:hidden;
-    height: 530px;
+    height: 540px;
     /*margin:10px*/
 }
-.ocb-line-height-6{
-    line-height: 0.6;
+.ocb-line-height-5{
+    line-height: 0.5;
 }
 .ocb-line-height-20{
     line-height: 2.0;
 }
 .ocb-gv{
     width:900px;
-    position:fixed;
 }
 
 .ocb-width_900{
@@ -260,7 +358,13 @@
 }
 
 .ocb-content-width{
-    width:1410px;
+    width:1440px;
+    /*width:1410px;*/
+}
+
+.ocb-options-bar-width{
+    width:1450px;
+    /*width:1420px;*/
 }
 
 

@@ -58,6 +58,12 @@
     <script src="js/directives/variantsDirectives/variantAndTranscriptsVarDirective.js"></script>
     <script src="js/directives/variantsDirectives/transcriptsVarDirective.js"></script>
 
+    <!---------------regulations directives------------->
+    <script src="js/directives/regulationsDirectives/regulationsSelectPanelDirective.js"></script>
+    <script src="js/directives/regulationsDirectives/regulationsResultPanelDirective.js"></script>
+    <!---------regulations widgets--------->
+    <script src="js/directives/regulationsDirectives/regulationsDirective.js"></script>
+
     <!--======================CONTROLLERS======================-->
     <script src="js/controllers/optionsBarController.js"></script>
     <!----------------genes controllers--------------->
@@ -67,6 +73,11 @@
     <!----------------variants controllers--------------->
     <script src="js/controllers/variantsSelectPanelController.js"></script>
     <script src="js/controllers/variantsResultPanelController.js"></script>
+
+    <!----------------regulation controllers--------------->
+    <script src="js/controllers/regulationSelectPanelController.js"></script>
+    <script src="js/controllers/regulationResultPanelController.js"></script>
+
 </head>
 <body>
 <div id="cellbase-web"  >
@@ -78,9 +89,10 @@
         <div options-bar></div>
     </div>
 
-    <ul class="nav nav-tabs ocb-border-b-darkgrey ocb-margin-five" id="myTab">
-        <li class="active"><a href="#genes">Genes</a></li>
-        <li><a href="#variants">Variants</a></li>
+    <ul class="nav nav-tabs ocb-border-b-darkgrey ocb-margin-l-r-five ocb-content-width" id="myTab">
+        <li class="active"><a href="#genes">Gen</a></li>
+        <li><a href="#variantion">Variantion</a></li>
+        <li><a href="#regulation">Regulation</a></li>
     </ul>
 
     <div class="tab-content ocb-margin-five ocb-inline-block ocb-content-width">
@@ -95,12 +107,21 @@
 
         </div>
 
-        <div class="tab-pane" id="variants">
+        <div class="tab-pane" id="variantion">
             <div class="pull-left ocb-select-panel-width" ng-controller="variantsSelect">
                 <div variants-select></div>
             </div>
             <div class="pull-left" ng-controller="variantsResult">
                 <div variants-result></div>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="regulation">
+            <div class="pull-left ocb-select-panel-width" ng-controller="regulationsSelect">
+                <div regulations-select></div>
+            </div>
+            <div class="pull-left" ng-controller="regulationsResult">
+                <div regulations-result></div>
             </div>
         </div>
 

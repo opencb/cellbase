@@ -60,7 +60,7 @@
 
         <ul class="nav nav-tabs" id="variantsResultTab">
             <li class="active"><a href="#variantsOverviewInfo">Overview Info</a></li>
-            <li><a href="#variantsGV" ng-click="changeResultTab()">Genome Viewer</a></li>
+            <li><a href="#variantsGV" ng-click="changeResultTab()">Genome Browser</a></li>
         </ul>
 
         <div class="tab-content">
@@ -81,9 +81,6 @@
                 </button>
             </a>
             <div class="ocb-panels-data-border" ng-show="!variantInfo">
-                <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
-                        ng-click="showMoreVariantData()">{{showMoreAndLessVariantData}}
-                </button>
                 <variants-and-transc-var variant="selectedVariant" variant-more-info="variantPanelMore" specie="selectedSpecie"
                                  on-click="showTanscriptVarFromTable"  tab-function="goToTab"></variants-and-transc-var>
             </div>
@@ -102,9 +99,6 @@
                 </button>
             </a>
             <div ng-show="!transcriptVarInfo" class="ocb-panels-data-border">
-                <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
-                        ng-click="showMoreTranscriptVarData()">{{showMoreAndLessTranscriptVarData}}
-                </button>
                 <transcripts-var info="selectedTranscriptVar" info-more="transcriptVarPanelMore" specie="selectedSpecie"
                              tab-function="goToTab"></transcripts-var>
             </div>
