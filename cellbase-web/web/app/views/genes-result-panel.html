@@ -1,58 +1,72 @@
 <div ng-show="showAll" class="ocb-inline-block ocb-result-width">
-    <div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree">
-        <div class="ocb-text-center">Number of results: <b>{{numResults}}</b></div>
-        <div class="ocb-text-center">
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllGenesTree()">
-                Expand All
-            </button>
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllGenesTree()">
-                Collapse all
-            </button>
+    <!--<div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree">-->
+
+    <div id="genesResultTree" class="pull-left ocb-result-tree panel panel-default ocb-margin-l-ten">
+        <div class="panel-heading">
+            <span style="margin-right: 10px">Results</span>
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllGenesTree()">Expand</span></button>
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllGenesTree()">Collapse</span></button>
+            <span class="badge pull-right">{{numResults}}</span>
         </div>
-        <!-------------- genes tree --------------->
-        <div class="ocb-scroll-tree">
+        <div class="panel-body">
+            <!-------------- genes tree --------------->
+            <div class="ocb-scroll-tree">
             <div ng-repeat="gene in paginationData">
-                <a ng-click="showSelectedGene(gene.id, $index);"
-                   class="list-group-item active ocb-margin-two ocb-tree-first-level">
-                    <small>{{gene.name}} ({{gene.id}})</small>
+
+                <!--<div class="list-group">-->
+                <div ng-click="showSelectedGene(gene.id, $index);" class="panel panel-default" style="margin:2px">
+                    <!--<a ng-click="showSelectedGene(gene.id, $index);" class="list-group-item active">-->
+                    <div class="panel-heading" style="font-size:13px">
+                        <span class="badge pull-right">{{gene.transcripts.length}}</span>
+                        <div style="font-weight: bold">{{gene.name}}</div>
+                        <div>{{gene.id}}</div>
+                    </div>
+
+                    <div class="panel-body" style="padding:0;font-size:11px">
+                        <div ng-show="toggleTree[$parent.$index]"
+                             ng-click="showSelectedTranscript(gene.id, transcriptId.name)"
+                             ng-repeat="transcriptId in gene.transcripts" class="ocb-tree-transcript">
+                            {{transcriptId.name}}
+                        </div>
+                    </div>
 
                     <!--with $parent.$index get the index of the div that is above -->
-                    <a ng-show="toggleTree[$parent.$index]"
-                       ng-click="showSelectedTranscript(gene.id, transcriptId.name)"
-                       ng-repeat="transcriptId in gene.transcripts" class="list-group-item ocb-margin-l-thirty"
-                            >{{transcriptId.name}}
-                    </a>
-                </a>
+
+                    <!--</a>-->
+                </div>
+
             </div>
-        </div>
-        <!----------------pagination----------------->
-        <div class="ocb-text-center">
-            <div ng-show="showPagination" class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
-                <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-click="goToFirstPage()"><<
-                </button>
-                <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-click="goPreviousPage()"><
-                </button>
-                <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-class="{'disabled': disableFirstNumber}"
-                        ng-click="goToNumberPage(paginationNumbers[0])">{{paginationNumbers[0]}}
-                </button>
-                <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-class="{'disabled': disableSecondNumber}"
-                        ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
-                </button>
-                <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
-                        >{{paginationNumbers[2]}}
-                </button>
-                <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-click="goNextPage()">>
-                </button>
-                <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
-                        ng-click="goToLastPage()">>>
-                </button>
             </div>
+            <!----------------pagination----------------->
+            <div class="ocb-text-center">
+                <div ng-show="showPagination" class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
+                    <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goToFirstPage()"><<
+                    </button>
+                    <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goPreviousPage()"><
+                    </button>
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-class="{'disabled': disableFirstNumber}"
+                            ng-click="goToNumberPage(paginationNumbers[0])">{{paginationNumbers[0]}}
+                    </button>
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-class="{'disabled': disableSecondNumber}"
+                            ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
+                    </button>
+                    <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
+                            >{{paginationNumbers[2]}}
+                    </button>
+                    <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goNextPage()">>
+                    </button>
+                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                            ng-click="goToLastPage()">>>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -60,16 +74,16 @@
 
         <ul class="nav nav-tabs" id="genesResultTab">
             <li class="active"><a href="#genesOverviewInfo">Overview Info</a></li>
-            <li><a href="#genesGV" ng-click="changeResultTab()">Genome Viewer</a></li>
+            <li><a href="#genesGV" ng-click="changeResultTab()">Genome Browser</a></li>
             <li><a href="#genesNV" ng-click="changeResultTab()">Network Viewer</a></li>
         </ul>
 
         <div class="tab-content">
 
-            <div class="tab-pane active ocb-width_900" id="genesOverviewInfo" >
+            <div class="tab-pane active ocb-width_900" id="genesOverviewInfo">
 
                 <!-----------------------gene and transcripts panel--------------------------->
-                <div class="list-group" ng-show="showGenePanel" >
+                <div class="list-group" ng-show="showGenePanel">
                     <a class="list-group-item active ocb-text-center">Gene
                         information
                         <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
@@ -81,13 +95,12 @@
                     </a>
 
                     <div class="ocb-panels-data-border" ng-show="!geneInfo">
-                        <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
-                                ng-click="showMoreGeneData()">{{showMoreAndLessGeneData}}
-                        </button>
                         <gene-and-transc gene="selectedGene" gene-more-info="genePanelMore" specie="selectedSpecie"
                                          on-click="showTanscriptFromTable"></gene-and-transc>
                     </div>
                 </div>
+
+
                 <!-------------------------transcript panel---------------------------->
                 <div class="list-group" ng-show="showTranscriptPanel">
                     <a class="list-group-item active ocb-text-center">Transcript
@@ -102,9 +115,6 @@
                     </a>
 
                     <div ng-show="!transcriptInfo" class="ocb-panels-data-border">
-                        <button type="button" class="btn btn-primary btn-xs ocb-margin-five ocb-float-left"
-                                ng-click="showMoreTranscriptData()">{{showMoreAndLessTranscriptData}}
-                        </button>
                         <transcripts transcript="selectedTranscript" transcript-more-info="transcriptPanelMore"
                                      specie="selectedSpecie"
                                      tab-function="goToTab"></transcripts>
@@ -113,10 +123,10 @@
             </div>
 
             <div class="tab-pane" id="genesGV">
-                    <div genes-genome-viewer class="ocb-gv"></div>
+                <div genes-genome-viewer class="ocb-gv"></div>
             </div>
             <div class="tab-pane" id="genesNV">
-                    <div genes-network-viewer class="ocb-gv"></div>
+                <div genes-network-viewer class="ocb-gv"></div>
             </div>
         </div>
     </div>

@@ -1,25 +1,83 @@
 <div id="transcripts">
-    <h5 class="ocb-margin-l-r-five">
-        <p>{{data.transcriptId}}
+    <h5 class="ocb-margin-l-r-five ocb-font-size-13">
+        <p><span class="ocb-bold">{{data.transcriptId}} </span>
             <a class="ocb-ensembl-link-color" target="_blank"
                href="http://www.ensembl.org/{{specieName.ensemblName}}/Transcript/Transcript?t={{data.transcriptId}};">
                 Go Ensembl</a>
         </p>
-        <p class="ocb-line-height-6">alleleString:<span class="text-muted"> {{data.alleleString}}</span></p>
-        <p class="ocb-line-height-6">somatic:<span class="text-muted"> {{data.somatic}}</span></p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary  ocb-text-width-200">alleleString:</span>
+            <span class="ocb-text-width-350"> {{data.alleleString}}</span>
 
-        <p class="ocb-line-height-6">consequenceTypes:
-            <span ng-repeat="ct in data.consequenceTypes" class="text-muted"> {{ct}}  </span>
+            <span class="text-primary ocb-text-width-165">distanceToTranscript:</span>
+            <span> {{data.distanceToTranscript}}</span>
         </p>
 
-        <p ng-show="showMore" class="ocb-line-height-6">cdsStart/cdsEnd: <span class="text-muted"> {{data.cdsStart}} / {{data.cdsEnd}}</span></p>
-        <p ng-show="showMore"  class="ocb-line-height-6">cdnaStart/cdnEnd:<span class="text-muted"> {{data.cdnaStart}} / {{data.cdnEnd}}</span></p>
-        <p ng-show="showMore"  class="ocb-line-height-6">translation Start/End:<span class="text-muted"> {{data.translationStart}} / {{data.translationEnd}}</span></p>
-        <p ng-show="showMore"  class="ocb-line-height-6">distanceToTranscript:<span class="text-muted"> {{data.distanceToTranscript}}</span></p>
-        <p ng-show="showMore"  class="ocb-line-height-6">codon/peptide AlleleString:<span class="text-muted"> {{data.codonAlleleString}} / {{data.peptideAlleleString}}</span></p>
-        <p ng-show="showMore"  class="ocb-line-height-6">hgvs Genomic/Transcript/Protein:<span class="text-muted"> {{data.hgvsGenomic}} / {{data.hgvsTranscript}} / {{data.hgvsProtein}} </span></p>
-        <p ng-show="showMore"  class="ocb-line-height-6">polyphen Prediction/Score:<span class="text-muted"> {{data.polyphenPrediction}} / {{data.polyphenScore}}</span></p>
-        <p ng-show="showMore"  class="ocb-line-height-6">sift Prediction/Score:<span class="text-muted"> {{data.siftPrediction}} / {{data.siftScore}}</span></p>
+
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-200">somatic:</span>
+            <span class="ocb-text-width-350"> {{data.somatic}}</span>
+
+            <span class="text-primary ocb-text-width-165">codon/peptide AlleleString:</span>
+            <span> {{data.codonAlleleString}} / {{data.peptideAlleleString}}</span>
+        </p>
+
+        <p class="ocb-line-height-5">
+                <span class="text-primary ocb-text-width-200">consequenceTypes:</span>
+            <span class="ocb-text-width-350">
+                <span ng-repeat="ct in data.consequenceTypes"> {{ct}}  </span>
+            </span>
+
+            <span class="text-primary ocb-text-width-165">translation Start/End:</span>
+            <span> {{data.translationStart}} / {{data.translationEnd}}</span>
+
+        </p>
+
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-200">cdsStart/cdsEnd:</span>
+            <span class="ocb-text-width-350"> {{data.cdsStart}} / {{data.cdsEnd}}</span>
+
+            <span class="text-primary ocb-text-width-165">polyphen Prediction/Score:</span>
+            <span> {{data.polyphenPrediction}} / {{data.polyphenScore}}</span>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-200">cdnaStart/cdnEnd:</span>
+            <span class="ocb-text-width-350"> {{data.cdnaStart}} / {{data.cdnEnd}}</span>
+
+            <span class="text-primary ocb-text-width-165">sift Prediction/Score:</span>
+            <span> {{data.siftPrediction}} / {{data.siftScore}}</span>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-200">hgvs Genomic/Transcript/Protein:</span>
+            <span> {{data.hgvsGenomic}} / {{data.hgvsTranscript}} / {{data.hgvsProtein}} </span>
+        </p>
+
+
+
+
+
+
+
+        <!--<p class="ocb-line-height-5">-->
+            <!--<span class="text-primary ocb-text-width-200">distanceToTranscript:</span>-->
+            <!--<span> {{data.distanceToTranscript}}</span>-->
+        <!--</p>-->
+        <!--<p class="ocb-line-height-5">-->
+            <!--<span class="text-primary ocb-text-width-200">codon/peptide AlleleString:</span>-->
+            <!--<span> {{data.codonAlleleString}} / {{data.peptideAlleleString}}</span>-->
+        <!--</p>-->
+        <!--<p class="ocb-line-height-5">-->
+            <!--<span class="text-primary ocb-text-width-200">hgvs Genomic/Transcript/Protein:</span>-->
+            <!--<span> {{data.hgvsGenomic}} / {{data.hgvsTranscript}} / {{data.hgvsProtein}} </span>-->
+        <!--</p>-->
+        <!--<p class="ocb-line-height-5">-->
+            <!--<span class="text-primary ocb-text-width-200">polyphen Prediction/Score:</span>-->
+            <!--<span> {{data.polyphenPrediction}} / {{data.polyphenScore}}</span>-->
+        <!--</p>-->
+        <!--<p class="ocb-line-height-5">-->
+            <!--<span class="text-primary ocb-text-width-200">sift Prediction/Score:</span>-->
+            <!--<span> {{data.siftPrediction}} / {{data.siftScore}}</span>-->
+        <!--</p>-->
     </h5>
 
 </div>

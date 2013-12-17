@@ -5,7 +5,7 @@
     <title>Cellbase web</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
-    <link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">
+    <!--<link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">-->
 
     <!--========================genome-viewer==============================-->
     <!--===================================================================-->
@@ -58,6 +58,12 @@
     <script src="js/directives/variantsDirectives/variantAndTranscriptsVarDirective.js"></script>
     <script src="js/directives/variantsDirectives/transcriptsVarDirective.js"></script>
 
+    <!---------------regulations directives------------->
+    <script src="js/directives/regulationsDirectives/regulationsSelectPanelDirective.js"></script>
+    <script src="js/directives/regulationsDirectives/regulationsResultPanelDirective.js"></script>
+    <!---------regulations widgets--------->
+    <script src="js/directives/regulationsDirectives/regulationsDirective.js"></script>
+
     <!--======================CONTROLLERS======================-->
     <script src="js/controllers/optionsBarController.js"></script>
     <!----------------genes controllers--------------->
@@ -67,23 +73,41 @@
     <!----------------variants controllers--------------->
     <script src="js/controllers/variantsSelectPanelController.js"></script>
     <script src="js/controllers/variantsResultPanelController.js"></script>
+
+    <!----------------regulation controllers--------------->
+    <script src="js/controllers/regulationSelectPanelController.js"></script>
+    <script src="js/controllers/regulationResultPanelController.js"></script>
+
+
+
+    <style type="text/css">
+        .bootstrap{
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+        }
+        body{
+            font-size: 14px;
+        }
+    </style>
+
 </head>
 <body>
-<div id="cellbase-web"  >
-    <div id="title">
-        <h4 class="ocb-text-center">Cellbase Web</h4>
-    </div>
+<div id="cellbase-web" class="bootstrap">
 
-    <div id="optionsBar" ng-controller="optionsBarController">
+    <div id="optionsBar" ng-controller="optionsBarController" style="height:60px">
         <div options-bar></div>
     </div>
 
-    <ul class="nav nav-tabs ocb-border-b-darkgrey ocb-margin-five" id="myTab">
-        <li class="active"><a href="#genes">Genes</a></li>
-        <li><a href="#variants">Variants</a></li>
-    </ul>
+    <div class="" style="margin-bottom:10px;margin-left:5%">
+        <!--<ul class="nav nav-pills ocb-border-b-darkgrey ocb-margin-l-r-five ocb-content-width" id="myTab">-->
+        <ul class="nav nav-pills" id="myTab">
+            <li class="active"><a href="#genes">Gen</a></li>
+            <li><a href="#variantion">Variantion</a></li>
+            <li><a href="#regulation">Regulation</a></li>
+        </ul>
+    </div>
 
-    <div class="tab-content ocb-margin-five ocb-inline-block ocb-content-width">
+    <!--<div class="tab-content ocb-margin-five ocb-inline-block ocb-content-width">-->
+    <div class="tab-content" style="margin-left:5%">
 
         <div class="tab-pane active" id="genes">
             <div id="genesSelectDiv" class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
@@ -95,12 +119,21 @@
 
         </div>
 
-        <div class="tab-pane" id="variants">
+        <div class="tab-pane" id="variantion">
             <div class="pull-left ocb-select-panel-width" ng-controller="variantsSelect">
                 <div variants-select></div>
             </div>
             <div class="pull-left" ng-controller="variantsResult">
                 <div variants-result></div>
+            </div>
+        </div>
+
+        <div class="tab-pane" id="regulation">
+            <div class="pull-left ocb-select-panel-width" ng-controller="regulationsSelect">
+                <div regulations-select></div>
+            </div>
+            <div class="pull-left" ng-controller="regulationsResult">
+                <div regulations-result></div>
             </div>
         </div>
 
@@ -118,6 +151,3 @@
 </script>
 </body>
 </html>
-
-
-

@@ -9,13 +9,9 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     $scope.showAll = true;
 
     $scope.showGenePanel = false;
-    $scope.showMoreAndLessGeneData = "+";
-    $scope.genePanelMore = false;
     $scope.genePanelStatus = "-";
 
     $scope.showTranscriptPanel = false;
-    $scope.showMoreAndLessTranscriptData = "+";
-    $scope.transcriptPanelMore = false;
     $scope.transcriptPanelStatus = "-";
 
     $scope.showPagination = false;
@@ -397,27 +393,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     $scope.collapseAllGenesTree = function () {
         for(var i in $scope.toggleTree){
             $scope.toggleTree[i] = false;
-        }
-    };
-
-    //show more info in gen panel
-    $scope.showMoreGeneData = function () {
-        $scope.genePanelMore = !$scope.genePanelMore;
-        if ($scope.showMoreAndLessGeneData == "+") {
-            $scope.showMoreAndLessGeneData = "-";
-        }
-        else {
-            $scope.showMoreAndLessGeneData = "+";
-        }
-    };
-    //show more info in transcript panel
-    $scope.showMoreTranscriptData = function () {
-        $scope.transcriptPanelMore = !$scope.transcriptPanelMore;
-        if ($scope.showMoreAndLessTranscriptData == "+") {
-            $scope.showMoreAndLessTranscriptData = "-";
-        }
-        else {
-            $scope.showMoreAndLessTranscriptData = "+";
         }
     };
 

@@ -115,7 +115,7 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
         $(function () {
             $('#variantsTabs a:first').tab('show')
         })
-        $('#myTab a').click(function (e) {
+        $('#variantsTabs a').click(function (e) {
             e.preventDefault()
             $(this).tab('show')
         })
