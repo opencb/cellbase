@@ -99,12 +99,12 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regionList, QueryOptions options) {
         //  db.regulatory_region.find({"chunkIds": {$in:["1_200", "1_300"]}, "start": 601156})
+        QueryBuilder builder = new QueryBuilder();
 
-        String featureType = options.getString("featureType", null);
-        String featureClass = options.getString("featureClass", null);
+        List<Object> featureType = options.getList("featureType", null);
+        List<Object> featureClass = options.getList("featureClass", null);
 
         List<DBObject> queries = new ArrayList<>();
-        List<String> ids = new ArrayList<>(regionList.size());
         for (Region region : regionList) {
             int firstChunkId = getChunkId(region.getStart(), CHUNKSIZE);
             int lastChunkId = getChunkId(region.getEnd(), CHUNKSIZE);
@@ -114,20 +114,24 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
                 chunksId.add(chunkId);
             }
 
-            QueryBuilder builder = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(region.getEnd()).and("end").greaterThanEquals(region.getStart());
-            if (featureType != null) {
-                builder.and("featureType").is(featureType);
-            }
-            if (featureClass != null) {
-                builder.and("featureClass").is(featureClass);
+            builder = builder.and("chunkIds").in(chunksId)
+                             .and("start").lessThanEquals(region.getEnd())
+                             .and("end").greaterThanEquals(region.getStart());
+
+            if (featureType != null && featureType.size() > 0) {
+                BasicDBList featureTypeDBList = new BasicDBList();
+                featureTypeDBList.addAll(featureType);
+                builder = builder.and("featureType").in(featureTypeDBList);
             }
 
-            System.out.println("Query: " + builder.get());
-            queries.add(builder.get());
-            ids.add(region.toString());
+            if (featureClass != null && featureClass.size() > 0) {
+                BasicDBList featureClassDBList = new BasicDBList();
+                featureClassDBList.addAll(featureClass);
+                builder = builder.and("featureClass").in(featureClassDBList);
+            }
         }
-        options = addExcludeReturnFields("chunkIds", options);
-        return executeQueryList(ids, queries, options);
+        System.out.println(builder.get().toString());
+        return executeQueryList(regionList, queries, options);
     }
 
     @Override
