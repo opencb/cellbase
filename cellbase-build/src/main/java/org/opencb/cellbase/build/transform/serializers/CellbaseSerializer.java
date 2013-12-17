@@ -1,5 +1,6 @@
 package org.opencb.cellbase.build.transform.serializers;
 
+import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
@@ -23,7 +24,7 @@ public interface CellbaseSerializer {
 
     public void serialize(Variation variation);
 
-    public void serialize(GenericFeatureChunk genericFeatureChunk);
+    public void serialize(GenericFeature genericFeature);
 
     public void serialize(GenomeSequenceChunk genomeSequenceChunk);
 
