@@ -1,0 +1,36 @@
+<div id="genesAndTranscripts">
+    <div class="ocb-scroll-regulations">
+        <table class="table table-striped table-bordered ocb-font-size-13">
+            <thead>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Chunk Ids</th>
+                <th>Source</th>
+                <th>Feature Type</th>
+                <th>Score</th>
+                <th>Strand</th>
+                <th>Frame</th>
+                <th>Feature Class</th>
+                <th>Alias</th>
+                <th>Cell Types</th>
+            </thead>
+                <tbody ng-repeat="variations in data">
+                    <td><small>{{variations.name}}</small></td>
+                    <td><small>{{variations.chromosome}} : {{variations.start}} -{{variations.end}}</small></td>
+
+                    <td><span ng-repeat="chunkIds in variations.chunkIds"> {{chunkIds}}  </span></td>
+
+                    <td><small>{{variations.source}}</small></td>
+                    <td><small>{{variations.featureType}}</small></td>
+                    <td><small>{{variations.score}}</small></td>
+                    <td><small>{{variations.strand}}</small></td>
+                    <td><small>{{variations.frame}}</small></td>
+                    <td><small>{{variations.featureClass}}</small></td>
+                    <td><small>{{variations.alias}}</small></td>
+
+                    <td><span ng-repeat="cellTypes in variations.cellTypes"> {{cellTypes}}  </span></td>
+
+                </tbody>
+        </table>
+    </div>
+</div>

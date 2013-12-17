@@ -1,82 +1,381 @@
-'use strict';
-
 var myApp = angular.module('project', []);
-//var foodMeApp = angular.module('foodMeApp', ['ngResource']);
 
-
-myApp.factory('mySharedService', function($rootScope){
+myApp.factory('mySharedService', function($rootScope, CellbaseService){
 
     var sharedService = {};
 
-    sharedService.message = '';
+    sharedService.initSpecie =  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
 
-    sharedService.selectedSpecies=  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
-    sharedService.selectedRegions= "";
+    //-----------genes--------------
+    sharedService.genesSpecie= sharedService.initSpecie;
+    sharedService.regionsAndChromosomesGenes = "20:32850000-33500000";
+    sharedService.genesSpecieGV= sharedService.initSpecie;
+    sharedService.genesIdFilter = "";
+    sharedService.biotypesFilter = [];
 
-//    sharedService.chromosomesPerSpecie = {
-//        hsapiens: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","X","Y","MT"],
-//        mmusculus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","X","Y","MT"],
-//        rnorvegicus: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","X","Y","MT"],
-//        drerio: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","X","Y","MT"],
-//        dmelanogaster: ["2L", "2LHet", "2R", "2RHet","3L", "3LHet", "3R", "3RHet","4", "U", "Uextra", "X","XHet", "YHet", "dmel_mitochondrion_genome"],
-//        celegans : ["I", "II", "III","IV","V","X","MtDNA"],
-//        scerevisiae: ["I", "II", "III","IV","V","VI", "VII", "VIII", "IX", "X","XI", "XII", "XIII", "XIV", "XV", "XVI", "Mito"],
-//        cfamiliaris: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","X","MT"],
-//        sscrofa: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","X","Y","MT"],
-//        agambiae: ["2L", "2R", "3L", "3R", "X"],
-//        pfalciparum: ["01","02","03","04","05","06","07","08","09","10","11","12","13","14"]
-//    };
+    //-----------variants------------
+    sharedService.variantsSpecie= sharedService.initSpecie;
+    sharedService.regionsAndChromosomesVariants = "20:32850000-32860000";
+    sharedService.variantsSpecieGV= sharedService.initSpecie;
+    sharedService.snpIdFilter = "";
+    sharedService.conseqTypesFilter = [];
 
-//    sharedService.species = ["Homo sapiens ","Mus musculus ","Rattus norvegicus ", "Danio rerio ","Drosophila melanogaster ","Caenorhabditis elegans ","Saccharomyces cerevisiae ","Canis familiaris ","Sus scrofa ","Anopheles gambiae ","Plasmodium falciparum"];
-//    $scope.species = ["hsapiens","mmusculus","rnorvegicus","drerio","dmelanogaster","celegans","scerevisiae","cfamiliaris","sscrofa","agambiae","pfalciparum"]
+    //---------regulations-----------
+    sharedService.regulationsSpecie= sharedService.initSpecie;
+    sharedService.regionsAndChromosomesRegulations = "20:32850000-32860000";
+    sharedService.featureClassFilter = "";
+    sharedService.featureTypesFilter = [];
 
 
+    sharedService.getChromNamesSpecie = function(specie){
+//        $scope.specie = mySharedService.selectedSpecies;
+        this.chromAllData = CellbaseService.getSpecieChromosomes(specie.shortName);
 
-    //comunicar la especie de optionsBar a SummaryPanel
+        var chromNames = [];
+        for (var i in this.chromAllData) {
+            chromNames.push(this.chromAllData[i].name);
+        }
+
+        chromNames = this.sortChromosomes(chromNames);
+
+        //homo sapiens has two Y chromosomes, so delete the last one
+        if (specie.shortName == "hsapiens") {
+            chromNames.pop();
+        }
+
+        return chromNames;
+    };
+
+    //sort the chromosomes, to use the function sort, it has to put a zero in the left if the number have one digit
+    sharedService.sortChromosomes = function (chromNames) {
+        for (var i in chromNames) {
+            if (!isNaN(chromNames[i])) {
+                if (chromNames[i].length == 1) {
+                    chromNames[i] = 0 + chromNames[i];
+                }
+            }
+        }
+        chromNames = chromNames.sort();
+
+        for (var i in chromNames) {
+            if (chromNames[i][0] == "0") {
+                chromNames[i] = chromNames[i].replace("0", "");
+            }
+        }
+
+      return chromNames;
+    };
+
+    //the initial chromosomes
+    sharedService.chromNames = sharedService.getChromNamesSpecie(sharedService.genesSpecie);
+
+
+    //------------------general events----------------------
     sharedService.broadcastSpecie = function(specie){
+        this.genesSpecie = specie;
+        this.variantsSpecie = specie;
+        this.regulationsSpecie = specie;
+        this.chromNames = this.getChromNamesSpecie(specie);
 
-        this.selectedSpecies = specie;
+        $rootScope.$broadcast('newSpecie');
+    };
+    sharedService.broadcastNew = function(specie){
+        this.genesSpecie = specie;
+        this.variantsSpecie = specie;
+        this.regulationsSpecie = specie;
+        this.chromNames = this.getChromNamesSpecie(this.initSpecie);
 
-        this.broadcastSpecieItem();
+        $rootScope.$broadcast('clear');
+    };
+    sharedService.broadcastExample = function(specie){
+        this.genesSpecie = specie;
+        this.variantsSpecie = specie;
+        this.regulationsSpecie = specie;
+        this.chromNames = this.getChromNamesSpecie(this.initSpecie);
+        $rootScope.$broadcast('example');
     };
 
-    //comunicar un nuevo resultado de summaryPanel a resultPanel
-    sharedService.newResult = function(regions, genesIdFilter,biotypeFilter){
+    //========================== GENES =============================
+    //from optionsBar to selectPanel
+    sharedService.broadcastGenesNew = function(specie){
+        this.genesSpecieGV = specie;
 
-        this.selectedRegions= regions;
+        this.genesChromNames = this.getChromNamesSpecie(specie);
+        $rootScope.$broadcast('genesNewSpecieGV');
+    };
+    //genesSelectPanel to GenesResultPanel
+    sharedService.broadcastGenesNewResult = function(chromSelected, regions,genesIdFilter,biotypesFilters){
+        this.chromSelected = chromSelected;
+        this.regions = regions;
         this.genesIdFilter = genesIdFilter;
-        this.biotypeFilter = biotypeFilter;
+        this.biotypesFilter = biotypesFilters;
 
-        this.broadcastResult();
+
+        if(this.genesIdFilter != ""){
+            this.genesIdFilter = this.removeSpaces(this.genesIdFilter);
+        }
+        else if(this.regions!= ""){
+            this.regions =  this.removeSpaces(this.regions );
+        }
+
+        if (this.genesIdFilter == "" && this.biotypesFilter.length == 0 && this.chromSelected.length == 0 && this.regions == "") {
+            alert("No data selected");
+        }
+        else {
+            this.regionsAndChromosomesGenes = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
+            $rootScope.$broadcast('genesNewResult');
+        }
     };
 
-    //para pasarlo a optionsBar y se filtre
-    sharedService.biotypesNames = function(biotypes){
+
+    //genesResultPanel to genesSelectPanel
+    sharedService.broadcastGenesBiotypes = function(biotypes){
         this.biotypes= biotypes;
+        $rootScope.$broadcast('genesBiotypes');
+    };
+    //genesgvDirective to genesSelectPanel
+    sharedService.broadcastGenesRegionGV = function(region){
+        this.regionFromGV = region;
+        $rootScope.$broadcast('genesRegionGV');
+    };
+    //genesgvDirective to optionsBar
+    sharedService.broadcastGenesSpecieGV = function(specie){
+        this.genesSpecieGV = specie;
+        $rootScope.$broadcast('genesSpecieGV');
+    };
+    sharedService.broadcastGenesRegionToGV = function(region){
+        this.genesRegionToGV = region;
 
-        this.broadcastbiotypes();
+        $rootScope.$broadcast('genesRegionToGV');
     };
 
 
-    sharedService.broadcastSpecieItem = function () {
-        $rootScope.$broadcast('specieBroadcast');
-    }
-    sharedService.broadcastbiotypes = function () {
-        $rootScope.$broadcast('biotypes');
-    }
-    sharedService.broadcastResult = function () {
-        $rootScope.$broadcast('newResult');
-    }
+    //================= Variants ===================
+    sharedService.broadcastVariantsNew = function(specie){
+        this.variantsSpecieGV = specie;
 
+        this.variantsChromNames = this.getChromNamesSpecie(specie);
+        $rootScope.$broadcast('variantsNewSpecieGV');
+    };
+    sharedService.broadcastVariantsNewResult = function(chromSelected, regions,snpIdFilter,conseqTypesFilter){
+        this.chromSelected = chromSelected;
+        this.regions = regions;
+        this.snpIdFilter = snpIdFilter;
+        this.conseqTypesFilter = conseqTypesFilter;
+
+        if(this.snpIdFilter != ""){
+            this.snpIdFilter = this.removeSpaces(this.snpIdFilter);
+        }
+        else if(this.regions!= ""){
+            this.regions =  this.removeSpaces(this.regions);
+        }
+
+        if (this.snpIdFilter == "" && this.conseqTypesFilter.length == 0 && this.chromSelected.length == 0 && this.regions == "") {
+            alert("No data selected");
+        }
+        else {
+
+            this.regionsAndChromosomesVariants = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
+            $rootScope.$broadcast('variantsNewResult');
+        }
+
+    };
+
+    sharedService.broadcastVariantsConseqTypes = function(conseqTypes){
+        this.conseqTypes= conseqTypes;
+        $rootScope.$broadcast('variantsConseqTypes');
+    };
+    sharedService.broadcastVariantsRegionGV = function(region){
+        this.regionFromGV = region;
+        $rootScope.$broadcast('variantsRegionGV');
+    };
+    sharedService.broadcastVariantsSpecieGV = function(specie){
+        this.variantsSpecieGV = specie;
+        $rootScope.$broadcast('variantsSpecieGV');
+    };
+
+    sharedService.broadcastVariantsRegionToGV = function(region){
+        this.variantsRegionToGV = region;
+
+        $rootScope.$broadcast('variantsRegionToGV');
+    };
+
+
+    //================= Regulations ===================
+    sharedService.broadcastRegulationsNewResult = function(chromSelected, regions,featureClassFilter,featureTypesFilter){
+        this.chromSelected = chromSelected;
+        this.regions = regions;
+        this.featureClassFilter = featureClassFilter;
+        this.featureTypesFilter = featureTypesFilter;
+
+        if(this.featureClassFilter != ""){
+            this.featureClassFilter = this.removeSpaces(this.featureClassFilter);
+        }
+        else if(this.regions!= ""){
+            this.regions =  this.removeSpaces(this.regions);
+        }
+
+        if (this.featureClassFilter == "" && this.featureTypesFilter.length == 0 && this.chromSelected.length == 0 && this.regions == "") {
+            alert("No data selected");
+        }
+        else {
+            this.regionsAndChromosomesRegulations = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
+            $rootScope.$broadcast('regulationsNewResult');
+        }
+    };
+    sharedService.broadcastVariationsFeatureTypes = function(featureTypes){
+        this.featureTypesFilter= featureTypes;
+        $rootScope.$broadcast('regulationsFeatureTypes');
+    };
+
+
+
+
+    //-------------- Cheks ------------------
+    sharedService.removeSpaces = function (data) {
+        var espacio = data.search(" ");
+
+        while (espacio != -1) {
+            data = data.slice(0, espacio) + data.slice(espacio + 1, data.length);
+            espacio = data.search(" ");
+        }
+        return data;
+    };
+
+
+    sharedService.mergeChromosomesAndRegions = function (chromSelected, regions, chromAllData) {
+        var completeChromosome = true;
+        var totalChromosomes = [];
+        var completeRegion;
+
+        if (regions != "") {
+            regions = this.checkCorrectRegions(regions,chromAllData);
+        }
+
+        if (chromSelected.length == 0) {
+            completeRegion = regions;
+        }
+        else if (regions.length == 0) {
+            completeRegion = chromSelected.join();
+        }
+        else {
+            //the variable regions has to be a sting to show it in an input, but for more facilities create an array with this information
+            var arrayOfRegions = regions.split(",");
+
+            //obtain the chromosomes that don't appear in a region
+            for (var i in chromSelected) {
+                for (var j in arrayOfRegions) {
+                    if (arrayOfRegions[j].substring(0, arrayOfRegions[j].search(":")) == chromSelected[i])
+                        completeChromosome = false
+                }
+                if (completeChromosome) {
+                    totalChromosomes.push(chromSelected[i]);
+                }
+                completeChromosome = true;
+            }
+            if (totalChromosomes.length == 0) {
+                completeRegion = regions;
+            }
+            else {
+                completeRegion = totalChromosomes.join() + "," + regions;
+            }
+        }
+        return completeRegion;
+    };
+
+
+    sharedService.checkCorrectRegions = function (regions, chromAllData) {
+        var regions = regions.split(",");
+        var correctRegions = [];
+        var incorrectRegions = [];
+        var chrom, start, end;
+        var posDoublePoints, posLine;
+        var correct = true;
+        var chromExist = false;
+        var messageError = "";
+
+
+        for (var i in regions) {
+            posDoublePoints = regions[i].search(":");
+            posLine = regions[i].search("-");
+            if (posDoublePoints == -1 || posLine == -1) {
+                correct = false;
+            }
+            else {
+                chrom = regions[i].slice(0, posDoublePoints);
+                start = regions[i].slice(posDoublePoints + 1, posLine);
+                end = regions[i].slice(posLine + 1, regions[i].length);
+
+
+                //check if the chromosome exist
+                for (var k in chromAllData) {
+                    if (chromAllData[k].name == chrom) {
+                        chromExist = true;
+                    }
+                }
+                if (!chromExist) {
+                    correct = false;
+                }
+                else {
+                    chromExist = false;
+
+                    //check if start and end are numbers
+                    if (isNaN(start) || isNaN(end)) {
+                        correct = false;
+                    }
+                    else if (parseInt(start) > parseInt(end)) {
+                        correct = false;
+                    }
+                    else {
+                        //check if the region is in the range
+                        if (!this.checkRegionInRange(chrom, start, end, chromAllData)) {
+                            correct = false;
+                            alert(regions[i] + " is out of range");
+                        }
+                    }
+                }
+            }
+            if (correct) {
+                correctRegions.push(regions[i]);
+            }
+            else {
+                incorrectRegions.push(regions[i]);
+                correct = true;
+            }
+        }
+        if (incorrectRegions.length != 0) {
+            messageError = incorrectRegions[0];
+
+            for (var i = 1; i < incorrectRegions.length; i++) {
+                messageError = messageError + ", " + incorrectRegions[i];
+            }
+            messageError = messageError + " incorrect";
+            alert(messageError);
+        }
+        return correctRegions.join();
+    };
+
+    sharedService.checkRegionInRange = function (chrom, start, end, chromAllData) {
+        for (var i in chromAllData) {
+            if (chromAllData[i].name == chrom) {
+                if (start >= chromAllData[i].start && end <= chromAllData[i].end) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+    };
 
     return sharedService;
 })
 
 myApp.service('CellbaseService', function () {
-    ////Not implemeneted yet
 
     var host = 'http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/';
 
+    ////Not implemeneted yet
     this.getSpecies = function () {
         var dataGet;
 
@@ -92,16 +391,12 @@ myApp.service('CellbaseService', function () {
         });
         return dataGet;
     };
-
-
-    //obtener los chromosomas de una especie
+    //obtain the chromosomes of a specie
     this.getSpecieChromosomes = function (specie) {
-
         var dataGet;
 
         $.ajax({
             url: host + specie + '/genomic/chromosome/all?of=json',
-//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
@@ -110,14 +405,16 @@ myApp.service('CellbaseService', function () {
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
-
         return dataGet;
     };
 
 
-    this.getGenesAndTranscripts = function (species, regions, biotypesFilter) {
 
-        var dataGet;
+
+    //------------------ G E N E S ------------------
+    //obtain genes and transcripts from regions of a specie and filter by biotypes
+    this.getGenesAndTranscripts = function (species, regions, biotypesFilter) {
+        var dataGet = [];
         var url;
 
         if (biotypesFilter.length == 0) {
@@ -129,61 +426,32 @@ myApp.service('CellbaseService', function () {
 
         $.ajax({
             url: url,
-//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
 
-                dataGet = data.response[0];
+                if(data != null){
+                    for(var i in data.response){
+                        for(var j in data.response[i].result){
+                            dataGet.push(data.response[i].result[j]);
+                        }
+                    }
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
-
-
         return dataGet;
     };
-    this.getGenesAllData = function (species, regions, biotypesFilter) {
-
-        var dataGet;
-        var url;
-
-        if (biotypesFilter.length == 0) {
-            url = host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json';
-        }
-        else {
-            url = host + species + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts&of=json';
-        }
-
-        $.ajax({
-            url: url,
-//                url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts&of=json',
-            async: false,
-            dataType: 'json',
-            success: function (data, textStatus, jqXHR) {
-
-                dataGet = data.response[0].result;
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-            }
-        });
-
-        return dataGet;
-    };
-    this.getGenesAndTranscriptsById = function (species, geneId) {
-
+    //obtain genes and transcripts from a specie and filter by geneId or name
+    this.getGenesAndTranscriptsByIdOrName = function (species, geneId) {
         var dataGet = [];
-        var url;
-
 
         $.ajax({
-//                url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
             url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
-//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
-
 
                 for (var i in data.response) {
                     dataGet.push(data.response[i].result[0]);
@@ -192,77 +460,113 @@ myApp.service('CellbaseService', function () {
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
-
         return dataGet;
     };
+    //obtain all data of genes from a specie and filter by geneId or name
     this.getGenesAllDataById = function (species, geneId) {
-
         var dataGet = [];
-        var url;
-
 
         $.ajax({
             url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
-//                url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
-//              url: host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+                dataGet = data.response[0].result[0];
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+        return dataGet;
+    };
+
+
+    //---------------- V A R I A N T S -----------------
+    this.getAllSNPData = function (species, regions, conseqTypesFilter) {
+        var dataGet = [];
+        var url;
+
+        if (conseqTypesFilter.length == 0) {
+            url = host + species + '/genomic/region/' + regions + '/snp?&of=json';
+        }
+        else {
+            url = host + species + '/genomic/region/' + regions + '/snp?consequence_type=' + conseqTypesFilter.join() + '&of=json';
+        }
+
+        $.ajax({
+            url: url,
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
 
-//                    for(var i in data.response)
-//                    {
-//                        dataGet.push(data.response[i].result[0]);
-//                    }
-                dataGet = data.response;
-//                    dataGet = data.response[0];
+                if(data != null){
+                    for(var i in data.response){
+                        for(var j in data.response[i].result){
+                            dataGet.push(data.response[i].result[j]);
+                        }
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+        return dataGet;
+    };
+
+    //obtain all data of genes from a specie and filter by snpId or name
+    this.getVariantsDataById = function (species, snpId) {
+        var dataGet = [];
+
+        $.ajax({
+            url: host + species + '/feature/snp/' + snpId + '/info?&of=json',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+                for (var i in data.response) {
+                    dataGet.push(data.response[i].result[0]);
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+        return dataGet;
+    };
+
+
+    //------------- R E G U L A T I O N S -----------------
+    this.getAllRegulationsData = function (species, regions, featureClassFilter, featureTypeFilter) {
+        var dataGet = [];
+        var url;
+
+        if (featureClassFilter.length == 0 && featureTypeFilter.length == 0) {
+            url = host + species + '/genomic/region/' + regions + '/feature?&of=json';
+        }
+       // else {
+      //       url = host + species + '/genomic/region/' + regions + '/feature?featureType='+ featureTypeFilter.join() +'&of=json';
+      //       url = host + species + '/genomic/region/' + regions + '/feature?featureClass='+ featureClassFilter +'&of=json';
+      //       url = host + species + '/genomic/region/' + regions + '/feature?featureType='+ featureTypeFilter.join() +'$featureClass='+featureClassFilter+'&of=json';
+       //  }
+
+        $.ajax({
+            url: url,
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                if(data != null){
+                    for(var i in data.response){
+                        for(var j in data.response[i].result){
+                            dataGet.push(data.response[i].result[j]);
+                        }
+                    }
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
             }
         });
 
+
         return dataGet;
     };
 
-
-
 });
 
-
-//myApp.config(function($routeProvider) {
-//
-//  $routeProvider.
-//      when('/', {
-//        controller: 'optionsBarController',
-//        templateUrl: 'views/options-bar.html'
-//      }).
-//      when('/', {
-//        controller: 'summaryPanelController',
-//        templateUrl: 'views/summary-panel.html'
-//      }).
-//      when('/', {
-//        controller: 'resultPanelController',
-//        templateUrl: 'views/result-panel.html'
-//      });
-////      .
-////      when('/checkout', {
-////        controller: 'CheckoutController',
-////        templateUrl: 'views/checkout.html'
-////      }).
-////      when('/thank-you', {
-////        controller: 'ThankYouController',
-////        templateUrl: 'views/thank-you.html'
-////      }).
-////      when('/customer', {
-////        controller: 'CustomerController',
-////        templateUrl: 'views/customer.html'
-////      }).
-////      when('/who-we-are', {
-////        templateUrl: 'views/who-we-are.html'
-////      }).
-////      when('/how-it-works', {
-////        templateUrl: 'views/how-it-works.html'
-////      }).
-////      when('/help', {
-////        templateUrl: 'views/help.html'
-////      });
-//});

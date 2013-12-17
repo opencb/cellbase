@@ -1,0 +1,113 @@
+<div>
+    <div class="ocb-margin-l-five">
+        <ul class="nav nav-pills" id="genesTabs">
+            <li class="active"><a href="#genesRegions" data-toggle="tab">Regions</a></li>
+            <li><a href="#genesFilters" data-toggle="tab" ng-click="goToTab()">Filters</a></li>
+        </ul>
+        <!--<div class="tab-content ocb-select-tabs">-->
+        <div class="tab-content">
+            <!--------------------------regions tab--------------------------->
+            <div class="tab-pane active" id="genesRegions"  style="padding-top:10px;">
+
+                <div class="panel panel-default" style="">
+                    <div class="panel-heading">Species</div>
+                    <div class="panel-body">
+                        <p class="ocb-margin-l-ten">{{specie.longName}}</p>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">Chromosomes</div>
+                    <div class="panel-body">
+                        <div id="genesChromMultiSelect" class="ocb-text-center">
+                                <button ng-repeat="chrom in chromNames"  ng-click="addChrom(chrom)" type="button" class="btn btn-default btn-sm" style="width:34px;margin:2px">{{chrom}}</button>
+                                <!--<input ng-click="addChrom(chrom)" type="checkbox">{{chrom}}-->
+                        </div>
+                        <br>
+                        <div class="ocb-text-center">
+                            <button type="button" class="btn btn-info btn-sm ocb-margin-five" ng-click="selectAllChrom()">
+                                Select all
+                            </button>
+                            <button type="button" class="btn btn-info btn-sm ocb-margin-five" ng-click="deselectAllChrom()">
+                                Deselect all
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">Regions</div>
+                    <div class="panel-body">
+                        <p class="text-muted ocb-margin-l-ten"><b>chom:start-end</b></p>
+                        <textarea type="text" ng-model="regions" rows="7" class="form-control" style="height:100px;max-width:213px;max-height:100px"></textarea>
+                    </div>
+                </div>
+
+
+                <!--<div class="ocb-margin-b-ten">-->
+                    <!--<p class="ocb-select-background-color"><strong class="ocb-select-panel-text">SPECIE:</strong></p>-->
+                    <!--<p class="ocb-margin-l-ten">{{specie.longName}}</p>-->
+                    <!--<p class="ocb-select-background-color ocb-maegin-t-twenty">-->
+                        <!--<strong class="ocb-select-panel-text">CHROMOSOMES: </strong>-->
+                    <!--</p>-->
+                    <!--<div class="ocb-chrom-scroll" id="genesChromMultiSelect">-->
+                        <!--<p ng-repeat="chrom in chromNames" class="ocb-margin-b-0">-->
+                            <!--<input ng-click="addChrom(chrom)" type="checkbox">{{chrom}}-->
+                        <!--</p>-->
+                    <!--</div>-->
+                    <!--<div class="ocb-text-center">-->
+                        <!--<button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="selectAllChrom()">-->
+                            <!--Select all-->
+                        <!--</button>-->
+                        <!--<button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="deselectAllChrom()">-->
+                            <!--Deselect all-->
+                        <!--</button>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <!--<p>-->
+                <!--<div class="ocb-maegin-t-twenty">-->
+                    <!--<p class="ocb-select-background-color"><strong class="ocb-select-panel-text">REGIONS: </strong></p>-->
+                    <!--<p class="text-muted ocb-margin-l-ten"><b>chom:start-end</b></p>-->
+                    <!--<textarea type="text" ng-model="regions" rows="7" class="form-control ocb-margin-b-ten ocb-margin-l-ten ocb-regions-textarea"></textarea>-->
+                <!--</div>-->
+                <!--</p>-->
+            </div>
+            <!-------------------filters tab------------------------>
+            <div class="tab-pane ocb-margin-b-twenty" id="genesFilters">
+
+                <div class="ocb-margin-b-ten">
+                    <div class="ocb-select-background-color">
+                        <p class="ocb-margin-l-ten ocb-text-options">Filter per Genes:</p>
+                    </div>
+                    <p class="text-muted ocb-margin-l-ten"><b>Ex: gene1,gene2,...</b></p>
+                    <textarea type="text" ng-model="genesIdFilter" rows="5"
+                              class="form-control ocb-margin-l-ten ocb-filter-textarea"></textarea>
+                    <div class="ocb-select-background-color ocb-text-options ocb-margin-t-twenty-five">
+                        <p class="ocb-margin-l-ten">Filter per Biotypes:</p>
+                    </div>
+                    <div>
+                        <div class="ocb-margin-l-ten">
+                            <div class="ocb-biotypes-scroll" id="BiotypesMultiSelect">
+                                <p ng-repeat="biotype in listOfbiotypeFilters" class="ocb-margin-b-0"
+                                   ng-click="addBiotypeFilter(biotype)">
+                                    <input type="checkbox">{{biotype}}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="ocb-text-center">
+                            <button type="button" class="btn btn-info btn-xs ocb-margin-five"
+                                    ng-click="selectAllBiotypeFilter()">Select all
+                            </button>
+                            <button type="button" class="btn btn-info btn-xs ocb-margin-five"
+                                    ng-click="deselectAllBiotypeFilter()">Deselect all
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="ocb-text-center ocb-margin-t-eigth"><a class="btn btn-warning btn-lg btn-medium" ng-click="setResult()">
+        RESULT</a>
+    </p>
+</div>

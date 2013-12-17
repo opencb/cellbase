@@ -1,0 +1,98 @@
+<div id="genesAndTranscripts">
+    <h5 class="ocb-margin-l-r-five ocb-font-size-13">
+        <p><span class="ocb-bold"> {{data.id}} </span><a class="ocb-ensembl-link-color" target="_blank"
+               href="http://www.ensembl.org/{{specieName.ensemblName}}/Location/View?v={{data.id}};">Go Ensembl</a>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-135">Location:</span>
+            <span class="ocb-text-width-300"> {{data.chromosome}} : {{data.start}} - {{data.end}}</span>
+
+            <span class="text-primary ocb-text-width-100">Assembly:</span>
+            <span > {{data.assembly}}</span>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-135">Strand:</span>
+            <span class="ocb-text-width-300"> {{data.strand}}</span>
+
+            <span class="text-primary ocb-text-width-100">Source:</span>
+            <span > {{data.source}}</span>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-135">Type:</span>
+            <span class="ocb-text-width-300"> {{data.type}}</span>
+
+            <span class="text-primary ocb-text-width-100">Version:</span>
+            <span > {{data.version}}</span>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-135">Reference / Alternate:</span>
+            <span class="ocb-text-width-300"> {{data.reference}} / {{data.alternate}}</span>
+
+            <span class="text-primary ocb-text-width-100">Feature Id/Alias:</span>
+            <span > {{data.featureId}} / {{data.featureAlias}}</span>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-135">Allele String:</span>
+            <span class="ocb-text-width-300"> {{data.alleleString}}</span>
+
+            <span class="text-primary ocb-text-width-100">VariantFreq:</span>
+            <span > {{data.variantFreq}}</span>
+        </p>
+        <p class="ocb-line-height-5">
+            <span class="text-primary ocb-text-width-135">Species:</span>
+            <span class="ocb-text-width-300"> {{data.species}}</span>
+
+            <span class="text-primary ocb-text-width-100">ValidationStatus:</span>
+            <span > {{data.validationStatus}}</span>
+        </p>
+    </h5>
+
+    <ul class="nav nav-tabs" id="transcriptsVarTab">
+        <li class="active"><a href="#transVar">Transcripts Variations</a></li>
+        <li><a href="#transVarXrefs" ng-click="changeTab()">Xrefs</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="transVar">
+            <div class="ocb-scroll-transVar">
+                <table class="table table-striped table-bordered table-condensed table-hover ocb-font-size-13">
+                    <thead>
+                    <th>Id</th>
+                    <th>Distance To Transcript</th>
+                    <th>HGVS Genomic</th>
+                    <th>Consequence Types</th>
+                    <th>Somatic</th>
+                    </thead>
+                    <tbody ng-repeat="transc in data.transcriptVariations">
+                    <td ng-click="functionDirective(transc.transcriptId)"><a><small> {{transc.transcriptId}}</small></a></td>
+                    <td><small>{{transc.distanceToTranscript}}</small></td>
+                    <td><small>{{transc.hgvsGenomic}}</small></td>
+
+                    <td class="ocb-line-height-5">
+                        <small ng-repeat="ct in transc.consequenceTypes" > {{ct}}   </small>
+                    </td>
+                    <td><small>{{transc.somatic}}</small></td>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane" id="transVarXrefs">
+            <div class="ocb-scroll-transVar">
+                <table class="table table-striped table-bordered table-condensed table-hover ocb-font-size-13">
+                    <thead>
+                    <th>Id</th>
+                    <th>Source</th>
+                    <th>Version</th>
+                    </thead>
+                    <tbody ng-repeat="xref in data.xrefs">
+                    <td><a><small> {{xref.id}}</small></a></td>
+                    <td><small>{{xref.source}}</small></td>
+                    <td><small>{{xref.version}}</small></td>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
