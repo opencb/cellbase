@@ -444,6 +444,7 @@ public class RegulatoryRegionParser {
         genericFeature.setStrand(rs.getString(7));
         genericFeature.setFrame(rs.getString(8));
 
+        genericFeature.setFeatureClass("microRNA");
         genericFeature.setName(groupFields.get("name"));
 
         return genericFeature;
