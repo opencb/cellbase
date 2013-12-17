@@ -98,23 +98,28 @@ public class MongoDBAdaptor extends DBAdaptor {
 
     protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {
         if (options != null && !options.getBoolean(returnField, true)) {
-            if (options.get("include") != null) {
+            if (options.getList("include") != null) {
 //                options.put("include", options.get("include") + "," + returnField);
                 options.getList("include").add(returnField);
             } else {
                 options.put("include", Arrays.asList(returnField));
             }
+        }else {
+            options = new QueryOptions("include", Arrays.asList(returnField));
         }
         return options;
     }
 
     protected QueryOptions addExcludeReturnFields(String returnField, QueryOptions options) {
         if (options != null && !options.getBoolean(returnField, true)) {
-            if (options.get("exclude") != null) {
-                options.put("exclude", options.get("exclude") + "," + returnField);
+            if (options.getList("exclude") != null) {
+//                options.put("exclude", options.get("exclude") + "," + returnField);
+                options.getList("exclude").add(returnField);
             } else {
-                options.put("exclude", returnField);
+                options.put("exclude", Arrays.asList(returnField));
             }
+        }else {
+            options = new QueryOptions("exclude", Arrays.asList(returnField));
         }
         return options;
     }

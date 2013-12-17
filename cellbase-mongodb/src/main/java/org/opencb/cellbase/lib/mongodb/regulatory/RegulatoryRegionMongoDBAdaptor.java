@@ -104,6 +104,8 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         List<Object> featureType = options.getList("featureType", null);
         List<Object> featureClass = options.getList("featureClass", null);
 
+        options = addExcludeReturnFields("chunkIds", options);
+
         List<DBObject> queries = new ArrayList<>();
         for (Region region : regionList) {
             int firstChunkId = getChunkId(region.getStart(), CHUNKSIZE);
@@ -114,7 +116,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
                 chunksId.add(chunkId);
             }
 
-            builder = builder.and("chunkIds").in(chunksId)
+            builder = builder.start("chunkIds").in(chunksId)
                              .and("start").lessThanEquals(region.getEnd())
                              .and("end").greaterThanEquals(region.getStart());
 
@@ -129,8 +131,11 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
                 featureClassDBList.addAll(featureClass);
                 builder = builder.and("featureClass").in(featureClassDBList);
             }
+
+            queries.add(builder.get());
         }
-        System.out.println(builder.get().toString());
+        System.out.println(">>"+regionList);
+        System.out.println(">>"+builder.get().toString());
         return executeQueryList(regionList, queries, options);
     }
 
