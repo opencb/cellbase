@@ -124,7 +124,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             queries.add(builder.get());
         }
 
-        options = addExcludeReturnFields("transcripts", options);
+//        options = addExcludeReturnFields("transcripts", options);
         return executeQueryList(idList, queries, options);
     }
 
@@ -258,7 +258,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             ids.add(region.toString());
         }
 
-        options = addExcludeReturnFields("transcripts", options);
+//        options = addExcludeReturnFields("transcripts", options);
         return executeQueryList(ids, queries, options);
     }
 
