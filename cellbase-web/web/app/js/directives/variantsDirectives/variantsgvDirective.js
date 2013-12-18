@@ -84,6 +84,9 @@ myApp.directive('variantsGenomeViewer', function () {
                         $scope.broadcastRegion = true;
 
                     },
+                    'region:move':function(event){
+                            mySharedService.broadcastVariantsRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
+                    },
 //                    'chromosome-button:change':function(event){
 //                    },
                     'species:change':function(event){

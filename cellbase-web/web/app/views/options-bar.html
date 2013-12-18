@@ -7,14 +7,14 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Cellbase</a>
+            <a class="navbar-brand" href="#" style="font-size:30px">Cellbase</a>
         </div>
         <div class="collapse navbar-collapse">
 
             <ul class="nav navbar-nav">
                 <li class="dropdown">
                     <a class="dropdown-toggle ocb-text-options" data-toggle="dropdown">
-                        Select Specie <b class="caret"></b></a>
+                        {{selectedSpecie}} <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a ng-repeat="specie in species" ng-click="setSelectedSpecie(specie)">{{specie.longName}}</a></li>
                     </ul>

@@ -4,7 +4,6 @@
             <thead>
                 <th>Name</th>
                 <th>Location</th>
-                <th>Chunk Ids</th>
                 <th>Source</th>
                 <th>Feature Type</th>
                 <th>Score</th>
@@ -16,10 +15,7 @@
             </thead>
                 <tbody ng-repeat="variations in data">
                     <td><small>{{variations.name}}</small></td>
-                    <td><small>{{variations.chromosome}} : {{variations.start}} -{{variations.end}}</small></td>
-
-                    <td><span ng-repeat="chunkIds in variations.chunkIds"> {{chunkIds}}  </span></td>
-
+                    <td><small>{{variations.chromosome}}:{{variations.start}}-{{variations.end}}</small></td>
                     <td><small>{{variations.source}}</small></td>
                     <td><small>{{variations.featureType}}</small></td>
                     <td><small>{{variations.score}}</small></td>

@@ -23,8 +23,7 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
     //---------regulations-----------
     sharedService.regulationsSpecie= sharedService.initSpecie;
     sharedService.regionsAndChromosomesRegulations = "20:32850000-32860000";
-    sharedService.featureClassFilter = "";
-    sharedService.featureTypesFilter = [];
+    sharedService.featureClassFilter = [];
 
 
     sharedService.getChromNamesSpecie = function(specie){
@@ -78,6 +77,8 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
         this.chromNames = this.getChromNamesSpecie(specie);
 
         $rootScope.$broadcast('newSpecie');
+//        $rootScope.$broadcast('genesRegionToGV');
+
     };
     sharedService.broadcastNew = function(specie){
         this.genesSpecie = specie;
@@ -202,30 +203,25 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
 
 
     //================= Regulations ===================
-    sharedService.broadcastRegulationsNewResult = function(chromSelected, regions,featureClassFilter,featureTypesFilter){
+    sharedService.broadcastRegulationsNewResult = function(chromSelected, regions,featureClassFilter){
         this.chromSelected = chromSelected;
         this.regions = regions;
         this.featureClassFilter = featureClassFilter;
-        this.featureTypesFilter = featureTypesFilter;
 
-        if(this.featureClassFilter != ""){
+        if(this.featureClassFilter.length != 0){
             this.featureClassFilter = this.removeSpaces(this.featureClassFilter);
         }
         else if(this.regions!= ""){
             this.regions =  this.removeSpaces(this.regions);
         }
 
-        if (this.featureClassFilter == "" && this.featureTypesFilter.length == 0 && this.chromSelected.length == 0 && this.regions == "") {
+        if (this.featureClassFilter == "" && this.chromSelected.length == 0 && this.regions == "") {
             alert("No data selected");
         }
         else {
             this.regionsAndChromosomesRegulations = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
             $rootScope.$broadcast('regulationsNewResult');
         }
-    };
-    sharedService.broadcastVariationsFeatureTypes = function(featureTypes){
-        this.featureTypesFilter= featureTypes;
-        $rootScope.$broadcast('regulationsFeatureTypes');
     };
 
 
@@ -533,18 +529,16 @@ myApp.service('CellbaseService', function () {
 
 
     //------------- R E G U L A T I O N S -----------------
-    this.getAllRegulationsData = function (species, regions, featureClassFilter, featureTypeFilter) {
+    this.getAllRegulationsData = function (species, regions, featureClassFilter) {
         var dataGet = [];
         var url;
 
-        if (featureClassFilter.length == 0 && featureTypeFilter.length == 0) {
-            url = host + species + '/genomic/region/' + regions + '/feature?&of=json';
+        if (featureClassFilter.length == 0) {
+            url = host + species + '/genomic/region/' + regions + '/regulatory?&of=json';
         }
-       // else {
-      //       url = host + species + '/genomic/region/' + regions + '/feature?featureType='+ featureTypeFilter.join() +'&of=json';
-      //       url = host + species + '/genomic/region/' + regions + '/feature?featureClass='+ featureClassFilter +'&of=json';
-      //       url = host + species + '/genomic/region/' + regions + '/feature?featureType='+ featureTypeFilter.join() +'$featureClass='+featureClassFilter+'&of=json';
-       //  }
+       else {
+             url = host + species + '/genomic/region/' + regions + '/feature?featureType='+ $featureClass.join() +'&of=json';
+         }
 
         $.ajax({
             url: url,

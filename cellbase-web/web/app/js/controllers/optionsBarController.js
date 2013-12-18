@@ -14,6 +14,9 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
         {longName: "Anopheles gambiae", shortName: "agambiae"},
         {longName: "Plasmodium falciparum", shortName: "pfalciparum"}
     ];
+
+    $scope.selectedSpecie = "Homo sapiens";
+
     //tabs
     $scope.goToTab = function () {
         $(function () {
@@ -29,6 +32,7 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
     };
     //comunicate the new specie selected
     $scope.setSelectedSpecie = function (specie) {
+        $scope.selectedSpecie = specie.longName;
         mySharedService.broadcastSpecie(specie);
     };
     $scope.example = function () {

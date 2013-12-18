@@ -38,6 +38,13 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
         else {
             $scope.chromSelected.splice(pos, 1);
         }
+
+        if($('#variants'+chrom).hasClass("btn-primary")){
+            $('#variants'+chrom).removeClass("btn-primary");
+        }
+        else{
+            $('#variants'+chrom).addClass("btn-primary");
+        }
     };
 
     $scope.addConseqTypeFilter = function (conseqType) {
@@ -49,27 +56,55 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
         else {
             $scope.conseqTypesFilter.splice(pos, 1);
         }
+
+        if($('#'+conseqType).hasClass("btn-primary")){
+            $('#'+conseqType).removeClass("btn-primary");
+        }
+        else{
+            $('#'+conseqType).addClass("btn-primary");
+        }
     };
 
     $scope.selectAllChrom = function () {
-        $('#variantsChromMultiSelect').children().children().prop('checked', true);
+
+        $('#variantsChromMultiSelect').children().addClass("btn-primary");
+
         for (var i in $scope.chromNames) {
-            $scope.chromSelected.push($scope.chromNames[i])
+            $scope.chromSelected.push($scope.chromNames[i]);
         }
+
+//        $('#variantsChromMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.chromNames) {
+//            $scope.chromSelected.push($scope.chromNames[i])
+//        }
     };
     $scope.deselectAllChrom = function () {
+
+        $('#variantsChromMultiSelect').children().removeClass("btn-primary");
         $scope.chromSelected = [];
-        $('#variantsChromMultiSelect').children().children().prop('checked', false);
+
+//        $scope.chromSelected = [];
+//        $('#variantsChromMultiSelect').children().children().prop('checked', false);
     };
-    $scope.selectAllConsewTypeFilter = function () {
-        $('#conseqTypeMultiSelect').children().children().prop('checked', true);
+    $scope.selectAllConseqTypeFilter = function () {
+
+        $('#conseqTypeMultiSelect').children().children().addClass("btn-primary");
         for (var i in $scope.listOfConseqTypes) {
             $scope.conseqTypesFilter.push($scope.listOfConseqTypes[i]);
         }
+
+//        $('#conseqTypeMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.listOfConseqTypes) {
+//            $scope.conseqTypesFilter.push($scope.listOfConseqTypes[i]);
+//        }
     };
     $scope.deselectAllConseqTypeFilter = function () {
+
+        $('#conseqTypeMultiSelect').children().children().removeClass("btn-primary");
         $scope.conseqTypesFilter = [];
-        $('#conseqTypeMultiSelect').children().children().prop('checked', false);
+
+//        $scope.conseqTypesFilter = [];
+//        $('#conseqTypeMultiSelect').children().children().prop('checked', false);
     };
 
     //-----------EVENTS---------------

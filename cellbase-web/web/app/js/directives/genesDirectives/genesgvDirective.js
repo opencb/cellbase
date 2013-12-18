@@ -12,8 +12,15 @@ myApp.directive('genesGenomeViewer', function () {
             $scope.broadcastRegion = true;
 
             $scope.$on('genesRegionToGV', function () {
+
+//                console.log("HOLAAAAAAAAAAAAAAAAAA");
+//                console.log(mySharedService.genesRegionToGV);
+//                console.log(mySharedService.genesSpecie.shortName);
+//                console.log("HOLAAAAAAAAAAAAAAAAAA");
+
                 $scope.broadcastRegion = false;
-                $scope.genomeViewer.setRegion(new Region(mySharedService.genesRegionToGV))
+                $scope.genomeViewer.setRegion(new Region(mySharedService.genesRegionToGV));
+//                $scope.genomeViewer.setSpecies(mySharedService.genesSpecie.shortName);
             });
 
 
@@ -80,6 +87,9 @@ myApp.directive('genesGenomeViewer', function () {
                             mySharedService.broadcastGenesRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
                         }
                         $scope.broadcastRegion = true;
+                    },
+                    'region:move':function(event){
+                            mySharedService.broadcastGenesRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
                     },
 //                    'chromosome-button:change':function(event){
 //                    },

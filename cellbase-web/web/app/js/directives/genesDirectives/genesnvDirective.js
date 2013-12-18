@@ -6,6 +6,14 @@ myApp.directive('genesNetworkViewer', function () {
         templateUrl: './views/genes-nv.html',
         controller: function($scope,mySharedService) {
 
+            $scope.networkViewer = new NetworkViewer({
+                targetId: 'network-viewer-div',
+                autoRender: true,
+                sidePanel: false,
+                overviewPanel: false
+            });
+            $scope.networkViewer.draw();
+
         }
     }
 });

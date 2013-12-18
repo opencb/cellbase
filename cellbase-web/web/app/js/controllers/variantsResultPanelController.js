@@ -286,7 +286,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
             $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations[0];
         }
         else{
-            alert("No results with this data");
+//            alert("No results with this data");
             $scope.paginationData = [];
         }
     };

@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+    
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Network Viewer Demo</title>
+        <!-- CSS from vendors -->
+        <link type="text/css" rel="stylesheet" href="vendor/jquery.qtip.min.css" />
+        <link type="text/css" rel="stylesheet" href="vendor/ChemDoodleWeb.css" />
+        <link type="text/css" rel="stylesheet" href="vendor/bootstrap-scoped-dist/css/bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="vendor/jquery.simplecolorpicker.css" />
+        <!--css vendor-->
+        <!-- CSS custom -->
+        <link type="text/css" rel="stylesheet" href="styles/css/style.css" />
+        <!-- JS from vendors -->
+        <script type="text/javascript" src="vendor/underscore-min.js"></script>
+        <script type="text/javascript" src="vendor/backbone-min.js"></script>
+        <script type="text/javascript" src="vendor/jquery.min.js"></script>
+        <script type="text/javascript" src="vendor/jquery.qtip.min.js"></script>
+        <script type="text/javascript" src="vendor/jquery.cookie.js"></script>
+        <script type="text/javascript" src="vendor/jquery.sha1.js"></script>
+        <script type="text/javascript" src="vendor/purl.min.js"></script>
+        <script type="text/javascript" src="vendor/bootstrap-scoped-dist/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="vendor/pick-a-color/tinycolor-0.9.15.min.js"></script>
+        <script type="text/javascript" src="vendor/jquery.simplecolorpicker.js"></script>
+        <!-- JS from Network Viewer -->
+        <!-- Network-viewer -->
+        <script type="text/javascript" src="nv-config.js"></script>
+        <script type="text/javascript" src="network-viewer-1.0.0.min.js"></script>
+        <script type="text/javascript">
+            var networkViewer;
+            var run = function() {
+                networkViewer = new NetworkViewer({
+                        targetId: 'application',
+                        autoRender: true,
+                        sidePanel: false,
+                        overviewPanel: false
+                    });
+                networkViewer.draw();
+            };
+            $(document).ready(run);
+        </script>
+        <style type="text/css">
+            html, body {
+                /*height: 100%;*/
+                /*position:relative;*/
+            }
+            body {
+                /*overflow: hidden;*/
+                /*padding:50px;*/
+            }
+            #application {
+                width: 1440px;
+                height: 800px;
+                /*overflow-y: auto;*/
+                /*overflow-x: hidden;*/
+                padding: 10px;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div style=""></div>
+        <div id="application"></div>
+        <div style=""></div>
+    </body>
+
+</html>

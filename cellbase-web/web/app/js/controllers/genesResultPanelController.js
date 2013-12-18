@@ -9,10 +9,8 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     $scope.showAll = true;
 
     $scope.showGenePanel = false;
-    $scope.genePanelStatus = "-";
 
     $scope.showTranscriptPanel = false;
-    $scope.transcriptPanelStatus = "-";
 
     $scope.showPagination = false;
     $scope.firstPages = false;
@@ -266,6 +264,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         $scope.initPagination();
         $scope.clear();
 
+
         if($scope.numResults != 0){
             $scope.toggleTree = [];
 
@@ -280,10 +279,14 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             $scope.showSelectedGene(Object.keys($scope.genesAndTranscriptsData)[0], 0);
 
             $scope.showTranscriptPanel = true;
-            $scope.selectedTranscript = $scope.selectedGene.transcripts[0];
+
+            if($scope.selectedGene.transcripts != "undefined")
+            {
+                $scope.selectedTranscript = $scope.selectedGene.transcripts[0];
+            }
         }
         else{
-            alert("No results with this data");
+//            alert("No results with this data");
 //            alert("No correct data selected");
             $scope.paginationData = [];
         }
@@ -393,25 +396,6 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     $scope.collapseAllGenesTree = function () {
         for(var i in $scope.toggleTree){
             $scope.toggleTree[i] = false;
-        }
-    };
-
-    //show/hide gen panel information
-    $scope.openCloseGenePanel = function () {
-        if ($scope.genePanelStatus == "+") {
-            $scope.genePanelStatus = "-";
-        }
-        else {
-            $scope.genePanelStatus = "+";
-        }
-    };
-    //show/hide transcript panel information
-    $scope.openCloseTranscriptPanel = function () {
-        if ($scope.transcriptPanelStatus == "+") {
-            $scope.transcriptPanelStatus = "-";
-        }
-        else {
-            $scope.transcriptPanelStatus = "+";
         }
     };
 

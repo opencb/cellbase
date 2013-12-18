@@ -37,6 +37,14 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         else {
             $scope.chromSelected.splice(pos, 1);
         }
+
+        if($('#genes'+chrom).hasClass("btn-primary")){
+            $('#genes'+chrom).removeClass("btn-primary");
+        }
+        else{
+            $('#genes'+chrom).addClass("btn-primary");
+        }
+
     };
 
     $scope.addBiotypeFilter = function (biotype) {
@@ -48,27 +56,57 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         else {
             $scope.biotypesFilter.splice(pos, 1);
         }
+
+
+
+        if($('#'+biotype).hasClass("btn-primary")){
+            $('#'+biotype).removeClass("btn-primary");
+        }
+        else{
+            $('#'+biotype).addClass("btn-primary");
+        }
+
     };
 
     $scope.selectAllChrom = function () {
-        $('#genesChromMultiSelect').children().children().prop('checked', true);
+
+        $('#genesChromMultiSelect').children().addClass("btn-primary");
+
         for (var i in $scope.chromNames) {
-            $scope.chromSelected.push($scope.chromNames[i])
+            $scope.chromSelected.push($scope.chromNames[i]);
         }
+
+//        $('#genesChromMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.chromNames) {
+//            $scope.chromSelected.push($scope.chromNames[i])
+//        }
     };
     $scope.deselectAllChrom = function () {
+
+        $('#genesChromMultiSelect').children().removeClass("btn-primary");
         $scope.chromSelected = [];
-        $('#genesChromMultiSelect').children().children().prop('checked', false);
+
+        //$('#genesChromMultiSelect').children().children().prop('checked', false);
     };
     $scope.selectAllBiotypeFilter = function () {
-        $('#BiotypesMultiSelect').children().children().prop('checked', true);
+
+        $('#BiotypesMultiSelect').children().addClass("btn-primary");
         for (var i in $scope.listOfbiotypeFilters) {
             $scope.biotypesFilter.push($scope.listOfbiotypeFilters[i]);
         }
+
+//        $('#BiotypesMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.listOfbiotypeFilters) {
+//            $scope.biotypesFilter.push($scope.listOfbiotypeFilters[i]);
+//        }
     };
     $scope.deselectAllBiotypeFilter = function () {
+
+        $('#BiotypesMultiSelect').children().removeClass("btn-primary");
         $scope.biotypesFilter = [];
-        $('#BiotypesMultiSelect').children().children().prop('checked', false);
+
+//        $scope.biotypesFilter = [];
+//        $('#BiotypesMultiSelect').children().children().prop('checked', false);
     };
 
     //-----------EVENTS---------------

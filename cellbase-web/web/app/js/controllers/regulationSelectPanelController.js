@@ -4,23 +4,24 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
     $scope.chromSelected = [];
     $scope.regions = "3:555-622666";
     $scope.listOfFeatureTypeFilters = [];
-    $scope.featureClassFilter = "";
-    $scope.featureTypesFilter = [];
+    $scope.featureClassFilter = [];
     $scope.chromNames = mySharedService.chromNames;
+
+
+    $scope.featureClassTypes = ["Histone", "Open Chromatin",  "Transcription Factor", "Polymerase", "microRNA" ];
 
 
     $scope.init = function(){
         $scope.deselectAllChrom();
-        $scope.deselectAllFeatureTypeFilter();
+        $scope.deselectAllFeatureClassFilter();
         $scope.chromSelected = [];
         $scope.regions = "";
         $scope.listOfFeatureTypeFilters = [];
-        $scope.featureClassFilter ="";
-        $scope.featureTypesFilter = [];
+        $scope.featureClassFilter = [];
     };
     //comunicate that a is a new result
     $scope.setResult = function () {
-        mySharedService.broadcastRegulationsNewResult( $scope.chromSelected, $scope.regions, $scope.featureClassFilter, $scope.featureTypesFilter);
+        mySharedService.broadcastRegulationsNewResult( $scope.chromSelected, $scope.regions,$scope.featureClassFilter);
     };
     $scope.setSpecie = function(){
         $scope.specie = mySharedService.regulationsSpecie;
@@ -36,37 +37,77 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
         else {
             $scope.chromSelected.splice(pos, 1);
         }
+
+        if($('#regulation'+chrom).hasClass("btn-primary")){
+            $('#regulation'+chrom).removeClass("btn-primary");
+        }
+        else{
+            $('#regulation'+chrom).addClass("btn-primary");
+        }
+
     };
-    $scope.addFeatureTypesFilter = function (biotype) {
-        var pos = $scope.featureTypesFilter.indexOf(biotype);
+    $scope.addFeatureClassFilter = function (featureClass) {
+        var pos = $scope.featureClassFilter.indexOf(featureClass);
 
         if (pos == -1) {
-            $scope.featureTypesFilter.push(biotype);
+            $scope.featureClassFilter.push(featureClass);
         }
         else {
-            $scope.featureTypesFilter.splice(pos, 1);
+            $scope.featureClassFilter.splice(pos, 1);
         }
 
-    };
-    $scope.selectAllChrom = function () {
-        $('#regulationsChromMultiSelect').children().children().prop('checked', true);
-        for (var i in $scope.chromNames) {
-            $scope.chromSelected.push($scope.chromNames[i])
+        if($("[id='"+featureClass+"']").hasClass("btn-primary")){
+            $("[id='"+featureClass+"']").removeClass("btn-primary");
         }
+        else{
+            $("[id='"+featureClass+"']").addClass("btn-primary");
+        }
+    };
+
+
+    $scope.selectAllChrom = function () {
+
+        $('#regulationsChromMultiSelect').children().addClass("btn-primary");
+
+        for (var i in $scope.chromNames) {
+            $scope.chromSelected.push($scope.chromNames[i]);
+        }
+
+
+//        $('#regulationsChromMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.chromNames) {
+//            $scope.chromSelected.push($scope.chromNames[i])
+//        }
     };
     $scope.deselectAllChrom = function () {
+
+        $('#regulationsChromMultiSelect').children().removeClass("btn-primary");
         $scope.chromSelected = [];
-        $('#regulationsChromMultiSelect').children().children().prop('checked', false);
+
+//        $scope.chromSelected = [];
+//        $('#regulationsChromMultiSelect').children().children().prop('checked', false);
     };
-    $scope.selectAllFeatureTypeFilter = function () {
-        $('#featureTypeMultiSelect').children().children().prop('checked', true);
+    $scope.selectAllFeatureClassFilter = function () {
+
+        $('#featureClassMultiSelect').children().children().addClass("btn-primary");
+
         for (var i in $scope.listOfFeatureTypeFilters) {
-            $scope.featureTypesFilter.push($scope.listOfFeatureTypeFilters[i]);
+            $scope.featureClassFilter.push($scope.listOfFeatureTypeFilters[i]);
         }
+
+//        $('#featureTypeMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.listOfFeatureTypeFilters) {
+//            $scope.featureClassFilter.push($scope.listOfFeatureTypeFilters[i]);
+//        }
     };
-    $scope.deselectAllFeatureTypeFilter = function () {
-        $scope.featureTypesFilter = [];
-        $('#featureTypeMultiSelect').children().children().prop('checked', false);
+    $scope.deselectAllFeatureClassFilter = function () {
+
+        $('#featureClassMultiSelect').children().children().removeClass("btn-primary");
+
+        $scope.featureClassFilter = [];
+
+//        $scope.featureClassFilter = [];
+//        $('#featureTypeMultiSelect').children().children().prop('checked', false);
     };
 
     //-----------EVENTS---------------
@@ -100,7 +141,7 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
 ////        $scope.setSpecie();
 //    });
     $scope.$on('regulationsFeatureTypes', function () {
-        $scope.listOfFeatureTypeFilters = mySharedService.featureTypesFilter;
+        $scope.listOfFeatureTypeFilters = mySharedService.featureClassFilter;
     });
 //    $scope.$on('regulationsRegionGV', function () {
 //        $scope.specie = mySharedService.regulationsSpecieGV;
