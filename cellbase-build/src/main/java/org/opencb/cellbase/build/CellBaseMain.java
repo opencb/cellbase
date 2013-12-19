@@ -143,7 +143,7 @@ public class CellBaseMain {
                 if(indir != null) {
                     serializer = getSerializer(serializationOutput, commandLine);
                     VariationParser vp = new VariationParser(serializer);
-//                    vp.createVariationDatabases(Paths.get(indir));
+//                    vp.createVariationDatabase(Paths.get(indir));
 //                    vp.connect(Paths.get(indir));
 
 //					List<String> res = vp.queryByVariationId(13, "variation_synonym", Paths.get(indir));
@@ -152,7 +152,8 @@ public class CellBaseMain {
 //					System.out.println("b");
 //					res = vp.queryByVariationId(8, "variation_synonym", Paths.get(indir));
 //					System.out.println("c");
-                    vp.parse("", "", "", "", Paths.get(indir)); //, Paths.get(outfile)
+//                    vp.parse("", "", "", "", Paths.get(indir)); //, Paths.get(outfile)
+                    vp.parse(Paths.get(indir)); //, Paths.get(outfile)
                     vp.disconnect();
                 }
             }
@@ -216,6 +217,8 @@ public class CellBaseMain {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (FileFormatException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
     }

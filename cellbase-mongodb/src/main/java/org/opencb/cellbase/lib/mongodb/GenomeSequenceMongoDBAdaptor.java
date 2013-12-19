@@ -63,9 +63,10 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
         List<String> chunkIds;
+        List<Integer> integerChunkIds;
         for (Region region : regions) {
             chunkIds = new ArrayList<>();
-
+            integerChunkIds = new ArrayList<>();
             // positions below 1 are not allowed
             if (region.getStart() < 1) {
                 region.setStart(1);
@@ -80,8 +81,10 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
             for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
                 String chunkIdStr = region.getChromosome() + "_" + chunkId + "_" + chunkIdSuffix;
                 chunkIds.add(chunkIdStr);
+                integerChunkIds.add(chunkId);
             }
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(chunkIds);
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
             /****/
 
 //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId")

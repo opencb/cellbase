@@ -64,7 +64,7 @@ public class VariationParser_old {
 							String[] aux = attributesData[j].split("=");
 							switch (aux[0].toLowerCase()) {
 							case "id":
-								variation[i].setFeatureId(aux[1]);
+								/*variation[i].setFeatureId(aux[1]);*/
 								break;
 							case "variant_seq":
 								variation[i].setAlternate(aux[1].split(",")[i]);
