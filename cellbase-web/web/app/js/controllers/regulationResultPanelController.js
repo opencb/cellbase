@@ -281,7 +281,6 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 //        }
 //        //if there aren't any filters, show all genes data
         if ($scope.featureClassFilters.length == 0) {
-debugger
 //            arrayOfRegulations = CellbaseService.getAllRegulationsData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesRegulations, [], []);
             $scope.regulationsData= CellbaseService.getAllRegulationsData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesRegulations, []);
 
@@ -303,7 +302,9 @@ debugger
         if($scope.numResults != 0){
             $scope.toggleTree = [];
 
-            for(var i=0;i< 5; i++){
+            $scope.toggleTree.push(true);
+
+            for(var i=1;i< 5; i++){
                 $scope.toggleTree.push(false);
             }
             $scope.showAll = true;
@@ -419,19 +420,6 @@ debugger
                 }
             }
         }
-
-
-        console.log($scope.histone);
-        console.log($scope.openChromatin);
-        console.log($scope.transcriptionFactor);
-        console.log($scope.polymerase);
-        console.log($scope.microRNA);
-
-        console.log($scope.histoneNames);
-        console.log($scope.openChromatinNames);
-        console.log($scope.transcriptionFactorNames);
-        console.log($scope.polymeraseNames);
-        console.log($scope.microRNANames);
 
     };
 
@@ -644,9 +632,9 @@ debugger
     $scope.$on('clear', function () {
         $scope.clearAll();
     });
-    $scope.$on('newSpecie', function () {
-        $scope.clearAll();
-    });
+//    $scope.$on('newSpecie', function () {
+//        $scope.clearAll();
+//    });
 ////    $scope.$on('genesNewSpecieGV', function () {
 ////        $scope.clearAll();
 ////    });

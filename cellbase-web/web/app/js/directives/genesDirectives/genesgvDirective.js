@@ -13,14 +13,14 @@ myApp.directive('genesGenomeViewer', function () {
 
             $scope.$on('genesRegionToGV', function () {
 
-//                console.log("HOLAAAAAAAAAAAAAAAAAA");
-//                console.log(mySharedService.genesRegionToGV);
-//                console.log(mySharedService.genesSpecie.shortName);
-//                console.log("HOLAAAAAAAAAAAAAAAAAA");
 
-                $scope.broadcastRegion = false;
-                $scope.genomeViewer.setRegion(new Region(mySharedService.genesRegionToGV));
-//                $scope.genomeViewer.setSpecies(mySharedService.genesSpecie.shortName);
+                if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
+
+                    $scope.broadcastRegion = false;
+                    $scope.genomeViewer.setRegion(new Region(mySharedService.genesRegionToGV));
+    //                $scope.genomeViewer.setSpecies(mySharedService.genesSpecie.shortName);
+                }
+
             });
 
 
@@ -83,13 +83,18 @@ myApp.directive('genesGenomeViewer', function () {
                 handlers:{
                     'region:change':function(event){
 
-                        if( $scope.broadcastRegion){
+                        if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
+
+                            if($scope.broadcastRegion){
                             mySharedService.broadcastGenesRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
                         }
                         $scope.broadcastRegion = true;
+                        }
                     },
                     'region:move':function(event){
+                        if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
                             mySharedService.broadcastGenesRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
+                        }
                     },
 //                    'chromosome-button:change':function(event){
 //                    },

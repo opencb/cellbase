@@ -1,7 +1,7 @@
-/*! Genome Viewer - v1.0.3 - 2013-12-18 17:16:13
+/*! Genome Viewer - v1.0.3 - 2013-12-18 19:31:07
 * http://https://github.com/opencb/jsorolla/
 * Copyright (c) 2013  Licensed GPLv2 */
-/*! Genome Viewer - v1.0.3 - 2013-12-18 17:16:13
+/*! Genome Viewer - v1.0.3 - 2013-12-18 19:31:07
 * http://https://github.com/opencb/jsorolla/
 * Copyright (c) 2013  Licensed GPLv2 */
 var Utils = {
@@ -2721,32 +2721,32 @@ NetworkViewer.prototype = {
         }
 
         this.targetDiv = $('#' + this.targetId)[0];
-        this.div = $('<div id="' + this.id + '" class="bootstrap" style="height:100%;width:90%;border:1px solid lightgrey;position:relative;"></div>')[0];
+        this.div = $('<div id="' + this.id + '" class="bootstrap" style="height:100%;border:1px solid lightgrey;position:relative;"></div>')[0];
         $(this.targetDiv).append(this.div);
 
-        this.height = $(this.div).height();
-        this.width = $(this.div).width();
+        this.height = $(this.targetDiv).height();
+        this.width = $(this.targetDiv).width();
 
-        this.toolbarDiv = $('<div id="toolbar"></div>')[0];
-        this.editionbarDiv = $('<div id="editionbar"></div>')[0];
-        this.centerPanelDiv = $('<div id="centerpanel" style="postion:relative;"></div>')[0];
-        this.statusbarDiv = $('<div id="statusbar"></div>')[0];
+        this.toolbarDiv = $('<div id="nv-toolbar"></div>')[0];
+        this.editionbarDiv = $('<div id="nv-editionbar"></div>')[0];
+        this.centerPanelDiv = $('<div id="nv-centerpanel" style="postion:relative;"></div>')[0];
+        this.statusbarDiv = $('<div id="nv-statusbar"></div>')[0];
 
         $(this.div).append(this.toolbarDiv);
         $(this.div).append(this.editionbarDiv);
         $(this.div).append(this.centerPanelDiv);
         $(this.div).append(this.statusbarDiv);
 
-        this.mainPanelDiv = $('<div id="mainpanel" style="postion:absolute;right:0px;height:100%;"></div>')[0];
+        this.mainPanelDiv = $('<div id="nv-mainpanel" style="postion:absolute;right:0px;height:100%;"></div>')[0];
         $(this.centerPanelDiv).append(this.mainPanelDiv);
 
         if (this.sidePanel) {
-            this.sidePanelDiv = $('<div id="sidepanel" style="postion:absolute;right:0px;height:100%;"></div>')[0];
+            this.sidePanelDiv = $('<div id="nv-sidepanel" style="postion:absolute;right:0px;height:100%;"></div>')[0];
             $(this.centerPanelDiv).append(this.sidePanelDiv);
         }
 
         if (this.overviewPanel) {
-            this.overviewPanelDiv = $('<div id="overviewpanel" style="postion:absolute;bottom:10px;right:10px;width:200px;height:200px;border:1px solid lightgrey;"></div>')[0];
+            this.overviewPanelDiv = $('<div id="nv-overviewpanel" style="postion:absolute;bottom:10px;right:10px;width:200px;height:200px;border:1px solid lightgrey;"></div>')[0];
             $(this.centerPanelDiv).append(this.overviewPanelDiv);
         }
 
@@ -2887,6 +2887,7 @@ NetworkViewer.prototype = {
         var editionbarHeight = $(this.editionbarDiv).height();
         var height = this.height - toolbarHeight - editionbarHeight;
 
+        console.log(height)
         var networkSvgLayout = new NetworkSvgLayout({
             targetId: targetId,
             width: this.width,

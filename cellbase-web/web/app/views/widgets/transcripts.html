@@ -14,20 +14,20 @@
         </p>
         <p class="ocb-line-height-5">
             <span class="text-primary ocb-text-width-180">Location:</span>
-            <span class="ocb-text-width-300"> {{data.chromosome}} : {{data.start}} -{{data.end}}</span>
+            <span class="ocb-text-width-300"> {{data.chromosome}}:{{data.start}}-{{data.end}}</span>
 
             <span class="text-primary ocb-text-width-100">Strand:</span>
             <span> {{data.strand}}</span>
         </p>
         <p class="ocb-line-height-5">
-            <span class="text-primary ocb-text-width-180">Genomic Coding Start/End:</span>
-            <span class="ocb-text-width-300"> {{data.genomicCodingStart}} / {{data.genomicCodingStart}}</span>
+            <span class="text-primary ocb-text-width-180">Genomic coding (start-end):</span>
+            <span class="ocb-text-width-300"> {{data.genomicCodingStart}}-{{data.genomicCodingStart}}</span>
 
             <span class="text-primary ocb-text-width-100">CDS Length:</span>
             <span> {{data.cdsLength}}</span>
         </p>
         <p class="ocb-line-height-5">
-            <span class="text-primary ocb-text-width-180">CDNA Coding Start/End :</span>
+            <span class="text-primary ocb-text-width-180">cDNA coding (start-end):</span>
             <span class="ocb-text-width-300"> {{data.cdnaCodingStart}} / {{data.cdnaCodingEnd}}</span>
 
             <span class="text-primary ocb-text-width-100">Protein ID:</span>
@@ -42,9 +42,9 @@
     </h5>
 
     <ul class="nav nav-tabs" id="transcriptsTab">
-        <li class="active"><a href="#exons">Exons</a></li>
-        <li><a href="#tfbs" ng-click="changeTab()">TFBS</a></li>
-        <li><a href="#xrefs" ng-click="changeTab()">Xrefs</a></li>
+        <li class="active"><a href="#exons" data-toggle="tab">Exons</a></li>
+        <li><a href="#tfbs" ng-click="changeTab()" data-toggle="tab">TFBS</a></li>
+        <li><a href="#xrefs" ng-click="changeTab()" data-toggle="tab">Xrefs</a></li>
     </ul>
 
     <div class="tab-content">
@@ -60,7 +60,7 @@
                     </thead>
                     <tbody ng-repeat="exon in data.exons">
                         <td><small>{{exon.id}}</small></td>
-                        <td><small>{{exon.chromosome}} : {{exon.start}} - {{exon.end}}</small></td>
+                        <td><small>{{exon.chromosome}}:{{exon.start}}-{{exon.end}}</small></td>
                         <td><small>{{exon.strand}}</small></td>
                         <td><small>{{exon.phase}}</small></td>
                         <td><small>{{exon.exonNumber}}</small></td>
@@ -76,15 +76,15 @@
                         <th>pwm</th>
                         <th>Location</th>
                         <th>Strand</th>
-                        <th>Relative Start/End</th>
+                        <th>Relative (start-end)</th>
                         <th>Score</th>
                     </thead>
                     <tbody ng-repeat="tfbs in data.tfbs">
                         <td><small>{{tfbs.tfName}}</small></td>
                         <td><small>{{tfbs.pwm}}</small></td>
-                        <td><small>{{tfbs.chromosome}} : {{tfbs.start}} - {{tfbs.end}}</small></td>
+                        <td><small>{{tfbs.chromosome}}:{{tfbs.start}}-{{tfbs.end}}</small></td>
                         <td><small>{{tfbs.strand}}</small></td>
-                        <td><small>{{tfbs.relativeStart}} / {{relativeEnd}}</small></td>
+                        <td><small>{{tfbs.relativeStart}}-{{relativeEnd}}</small></td>
                         <td><small>{{tfbs.score}}</small></td>
                     </tbody>
                 </table>

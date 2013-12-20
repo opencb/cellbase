@@ -117,6 +117,58 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
     $scope.$on('newSpecie', function () {
         $scope.init();
         $scope.setSpecie();
+
+        if($scope.specie.shortName == "hsapiens"){
+            $scope.regions = "20:32850000-33500000";
+        }
+        if($scope.specie.shortName == "mmusculus"){
+            $scope.regions = "2:32850000-33500000";
+        }
+        if($scope.specie.shortName == "rnorvegicus"){
+            $scope.regions = "6:32850000-33500000";
+        }
+        if($scope.specie.shortName == "drerio"){
+            $scope.regions = "1:32850000-33500000";
+        }
+        if($scope.specie.shortName == "dmelanogaster"){
+            $scope.regions = "2L:12850000-13500000";
+        }
+        if($scope.specie.shortName == "celegans"){
+            $scope.regions = "V:12850000-13500000";
+        }
+        if($scope.specie.shortName == "scerevisiae"){
+            $scope.regions = "III:286620-316620";
+        }
+        if($scope.specie.shortName == "cfamiliaris"){
+            $scope.regions = "5:32850000-33500000";
+        }
+        if($scope.specie.shortName == "sscrofa"){
+            $scope.regions = "3:32850000-33500000";
+        }
+        if($scope.specie.shortName == "agambiae"){
+            $scope.regions = "2L:32850000-33500000";
+        }
+        if($scope.specie.shortName == "pfalciparum"){
+            $scope.regions = "11:1938337-2038337";
+        }
+
+
+        if($scope.specie.shortName != "hsapiens" || $scope.specie.shortName != "mmusculus"){
+            //disable variation tab
+            if(!$('#genesGV').hasClass("disabled")){
+                 $('#genesGV').addClass("disabled");
+            }
+
+            else{
+                //enable variation tab
+                if($('#genesGV').hasClass("disabled")){
+                    $('#genesGV').removeClass("disabled");
+                }
+            }
+        }
+
+        $scope.setResult();
+
     });
     $scope.$on('example', function () {
         $scope.init();
@@ -131,7 +183,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
 //        $scope.$apply();
 
         chromDiv[1].setAttribute("checked", "checked");
-        chromDiv[19].setAttribute("checked", "checked");
     });
     $scope.$on('genesNewSpecieGV', function () {
         $scope.init();

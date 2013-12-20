@@ -4,18 +4,18 @@
     <div id="regulationResultTree" class="pull-left ocb-margin-l-ten panel-default ocb-border-darkgray ocb-result-tree">
         <div class="panel-heading">
             <span style="margin-right:10px">Results</span>
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllVariantsTree()">
-                Expand</span></button>
+            <span class="badge">{{numResults}}</span>
+            <button style="margin-left:40px" type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllVariantsTree()">
+                <span class="glyphicon glyphicon-resize-full"></span></button>
             <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllVariantsTree()">
-                Collapse</span></button>
-            <span class="badge pull-right">{{numResults}}</span>
+                <span class="glyphicon glyphicon-resize-small"></span></button>
         </div>
         <div class="panel-body">
-
+          <div class="ocb-scroll-tree">
             <div class="list-group"
                  style="margin-bottom:2px; font-size:11px">
-                <a href="#" ng-click="showHistoneInfo();" class="list-group-item active"
-                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB">
+                <a ng-click="showHistoneInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
                     Histone
                     <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{histoneNames.length}}</span>
 
@@ -27,10 +27,11 @@
                     </a>
                 </a>
             </div>
+
             <div class="list-group"
                  style="margin-bottom:2px; font-size:11px">
-                <a href="#" ng-click="showOpenChromatinInfo();" class="list-group-item active"
-                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB">
+                <a ng-click="showOpenChromatinInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
                     Open Chromatin
                     <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{openChromatinNames.length}}</span>
 
@@ -45,9 +46,9 @@
 
             <div class="list-group"
                  style="margin-bottom:2px; font-size:11px">
-                <a href="#" ng-click="showTranscriptionFactorInfo();" class="list-group-item active"
-                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB">
-                    Open Chromatin
+                <a ng-click="showTranscriptionFactorInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
+                    Transcription Factor
                     <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{transcriptionFactorNames.length}}</span>
 
                     <a ng-show="toggleTree[2]"
@@ -61,9 +62,9 @@
 
             <div class="list-group"
                  style="margin-bottom:2px; font-size:11px">
-                <a href="#" ng-click="showPolymeraseInfo();" class="list-group-item active"
-                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB">
-                    Open Chromatin
+                <a ng-click="showPolymeraseInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
+                    Polymerase
                     <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{polymeraseNames.length}}</span>
 
                     <a ng-show="toggleTree[3]"
@@ -77,8 +78,8 @@
 
             <div class="list-group"
                  style="margin-bottom:2px; font-size:11px">
-                <a href="#" ng-click="showMicroRNAInfo();" class="list-group-item active"
-                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB">
+                <a ng-click="showMicroRNAInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
                     microRNA
                     <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{microRNANames.length}}</span>
 
@@ -90,6 +91,7 @@
                     </a>
                 </a>
             </div>
+          </div>
 
         </div>
     </div>

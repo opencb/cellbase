@@ -4,6 +4,7 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
 
     var sharedService = {};
 
+
     sharedService.initSpecie =  {longName: "Homo sapiens", shortName:"hsapiens", ensemblName: "Homo_sapiens"};
 
     //-----------genes--------------
@@ -12,6 +13,8 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
     sharedService.genesSpecieGV= sharedService.initSpecie;
     sharedService.genesIdFilter = "";
     sharedService.biotypesFilter = [];
+    this.geneProteinId = "";
+    this.proteinsIdLinks = [];
 
     //-----------variants------------
     sharedService.variantsSpecie= sharedService.initSpecie;
@@ -22,13 +25,14 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
 
     //---------regulations-----------
     sharedService.regulationsSpecie= sharedService.initSpecie;
-    sharedService.regionsAndChromosomesRegulations = "20:32850000-32860000";
+    sharedService.regionsAndChromosomesRegulations = "3:555-622666";
     sharedService.featureClassFilter = [];
 
 
     sharedService.getChromNamesSpecie = function(specie){
 //        $scope.specie = mySharedService.selectedSpecies;
         this.chromAllData = CellbaseService.getSpecieChromosomes(specie.shortName);
+
 
         var chromNames = [];
         for (var i in this.chromAllData) {
@@ -75,6 +79,32 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
         this.variantsSpecie = specie;
         this.regulationsSpecie = specie;
         this.chromNames = this.getChromNamesSpecie(specie);
+
+        if(specie.data.search("variation") == -1){
+            //disable variation tab
+            if(!$('#variationDiv').hasClass("disabled")){
+                $('#variationDiv').addClass("disabled");
+            }
+        }
+        else{
+            //enable variation tab
+            if($('#variationDiv').hasClass("disabled")){
+                $('#variationDiv').removeClass("disabled");
+            }
+        }
+
+        if(specie.data.search("regulation") == -1){
+            //disable regulation tab
+            if(!$('#regulationDiv').hasClass("disabled")){
+                $('#regulationDiv').addClass("disabled");
+            }
+        }
+        else{
+            //enable regulation tab
+            if($('#regulationDiv').hasClass("disabled")){
+                $('#regulationDiv').removeClass("disabled");
+            }
+        }
 
         $rootScope.$broadcast('newSpecie');
 //        $rootScope.$broadcast('genesRegionToGV');
@@ -149,6 +179,13 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
 
         $rootScope.$broadcast('genesRegionToGV');
     };
+    sharedService.broadcastGeneProteinsToNV = function(geneProteinId,proteinsIdLinks){
+        this.geneProteinId = geneProteinId;
+        this.proteinsIdLinks = proteinsIdLinks;
+
+        $rootScope.$broadcast('geneProteins');
+    };
+
 
 
     //================= Variants ===================
@@ -219,7 +256,9 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
             alert("No data selected");
         }
         else {
-            this.regionsAndChromosomesRegulations = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
+
+            this.regionsAndChromosomesRegulations = this.regions;  //por ahora
+            //this.regionsAndChromosomesRegulations = this.mergeChromosomesAndRegions(this.chromSelected, this.regions, this.chromAllData);
             $rootScope.$broadcast('regulationsNewResult');
         }
     };
@@ -409,15 +448,15 @@ myApp.service('CellbaseService', function () {
 
     //------------------ G E N E S ------------------
     //obtain genes and transcripts from regions of a specie and filter by biotypes
-    this.getGenesAndTranscripts = function (species, regions, biotypesFilter) {
+    this.getGenesAndTranscripts = function (specie, regions, biotypesFilter) {
         var dataGet = [];
         var url;
 
         if (biotypesFilter.length == 0) {
-            url = host + species + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
+            url = host + specie + '/genomic/region/' + regions + '/gene?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
         }
         else {
-            url = host + species + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
+            url = host + specie + '/genomic/region/' + regions + '/gene?biotype=' + biotypesFilter.join() + '&exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json';
         }
 
         $.ajax({
@@ -440,11 +479,11 @@ myApp.service('CellbaseService', function () {
         return dataGet;
     };
     //obtain genes and transcripts from a specie and filter by geneId or name
-    this.getGenesAndTranscriptsByIdOrName = function (species, geneId) {
+    this.getGenesAndTranscriptsByIdOrName = function (specie, geneId) {
         var dataGet = [];
 
         $.ajax({
-            url: host + species + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
+            url: host + specie + '/feature/gene/' + geneId + '/info?exclude=transcripts.xrefs,transcripts.exons,transcripts.tfbs&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
@@ -459,11 +498,11 @@ myApp.service('CellbaseService', function () {
         return dataGet;
     };
     //obtain all data of genes from a specie and filter by geneId or name
-    this.getGenesAllDataById = function (species, geneId) {
+    this.getGenesAllDataById = function (specie, geneId) {
         var dataGet = [];
 
         $.ajax({
-            url: host + species + '/feature/gene/' + geneId + '/info?&of=json',
+            url: host + specie + '/feature/gene/' + geneId + '/info?&of=json',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
@@ -475,17 +514,64 @@ myApp.service('CellbaseService', function () {
         return dataGet;
     };
 
+    this.getProteinsLinks = function (specie, geneName) {
+
+
+        var dataGet = [];
+        var url = host + specie + '/network/protein/all?interactor=' + geneName + '&of=json';
+
+        $.ajax({
+            url: url,
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+                if(data != null){
+                    for(var i in data.response.result){
+                        dataGet.push(data.response.result[i]);
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+        return dataGet;
+    };
+
+    //obtain all data of genes from a specie and filter by snpId or name
+    this.getBiotypes = function (specie) {
+        var dataGet = [];
+
+        $.ajax({
+            url: host + specie + '/feature/gene/biotypes',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                if(data != null){
+                    for (var i in data.response.result[0].biotypes) {
+                        dataGet.push(data.response.result[0].biotypes[i]);
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+
+        return dataGet;
+    };
 
     //---------------- V A R I A N T S -----------------
-    this.getAllSNPData = function (species, regions, conseqTypesFilter) {
+    this.getAllSNPData = function (specie, regions, conseqTypesFilter) {
         var dataGet = [];
         var url;
 
         if (conseqTypesFilter.length == 0) {
-            url = host + species + '/genomic/region/' + regions + '/snp?&of=json';
+            url = host + specie + '/genomic/region/' + regions + '/snp?';
         }
         else {
-            url = host + species + '/genomic/region/' + regions + '/snp?consequence_type=' + conseqTypesFilter.join() + '&of=json';
+            url = host + specie + '/genomic/region/' + regions + '/snp?consequence_type=' + conseqTypesFilter.join() + '&';
         }
 
         $.ajax({
@@ -508,12 +594,72 @@ myApp.service('CellbaseService', function () {
         return dataGet;
     };
 
+    this.getAllSNPDataPaginated = function (specie, regions, conseqTypesFilter, page) {
+        var dataGet = [];
+        var url;
+
+        if (conseqTypesFilter.length == 0) {
+            url = host + specie + '/genomic/region/' + regions + '/snp?limit=10&skip='+(page-1)*10;
+//            url = host + specie + '/genomic/region/' + regions + '/snp?&of=json';
+        }
+        else {
+            url = host + specie + '/genomic/region/' + regions + '/snp?limit=10&skip='+(page-1)*10+'&consequence_type=' + conseqTypesFilter.join();
+        }
+
+        $.ajax({
+            url: url,
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+
+                //falta que los datos los devuelva todos juntos
+
+                if(data != null){
+                    for(var i in data.response){
+                        for(var j in data.response[i].result){
+                            dataGet.push(data.response[i].result[j]);
+                        }
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+
+        return dataGet;
+    };
+    this.getCountSNPData = function (specie, regions) {
+        var numResults;
+        var url;
+            url = host + specie + '/genomic/region/' + regions + '/snp?count=true';
+//            url = host + specie + '/genomic/snp/consequenceTypes';
+
+        $.ajax({
+            url: url,
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                if(data != null){
+                    numResults = data.response[0].result[0].count;
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+
+        return numResults;
+    };
+
     //obtain all data of genes from a specie and filter by snpId or name
-    this.getVariantsDataById = function (species, snpId) {
+    this.getVariantsDataById = function (specie, snpId) {
         var dataGet = [];
 
         $.ajax({
-            url: host + species + '/feature/snp/' + snpId + '/info?&of=json',
+            url: host + specie + '/feature/snp/' + snpId + '/info?',
             async: false,
             dataType: 'json',
             success: function (data, textStatus, jqXHR) {
@@ -526,18 +672,43 @@ myApp.service('CellbaseService', function () {
         });
         return dataGet;
     };
+    //obtain all data of genes from a specie and filter by snpId or name
+    this.getConsequenceTypes = function (specie) {
+        var dataGet = [];
+
+        $.ajax({
+            url: host + specie + '/feature/snp/consequence_types',
+            async: false,
+            dataType: 'json',
+            success: function (data, textStatus, jqXHR) {
+
+                if(data != null){
+                    for (var i in data.response.result[0].consequenceTypes) {
+                        dataGet.push(data.response.result[0].consequenceTypes[i]);
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+            }
+        });
+
+
+        return dataGet;
+    };
 
 
     //------------- R E G U L A T I O N S -----------------
-    this.getAllRegulationsData = function (species, regions, featureClassFilter) {
+    this.getAllRegulationsData = function (specie, regions, featureClassFilter) {
+
+
         var dataGet = [];
         var url;
 
         if (featureClassFilter.length == 0) {
-            url = host + species + '/genomic/region/' + regions + '/regulatory?&of=json';
+            url = host + specie + '/genomic/region/' + regions + '/regulatory?&of=json';
         }
        else {
-             url = host + species + '/genomic/region/' + regions + '/feature?featureType='+ $featureClass.join() +'&of=json';
+             url = host + specie + '/genomic/region/' + regions + '/feature?featureType='+ $featureClass.join() +'&of=json';
          }
 
         $.ajax({

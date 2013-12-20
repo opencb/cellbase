@@ -113,8 +113,39 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
         $scope.setSpecie();
     });
     $scope.$on('newSpecie', function () {
-        $scope.init();
-        $scope.setSpecie();
+
+        if(mySharedService.variantsSpecie.shortName == "hsapiens" || mySharedService.variantsSpecie.shortName == "dmelanogaster"){
+
+            $scope.init();
+            $scope.setSpecie();
+
+            if($scope.specie.shortName == "hsapiens"){
+                $scope.regions = "20:32850000-32860000";
+            }
+            if($scope.specie.shortName == "dmelanogaster"){
+                $scope.regions = "2L:12850000-12855000";
+            }
+            if($scope.specie.shortName == "cfamiliaris"){
+                $scope.regions = "5:11850000-32950000";
+            }
+
+            $scope.setResult();
+
+            if(mySharedService.variantsSpecie.shortName == "dmelanogaster"){
+                //disable variation tab
+                if(!$('#variantsGV').hasClass("disabled")){
+                    $('#variantsGV').addClass("disabled");
+                }
+            }
+            else{
+                //enable variation tab
+                if($('#variantsGV').hasClass("disabled")){
+                    $('#variantsGV').removeClass("disabled");
+                }
+            }
+
+        }
+
     });
     $scope.$on('example', function () {
         $scope.init();

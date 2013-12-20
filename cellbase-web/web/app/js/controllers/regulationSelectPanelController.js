@@ -116,8 +116,18 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
         $scope.setSpecie();
     });
     $scope.$on('newSpecie', function () {
-        $scope.init();
-        $scope.setSpecie();
+
+
+        if(mySharedService.regulationsSpecie.shortName == "hsapiens"){
+            $scope.init();
+            $scope.setSpecie();
+
+            if($scope.specie.shortName == "hsapiens"){
+                $scope.regions = "3:555-622666";
+            }
+
+            $scope.setResult();
+        }
     });
     $scope.$on('example', function () {
         $scope.init();
