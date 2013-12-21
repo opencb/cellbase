@@ -313,9 +313,13 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/function_prediction")
-    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId") String query, @DefaultValue("") @QueryParam("aaPosition") String aaPosition) {
+    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId") String query,
+                                                               @DefaultValue("") @QueryParam("aaPosition") String aaPosition,
+                                                               @DefaultValue("") @QueryParam("aaChange") String aaChange) {
         try {
             checkVersionAndSpecies();
+            queryOptions.put("aaPosition", aaPosition);
+            queryOptions.put("aaChange", aaChange);
             ProteinFunctionPredictorDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinFunctionPredictorDBAdaptor(this.species, this.version);
             List<QueryResult> queryResults = mutationAdaptor.getAllByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions);
             return createOkResponse(queryResults);

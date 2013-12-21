@@ -97,7 +97,7 @@ public class MongoDBAdaptor extends DBAdaptor {
     //	}
 
     protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {
-        if (options != null && !options.getBoolean(returnField, true)) {
+        if (options != null ) { //&& !options.getBoolean(returnField, true)
             if (options.getList("include") != null) {
 //                options.put("include", options.get("include") + "," + returnField);
                 options.getList("include").add(returnField);
@@ -162,30 +162,38 @@ public class MongoDBAdaptor extends DBAdaptor {
     protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options, DBCollection dbCollection) {
         BasicDBList list = new BasicDBList();
 
-        System.out.println(returnFields);
-        DBCursor cursor = dbCollection.find(query, returnFields);
+        if (options.getBoolean("count")) {
+            Long count = dbCollection.count(query);
+            list.add(new BasicDBObject("count", count));
+        }else {
+            DBCursor cursor = dbCollection.find(query, returnFields);
 
-        int limit = options.getInt("limit", 0);
-        if (limit > 0) {
-            cursor.limit(limit);
-        }
-        BasicDBObject sort = (BasicDBObject) options.get("sort");
-        if (sort != null) {
-            cursor.sort(sort);
-        }
+            int limit = options.getInt("limit", 0);
+            if (limit > 0) {
+                cursor.limit(limit);
+            }
+            int skip = options.getInt("skip", 0);
+            if (skip > 0) {
+                cursor.skip(skip);
+            }
 
-        try {
-            if (cursor != null) {
-                while (cursor.hasNext()) {
-                    list.add(cursor.next());
+            BasicDBObject sort = (BasicDBObject) options.get("sort");
+            if (sort != null) {
+                cursor.sort(sort);
+            }
+
+            try {
+                if (cursor != null) {
+                    while (cursor.hasNext()) {
+                        list.add(cursor.next());
+                    }
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
                 }
             }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
-
         return list;
     }
 
@@ -219,7 +227,7 @@ public class MongoDBAdaptor extends DBAdaptor {
 
         // Select which fields are excluded and included in MongoDB query
         BasicDBObject returnFields = getReturnFields(options);
-
+        System.out.println(returnFields.toString());
         // Time parameters
 //		long timeStart = System.currentTimeMillis();
         long dbTimeStart, dbTimeEnd;

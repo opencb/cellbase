@@ -26,37 +26,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
-    //	private List<Gene> executeQuery(DBObject query, List<String> excludeFields) {
-    //		List<Gene> result = null;
-    //
-    //		DBCursor cursor = null;
-    //		if (excludeFields != null && excludeFields.size() > 0) {
-    //			BasicDBObject returnFields = new BasicDBObject("_id", 0);
-    //			for (String field : excludeFields) {
-    //				returnFields.put(field, 0);
-    //			}
-    //			cursor = mongoDBCollection.find(query, returnFields);
-    //		} else {
-    //			cursor = mongoDBCollection.find(query);
-    //		}
-    //
-    //		try {
-    //			if (cursor != null) {
-    //				result = new ArrayList<Gene>(cursor.size());
-    //				Gson jsonObjectMapper = new Gson();
-    //				Gene gene;
-    //				while (cursor.hasNext()) {
-    //					gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
-    //					result.add(gene);
-    //				}
-    //			}
-    //		} finally {
-    //			cursor.close();
-    //		}
-    //		return result;
-    //	}
-
-
     @Override
     public QueryResult getAll(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
@@ -128,73 +97,16 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         return executeQueryList(idList, queries, options);
     }
 
-
-//	public QueryResponse getAllEnsemblIds() {
-//		BasicDBObject query = new BasicDBObject();
-//
-//		query.put("id", "ENSG00000260748");
-//		BasicDBObject returnFields = new BasicDBObject();
-//		returnFields.put("transcripts.xrefs", 1);
-//		DBCursor cursor = mongoDBCollection.find(query);
-//		DBObject res = cursor.next();
-//		System.out.println(res.get("transcripts"));
-//
-//		//		BasicDBObject returnFields = new BasicDBObject();
-//		// returnFields.put("id", 1);
-//		//		returnFields.put("_id", 0);
-//		//		returnFields.put("id", 1);
-//		//		returnFields.put("name", 1);
-//
-//		query = new BasicDBObject();
-//		BasicDBObject orderBy = new BasicDBObject();
-//		orderBy.put("id", 1);
-//
-//		QueryResponse result = executeQuery("result", query, null);
-//		result.safePrint();
-//		//		List<String> idList = new ArrayList<String>(65000);
-//		//		DBCursor cursor = mongoDBCollection.find(query, returnFields).sort(orderBy);
-//		//
-//		//		QueryResult result = new QueryResult();
-//		//
-//		//
-//		//		DBObject explain = cursor.explain();
-//		//
-//		//
-//		//		//		((BasicBSONList)cursor).get("id");
-//		////		DBObject explain = cursor.explain();
-//		//		long start1 = System.currentTimeMillis();
-//		//		BasicDBList list = new BasicDBList();
-//		////		BasicBSONList list1 = new BasicBSONList();
-//		//		while(cursor.hasNext()) {
-//		//			list.add(cursor.next());
-//		////			list1.add(cursor.next());
-//		////			idList.add(obj.get("id").toString());
-//		//		}
-//		//		result.setResult(list.toString());
-//		//		long end1 = System.currentTimeMillis();
-//		//		System.out.println("DBCursor to JSON1:\n"+(end1-start1));
-//		//		cursor.close();
-//		//
-//		//		result.setDBTime(explain.get("millis"));
-//		//System.out.println(result.safeToString());
-//		return result;
-//	}
-
-
-    //	@Override
-    //	public List<Gene> getByXref(String xref, List<String> exclude) {
-    //		BasicDBObject query = new BasicDBObject("transcripts.xrefs.id", xref.toUpperCase());
-    //		return executeQuery(query, exclude);
-    //	}
-    //
-    //    @Override
-    //    public List<List<Gene>> getByXrefList(List<String> xrefList, List<String> exclude) {
-    //        List<List<Gene>> genes = new ArrayList<List<Gene>>(xrefList.size());
-    //        for (String name : xrefList) {
-    //            genes.add(getByXref(name, exclude));
-    //        }
-    //        return genes;
-    //    }
+    @Override
+    public QueryResult getAllBiotypes(QueryOptions options) {
+        String[] biotypes = applicationProperties.getProperty("CELLBASE."+version.toUpperCase()+".BIOTYPES").split(",");
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId("result");
+        DBObject result = new BasicDBObject("biotypes", biotypes);
+        queryResult.setResult(Arrays.asList(result));
+        queryResult.setDBTime(0);
+        return queryResult;
+    }
 
     @Override
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {

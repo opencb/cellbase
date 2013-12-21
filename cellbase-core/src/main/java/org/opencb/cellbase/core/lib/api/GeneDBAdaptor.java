@@ -33,6 +33,8 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
 	public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
+	public QueryResult getAllBiotypes(QueryOptions options);
+
 //	public Gene getByEnsemblId(String ensemblId, boolean fetchTranscriptsAndExons);
 //
 //	public List<Gene> getAllByEnsemblIdList(List<String> ensemblIdList, boolean fetchTranscriptsAndExons);

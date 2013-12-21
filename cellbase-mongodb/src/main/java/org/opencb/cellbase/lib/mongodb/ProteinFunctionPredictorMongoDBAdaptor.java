@@ -36,15 +36,17 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
     public List<QueryResult> getAllByEnsemblTranscriptIdList(List<String> transcriptIdList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>(transcriptIdList.size());
 
-        DBObject aaPosition = null;
         if(options.containsKey("aaPosition")) {
-
+            if(options.containsKey("aaChange")) {
+                addIncludeReturnFields("aaPositions."+options.getString("aaPosition")+"."+options.getString("aaChange"), options);
+            }else {
+                addIncludeReturnFields("aaPositions."+options.getString("aaPosition"), options);
+            }
         }
+
 
         for (String id : transcriptIdList) {
             QueryBuilder builder = QueryBuilder.start("transcriptId").is(id);
-
-
             queries.add(builder.get());
         }
 

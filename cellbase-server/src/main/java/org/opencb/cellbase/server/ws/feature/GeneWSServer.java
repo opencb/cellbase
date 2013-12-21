@@ -73,88 +73,6 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-//	@GET
-//	@Path("/{geneId}/fullinfo")
-//	public Response getFullInfoByEnsemblId(@PathParam("geneId") String query, @DefaultValue("") @QueryParam("sources") String sources) {
-//		try {
-//			checkVersionAndSpecies();
-//			
-//			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
-//			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
-//			return createJsonResponse(geneDBAdaptor.getAllByIdList(StringUtils.toList(query, ","), queryOptions));
-////			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","), exclude));
-//			
-//			
-////			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
-////			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
-////			XRefsDBAdaptor xRefsDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
-////			TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.version);
-////			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-////			ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-////			
-////			List<List<Gene>> geneListList = geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","));
-////
-//////			List<String> ensemblIds = new ArrayList<String>();
-//////			for(List<Gene> geneList : geneListList) {
-//////				if(geneList.size() > 0){
-//////					for(Gene gene : geneList) {
-//////						ensemblIds.add(gene.getStableId());
-//////					}
-//////				}
-//////				else{
-//////					ensemblIds.add(null);
-//////				}
-//////			}
-////			
-////			List<List<Transcript>> transcriptList = transcriptDBAdaptor.getByEnsemblGeneIdList(StringUtils.toList(query, ","));
-////			List<List<Xref>> goLists = xRefsDBAdaptor.getAllByDBName(StringUtils.toList(query, ","),"go");
-////			List<List<Xref>> interproLists = xRefsDBAdaptor.getAllByDBName(StringUtils.toList(query, ","),"interpro");
-////			List<List<Xref>> reactomeLists = xRefsDBAdaptor.getAllByDBName(StringUtils.toList(query, ","),"reactome");
-////			List<List<Tfbs>> tfbsLists = tfbsDBAdaptor.getAllByTargetGeneNameList(StringUtils.toList(query, ","));
-////			List<List<MirnaTarget>> mirnaTargetsList = mirnaDBAdaptor.getAllMiRnaTargetsByGeneNameList(StringUtils.toList(query, ","));
-////			List<List<ProteinFeature>> proteinFeaturesList = proteinDBAdaptor.getAllProteinFeaturesByProteinXrefList(StringUtils.toList(query, ","));
-////			
-////			StringBuilder response = new StringBuilder();
-////			response.append("[");
-////			for(int i = 0; i < geneListList.size(); i++) {
-////				response.append("[");
-////				boolean removeComma = false;
-////				for(int j = 0; j < geneListList.get(i).size(); j++) {
-////					removeComma = true;
-////					response.append("{");
-////					response.append("\"stableId\":"+"\""+geneListList.get(i).get(j).getId()+"\",");
-////					response.append("\"externalName\":"+"\""+geneListList.get(i).get(j).getName()+"\",");
-//////					response.append("\"externalDb\":"+"\""+geneListList.get(i).get(j).getExternalDb()+"\",");
-////					response.append("\"biotype\":"+"\""+geneListList.get(i).get(j).getBiotype()+"\",");
-////					response.append("\"status\":"+"\""+geneListList.get(i).get(j).getStatus()+"\",");
-////					response.append("\"chromosome\":"+"\""+geneListList.get(i).get(j).getChromosome()+"\",");
-////					response.append("\"start\":"+geneListList.get(i).get(j).getStart()+",");
-////					response.append("\"end\":"+geneListList.get(i).get(j).getEnd()+",");
-////					response.append("\"strand\":"+"\""+geneListList.get(i).get(j).getStrand()+"\",");
-////					response.append("\"source\":"+"\""+geneListList.get(i).get(j).getSource()+"\",");
-////					response.append("\"description\":"+"\""+geneListList.get(i).get(j).getDescription()+"\",");
-////					response.append("\"transcripts\":"+gson.toJson(transcriptList.get(i))+",");
-////					response.append("\"go\":"+gson.toJson(goLists.get(i))+",");
-////					response.append("\"interpro\":"+gson.toJson(interproLists.get(i))+",");
-////					response.append("\"reactome\":"+gson.toJson(reactomeLists.get(i))+",");
-////					response.append("\"tfbs\":"+gson.toJson(tfbsLists.get(i))+",");
-////					response.append("\"mirnaTargets\":"+gson.toJson(mirnaTargetsList.get(i))+",");
-////					response.append("\"proteinFeatures\":"+gson.toJson(proteinFeaturesList.get(i))+"");
-////					response.append("},");
-////				}
-////				if(removeComma){
-////					response.replace(response.length()-1, response.length(), "");
-////				}
-////				response.append("],");
-////			}
-////			response.replace(response.length()-1, response.length(), "");
-////			response.append("]");
-////			return  generateResponse(query,Arrays.asList(response));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return createErrorResponse("getFullInfoByEnsemblId", e.toString());
-//		}
-//	}
 
     @GET
     @Path("/{geneId}/transcript")
@@ -163,6 +81,19 @@ public class GeneWSServer extends GenericRestWSServer {
             checkVersionAndSpecies();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getTranscriptsById", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/biotypes")
+    public Response getAllBiotypes() {
+        try {
+            checkVersionAndSpecies();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
+            return createOkResponse(geneDBAdaptor.getAllBiotypes(queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getTranscriptsById", e.toString());

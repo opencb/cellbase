@@ -45,6 +45,19 @@ public class SnpWSServer extends GenericRestWSServer {
 		}
 	}
 
+    @GET
+    @Path("/consequence_types")
+    public Response getAllConsequenceTypes() {
+        try {
+            checkVersionAndSpecies();
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            return createOkResponse(variationDBAdaptor.getAllConsequenceTypes(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getByEnsemblId", e.toString());
+        }
+    }
+
 	//	private int snpId;
 	//	private String name;
 	//	private String chromosome;

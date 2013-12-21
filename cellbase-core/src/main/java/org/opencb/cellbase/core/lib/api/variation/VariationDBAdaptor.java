@@ -15,6 +15,8 @@ public interface VariationDBAdaptor {
 
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
+    public QueryResult getAllConsequenceTypes(QueryOptions options);
+
     
 	public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
 
