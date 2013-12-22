@@ -272,18 +272,17 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         if($scope.numResults != 0){
             $scope.toggleTree = [];
 
-            $scope.toggleTree.push(true)
-
-            for(var i=1;i< 10; i++){
+            for(var i=0;i< 10; i++){
                 $scope.toggleTree.push(false);
             }
+
             $scope.showAll = true;
             $scope.firstGeneId = Object.keys($scope.genesAndTranscriptsData)[0];
 
             $scope.lastDataShow = Object.keys($scope.genesAndTranscriptsData)[0];
             $scope.selectedGene = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, $scope.lastDataShow);
             //show the informtion of the first gen
-            $scope.showSelectedGene(Object.keys($scope.genesAndTranscriptsData)[0], 0);
+            $scope.showGene(Object.keys($scope.genesAndTranscriptsData)[0], 0);
 
 
 

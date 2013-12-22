@@ -4,7 +4,7 @@ var optionsBarControl = myApp.controller('optionsBarController', ['$scope', 'myS
     $scope.species = [
         {longName: "Homo sapiens", shortName: "hsapiens", ensemblName: "Homo_sapiens", data: "gene,variation,regulation"},
         {longName: "Mus musculus", shortName: "mmusculus", ensemblName: "Mus_musculus", data: "gene"},
-        {longName: "Rattus norvegicus", shortName: "rnorvegicus"},
+        {longName: "Rattus norvegicus", shortName: "rnorvegicus", data: "gene"},
         {longName: "Danio rerio", shortName: "drerio", ensembleName: "Danio_rerio", data: "gene"},
         {longName: "Drosophila melanogaster", shortName: "dmelanogaster", ensembleName: "Drosophila_melanogaster", data: "gene,variation"},
         {longName: "Caenorhabditis elegans", shortName: "celegans", ensembleName: "Caenorhabditis_elegans", data: "gene"},

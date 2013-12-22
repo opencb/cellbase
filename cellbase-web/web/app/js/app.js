@@ -80,6 +80,7 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
         this.regulationsSpecie = specie;
         this.chromNames = this.getChromNamesSpecie(specie);
 
+
         if(specie.data.search("variation") == -1){
             //disable variation tab
             if(!$('#variationDiv').hasClass("disabled")){
@@ -105,6 +106,8 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
                 $('#regulationDiv').removeClass("disabled");
             }
         }
+
+
 
         $rootScope.$broadcast('newSpecie');
 //        $rootScope.$broadcast('genesRegionToGV');

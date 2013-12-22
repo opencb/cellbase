@@ -308,9 +308,8 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
 
             $scope.toggleTree = [];
 
-            $scope.toggleTree.push(true)
 
-            for(var i=1;i< 10; i++){
+            for(var i=0;i< 10; i++){
                 $scope.toggleTree.push(false);
             }
 
