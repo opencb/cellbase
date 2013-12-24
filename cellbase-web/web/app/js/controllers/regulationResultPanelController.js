@@ -1,6 +1,6 @@
 var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
-//    $scope.toggleTree = []; //array of booleans that will show of hide the elements of the tree
+    $scope.toggleTree = []; //array of booleans that will show of hide the elements of the tree
 
     $scope.regulationsData = []; //$scope.regulationsData = {};
 //    $scope.paginationData = [];
@@ -32,6 +32,8 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
     $scope.disableFirstNumber = true;
     $scope.disableSecondNumber = false;
     $scope.disableThirdNumber = false;
+
+    $scope.featureClassTypes = ["Histone", "Open Chromatin",  "Transcription Factor", "Polymerase", "microRNA" ];
 
 
     //========================Pagination==================================
@@ -254,7 +256,6 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 //    };
     $scope.setResult = function(){
         $scope.featureClassFilters = mySharedService.featureClassFilter;
-        $scope.featureTypeFilters = mySharedService.featureTypesFilter;
         $scope.selectedSpecie = mySharedService.regulationsSpecie;
 
         $scope.regulationsData = []; //$scope.regulationsData = {};
@@ -279,18 +280,18 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 //            $scope.checkGeneFilter(featureClassFilter)
 //        }
 //        //if there aren't any filters, show all genes data
-        if ($scope.featureTypeFilters.length == 0 && $scope.featureClassFilters.length == 0) {
-
+        if ($scope.featureClassFilters.length == 0) {
 //            arrayOfRegulations = CellbaseService.getAllRegulationsData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesRegulations, [], []);
-            $scope.regulationsData= CellbaseService.getAllRegulationsData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesRegulations, [], []);
+            $scope.regulationsData= CellbaseService.getAllRegulationsData($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesRegulations, []);
 
+
+            $scope.separateFeatureClassTypes();
 
 
             //save the data in a hash table
 //            for (var i in arrayOfRegulations) {
 //                $scope.regulationsData[arrayOfRegulations[i].id] = arrayOfRegulations[i];
 //            }
-            $scope.getFeatureTypes(); //  $scope.getFeatureTypes(arrayOfRegulations);
         }
         $scope.numResults = $scope.regulationsData.length; //$scope.numResults = arrayOfRegulations.length;
         $scope.initPagination();
@@ -299,11 +300,13 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 
 //
         if($scope.numResults != 0){
-//            $scope.toggleTree = [];
-//
-//            for(var i=0;i< 10; i++){
-//                $scope.toggleTree.push(false);
-//            }
+            $scope.toggleTree = [];
+
+            $scope.toggleTree.push(true);
+
+            for(var i=1;i< 5; i++){
+                $scope.toggleTree.push(false);
+            }
             $scope.showAll = true;
 //            $scope.firstGeneId = Object.keys($scope.regulationsData)[0];
 //            $scope.lastDataShow = Object.keys($scope.regulationsData)[0];
@@ -347,32 +350,152 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 //        alert(messageError);
 //        }
 //    };
-    //obtain the list of the biotypes
-    $scope.getFeatureTypes = function () {
-        $scope.featureTypes = [];
 
-        for (var i in $scope.regulationsData) {
-            if ($scope.featureTypes.indexOf($scope.regulationsData[i].featureType) == -1) {
-                $scope.featureTypes.push($scope.regulationsData[i].featureType);
+
+    $scope.separateFeatureClassTypes = function () {
+
+        $scope.histone = [];
+        $scope.openChromatin = [];
+        $scope.transcriptionFactor = [];
+        $scope.polymerase = [];
+        $scope.microRNA = [];
+
+        $scope.histoneNames = [];
+        $scope.openChromatinNames = [];
+        $scope.transcriptionFactorNames = [];
+        $scope.polymeraseNames = [];
+        $scope.microRNANames = [];
+
+
+        $scope.showHistoneNames = true;
+
+        var pos;
+
+        for(var i in $scope.regulationsData){
+            if($scope.regulationsData[i].featureClass == "Histone")
+            {
+                $scope.histone.push($scope.regulationsData[i]);
+
+                pos = $scope.histoneNames.indexOf($scope.regulationsData[i].name);
+                if (pos == -1) {
+                    $scope.histoneNames.push($scope.regulationsData[i].name);
+                }
+
+            }
+            if($scope.regulationsData[i].featureClass == "Open Chromatin")
+            {
+                $scope.openChromatin.push($scope.regulationsData[i]);
+
+                pos = $scope.openChromatinNames.indexOf($scope.regulationsData[i].name);
+                if (pos == -1) {
+                    $scope.openChromatinNames.push($scope.regulationsData[i].name);
+                }
+            }
+            if($scope.regulationsData[i].featureClass == "Transcription Factor")
+            {
+                $scope.transcriptionFactor.push($scope.regulationsData[i]);
+
+                pos = $scope.transcriptionFactorNames.indexOf($scope.regulationsData[i].name);
+                if (pos == -1) {
+                    $scope.transcriptionFactorNames.push($scope.regulationsData[i].name);
+                }
+            }
+            if($scope.regulationsData[i].featureClass == "Polymerase")
+            {
+                $scope.polymerase.push($scope.regulationsData[i]);
+
+                pos = $scope.polymeraseNames.indexOf($scope.regulationsData[i].name);
+                if (pos == -1) {
+                    $scope.polymeraseNames.push($scope.regulationsData[i].name);
+                }
+
+            }
+            if($scope.regulationsData[i].featureClass == "microRNA")
+            {
+                $scope.microRNA.push($scope.regulationsData[i]);
+
+                pos = $scope.microRNANames.indexOf($scope.regulationsData[i].name);
+                if (pos == -1) {
+                    $scope.microRNANames.push($scope.regulationsData[i].name);
+                }
             }
         }
-//        for (var i in arrayOfRegulations) {
-//            if ($scope.featureTypes.indexOf(arrayOfRegulations[i].featureType) == -1) {
-//                $scope.featureTypes.push(arrayOfRegulations[i].featureType);
-//            }
-//        }
 
-        mySharedService.broadcastVariationsFeatureTypes($scope.featureTypes);
     };
+
+
 //    //===================== tree events ========================
 //    //show gen panel
-//    $scope.showSelectedGene = function (geneId, index) {
+
+
+    //-------------Show Type Info-----------------
+    $scope.showHistoneInfo = function () {
+        $scope.showTypeData(0,$scope.histone);
+    };
+    $scope.showOpenChromatinInfo = function () {
+        $scope.showTypeData(1,$scope.openChromatin);
+    };
+    $scope.showTranscriptionFactorInfo = function () {
+        $scope.showTypeData(2,$scope.transcriptionFactor);
+    };
+    $scope.showPolymeraseInfo = function () {
+        $scope.showTypeData(3,$scope.polymerase);
+    };
+    $scope.showMicroRNAInfo = function () {
+        $scope.showTypeData(4,$scope.microRNA);
+    };
+    $scope.showTypeData = function (index, data) {
+
+        if($scope.toggleTree[index]){
+            $scope.toggleTree[index] = false;
+        }
+        else{
+            $scope.toggleTree[index] = true;
+        }
+        $scope.regulationsData = data;
+        $scope.initPagination();
+    };
+
+
+
+    //--------------Show Name Info--------------
+    $scope.showHistoneNameInfo = function (name) {
+        $scope.showTypeNameData($scope.histone, name);
+    };
+    $scope.showOpenChromatinNamesInfo = function (name) {
+        $scope.showTypeNameData($scope.openChromatin, name);
+    };
+    $scope.showTranscriptionFactorNamesInfo = function (name) {
+        $scope.showTypeNameData($scope.transcriptionFactor, name);
+    };
+    $scope.showPolymeraseNamesInfo = function (name) {
+        $scope.showTypeNameData($scope.polymerase, name);
+    };
+    $scope.showMicroRNANamesInfo = function (name) {
+        $scope.showTypeNameData($scope.microRNA, name);
+    };
+
+    $scope.showTypeNameData = function (data, name) {
+        $scope.regulationsData = [];
+
+        for (var i in data){
+            if(data[i].name == name){
+                $scope.regulationsData.push(data[i]);
+            }
+        }
+        $scope.initPagination();
+    };
+
+
+//    $scope.showSelectedType = function (type, index) {
 //        if($scope.toggleTree[index]){
 //            $scope.toggleTree[index] = false;
 //        }
 //        else{
 //            $scope.toggleTree[index] = true;
 //        }
+
+
 //        if ($scope.lastDataShow != geneId) {
 //            $scope.lastDataShow = geneId;
 //            $scope.showGenePanel = true;
@@ -390,8 +513,8 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 //
 //        mySharedService.broadcastGenesRegionToGV($scope.selectedGene.chromosome+":"+$scope.selectedGene.start+"-"+$scope.selectedGene.end);
 //    };
-//    //show transcripts panel
-//    $scope.showSelectedTranscript = function (geneId, transcriptName) {
+    //show transcripts panel
+    $scope.showSelectedRegulation = function (geneId, transcriptName) {
 //        var transcripts;
 //
 //        if ($scope.lastDataShow != geneId) {
@@ -409,7 +532,7 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 //
 //        mySharedService.broadcastGenesRegionToGV($scope.selectedTranscript.chromosome+":"+$scope.selectedTranscript.start+"-"+$scope.selectedTranscript.end);
 //
-//    };
+    };
 //
 //    //show transcripts panel from transcripts table
 //    $scope.showTanscriptFromTable = function (transcriptName) {
@@ -509,9 +632,9 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
     $scope.$on('clear', function () {
         $scope.clearAll();
     });
-    $scope.$on('newSpecie', function () {
-        $scope.clearAll();
-    });
+//    $scope.$on('newSpecie', function () {
+//        $scope.clearAll();
+//    });
 ////    $scope.$on('genesNewSpecieGV', function () {
 ////        $scope.clearAll();
 ////    });

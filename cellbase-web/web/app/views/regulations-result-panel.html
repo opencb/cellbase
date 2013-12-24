@@ -1,6 +1,106 @@
-<div ng-show="showAll" class="ocb-inline-block ocb-result-width">
+<div ng-show="showAll" class="ocb-inline-block ">
 
-    <div id="variantsResultPanels" class="pull-left ocb-margin-l-ten">
+
+    <div id="regulationResultTree" class="pull-left ocb-margin-l-ten panel-default ocb-border-darkgray ocb-result-tree">
+        <div class="panel-heading">
+            <span style="margin-right:10px">Results</span>
+            <span class="badge">{{numResults}}</span>
+            <button style="margin-left:40px" type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllVariantsTree()">
+                <span class="glyphicon glyphicon-resize-full"></span></button>
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllVariantsTree()">
+                <span class="glyphicon glyphicon-resize-small"></span></button>
+        </div>
+        <div class="panel-body">
+          <div class="ocb-scroll-tree">
+            <div class="list-group"
+                 style="margin-bottom:2px; font-size:11px">
+                <a ng-click="showHistoneInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
+                    Histone
+                    <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{histoneNames.length}}</span>
+
+                    <a ng-show="toggleTree[0]"
+                       ng-click="showHistoneNameInfo(name)"
+                       ng-repeat="name in histoneNames"
+                       class="list-group-item">
+                        <div style="margin-left: 20px">{{name}}</div>
+                    </a>
+                </a>
+            </div>
+
+            <div class="list-group"
+                 style="margin-bottom:2px; font-size:11px">
+                <a ng-click="showOpenChromatinInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
+                    Open Chromatin
+                    <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{openChromatinNames.length}}</span>
+
+                    <a ng-show="toggleTree[1]"
+                       ng-click="showOpenChromatinNamesInfo(name)"
+                       ng-repeat="name in openChromatinNames"
+                       class="list-group-item">
+                        <div style="margin-left: 20px">{{name}}</div>
+                    </a>
+                </a>
+            </div>
+
+            <div class="list-group"
+                 style="margin-bottom:2px; font-size:11px">
+                <a ng-click="showTranscriptionFactorInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
+                    Transcription Factor
+                    <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{transcriptionFactorNames.length}}</span>
+
+                    <a ng-show="toggleTree[2]"
+                       ng-click="showTranscriptionFactorNamesInfo(name)"
+                       ng-repeat="name in transcriptionFactorNames"
+                       class="list-group-item">
+                        <div style="margin-left: 20px">{{name}}</div>
+                    </a>
+                </a>
+            </div>
+
+            <div class="list-group"
+                 style="margin-bottom:2px; font-size:11px">
+                <a ng-click="showPolymeraseInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
+                    Polymerase
+                    <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{polymeraseNames.length}}</span>
+
+                    <a ng-show="toggleTree[3]"
+                       ng-click="showPolymeraseNamesInfo(name)"
+                       ng-repeat="name in polymeraseNames"
+                       class="list-group-item">
+                        <div style="margin-left: 20px">{{name}}</div>
+                    </a>
+                </a>
+            </div>
+
+            <div class="list-group"
+                 style="margin-bottom:2px; font-size:11px">
+                <a ng-click="showMicroRNAInfo();" class="list-group-item active"
+                   style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
+                    microRNA
+                    <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{microRNANames.length}}</span>
+
+                    <a ng-show="toggleTree[4]"
+                       ng-click="showMicroRNANamesInfo(name)"
+                       ng-repeat="name in microRNANames"
+                       class="list-group-item">
+                        <div style="margin-left: 20px">{{name}}</div>
+                    </a>
+                </a>
+            </div>
+          </div>
+
+        </div>
+    </div>
+
+
+
+    <div id="regulationResultPanels" class="pull-left ocb-margin-l-ten" style="width:900px">
+
+
         <div class="list-group">
             <a class="list-group-item active ocb-text-center">
                 Regulations information

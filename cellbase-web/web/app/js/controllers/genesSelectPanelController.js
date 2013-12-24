@@ -37,6 +37,14 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         else {
             $scope.chromSelected.splice(pos, 1);
         }
+
+        if($('#genes'+chrom).hasClass("btn-primary")){
+            $('#genes'+chrom).removeClass("btn-primary");
+        }
+        else{
+            $('#genes'+chrom).addClass("btn-primary");
+        }
+
     };
 
     $scope.addBiotypeFilter = function (biotype) {
@@ -48,27 +56,57 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
         else {
             $scope.biotypesFilter.splice(pos, 1);
         }
+
+
+
+        if($('#'+biotype).hasClass("btn-primary")){
+            $('#'+biotype).removeClass("btn-primary");
+        }
+        else{
+            $('#'+biotype).addClass("btn-primary");
+        }
+
     };
 
     $scope.selectAllChrom = function () {
-        $('#genesChromMultiSelect').children().children().prop('checked', true);
+
+        $('#genesChromMultiSelect').children().addClass("btn-primary");
+
         for (var i in $scope.chromNames) {
-            $scope.chromSelected.push($scope.chromNames[i])
+            $scope.chromSelected.push($scope.chromNames[i]);
         }
+
+//        $('#genesChromMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.chromNames) {
+//            $scope.chromSelected.push($scope.chromNames[i])
+//        }
     };
     $scope.deselectAllChrom = function () {
+
+        $('#genesChromMultiSelect').children().removeClass("btn-primary");
         $scope.chromSelected = [];
-        $('#genesChromMultiSelect').children().children().prop('checked', false);
+
+        //$('#genesChromMultiSelect').children().children().prop('checked', false);
     };
     $scope.selectAllBiotypeFilter = function () {
-        $('#BiotypesMultiSelect').children().children().prop('checked', true);
+
+        $('#BiotypesMultiSelect').children().addClass("btn-primary");
         for (var i in $scope.listOfbiotypeFilters) {
             $scope.biotypesFilter.push($scope.listOfbiotypeFilters[i]);
         }
+
+//        $('#BiotypesMultiSelect').children().children().prop('checked', true);
+//        for (var i in $scope.listOfbiotypeFilters) {
+//            $scope.biotypesFilter.push($scope.listOfbiotypeFilters[i]);
+//        }
     };
     $scope.deselectAllBiotypeFilter = function () {
+
+        $('#BiotypesMultiSelect').children().removeClass("btn-primary");
         $scope.biotypesFilter = [];
-        $('#BiotypesMultiSelect').children().children().prop('checked', false);
+
+//        $scope.biotypesFilter = [];
+//        $('#BiotypesMultiSelect').children().children().prop('checked', false);
     };
 
     //-----------EVENTS---------------
@@ -79,6 +117,58 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
     $scope.$on('newSpecie', function () {
         $scope.init();
         $scope.setSpecie();
+
+        if($scope.specie.shortName == "hsapiens"){
+            $scope.regions = "20:32850000-33500000";
+        }
+        if($scope.specie.shortName == "mmusculus"){
+            $scope.regions = "2:32850000-33500000";
+        }
+        if($scope.specie.shortName == "rnorvegicus"){
+            $scope.regions = "6:32850000-33500000";
+        }
+        if($scope.specie.shortName == "drerio"){
+            $scope.regions = "1:32850000-33500000";
+        }
+        if($scope.specie.shortName == "dmelanogaster"){
+            $scope.regions = "2L:12850000-13500000";
+        }
+        if($scope.specie.shortName == "celegans"){
+            $scope.regions = "V:12850000-13500000";
+        }
+        if($scope.specie.shortName == "scerevisiae"){
+            $scope.regions = "III:286620-316620";
+        }
+        if($scope.specie.shortName == "cfamiliaris"){
+            $scope.regions = "5:32850000-33500000";
+        }
+        if($scope.specie.shortName == "sscrofa"){
+            $scope.regions = "3:32850000-33500000";
+        }
+        if($scope.specie.shortName == "agambiae"){
+            $scope.regions = "2L:32850000-33500000";
+        }
+        if($scope.specie.shortName == "pfalciparum"){
+            $scope.regions = "11:1938337-2038337";
+        }
+
+
+        if($scope.specie.shortName != "hsapiens" || $scope.specie.shortName != "mmusculus"){
+            //disable variation tab
+            if(!$('#genesGV').hasClass("disabled")){
+                 $('#genesGV').addClass("disabled");
+            }
+
+            else{
+                //enable variation tab
+                if($('#genesGV').hasClass("disabled")){
+                    $('#genesGV').removeClass("disabled");
+                }
+            }
+        }
+
+        $scope.setResult();
+
     });
     $scope.$on('example', function () {
         $scope.init();
@@ -93,7 +183,6 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
 //        $scope.$apply();
 
         chromDiv[1].setAttribute("checked", "checked");
-        chromDiv[19].setAttribute("checked", "checked");
     });
     $scope.$on('genesNewSpecieGV', function () {
         $scope.init();

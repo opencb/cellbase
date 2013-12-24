@@ -12,8 +12,11 @@ myApp.directive('variantsGenomeViewer', function () {
             $scope.broadcastRegion = true;
 
             $scope.$on('variantsRegionToGV', function () {
-                $scope.broadcastRegion = false;
-                $scope.genomeViewer.setRegion(new Region(mySharedService.variantsRegionToGV))
+
+                if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
+                    $scope.broadcastRegion = false;
+                    $scope.genomeViewer.setRegion(new Region(mySharedService.variantsRegionToGV))
+                }
             });
 
 
@@ -77,12 +80,17 @@ myApp.directive('variantsGenomeViewer', function () {
                 },
                 handlers:{
                     'region:change':function(event){
-
-                        if( $scope.broadcastRegion){
+                        if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
+                                if( $scope.broadcastRegion){
+                                mySharedService.broadcastVariantsRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
+                            }
+                            $scope.broadcastRegion = true;
+                        }
+                    },
+                    'region:move':function(event){
+                        if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
                             mySharedService.broadcastVariantsRegionGV(event.region.chromosome + ":" + event.region.start + "-" + event.region.end);
                         }
-                        $scope.broadcastRegion = true;
-
                     },
 //                    'chromosome-button:change':function(event){
 //                    },
