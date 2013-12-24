@@ -2,10 +2,7 @@ package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
-import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
-import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
-import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -274,7 +271,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
             checkVersionAndSpecies();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
                     this.version);
-            return generateResponse(query, transcriptDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query)));
+//            return generateResponse(query, transcriptDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query)));
+            return Response.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getSequencesByIdList", e.toString());
@@ -288,7 +286,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
             checkVersionAndSpecies();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
                     this.version);
-            return generateResponse(query, transcriptDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query)));
+//            return generateResponse(query, transcriptDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query)));
+            return Response.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getRegionsByIdList", e.toString());
@@ -305,6 +304,24 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
             List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
 //            return generateResponse(query, "MUTATION", queryResults);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getMutationByGene", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{transcriptId}/function_prediction")
+    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId") String query,
+                                                               @DefaultValue("") @QueryParam("aaPosition") String aaPosition,
+                                                               @DefaultValue("") @QueryParam("aaChange") String aaChange) {
+        try {
+            checkVersionAndSpecies();
+            queryOptions.put("aaPosition", aaPosition);
+            queryOptions.put("aaChange", aaChange);
+            ProteinFunctionPredictorDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinFunctionPredictorDBAdaptor(this.species, this.version);
+            List<QueryResult> queryResults = mutationAdaptor.getAllByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             e.printStackTrace();

@@ -11,19 +11,19 @@ public class Variation {
 	private int start; 				//2
 	private int end; 				//3
 	private String strand; 			//4
-	private String type;		// Types: SNV, MUT, INDEL, SV
+	private String type;		    // Allowed type values: SNV, MUT, INDEL, SV
 	private String reference;
 	private String alternate;
 	private String alleleString;
 	private String ancestralAllele;
 	private String displayConsequenceType;
-	
-	private String species; 
-	private String assembly;
-	private String source;
-	private String version;
- 
 	private List<String> consequenceTypes;
+
+//	private String species;
+//	private String assembly;
+//	private String source;
+//	private String version;
+
 	private List<TranscriptVariation> transcriptVariations = new ArrayList<>();
 	private Phenotype phenotype;
 	private List<SampleGenotype> samples = new ArrayList<>();
@@ -31,7 +31,7 @@ public class Variation {
 	private List<Xref> xrefs = new ArrayList<>();
 	
 	// Required
-	private String featureId;
+//	private String featureId;
 
 	// Optional
 	private String minorAllele;
@@ -52,9 +52,9 @@ public class Variation {
 	}
 
 	public Variation(String id, String chromosome, String type, int start, int end, String strand, String reference,
-			String alternate, String alleleString, String ancestralAllele, String displayConsequenceType, String species, String assembly, String source, String version,
+			String alternate, String alleleString, String ancestralAllele, String displayConsequenceType, /*String species, String assembly, String source, String version,*/
 			List<String> consequencesTypes, List<TranscriptVariation> transcriptVariations, Phenotype phenotype, List<SampleGenotype> samples,
-			List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, String featureId, String minorAllele,
+			List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, /*String featureId,*/ String minorAllele,
 			String minorAlleleFreq, String validationStatus, String evidence) {
 		this.id = id;
 		this.chromosome = chromosome;
@@ -68,10 +68,10 @@ public class Variation {
 		this.ancestralAllele = ancestralAllele;
 		this.displayConsequenceType = displayConsequenceType;
 
-		this.species = species;
-		this.assembly = assembly;
-		this.source = source;
-		this.version = version;
+//		this.species = species;
+//		this.assembly = assembly;
+//		this.source = source;
+//		this.version = version;
 
 		this.consequenceTypes = consequencesTypes;
 		this.transcriptVariations = transcriptVariations;
@@ -80,7 +80,7 @@ public class Variation {
 		this.populationFrequencies = populationFrequencies;
 		this.xrefs = xrefs;
 		
-		this.featureId = featureId;
+//		this.featureId = featureId;
 		this.minorAllele = minorAllele;
 		this.minorAlleleFreq = minorAlleleFreq;
 		this.validationStatus = validationStatus;
@@ -88,37 +88,37 @@ public class Variation {
 	}
 
 
-	public String getSpecies() {
-		return species;
-	}
-
-	public void setSpecies(String species) {
-		this.species = species;
-	}
-
-	public String getAssembly() {
-		return assembly;
-	}
-
-	public void setAssembly(String assembly) {
-		this.assembly = assembly;
-	}
-
-	public String getSource() {
-		return source;
-	}
-
-	public void setSource(String source) {
-		this.source = source;
-	}
-
-	public String getVersion() {
-		return version;
-	}
-
-	public void setVersion(String version) {
-		this.version = version;
-	}
+//	public String getSpecies() {
+//		return species;
+//	}
+//
+//	public void setSpecies(String species) {
+//		this.species = species;
+//	}
+//
+//	public String getAssembly() {
+//		return assembly;
+//	}
+//
+//	public void setAssembly(String assembly) {
+//		this.assembly = assembly;
+//	}
+//
+//	public String getSource() {
+//		return source;
+//	}
+//
+//	public void setSource(String source) {
+//		this.source = source;
+//	}
+//
+//	public String getVersion() {
+//		return version;
+//	}
+//
+//	public void setVersion(String version) {
+//		this.version = version;
+//	}
 
 	public List<SampleGenotype> getSamples() {
 		return samples;
@@ -130,14 +130,6 @@ public class Variation {
 
 	public void setXrefs(List<Xref> xrefs) {
 		this.xrefs = xrefs;
-	}
-
-	public String getName() {
-		return id;
-	}
-
-	public void setName(String name) {
-		this.id = name;
 	}
 
 	public String getChromosome() {
@@ -180,13 +172,13 @@ public class Variation {
 		this.populationFrequencies = populationFrequencies;
 	}
 
-	public String getFeatureId() {
-		return featureId;
-	}
-
-	public void setFeatureId(String featureId) {
-		this.featureId = featureId;
-	}
+//	public String getFeatureId() {
+//		return featureId;
+//	}
+//
+//	public void setFeatureId(String featureId) {
+//		this.featureId = featureId;
+//	}
 
 	public String getMinorAllele() {
 		return minorAllele;
@@ -300,4 +292,11 @@ public class Variation {
 		this.phenotype = phenotype;
 	}
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }

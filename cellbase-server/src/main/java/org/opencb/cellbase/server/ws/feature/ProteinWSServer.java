@@ -78,7 +78,21 @@ public class ProteinWSServer extends GenericRestWSServer {
 			return createErrorResponse("getFeatures", e.toString());
 		}
 	}
-	
+
+    @GET
+    @Path("/{proteinName}/function_prediction")
+    public Response getFunctionalPredictions(@PathParam("proteinName") String query, @DefaultValue("") @QueryParam("source") String source) {
+        try {
+            checkVersionAndSpecies();
+            queryOptions.put("disease", Splitter.on(",").splitToList(source));
+            ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+            return generateResponse(query, "PROTEIN_FEATURE", adaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getFeatures", e.toString());
+        }
+    }
+
 //	@GET
 //	@Path("/{proteinId}/association")
 //	public Response getInteraction(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("type") String type) {

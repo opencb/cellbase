@@ -1,20 +1,25 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
-
-import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
+import org.opencb.cellbase.core.lib.api.FeatureDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
-public interface MutationDBAdaptor {
+public interface MutationDBAdaptor extends FeatureDBAdaptor {
 
-    public QueryResult getById(String id, QueryOptions options);
+    public QueryResult getAllById(String id, QueryOptions options);
 
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+
+
+    public QueryResult getAllDiseases(QueryOptions options);
+
+    public QueryResult getAllByDisease(String geneName, QueryOptions options);
+
+    public List<QueryResult> getAllByDiseaseList(List<String> geneName, QueryOptions options);
 
 
     public QueryResult getByGeneName(String geneName, QueryOptions options);

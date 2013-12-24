@@ -21,41 +21,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         mongoDBCollection = db.getCollection("variation");
     }
 
-    //    private List<Variation> executeQuery(DBObject query, List<String> excludeFields) {
-    //        List<Variation> result = null;
-    //
-    //        DBCursor cursor = null;
-    //        if (excludeFields != null && excludeFields.size() > 0) {
-    //            BasicDBObject returnFields = new BasicDBObject();
-    //                returnFields.put("_id", 0);
-    //            for (String field : excludeFields) {
-    //                returnFields.put(field, 0);
-    //            }
-    //            System.out.println(query);
-    //            System.out.println(returnFields);
-    //            cursor = mongoDBCollection.find(query, returnFields);
-    //
-    //        } else {
-    //            System.out.println(query);
-    //            cursor = mongoDBCollection.find(query);
-    //        }
-    //
-    //
-    //        try {
-    //            if (cursor != null) {
-    //                result = new ArrayList<Variation>(cursor.size());
-    ////                Gson jsonObjectMapper = new Gson();
-    //                Variation variation = null;
-    //                while (cursor.hasNext()) {
-    ////                    variation = (Variation) jsonObjectMapper.fromJson(cursor.next().toString(), Variation.class);
-    //                    result.add(variation);
-    //                }
-    //            }
-    //        } finally {
-    //            cursor.close();
-    //        }
-    //        return result;
-    //    }
 
     @Override
     public QueryResult getById(String id, QueryOptions options) {
@@ -71,6 +36,17 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         }
 
         return executeQueryList(idList, queries, options);
+    }
+
+    @Override
+    public QueryResult getAllConsequenceTypes(QueryOptions options) {
+        String[] consquenceTypes = applicationProperties.getProperty("CELLBASE."+version.toUpperCase()+".CONSEQUENCE_TYPES").split(",");
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId("result");
+        DBObject result = new BasicDBObject("consequenceTypes", consquenceTypes);
+        queryResult.setResult(Arrays.asList(result));
+        queryResult.setDBTime(0);
+        return queryResult;
     }
 
 

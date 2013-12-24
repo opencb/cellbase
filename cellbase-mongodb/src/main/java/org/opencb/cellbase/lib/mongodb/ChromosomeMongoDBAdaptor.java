@@ -81,7 +81,7 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
 //        return null;
 //    }
 
-//	public Chromosome getById(String name) {
+//	public Chromosome getAllById(String name) {
 //		for (Chromosome chromosome : executeQuery()) {
 //			if (chromosome.getName().equals(name)) {
 //				return chromosome;

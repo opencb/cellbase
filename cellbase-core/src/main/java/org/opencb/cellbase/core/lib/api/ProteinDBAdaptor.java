@@ -2,6 +2,8 @@ package org.opencb.cellbase.core.lib.api;
 
 import org.opencb.cellbase.core.common.ProteinRegion;
 import org.opencb.cellbase.core.common.Region;
+import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.commons.bioformats.network.biopax.ProteinInteraction;
 import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.DbReferenceType;
 import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.FeatureType;
@@ -12,7 +14,16 @@ import java.util.List;
 
 public interface ProteinDBAdaptor extends FeatureDBAdaptor {
 
-	
+
+    public QueryResult getAll(QueryOptions options);
+
+
+    public QueryResult getAllById(String id, QueryOptions options);
+
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+
+
+
 
 	public List<String> getAllUniprotAccessions();
 	

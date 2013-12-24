@@ -55,11 +55,18 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
+        /****/
+        String chunkIdSuffix = Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
+                + ".GENOME_SEQUENCE.CHUNK_SIZE", "2000")) / 1000 + "k";
+        /****/
 
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
+        List<String> chunkIds;
+        List<Integer> integerChunkIds;
         for (Region region : regions) {
-
+            chunkIds = new ArrayList<>();
+            integerChunkIds = new ArrayList<>();
             // positions below 1 are not allowed
             if (region.getStart() < 1) {
                 region.setStart(1);
@@ -68,10 +75,24 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
                 region.setEnd(1);
             }
 
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId")
-                    .greaterThanEquals(getChunk(region.getStart())).lessThanEquals(getChunk(region.getEnd()));
+            /****/
+            int regionChunkStart = getChunk(region.getStart());
+            int regionChunkEnd = getChunk(region.getEnd());
+            for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
+                String chunkIdStr = region.getChromosome() + "_" + chunkId + "_" + chunkIdSuffix;
+                chunkIds.add(chunkIdStr);
+                integerChunkIds.add(chunkId);
+            }
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+            /****/
+
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId")
+//                    .greaterThanEquals(getChunk(region.getStart())).lessThanEquals(getChunk(region.getEnd()));
             queries.add(builder.get());
             ids.add(region.toString());
+
+            logger.info(builder.get().toString());
         }
 
         List<QueryResult> queryResults = executeQueryList(ids, queries, options);

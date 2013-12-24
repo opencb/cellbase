@@ -162,7 +162,7 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 		
 		List<Xref> xrefReturnList = new ArrayList<Xref>(xrefQuery.size());
 		for(Xref xref: xrefQuery) {
-			if(dbnameSet.size() == 0 || dbnameSet.contains(xref.getDbNameShort())) {
+			if(dbnameSet.size() == 0 || dbnameSet.contains(xref.getDbName())) {
 				logger.info("->>>>>>>>>>>>>>>>"+xref.getId());
 				xrefReturnList.add(xref);
 			}

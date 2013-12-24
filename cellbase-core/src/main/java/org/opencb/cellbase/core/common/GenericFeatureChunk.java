@@ -10,6 +10,7 @@ import java.util.List;
  * Time: 12:12 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class GenericFeatureChunk {
     private String chromosome;
     private int chunkId;
