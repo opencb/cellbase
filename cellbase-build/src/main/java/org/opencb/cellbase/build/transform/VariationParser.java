@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.common.variation.*;
@@ -25,11 +25,11 @@ public class VariationParser {
 
     private int LIMITROWS = 100000;
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public VariationParser(CellbaseSerializer serializer) {
+    public VariationParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 
@@ -193,6 +193,7 @@ public class VariationParser {
 
         bwLog.close();
         bufferedReaderVariation.close();
+        disconnect();
     }
 
     public void connect(Path variationFilePath) throws SQLException, ClassNotFoundException, FileNotFoundException {

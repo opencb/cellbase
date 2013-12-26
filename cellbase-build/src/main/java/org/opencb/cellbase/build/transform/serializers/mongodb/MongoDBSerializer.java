@@ -4,11 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.GenericFeature;
-import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.protein.Interaction;
@@ -34,11 +32,9 @@ import java.util.Map;
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MongoDBSerializer implements CellbaseSerializer {
+public class MongoDBSerializer implements CellBaseSerializer {
 
-    private File file;
     private Path outdirPath;
-    private Path outfilePath;
 
     private Map<String, BufferedWriter> bufferedWriterMap;
 
@@ -54,17 +50,14 @@ public class MongoDBSerializer implements CellbaseSerializer {
 
     private int chunkSize = 2000;
 
-    public MongoDBSerializer(File file) throws IOException {
-        this.file = file;
+
+    public MongoDBSerializer(Path path) throws IOException {
+        this.outdirPath = path;
         init();
     }
 
     private void init() throws IOException {
-        if(file.exists() && file.isDirectory() && file.canWrite()) {
-            outdirPath = file.toPath();
-        }else {
-            outfilePath = file.toPath();
-        }
+        FileUtils.checkPath(outdirPath);
 
         bufferedWriterMap = new Hashtable<>(50);
         variationBufferedWriter = new HashMap<>(40);

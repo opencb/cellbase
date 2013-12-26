@@ -16,7 +16,7 @@ import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
  * Time: 5:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface CellbaseSerializer {
+public interface CellBaseSerializer {
 
     public void serialize(Gene gene);
 

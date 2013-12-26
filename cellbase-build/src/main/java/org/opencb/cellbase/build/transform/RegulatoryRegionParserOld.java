@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 
@@ -23,11 +23,11 @@ import java.util.zip.GZIPInputStream;
 
 public class RegulatoryRegionParserOld {
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
 	private int CHUNKSIZE = 2000;
 
-    public RegulatoryRegionParserOld(CellbaseSerializer serializer) {
+    public RegulatoryRegionParserOld(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 

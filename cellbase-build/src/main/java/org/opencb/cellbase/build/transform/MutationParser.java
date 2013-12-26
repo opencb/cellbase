@@ -1,23 +1,15 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.common.variation.Mutation;
-import org.opencb.commons.bioformats.protein.uniprot.UniprotParser;
-import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
-import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.OrganismNameType;
-import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Uniprot;
 
-import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,11 +22,11 @@ import java.util.Map;
  */
 public class MutationParser {
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
     private static final int CHUNK_SIZE = 1000;
 
-    public MutationParser(CellbaseSerializer serializer) {
+    public MutationParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 

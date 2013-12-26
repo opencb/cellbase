@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.common.GenericFeature;
-import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.protein.Interaction;
@@ -30,7 +29,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 @Deprecated
-public class JsonSerializer implements CellbaseSerializer {
+public class JsonSerializer implements CellBaseSerializer {
 
     private File file;
     private Path outdirPath;
