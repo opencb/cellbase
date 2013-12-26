@@ -243,12 +243,17 @@ public class CellBaseMain {
         GeneParser geneParser = new GeneParser(serializer);
         geneParser.parse(speciesInDir.resolve("gene"), genomeFastaPath);
 
-        VariationParser vp = new VariationParser(serializer);
-        vp.parse(speciesInDir.resolve("variation"));
+        Path variationPath = speciesInDir.resolve("variation");
+        if(variationPath.toFile().list().length > 2) {
+            VariationParser vp = new VariationParser(serializer);
+            vp.parse(variationPath);
+        }
 
+        Path regulationPath = speciesInDir.resolve("regulation");
+        if(variationPath.toFile().list().length > 2) {
         RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(serializer);
-        regulatoryParser.parse(speciesInDir.resolve("regulation"));
-
+        regulatoryParser.parse(regulationPath);
+        }
     }
 
 }
