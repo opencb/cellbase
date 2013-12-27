@@ -47,10 +47,9 @@ public class ProteinParser {
                     String entryOrganism = null;
                     Iterator<OrganismNameType> iter = entry.getOrganism().getName().iterator();
                     while(iter.hasNext()) {
-                        //					System.out.println(iter.next().getValue());
                         entryOrganism = iter.next().getValue();
-                        if(entryOrganism.contains(species)) {
-                            //						pw.println(gson.toJson(entry));
+//                        if(entryOrganism.contains(species)) {
+                        if(entryOrganism.equals(species)) {
                             serializer.serialize(entry);
                         }
                     }
