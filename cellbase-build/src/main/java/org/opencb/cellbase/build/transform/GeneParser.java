@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.transform.utils.GenomeSequenceUtils;
 import org.opencb.cellbase.core.common.core.*;
 import org.opencb.commons.bioformats.commons.exception.FileFormatException;
 import org.opencb.commons.bioformats.feature.gtf.Gtf;
@@ -14,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
@@ -22,6 +24,7 @@ public class GeneParser {
     //	private Map<String, Integer> geneDict;
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
+    private RandomAccessFile rafChromosomeSequenceFile;
 
     private static final int CHUNK_SIZE = 5000;
 
@@ -42,7 +45,7 @@ public class GeneParser {
     }
 
     public void parse(Path geneDirectoryPath, Path genomeSequenceDir)
-            throws IOException, SecurityException, NoSuchMethodException, FileFormatException {
+            throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
         Path gtfFile = null;
         for(String fileName: geneDirectoryPath.toFile().list()) {
             if(fileName.endsWith(".gtf") || fileName.endsWith(".gtf.gz")) {
@@ -53,8 +56,8 @@ public class GeneParser {
         parse(gtfFile, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), genomeSequenceDir);
     }
 
-    public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceDir)
-            throws IOException, SecurityException, NoSuchMethodException, FileFormatException {
+    public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath)
+            throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
         Files.exists(gtfFile);
         init();
 
@@ -70,6 +73,9 @@ public class GeneParser {
         int cdna = 1;
         int cds = 1;
         String[] fields;
+
+//        Map<String, String> gseq = GenomeSequenceUtils.getGenomeSequence(genomeSequenceDir);
+//        System.out.println("toma!!");
 
         Map<String, String> geneDescriptionMap = new HashMap<>();
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
@@ -112,12 +118,17 @@ public class GeneParser {
             mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
         }
 
+        // Preparing the fasta file for fast accessing
+        // File must be ungunzipped and offsets stored
+        // Commented because it takes too much time to gzip/gunzip
+//        Map<String, Long> chromSequenceOffsets = prepareChromosomeSequenceFile(genomeSequenceFilePath);
+
+
         // BasicBSONList list = new BasicBSONList();
-        String chunkIdSuffix = CHUNK_SIZE/1000+"k";
+        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
         int cont = 0;
         GtfReader gtfReader = new GtfReader(gtfFile);
         Gtf gtf;
-        boolean first = false;
         while ((gtf = gtfReader.read()) != null) {
             geneId = gtf.getAttributes().get("gene_id");
             transcriptId = gtf.getAttributes().get("transcript_id");
@@ -127,7 +138,8 @@ public class GeneParser {
 			 */
             if(!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
                 currentChromosome = gtf.getSequenceName();
-                chromSequence = getSequenceByChromosome(currentChromosome, genomeSequenceDir);
+                chromSequence = getSequenceByChromosome(currentChromosome, genomeSequenceFilePath);
+//                chromSequence = getSequenceByChromosome(currentChromosome, chromSequenceOffsets, genomeSequenceFilePath);
 //				chromSequence = getSequenceByChromosomeName(currentChromosome, genomeSequenceDir);
             }
 
@@ -136,11 +148,6 @@ public class GeneParser {
             if (gene == null || !geneId.equals(gene.getId())) {
                 // gene object can only be null the first time
                 if (gene != null) { // genes.size()>0
-//					if (first) {
-//						tfw.writeStringToFile("\n");
-//					}
-                    // tfw.writeStringToFile(gson.toJson(genes.get(genes.size()-1)));
-                    // genes.remove(genes.size()-1);
                     // Adding chunksIds
                     int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
                     int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
@@ -148,8 +155,6 @@ public class GeneParser {
                         gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
                     }
                     serializer.serialize(gene);
-
-//					first = true;
                 }
 
                 gene = new GeneMongoDB(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
@@ -357,8 +362,49 @@ public class GeneParser {
         // last gene must be written
         serializer.serialize(gene);
 
+        // cleaning
         gtfReader.close();
         serializer.close();
+        // compress fasta file
+        // commented becasue it takes too much time to gzip/gunzip the fasta file
+//        Path gunzipedSeqFile = Paths.get(genomeSequenceFilePath.toString().replace(".gz", ""));
+//        if(Files.exists(gunzipedSeqFile)) {
+//            Process process = Runtime.getRuntime().exec("gzip " + gunzipedSeqFile.toAbsolutePath());
+//            process.waitFor();
+//        }
+    }
+
+    private Map<String, Long> prepareChromosomeSequenceFile(Path genomeSequenceFilePath) throws IOException, InterruptedException {
+        if(Files.exists(genomeSequenceFilePath)) {
+            Process process = Runtime.getRuntime().exec("gunzip " + genomeSequenceFilePath.toAbsolutePath());
+            process.waitFor();
+        }
+        Map<String, Long> chromOffsets = new HashMap<>(200);
+        Path gunzipedChromosomeSequenceFile = Paths.get(genomeSequenceFilePath.toString().replace(".gz", ""));
+        if(Files.exists(gunzipedChromosomeSequenceFile)) {
+            long offset = 0;
+            String chrom;
+            String line = null;
+            BufferedReader br = FileUtils.newBufferedReader(gunzipedChromosomeSequenceFile, Charset.defaultCharset());
+            while ((line = br.readLine()) != null) {
+                if(line.startsWith(">")) {
+                    chrom = line.split(" ")[0].replace(">", "");
+                    chromOffsets.put(chrom, offset);
+                }
+                offset += line.length() + 1;
+            }
+            br.close();
+//            rafChromosomeSequenceFile = new RandomAccessFile(new File(genomeSequenceFilePath.toString().replace(".gz", "")), "r");
+//            for(String s: chromOffsets.keySet()) {
+//                System.out.println(chromOffsets.get(s));
+//                Long l = chromOffsets.get(s);
+//                rafChromosomeSequenceFile.seek(l);
+//                String li = rafChromosomeSequenceFile.readLine();
+//                System.out.println(li);
+//            }
+//            rafChromosomeSequenceFile.close();
+        }
+        return chromOffsets;
     }
 
     private void updateTranscriptAndGeneCoords(Transcript transcript, Gene gene, Gtf gtf) {
@@ -444,6 +490,27 @@ public class GeneParser {
             }
         }
         br.close();
+        return sb.toString();
+    }
+
+    public String getSequenceByChromosome(String chrom, Map<String, Long> chromOffsets, Path genomeSequenceFile) throws IOException {
+//        BufferedReader br = FileUtils.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
+        RandomAccessFile rafChromosomeSequenceFile = new RandomAccessFile(new File(genomeSequenceFile.toString().replace(".gz", "")), "r");
+        rafChromosomeSequenceFile.seek(chromOffsets.get(chrom));
+        StringBuilder sb = new StringBuilder(100000);
+        String line = "";
+
+        // first line contains the chromosome info line from fasta file
+        // we must consume it
+        rafChromosomeSequenceFile.readLine();
+        while((line = rafChromosomeSequenceFile.readLine()) != null) {
+            if(!line.startsWith(">")) {
+                sb.append(line);
+            }else {
+                break;
+            }
+        }
+        rafChromosomeSequenceFile.close();
         return sb.toString();
     }
 

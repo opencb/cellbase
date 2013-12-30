@@ -79,7 +79,7 @@ public class GenomeSequenceFastaParser {
         int end = CHUNK_SIZE - 1;
         String chunkSequence;
 
-        String chunkIdSuffix = CHUNK_SIZE/1000+"k";
+        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
         GenomeSequenceChunk genomeSequenceChunk;
 
         if (sequence.length() < CHUNK_SIZE) {//chromosome sequence length can be less than CHUNK_SIZE

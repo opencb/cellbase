@@ -388,7 +388,7 @@ public class VariationParser {
                 ps.executeBatch();
                 sqlConn.commit();
                 logger.info("Inserting in " + tableName + ": " + count);
-                if(count > 1000000) break;
+//                if(count > 1000000) break;
             }
 
             offset += line.length() + 1;

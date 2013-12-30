@@ -117,14 +117,14 @@ public class CellBaseMain {
                     String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
                     String mirnaFile = commandLine.getOptionValue("mirna-file", "");
 
-                    if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
+//                    if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
                         GeneParser geneParser = new GeneParser(serializer);
                         if(geneFilesDir != null && !geneFilesDir.equals("")) {
                             geneParser.parse(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
                         }else {
                             geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
                         }
-                    }
+//                    }
                     break;
                 case "regulation":
                     System.out.println("In regulation");

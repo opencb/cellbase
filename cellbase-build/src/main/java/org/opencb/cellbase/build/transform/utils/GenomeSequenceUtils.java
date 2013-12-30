@@ -23,7 +23,7 @@ public class GenomeSequenceUtils {
         Map<String, String> genomeSequenceMap = new HashMap<>();
         String line = "";
         String chromosome = "";
-        StringBuilder sequenceStringBuilder = new StringBuilder();
+        StringBuilder sequenceStringBuilder = new StringBuilder(100000);
 
         while((line = br.readLine()) != null) {
             if (!line.startsWith(">")) {
@@ -32,13 +32,14 @@ public class GenomeSequenceUtils {
                 // new chromosome found
                 if (sequenceStringBuilder.length() > 0) {
                     // we have read whole chromosome sequence, it's time to store it
-                    if(!chromosome.contains("PATCH")) {
+                    if(!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
                         genomeSequenceMap.put(chromosome, sequenceStringBuilder.toString());
                     }
                 }
                 // initialize data structures and empty previous sequence
                 chromosome = line.replace(">", "").split(" ")[0];
                 sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
+                System.out.println(chromosome);
             }
         }
 

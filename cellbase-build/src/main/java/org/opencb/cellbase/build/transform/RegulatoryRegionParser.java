@@ -64,7 +64,7 @@ public class RegulatoryRegionParser {
         // Create the SQLite databases
 //        createSQLiteRegulatoryFiles(regulatoryRegionPath);
 
-        String chunkIdSuffix = CHUNK_SIZE/1000+"k";
+        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
 
         Path annotatedFilePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff.gz.db");
         Path motifFilePath = regulatoryRegionPath.resolve("MotifFeatures.gff.gz.db");
