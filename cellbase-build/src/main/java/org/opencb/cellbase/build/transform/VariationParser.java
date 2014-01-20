@@ -33,7 +33,7 @@ public class VariationParser {
         this.serializer = serializer;
     }
 
-    //	public void parse(String species, String assembly, String source, String version, Path variationDirectoryPath, Path outfileJson) throws IOException, SQLException {
+    //	public void parseCosmic(String species, String assembly, String source, String version, Path variationDirectoryPath, Path outfileJson) throws IOException, SQLException {
     public void parse(Path variationDirectoryPath) throws IOException, SQLException, ClassNotFoundException, InterruptedException {
 
         if(!Files.exists(variationDirectoryPath) || !Files.isDirectory(variationDirectoryPath) || !Files.isReadable(variationDirectoryPath)) {

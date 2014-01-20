@@ -33,6 +33,25 @@ public class VariationUtils {
         return seqRegion;
     }
 
+    public static Map<String, String> parsePhenotypeToMap(Path variationDirectoryPath) {
+        Map<String, String> seqRegion = new HashMap<>();
+        try {
+            File seqRegionFile = variationDirectoryPath.resolve("phenotype.txt.gz").toFile();
+            if(seqRegionFile.exists()) {
+                BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
+                String readLine;
+                while ((readLine = br.readLine()) != null) {
+                    String[] readLineFields = readLine.split("\t");
+                    seqRegion.put(readLineFields[0], readLineFields[3]);
+                }
+                br.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return seqRegion;
+    }
+
     public static Map<String, String> parseSourceToMap(Path variationDirectoryPath) {
         Map<String, String> sourceMap = new HashMap<>();
         try {
@@ -56,16 +75,35 @@ public class VariationUtils {
         return sourceMap;
     }
 
-    public static Map<String, String> parsePhenotypeToMap(Path variationDirectoryPath) {
+    public static Map<String, String> parseStudyToMap(Path variationDirectoryPath) {
         Map<String, String> seqRegion = new HashMap<>();
         try {
-            File seqRegionFile = variationDirectoryPath.resolve("phenotype.txt.gz").toFile();
+            File seqRegionFile = variationDirectoryPath.resolve("study.txt.gz").toFile();
             if(seqRegionFile.exists()) {
                 BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
                 String readLine;
                 while ((readLine = br.readLine()) != null) {
                     String[] readLineFields = readLine.split("\t");
-                    seqRegion.put(readLineFields[0], readLineFields[3]);
+                    seqRegion.put(readLineFields[0], readLineFields[5]);
+                }
+                br.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return seqRegion;
+    }
+
+    public static Map<String, String> parseAttribTypeToMap(Path variationDirectoryPath) {
+        Map<String, String> seqRegion = new HashMap<>();
+        try {
+            File seqRegionFile = variationDirectoryPath.resolve("attrib_type.txt.gz").toFile();
+            if(seqRegionFile.exists()) {
+                BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
+                String readLine;
+                while ((readLine = br.readLine()) != null) {
+                    String[] readLineFields = readLine.split("\t");
+                    seqRegion.put(readLineFields[0], readLineFields[1]);
                 }
                 br.close();
             }

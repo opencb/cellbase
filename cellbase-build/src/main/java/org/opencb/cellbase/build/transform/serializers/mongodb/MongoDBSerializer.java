@@ -12,6 +12,7 @@ import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 import java.io.BufferedWriter;
@@ -42,6 +43,7 @@ public class MongoDBSerializer implements CellBaseSerializer {
     // Variation data is too big to be stored in a single file,
     // data is split in different files
     private Map<String, BufferedWriter> variationBufferedWriter;
+    private BufferedWriter variationPhenotypeAnnotationBufferedWriter;
     private BufferedWriter mutationBufferedWriter;
     private BufferedWriter ppiBufferedWriter;
 
@@ -137,6 +139,19 @@ public class MongoDBSerializer implements CellBaseSerializer {
     }
 
     @Override
+    public void serialize(VariationPhenotypeAnnotation variationPhenotypeAnnotation) {
+        try {
+            if(variationPhenotypeAnnotationBufferedWriter == null) {
+                variationPhenotypeAnnotationBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("variation_phenotype_annotation.json"), Charset.defaultCharset());
+            }
+            variationPhenotypeAnnotationBufferedWriter.write(jsonObjectWriter.writeValueAsString(variationPhenotypeAnnotation));
+            variationPhenotypeAnnotationBufferedWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        };
+    }
+
+    @Override
     public void serialize(Mutation mutation) {
         try {
             if(mutationBufferedWriter == null) {
@@ -185,6 +200,7 @@ public class MongoDBSerializer implements CellBaseSerializer {
         try {
 
             closeBufferedWriter(genomeSequenceBufferedWriter);
+            closeBufferedWriter(variationPhenotypeAnnotationBufferedWriter);
             closeBufferedWriter(mutationBufferedWriter);
             closeBufferedWriter(ppiBufferedWriter);
         } catch (IOException e) {

@@ -223,13 +223,13 @@ public class BiopaxPathwayParser {
 				pathwayList.add(p);
 
                 // TODO
-//				dbObjList.add((DBObject)JSON.parse(gson.toJson(p)));
+//				dbObjList.add((DBObject)JSON.parseCosmic(gson.toJson(p)));
 			}
 //			System.out.println(gson.toJson(pathwayList));
 //			String json = g.toJson(pathwayList);
 //			IOUtils.write(new File("/tmp/test2.json"), json);
 			
-//			BSONObject b = (BSONObject)JSON.parse(json);
+//			BSONObject b = (BSONObject)JSON.parseCosmic(json);
 //			FileOutputStream fos = new FileOutputStream("/tmp/test2.bson");
 //			fos.write(BSON.encode(b));
 //			fos.close();

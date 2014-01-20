@@ -142,6 +142,15 @@ public class CellBaseMain {
                         vp.parse(Paths.get(variationFilesDir)); //, Paths.get(outfile)
                     }
                     break;
+                case "variation-phen-annot":
+                    System.out.println("In variation phenotype annotation...");
+                    variationFilesDir = commandLine.getOptionValue("indir");
+                    if(variationFilesDir != null) {
+                        VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(serializer);
+//                    vp.parseCosmic(Paths.get(cosmicFilePath));
+                        variationPhenotypeAnnotationParser.parseEnsembl(Paths.get(variationFilesDir));
+                    }
+                    break;
                 case "protein":
                     System.out.println("In protein...");
                     String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
@@ -159,8 +168,8 @@ public class CellBaseMain {
                     String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
                     if(cosmicFilePath != null) {
                         MutationParser vp = new MutationParser(serializer);
-//                    vp.parse(Paths.get(cosmicFilePath));
-                        vp.parseEnsembl(Paths.get(cosmicFilePath));
+//                    vp.parseCosmic(Paths.get(cosmicFilePath));
+                        vp.parseCosmic(Paths.get(cosmicFilePath));
                     }
                     break;
 
