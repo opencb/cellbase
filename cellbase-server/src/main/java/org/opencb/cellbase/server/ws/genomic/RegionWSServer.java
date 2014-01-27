@@ -167,7 +167,9 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/snp")
-    public Response getSnpByRegion(@PathParam("chrRegionId") String chregionId, @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes) {
+    public Response getSnpByRegion(@PathParam("chrRegionId") String chregionId,
+                                   @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
+                                   @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             checkVersionAndSpecies();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
@@ -187,6 +189,9 @@ public class RegionWSServer extends GenericRestWSServer {
             } else {
                 if(!consequenceTypes.equals("")) {
                     queryOptions.put("consequence_type", consequenceTypes);
+                }
+                if(!phenotype.equals("")) {
+                    queryOptions.put("phenotype", phenotype);
                 }
                 return createOkResponse(variationDBAdaptor.getAllByRegionList(regions, queryOptions));
             }

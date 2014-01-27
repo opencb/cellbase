@@ -1,5 +1,8 @@
 package org.opencb.cellbase.build.transform;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
@@ -7,16 +10,15 @@ import org.opencb.cellbase.build.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by imedina on 12/01/14.
@@ -32,8 +34,15 @@ public class VariationPhenotypeAnnotationParser {
     private Connection sqlConn = null;
     private PreparedStatement prepStmVariationFeature;
 
+    private ObjectMapper jsonObjectMapper;
+    private ObjectWriter jsonObjectWriter;
+
     public VariationPhenotypeAnnotationParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
+
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectWriter = jsonObjectMapper.writer();
     }
 
 
@@ -44,6 +53,8 @@ public class VariationPhenotypeAnnotationParser {
         Map<String, String> sourceMap = VariationUtils.parseSourceToMap(ensemblVariationDir);
         Map<String, String> studyMap = VariationUtils.parseStudyToMap(ensemblVariationDir);
         Map<String, String> attribTypeMap = VariationUtils.parseAttribTypeToMap(ensemblVariationDir);
+
+        Map<String, Set<String>> phenotypeToGeneList = new HashMap<>(20000);
 
         prepare(ensemblVariationDir);
         createPhenFeatAttribTable(ensemblVariationDir);
@@ -86,8 +97,10 @@ public class VariationPhenotypeAnnotationParser {
                 pValue = -1f;
                 oddsRatio = -1f;
                 List<String> resultPhenAnnot = queryByVariationId(Integer.parseInt(fields[0]), ensemblVariationDir);
-                if(++count % 10000 == 0)
+                if(++count % 10000 == 0) {
                     System.out.println(resultPhenAnnot);
+//                    if(count > 200000) break;
+                }
                 for(String result: resultPhenAnnot) {
                     rafFields = result.split("\t", -1);
                     switch (rafFields[1]) {
@@ -112,6 +125,11 @@ public class VariationPhenotypeAnnotationParser {
                     }
 
                 }
+
+                if(!phenotypeToGeneList.containsKey(phenotype)) {
+                    phenotypeToGeneList.put(phenotype, new HashSet<String>());
+                }
+                phenotypeToGeneList.get(phenotype).addAll(associatedGenes);
 
                 //Mutation(String id, String chromosome, int start, int end,
                 //String strand, String protein, int proteinStart, int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName, String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity, String status, String pubmed, String tumourOrigin, String description) {
@@ -138,6 +156,18 @@ public class VariationPhenotypeAnnotationParser {
         }
         raf.close();
         br.close();
+
+        BufferedWriter bw = Files.newBufferedWriter(Paths.get("/tmp/phenotype.json"), Charset.defaultCharset());
+//        Iterator<String> iter = phenotypeToGeneList.keySet().iterator();
+//        for (Object o : iter) {
+//            jsonObjectWriter.writeValueAsString(phenotypeToGeneList);
+//        }
+        for( Map.Entry<String, Set<String>> elem: phenotypeToGeneList.entrySet()) {
+            bw.write(jsonObjectWriter.writeValueAsString(elem).replace("\"key\"", "\"phenotype\"").replace("\"value\"", "\"associatedGenes\""));
+            bw.newLine();
+        }
+        bw.close();
+
         clean(ensemblVariationDir);
     }
 
