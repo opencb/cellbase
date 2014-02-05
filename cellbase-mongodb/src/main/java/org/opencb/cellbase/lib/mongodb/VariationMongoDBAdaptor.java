@@ -8,12 +8,11 @@ import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
-import javax.ws.rs.core.Variant;
 import java.util.*;
 
 public class VariationMongoDBAdaptor extends MongoDBAdaptor implements VariationDBAdaptor {
 
-    private DBCollection mongoPhenotypeDBCollection;
+    private DBCollection mongoVariationPhenotypeDBCollection;
 
     public VariationMongoDBAdaptor(DB db) {
         super(db);
@@ -22,7 +21,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     public VariationMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("variation");
-        mongoPhenotypeDBCollection = db.getCollection("variation_phenotype");
+        mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
     }
 
 
@@ -55,7 +54,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public QueryResult getAllPhenotypes(QueryOptions options) {
-//        return executeDistinct("distinct", "phenotype", mongoPhenotypeDBCollection);
+//        return executeDistinct("distinct", "phenotype", mongoVariationPhenotypeDBCollection);
         QueryBuilder builder = new QueryBuilder();
         if(options.containsKey("phenotype")) {
             String pheno = options.getString("phenotype");
@@ -63,8 +62,36 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 builder = builder.start("phenotype").is(pheno);
             }
         }
-        return executeQuery("result", builder.get(), options, mongoPhenotypeDBCollection);
+        return executeQuery("result", builder.get(), options, mongoVariationPhenotypeDBCollection);
     }
+
+    @Override
+    public List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options) {
+        QueryBuilder builder = null;
+        List<DBObject> queries = new ArrayList<>();
+
+//        List<Region> regions = Region.parseRegions(options.getString("region"));
+        List<String> ids = new ArrayList<>(regions.size());
+        for (Region region : regions) {
+            if(region != null && !region.equals("")) {
+                // If regions is 1 position then query can be optimize using chunks
+                if (region.getStart() == region.getEnd()) {
+                    String chunkId = getChunkPrefix(region.getChromosome(), region.getStart(), Integer.parseInt(applicationProperties.getProperty("VARIATION_CHUNK_SIZE", "1000")));
+                    System.out.println(chunkId);
+                    builder = QueryBuilder.start("chunkIds").is(chunkId).and("end")
+                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                } else {
+                    builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                }
+
+                queries.add(builder.get());
+                ids.add(region.toString());
+            }
+        }
+        return executeQueryList(ids, queries, options, db.getCollection("variation_phenotype_annotation"));
+    }
+
 
     @Override
     public QueryResult getAllByPhenotype(String phenotype, QueryOptions options) {
@@ -91,7 +118,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     @Override
     public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
-        return executeQuery(phenotype, builder.get(), options, mongoPhenotypeDBCollection);
+        return executeQuery(phenotype, builder.get(), options, mongoVariationPhenotypeDBCollection);
     }
 
     @Override
@@ -101,7 +128,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             QueryBuilder builder = QueryBuilder.start("phenotype").is(id);
             queries.add(builder.get());
         }
-        return executeQueryList(phenotypeList, queries, options, mongoPhenotypeDBCollection);
+        return executeQueryList(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection);
     }
 
 

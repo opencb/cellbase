@@ -138,7 +138,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getTranscriptByRegion(@PathParam("chrRegionId") String chregionId, @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             checkVersionAndSpecies();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,	this.version);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
             List<Region> regions = Region.parseRegions(chregionId);
             if (biotype != null && !biotype.equals("")) {
                 queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
@@ -227,6 +227,34 @@ public class RegionWSServer extends GenericRestWSServer {
             return createErrorResponse("getMutationByRegion", e.toString());
         }
     }
+
+    @GET
+    @Path("/{chrRegionId}/phenotype")
+    public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query) {
+        try {
+            checkVersionAndSpecies();
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            List<Region> regions = Region.parseRegions(query);
+
+            if (hasHistogramQueryParam()) {
+//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
+//						regions.get(0), getHistogramIntervalSize());
+                QueryResult queryResult = variationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
+//				return generateResponse(query, intervalList);
+                return createOkResponse(queryResult);
+            } else {
+//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
+                List<QueryResult> queryResults = variationDBAdaptor.getAllPhenotypeByRegion(regions, queryOptions);
+//				return this.generateResponse(query, "MUTATION", mutationList);
+                return createOkResponse(queryResults);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getMutationByRegion", e.toString());
+        }
+    }
+
 
     @GET
     @Path("/{chrRegionId}/structural_variation")

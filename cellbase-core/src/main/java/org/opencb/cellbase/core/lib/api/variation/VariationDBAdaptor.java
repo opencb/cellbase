@@ -20,6 +20,8 @@ public interface VariationDBAdaptor {
 
     public QueryResult getAllPhenotypes(QueryOptions options);
 
+    public List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options);
+
     public QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
 
     public List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options);
