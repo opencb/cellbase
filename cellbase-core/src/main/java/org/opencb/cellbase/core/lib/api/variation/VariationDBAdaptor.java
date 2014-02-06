@@ -17,6 +17,20 @@ public interface VariationDBAdaptor {
 
     public QueryResult getAllConsequenceTypes(QueryOptions options);
 
+
+    public QueryResult getAllPhenotypes(QueryOptions options);
+
+    public List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options);
+
+    public QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
+
+    public List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options);
+
+    public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options);
+
+    public List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
+
+
     
 	public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
 

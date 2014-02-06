@@ -96,6 +96,11 @@ public class MongoDBAdaptor extends DBAdaptor {
     //		return session;
     //	}
 
+    protected String getChunkPrefix(String chromosome, int position, int chunkSize) {
+        return  chromosome + "_" +  position/chunkSize + "_" + chunkSize/1000 + "k";
+    }
+
+
     protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {
         if (options != null ) { //&& !options.getBoolean(returnField, true)
             if (options.getList("include") != null) {
@@ -198,13 +203,18 @@ public class MongoDBAdaptor extends DBAdaptor {
     }
 
     protected QueryResult executeDistinct(Object id, String key) {
+        return executeDistinct(id, key, mongoDBCollection);
+    }
+
+    protected QueryResult executeDistinct(Object id, String key, DBCollection dbCollection) {
         QueryResult queryResult = new QueryResult();
         long dbTimeStart = System.currentTimeMillis();
-        List<String> diseases = mongoDBCollection.distinct(key);
+        List<String> diseases = dbCollection.distinct(key);
         long dbTimeEnd = System.currentTimeMillis();
         queryResult.setId(id.toString());
         queryResult.setDBTime(dbTimeEnd - dbTimeStart);
         queryResult.setResult(diseases);
+        queryResult.setNumResults(diseases.size());
 
         return queryResult;
     }
