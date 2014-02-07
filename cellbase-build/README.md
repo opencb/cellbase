@@ -1,7 +1,7 @@
 MongoDB installation
 ======================
 
-Assuming you already have built or downloaded the JSON data files the installation consist of using just mongoimport itulity from MongoDB.
+Assuming you already have built or downloaded the JSON data files the installation consist of using just mongoimport utility from MongoDB.
 
 CellBase MongoDB database consist of the following collections:
 conserved_region
@@ -26,4 +26,15 @@ To have the basic functionality such as genome and gene annotations for a genome
   mongoimport -u root -p XXX --directoryperdb -d hsapiens_cdb_v3_3710 -c core --file gene.json
 ```
 
-Where hsapiens_cdb_v3_3710 is the name of database for human, this can be changed as long as it is also changed in the Java web service package. The rest of collections can be installed in the same way.
+Where *hsapiens_cdb_v3_3710* is the name of database for human, this can be changed as long as it is also changed in the Java web service package. The rest of collections can be installed in the same way.
+
+
+Web Server installation
+=======================
+A Java 7, Tomcat 7 and Maven 3.x are needed. You can build the _war_ file by executing:
+```
+mvn clean install -DskipTests
+```
+
+in the root of the CellBase project and copy the _war_ file int Tomcat _webapps_ folder.
+
