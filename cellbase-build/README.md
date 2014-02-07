@@ -21,8 +21,8 @@ variation_phenotype_annotation
 
 To have the basic functionality such as genome and gene annotations for a genome browser only three collections are needed. They can be installed by executing:
 
-mongoimport -u root -p XXX --directoryperdb -d hsapiens_cdb_v3_3710 -c info_stats --file info_stats.json
-mongoimport -u root -p XXX --directoryperdb -d hsapiens_cdb_v3_3710 -c genome_sequence --file genome_sequence.json
-mongoimport -u root -p XXX --directoryperdb -d hsapiens_cdb_v3_3710 -c core --file gene.json
+  mongoimport -u root -p XXX --directoryperdb -d hsapiens_cdb_v3_3710 -c info_stats --file info_stats.json
+  mongoimport -u root -p XXX --directoryperdb -d hsapiens_cdb_v3_3710 -c genome_sequence --file genome_sequence.json
+  mongoimport -u root -p XXX --directoryperdb -d hsapiens_cdb_v3_3710 -c core --file gene.json
 
 Where hsapiens_cdb_v3_3710 is the name of database for human, this can be changed as long as it is also changed in the Java web service package. The rest of collections can be installed in the same way.
