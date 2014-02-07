@@ -197,7 +197,8 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 // {$group:{_id:{id:"$transcripts.xrefs.id", dbNameShort:"$transcripts.xrefs.dbNameShort"}}},
 // {$project:{"_id":0,"xref":"$_id"}})
 
-
+// Biotype if gene given: db.core.find({"transcripts.xrefs.id": "BRCA2"}, {"biotype":1})
+// Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}}, {$project:{"transcripts.biotype":1}})
         List<DBObject[]> commandsList = new ArrayList<>(ids.size());
         for (String id : ids) {
             List<DBObject> commands = new ArrayList<>(ids.size());
@@ -208,6 +209,7 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 
             commands.add(match);
             commands.add(unwind);
+            commands.add(match);
             commands.add(unwind2);
 
             //Check dbname option exists
