@@ -2,7 +2,7 @@ MongoDB installation
 ======================
 
 Assuming you already have built or downloaded the JSON data files the installation consist of using just mongoimport utility from MongoDB.
-
+```
 CellBase MongoDB database consist of the following collections:
 conserved_region
 core
@@ -17,7 +17,7 @@ protein_protein_interaction
 regulatory_region
 variation
 variation_phenotype_annotation
-
+```
 
 To have the basic functionality such as genome and gene annotations for a genome browser only three collections are needed. They can be installed by executing:
 ```
