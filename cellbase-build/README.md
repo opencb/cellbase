@@ -2,8 +2,9 @@ MongoDB installation
 ======================
 
 Assuming you already have built or downloaded the JSON data files the installation consist of using just mongoimport utility from MongoDB.
-```
+
 CellBase MongoDB database consist of the following collections:
+```
 conserved_region
 core
 drugbank
