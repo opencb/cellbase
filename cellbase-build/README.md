@@ -29,6 +29,14 @@ To have the basic functionality such as genome and gene annotations for a genome
 
 Where *hsapiens_cdb_v3_3710* is the name of database for human, this can be changed as long as it is also changed in the Java web service package. The rest of collections can be installed in the same way.
 
+Indexes must be created in order to get an acceptable speed, indexes can be found at https://github.com/opencb/cellbase/tree/develop/cellbase-build/installation-dir/mongodb-scripts
+```
+mongo -u root -p XXX hsapiens_cdb_v3_3710 gene-indexes.js
+mongo -u root -p XXX hsapiens_cdb_v3_3710 genome_sequence-indexes.js
+
+```
+Notice that *info_stats* does not need indexes as it's a one-only document collection.
+
 
 Web Server installation
 =======================
