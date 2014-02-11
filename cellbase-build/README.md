@@ -1,7 +1,7 @@
 MongoDB installation
 ======================
 
-Assuming you already have built or downloaded the JSON data files the installation consist of using just mongoimport utility from MongoDB.
+Assuming you already have built or downloaded the JSON data files the installation consist of using just mongoimport utility from MongoDB. Collections are installed in *localhost* which is the default, if you need to install in any other host just add *--host hotname* to command lines.
 
 CellBase MongoDB database consist of the following collections:
 ```
