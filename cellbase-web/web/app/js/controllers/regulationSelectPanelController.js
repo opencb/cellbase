@@ -56,6 +56,7 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
             $scope.featureClassFilter.splice(pos, 1);
         }
 
+
         if($("[id='"+featureClass+"']").hasClass("btn-primary")){
             $("[id='"+featureClass+"']").removeClass("btn-primary");
         }

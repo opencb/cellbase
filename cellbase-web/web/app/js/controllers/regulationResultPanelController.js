@@ -331,7 +331,7 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
 //
 //        for(var i in featureClassFilter){
 //            if(featureClassFilter[i] == undefined){
-//                genesIdError.push(featureClassFilters[i]);
+//                genesIdError.push([i]);
 //                error = true
 //            }
 //            else{

@@ -93,16 +93,10 @@
                 <div class="list-group" ng-show="showVariantPanel">
                     <a class="list-group-item active ocb-text-center">Variant
                         information
-                        <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
-                                ng-click="showVariantPanel = false">&times;
-                        </button>
-                        <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
-                                ng-click="variantInfo = !variantInfo; openCloseVariantPanel()">{{variantPanelStatus}}
-                        </button>
                     </a>
 
                     <div class="ocb-panels-data-border" ng-show="!variantInfo">
-                        <variants-and-transc-var variant="selectedVariant" variant-more-info="variantPanelMore"
+                        <variants-and-transc-var variant="selectedVariant"
                                                  specie="selectedSpecie"
                                                  on-click="showTanscriptVarFromTable"
                                                  tab-function="goToTab"></variants-and-transc-var>
@@ -113,17 +107,10 @@
                 <div class="list-group" ng-show="showTranscriptVarPanel">
                     <a class="list-group-item active ocb-text-center">Transcript Variations
                         information
-                        <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
-                                ng-click="showTranscriptVarPanel = false">x
-                        </button>
-                        <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
-                                ng-click="transcriptVarInfo = !transcriptVarInfo; openCloseTranscriptVarPanel()">
-                            {{transcriptVarPanelStatus}}
-                        </button>
                     </a>
 
                     <div ng-show="!transcriptVarInfo" class="ocb-panels-data-border">
-                        <transcripts-var info="selectedTranscriptVar" info-more="transcriptVarPanelMore"
+                        <transcripts-var info="selectedTranscriptVar"
                                          specie="selectedSpecie"
                                          tab-function="goToTab"></transcripts-var>
                     </div>

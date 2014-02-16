@@ -84,7 +84,7 @@
                     </a>
 
                     <div class="ocb-panels-data-border" ng-show="!geneInfo">
-                        <gene-and-transc gene="selectedGene" gene-more-info="genePanelMore" specie="selectedSpecie"
+                        <gene-and-transc gene="selectedGene" specie="selectedSpecie"
                                          on-click="showTanscriptFromTable"></gene-and-transc>
                     </div>
                 </div>
@@ -95,8 +95,7 @@
                     </a>
 
                     <div ng-show="!transcriptInfo" class="ocb-panels-data-border">
-                        <transcripts transcript="selectedTranscript" transcript-more-info="transcriptPanelMore"
-                                     specie="selectedSpecie"
+                        <transcripts transcript="selectedTranscript" specie="selectedSpecie"
                                      tab-function="goToTab"></transcripts>
                     </div>
                 </div>
@@ -111,5 +110,11 @@
     </div>
 
 </div>
+
+
+
+
+
+
 
 
