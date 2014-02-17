@@ -392,6 +392,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     };
     //===================== tree events ========================
     $scope.showVariant = function (variantId, index){
+
         if($scope.toggleTree[index]){
             $scope.toggleTree[index] = false;
         }
@@ -403,6 +404,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
         if($scope.selectedVariant.transcriptVariations.length != 0){
             $scope.showSelectedTranscriptVar(variantId,$scope.selectedVariant.transcriptVariations[0].transcriptId);
         }
+
     };
 
     $scope.showTranscriptVar = function (variantId, transcriptId) {
@@ -429,7 +431,11 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
         }
         $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations;
 
-        mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
+
+
+        if($('#variants_GV').hasClass("active")){
+            mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
+        }
     };
     //show transcripts panel
     $scope.showSelectedTranscriptVar = function (variantId, transcriptId) {
@@ -447,8 +453,9 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
                 $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations[i];
             }
         }
-        mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
-
+        if($('#variants_GV').hasClass("active")){
+            mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
+        }
     };
 
     //show transcripts panel from transcripts table

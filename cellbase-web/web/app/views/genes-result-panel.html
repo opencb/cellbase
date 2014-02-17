@@ -3,9 +3,9 @@
 
     <div id="genesResultTree" class="pull-left ocb-result-tree panel panel-default ocb-margin-l-ten">
         <div class="panel-heading" >
-            <span style="margin-right:10px">Results</span>
+            <span class="ocb-margin-r-ten">Results</span>
             <span class="badge">{{numResults}}</span>
-            <button  style="margin-left:40px" type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllGenesTree()">
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-40" ng-click="expandAllGenesTree()">
                <span class="glyphicon glyphicon-resize-full"></span>  </button>
             <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllGenesTree()">
                 <span class="glyphicon glyphicon-resize-small"></span> </button>
@@ -30,7 +30,7 @@
                     <!--</a>-->
                 <!--</div>-->
 
-                <witched-list page-data="paginationData" toggle="toggleTree" show-first-level-data="showGene" show-second-level-data="showTranscript"></witched-list>
+                <witched-genes-list page-data="paginationData" toggle="toggleTree" show-first-level-data="showGene" show-second-level-data="showTranscript"></witched-genes-list>
 
 
             </div>
@@ -77,7 +77,7 @@
         <div class="tab-content">
             <div class="tab-pane active ocb-width_900" id="genesOverviewInfo">
                 <!-----------------------gene and transcripts panel--------------------------->
-                <div class="list-group" ng-show="showGenePanel" style="margin-bottom: 5px;">
+                <div class="list-group ocb-margin-b-5" ng-show="showGenePanel">
                     <a class="list-group-item active ocb-text-center">
                         Gene information
                     </a>

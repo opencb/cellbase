@@ -27,6 +27,9 @@
 .ocb-result-width{
     width:1190px;
 }
+.ocb-width-900{
+    width:900px;
+}
 
 .ocb-h-50{
     height:50px;
@@ -132,11 +135,17 @@
 .ocb-margin-b-ten{
     margin-bottom:10px;
 }
+.ocb-margin-r-ten{
+    margin-right:10px;
+}
 .ocb-margin-b-5{
     margin-bottom:5px !important;
 }
 .ocb-margin-l-ten{
     margin-left:10px;
+}
+.ocb-margin-l-40{
+    margin-left:40px !important;
 }
 .ocb-border-darkgray{
     border:1px solid darkgray;
@@ -180,12 +189,16 @@
     max-height:154px
 }
 .ocb-filter-textarea{
-    height:124px;
+    height:124px !important;
     max-width:212px;
     width:212px;
     max-height:124px
 }
 
+.ocb-filter-width{
+    min-width:170px;
+    margin:2px !important;
+}
 
 
 .ocb-panels-data-border{

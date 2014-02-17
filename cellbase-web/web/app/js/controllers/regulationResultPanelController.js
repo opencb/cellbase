@@ -360,12 +360,14 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
         $scope.polymerase = [];
         $scope.microRNA = [];
 
-        $scope.histoneNames = [];
-        $scope.openChromatinNames = [];
-        $scope.transcriptionFactorNames = [];
-        $scope.polymeraseNames = [];
-        $scope.microRNANames = [];
 
+        $scope.dataNames={};
+
+        $scope.dataNames.histone=[];
+        $scope.dataNames.openChromatin=[];
+        $scope.dataNames.transcriptionFactor=[];
+        $scope.dataNames.polymerase=[];
+        $scope.dataNames.microRNA=[];
 
         $scope.showHistoneNames = true;
 
@@ -376,9 +378,9 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
             {
                 $scope.histone.push($scope.regulationsData[i]);
 
-                pos = $scope.histoneNames.indexOf($scope.regulationsData[i].name);
+                pos = $scope.dataNames.histone.indexOf($scope.regulationsData[i].name);
                 if (pos == -1) {
-                    $scope.histoneNames.push($scope.regulationsData[i].name);
+                    $scope.dataNames.histone.push($scope.regulationsData[i].name);
                 }
 
             }
@@ -386,27 +388,27 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
             {
                 $scope.openChromatin.push($scope.regulationsData[i]);
 
-                pos = $scope.openChromatinNames.indexOf($scope.regulationsData[i].name);
+                pos = $scope.dataNames.openChromatin.indexOf($scope.regulationsData[i].name);
                 if (pos == -1) {
-                    $scope.openChromatinNames.push($scope.regulationsData[i].name);
+                    $scope.dataNames.openChromatin.push($scope.regulationsData[i].name);
                 }
             }
             if($scope.regulationsData[i].featureClass == "Transcription Factor")
             {
                 $scope.transcriptionFactor.push($scope.regulationsData[i]);
 
-                pos = $scope.transcriptionFactorNames.indexOf($scope.regulationsData[i].name);
+                pos = $scope.dataNames.transcriptionFactor.indexOf($scope.regulationsData[i].name);
                 if (pos == -1) {
-                    $scope.transcriptionFactorNames.push($scope.regulationsData[i].name);
+                    $scope.dataNames.transcriptionFactor.push($scope.regulationsData[i].name);
                 }
             }
             if($scope.regulationsData[i].featureClass == "Polymerase")
             {
                 $scope.polymerase.push($scope.regulationsData[i]);
 
-                pos = $scope.polymeraseNames.indexOf($scope.regulationsData[i].name);
+                pos = $scope.dataNames.polymerase.indexOf($scope.regulationsData[i].name);
                 if (pos == -1) {
-                    $scope.polymeraseNames.push($scope.regulationsData[i].name);
+                    $scope.dataNames.polymerase.push($scope.regulationsData[i].name);
                 }
 
             }
@@ -414,9 +416,9 @@ var regulationsResult = myApp.controller('regulationsResult', ['$scope', 'myShar
             {
                 $scope.microRNA.push($scope.regulationsData[i]);
 
-                pos = $scope.microRNANames.indexOf($scope.regulationsData[i].name);
+                pos = $scope.dataNames.microRNA.indexOf($scope.regulationsData[i].name);
                 if (pos == -1) {
-                    $scope.microRNANames.push($scope.regulationsData[i].name);
+                    $scope.dataNames.microRNA.push($scope.regulationsData[i].name);
                 }
             }
         }

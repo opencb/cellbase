@@ -8,6 +8,8 @@ var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 
     $scope.biotypesFilter = [];
     $scope.chromNames = mySharedService.chromNames;
 
+//    $scope.typeOfData = [];
+//    $scope.typeOfData = ["genes","genes","genes","genes","genes","genes","genes"];
     $scope.typeOfData = "genes";
 
 

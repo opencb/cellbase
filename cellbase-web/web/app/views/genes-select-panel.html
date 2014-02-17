@@ -59,8 +59,7 @@
                     <div class="panel-heading">Gene Id/Name</div>
                     <div class="panel-body">
                         <p class="text-muted ocb-margin-l-ten"><b>Ex: gene1,gene2,...</b></p>
-                        <textarea type="text" ng-model="genesIdFilter" rows="5" class="form-control"
-                                  style="height:124px;max-width:212px;width:212px; max-height:124px"></textarea>
+                        <textarea type="text" ng-model="genesIdFilter" rows="5" class="form-control ocb-filter-textarea"></textarea>
                     </div>
                 </div>
 
@@ -72,7 +71,7 @@
                                 <div ng-repeat="biotype in listOfbiotypeFilters">
                                     <button id="{{biotype}}"
                                             ng-click="addBiotypeFilter(biotype)" type="button"
-                                            class="btn btn-default btn-sm" style="min-width:170px;margin:2px;">{{biotype}}
+                                            class="btn btn-default btn-sm ocb-filter-width">{{biotype}}
                                     </button>
                                 </div>
                             </div>
