@@ -1,6 +1,3 @@
-
-
-
 /*-----rewritte bootstrap css----*/
 .list-group-item {
     position: relative;
@@ -17,13 +14,57 @@
 }
 /*-------------------------------*/
 
-.ocb-text-center {
+.ocb-content-width{
+    width:1440px;
+    /*width:1410px;*/
+}
+
+.ocb-select-panel-width{
+    width:250px;
+    /*width:220px;*/
+}
+
+.ocb-result-width{
+    width:1190px;
+}
+
+.ocb-h-50{
+    height:50px;
+}
+
+.ocb-list{
+    margin-bottom:2px !important;
+    font-size:11px;
+}
+.ocb-list-in{
+    font-size:13px;
+    background-color: #F2F2F2 !important;
+    color: #000000 !important;
+    border:1px solid #DBDBDB !important;
+}
+
+.ocb-padding-t-5{
+    padding-top:5px;
+}
+
+.ocb-list-button{
+    background-color: #999 !important;
+    color:#ffffff !important;
+}
+.ocb-m-l-20{
+    margin-left: 20px;
+}
+.ocb-chrom-buttons{
+    min-width:35px;
+    margin:2px !important;
+}
+.ocb-text-center{
     text-align:center;
 }
 .ocb-text-right {
     text-align:right;
 }
-.ocb-text-width-400 {
+.ocb-text-width-400{
     display: inline-block;
     width: 400px;
 }
@@ -31,54 +72,25 @@
     display: inline-block;
     width: 300px;
 }
-
 .ocb-text-width-80 {
     display: inline-block;
     width: 80px;
-}
-.ocb-text-width-70 {
-    display: inline-block;
-    width: 70px;
-}
-.ocb-text-width-60 {
-    display: inline-block;
-    width: 60px;
 }
 .ocb-text-width-50 {
     display: inline-block;
     width: 50px;
 }
-.ocb-text-width-85 {
-    display: inline-block;
-    width: 85px;
-}
 .ocb-text-width-180 {
     display: inline-block;
     width: 180px;
-}
-.ocb-text-width-165 {
-    display: inline-block;
-    width: 165px;
-}
-.ocb-text-width-160 {
-    display: inline-block;
-    width: 160px;
 }
 .ocb-text-width-150 {
     display: inline-block;
     width: 150px;
 }
-.ocb-text-width-135 {
-    display: inline-block;
-    width: 135px;
-}
 .ocb-text-width-130 {
     display: inline-block;
     width: 130px;
-}
-.ocb-text-width-200 {
-    display: inline-block;
-    width: 200px;
 }
 .ocb-text-width-220 {
     display: inline-block;
@@ -96,98 +108,45 @@
     display: inline-block;
     width: 350px;
 }
-
-.ocb-border-b-darkgrey{
-    border-bottom: 1px solid darkgray;
-}
-
 .ocb-margin-five{
     margin:5px;
 }
-
 .ocb-inline-block{
     display: inline-block;
 }
-
-.ocb-select-panel-width{
-    width:250px;
-    /*width:220px;*/
-}
-
-.ocb-chrom-panel{
-    width:100%;
-    position:relative;
-    bottom:0;
-}
-
 .ocb-text-options{
     font-weight:bold;
     font-size:medium;
     color:#0B0B61;
 }
-
-/*.ocb-select-panel{*/
-
-/*}*/
-
-.ocb-select-panel-text{
-    color:#0B0B61;
-    font-size:medium;
-    margin-left:10px;
-}
-
 .ocb-font-size-13{
     font-size:13px;
+}
+.ocb-font-size-30{
+    font-size:30px !important;
 }
 
 .ocb-font-size-12{
     font-size:12px;
 }
-
-.ocb-background-color-lightgrey{
-    background-color:lightgrey;
-}
-
 .ocb-margin-b-ten{
     margin-bottom:10px;
 }
-
-.ocb-margin-b-0{
-    margin-bottom:0px;
+.ocb-margin-b-5{
+    margin-bottom:5px !important;
 }
-
 .ocb-margin-l-ten{
     margin-left:10px;
 }
-
 .ocb-border-darkgray{
     border:1px solid darkgray;
 }
-
 .ocb-result-tree{
     width:260px;
     height: 665px;
 }
-.ocb-result-width{
-    width:1190px;
-}
 .ocb-bold{
     font-weight: bold;
-}
-.ocb-all-data-button{
-    font-weight: bold;
-    margin-left:5px;
-    margin-right: 5px;
-    margin-top: 5px;
-    margin-bottom: 8px;
-    width:248px;
-    background-color: #e6e6e6;
-    color:black;
-    border:1px solid #808080;
-}
-
-.ocb-margin-two{
-    margin:2px;
 }
 .ocb-pagnation-text-color{
     color:#006ffb;
@@ -199,21 +158,10 @@
     margin-rigth:4px;
 }
 
-.ocb-margin-l-thirty{
-    margin-left:30px;
-}
-
-.ocb-select-background-color{
-    background-color: #e6e6e6;
-}
 
 .ocb-margin-l-r-five{
     margin-left:5px;
     margin-rigth:5px;
-}
-
-.ocb-margin-b-five{
-    margin-bottom:5px;
 }
 
 .ocb-margin-l-five{
@@ -225,101 +173,28 @@
     height: 540px;
 }
 
-.ocb-select-first-tab{
-    margin-top:0px;
-    margin-bottom: 20px;
-}
-
-.ocb-maegin-t-twenty{
-    margin-top:20px;
-}
-
-.ocb-regions-textarea{  /* borrar */
-    width:222px;
-    max-width:222px;
-    /*width:190px;*/
-    /*max-width:190px;*/
-    max-height: 154px;
-}
-.ocb-textarea-regions{
-height:154px;
+.ocb-regions-textarea{
+    height:154px !important;
     max-width:212px;
     width:212px;
     max-height:154px
 }
-
-.ocb-margin-b-twenty{
-    margin-bottom: 20px;
-}
-
 .ocb-filter-textarea{
-    width:222px;
-    max-width:222px;
-    /*width:190px;*/
-    /*max-width:190px;*/
-    max-height: 114px;
+    height:124px;
+    max-width:212px;
+    width:212px;
+    max-height:124px
 }
 
-.ocb-margin-t-twenty-five{
-    margin-top: 25px;
-}
 
-.ocb-biotypes-list{
-    width:180;
-    max-width: 180px;
-}
-
-.ocb-background-color-lightblue{
-    background-color: lightblue;
-}
-
-.ocb-margin-t-eigth{
-    margin-top: 8px;
-}
-
-.ocb-margin-b-eigth{
-    margin-bottom: 8px;
-}
-
-.ocb-margin-t-ten{
-    margin-top: 10px;
-}
-
-.ocb-margin-ten{
-    margin: 10px;
-}
-
-.ocb-tree-first-level{
-    color:black !important;
-    border:1px solid #808080 !important;
-    background-color: #e6e6e6 !important;
-}
-
-.ocb-float-rigth{
-    float:right;
-}
-
-.ocb-collapse-button{
-    float:right;
-    margin-left:3px;
-}
 
 .ocb-panels-data-border{
     border:1px solid #006ffb;
 }
-
-.ocb-float-left{
-    float:left;
-}
-
 .ocb-ensembl-link-color{
     color:palevioletred;
 }
 
-.ocb-text-blue{
-    font-weight: bold;
-    color: blue;
-}
 .ocb-chrom-scroll{
     overflow-y:scroll;
     overflow-x:hidden;
@@ -341,7 +216,6 @@ height:154px;
     height: 120px;
     margin:10px
 }
-
 .ocb-scroll-transVar{
     overflow-y:scroll;
     overflow-x:hidden;
@@ -355,11 +229,6 @@ height:154px;
     margin:10px
 }
 
-
-
-
-
-
 .ocb-scroll-tree{
     overflow-y:scroll;
     overflow-x:hidden;
@@ -369,9 +238,6 @@ height:154px;
 }
 .ocb-line-height-5{
     line-height: 0.5;
-}
-.ocb-line-height-20{
-    line-height: 2.0;
 }
 .ocb-gv{
     width:900px;
@@ -384,30 +250,6 @@ height:154px;
 .ocb-width_900{
     width:900px;
 }
-
-.ocb-content-width{
-    width:1440px;
-    /*width:1410px;*/
-}
-
-.ocb-options-bar-width{
-    width:1450px;
-    /*width:1420px;*/
-}
-
-
-
-/*-------no funcionan:---------*/
-.ocb-result-panels-width{
-    width: calc(100% - 220px) !important;
-}
-/*.ocb-gv-width{*/
-    /*width: calc(100%-10px);*/
-/*}*/
-
-
-
-
 
 .ocb-tree-transcript{
 padding:10px 0 10px 40px;

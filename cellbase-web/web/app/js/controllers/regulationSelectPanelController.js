@@ -7,6 +7,7 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
     $scope.featureClassFilter = [];
     $scope.chromNames = mySharedService.chromNames;
 
+    $scope.typeOfData = "regulation";
 
     $scope.featureClassTypes = ["Histone", "Open Chromatin",  "Transcription Factor", "Polymerase", "microRNA" ];
 

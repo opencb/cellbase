@@ -7,6 +7,7 @@ var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedServ
     $scope.snpIdFilter = "";
     $scope.conseqTypesFilter = [];
 
+    $scope.typeOfData = "variants";
 
     $scope.chromNames = mySharedService.chromNames;
 
