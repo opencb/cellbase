@@ -5,7 +5,6 @@ myApp.directive('variantsAndTranscVar', function () {
         transclude: true,
         scope: {
             data: '=variant',
-            showMore: '=variantMoreInfo',
             specieName: '=specie',
             functionDirective: '=onClick',
             changeTab: '=tabFunction'
