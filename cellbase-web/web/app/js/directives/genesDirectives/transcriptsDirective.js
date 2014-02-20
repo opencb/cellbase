@@ -6,7 +6,6 @@ myApp.directive('transcripts', function () {
         //the words in capital letters will change to "-" and the lower case
         scope: {
             data: '=transcript',
-            showMore: '=transcriptMoreInfo',
             specieName: '=specie',
             changeTab: '=tabFunction'
         },

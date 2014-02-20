@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Cellbase web</title>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js"></script>
     <!--<link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">-->
 
     <!--========================genome-viewer==============================-->
@@ -56,6 +56,11 @@
 
     <!--======================DIRECTIVES======================-->
     <script src="js/directives/optionsBarDirective.js"></script>
+    <script src="js/directives/chromosomesDirective.js"></script>
+    <script src="js/directives/genesDirectives/genesListDirective.js"></script>
+    <script src="js/directives/variantsDirectives/variantsListDirective.js"></script>
+    <script src="js/directives/regulationsDirectives/regulationsListDirective.js"></script>
+
     <!----------------genes directives--------------->
     <script src="js/directives/genesDirectives/genesSelectPanelDirective.js"></script>
     <script src="js/directives/genesDirectives/genesResultPanelDirective.js"></script>
@@ -108,13 +113,13 @@
 <body>
 <div id="cellbase-web" class="bootstrap">
 
-    <div id="optionsBar" ng-controller="optionsBarController" style="height:60px">
+    <div id="optionsBar" ng-controller="optionsBarController" class="ocb-h-50">
         <div options-bar></div>
     </div>
 
-    <div class="" style="margin-bottom:10px;">
+    <div class="ocb-margin-b-5">
         <!--<ul class="nav nav-pills ocb-border-b-darkgrey ocb-margin-l-r-five ocb-content-width" id="myTab">-->
-        <ul class="nav nav-pills ocb-content-width" id="myTab">
+        <ul class="nav nav-tabs ocb-content-width" id="myTab">
             <li class="active"><a href="#genes">Gene</a></li>
             <li id="variationDiv"><a href="#variantion">Variation</a></li>
             <li id="regulationDiv"><a href="#regulation">Regulation</a></li>

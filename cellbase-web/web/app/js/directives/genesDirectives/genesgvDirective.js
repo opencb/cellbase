@@ -12,15 +12,11 @@ myApp.directive('genesGenomeViewer', function () {
             $scope.broadcastRegion = true;
 
             $scope.$on('genesRegionToGV', function () {
-
-
                 if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
-
                     $scope.broadcastRegion = false;
                     $scope.genomeViewer.setRegion(new Region(mySharedService.genesRegionToGV));
     //                $scope.genomeViewer.setSpecies(mySharedService.genesSpecie.shortName);
                 }
-
             });
 
 
@@ -82,6 +78,7 @@ myApp.directive('genesGenomeViewer', function () {
                 },
                 handlers:{
                     'region:change':function(event){
+                        console.log(event);
 
                         if(mySharedService.genesSpecie.shortName == "hsapiens" || mySharedService.genesSpecie.shortName == "mmusculus"){
 

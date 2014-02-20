@@ -5,7 +5,6 @@ myApp.directive('transcriptsVar', function () {
         transclude: true,
         scope: {
             data: '=info',
-            showMore: '=infoMore',
             specieName: '=specie'
 //            changeTab: '=tabFunction'
         },

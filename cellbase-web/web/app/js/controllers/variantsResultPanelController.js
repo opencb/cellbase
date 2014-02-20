@@ -8,10 +8,8 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     $scope.showAll = false;
 
     $scope.showVariantPanel = false;
-    $scope.variantPanelStatus = "-";
 
     $scope.showTranscriptVarPanel = false;
-    $scope.transcriptVarPanelStatus = "-";
 
     $scope.showPagination = false;
     $scope.firstPages = false;
@@ -394,6 +392,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     };
     //===================== tree events ========================
     $scope.showVariant = function (variantId, index){
+
         if($scope.toggleTree[index]){
             $scope.toggleTree[index] = false;
         }
@@ -405,6 +404,7 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
         if($scope.selectedVariant.transcriptVariations.length != 0){
             $scope.showSelectedTranscriptVar(variantId,$scope.selectedVariant.transcriptVariations[0].transcriptId);
         }
+
     };
 
     $scope.showTranscriptVar = function (variantId, transcriptId) {
@@ -431,7 +431,11 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
         }
         $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations;
 
-        mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
+
+
+        if($('#variants_GV').hasClass("active")){
+            mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
+        }
     };
     //show transcripts panel
     $scope.showSelectedTranscriptVar = function (variantId, transcriptId) {
@@ -449,8 +453,9 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
                 $scope.selectedTranscriptVar = $scope.selectedVariant.transcriptVariations[i];
             }
         }
-        mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
-
+        if($('#variants_GV').hasClass("active")){
+            mySharedService.broadcastVariantsRegionToGV($scope.selectedVariant.chromosome+":"+$scope.selectedVariant.start+"-"+$scope.selectedVariant.end);
+        }
     };
 
     //show transcripts panel from transcripts table
@@ -473,24 +478,6 @@ var variantsResult = myApp.controller('variantsResult', ['$scope', 'mySharedServ
     $scope.collapseAllVariantsTree = function () {
         for(var i in $scope.toggleTree){
             $scope.toggleTree[i] = false;
-        }
-    };
-    //show/hide variant panel information
-    $scope.openCloseVariantPanel = function () {
-        if ($scope.variantPanelStatus == "+") {
-            $scope.variantPanelStatus = "-";
-        }
-        else {
-            $scope.variantPanelStatus = "+";
-        }
-    };
-    //show/hide transcriptVar panel information
-    $scope.openCloseTranscriptVarPanel = function () {
-        if ($scope.transcriptVarPanelStatus == "+") {
-            $scope.transcriptVarPanelStatus = "-";
-        }
-        else {
-            $scope.transcriptVarPanelStatus = "+";
         }
     };
 
