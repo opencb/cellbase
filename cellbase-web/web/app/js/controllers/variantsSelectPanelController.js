@@ -1,4 +1,4 @@
-var variantsSelect = myApp.controller('variantsSelect', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
+var variantsSelect = variationsSelectModule.controller('variantsSelect', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
     $scope.specie = mySharedService.variantsSpecie;
     $scope.chromSelected = [];

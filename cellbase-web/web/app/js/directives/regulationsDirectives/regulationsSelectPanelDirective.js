@@ -1,4 +1,4 @@
-myApp.directive('regulationsSelect', function () {
+regulationsSelectModule.directive('regulationsSelect', function () {
     return {
         restrict: 'A',
         replace: true,

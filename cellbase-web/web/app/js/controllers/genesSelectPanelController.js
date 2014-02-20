@@ -1,4 +1,4 @@
-var genesSelect = myApp.controller('genesSelect', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
+var genesSelect = genesSelectModule.controller('genesSelect', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
     $scope.specie = mySharedService.genesSpecie;
     $scope.chromSelected = [];

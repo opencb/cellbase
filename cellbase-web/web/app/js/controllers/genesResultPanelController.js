@@ -1,4 +1,4 @@
-var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
+var genesResult = genesResultModule.controller('genesResult', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
 
     $scope.toggleTree = []; //array of booleans that will show of hide the elements of the tree
     $scope.genesAndTranscriptsData = {};

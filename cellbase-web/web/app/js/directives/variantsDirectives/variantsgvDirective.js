@@ -1,4 +1,4 @@
-myApp.directive('variantsGenomeViewer', function () {
+variationsGVModule.directive('variantsGenomeViewer', function () {
     return {
         restrict: 'A',
         replace: true,
