@@ -1,9 +1,6 @@
 package org.opencb.cellbase.lib.mongodb;
 
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
@@ -96,9 +93,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 mc = new MongoClient(new ServerAddress(applicationProperties.getProperty(dbPrefix + ".HOST",
                         "localhost"), Integer.parseInt(applicationProperties.getProperty(dbPrefix + ".PORT", "27017"))),
                         mongoClientOptions);
+//                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
+                mc.setReadPreference(ReadPreference.primary());
+//                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
                 System.out.println(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
                 db = mc.getDB(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
-
+//db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
+db.setReadPreference(ReadPreference.primary());
                 String user = applicationProperties.getProperty(dbPrefix+".USERNAME");
                 String pass = applicationProperties.getProperty(dbPrefix+".PASSWORD");
                 if(!user.equals("") || !pass.equals("")){
