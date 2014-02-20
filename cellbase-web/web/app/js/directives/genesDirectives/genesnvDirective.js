@@ -1,4 +1,4 @@
-myApp.directive('genesNetworkViewer', function () {
+genesNVModule.directive('genesNetworkViewer', function () {
     return {
         restrict: 'A',
         replace: true,
