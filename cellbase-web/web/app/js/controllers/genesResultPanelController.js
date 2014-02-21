@@ -421,7 +421,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', '$rootScope', 'mySh
 //            console.log( $scope.proteinsIdLinks);
 
 //                mySharedService.broadcastGeneProteinsToNV($scope.geneProteinId, $scope.proteinsIdLinks);
-                $rootScope.$broadcast("geneProteins", $scope.geneProteinId, $scope.proteinsIdLinks);
+                $rootScope.$broadcast("genesNV:geneProteins", $scope.geneProteinId, $scope.proteinsIdLinks);
 
             }
         }
