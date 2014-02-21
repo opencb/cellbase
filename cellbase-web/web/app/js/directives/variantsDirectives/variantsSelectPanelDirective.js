@@ -1,4 +1,4 @@
-variationsSelectModule.directive('variantsSelect', function () {
+myApp.directive('variantsSelect', function () {
     return {
         restrict: 'A',
         replace: true,

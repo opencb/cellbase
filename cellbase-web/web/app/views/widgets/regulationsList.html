@@ -1,0 +1,71 @@
+<div>
+    <div class="ocb-list list-group">
+        <a ng-click="showHistone();" class="list-group-item active ocb-list-in ocb-bold">
+            Histone
+            <span class="badge pull-right ocb-list-button">{{allData.histone.length}}</span>
+
+            <a ng-show="toggleList[0]"
+               ng-click="showHistoneName(name)"
+               ng-repeat="name in allData.histone"
+               class="list-group-item">
+                <div class="ocb-m-l-20">{{name}}</div>
+            </a>
+        </a>
+    </div>
+
+    <div class="ocb-list list-group">
+        <a ng-click="showOpenChromatin();" class="list-group-item active ocb-list-in ocb-bold">
+            Open Chromatin
+            <span class="badge pull-right ocb-list-button">{{allData.openChromatin.length}}</span>
+
+            <a ng-show="toggleList[1]"
+               ng-click="showHpenChromatinName(name)"
+               ng-repeat="name in allData.openChromatin"
+               class="list-group-item">
+                <div class="ocb-m-l-20">{{name}}</div>
+            </a>
+        </a>
+    </div>
+
+    <div class="ocb-list list-group">
+        <a ng-click="showTranscriptionFactor();" class="list-group-item active ocb-list-in ocb-bold">
+            Transcription Factor
+            <span class="badge pull-right ocb-list-button">{{allData.transcriptionFactor.length}}</span>
+
+            <a ng-show="toggleList[2]"
+               ng-click="showTranscriptionFactorName(name)"
+               ng-repeat="name in allData.transcriptionFactor"
+               class="list-group-item">
+                <div class="ocb-m-l-20">{{name}}</div>
+            </a>
+        </a>
+    </div>
+
+    <div class="ocb-list list-group">
+        <a ng-click="showPolymerase();" class="list-group-item active ocb-list-in ocb-bold">
+            Polymerase
+            <span class="badge pull-right ocb-list-button">{{allData.polymerase.length}}</span>
+
+            <a ng-show="toggleList[3]"
+               ng-click="showPolymeraseName(name)"
+               ng-repeat="name in allData.polymerase"
+               class="list-group-item">
+                <div class="ocb-m-l-20">{{name}}</div>
+            </a>
+        </a>
+    </div>
+
+    <div class="ocb-list list-group">
+        <a ng-click="showMicroRNA();" class="list-group-item active ocb-list-in ocb-bold">
+            microRNA
+            <span class="badge pull-right ocb-list-button">{{allData.microRNA.length}}</span>
+
+            <a ng-show="toggleList[4]"
+               ng-click="showMicroRNAName(name)"
+               ng-repeat="name in allData.microRNA"
+               class="list-group-item">
+                <div class="ocb-m-l-20">{{name}}</div>
+            </a>
+        </a>
+    </div>
+</div>

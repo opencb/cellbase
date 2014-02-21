@@ -1,4 +1,4 @@
-optionsModule.directive('optionsBar', function () {
+myApp.directive('optionsBar', function () {
     return {
         restrict: 'A',
         replace: true,

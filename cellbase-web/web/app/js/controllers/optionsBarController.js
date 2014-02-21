@@ -1,4 +1,4 @@
-var optionsBarControl = optionsModule.controller('optionsBarController', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
+var optionsBarControl = myApp.controller('optionsBarController', ['$scope', '$rootScope','mySharedService', 'CellbaseService', function ($scope, $rootScope, mySharedService, CellbaseService) {
 
     //this will be obtained from cellbase
     $scope.species = [

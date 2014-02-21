@@ -1,4 +1,4 @@
-var genesResult = genesResultModule.controller('genesResult', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
+var genesResult = myApp.controller('genesResult', ['$scope', '$rootScope', 'mySharedService', 'CellbaseService', function ($scope, $rootScope, mySharedService, CellbaseService) {
 
     $scope.toggleTree = []; //array of booleans that will show of hide the elements of the tree
     $scope.genesAndTranscriptsData = {};
@@ -393,8 +393,7 @@ var genesResult = genesResultModule.controller('genesResult', ['$scope', 'myShar
         if ($('#genes_GV').hasClass("active")) {
             mySharedService.broadcastGenesRegionToGV($scope.selectedGene.chromosome + ":" + $scope.selectedGene.start + "-" + $scope.selectedGene.end);
         }
-
-        if ($('#genesNV').hasClass("active")) {
+        if ($('#genesNVtab').hasClass("active")) {
             $scope.proteinsAllData = CellbaseService.getProteinsLinks($scope.selectedSpecie.shortName, $scope.selectedGene.name);
 
 //        console.log($scope.proteinsAllData);
@@ -421,7 +420,8 @@ var genesResult = genesResultModule.controller('genesResult', ['$scope', 'myShar
                 }
 //            console.log( $scope.proteinsIdLinks);
 
-                mySharedService.broadcastGeneProteinsToNV($scope.geneProteinId, $scope.proteinsIdLinks);
+//                mySharedService.broadcastGeneProteinsToNV($scope.geneProteinId, $scope.proteinsIdLinks);
+                $rootScope.$broadcast("geneProteins", $scope.geneProteinId, $scope.proteinsIdLinks);
 
             }
         }

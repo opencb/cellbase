@@ -1,4 +1,4 @@
-genesResultModule.directive('genesResult', function () {
+myApp.directive('genesResult', function () {
     return {
         restrict: 'A',
         replace: true,

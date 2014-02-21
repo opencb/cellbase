@@ -1,0 +1,15 @@
+<div ng-repeat="data in allData" class="ocb-list list-group">
+    <a ng-click="showFirstData(data.id, $index);" class="list-group-item active ocb-list-in">
+
+        <div>
+            <span class="badge pull-right ocb-list-button">{{data.transcripts.length}}</span>
+            <div class="ocb-bold">{{data.name}}</div>
+            <div>{{data.id}}</div>
+        </div>
+
+        <a ng-show="toggleList[$parent.$index]" ng-click="showSecondData(data.id, transcriptId.name)"
+           ng-repeat="transcriptId in data.transcripts" class="list-group-item">
+            <div class="ocb-m-l-20">{{transcriptId.name}}</div>
+        </a>
+    </a>
+</div>
