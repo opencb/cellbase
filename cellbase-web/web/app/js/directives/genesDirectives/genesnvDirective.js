@@ -6,7 +6,7 @@ myApp.directive('genesNetworkViewer', function () {
         scope: {
             targetId: '@id'
         },
-        controller: function($scope, $rootScope, mySharedService) {
+        controller: function($scope, $rootScope) {
 
             $scope.$on($scope.targetId + ':geneProteins', function (event, geneProteinId, proteinsIdLinks) {
 //                $scope.networkViewer.networkSvgLayout.createVertex(40,40);
