@@ -25,7 +25,8 @@
 }
 
 .ocb-result-width{
-    width:1190px;
+    width:1015px;   /*250+765*/
+    /*width:1190px;*/
 }
 .ocb-width-900{
     width:900px;
@@ -40,10 +41,15 @@
     font-size:11px;
 }
 .ocb-list-in{
-    font-size:13px;
-    background-color: #F2F2F2 !important;
+    font-size:11px;
+    /*background-color: #e2edff !important;*/
+    /*background-color: #ebe2f8 !important;*/
+    background-color: #f8f8f8 !important;
+    /*background-color: #e0e0e0 !important;*/
+    /*background-color: #F2F2F2 !important;*/
     color: #000000 !important;
-    border:1px solid #DBDBDB !important;
+    border:1px solid #a6a6a6 !important;
+    /*border:1px solid #DBDBDB !important;*/
 }
 
 .ocb-padding-t-5{
@@ -51,6 +57,8 @@
 }
 
 .ocb-list-button{
+    /*background-color: #ffffff !important;*/
+    /*color:#000000 !important;*/
     background-color: #999 !important;
     color:#ffffff !important;
 }
@@ -138,6 +146,9 @@
 .ocb-margin-r-ten{
     margin-right:10px;
 }
+.ocb-margin-r-5{
+    margin-right:5px;
+}
 .ocb-margin-b-5{
     margin-bottom:5px !important;
 }
@@ -147,12 +158,15 @@
 .ocb-margin-l-40{
     margin-left:40px !important;
 }
+.ocb-margin-l-30{
+    margin-left:30px !important;
+}
 .ocb-border-darkgray{
     border:1px solid darkgray;
 }
 .ocb-result-tree{
-    width:260px;
-    height: 665px;
+    width:215px;
+    /*height: 645px;*/
 }
 .ocb-bold{
     font-weight: bold;
@@ -162,7 +176,7 @@
 }
 
 .ocb-pagnation-tree-position{
-    margin-top: 10px;
+    margin-top: 5px;
     margin-left:4px;
     margin-rigth:4px;
 }
@@ -245,7 +259,8 @@
 .ocb-scroll-tree{
     overflow-y:scroll;
     overflow-x:hidden;
-    height: 555px;
+    height: 540px;
+    /*height: 555px;*/
     /*height: 540px;*/
     /*margin:10px*/
 }
@@ -253,15 +268,20 @@
     line-height: 0.5;
 }
 .ocb-gv{
-    width:900px;
+    width:765px;
+    /*width:900px;*/
 }
 .ocb-nv{
-    width:900px;
+    width:765px;
+    /*width:900px;*/
     height:665px;
 }
 
 .ocb-width_900{
     width:900px;
+}
+.ocb-width_765{
+    width:765px;
 }
 
 .ocb-tree-transcript{

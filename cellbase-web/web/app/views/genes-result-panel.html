@@ -2,15 +2,15 @@
     <!--<div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree">-->
 
     <div id="genesResultTree" class="pull-left ocb-result-tree panel panel-default ocb-margin-l-ten">
-        <div class="panel-heading" >
-            <span class="ocb-margin-r-ten">Results</span>
-            <span class="badge">{{numResults}}</span>
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-40" ng-click="expandAllGenesTree()">
+        <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; padding:1px">
+            <span class="ocb-margin-r-5" style="color:white; margin-left: 15px">Results</span>
+            <span class="badge" style="background-color: #ffffff; color:#000000">{{numResults}}</span>
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-30" ng-click="expandAllGenesTree()">
                <span class="glyphicon glyphicon-resize-full"></span>  </button>
             <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllGenesTree()">
                 <span class="glyphicon glyphicon-resize-small"></span> </button>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" style="border: 1px solid #3366FF; background-color: white">
             <!-------------- genes tree --------------->
             <div class="ocb-scroll-tree">
 
@@ -35,31 +35,31 @@
 
             </div>
             <!----------------pagination----------------->
-            <div class="ocb-text-center">
+            <div class="ocb-text-center" style="margin-top:3px">
                 <div ng-show="showPagination"
-                     class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
-                    <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                     class="btn-group btn-group-xs ocb-margin-b-5 ocb-pagnation-tree-position">
+                    <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goToFirstPage()"><<
                     </button>
-                    <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goPreviousPage()"><
                     </button>
-                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-class="{'disabled': disableFirstNumber}"
                             ng-click="goToNumberPage(paginationNumbers[0])">{{paginationNumbers[0]}}
                     </button>
-                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-class="{'disabled': disableSecondNumber}"
                             ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
                     </button>
-                    <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
                             >{{paginationNumbers[2]}}
                     </button>
-                    <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goNextPage()">>
                     </button>
-                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgrayf"
                             ng-click="goToLastPage()">>>
                     </button>
                 </div>
@@ -75,10 +75,10 @@
             <li><a href="#genesNVtab" ng-click="changeResultTab()" data-toggle="tab">Network Viewer</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane active ocb-width_900" id="genesOverviewInfo">
+            <div class="tab-pane active ocb-width_765" id="genesOverviewInfo" style="background-color: white">
                 <!-----------------------gene and transcripts panel--------------------------->
-                <div class="list-group ocb-margin-b-5" ng-show="showGenePanel">
-                    <a class="list-group-item active ocb-text-center">
+                <div class="list-group" ng-show="showGenePanel" style="background-color: white">
+                    <a class="list-group-item active ocb-text-center" style="background-color: #5E84CF; border:1px solid #3366FF">
                         Gene information
                     </a>
 
@@ -88,8 +88,8 @@
                     </div>
                 </div>
                 <!-------------------------transcript panel---------------------------->
-                <div class="list-group" ng-show="showTranscriptPanel">
-                    <a class="list-group-item active ocb-text-center">
+                <div class="list-group" ng-show="showTranscriptPanel" style="background-color: white">
+                    <a class="list-group-item active ocb-text-center"  style="background-color: #5E84CF; border:1px solid #3366FF">
                         Transcript information
                     </a>
 

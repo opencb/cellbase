@@ -5,7 +5,10 @@
     <title>Cellbase web</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js"></script>
-    <link href="../vendor/bootstrap-custom.css" rel="stylesheet">
+    <!--<link href="../vendor/bootstrap-custom.css" rel="stylesheet">-->
+    <link href="../vendor/bootstrap-custom6.css" rel="stylesheet">
+    <!--<link href="../vendor/bootstrap-custom3.css" rel="stylesheet">-->
+    <!--<link href="../vendor/bootstrap-custom2.css" rel="stylesheet">-->
     <!--<link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">-->
 
     <!--========================genome-viewer==============================-->
@@ -13,8 +16,8 @@
         <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/jquery.qtip.min.css"/>
         <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/jquery.qtip.min.css"/>
         <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/ChemDoodleWeb.css"/>
-        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/bootstrap-scoped-dist/css/bootstrap.min.css"/>
-        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/typeahead.js-bootstrap.css"/>
+        <!--<link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/bootstrap-scoped-dist/css/bootstrap.min.css"/>-->
+        <!--<link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/typeahead.js-bootstrap.css"/>-->
 
 
 
@@ -86,8 +89,6 @@
 
     <!--========================network-viewer==============================-->
     <!--===================================================================-->
-    <!--<link type="text/css" rel="stylesheet" href="network-viewer/vendor/jquery.simplecolorpicker.css" />-->
-    <!--<script type="text/javascript" src="network-viewer/vendor/jquery.simplecolorpicker.js"></script>-->
 
         <script type="text/javascript" src="http://cdn.sencha.io/ext/gpl/4.2.1/ext-all.js"></script>
 
@@ -96,12 +97,7 @@
 
         <link type="text/css" rel="stylesheet" href="../../../../jsorolla/styles/css/style.css" />
 
-
-    <!--<script type="text/javascript" src="network-viewer/nv-config.js"></script>-->
-    <!--<script type="text/javascript" src="network-viewer/network-viewer-1.0.0.js"></script>-->
-
         <script type="text/javascript" src="../../../../jsorolla/src/network-viewer/nv-config.js"></script>
-
 
         <script type="text/javascript" src="../../../../jsorolla/src/lib/utils/svg.js"></script>
         <script type="text/javascript" src="../../../../jsorolla/src/lib/utils/utils.js"></script>
@@ -182,31 +178,38 @@
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
         }
         body{
-            font-size: 14px;
+            font-size: 13px;
+            /*background-color: #D1C2D6;*/
+            /*background-color: #cdd1d9;*/
+            background-color: #C4E4EE;
         }
     </style>
 
+    <link href='http://fonts.googleapis.com/css?family=Aclonica' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Righteous' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Cantata+One' rel='stylesheet' type='text/css'>
+
 </head>
-<body>
+<body style="display:inline-block">
 <div id="cellbase-web" class="bootstrap">
 
-    <div id="optionsBar" ng-controller="optionsBarController" class="ocb-h-50">
+    <div id="optionsBar" ng-controller="optionsBarController" style="height: 45px">
         <div options-bar></div>
     </div>
 
-    <div class="ocb-margin-b-5">
+    <div class="ocb-margin-b-5" style="border-bottom:2px solid white">
         <!--<ul class="nav nav-pills ocb-border-b-darkgrey ocb-margin-l-r-five ocb-content-width" id="myTab">-->
         <ul class="nav nav-tabs ocb-content-width" id="myTab">
-            <li class="active"><a href="#genes">Gene</a></li>
+            <li class="active"><a href="#genes" >Gene</a></li>
             <li id="variationDiv"><a href="#variantion">Variation</a></li>
             <li id="regulationDiv"><a href="#regulation">Regulation</a></li>
         </ul>
     </div>
 
     <!--<div class="tab-content ocb-margin-five ocb-inline-block ocb-content-width">-->
-    <div class="tab-content ocb-content-width">
+    <div class="tab-content ocb-content-width" style="display:inline-block">
 
-        <div class="tab-pane active" id="genes">
+        <div class="tab-pane active" id="genes" style="display:inline-block">
             <div id="genesSelectDiv" class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
                 <div genes-select ></div>
             </div>
