@@ -5,49 +5,120 @@
     <title>Cellbase web</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.min.js"></script>
-    <link href="../vendor/bootstrap-custom.css" rel="stylesheet">
+    <!--<link href="../vendor/bootstrap-custom.css" rel="stylesheet">-->
+    <link href="../vendor/bootstrap-custom6.css" rel="stylesheet">
+    <!--<link href="../vendor/bootstrap-custom3.css" rel="stylesheet">-->
+    <!--<link href="../vendor/bootstrap-custom2.css" rel="stylesheet">-->
     <!--<link href="../vendor/bootstrap-3.0.2/css/bootstrap.css" rel="stylesheet">-->
 
     <!--========================genome-viewer==============================-->
     <!--===================================================================-->
-    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/jquery.qtip.min.css"/>
-    <link type="text/css" rel="stylesheet" href="genome-viewer/vendor/ChemDoodleWeb.css"/>
-    <!--<link type="text/css" rel="stylesheet" href="genome-viewer/vendor/bootstrap-scoped-dist/css/bootstrap.min.css"/>-->
-    <!--<link type="text/css" rel="stylesheet" href="genome-viewer/vendor/typeahead.js-bootstrap.css"/>-->
+        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/jquery.qtip.min.css"/>
+        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/jquery.qtip.min.css"/>
+        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/ChemDoodleWeb.css"/>
+        <!--<link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/bootstrap-scoped-dist/css/bootstrap.min.css"/>-->
+        <!--<link type="text/css" rel="stylesheet" href="../../../../jsorolla/vendor/typeahead.js-bootstrap.css"/>-->
+
+
+
+
 
     <!-- CSS from Genome Viewer -->
-    <link type="text/css" rel="stylesheet" href="genome-viewer/styles/css/style.css"/>
+        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/styles/css/style.css"/>
 
-    <script type="text/javascript" src="genome-viewer/vendor/underscore-min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/backbone-min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/rawdeflate.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/jquery.min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/bootstrap-scoped-dist/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/typeahead.min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/jquery.qtip.min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/jquery.cookie.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/jquery.sha1.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/purl.min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/jquery.mousewheel.min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/gl-matrix-min.js"></script>
-    <script type="text/javascript" src="genome-viewer/vendor/ChemDoodleWeb.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/underscore-min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/backbone-min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/rawdeflate.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/jquery.min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/bootstrap-scoped-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/typeahead.min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/jquery.qtip.min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/jquery.sha1.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/purl.min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/jquery.mousewheel.min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/gl-matrix-min.js"></script>
+    <script type="text/javascript" src="../../../../jsorolla/vendor/ChemDoodleWeb.js"></script>
 
-    <script type="text/javascript" src="genome-viewer/gv-config.js"></script>
-    <script type="text/javascript" src="genome-viewer/genome-viewer-1.0.3.min.js"></script>
+        <!-- js-common-libs cellbase ws-manager -->
+        <script type="text/javascript" src="../../../../jsorolla/src/lib/cellbase/cellbase-manager.js"></script>
 
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/data-adapter/cellbase-adapter.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/data-adapter/sequence-adapter.js"></script>
+
+
+        <!-- js-common-libs ensemble manager -->
+        <script type="text/javascript" src="../../../../jsorolla/src/lib/ensembl/ensembl-manager.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/data-adapter/ensembl-adapter.js"></script>
+
+
+        <!-- GENOME VIEWER SCRIPS   -->
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/gv-config.js"></script>
+
+        <script type="text/javascript" src="../../../../jsorolla/src/lib/region.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/lib/feature-binary-search-tree.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/cache/feature-cache.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/cache/feature-chunk-cache.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/cache/memory-store.js"></script>
+
+
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/navigation-bar.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/karyotype-panel.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/chromosome-panel.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/tracks/tracklist-panel.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/status-bar.js"></script>
+
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/widget/legend-panel.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/widget/legend-widget.js"></script>
+
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/tracks/track.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/tracks/feature-track.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/tracks/sequence-track.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/tracks/gene-track.js"></script>
+
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/renderers/renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/renderers/feature-renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/renderers/feature-cluster-renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/renderers/sequence-renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/renderers/histogram-renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/renderers/gene-renderer.js"></script>
+
+
+
+        <script type="text/javascript" src="../../../../jsorolla/src/genome-viewer/genome-viewer.js"></script>
 
     <!--========================network-viewer==============================-->
     <!--===================================================================-->
-    <link type="text/css" rel="stylesheet" href="network-viewer/vendor/jquery.simplecolorpicker.css" />
-    <script type="text/javascript" src="network-viewer/vendor/jquery.simplecolorpicker.js"></script>
 
-    <script type="text/javascript" src="network-viewer/nv-config.js"></script>
-    <script type="text/javascript" src="network-viewer/network-viewer-1.0.0.js"></script>
+        <script type="text/javascript" src="http://cdn.sencha.io/ext/gpl/4.2.1/ext-all.js"></script>
 
+        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/build/network-viewer/1.0.0/vendor/jquery.simplecolorpicker.css" />
+        <script type="text/javascript" src="../../../../jsorolla/build/network-viewer/1.0.0/vendor/jquery.simplecolorpicker.js"></script>
 
+        <link type="text/css" rel="stylesheet" href="../../../../jsorolla/styles/css/style.css" />
 
+        <script type="text/javascript" src="../../../../jsorolla/src/network-viewer/nv-config.js"></script>
 
+        <script type="text/javascript" src="../../../../jsorolla/src/lib/utils/svg.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/lib/utils/utils.js"></script>
 
+        <script type="text/javascript" src="../../../../jsorolla/src/network-viewer/tool-bar.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network-viewer/edition-bar.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/attributes/attribute-manager-idb.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/attributes/attribute-manager-store.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/network.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/network-config.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/graph.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/edge.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/edge-config.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/vertex.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/vertex-config.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/default-vertex-renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/circos-vertex-renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network/default-edge-renderer.js"></script>
+        <script type="text/javascript" src="../../../../jsorolla/src/network-viewer/network-svg-layout.js"></script>
+
+        <script type="text/javascript" src="../../../../jsorolla/src/network-viewer/network-viewer.js"></script>
 
 
     <!--========================cellbase-web==============================-->
@@ -107,31 +178,38 @@
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
         }
         body{
-            font-size: 14px;
+            font-size: 13px;
+            /*background-color: #D1C2D6;*/
+            /*background-color: #cdd1d9;*/
+            background-color: #C4E4EE;
         }
     </style>
 
+    <link href='http://fonts.googleapis.com/css?family=Aclonica' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Righteous' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Cantata+One' rel='stylesheet' type='text/css'>
+
 </head>
-<body>
+<body style="display:inline-block">
 <div id="cellbase-web" class="bootstrap">
 
-    <div id="optionsBar" ng-controller="optionsBarController" class="ocb-h-50">
+    <div id="optionsBar" ng-controller="optionsBarController" style="height: 45px">
         <div options-bar></div>
     </div>
 
-    <div class="ocb-margin-b-5">
+    <div class="ocb-margin-b-5" style="border-bottom:2px solid white">
         <!--<ul class="nav nav-pills ocb-border-b-darkgrey ocb-margin-l-r-five ocb-content-width" id="myTab">-->
         <ul class="nav nav-tabs ocb-content-width" id="myTab">
-            <li class="active"><a href="#genes">Gene</a></li>
+            <li class="active"><a href="#genes" >Gene</a></li>
             <li id="variationDiv"><a href="#variantion">Variation</a></li>
             <li id="regulationDiv"><a href="#regulation">Regulation</a></li>
         </ul>
     </div>
 
     <!--<div class="tab-content ocb-margin-five ocb-inline-block ocb-content-width">-->
-    <div class="tab-content ocb-content-width">
+    <div class="tab-content ocb-content-width" style="display:inline-block">
 
-        <div class="tab-pane active" id="genes">
+        <div class="tab-pane active" id="genes" style="display:inline-block">
             <div id="genesSelectDiv" class="pull-left ocb-select-panel-width" ng-controller="genesSelect">
                 <div genes-select ></div>
             </div>

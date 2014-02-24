@@ -1,37 +1,8 @@
-var optionsModule = angular.module('cellbaseWeb.options', []);
-
-//------------GENES---------------
-var  genesSelectModule = angular.module('cellbaseWeb.genesSelect', []);
-var  genesResultModule = angular.module('cellbaseWeb.genesResult', []);
-var  genesGVModule = angular.module('cellbaseWeb.genesGV', []);
-var  genesNVModule = angular.module('cellbaseWeb.genesNV', []);
-
-//---------VARIATIONS---------------
-var  variationsSelectModule = angular.module('cellbaseWeb.variationsSelect', []);
-var  variationsResultModule = angular.module('cellbaseWeb.variationsResult', []);
-var  variationsGVModule = angular.module('cellbaseWeb.variationsGV', []);
-
-//-------REGULATIONS-------------
-var  regulationsSelectModule = angular.module('cellbaseWeb.regulationsSelect', []);
-var  regulationsResultModule = angular.module('cellbaseWeb.regulationsResult', []);
+var myApp2 = angular.module('project2', []);
+var myApp = angular.module('cellbaseWeb', ['project2']);
 
 
-var myApp = angular.module('cellbaseWeb',
-    [
-        'cellbaseWeb.options',
-        'cellbaseWeb.genesSelect',
-        'cellbaseWeb.genesResult',
-        'cellbaseWeb.genesGV',
-        'cellbaseWeb.genesNV',
-        'cellbaseWeb.variationsSelect',
-        'cellbaseWeb.variationsResult',
-        'cellbaseWeb.variationsGV',
-        'cellbaseWeb.regulationsSelect',
-        'cellbaseWeb.regulationsResult'
-    ]);
-
-
-myApp.factory('mySharedService', function($rootScope, CellbaseService){
+myApp2.factory('mySharedService', function($rootScope, CellbaseService){
 
     var sharedService = {};
 

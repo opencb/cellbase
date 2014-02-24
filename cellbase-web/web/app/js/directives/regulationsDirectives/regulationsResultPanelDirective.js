@@ -1,4 +1,4 @@
-regulationsResultModule.directive('regulationsResult', function () {
+myApp.directive('regulationsResult', function () {
     return {
         restrict: 'A',
         replace: true,

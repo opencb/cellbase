@@ -1,4 +1,4 @@
-genesGVModule.directive('genesGenomeViewer', function () {
+myApp.directive('genesGenomeViewer', function () {
     return {
         restrict: 'A',
         replace: true,

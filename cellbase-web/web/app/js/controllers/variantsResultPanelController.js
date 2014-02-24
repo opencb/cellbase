@@ -1,4 +1,4 @@
-var variantsResult = variationsResultModule.controller('variantsResult', ['$scope', 'mySharedService', 'CellbaseService', function ($scope, mySharedService, CellbaseService) {
+var variantsResult = myApp.controller('variantsResult', ['$scope','$rootScope', 'mySharedService', 'CellbaseService', function ($scope, $rootScope, mySharedService, CellbaseService) {
     $scope.toggleTree = [];
     $scope.snpData = {};
     $scope.paginationData = [];
@@ -290,7 +290,7 @@ var variantsResult = variationsResultModule.controller('variantsResult', ['$scop
             $scope.paginationData = CellbaseService.getVariantsDataById($scope.selectedSpecie.shortName, $scope.snpFilters);  //obtener los datos
 
 
-            $scope.checkSNPFilter($scope.snpFilters);
+            $scope.checkSNPFilter(snpFilter);
         }
         else{
             $scope.paginationData = CellbaseService.getAllSNPDataPaginated($scope.selectedSpecie.shortName, mySharedService.regionsAndChromosomesVariants, [],1);
