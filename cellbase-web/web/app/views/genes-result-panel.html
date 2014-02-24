@@ -1,7 +1,7 @@
 <div ng-show="showAll" class="ocb-inline-block">
-    <!--<div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree">-->
+    <!--<div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-tree-width">-->
 
-    <div id="genesResultTree" class="pull-left ocb-result-tree panel panel-default ocb-margin-l-ten">
+    <div id="genesResultTree" class="pull-left ocb-tree-width panel panel-default ocb-margin-l-ten">
         <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; padding:1px">
             <span class="ocb-margin-r-5" style="color:white; margin-left: 15px">Results</span>
             <span class="badge" style="background-color: #ffffff; color:#000000">{{numResults}}</span>
@@ -35,7 +35,7 @@
 
             </div>
             <!----------------pagination----------------->
-            <div class="ocb-text-center" style="margin-top:3px">
+            <div class="ocb-text-center" style="margin-top:3px;">
                 <div ng-show="showPagination"
                      class="btn-group btn-group-xs ocb-margin-b-5 ocb-pagnation-tree-position">
                     <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
@@ -59,12 +59,11 @@
                     <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goNextPage()">>
                     </button>
-                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgrayf"
+                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goToLastPage()">>>
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -114,11 +113,5 @@
     </div>
 
 </div>
-
-
-
-
-
-
 
 

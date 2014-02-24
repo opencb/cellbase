@@ -1,25 +1,25 @@
 <div>
 
-<div class="ocb-margin-l-five">
+<div class="ocb-margin-l-five" style="margin-bottom: 5px">
     <ul class="nav nav-tabs" id="variantsTabs">
         <li class="active"><a href="#variantsRegions" data-toggle="tab" class="ocb-font-size-12">Regions</a></li>
         <li><a href="#variantsFilters" data-toggle="tab" class="ocb-font-size-12" ng-click="goToTab()">Filters</a></li>
     </ul>
     <div class="tab-content ocb-margin-b-ten">
         <!--------------------------regions tab--------------------------->
-        <div class="tab-pane active ocb-padding-t-5" id="variantsRegions">
+        <div class="tab-pane active" id="variantsRegions" style="background-color: white">
 
             <div class="panel panel-default ocb-margin-b-5">
-            <div class="panel-heading">Species</div>
-            <div class="panel-body">
+            <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Specie</div></div>
+            <div class="panel-body" style="height:40px">
             <p class="ocb-margin-l-ten">{{specie.longName}}</p>
             </div>
             </div>
 
             <div class="panel panel-default ocb-margin-b-5">
-                <div class="panel-heading">Chromosomes</div>
+                <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Chromosomes</div></div>
                 <div class="panel-body">
-                    <div class="ocb-chrom-scroll">
+                    <div class="ocb-chrom-scroll" style="margin:2px">
                         <div id="variantsChromMultiSelect" class="ocb-text-center">
                             <!--<button id="variants{{chrom}}" ng-repeat="chrom in chromNames" ng-click="addChrom(chrom)"-->
                                     <!--type="button" class="btn btn-default btn-sm" style=" min-width:35px; margin:2px;">{{chrom}}-->
@@ -29,14 +29,13 @@
 
                         </div>
                     </div>
-                    <br>
 
                     <div class="ocb-text-center">
-                        <button type="button" class="btn btn-info btn-sm ocb-margin-five"
+                        <button type="button" class="btn btn-info btn-xs"  style="margin:2px"
                                 ng-click="selectAllChrom()">
                             Select all
                         </button>
-                        <button type="button" class="btn btn-info btn-sm ocb-margin-five"
+                        <button type="button" class="btn btn-info btn-xs"  style="margin:2px"
                                 ng-click="deselectAllChrom()">
                             Deselect all
                         </button>
@@ -45,7 +44,7 @@
             </div>
 
             <div class="panel panel-default">
-                <div class="panel-heading">Regions</div>
+                <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Regions</div></div>
                 <div class="panel-body">
                     <p class="text-muted ocb-margin-l-ten"><b>chom:start-end</b></p>
                     <!--<textarea type="text" ng-model="regions" rows="7" class="form-control ocb-textarea-regions"></textarea>-->
@@ -55,10 +54,10 @@
 
         </div>
         <!-------------------filters tab------------------------>
-        <div class="tab-pane ocb-padding-t-5" id="variantsFilters">
+        <div class="tab-pane" id="variantsFilters" style="background-color: white">
 
             <div class="panel panel-default ocb-margin-b-5">
-                <div class="panel-heading">SNP Id</div>
+                <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">SNP Id</div></div>
                 <div class="panel-body">
                     <p class="text-muted ocb-margin-l-ten"><b>Ex: SNP_ID1,SNP_ID2,...</b></p>
                     <textarea type="text" ng-model="snpIdFilter" rows="5" class="form-control ocb-filter-textarea"></textarea>
@@ -66,7 +65,7 @@
             </div>
 
             <div class="panel panel-default">
-                <div class="panel-heading">Consequence Tye</div>
+                <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Consequence Type</div></div>
                 <div class="panel-body">
                     <div class="ocb-biotypes-scroll">
                         <div id="conseqTypeMultiSelect">
@@ -78,14 +77,13 @@
                             </div>
                         </div>
                     </div>
-                    <br>
 
                     <div class="ocb-text-center">
-                        <button type="button" class="btn btn-info btn-sm ocb-margin-five"
+                        <button type="button" class="btn btn-info btn-xs" style="margin:2px"
                                 ng-click="selectAllConseqTypeFilter()">
                             Select all
                         </button>
-                        <button type="button" class="btn btn-info btn-sm ocb-margin-five"
+                        <button type="button" class="btn btn-info btn-xs" style="margin:2px"
                                 ng-click="deselectAllConseqTypeFilter()">
                             Deselect all
                         </button>

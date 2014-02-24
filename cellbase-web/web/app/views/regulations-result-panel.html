@@ -1,16 +1,18 @@
 <div ng-show="showAll" class="ocb-inline-block ">
 
 
-    <div id="regulationResultTree" class="pull-left ocb-margin-l-ten panel-default ocb-border-darkgray ocb-result-tree">
-        <div class="panel-heading">
-            <span class="ocb-margin-r-ten">Results</span>
-            <span class="badge">{{numResults}}</span>
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-40" ng-click="expandAllVariantsTree()">
-                <span class="glyphicon glyphicon-resize-full"></span></button>
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllVariantsTree()">
+    <div id="regulationResultTree" class="pull-left ocb-tree-width panel panel-default ocb-margin-l-ten">
+        <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; padding:1px">
+            <span class="ocb-margin-r-5" style="color:white; margin-left: 15px">Results</span>
+            <span class="badge" style="background-color: #ffffff; color:#000000">{{numResults}}</span>
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-30" ng-click="expandAllVariantsTree()">
                 <span class="glyphicon glyphicon-resize-small"></span></button>
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllVariantsTree()">
+                <span class="glyphicon glyphicon-resize-full"></span></button>
         </div>
-        <div class="panel-body ">
+
+
+        <div class="panel-body ocb-tree-height" style="border: 1px solid #3366FF; background-color: white">
           <div class="ocb-scroll-tree">
 
               <witched-regulations-list data="dataNames" toggle="toggleTree"
@@ -99,40 +101,39 @@
 
     <div id="regulationResultPanels" class="pull-left ocb-margin-l-ten ocb-width_765">
 
-
         <div class="list-group">
             <a class="list-group-item active ocb-text-center">
                 Regulations information
             </a>
-            <div class="ocb-panels-data-border" >
+            <div class="ocb-panels-data-border" style="background-color: white">
                 <regulations regulations="paginationData" specie="selectedSpecie"></regulations>
                 <!--<regulations regulations="regulationsData" specie="selectedSpecie"></regulations>-->
 
                 <!----------------pagination----------------->
                 <div class="ocb-text-center">
                     <div class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
-                        <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                        <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                                 ng-click="goToFirstPage()"><<
                         </button>
-                        <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                        <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                                 ng-click="goPreviousPage()"><
                         </button>
-                        <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                        <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                                 ng-class="{'disabled': disableFirstNumber}"
                                 ng-click="goToNumberPage(paginationNumbers[0])">{{paginationNumbers[0]}}
                         </button>
-                        <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                        <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                                 ng-class="{'disabled': disableSecondNumber}"
                                 ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
                         </button>
-                        <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                        <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                                 ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
                                 >{{paginationNumbers[2]}}
                         </button>
-                        <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                        <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                                 ng-click="goNextPage()">>
                         </button>
-                        <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                        <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                                 ng-click="goToLastPage()">>>
                         </button>
                     </div>
