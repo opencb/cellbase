@@ -50,7 +50,7 @@
                     <th>Somatic</th>
                     </thead>
                     <tbody ng-repeat="transc in data.transcriptVariations">
-                    <td ng-click="functionDirective(transc.transcriptId)"><a><small> {{transc.transcriptId}}</small></a></td>
+                    <td ng-click="functionDirective(transc.transcriptId)"><a style="cursor:pointer"><small> {{transc.transcriptId}}</small></a></td>
                     <td><small>{{transc.distanceToTranscript}}</small></td>
                     <td><small>{{transc.hgvsGenomic}}</small></td>
 

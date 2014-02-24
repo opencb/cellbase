@@ -17,18 +17,18 @@
 
             <ul class="nav navbar-nav">
                 <li class="dropdown">
-                    <a class="dropdown-toggle ocb-text-options" data-toggle="dropdown">
+                    <a class="dropdown-toggle ocb-text-options" data-toggle="dropdown" style="cursor:pointer">
                         {{selectedSpecie}} <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a ng-repeat="specie in species" ng-click="setSelectedSpecie(specie)">{{specie.longName}}</a></li>
                     </ul>
                 </li>
-                <li><a class="ocb-text-options" ng-click="new()">New</a></li>
+                <li><a class="ocb-text-options" ng-click="new()" style="cursor:pointer">New</a></li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
-                <li><a class="ocb-text-options" ng-click="example()">Example</a></li>
-                <li><a class="ocb-text-options">Documentation</a></li>
+                <li><a class="ocb-text-options" ng-click="example()" style="cursor:pointer">Example</a></li>
+                <li><a class="ocb-text-options" style="cursor:pointer">Documentation</a></li>
             </ul>
         </div>
         <!--/.nav-collapse -->

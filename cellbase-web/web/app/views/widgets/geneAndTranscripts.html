@@ -44,7 +44,7 @@
                 <th>Protein ID</th>
             </thead>
                 <tbody ng-repeat="transc in data.transcripts">
-                    <td ng-click="functionDirective(transc.name)"><a><small>{{transc.name}} ( {{transc.id}} )</small></a></td>
+                    <td ng-click="functionDirective(transc.name)"><a style="cursor:pointer"><small>{{transc.name}} ( {{transc.id}} )</small></a></td>
                     <td><small>{{transc.biotype}}</small></td>
                     <td><small>{{transc.chromosome}}:{{transc.start}}-{{transc.end}}</small></td>
                     <td><small>{{transc.status}}</small></td>
