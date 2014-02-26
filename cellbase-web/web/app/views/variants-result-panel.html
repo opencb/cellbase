@@ -1,7 +1,7 @@
 <div ng-show="showAll" class="ocb-inline-block">
 
 
-    <!--<div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-result-tree">-->
+    <!--<div id="genesResultTree" class="pull-left ocb-margin-l-ten ocb-border-darkgray ocb-tree-width">-->
     <!--<div class="ocb-text-center">Number of results: <b>{{numResults}}</b></div>-->
     <!--<div class="ocb-text-center">-->
     <!--<button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllVariantsTree()">-->
@@ -12,16 +12,16 @@
     <!--</button>-->
     <!--</div>-->
     <!-------------- genes tree --------------->
-    <div id="variantsResultTree" class="pull-left ocb-result-tree panel panel-default ocb-margin-l-ten">
-        <div class="panel-heading">
-            <span class="ocb-margin-r-ten">Results</span>
-            <span class="badge">{{snpDataSize}}</span>
-            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-40" ng-click="collapseAllVariantsTree()">
+    <div id="variantsResultTree" class="pull-left ocb-tree-width panel panel-default ocb-margin-l-ten">
+        <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; padding:1px">
+            <span class="ocb-margin-r-5" style="color:white; margin-left: 15px">Results</span>
+            <span class="badge" style="background-color: #ffffff; color:#000000">{{snpDataSize}}</span>
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-30" ng-click="collapseAllVariantsTree()">
                 <span class="glyphicon glyphicon-resize-small"></span></button>
             <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllVariantsTree()">
                 <span class="glyphicon glyphicon-resize-full"></span></button>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" style="border: 1px solid #3366FF; background-color: white">
             <div class="ocb-scroll-tree">
 
                 <!--<div ng-repeat="variant in paginationData" class="ocb-list list-group" >-->
@@ -43,31 +43,31 @@
             </div>
 
             <!----------------pagination----------------->
-            <div class="ocb-text-center">
+            <div class="ocb-text-center" style="margin-top:3px; paddig-bottom: 0px">
                 <div ng-show="showPagination"
-                     class="btn-group btn-group-xs ocb-margin-b-ten ocb-pagnation-tree-position">
-                    <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                     class="btn-group btn-group-xs ocb-margin-b-5 ocb-pagnation-tree-position">
+                    <button ng-show="firstPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goToFirstPage()"><<
                     </button>
-                    <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="previousPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goPreviousPage()"><
                     </button>
-                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-class="{'disabled': disableFirstNumber}"
                             ng-click="goToNumberPage(paginationNumbers[0])">{{paginationNumbers[0]}}
                     </button>
-                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-class="{'disabled': disableSecondNumber}"
                             ng-click="goToNumberPage(paginationNumbers[1])">{{paginationNumbers[1]}}
                     </button>
-                    <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="thirdNumber" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-class="{'disabled': disableThirdNumber}" ng-click="goToNumberPage(paginationNumbers[2])"
                             >{{paginationNumbers[2]}}
                     </button>
-                    <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="nextPage" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goNextPage()">>
                     </button>
-                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color"
+                    <button ng-show="lastPages" type="button" class="btn btn-default btn-ms ocb-pagnation-text-color ocb-border-darkgray"
                             ng-click="goToLastPage()">>>
                     </button>
                 </div>
@@ -78,21 +78,18 @@
 
     <div id="variantsResultPanels" class="pull-left ocb-margin-l-ten">
 
-
         <ul class="nav nav-tabs" id="variantsResultTab">
             <li class="active"><a href="#variantsOverviewInfo" data-toggle="tab">Overview Info</a></li>
             <li id="variantsGV"><a href="#variants_GV" ng-click="changeResultTab()" data-toggle="tab">Genome Browser</a></li>
         </ul>
 
         <div class="tab-content">
-
-            <div class="tab-pane active ocb-width_900" id="variantsOverviewInfo">
-
+            <div class="tab-pane active ocb-width_765" id="variantsOverviewInfo" style="background-color: white">
 
                 <!-----------------------variant and transcriptsVar panel--------------------------->
                 <!--<div class="list-group">-->
-                <div class="list-group  ocb-margin-b-5" ng-show="showVariantPanel">
-                    <a class="list-group-item active ocb-text-center">Variant
+                <div class="list-group  ocb-margin-b-5" ng-show="showVariantPanel" style="background-color: white">
+                    <a class="list-group-item active ocb-text-center" style="background-color: #5E84CF; border:1px solid #3366FF">Variant
                         information
                     </a>
 
@@ -105,8 +102,8 @@
                 </div>
                 <!-------------------------transcriptVar panel---------------------------->
                 <!--<div class="list-group">-->
-                <div class="list-group" ng-show="showTranscriptVarPanel">
-                    <a class="list-group-item active ocb-text-center">Transcript Variations
+                <div class="list-group" ng-show="showTranscriptVarPanel" style="background-color: white">
+                    <a class="list-group-item active ocb-text-center"  style="background-color: #5E84CF; border:1px solid #3366FF">Transcript Variations
                         information
                     </a>
 

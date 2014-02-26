@@ -9,7 +9,7 @@
             <div class="tab-pane active" id="genesRegions" style="background-color: white">
 
                 <div class="panel panel-default ocb-margin-b-5">
-                <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Species</div></div>
+                <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Specie</div></div>
                 <div class="panel-body" style="height:40px">
                 <p class="ocb-margin-l-ten">{{specie.longName}}</p>
                 </div>
@@ -52,10 +52,10 @@
 
             </div>
             <!-------------------filters tab------------------------>
-            <div class="tab-pane ocb-padding-t-5" id="genesFilters">
+            <div class="tab-pane" id="genesFilters" style="background-color: white">
 
                 <div class="panel panel-default ocb-margin-b-5">
-                    <div class="panel-heading">Gene Id/Name</div>
+                    <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Gene Id/Name</div></div>
                     <div class="panel-body">
                         <p class="text-muted ocb-margin-l-ten"><b>Ex: gene1,gene2,...</b></p>
                         <textarea type="text" ng-model="genesIdFilter" rows="5" class="form-control ocb-filter-textarea"></textarea>
@@ -63,7 +63,7 @@
                 </div>
 
                 <div class="panel panel-default">
-                    <div class="panel-heading">Biotype</div>
+                    <div class="panel-heading" style="background-color: #5E84CF; border:1px solid #3366FF; color: white; padding:3px"><div style="margin-left:10px">Biotype</div></div>
                     <div class="panel-body">
                         <div class="ocb-biotypes-scroll">
                             <div id="BiotypesMultiSelect">
@@ -75,14 +75,13 @@
                                 </div>
                             </div>
                         </div>
-                        <br>
 
                         <div class="ocb-text-center">
-                            <button type="button" class="btn btn-info btn-sm ocb-margin-five"
+                            <button type="button" class="btn btn-info btn-xs" style="margin:2px"
                                     ng-click="selectAllBiotypeFilter()">
                                 Select all
                             </button>
-                            <button type="button" class="btn btn-info btn-sm ocb-margin-five"
+                            <button type="button" class="btn btn-info btn-xs" style="margin:2px"
                                     ng-click="deselectAllBiotypeFilter()">
                                 Deselect all
                             </button>
@@ -93,7 +92,8 @@
             </div>
         </div>
     </div>
-    <p class="ocb-text-center"><a class="btn btn-warning btn-lg btn-medium" style="background:-webkit-linear-gradient(#F3CD64, #F77716);" ng-click="setResult()">
+    <p class="ocb-text-center"><a class="btn btn-warning btn-lg btn-medium" ng-click="setResult()">
+    <!--<p class="ocb-text-center"><a class="btn btn-warning btn-lg btn-medium" style="background:-webkit-linear-gradient(#F3CD64, #F77716);" ng-click="setResult()">-->
         RESULT</a>
     </p>
 </div>

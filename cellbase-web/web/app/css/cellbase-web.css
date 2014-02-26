@@ -15,7 +15,7 @@
 /*-------------------------------*/
 
 .ocb-content-width{
-    width:1440px;
+    width:1250px;
     /*width:1410px;*/
 }
 
@@ -25,7 +25,8 @@
 }
 
 .ocb-result-width{
-    width:1015px;   /*250+765*/
+    width:1000px;
+    /*width:1015px;   *//*250+765*/
     /*width:1190px;*/
 }
 .ocb-width-900{
@@ -164,10 +165,7 @@
 .ocb-border-darkgray{
     border:1px solid darkgray;
 }
-.ocb-result-tree{
-    width:215px;
-    /*height: 645px;*/
-}
+
 .ocb-bold{
     font-weight: bold;
 }
@@ -193,24 +191,33 @@
 
 .ocb-select-tabs{
     /*border:1px solid #808080;*/
-    height: 540px;
+    height: 521px;
+}
+
+.ocb-tree-width{
+    width:215px;
+    /*height: 645px;*/
+}
+
+.ocb-tree-height{
+    height: 597px;
 }
 
 .ocb-regions-textarea{
     height:154px !important;
-    max-width:212px;
-    width:212px;
+    max-width:222px;
+    width:222px;
     max-height:154px
 }
 .ocb-filter-textarea{
     height:124px !important;
-    max-width:212px;
-    width:212px;
+    max-width:222px;
+    width:222px;
     max-height:124px
 }
 
 .ocb-filter-width{
-    min-width:170px;
+    min-width:180px;
     margin:2px !important;
 }
 
@@ -225,7 +232,7 @@
 .ocb-chrom-scroll{
     overflow-y:scroll;
     overflow-x:hidden;
-    height: 145px;
+    height: 135px;
     margin:10px
 
     /*overflow: scroll;*/
@@ -234,7 +241,7 @@
 }
 .ocb-biotypes-scroll{
     overflow: scroll;
-    height: 190px;
+    height: 222px;
     margin:10px
 }
 .ocb-scroll{
@@ -251,9 +258,14 @@
 }
 .ocb-scroll-regulations{
     overflow-y:scroll;
-    overflow-x:hidden;
+    overflow-x:scroll;
     height: 540px;
     margin:10px
+
+    /*overflow-y:scroll;*/
+    /*overflow-x:hidden;*/
+    /*height: 540px;*/
+    /*margin:10px*/
 }
 
 .ocb-scroll-tree{
