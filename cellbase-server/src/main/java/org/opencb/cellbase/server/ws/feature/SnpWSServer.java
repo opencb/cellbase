@@ -58,6 +58,24 @@ public class SnpWSServer extends GenericRestWSServer {
         }
     }
 
+
+
+    @GET
+    @Path("/phenotypes")
+    public Response getAllPhenotypes(@QueryParam("phenotype") String phenotype) {
+        try {
+            checkVersionAndSpecies();
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+
+            queryOptions.put("phenotype", phenotype);
+
+            return createOkResponse(variationDBAdaptor.getAllPhenotypes(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getByEnsemblId", e.toString());
+        }
+    }
+
 	//	private int snpId;
 	//	private String name;
 	//	private String chromosome;
@@ -83,7 +101,7 @@ public class SnpWSServer extends GenericRestWSServer {
 //			List<List<Snp>> snpListList = snpDBAdaptor.getAllBySnpIdList(StringUtils.toList(query, ","));
 //			List<List<SnpToTranscript>> snpToTranscript = snpDBAdaptor.getAllSnpToTranscriptList(StringUtils.toList(query, ","));
 //			List<List<SnpPopulationFrequency>> snpPopulation = snpDBAdaptor.getAllSnpPopulationFrequencyList(StringUtils.toList(query, ","));
-//			List<List<SnpPhenotypeAnnotation>> snpPhenotype = snpDBAdaptor.getAllSnpPhenotypeAnnotationListBySnpNameList(StringUtils.toList(query, ","));
+//			List<List<VariationPhenotypeAnnotation>> snpPhenotype = snpDBAdaptor.getAllSnpPhenotypeAnnotationListBySnpNameList(StringUtils.toList(query, ","));
 			
 //			List<List<Transcript>> transcripts = new ArrayList<List<Transcript>>(StringUtils.toList(query, ",").size());
 //			for (int i = 0; i < snpToTranscript.size(); i++) {
@@ -214,8 +232,7 @@ public class SnpWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.version);
-			long t0 = System.currentTimeMillis();
-//			List<List<SnpPhenotypeAnnotation>> snpPhenotypeAnnotList = snpDBAdaptor.getAllSnpPhenotypeAnnotationListBySnpNameList(StringUtils.toList(snps, ","));
+//			List<List<VariationPhenotypeAnnotation>> snpPhenotypeAnnotList = snpDBAdaptor.getAllSnpPhenotypeAnnotationListBySnpNameList(StringUtils.toList(snps, ","));
 //			logger.debug("getSnpPhenotypesByName: "+(System.currentTimeMillis()-t0)+"ms");
 //			return generateResponse(snps, "SNP_PHENOTYPE", snpPhenotypeAnnotList);
 			

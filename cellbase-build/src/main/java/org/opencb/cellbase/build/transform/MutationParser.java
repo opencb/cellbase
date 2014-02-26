@@ -1,23 +1,15 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.common.variation.Mutation;
-import org.opencb.commons.bioformats.protein.uniprot.UniprotParser;
-import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
-import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.OrganismNameType;
-import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Uniprot;
 
-import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,11 +22,11 @@ import java.util.Map;
  */
 public class MutationParser {
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
     private static final int CHUNK_SIZE = 1000;
 
-    public MutationParser(CellbaseSerializer serializer) {
+    public MutationParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 
@@ -64,51 +56,7 @@ public class MutationParser {
     // 23 Tumour origin***
     // 24 Comments
 
-
-
-    // Ensembl: phenotype_feature_id 0| phenotype_id 1| source_id 2| study_id 3| type 4| object_id 5      | is_significant 6| seq_region_id 7| seq_region_start 8| seq_region_end 9| seq_region_strand 10
-    public void parseEnsembl(Path ensemblVariationDir) throws IOException {
-        Map<String, String> seqRegionMap = VariationUtils.parseSeqRegionToMap(ensemblVariationDir);
-        Map<String, String> sourceMap = VariationUtils.parseSourceToMap(ensemblVariationDir);
-        Map<String, String> phenotypeMap = VariationUtils.parsePhenotypeToMap(ensemblVariationDir);
-
-        MutationMongoDB mutation;
-        String seqRegion = null;
-        String source = null;
-        String phenotype = null;
-        String chunkIdSuffix = CHUNK_SIZE/1000+"k";
-
-        BufferedReader br = FileUtils.newBufferedReader(ensemblVariationDir.resolve("phenotype_feature.txt.gz"), Charset.defaultCharset());
-        String[] fields = null;
-        String line = null;
-        while((line = br.readLine()) != null) {
-            fields = line.split("\t");
-
-            if(fields[4].equals("Variation")) {
-                seqRegion = seqRegionMap.get(fields[7]);
-                source = sourceMap.get(fields[2]).split(",")[0];
-                phenotype = phenotypeMap.get(fields[1]);
-
-                //Mutation(String id, String chromosome, int start, int end,
-                //String strand, String protein, int proteinStart, int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName, String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity, String status, String pubmed, String tumourOrigin, String description) {
-                mutation = new MutationMongoDB(fields[5], seqRegion, Integer.parseInt(fields[8]), Integer.parseInt(fields[9]),
-                        fields[10], "", 0, 0, "gene", "transcript", "", "", "", "", "",
-                        "6", "7", phenotype, "9", "10", "12",
-                        "13", "15", "20", "21", "23", "14", source);
-                int chunkStart = (mutation.getStart()) / CHUNK_SIZE;
-                int chunkEnd = (mutation.getEnd()) / CHUNK_SIZE;
-                for(int i=chunkStart; i<=chunkEnd; i++) {
-                    mutation.getChunkIds().add(mutation.getChromosome()+"_"+i+"_"+chunkIdSuffix);
-                }
-                serializer.serialize(mutation);
-
-            }
-        }
-
-        br.close();
-    }
-
-    public void parse(Path cosmicMutationFile) {
+    public void parseCosmic(Path cosmicMutationFile) {
         try {
 //            BufferedReader br;
 //            if(mutationFile.getName().endsWith(".gz")) {
@@ -173,5 +121,6 @@ public class MutationParser {
             this.chunkIds = chunkIds;
         }
     }
+
 
 }

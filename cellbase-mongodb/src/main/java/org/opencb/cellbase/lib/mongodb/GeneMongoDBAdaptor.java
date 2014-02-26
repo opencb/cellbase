@@ -163,7 +163,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             }
 
             if (biotypeIds.size() > 0) {
-                System.out.println("regions = [" + regions + "], options = [" + options + "]");
+//                System.out.println("regions = [" + regions + "], options = [" + options + "]");
                 builder = builder.and("biotype").in(biotypeIds);
             }
             queries.add(builder.get());

@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.core.Chromosome;
 import org.opencb.cellbase.core.common.core.Cytoband;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
@@ -9,6 +10,7 @@ import org.opencb.cellbase.core.common.core.InfoStats;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -17,18 +19,18 @@ import java.util.zip.GZIPInputStream;
 
 public class GenomeSequenceFastaParser {
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
 
     private int CHUNK_SIZE = 2000;
 
 
-    public GenomeSequenceFastaParser(CellbaseSerializer serializer) {
+    public GenomeSequenceFastaParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 
 
-    public void parse(File genomeReferenceFastaFile) {
+    public void parse(Path genomeReferenceFastaFile) {
         try {
             String chromosome = "";
             String line;
@@ -36,11 +38,12 @@ public class GenomeSequenceFastaParser {
 
             // Preparing input and output files
             BufferedReader br;
-            if(genomeReferenceFastaFile.getName().endsWith(".gz")) {
-                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(genomeReferenceFastaFile))));
-            }else {
-                br = Files.newBufferedReader(Paths.get(genomeReferenceFastaFile.getAbsolutePath()), Charset.defaultCharset());
-            }
+//            if(genomeReferenceFastaFile.getName().endsWith(".gz")) {
+//                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(genomeReferenceFastaFile))));
+//            }else {
+//                br = Files.newBufferedReader(Paths.get(genomeReferenceFastaFile.getAbsolutePath()), Charset.defaultCharset());
+//            }
+            br = FileUtils.newBufferedReader(genomeReferenceFastaFile);
 
             while ((line = br.readLine()) != null) {
                 if (!line.startsWith(">")) {
@@ -48,8 +51,10 @@ public class GenomeSequenceFastaParser {
                 } else {
                     // new chromosome, save data
                     if (sequenceStringBuilder.length() > 0) {
-                        System.out.println(chromosome);
-                        serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+                        if(!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
+                            System.out.println(chromosome);
+                            serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+                        }
                     }
 
                     // initialize data structures
@@ -58,7 +63,9 @@ public class GenomeSequenceFastaParser {
                 }
             }
             // Last chromosome must be processed
-            serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+            if(!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
+                serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+            }
 
             br.close();
         } catch (IOException e) {
@@ -72,7 +79,7 @@ public class GenomeSequenceFastaParser {
         int end = CHUNK_SIZE - 1;
         String chunkSequence;
 
-        String chunkIdSuffix = CHUNK_SIZE/1000+"k";
+        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
         GenomeSequenceChunk genomeSequenceChunk;
 
         if (sequence.length() < CHUNK_SIZE) {//chromosome sequence length can be less than CHUNK_SIZE

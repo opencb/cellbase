@@ -7,7 +7,7 @@ package org.opencb.cellbase.build.transform; /**
  */
 
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.core.common.protein.*;
 import org.opencb.cellbase.core.common.protein.Interactor;
 import psidev.psi.mi.tab.PsimiTabReader;
@@ -19,9 +19,9 @@ import java.util.*;
 
 public class InteractionParser {
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
-    public InteractionParser(CellbaseSerializer serializer) {
+    public InteractionParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 

@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 /**
@@ -16,7 +17,7 @@ import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
  * Time: 5:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface CellbaseSerializer {
+public interface CellBaseSerializer {
 
     public void serialize(Gene gene);
 
@@ -27,6 +28,8 @@ public interface CellbaseSerializer {
     public void serialize(GenericFeature genericFeature);
 
     public void serialize(GenomeSequenceChunk genomeSequenceChunk);
+
+    public void serialize(VariationPhenotypeAnnotation variationPhenotypeAnnotation);
 
     public void serialize(Mutation mutation);
 

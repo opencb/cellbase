@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.common.variation.*;
@@ -25,15 +25,15 @@ public class VariationParser {
 
     private int LIMITROWS = 100000;
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public VariationParser(CellbaseSerializer serializer) {
+    public VariationParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 
-    //	public void parse(String species, String assembly, String source, String version, Path variationDirectoryPath, Path outfileJson) throws IOException, SQLException {
+    //	public void parseCosmic(String species, String assembly, String source, String version, Path variationDirectoryPath, Path outfileJson) throws IOException, SQLException {
     public void parse(Path variationDirectoryPath) throws IOException, SQLException, ClassNotFoundException, InterruptedException {
 
         if(!Files.exists(variationDirectoryPath) || !Files.isDirectory(variationDirectoryPath) || !Files.isReadable(variationDirectoryPath)) {
@@ -193,6 +193,7 @@ public class VariationParser {
 
         bwLog.close();
         bufferedReaderVariation.close();
+        disconnect();
     }
 
     public void connect(Path variationFilePath) throws SQLException, ClassNotFoundException, FileNotFoundException {
@@ -387,7 +388,7 @@ public class VariationParser {
                 ps.executeBatch();
                 sqlConn.commit();
                 logger.info("Inserting in " + tableName + ": " + count);
-                if(count > 1000000) break;
+//                if(count > 1000000) break;
             }
 
             offset += line.length() + 1;

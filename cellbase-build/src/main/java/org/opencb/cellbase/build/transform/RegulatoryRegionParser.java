@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
 
 import java.io.BufferedReader;
@@ -22,14 +22,14 @@ import java.util.zip.GZIPInputStream;
 
 public class RegulatoryRegionParser {
 
-    static int chunkSize = 2000;
+    static int CHUNK_SIZE = 2000;
 
 //    private static Gson gson = new Gson();
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
 
-    public RegulatoryRegionParser(CellbaseSerializer serializer) {
+    public RegulatoryRegionParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 
@@ -63,6 +63,8 @@ public class RegulatoryRegionParser {
     public void parse(Path regulatoryRegionPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
         // Create the SQLite databases
 //        createSQLiteRegulatoryFiles(regulatoryRegionPath);
+
+        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
 
         Path annotatedFilePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff.gz.db");
         Path motifFilePath = regulatoryRegionPath.resolve("MotifFeatures.gff.gz.db");
@@ -113,13 +115,13 @@ public class RegulatoryRegionParser {
                 genericFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
                 int c = 0;
                 for (GenericFeature genericFeature : genericFeatures) {
-					int firstChunkId =  getChunkId(genericFeature.getStart(), chunkSize);
-					int lastChunkId  = getChunkId(genericFeature.getEnd(), chunkSize);
+					int firstChunkId =  getChunkId(genericFeature.getStart(), CHUNK_SIZE);
+					int lastChunkId  = getChunkId(genericFeature.getEnd(), CHUNK_SIZE);
 
                     List<String> chunkIds = new ArrayList<>();
                     String chunkId;
                     for(int j=firstChunkId; j<=lastChunkId; j++) {
-                        chunkId = chromosome+"_"+j;
+                        chunkId = chromosome+"_"+j+"_"+chunkIdSuffix;
                         chunkIds.add(chunkId);
                         //count chunks
                         if(!chunksHash.contains(j)) {
@@ -545,7 +547,7 @@ public class RegulatoryRegionParser {
 
     private int getChunkId(int position, int chunksize) {
         if (chunksize <= 0) {
-            return position / chunkSize;
+            return position / CHUNK_SIZE;
         } else {
             return position / chunksize;
         }
@@ -553,7 +555,7 @@ public class RegulatoryRegionParser {
 
     private int getChunkStart(int id, int chunksize) {
         if (chunksize <= 0) {
-            return (id == 0) ? 1 : id * chunkSize;
+            return (id == 0) ? 1 : id * CHUNK_SIZE;
         } else {
             return (id == 0) ? 1 : id * chunksize;
         }
@@ -561,7 +563,7 @@ public class RegulatoryRegionParser {
 
     private int getChunkEnd(int id, int chunksize) {
         if (chunksize <= 0) {
-            return (id * chunkSize) + chunkSize - 1;
+            return (id * CHUNK_SIZE) + CHUNK_SIZE - 1;
         } else {
             return (id * chunksize) + chunksize - 1;
         }

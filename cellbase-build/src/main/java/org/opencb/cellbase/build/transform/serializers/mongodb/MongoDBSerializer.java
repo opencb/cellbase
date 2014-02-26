@@ -4,16 +4,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.GenericFeature;
-import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 import java.io.BufferedWriter;
@@ -34,11 +33,9 @@ import java.util.Map;
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MongoDBSerializer implements CellbaseSerializer {
+public class MongoDBSerializer implements CellBaseSerializer {
 
-    private File file;
     private Path outdirPath;
-    private Path outfilePath;
 
     private Map<String, BufferedWriter> bufferedWriterMap;
 
@@ -46,6 +43,7 @@ public class MongoDBSerializer implements CellbaseSerializer {
     // Variation data is too big to be stored in a single file,
     // data is split in different files
     private Map<String, BufferedWriter> variationBufferedWriter;
+    private BufferedWriter variationPhenotypeAnnotationBufferedWriter;
     private BufferedWriter mutationBufferedWriter;
     private BufferedWriter ppiBufferedWriter;
 
@@ -54,17 +52,14 @@ public class MongoDBSerializer implements CellbaseSerializer {
 
     private int chunkSize = 2000;
 
-    public MongoDBSerializer(File file) throws IOException {
-        this.file = file;
+
+    public MongoDBSerializer(Path path) throws IOException {
+        this.outdirPath = path;
         init();
     }
 
     private void init() throws IOException {
-        if(file.exists() && file.isDirectory() && file.canWrite()) {
-            outdirPath = file.toPath();
-        }else {
-            outfilePath = file.toPath();
-        }
+        FileUtils.checkPath(outdirPath);
 
         bufferedWriterMap = new Hashtable<>(50);
         variationBufferedWriter = new HashMap<>(40);
@@ -144,6 +139,19 @@ public class MongoDBSerializer implements CellbaseSerializer {
     }
 
     @Override
+    public void serialize(VariationPhenotypeAnnotation variationPhenotypeAnnotation) {
+        try {
+            if(variationPhenotypeAnnotationBufferedWriter == null) {
+                variationPhenotypeAnnotationBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("variation_phenotype_annotation.json"), Charset.defaultCharset());
+            }
+            variationPhenotypeAnnotationBufferedWriter.write(jsonObjectWriter.writeValueAsString(variationPhenotypeAnnotation));
+            variationPhenotypeAnnotationBufferedWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        };
+    }
+
+    @Override
     public void serialize(Mutation mutation) {
         try {
             if(mutationBufferedWriter == null) {
@@ -192,6 +200,7 @@ public class MongoDBSerializer implements CellbaseSerializer {
         try {
 
             closeBufferedWriter(genomeSequenceBufferedWriter);
+            closeBufferedWriter(variationPhenotypeAnnotationBufferedWriter);
             closeBufferedWriter(mutationBufferedWriter);
             closeBufferedWriter(ppiBufferedWriter);
         } catch (IOException e) {

@@ -3,6 +3,7 @@ package org.opencb.cellbase.lib.mongodb;
 import com.mongodb.*;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
+import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -11,6 +12,7 @@ import java.util.*;
 
 public class VariationMongoDBAdaptor extends MongoDBAdaptor implements VariationDBAdaptor {
 
+    private DBCollection mongoVariationPhenotypeDBCollection;
 
     public VariationMongoDBAdaptor(DB db) {
         super(db);
@@ -19,6 +21,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     public VariationMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("variation");
+        mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
     }
 
 
@@ -47,6 +50,85 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         queryResult.setResult(Arrays.asList(result));
         queryResult.setDBTime(0);
         return queryResult;
+    }
+
+    @Override
+    public QueryResult getAllPhenotypes(QueryOptions options) {
+//        return executeDistinct("distinct", "phenotype", mongoVariationPhenotypeDBCollection);
+        QueryBuilder builder = new QueryBuilder();
+        if(options.containsKey("phenotype")) {
+            String pheno = options.getString("phenotype");
+            if(pheno != null && !pheno.equals("")) {
+                builder = builder.start("phenotype").is(pheno);
+            }
+        }
+        return executeQuery("result", builder.get(), options, mongoVariationPhenotypeDBCollection);
+    }
+
+    @Override
+    public List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options) {
+        QueryBuilder builder = null;
+        List<DBObject> queries = new ArrayList<>();
+
+//        List<Region> regions = Region.parseRegions(options.getString("region"));
+        List<String> ids = new ArrayList<>(regions.size());
+        for (Region region : regions) {
+            if(region != null && !region.equals("")) {
+                // If regions is 1 position then query can be optimize using chunks
+                if (region.getStart() == region.getEnd()) {
+                    String chunkId = getChunkPrefix(region.getChromosome(), region.getStart(), Integer.parseInt(applicationProperties.getProperty("VARIATION_CHUNK_SIZE", "1000")));
+                    System.out.println(chunkId);
+                    builder = QueryBuilder.start("chunkIds").is(chunkId).and("end")
+                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                } else {
+                    builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                }
+
+                queries.add(builder.get());
+                ids.add(region.toString());
+            }
+        }
+        return executeQueryList(ids, queries, options, db.getCollection("variation_phenotype_annotation"));
+    }
+
+
+    @Override
+    public QueryResult getAllByPhenotype(String phenotype, QueryOptions options) {
+        QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
+
+        List<QueryResult> queryResults = new ArrayList<>();
+        if(options.containsKey("variants")) {
+            List<Object> variantList = options.getList("variants");
+            List<GenomicVariant> variants = new ArrayList<>(variantList.size());
+            for (int i = 0; i < variantList.size(); i++) {
+                GenomicVariant genomicVariant = (GenomicVariant) variantList.get(i);
+                variants.add(genomicVariant);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options) {
+        QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
+        return executeQuery(phenotype, builder.get(), options, mongoVariationPhenotypeDBCollection);
+    }
+
+    @Override
+    public List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options) {
+        List<DBObject> queries = new ArrayList<>(phenotypeList.size());
+        for (String id : phenotypeList) {
+            QueryBuilder builder = QueryBuilder.start("phenotype").is(id);
+            queries.add(builder.get());
+        }
+        return executeQueryList(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection);
     }
 
 
@@ -83,27 +165,38 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
-
-        String consequenceTypes = options.getString("consequence_type", null);
-        BasicDBList consequenceTypeDBList = new BasicDBList();
-        if (consequenceTypes != null && !consequenceTypes.equals("")) {
-            for (String ct : consequenceTypes.split(",")) {
-                consequenceTypeDBList.add(ct);
-            }
-        }
-
         List<String> ids = new ArrayList<>(regions.size());
-        for (Region region : regions) {
-            //			QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end").greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
-            if (consequenceTypeDBList.size() > 0) {
-                builder = builder.and("transcriptVariations.consequenceTypes").in(consequenceTypeDBList);
-            }
-            queries.add(builder.get());
-            ids.add(region.toString());
-        }
 
-        return executeQueryList(ids, queries, options);
+        String phenotype = options.getString("phenotype");
+        if(phenotype != null && !phenotype.equals("")) {
+            for (Region region : regions) {
+                QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
+                builder = builder.and("phenotype").is(phenotype);
+                queries.add(builder.get());
+                ids.add(region.toString());
+            }
+            return executeQueryList(ids, queries, options, db.getCollection("variation_phenotype_annotation"));
+        }else {
+            String consequenceTypes = options.getString("consequence_type", null);
+            BasicDBList consequenceTypeDBList = new BasicDBList();
+            if (consequenceTypes != null && !consequenceTypes.equals("")) {
+                for (String ct : consequenceTypes.split(",")) {
+                    consequenceTypeDBList.add(ct);
+                }
+            }
+
+            for (Region region : regions) {
+                //			QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end").greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
+                QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
+                if (consequenceTypeDBList.size() > 0) {
+                    builder = builder.and("transcriptVariations.consequenceTypes").in(consequenceTypeDBList);
+                }
+                queries.add(builder.get());
+                ids.add(region.toString());
+            }
+
+            return executeQueryList(ids, queries, options);
+        }
     }
     @Override
     public QueryResult getAllIntervalFrequencies(Region region, QueryOptions queryOptions) {

@@ -34,15 +34,20 @@ public class IdWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/xref")
-    public Response getByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbName) {
+    public Response getByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
         try {
             checkVersionAndSpecies();
             XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
-            if (dbName.equals("")) {
-                return generateResponse(query, "XREF", x.getAllByDBNameList(Splitter.on(",").splitToList(query), null));
-            } else {
-                return generateResponse(query, "XREF", x.getAllByDBNameList(Splitter.on(",").splitToList(query), Splitter.on(",").splitToList(dbName)));
-            }
+                if(!dbname.equals("")) {
+                    queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
+                }
+                return createOkResponse(x.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions));
+//            if (dbName.equals("")) {
+//                return generateResponse(query, "XREF", x.getAllByDBNameList(Splitter.on(",").splitToList(query), null));
+//            }
+//            else {
+//                return generateResponse(query, "XREF", x.getAllByDBNameList(Splitter.on(",").splitToList(query), Splitter.on(",").splitToList(dbName)));
+//            }
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getByEnsemblId", e.toString());

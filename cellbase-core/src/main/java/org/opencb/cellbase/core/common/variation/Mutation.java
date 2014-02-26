@@ -1,7 +1,7 @@
 package org.opencb.cellbase.core.common.variation;
 
 /**
- * Created with IntelliJ IDEA.
+ * This class models a Cosmic mutation, the attributes are found in the TXT file
  * User: imedina
  * Date: 9/21/13
  * Time: 7:37 PM

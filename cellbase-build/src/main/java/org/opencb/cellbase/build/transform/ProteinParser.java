@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellbaseSerializer;
+import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.commons.bioformats.protein.uniprot.UniprotParser;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.OrganismNameType;
@@ -18,11 +18,11 @@ import java.util.Iterator;
 
 public class ProteinParser {
 
-    private CellbaseSerializer serializer;
+    private CellBaseSerializer serializer;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public ProteinParser(CellbaseSerializer serializer) {
+    public ProteinParser(CellBaseSerializer serializer) {
         this.serializer = serializer;
     }
 
@@ -47,10 +47,9 @@ public class ProteinParser {
                     String entryOrganism = null;
                     Iterator<OrganismNameType> iter = entry.getOrganism().getName().iterator();
                     while(iter.hasNext()) {
-                        //					System.out.println(iter.next().getValue());
                         entryOrganism = iter.next().getValue();
-                        if(entryOrganism.contains(species)) {
-                            //						pw.println(gson.toJson(entry));
+//                        if(entryOrganism.contains(species)) {
+                        if(entryOrganism.equals(species)) {
                             serializer.serialize(entry);
                         }
                     }
