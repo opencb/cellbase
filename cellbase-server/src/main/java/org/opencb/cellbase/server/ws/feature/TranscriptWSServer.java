@@ -329,19 +329,19 @@ public class TranscriptWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{transcriptId}/protein_feature")
-    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
-        try {
-            checkVersionAndSpecies();
-            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
-            return generateResponse(query, "PROTEIN_FEATURE", geneList);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByGene", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{transcriptId}/protein_feature")
+//    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
+//        try {
+//            checkVersionAndSpecies();
+//            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+//            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
+//            return generateResponse(query, "PROTEIN_FEATURE", geneList);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMutationByGene", e.toString());
+//        }
+//    }
 
     @GET
     @Path("/{transcriptId}/cdna")

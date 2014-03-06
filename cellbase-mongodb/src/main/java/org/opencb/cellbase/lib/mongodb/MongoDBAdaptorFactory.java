@@ -247,14 +247,18 @@ db.setReadPreference(ReadPreference.primary());
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species) {
-        // TODO Auto-generated method stub
-        return null;
+        return getProteinDBAdaptor(species, null);
     }
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species, String version) {
-        // TODO Auto-generated method stub
-        return null;
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return new ProteinMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
     }
 
     @Override
