@@ -121,7 +121,7 @@ public class SnpWSServer extends GenericRestWSServer {
 //					removeComma = true;
 //					response.append("{");
 //					response.append("\"name\":"+"\""+snpListList.get(i).get(j).getName()+"\",");
-//					response.append("\"chromosome\":"+"\""+snpListList.get(i).get(j).getChromosome()+"\",");
+//					response.append("\"chromosome\":"+"\""+snpListList.get(i).get(j).getSequenceName()+"\",");
 //					response.append("\"start\":"+snpListList.get(i).get(j).getStart()+",");
 //					response.append("\"end\":"+snpListList.get(i).get(j).getEnd()+",");
 //					response.append("\"strand\":"+"\""+snpListList.get(i).get(j).getStrand()+"\",");

@@ -32,7 +32,9 @@ public class GenomeSequenceFastaParser {
 
     public void parse(Path genomeReferenceFastaFile) {
         try {
-            String chromosome = "";
+            String sequenceName = "";
+            String sequenceType = "";
+            String sequenceAssembly = "";
             String line;
             StringBuilder sequenceStringBuilder = new StringBuilder();
 
@@ -51,20 +53,22 @@ public class GenomeSequenceFastaParser {
                 } else {
                     // new chromosome, save data
                     if (sequenceStringBuilder.length() > 0) {
-                        if(!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
-                            System.out.println(chromosome);
-                            serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+                        if(!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+                            System.out.println(sequenceName);
+                            serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
                         }
                     }
 
                     // initialize data structures
-                    chromosome = line.replace(">", "").split(" ")[0];
+                    sequenceName = line.replace(">", "").split(" ")[0];
+                    sequenceType = line.replace(">", "").split(" ")[2].split(":")[0];
+                    sequenceAssembly = line.replace(">", "").split(" ")[2].split(":")[1];
                     sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
                 }
             }
             // Last chromosome must be processed
-            if(!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
-                serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+            if(!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+                serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
             }
 
             br.close();
@@ -73,7 +77,7 @@ public class GenomeSequenceFastaParser {
         }
     }
 
-    private void serializeGenomeSequence(String chromosome, String sequence) throws IOException {
+    private void serializeGenomeSequence(String chromosome, String sequenceType, String sequenceAssembly, String sequence) throws IOException {
         int chunk = 0;
         int start = 1;
         int end = CHUNK_SIZE - 1;
@@ -84,7 +88,7 @@ public class GenomeSequenceFastaParser {
 
         if (sequence.length() < CHUNK_SIZE) {//chromosome sequence length can be less than CHUNK_SIZE
             chunkSequence = sequence;
-            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+0+"_"+chunkIdSuffix, start, sequence.length() - 1, chunkSequence);
+            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+0+"_"+chunkIdSuffix, start, sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
             serializer.serialize(genomeSequenceChunk);
             start += CHUNK_SIZE - 1;
         } else {
@@ -96,7 +100,7 @@ public class GenomeSequenceFastaParser {
                 if (start == 1) {
                     // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
                     chunkSequence = sequence.substring(start - 1, CHUNK_SIZE - 1);
-                    genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, chunkSequence);
+                    genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
                     serializer.serialize(genomeSequenceChunk);
                     start += CHUNK_SIZE - 1;
 
@@ -104,13 +108,13 @@ public class GenomeSequenceFastaParser {
                     // Regular chunk
                     if ((start + CHUNK_SIZE) < sequence.length()) {
                         chunkSequence = sequence.substring(start - 1, start + CHUNK_SIZE - 1);
-                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, chunkSequence);
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
                         serializer.serialize(genomeSequenceChunk);
                         start += CHUNK_SIZE;
                     } else {
                         // Last chunk of the chromosome
                         chunkSequence = sequence.substring(start - 1, sequence.length());
-                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, sequence.length(), chunkSequence);
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, sequence.length(), sequenceType, sequenceAssembly, chunkSequence);
                         serializer.serialize(genomeSequenceChunk);
                         start = sequence.length();
                     }
@@ -144,7 +148,7 @@ public class GenomeSequenceFastaParser {
                             if (sequenceStringBuilder.length() > 0) {
                                 System.out.println(chromosome);
 //								serializeGenomeSequence(chromosome, sequenceStringBuilder.toString(), bw);
-                                serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+                                serializeGenomeSequence(chromosome, "", "", sequenceStringBuilder.toString());
                             }
 
                             // initialize data structures
@@ -154,7 +158,7 @@ public class GenomeSequenceFastaParser {
                     }
                     // Last chromosome must be processed
 //					serializeGenomeSequence(chromosome, sequenceStringBuilder.toString(), bw);
-                    serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+                    serializeGenomeSequence(chromosome, "", "", sequenceStringBuilder.toString());
                     br.close();
                 }
             }
@@ -192,7 +196,7 @@ public class GenomeSequenceFastaParser {
                     // save data
                     if (sequenceStringBuilder.length() > 0) {
 //						serializeGenomeSequence(chromosome, sequenceStringBuilder.toString(), bw);
-                        serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+                        serializeGenomeSequence(chromosome, "", "", sequenceStringBuilder.toString());
 
 						/*infoStats*/
                         int len = sequenceStringBuilder.length();
@@ -219,7 +223,7 @@ public class GenomeSequenceFastaParser {
             }
             // Last chromosome must be processed
 //			serializeGenomeSequence(chromosome, sequenceStringBuilder.toString(), bw);
-            serializeGenomeSequence(chromosome, sequenceStringBuilder.toString());
+            serializeGenomeSequence(chromosome, "", "", sequenceStringBuilder.toString());
             br.close();
             bw.close();
 

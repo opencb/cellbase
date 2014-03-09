@@ -475,7 +475,7 @@ public class MongoDBAdaptor extends DBAdaptor {
 
 
         /***************************/
-        //        QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+        //        QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end")
         //                .greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
         //
         //        int numIntervals = (region.getEnd() - region.getStart()) / interval + 1;
@@ -509,7 +509,7 @@ public class MongoDBAdaptor extends DBAdaptor {
         //            intervalEnd = intervalStart + interval - 1;
         //        }
         //
-        //        System.out.println(region.getChromosome());
+        //        System.out.println(region.getSequenceName());
         //        System.out.println(region.getStart());
         //        System.out.println(region.getEnd());
         //        return intervalList.toString();

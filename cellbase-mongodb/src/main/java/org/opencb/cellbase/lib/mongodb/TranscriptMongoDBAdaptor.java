@@ -139,10 +139,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //            QueryBuilder builder = null;
 //            // If regions is 1 position then query can be optimize using chunks
 //            if (region.getStart() == region.getEnd()) {
-//                builder = QueryBuilder.start("chunkIds").is(region.getChromosome() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CHUNK_SIZE", "4000")))).and("end")
+//                builder = QueryBuilder.start("chunkIds").is(region.getSequenceName() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CHUNK_SIZE", "4000")))).and("end")
 //                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
 //            } else {
-//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//                builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end")
 //                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
 //            }
 //

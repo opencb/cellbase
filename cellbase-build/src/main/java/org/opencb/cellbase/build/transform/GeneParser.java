@@ -724,7 +724,7 @@ public class GeneParser {
                 // g.setBiotype("");
                 // g.setStatus("");
                 // g.setName(name);
-                // g.setChromosome(chromosome);
+                // g.setSequenceName(chromosome);
                 // g.setStart(start);
                 // g.setEnd(end);
                 // g.setStrand(strand);

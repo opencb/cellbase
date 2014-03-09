@@ -77,7 +77,7 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
 //    public List<List<ConservedRegion>> getByRegionList(List<Region> regions) {
 //        List<List<ConservedRegion>> result = new ArrayList<List<ConservedRegion>>(regions.size());
 //        for (Region region : regions) {
-//            result.add(getByRegion(region.getChromosome(), region.getStart(), region.getEnd()));
+//            result.add(getByRegion(region.getSequenceName(), region.getStart(), region.getEnd()));
 //        }
 //        return result;
 //    }

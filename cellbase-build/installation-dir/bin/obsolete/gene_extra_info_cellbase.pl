@@ -55,7 +55,17 @@ use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
 use Bio::EnsEMBL::Funcgen::DBSQL::DBAdaptor;
 
 ## loading the registry with the adaptors 
-Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
+#Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
+Bio::EnsEMBL::Registry->load_registry_from_db(
+    -host => 'mysql.ebi.ac.uk',
+    -port => 4157,
+    -user => 'anonymous'
+);
+Bio::EnsEMBL::Registry->load_registry_from_db(
+  -host    => 'ensembldb.ensembl.org',
+  -user    => 'anonymous',
+  -verbose => '0'
+);
 ####################################################################
 
 ## variables definition

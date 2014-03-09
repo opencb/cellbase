@@ -196,7 +196,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             // response.append("\"externalDb\":"+"\""+transcripts.get(i).getExternalDb()+"\",");
             // response.append("\"biotype\":"+"\""+transcripts.get(i).getBiotype()+"\",");
             // response.append("\"status\":"+"\""+transcripts.get(i).getStatus()+"\",");
-            // response.append("\"chromosome\":"+"\""+transcripts.get(i).getChromosome()+"\",");
+            // response.append("\"chromosome\":"+"\""+transcripts.get(i).getSequenceName()+"\",");
             // response.append("\"start\":"+transcripts.get(i).getStart()+",");
             // response.append("\"end\":"+transcripts.get(i).getEnd()+",");
             // response.append("\"strand\":"+"\""+transcripts.get(i).getStrand()+"\",");

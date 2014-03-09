@@ -270,7 +270,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //        start.append("$lt", region.getEnd());
 //
 //        BasicDBList andArr = new BasicDBList();
-//        andArr.add(new BasicDBObject("chromosome", region.getChromosome()));
+//        andArr.add(new BasicDBObject("chromosome", region.getSequenceName()));
 //        andArr.add(new BasicDBObject("start", start));
 //
 //        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", andArr));
@@ -324,7 +324,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //        }
 //        return BasicDBList;
 //
-//        //		QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//        //		QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end")
 //        //				.greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
 //        //
 //        //		int numIntervals = (region.getEnd() - region.getStart()) / interval + 1;
@@ -359,7 +359,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //        //			intervalEnd = intervalStart + interval - 1;
 //        //		}
 //        //
-//        //		System.out.println(region.getChromosome());
+//        //		System.out.println(region.getSequenceName());
 //        //		System.out.println(region.getStart());
 //        //		System.out.println(region.getEnd());
 //        //		return intervalList.toString();
