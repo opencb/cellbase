@@ -186,7 +186,6 @@ public class MongoDBAdaptor extends DBAdaptor {
             if (sort != null) {
                 cursor.sort(sort);
             }
-
             try {
                 if (cursor != null) {
                     while (cursor.hasNext()) {

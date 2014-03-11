@@ -1,6 +1,7 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -36,7 +37,14 @@ public class ProteinWSServer extends GenericRestWSServer {
 	@GET
 	@Path("/{proteinId}/fullinfo")
 	public Response getFullInfoByEnsemblId(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("sources") String sources) {
-		return null;
+        try {
+            checkVersionAndSpecies();
+            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getTranscriptsById", e.toString());
+        }
 	}
 	
 	@GET
@@ -53,7 +61,20 @@ public class ProteinWSServer extends GenericRestWSServer {
 			return createErrorResponse("getByEnsemblId", e.toString());
 		}
 	}
-	
+
+    @GET
+    @Path("/{proteinId}/name")
+    public Response getproteinByName(@PathParam("proteinId") String id) {
+        try {
+            checkVersionAndSpecies();
+            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(id), queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getTranscriptsById", e.toString());
+        }
+    }
+
 	@GET
 	@Path("/{proteinId}/gene")
 	public Response getGene(@PathParam("proteinId") String query) {

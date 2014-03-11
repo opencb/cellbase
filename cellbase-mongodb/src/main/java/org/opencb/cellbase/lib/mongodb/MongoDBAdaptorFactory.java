@@ -94,12 +94,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                         "localhost"), Integer.parseInt(applicationProperties.getProperty(dbPrefix + ".PORT", "27017"))),
                         mongoClientOptions);
 //                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
-                mc.setReadPreference(ReadPreference.primary());
+//                mc.setReadPreference(ReadPreference.primary());
 //                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
                 System.out.println(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
                 db = mc.getDB(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
 //db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
-db.setReadPreference(ReadPreference.primary());
+//db.setReadPreference(ReadPreference.primary());
+                System.out.println("Debug String: "+mc.debugString());
                 String user = applicationProperties.getProperty(dbPrefix+".USERNAME");
                 String pass = applicationProperties.getProperty(dbPrefix+".PASSWORD");
                 if(!user.equals("") || !pass.equals("")){
