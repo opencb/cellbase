@@ -83,7 +83,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
                 chunkIds.add(chunkIdStr);
                 integerChunkIds.add(chunkId);
             }
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(chunkIds);
+            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosome()).and("chunkId").in(chunkIds);
 //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("chunkId").in(integerChunkIds);
             /****/
             System.out.println(builder.toString());
