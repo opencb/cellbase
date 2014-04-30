@@ -464,27 +464,19 @@ public class RegionWSServer extends GenericRestWSServer {
         }
     }
 
-//	@GET
-//	@Path("/{chrRegionId}/conserved_region")
-//	public Response getConservedRegionByRegion(@PathParam("chrRegionId") String query) {
-//		try {
-//			checkVersionAndSpecies();
-//			RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(
-//					this.species, this.version);
-//			List<Region> regions = Region.parseRegions(query);
-//
-//			if (hasHistogramQueryParam()) {
-//				List<IntervalFeatureFrequency> intervalList = regulatoryRegionDBAdaptor.getAllConservedRegionIntervalFrequencies(regions.get(0), getHistogramIntervalSize());
-//				return generateResponse(query, intervalList);
-//			} else {
-//				return this.generateResponse(query,
-//						regulatoryRegionDBAdaptor.getAllConservedRegionByRegionList(regions));
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return createErrorResponse("getConservedRegionByRegion", e.toString());
-//		}
-//	}
+	@GET
+	@Path("/{chrRegionId}/conserved_region")
+	public Response getConservedRegionByRegion(@PathParam("chrRegionId") String query) {
+        try {
+            checkVersionAndSpecies();
+            List<Region> regions = Region.parseRegions(query);
+            ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species,	this.version);
+            return createOkResponse(conservedRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("conserved_region", e.toString());
+        }
+	}
 
     @GET
     @Path("/{chrRegionId}/conserved_region2")
