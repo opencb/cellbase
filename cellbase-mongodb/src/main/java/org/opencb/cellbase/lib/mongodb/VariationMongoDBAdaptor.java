@@ -186,7 +186,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             }
 
             for (Region region : regions) {
-                //			QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end").greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
+                //			QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end").greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
                 QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
                 if (consequenceTypeDBList.size() > 0) {
                     builder = builder.and("transcriptVariations.consequenceTypes").in(consequenceTypeDBList);

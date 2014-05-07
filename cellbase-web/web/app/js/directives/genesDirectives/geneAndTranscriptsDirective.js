@@ -5,7 +5,6 @@ myApp.directive('geneAndTransc', function () {
         transclude: true,
         scope: {
             data: '=gene',
-            showMore: '=geneMoreInfo',
             specieName: '=specie',
             functionDirective: '=onClick'
         },

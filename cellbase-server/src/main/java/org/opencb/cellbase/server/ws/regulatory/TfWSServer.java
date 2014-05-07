@@ -33,79 +33,79 @@ public class TfWSServer extends RegulatoryWSServer {
 
 	
 	
-	@GET
-	@Path("/{tfId}/info")
-	public Response getTfInfo(@PathParam("tfId") String query) {
-		try {
-			checkVersionAndSpecies();
-			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-			return generateResponse(query, adaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query)));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getTfInfo", e.toString());
-		}
-	}
+//	@GET
+//	@Path("/{tfId}/info")
+//	public Response getTfInfo(@PathParam("tfId") String query) {
+//		try {
+//			checkVersionAndSpecies();
+//			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+//			return generateResponse(query, adaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query)));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return createErrorResponse("getTfInfo", e.toString());
+//		}
+//	}
 	
 
-	@GET
-	@Path("/{tfId}/fullinfo") // Devuelve los TFBSs para el TFId que le das
-	public Response getTfFullInfo(@PathParam("tfId") String query) {
-		try {
-			checkVersionAndSpecies();
-			ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
-			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
-			TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.version);
-			
-			List<List<Gene>> geneListList = geneDBAdaptor.getAllByTfNameList(Splitter.on(",").splitToList(query));
-			List<String> ensemblGeneList = new ArrayList<String>();
-			List<String> externalNameList = new ArrayList<String>();
-			for(List<Gene> geneList : geneListList) {
-				if(geneList != null && geneList.size() > 0) {
-					ensemblGeneList.add(geneList.get(0).getId());
-					externalNameList.add(geneList.get(0).getName());
-				}else {
-					ensemblGeneList.add("");
-					externalNameList.add("");
-				}
-			}
-			
-			List<List<Protein>> proteinList = proteinDBAdaptor.getAllByGeneNameList(externalNameList);
-			List<List<Transcript>> transcriptList = transcriptDBAdaptor.getAllByProteinNameList(externalNameList);
-			List<List<Gene>> targetGeneList = geneDBAdaptor.getAllByTfList(Splitter.on(",").splitToList(query));
-//			List<List<Pwm>> pwmGeneList =  tfbsDBAdaptor.getAllPwmByTfGeneNameList(Splitter.on(",").splitToList(query)));
-			
-			List<List<DbReferenceType>> proteinXrefList = proteinDBAdaptor.getAllProteinXrefsByProteinNameList(externalNameList);
-			List<List<FeatureType>> proteinFeature = proteinDBAdaptor.getAllProteinFeaturesByProteinXrefList(externalNameList);
-			
-			StringBuilder response = new StringBuilder();
-			response.append("[");
-			for (int i = 0; i < geneListList.size(); i++) {
-				if(geneListList.get(i).size() > 0){
-					response.append("{");
-//					response.append("\"proteins\":"+gson.toJson(proteinList.get(i))+",");
-//					response.append("\"gene\":"+gson.toJson(geneListList.get(i).get(0))+",");
-//					response.append("\"transcripts\":"+gson.toJson(transcriptList.get(i))+",");
-//					response.append("\"pwm\":"+gson.toJson(pwmGeneList.get(i))+",");
-//					response.append("\"targetGenes\":"+gson.toJson(targetGeneList.get(i))+",");
-//					response.append("\"protein_xref\":"+gson.toJson(proteinXrefList.get(i))+",");
-//					response.append("\"protein_feature\":"+gson.toJson(proteinFeature.get(i))+"");
-					response.append("},");
-				}else{
-					response.append("null,");
-				}
-			}
-			response.append("]");
-			//Remove the last comma
-			response.replace(response.length()-2, response.length()-1, "");
-			
-			return  generateResponse(query,Arrays.asList(response));
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getTfFullInfo", e.toString());
-		}
-	}
+//	@GET
+//	@Path("/{tfId}/fullinfo") // Devuelve los TFBSs para el TFId que le das
+//	public Response getTfFullInfo(@PathParam("tfId") String query) {
+//		try {
+//			checkVersionAndSpecies();
+//			ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+//			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
+//			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
+//			TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.version);
+//
+//			List<List<Gene>> geneListList = geneDBAdaptor.getAllByTfNameList(Splitter.on(",").splitToList(query));
+//			List<String> ensemblGeneList = new ArrayList<String>();
+//			List<String> externalNameList = new ArrayList<String>();
+//			for(List<Gene> geneList : geneListList) {
+//				if(geneList != null && geneList.size() > 0) {
+//					ensemblGeneList.add(geneList.get(0).getId());
+//					externalNameList.add(geneList.get(0).getName());
+//				}else {
+//					ensemblGeneList.add("");
+//					externalNameList.add("");
+//				}
+//			}
+//
+//			List<List<Protein>> proteinList = proteinDBAdaptor.getAllByGeneNameList(externalNameList);
+//			List<List<Transcript>> transcriptList = transcriptDBAdaptor.getAllByProteinNameList(externalNameList);
+//			List<List<Gene>> targetGeneList = geneDBAdaptor.getAllByTfList(Splitter.on(",").splitToList(query));
+////			List<List<Pwm>> pwmGeneList =  tfbsDBAdaptor.getAllPwmByTfGeneNameList(Splitter.on(",").splitToList(query)));
+//
+//			List<List<DbReferenceType>> proteinXrefList = proteinDBAdaptor.getAllProteinXrefsByProteinNameList(externalNameList);
+//			List<List<FeatureType>> proteinFeature = proteinDBAdaptor.getAllProteinFeaturesByProteinXrefList(externalNameList);
+//
+//			StringBuilder response = new StringBuilder();
+//			response.append("[");
+//			for (int i = 0; i < geneListList.size(); i++) {
+//				if(geneListList.get(i).size() > 0){
+//					response.append("{");
+////					response.append("\"proteins\":"+gson.toJson(proteinList.get(i))+",");
+////					response.append("\"gene\":"+gson.toJson(geneListList.get(i).get(0))+",");
+////					response.append("\"transcripts\":"+gson.toJson(transcriptList.get(i))+",");
+////					response.append("\"pwm\":"+gson.toJson(pwmGeneList.get(i))+",");
+////					response.append("\"targetGenes\":"+gson.toJson(targetGeneList.get(i))+",");
+////					response.append("\"protein_xref\":"+gson.toJson(proteinXrefList.get(i))+",");
+////					response.append("\"protein_feature\":"+gson.toJson(proteinFeature.get(i))+"");
+//					response.append("},");
+//				}else{
+//					response.append("null,");
+//				}
+//			}
+//			response.append("]");
+//			//Remove the last comma
+//			response.replace(response.length()-2, response.length()-1, "");
+//
+//			return  generateResponse(query,Arrays.asList(response));
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return createErrorResponse("getTfFullInfo", e.toString());
+//		}
+//	}
 	
 	@GET
 	@Path("/{tfId}/tfbs")

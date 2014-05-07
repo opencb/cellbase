@@ -196,7 +196,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             // response.append("\"externalDb\":"+"\""+transcripts.get(i).getExternalDb()+"\",");
             // response.append("\"biotype\":"+"\""+transcripts.get(i).getBiotype()+"\",");
             // response.append("\"status\":"+"\""+transcripts.get(i).getStatus()+"\",");
-            // response.append("\"chromosome\":"+"\""+transcripts.get(i).getChromosome()+"\",");
+            // response.append("\"chromosome\":"+"\""+transcripts.get(i).getSequenceName()+"\",");
             // response.append("\"start\":"+transcripts.get(i).getStart()+",");
             // response.append("\"end\":"+transcripts.get(i).getEnd()+",");
             // response.append("\"strand\":"+"\""+transcripts.get(i).getStrand()+"\",");
@@ -329,19 +329,19 @@ public class TranscriptWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{transcriptId}/protein_feature")
-    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
-        try {
-            checkVersionAndSpecies();
-            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
-            return generateResponse(query, "PROTEIN_FEATURE", geneList);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByGene", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{transcriptId}/protein_feature")
+//    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
+//        try {
+//            checkVersionAndSpecies();
+//            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+//            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
+//            return generateResponse(query, "PROTEIN_FEATURE", geneList);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMutationByGene", e.toString());
+//        }
+//    }
 
     @GET
     @Path("/{transcriptId}/cdna")

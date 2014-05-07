@@ -130,8 +130,14 @@ public class GeneParser {
         GtfReader gtfReader = new GtfReader(gtfFile);
         Gtf gtf;
         while ((gtf = gtfReader.read()) != null) {
+
+            if(gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript") || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
+                continue;
+            }
+
             geneId = gtf.getAttributes().get("gene_id");
             transcriptId = gtf.getAttributes().get("transcript_id");
+            System.out.println(geneId);
             /*
 			 * If chromosome is changed (or it's the first chromosome)
 			 * we load the new chromosome sequence.
@@ -724,7 +730,7 @@ public class GeneParser {
                 // g.setBiotype("");
                 // g.setStatus("");
                 // g.setName(name);
-                // g.setChromosome(chromosome);
+                // g.setSequenceName(chromosome);
                 // g.setStart(start);
                 // g.setEnd(end);
                 // g.setStrand(strand);

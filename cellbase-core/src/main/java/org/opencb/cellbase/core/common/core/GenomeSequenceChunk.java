@@ -2,33 +2,35 @@ package org.opencb.cellbase.core.common.core;
 
 public class GenomeSequenceChunk {
 
-	private String chromosome;
+	private String sequenceName;
 	private String chunkId;
 	private int start;
 	private int end;
     private String sequenceType;
+    private String assembly;
 	private String sequence;
 
 	
-	public GenomeSequenceChunk(String chromosome, String chunkId, int start, int end, String sequence) {
-        this(chromosome, chunkId, start, end, "", sequence);
+	public GenomeSequenceChunk(String sequenceName, String chunkId, int start, int end, String sequence) {
+        this(sequenceName, chunkId, start, end, "", "", sequence);
 	}
 
-    public GenomeSequenceChunk(String chromosome, String chunkId, int start, int end, String sequenceType, String sequence) {
-		this.chromosome = chromosome;
+    public GenomeSequenceChunk(String sequenceName, String chunkId, int start, int end, String sequenceType, String assembly, String sequence) {
+		this.sequenceName = sequenceName;
 		this.chunkId = chunkId;
 		this.start = start;
 		this.end = end;
         this.sequenceType = sequenceType;
+        this.assembly = assembly;
 		this.sequence = sequence;
 	}
 	
 	
-	public String getChromosome() {
-		return chromosome;
+	public String getSequenceName() {
+		return sequenceName;
 	}
-	public void setChromosome(String chromosome) {
-		this.chromosome = chromosome;
+	public void setSequenceName(String sequenceName) {
+		this.sequenceName = sequenceName;
 	}
 
 	
@@ -65,6 +67,13 @@ public class GenomeSequenceChunk {
         this.sequenceType = sequenceType;
     }
 
+    public String getAssembly() {
+        return assembly;
+    }
+
+    public void setAssembly(String assembly) {
+        this.assembly = assembly;
+    }
 
 	public String getSequence() {
 		return sequence;
@@ -73,4 +82,5 @@ public class GenomeSequenceChunk {
 	public void setSequence(String sequence) {
 		this.sequence = sequence;
 	}
+
 }

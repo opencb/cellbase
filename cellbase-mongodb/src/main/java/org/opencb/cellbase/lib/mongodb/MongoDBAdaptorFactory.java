@@ -1,9 +1,6 @@
 package org.opencb.cellbase.lib.mongodb;
 
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
@@ -96,9 +93,14 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 mc = new MongoClient(new ServerAddress(applicationProperties.getProperty(dbPrefix + ".HOST",
                         "localhost"), Integer.parseInt(applicationProperties.getProperty(dbPrefix + ".PORT", "27017"))),
                         mongoClientOptions);
+//                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
+//                mc.setReadPreference(ReadPreference.primary());
+//                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
                 System.out.println(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
                 db = mc.getDB(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
-
+//db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
+//db.setReadPreference(ReadPreference.primary());
+                System.out.println("Debug String: "+mc.debugString());
                 String user = applicationProperties.getProperty(dbPrefix+".USERNAME");
                 String pass = applicationProperties.getProperty(dbPrefix+".PASSWORD");
                 if(!user.equals("") || !pass.equals("")){
@@ -246,14 +248,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species) {
-        // TODO Auto-generated method stub
-        return null;
+        return getProteinDBAdaptor(species, null);
     }
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species, String version) {
-        // TODO Auto-generated method stub
-        return null;
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return new ProteinMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
     }
 
     @Override

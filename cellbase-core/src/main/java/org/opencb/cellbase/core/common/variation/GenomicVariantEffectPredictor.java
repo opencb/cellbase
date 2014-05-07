@@ -155,14 +155,14 @@ public class GenomicVariantEffectPredictor {
 //            featureMapList = null;
 //            if(variant != null) {
 //                chunkId = variant.getPosition() / applicationProperties.getIntProperty("CELLBASE."+version.toUpperCase()+".FEATURE_MAP.CHUNK_SIZE", 500);
-//                //			System.out.println("getAllConsequenceTypeByVariant: "+chunkId+", chromosome: "+variant.getChromosome());
+//                //			System.out.println("getAllConsequenceTypeByVariant: "+chunkId+", chromosome: "+variant.getSequenceName());
 //                //			criteria.add(Restrictions.eq("chunkId", chunkId))
-//                //				.add(Restrictions.eq("chromosome", variant.getChromosome()))
+//                //				.add(Restrictions.eq("chromosome", variant.getSequenceName()))
 //                //				.add(Restrictions.le("start", variant.getPosition()))
 //                //				.add(Restrictions.ge("end", variant.getPosition()));
 //                ////			featureMapList = (List<FeatureMap>) executeAndClose(criteria);
 //                //			featureMapList = (List<FeatureMap>) execute(criteria);
-//                query.setParameter("CHUNK_ID", chunkId).setParameter("CHROM", variant.getChromosome()).setParameter("START", variant.getPosition()).setParameter("END", variant.getPosition());
+//                query.setParameter("CHUNK_ID", chunkId).setParameter("CHROM", variant.getSequenceName()).setParameter("START", variant.getPosition()).setParameter("END", variant.getPosition());
 //                featureMapList = (List<FeatureMap>) execute(query);
 //            }
 //        }

@@ -9,7 +9,8 @@ my $in_entry = 0;
 my $header = "";
 
 if(@ARGV != 2) {
-  print "dasasasddasads\n";
+  print "Two args needed\n";
+  print "\t./uniprot_split.pl uniprot_sprot.xml outdir\n";
   exit;
 }
 
@@ -18,7 +19,7 @@ my $outdir = $ARGV[1];
 
 print $xml_file."\n";
 
-open(FILE, "$xml_file") || die "dsaaaaaa";
+open(FILE, "$xml_file") || die "Error trying to open the File";
 my $line;
 
 while($line = <FILE>) {

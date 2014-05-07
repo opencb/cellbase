@@ -132,7 +132,7 @@ public class RegulatoryRegionParser {
 
                     // remove 'chr' prefix
                     if (genericFeature.getChromosome() != null) {
-//                        genericFeature.setChromosome(genericFeature.getChromosome().replace("chr", ""));
+//                        genericFeature.setSequenceName(genericFeature.getSequenceName().replace("chr", ""));
                     }
 //                    bw.write(gson.toJson(genericFeature) + "\n");
                     serializer.serialize(genericFeature);

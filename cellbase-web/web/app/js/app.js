@@ -248,12 +248,21 @@ myApp.factory('mySharedService', function($rootScope, CellbaseService){
         this.regions = regions;
         this.featureClassFilter = featureClassFilter;
 
-        if(this.featureClassFilter.length != 0){
-            this.featureClassFilter = this.removeSpaces(this.featureClassFilter);
-        }
-        else if(this.regions!= ""){
+
+//--------------------
+//        if(this.featureClassFilter.length != 0){
+//            this.featureClassFilter = this.removeSpaces(this.featureClassFilter);
+//        }
+//        else if(this.regions!= ""){
+//            this.regions =  this.removeSpaces(this.regions);
+//        }
+
+        //-----------
+        if(this.regions!= ""){
             this.regions =  this.removeSpaces(this.regions);
         }
+        //---------
+
 
         if (this.featureClassFilter == "" && this.chromSelected.length == 0 && this.regions == "") {
             alert("No data selected");

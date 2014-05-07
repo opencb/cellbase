@@ -176,18 +176,18 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
 
-    @GET
-    @Path("/{geneId}/protein_feature")
-    public Response getProteinFeature(@PathParam("geneId") String query) {
-        try {
-            checkVersionAndSpecies();
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-            return generateResponse(query, "PROTEIN_FEATURE", proteinDBAdaptor.getAllProteinFeaturesByGeneNameList(Splitter.on(",").splitToList(query)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getProteinFeature", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{geneId}/protein_feature")
+//    public Response getProteinFeature(@PathParam("geneId") String query) {
+//        try {
+//            checkVersionAndSpecies();
+//            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+//            return generateResponse(query, "PROTEIN_FEATURE", proteinDBAdaptor.getAllProteinFeaturesByGeneNameList(Splitter.on(",").splitToList(query)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getProteinFeature", e.toString());
+//        }
+//    }
 
 
     @GET

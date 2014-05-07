@@ -83,11 +83,11 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
                 chunkIds.add(chunkIdStr);
                 integerChunkIds.add(chunkId);
             }
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosome()).and("chunkId").in(chunkIds);
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("chunkId").in(integerChunkIds);
             /****/
-
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId")
+            System.out.println(builder.toString());
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("chunkId")
 //                    .greaterThanEquals(getChunk(region.getStart())).lessThanEquals(getChunk(region.getEnd()));
             queries.add(builder.get());
             ids.add(region.toString());
@@ -208,7 +208,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 //	public List<GenomeSequenceFeature> getByRegionList(List<Region> regions) {
 //		List<GenomeSequenceFeature> result = new ArrayList<GenomeSequenceFeature>(regions.size());
 //		for (Region region : regions) {
-//			result.add(getByRegion(region.getChromosome(), region.getStart(), region.getEnd(), 1));
+//			result.add(getByRegion(region.getSequenceName(), region.getStart(), region.getEnd(), 1));
 //		}
 //		return result;
 //	}
@@ -217,7 +217,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 //	public List<GenomeSequenceFeature> getByRegionList(List<Region> regions, int strand) {
 //		List<GenomeSequenceFeature> result = new ArrayList<GenomeSequenceFeature>(regions.size());
 //		for (Region region : regions) {
-//			result.add(getByRegion(region.getChromosome(), region.getStart(), region.getEnd(), strand));
+//			result.add(getByRegion(region.getSequenceName(), region.getStart(), region.getEnd(), strand));
 //		}
 //		return result;
 //	}
