@@ -63,6 +63,11 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.opencb.biodata</groupId>
+                <artifactId>models</artifactId>
+                <version>0.1</version>
+            </dependency>
+            <dependency>
                 <groupId>org.opencb.commons</groupId>
                 <artifactId>bioformats</artifactId>
                 <version>1.0.0</version>
