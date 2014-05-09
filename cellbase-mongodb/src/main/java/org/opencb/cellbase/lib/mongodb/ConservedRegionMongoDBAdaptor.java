@@ -112,7 +112,13 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
 
                 BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
 
-                for (int pos = 0; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
+                int pos = 0;
+                if( region.getStart() > chunk.getInt("start")){
+                    pos = region.getStart() - chunk.getInt("start");
+                }
+
+
+                for (; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
 //                    System.out.println("valuesList SIZE = " + valuesList.size());
 //                    System.out.println("pos = " + pos);
 //                    System.out.println("DIV " + (chunk.getInt("start") - region.getStart()));

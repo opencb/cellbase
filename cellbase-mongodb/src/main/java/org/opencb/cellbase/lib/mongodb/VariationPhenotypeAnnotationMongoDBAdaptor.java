@@ -46,6 +46,11 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
         return executeDistinct("distinct", "phenotype");
     }
 
+    @Override
+    public QueryResult getAllByPhenotype(String phenotype, QueryOptions options) {
+        QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
+        return executeQuery(phenotype, builder.get(), options);
+    }
 
     @Override
     public QueryResult getAllByGene(String gene, QueryOptions options) {
