@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -136,6 +137,18 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
+    @GET
+    @Path("/{phenotype}/phenotype")
+    public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
+        try {
+            checkVersionAndSpecies();
+            VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.version);
+            return createOkResponse(va.getAllByPhenotype(phenotype,queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getVariantsByPhenotype", e.toString());
+        }
+    }
 
     @GET
     @Path("/{variants}/snp_phenotype")

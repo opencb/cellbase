@@ -5,10 +5,7 @@ import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,4 +203,9 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species);
 
     public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species, String version);
+
+
+    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species);
+
+    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species, String version);
 }
