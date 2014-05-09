@@ -13,6 +13,7 @@ import org.opencb.biodata.models.variant.effect.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.effect.ProteinSubstitutionScores;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.build.transform.serializers.json.JsonSerializer;
+import org.opencb.commons.io.DataWriter;
 
 
 /**
@@ -21,15 +22,15 @@ import org.opencb.cellbase.build.transform.serializers.json.JsonSerializer;
  */
 public class VariantEffectParser {
     
-    private JsonSerializer serializer;
+    private DataWriter serializer;
     
-    public VariantEffectParser(JsonSerializer serializer) {
+    public VariantEffectParser(DataWriter serializer) {
         this.serializer = serializer;
     }
     
     public int parse(Path file) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file.toFile())));
-        String line = null;
+        String line;
         VariantEffect currentEffect = null;
         String currentAllele = null;
         
@@ -104,10 +105,16 @@ public class VariantEffectParser {
         ConsequenceType ct = new ConsequenceType(alternateAllele);
         effect.addConsequenceType(alternateAllele, ct);
         
-        // Gene and feature information
-        ct.setGeneId(fields[3]);
-        ct.setFeatureId(fields[4]);
-        ct.setFeatureType(fields[5]);
+        // Gene and feature fields can be empty (marked with "-")
+        if (!"-".equals(fields[3])) {
+            ct.setGeneId(fields[3]);
+        }
+        if (!"-".equals(fields[4])) {
+            ct.setFeatureId(fields[4]);
+        }
+        if (!"-".equals(fields[5])) {
+            ct.setFeatureType(fields[5]);
+        }
         
         // List of consequence types as SO codes
         String[] consequencesName = fields[6].split(",");
@@ -185,7 +192,7 @@ public class VariantEffectParser {
                     ct.setVariantToTranscriptDistance(Integer.parseInt(keyValue[1]));
                     break;
                 case "domains":
-                    ct.setProteinDomains(keyValue[1]);
+                    ct.setProteinDomains(keyValue[1].split(","));
                     break;
                 case "ea_maf":
                     effect.getFrequencies().setMafNhlbiEspEuropeanAmerican(Float.parseFloat(keyValue[1]));
