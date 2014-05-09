@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.common.regulatory.ConservedRegion;
 
 import java.io.BufferedReader;
@@ -64,7 +65,8 @@ public class ConservedRegionParser {
         float value;
         String chromosome = "";
         Map<String, String> attributes = new HashMap<>();
-        ConservedRegion conservedRegion =  null;
+//        ConservedRegion conservedRegion =  null;
+        ConservedRegionFeature conservedRegion =  null;
         List<Float> values = new ArrayList<>();
 
         while ((line = br.readLine()) != null) {
@@ -93,6 +95,7 @@ public class ConservedRegionParser {
                 values = new ArrayList<>();
                 // TODO
 //                conservedRegion = new ConservedRegion(chromosome, start, 0, conservedType, values);
+                conservedRegion = new ConservedRegionFeature(chromosome, start, 0, conservedType, values);
                 System.out.println(start);
 
             } else {
