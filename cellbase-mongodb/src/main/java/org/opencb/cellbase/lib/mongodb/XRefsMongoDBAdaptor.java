@@ -190,14 +190,15 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 
         // Mel de romer
 //db.core.aggregate(
-// {$match: {"transcripts.xrefs.id": "ENST00000544455"}},
-// {$unwind: "$transcripts"},
-// {$unwind: "$transcripts.xrefs"},
-// {$match: {"transcripts.xrefs.dbNameShort":{$in:["go"]}}},
-// {$group:{_id:{id:"$transcripts.xrefs.id", dbNameShort:"$transcripts.xrefs.dbNameShort"}}},
-// {$project:{"_id":0,"xref":"$_id"}})
+//{$match: {"transcripts.xrefs.id": "ENST00000544455"}},
+//{$unwind: "$transcripts"},
+//{$unwind: "$transcripts.xrefs"},
+//{$match: {"transcripts.xrefs.dbNameShort":{$in:["go"]}}},
+//{$group:{_id:{id:"$transcripts.xrefs.id", dbNameShort:"$transcripts.xrefs.dbNameShort", description:"$transcripts.xrefs.description"}}},
+//{$project:{"_id":0,"id":"$_id.id","dbNameShort":"$_id.dbNameShort","description":"$_id.description"}})
 
-
+// Biotype if gene given: db.core.find({"transcripts.xrefs.id": "BRCA2"}, {"biotype":1})
+// Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}}, {$project:{"transcripts.biotype":1}})
         List<DBObject[]> commandsList = new ArrayList<>(ids.size());
         for (String id : ids) {
             List<DBObject> commands = new ArrayList<>(ids.size());
@@ -208,6 +209,7 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 
             commands.add(match);
             commands.add(unwind);
+            commands.add(match);
             commands.add(unwind2);
 
             //Check dbname option exists
@@ -219,10 +221,17 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
                 commands.add(dbnameMatch);
             }
 
-            DBObject group = new BasicDBObject("$group", new BasicDBObject("_id", new BasicDBObject("id","$transcripts.xrefs.id").append("dbNameShort","$transcripts.xrefs.dbNameShort")));
+            DBObject group = new BasicDBObject("$group", new BasicDBObject("_id", new BasicDBObject(
+                    "id", "$transcripts.xrefs.id").append(
+                    "dbNameShort", "$transcripts.xrefs.dbNameShort").append(
+                    "description", "$transcripts.xrefs.description")));
             commands.add(group);
 
-            DBObject project = new BasicDBObject("$project", new BasicDBObject("_id", 0).append("xref","$_id"));
+            DBObject project = new BasicDBObject("$project", new BasicDBObject(
+                    "_id", 0).append(
+                    "id", "$_id.id").append(
+                    "dbNameShort","$_id.dbNameShort").append(
+                    "description","$_id.description"));
             commands.add(project);
 
             //ArrayList to array
