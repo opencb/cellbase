@@ -53,10 +53,10 @@ public class GeneParser {
                 break;
             }
         }
-        parse(gtfFile, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), genomeSequenceDir);
+        parse(gtfFile, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"), geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), geneDirectoryPath.resolve("Homo_sapiens.GRCh37.p12.fa.gz"));
     }
 
-    public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath)
+    public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath)
             throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
         Files.exists(gtfFile);
         init();
@@ -77,6 +77,9 @@ public class GeneParser {
 //        Map<String, String> gseq = GenomeSequenceUtils.getGenomeSequence(genomeSequenceDir);
 //        System.out.println("toma!!");
 
+        /*
+            Loading Gene Description data
+         */
         Map<String, String> geneDescriptionMap = new HashMap<>();
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
             List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
@@ -86,6 +89,9 @@ public class GeneParser {
             }
         }
 
+        /*
+            Loading Gene Xref data
+         */
         Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
         if (xrefsFile != null && Files.exists(xrefsFile)) {
             List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
@@ -100,6 +106,30 @@ public class GeneParser {
             }
         }
 
+        /*
+            Loading Gene Xref data
+         */
+//        Map<String, ArrayList<Xref>> uniprotIdMappingMap = new HashMap<>();
+        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile)) {
+//            List<String> lines = Files.readAllLines(uniprotIdMappingFile, Charset.defaultCharset());
+            BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
+            String line;
+            while ((line = br.readLine()) != null) {
+                fields = line.split("\t", -1);
+                if(fields.length >= 20 && fields[20].startsWith("ENST")) {
+                    if (!xrefMap.containsKey(fields[20])) {
+                        xrefMap.put(fields[20], new ArrayList<Xref>());
+                    }
+                    xrefMap.get(fields[20]).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
+                    xrefMap.get(fields[20]).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
+                }
+            }
+            br.close();
+        }
+
+        /*
+            Loading Gene Description data
+         */
         Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
         if(tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
             List<String> lines = Files.readAllLines(tfbsFile, Charset.defaultCharset());

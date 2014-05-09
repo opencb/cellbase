@@ -37,7 +37,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             QueryBuilder builder = QueryBuilder.start("id").is(id);
             queries.add(builder.get());
         }
-
+        System.out.println("aaaaaaaaaaaaaaaaa");
         return executeQueryList(idList, queries, options);
     }
 

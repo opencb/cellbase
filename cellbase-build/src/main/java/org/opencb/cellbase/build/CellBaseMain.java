@@ -113,6 +113,7 @@ public class CellBaseMain {
                     String gtfFile = commandLine.getOptionValue("gtf-file");
                     String genomeFastaFile = commandLine.getOptionValue("fasta-file", "");
                     String xrefFile = commandLine.getOptionValue("xref-file", "");
+                    String uniprotIdMapping = commandLine.getOptionValue("uniprot-id-mapping-file", "");
                     String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
                     String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
                     String mirnaFile = commandLine.getOptionValue("mirna-file", "");
@@ -122,7 +123,7 @@ public class CellBaseMain {
                         if(geneFilesDir != null && !geneFilesDir.equals("")) {
                             geneParser.parse(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
                         }else {
-                            geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
+                            geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
                         }
 //                    }
                     break;

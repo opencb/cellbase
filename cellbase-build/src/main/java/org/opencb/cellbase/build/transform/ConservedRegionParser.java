@@ -22,6 +22,10 @@ public class ConservedRegionParser {
     private static ObjectMapper gson = new ObjectMapper();
 //	static Gson gson = new Gson();
 
+    // Download data:
+    // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
+
+
     public static void parseConservedRegionFilesToJson(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
         Path inGzPath;
         Path outJsonPath;

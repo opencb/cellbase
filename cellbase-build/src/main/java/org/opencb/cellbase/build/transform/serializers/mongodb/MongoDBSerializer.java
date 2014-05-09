@@ -127,7 +127,8 @@ public class MongoDBSerializer implements CellBaseSerializer {
     public void serialize(Variation variation) {
         try {
             if(variationBufferedWriter.get(variation.getChromosome()) == null) {
-                variationBufferedWriter.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
+//                variationBufferedWriter.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
+                variationBufferedWriter.put(variation.getChromosome(), FileUtils.newGzipBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json.gz")));
             }
             variationBufferedWriter.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
             variationBufferedWriter.get(variation.getChromosome()).newLine();

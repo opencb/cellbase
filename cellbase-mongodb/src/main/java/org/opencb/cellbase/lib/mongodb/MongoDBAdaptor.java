@@ -97,7 +97,7 @@ public class MongoDBAdaptor extends DBAdaptor {
     //	}
 
     protected String getChunkPrefix(String chromosome, int position, int chunkSize) {
-        return  chromosome + "_" +  position/chunkSize + "_" + chunkSize/1000 + "k";
+        return chromosome + "_" +  position/chunkSize + "_" + chunkSize/1000 + "k";
     }
 
 

@@ -204,11 +204,13 @@ public class VariationPhenotypeAnnotationParser {
 //        System.out.println(results.toString());
         return results;
     }
+
+
     private void createPhenFeatAttribTable(Path variationDirectoryPath) throws SQLException, IOException, ClassNotFoundException {
         String tableName = "phen_feat_attrib";
         Class.forName("org.sqlite.JDBC");
         sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationDirectoryPath.resolve("variation_phenotype.db").toString());
-        if(!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db"))) {
+        if(!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db")) || Files.size(variationDirectoryPath.resolve("variation_phenotype.db")) == 0) {
             sqlConn.setAutoCommit(false);
 
             Statement createTables = sqlConn.createStatement();
