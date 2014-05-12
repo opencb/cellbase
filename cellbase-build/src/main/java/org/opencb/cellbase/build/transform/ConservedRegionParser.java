@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.common.regulatory.ConservedRegion;
 
@@ -25,6 +26,7 @@ public class ConservedRegionParser {
 
     // Download data:
     // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
+    // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
 
     public static void parseConservedRegionFilesToJson(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
@@ -60,14 +62,15 @@ public class ConservedRegionParser {
         BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(inGzPath))));
 
         String line = null;
-        int start = 0, offset = 0, step = 1, end=0;
+        String chromosome = "";
+        int start = 0, end=0;
         boolean isFirst = true;
         float value;
-        String chromosome = "";
         Map<String, String> attributes = new HashMap<>();
 //        ConservedRegion conservedRegion =  null;
-        ConservedRegionFeature conservedRegion =  null;
         List<Float> values = new ArrayList<>();
+
+        ConservedRegionChunk conservedRegion =  null;
 
         while ((line = br.readLine()) != null) {
             if (line.startsWith("fixedStep")) {
@@ -75,41 +78,56 @@ public class ConservedRegionParser {
                 if(conservedRegion != null){
                     conservedRegion.setEnd(end);
 //                    bw.write(gson.toJson(conservedRegion)+"\n");
+                    conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
                     bw.write(gson.writeValueAsString(conservedRegion)+"\n");
                 }
 
-                offset = 0;
+//                offset = 0;
                 attributes.clear();
-                String[] atrrFields = line.split(" ");
+                String[] attrFields = line.split(" ");
                 String[] attrKeyValue;
-                for (String attrField : atrrFields) {
+                for (String attrField : attrFields) {
                     if (!attrField.equalsIgnoreCase("fixedStep")) {
                         attrKeyValue = attrField.split("=");
                         attributes.put(attrKeyValue[0].toLowerCase(), attrKeyValue[1]);
                     }
                 }
-                start = Integer.parseInt(attributes.get("start"));
-                step = Integer.parseInt(attributes.get("step"));
                 chromosome = attributes.get("chrom").replace("chr", "");
+                start = Integer.parseInt(attributes.get("start"));
+                end = Integer.parseInt(attributes.get("start"));
+//                step = Integer.parseInt(attributes.get("step"));
 
-                values = new ArrayList<>();
-                // TODO
+                values = new ArrayList<>(2000);
+
+
 //                conservedRegion = new ConservedRegion(chromosome, start, 0, conservedType, values);
-                conservedRegion = new ConservedRegionFeature(chromosome, start, 0, conservedType, values);
+//                conservedRegion = new ConservedRegionChunk(chromosome, start, 0, conservedType, start/CHUNKSIZE, values);
                 System.out.println(start);
 
             } else {
-                end = start + offset;
-                offset += step;
+                int startChunk = start/CHUNKSIZE;
+                end++;
+                int endChunk = end/CHUNKSIZE;
+
+                if(startChunk != endChunk) {
+                    System.out.println("coords: "+start+", "+(end-1));
+                    System.out.println("values length: "+values.size());
+                    conservedRegion = new ConservedRegionChunk(chromosome, start, end-1, conservedType, startChunk, values);
+                    bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+                    values.clear();
+                    start = end;
+                }
+
+//                offset += step;
                 value = Float.parseFloat(line.trim());
                 values.add(value);
             }
         }
         //write last
-        conservedRegion.setEnd(end);
+        conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
         bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+//        conservedRegion.setEnd(end);
         br.close();
-
     }
 
 

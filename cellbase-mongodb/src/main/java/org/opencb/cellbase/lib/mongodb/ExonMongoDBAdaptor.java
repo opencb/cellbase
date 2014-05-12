@@ -25,7 +25,7 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
 	public ExonMongoDBAdaptor(DB db, String species, String version) {
 		super(db, species, version);
-		mongoDBCollection = db.getCollection("core");
+		mongoDBCollection = db.getCollection("gene");
 	}
 
     private List<Gene> executeQuery(DBObject query, List<String> excludeFields) {

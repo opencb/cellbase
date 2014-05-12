@@ -93,77 +93,81 @@ foreach my $chrom(@chroms) {
         $num_genes++;
         my $gene_start = $gene->seq_region_start,
         my $sequence = $chrom->subseq($gene->seq_region_start - 5000, $gene->seq_region_end + 5000);
-#print $sequence."\n";
+print $gene->stable_id."\n";
+
         ## First we generate all genetic positions +/- 5000 bp
+        ## Upstream
         $start = $gene->seq_region_start - 5000;
-        $end = $gene->seq_region_start;
-        print_simulated_variants($start, $end, $sequence);
-#        for(my $i = $start; $i <= $end; $i++) {
-#            my $c = substr($sequence, $i-$start, 1);
-#            foreach my $nt(@nts) {
-#                if($nt ne $c) {
-#                    print "$chrom_name\t$i\t$i\t$c/$nt\t+\t${i}_*\n";
-#                    last;
-#                }
-#            }
-#        }
+        $end = $gene->seq_region_start-1;
+        print_simulated_variants($start, $end, $sequence, *CHROM_OUTPUT, 'u');
 
-        $start = $gene->seq_region_end;
+        ## Downstream
+        $start = $gene->seq_region_end+1;
         $end = $gene->seq_region_end + 5000;
-        for(my $i = $start; $i <= $end; $i++) {
-            print "downstream $i\n";
-        }
+        print_simulated_variants($start, $end, $sequence, *CHROM_OUTPUT, 'd');
 
+        ## Exons and introns
+        my @introns = ();
+        my ($intron_start, $intron_end);
+        my $prev_exon;
         my @exons = @{$gene->get_all_Exons()};
         foreach my $exon(@exons) {
 #            print $exon->stable_id."\n";
             $start = $exon->seq_region_start;
             $end = $exon->seq_region_end;
-            for(my $i = $start; $i <= $end; $i++) {
-                print "\texon $i\n";
-            }
-        }
+            print_all_simulated_variants($start, $end, $sequence, *CHROM_OUTPUT, 'e');
 
+            if(defined $prev_exon) {
+                push(@introns, ($prev_exon->end+1)."-".($start-1));
+            }
+            $prev_exon = $exon;
+        }
+#        print "Num. exons: ".@exons.", num. introns: ".@introns."\n";
+        foreach my $intron(@introns) {
+            ($start, $end) = split("-", $intron);
+            print_simulated_variants($start, $end, $sequence, *CHROM_OUTPUT, 'i');
+        }
     }
+
     close(TMP_FILE);
 
     ## Second we sort and uniq all this positions to avoid repetitions due to overlapping
-    system("sort -n '$outdir/tmp_file.txt' | uniq > '$outdir/tmp_file.txt.sort'");
-    ## Reading whole chromosome sequence
-    my $sequence = $chrom->seq();
-#    print substr($sequence, 0, 10);
-    open(TMP_FILE, "<$outdir/tmp_file.txt.sort") || die "";
-    while(my $line = <TMP_FILE>) {
-        chomp($line);
-        print "$chrom_name\t$line\t$line\t+\t".substr($sequence, $line, 1)."\n";
-    }
-    close(TMP_FILE);
+#    system("sort -n '$outdir/tmp_file.txt' | uniq > '$outdir/tmp_file.txt.sort'");
+#    ## Reading whole chromosome sequence
+#    my $sequence = $chrom->seq();
+##    print substr($sequence, 0, 10);
+#    open(TMP_FILE, "<$outdir/tmp_file.txt.sort") || die "";
+#    while(my $line = <TMP_FILE>) {
+#        chomp($line);
+#        print "$chrom_name\t$line\t$line\t+\t".substr($sequence, $line, 1)."\n";
+#    }
+#    close(TMP_FILE);
 
 
     #############################
     ## Simulating gene mutations
     #############################
-    my $num_reg_feats = 0;
-    my $num_reg_feats_bp = 0;
-#    my @reg_feats = @{$regfeat_adaptor->fetch_all()};
-#    my $chr_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chrom );
-    my @reg_feats = @{$regfeat_adaptor->fetch_all_by_Slice($chrom)};
-    foreach my $reg_feat (@reg_feats) {
-        $num_reg_feats++;
-
-        ($start, $end) = ($reg_feat->seq_region_start, $reg_feat->seq_region_end);
-    #    print $start."-".$end, "\n";
-        for(my $i = $start; $i <= $end; $i++) {
-            $num_reg_feats_bp++;
-    #        print $reg_feat->seq_region_name."\t".$reg_feat->seq_region_start."\t".$reg_feat->seq_region_end."\t"."/"."\t+\t\n";
-        }
-
-        if($num_reg_feats % 50000 == 0) {
-            print $num_reg_feats."\n";
-        }
-    }
-    print $num_reg_feats."\n";
-    print $num_reg_feats_bp."\n";
+#    my $num_reg_feats = 0;
+#    my $num_reg_feats_bp = 0;
+##    my @reg_feats = @{$regfeat_adaptor->fetch_all()};
+##    my $chr_slice = $slice_adaptor->fetch_by_region( 'chromosome', $chrom );
+#    my @reg_feats = @{$regfeat_adaptor->fetch_all_by_Slice($chrom)};
+#    foreach my $reg_feat (@reg_feats) {
+#        $num_reg_feats++;
+#
+#        ($start, $end) = ($reg_feat->seq_region_start, $reg_feat->seq_region_end);
+#    #    print $start."-".$end, "\n";
+#        for(my $i = $start; $i <= $end; $i++) {
+#            $num_reg_feats_bp++;
+#    #        print $reg_feat->seq_region_name."\t".$reg_feat->seq_region_start."\t".$reg_feat->seq_region_end."\t"."/"."\t+\t\n";
+#        }
+#
+#        if($num_reg_feats % 50000 == 0) {
+#            print $num_reg_feats."\n";
+#        }
+#    }
+#    print $num_reg_feats."\n";
+#    print $num_reg_feats_bp."\n";
 
 
     #############################
@@ -172,22 +176,42 @@ foreach my $chrom(@chroms) {
 
 
     close(CHROM_OUTPUT);
-    return;
+    last;
 }
 
 sub print_simulated_variants {
     my $start = shift;
     my $end = shift;
     my $sequence = shift;
+    local *FILE = shift;
+    my $comment = shift;
 
     for(my $i = $start; $i <= $end; $i++) {
         my $c = substr($sequence, $i-$start, 1);
         foreach my $nt(@nts) {
             if($nt ne $c) {
-                print "$chrom_name\t$i\t$i\t$c/$nt\t+\t${i}_*\n";
+                print FILE "$chrom_name\t$i\t$i\t$c/$nt\t+\t${chrom_name}_${i}_$c/*_${comment}\n";
                 last;
             }
         }
+#        print FILE "$chrom_name\t$i\t$i\t$c/-\t+\t${chrom_name}_${i}_$c/-_${comment}\n";
     }
 }
 
+sub print_all_simulated_variants {
+    my $start = shift;
+    my $end = shift;
+    my $sequence = shift;
+    local *FILE = shift;
+    my $comment = shift;
+
+    for(my $i = $start; $i <= $end; $i++) {
+        my $c = substr($sequence, $i-$start, 1);
+        foreach my $nt(@nts) {
+            if($nt ne $c) {
+                print FILE "$chrom_name\t$i\t$i\t$c/$nt\t+\t${chrom_name}_${i}_$c/${nt}_${comment}\n";
+             }
+        }
+        print FILE "$chrom_name\t$i\t$i\t$c/-\t+\t${chrom_name}_${i}_$c/-_${comment}\n";
+    }
+}

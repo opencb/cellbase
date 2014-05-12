@@ -31,7 +31,7 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
 
     public VariantEffectMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        mongoDBCollection = db.getCollection("core");
+        mongoDBCollection = db.getCollection("gene");
     }
 
 

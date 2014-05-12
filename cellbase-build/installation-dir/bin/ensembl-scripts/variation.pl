@@ -10,7 +10,7 @@ use DB_CONFIG;
 
 
 my $species = 'Homo sapiens';
-my $chrom = '22';
+my $chrom = '5';
 my $transcript_file = 'Homo sapiens';
 my $outdir = "/tmp/$species";
 my $verbose = '0';
@@ -49,7 +49,7 @@ if(-d $outdir){
 use lib "$ENSEMBL_LIBS/ensembl/modules";
 use lib "$ENSEMBL_LIBS/ensembl-variation/modules";
 use lib "$ENSEMBL_LIBS/ensembl-compara/modules";
-use lib "$ENSEMBL_LIBS/ensembl-functgenomics/modules";
+use lib "$ENSEMBL_LIBS/ensembl-funcgen/modules";
 use lib "$ENSEMBL_LIBS/bioperl-live";
 
 ## creating ensembl adaptors
@@ -329,7 +329,8 @@ foreach my $chrom_obj(@chroms) {
 			
 			########################################################################
 			##### SNP phenotype annotation	########################################
-			@var_annots = @{$variation->get_all_VariationAnnotations()};
+#			@var_annots = @{$variation->get_all_VariationAnnotations()};
+			@var_annots = @{$variation->get_all_PhenotypeFeatures()};
 			if(@var_annots > 0) {
 				
 #				print "\n"."SNP phenotype annotation is TRUE"."\n";
@@ -482,58 +483,58 @@ foreach my $chrom_obj(@chroms) {
 		
 		    ########################################################################
             ##### SNP population genotype ##########################################
-            my %pop_genotype_json = ();
-            my @pop_genotype_array = ();
-            if(@{$variation_feature->get_all_PopulationGenotypes} > 0) {
-                  foreach my $pop_genotype(@{$variation_feature->get_all_PopulationGenotypes}) {
-#                     print $pop_genotype->allele()."\t".$pop_genotype->count()."\t".$pop_genotype->population()->name."\t".$pop_genotype->genotype_string()."\n";
-                      my %pop_genotype_json = ();
-                      $pop_genotype_json{'alele'} = $pop_genotype->allele();
-                      $pop_genotype_json{'count'} = $pop_genotype->count();
-                      $pop_genotype_json{'frequency'} = $pop_genotype->frequency();
-                      $pop_genotype_json{'populationName'} = $pop_genotype->population()->name();
-                      $pop_genotype_json{'populationDescription'} = $pop_genotype->population()->description();
-                      $pop_genotype_json{'populationSize'} = $pop_genotype->population()->size();
-                      $pop_genotype_json{'genotype'} = $pop_genotype->genotype_string();
-                      $pop_genotype_json{'subsnp'} = $pop_genotype->subsnp();
-                      
-                      my @pop_individual_array = ();
-                      my @pop_individual_children_array = ();
-                      my %individual_hash = ();
-                      foreach my $ind(@{$pop_genotype->population()->get_all_Individuals()}) {
-                          my %individual_hash = ();
-                          $individual_hash{'name'} = $ind->name;
-                          $individual_hash{'display'} = $ind->display;
-                          $individual_hash{'gender'} = $ind->gender();
-                          if(defined $ind->father_Individual()) {
-                              $individual_hash{'father'} = $ind->father_Individual()->name();
-                          }else {
-                              $individual_hash{'father'} = '';
-                          }
-                          if(defined $ind->mother_Individual()) {
-                              $individual_hash{'mother'} = $ind->mother_Individual()->name();
-                          }else {
-                              $individual_hash{'mother'} = '';
-                          }
-                          
-                          @pop_individual_children_array = ();
-                          if(defined $ind->get_all_child_Individuals()) {
-                              for(@{$ind->get_all_child_Individuals()}) {
-                                 push(@pop_individual_children_array, $_->name);
-                              }     
-                          }
-                          $individual_hash{'children'} = \@pop_individual_children_array;
-                          
-                          $individual_hash{'description'} = $ind->description();
-                          
-                          push(@pop_individual_array, \%individual_hash);
-                      }
-                      $pop_genotype_json{'individuals'} = \@pop_individual_array;
-                      
-                      push(@pop_genotype_array, \%pop_genotype_json);
-                  }
-            }
-           $jsonVariation{'populationGenotypes'} = \@pop_genotype_array;
+#            my %pop_genotype_json = ();
+#            my @pop_genotype_array = ();
+#            if(@{$variation_feature->get_all_PopulationGenotypes} > 0) {
+#                  foreach my $pop_genotype(@{$variation_feature->get_all_PopulationGenotypes}) {
+##                     print $pop_genotype->allele()."\t".$pop_genotype->count()."\t".$pop_genotype->population()->name."\t".$pop_genotype->genotype_string()."\n";
+#                      my %pop_genotype_json = ();
+#                      $pop_genotype_json{'alele'} = $pop_genotype->allele();
+#                      $pop_genotype_json{'count'} = $pop_genotype->count();
+#                      $pop_genotype_json{'frequency'} = $pop_genotype->frequency();
+#                      $pop_genotype_json{'populationName'} = $pop_genotype->population()->name();
+#                      $pop_genotype_json{'populationDescription'} = $pop_genotype->population()->description();
+#                      $pop_genotype_json{'populationSize'} = $pop_genotype->population()->size();
+#                      $pop_genotype_json{'genotype'} = $pop_genotype->genotype_string();
+#                      $pop_genotype_json{'subsnp'} = $pop_genotype->subsnp();
+#
+#                      my @pop_individual_array = ();
+#                      my @pop_individual_children_array = ();
+#                      my %individual_hash = ();
+#                      foreach my $ind(@{$pop_genotype->population()->get_all_Individuals()}) {
+#                          my %individual_hash = ();
+#                          $individual_hash{'name'} = $ind->name;
+#                          $individual_hash{'display'} = $ind->display;
+#                          $individual_hash{'gender'} = $ind->gender();
+#                          if(defined $ind->father_Individual()) {
+#                              $individual_hash{'father'} = $ind->father_Individual()->name();
+#                          }else {
+#                              $individual_hash{'father'} = '';
+#                          }
+#                          if(defined $ind->mother_Individual()) {
+#                              $individual_hash{'mother'} = $ind->mother_Individual()->name();
+#                          }else {
+#                              $individual_hash{'mother'} = '';
+#                          }
+#
+#                          @pop_individual_children_array = ();
+#                          if(defined $ind->get_all_child_Individuals()) {
+#                              for(@{$ind->get_all_child_Individuals()}) {
+#                                 push(@pop_individual_children_array, $_->name);
+#                              }
+#                          }
+#                          $individual_hash{'children'} = \@pop_individual_children_array;
+#
+#                          $individual_hash{'description'} = $ind->description();
+#
+#                          push(@pop_individual_array, \%individual_hash);
+#                      }
+#                      $pop_genotype_json{'individuals'} = \@pop_individual_array;
+#
+#                      push(@pop_genotype_array, \%pop_genotype_json);
+#                  }
+#            }
+#           $jsonVariation{'populationGenotypes'} = \@pop_genotype_array;
             
             ################################################################################
 			##### TranscriptVariations	####################################################

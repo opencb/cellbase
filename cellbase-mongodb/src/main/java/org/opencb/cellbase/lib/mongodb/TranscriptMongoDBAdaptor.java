@@ -18,7 +18,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     public TranscriptMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        mongoDBCollection = db.getCollection("core");
+        mongoDBCollection = db.getCollection("gene");
     }
 
     @Override
