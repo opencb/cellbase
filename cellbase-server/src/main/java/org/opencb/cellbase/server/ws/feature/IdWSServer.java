@@ -37,11 +37,11 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
         try {
             checkVersionAndSpecies();
-            XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
+            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
                 if(!dbname.equals("")) {
                     queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
                 }
-                return createOkResponse(x.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions));
+                return createOkResponse(xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions));
 //            if (dbName.equals("")) {
 //                return generateResponse(query, "XREF", x.getAllByDBNameList(Splitter.on(",").splitToList(query), null));
 //            }

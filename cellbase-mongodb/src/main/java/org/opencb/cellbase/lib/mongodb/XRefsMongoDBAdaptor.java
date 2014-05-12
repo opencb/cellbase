@@ -217,21 +217,23 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
             if (list != null && list.size() > 0) {
                 BasicDBList dbnameDBList = new BasicDBList();
                 dbnameDBList.addAll(list);
-                DBObject dbnameMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.dbNameShort", new BasicDBObject("$in", dbnameDBList)));
+                DBObject dbnameMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.dbName", new BasicDBObject("$in", dbnameDBList)));
                 commands.add(dbnameMatch);
             }
 
-            DBObject group = new BasicDBObject("$group", new BasicDBObject("_id", new BasicDBObject(
-                    "id", "$transcripts.xrefs.id").append(
-                    "dbNameShort", "$transcripts.xrefs.dbNameShort").append(
-                    "description", "$transcripts.xrefs.description")));
+            DBObject group = new BasicDBObject("$group", new BasicDBObject("_id",
+                    new BasicDBObject("id", "$transcripts.xrefs.id")
+                            .append("dbName", "$transcripts.xrefs.dbName")
+                            .append("dbDisplayName", "$transcripts.xrefs.dbDisplayName")
+                            .append("description", "$transcripts.xrefs.description")));
             commands.add(group);
 
-            DBObject project = new BasicDBObject("$project", new BasicDBObject(
-                    "_id", 0).append(
-                    "id", "$_id.id").append(
-                    "dbNameShort","$_id.dbNameShort").append(
-                    "description","$_id.description"));
+            DBObject project = new BasicDBObject("$project",
+                    new BasicDBObject("_id", 0)
+                            .append("id", "$_id.id")
+                            .append("dbName","$_id.dbName")
+                            .append("dbDisplayName", "$_id.dbDisplayName")
+                            .append("description","$_id.description"));
             commands.add(project);
 
             //ArrayList to array
