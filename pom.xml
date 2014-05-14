@@ -30,6 +30,11 @@
             <name>Francisco</name>
             <email>frasator@gmail.com</email>
         </developer>
+        <developer>
+            <id>cyenyxe</id>
+            <name>Cristina</name>
+            <email>cristina.yenyxe@gmail.com</email>
+        </developer>
     </developers>
 
     <modules>
@@ -71,6 +76,11 @@
                 <groupId>org.opencb.commons</groupId>
                 <artifactId>bioformats</artifactId>
                 <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.datastore</groupId>
+                <artifactId>datastore-mongodb</artifactId>
+                <version>0.1.0</version>
             </dependency>
 
             <!-- General dependencies -->
