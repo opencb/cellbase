@@ -37,7 +37,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             QueryBuilder builder = QueryBuilder.start("id").is(id);
             queries.add(builder.get());
         }
-        System.out.println("aaaaaaaaaaaaaaaaa");
         return executeQueryList(idList, queries, options);
     }
 
@@ -51,6 +50,25 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         queryResult.setDBTime(0);
         return queryResult;
     }
+
+
+
+    @Override
+    public QueryResult getByTranscriptId(String id, QueryOptions options) {
+        return getAllByTranscriptIdList(Arrays.asList(id), options).get(0);
+    }
+
+    @Override
+    public List<QueryResult> getAllByTranscriptIdList(List<String> idList, QueryOptions options) {
+        List<DBObject> queries = new ArrayList<>();
+        for (String id : idList) {
+            QueryBuilder builder = QueryBuilder.start("transcriptVariations.transcriptId").is(id);
+            queries.add(builder.get());
+        }
+        return executeQueryList(idList, queries, options);
+    }
+
+
 
     @Override
     public QueryResult getAllPhenotypes(QueryOptions options) {

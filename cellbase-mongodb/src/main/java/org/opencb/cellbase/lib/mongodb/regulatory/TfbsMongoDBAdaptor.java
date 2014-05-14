@@ -93,7 +93,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
 
     @Override
     public List<QueryResult> getAllByTargetGeneIdList(List<String> targetGeneIdList, QueryOptions options) {
-        DBCollection coreMongoDBCollection = db.getCollection("core");
+        DBCollection coreMongoDBCollection = db.getCollection("gene");
 
         List<DBObject[]> commandList = new ArrayList<>();
         for (String targetGeneId : targetGeneIdList) {
