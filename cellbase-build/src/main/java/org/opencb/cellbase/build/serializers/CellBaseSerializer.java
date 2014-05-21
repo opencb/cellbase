@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.serializers;
+package org.opencb.cellbase.build.serializers;
 
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;

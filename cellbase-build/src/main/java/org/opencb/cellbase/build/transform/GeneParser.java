@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.GenomeSequenceUtils;
 import org.opencb.cellbase.core.common.core.*;
 import org.opencb.commons.bioformats.commons.exception.FileFormatException;

@@ -1,5 +1,6 @@
-package org.opencb.cellbase.build.transform.loaders.mongodb;
+package org.opencb.cellbase.build.loaders.mongodb;
 
+import org.opencb.cellbase.build.loaders.mongodb.VariantEffectMongoDBLoader;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;

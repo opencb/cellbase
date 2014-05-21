@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.serializers.mongodb;
+package org.opencb.cellbase.build.serializers.mongodb;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;

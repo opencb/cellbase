@@ -12,7 +12,7 @@ import org.opencb.biodata.models.variant.effect.ConsequenceType;
 import org.opencb.biodata.models.variant.effect.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.effect.ProteinSubstitutionScores;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
-import org.opencb.cellbase.build.transform.serializers.json.JsonSerializer;
+import org.opencb.cellbase.build.serializers.json.JsonSerializer;
 import org.opencb.commons.io.DataWriter;
 
 

@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import org.opencb.commons.bioformats.protein.uniprot.UniprotParser;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.OrganismNameType;

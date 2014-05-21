@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
-import org.opencb.cellbase.build.transform.serializers.json.JsonSerializer;
+import org.opencb.cellbase.build.serializers.json.JsonSerializer;
 
 /**
  *
@@ -25,7 +25,7 @@ public class VariantEffectParserTest {
         URL resource = VariantEffectParserTest.class.getResource("/vep-example-output.txt");
         file = Paths.get(resource.toURI());
         
-        serializer = new JsonSerializer<>(Paths.get("/tmp"), Paths.get("vep-example-output"));
+        serializer = new JsonSerializer<>(Paths.get("/tmp/vep-example-output"));
         serializer.open();
         serializer.pre();
     }

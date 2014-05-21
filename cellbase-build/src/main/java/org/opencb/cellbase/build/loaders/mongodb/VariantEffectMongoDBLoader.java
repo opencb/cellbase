@@ -1,10 +1,11 @@
-package org.opencb.cellbase.build.transform.loaders.mongodb;
+package org.opencb.cellbase.build.loaders.mongodb;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
@@ -18,6 +19,7 @@ import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.utils.CryptoUtils;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDBCollection;
+import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
 import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
@@ -31,11 +33,22 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
     private int port;
     private String dbName;
     private String collectionName;
+    private String user;
+    private String pass;
 
     private MongoDataStoreManager manager;
     private MongoDataStore datastore;
     private MongoDBCollection collection;
 
+    public VariantEffectMongoDBLoader(Properties applicationProperties) {
+        host = applicationProperties.getProperty("MONGO.HOST", "localhost");
+        port = Integer.parseInt(applicationProperties.getProperty("MONGO.PORT", "27017"));
+        user = applicationProperties.getProperty("MONGO.USERNAME", null);
+        pass = applicationProperties.getProperty("MONGO.PASSWORD", null);
+        dbName = applicationProperties.getProperty("MONGO.DB", "");
+        collectionName = applicationProperties.getProperty("MONGO.COLLECTIONS.VARIANT_EFFECT", "");
+    }
+    
     public VariantEffectMongoDBLoader(String host, int port, String dbName, String collectionName) {
         this.host = host;
         this.port = port;
@@ -46,7 +59,12 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
     @Override
     public boolean open() {
         manager = new MongoDataStoreManager(host, port);
+        
         datastore = manager.get(dbName);
+        if(user != null && pass != null && (!"".equals(user) || !"".equals(pass))) {
+            datastore.getDb().authenticate(user,pass.toCharArray());
+        }
+        
         collection = datastore.getCollection(collectionName);
 
         return true;
@@ -92,7 +110,8 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
 
             mongoEffect.append("ct", alleles);
 
-            QueryResult result = collection.insert(mongoEffect);
+//            QueryResult result = collection.insert(mongoEffect);
+            QueryResult result = collection.update(new BasicDBObject("_id", rowkey), mongoEffect, true, true);
             if (result.getError() != null) { 
                 // TODO Do anything special when an error occurs?
                 Logger.getLogger(VariantEffectMongoDBLoader.class.getName()).log(Level.SEVERE, null, result.getError());
@@ -110,7 +129,7 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
 
     @Override
     public boolean close() {
-        datastore.close();
+        manager.close(datastore.getDatabaseName());
         return true;
     }
 

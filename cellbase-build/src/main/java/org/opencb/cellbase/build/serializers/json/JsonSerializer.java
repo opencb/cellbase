@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.serializers.json;
+package org.opencb.cellbase.build.serializers.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -17,10 +17,10 @@ import org.opencb.commons.io.DataWriter;
 /**
  *
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
+ * @param <T> Type of data to serialize
  */
 public class JsonSerializer<T> implements DataWriter<T> {
 
-    private Path outdir;
     private Path file;
     
     protected JsonFactory factory;
@@ -28,8 +28,7 @@ public class JsonSerializer<T> implements DataWriter<T> {
     protected JsonGenerator generator;
     private OutputStream stream;
     
-    public JsonSerializer(Path outdir, Path file) {
-        this.outdir = outdir;
+    public JsonSerializer(Path file) {
         this.file = file;
         this.factory = new JsonFactory();
         this.jsonObjectMapper = new ObjectMapper(this.factory);
@@ -38,8 +37,7 @@ public class JsonSerializer<T> implements DataWriter<T> {
     @Override
     public boolean open() {
         try {
-            stream = new GZIPOutputStream(new FileOutputStream(
-                    Paths.get(outdir.toString(), file.getFileName().toString()).toAbsolutePath().toString() + ".json.gz"));
+            stream = new GZIPOutputStream(new FileOutputStream(Paths.get(file.toAbsolutePath().toString() + ".json.gz").toFile()));
         } catch (IOException ex) {
             Logger.getLogger(JsonSerializer.class.getName()).log(Level.SEVERE, null, ex);
             return false;

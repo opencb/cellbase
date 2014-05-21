@@ -1,10 +1,10 @@
-package org.opencb.cellbase.build.transform.serializers.mongodb;
+package org.opencb.cellbase.build.serializers.mongodb;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.core.Gene;
