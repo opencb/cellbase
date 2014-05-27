@@ -109,8 +109,10 @@ public class RegionWSServer extends GenericRestWSServer {
                     queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
                 }
 //				queryOptions.put("transcripts", transcripts.equalsIgnoreCase("true"));
-                addExcludeReturnFields("transcripts.exons.sequence", queryOptions);
+//                addExcludeReturnFields("transcripts.exons.sequence", queryOptions);
 //				return createOkResponse(chregionId, "GENE",	geneDBAdaptor.getAllByRegionList(regions, queryOptions));
+
+                System.out.println("queryOptions: "+queryOptions);
                 return createOkResponse(geneDBAdaptor.getAllByRegionList(regions, queryOptions));
 //				if (transcripts != null) {
 //					if (biotype != null && !biotype.equals("")) {
@@ -230,7 +232,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/phenotype")
-    public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query) {
+    public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query, @DefaultValue("") @QueryParam("source") String source) {
         try {
             checkVersionAndSpecies();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
@@ -243,6 +245,9 @@ public class RegionWSServer extends GenericRestWSServer {
 //				return generateResponse(query, intervalList);
                 return createOkResponse(queryResult);
             } else {
+                if (source != null && !source.equals("")) {
+                    queryOptions.put("source", Splitter.on(",").splitToList(source));
+                }
 //				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
                 List<QueryResult> queryResults = variationDBAdaptor.getAllPhenotypeByRegion(regions, queryOptions);
 //				return this.generateResponse(query, "MUTATION", mutationList);

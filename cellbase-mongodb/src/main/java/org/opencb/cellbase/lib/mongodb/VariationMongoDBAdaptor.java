@@ -88,6 +88,16 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         QueryBuilder builder = null;
         List<DBObject> queries = new ArrayList<>();
 
+        /**
+         * If source is present in options is it parsed and prepare first,
+         * otherwise ti will be done for each iteration of regions.
+         */
+        List<Object> source = options.getList("source", null);
+        BasicDBList sourceIds = new BasicDBList();
+        if (source != null && source.size() > 0) {
+            sourceIds.addAll(source);
+        }
+
 //        List<Region> regions = Region.parseRegions(options.getString("region"));
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
@@ -101,6 +111,10 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 } else {
                     builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
                             .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                }
+
+                if (sourceIds != null && sourceIds.size() > 0) {
+                    builder = builder.and("source").in(sourceIds);
                 }
 
                 queries.add(builder.get());

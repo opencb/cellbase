@@ -269,6 +269,7 @@ public class GenericRestWSServer implements IWSServer {
         // System.out.println("version init: "+version);
         // }
 
+        System.out.println("uriInfo.getQueryParameters(): "+uriInfo.getQueryParameters());
         // this code MUST be run before the checking
         parseCommonQueryParameters(uriInfo.getQueryParameters());
     }

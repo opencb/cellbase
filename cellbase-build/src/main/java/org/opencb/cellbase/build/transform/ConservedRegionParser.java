@@ -2,39 +2,50 @@ package org.opencb.cellbase.build.transform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
-import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.common.regulatory.ConservedRegion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 public class ConservedRegionParser {
 
 	private static int CHUNKSIZE = 2000;
 
-    private static ObjectMapper gson = new ObjectMapper();
-//	static Gson gson = new Gson();
+    private ObjectMapper gson;
+    private Logger logger;
 
     // Download data:
     // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
+    public ConservedRegionParser() {
+        logger = LoggerFactory.getLogger(ConservedRegionParser.class);
+        gson = new ObjectMapper();
+    }
 
-    public static void parseConservedRegionFilesToJson(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
+    public void parse(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
         Path inGzPath;
         Path outJsonPath;
 
-        List<String> chromosomes = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y");
-//        List<String> chromosomes = Arrays.asList("22");
+        List<String> chromosomes = new ArrayList<>();
+        DirectoryStream<Path> directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"));
+        for(Path path: directoryStream) {
+            chromosomes.add(path.getFileName().toString().split("\\.")[0].replace("chr", ""));
+        }
+
+        logger.debug("Chromosomes found {}", chromosomes.toString());
+        chromosomes.clear();
 
         for(String chr : chromosomes){
 
@@ -45,11 +56,11 @@ public class ConservedRegionParser {
             BufferedWriter bw = Files.newBufferedWriter(outJsonPath, Charset.defaultCharset(), StandardOpenOption.CREATE);
 
             inGzPath = getConservedRegionPath(conservedRegionPath.resolve(Paths.get("phastCons")), chr);
-            System.out.println("processing  "+chr+" "+inGzPath+"...");
+            logger.debug(" Processing chromosome {}, file {}", chr, inGzPath);
             processFile(inGzPath, "phastCons", bw);
 
             inGzPath = getConservedRegionPath(conservedRegionPath.resolve(Paths.get("phylop")), chr);
-            System.out.println("processing  "+chr+" "+inGzPath+"...");
+            logger.debug(" Processing chromosome {}, file {}", chr, inGzPath);
             processFile(inGzPath, "phylop", bw);
 
             bw.close();
@@ -57,7 +68,7 @@ public class ConservedRegionParser {
     }
 
 
-    private static void processFile(Path inGzPath, String conservedType, BufferedWriter bw) throws IOException {
+    private void processFile(Path inGzPath, String conservedType, BufferedWriter bw) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(inGzPath))));
 

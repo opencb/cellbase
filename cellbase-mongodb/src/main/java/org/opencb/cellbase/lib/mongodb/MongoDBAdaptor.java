@@ -116,10 +116,13 @@ public class MongoDBAdaptor extends DBAdaptor {
     }
 
     protected QueryOptions addExcludeReturnFields(String returnField, QueryOptions options) {
-        if (options != null && !options.getBoolean(returnField, true)) {
+        if (options != null ) { //&& !options.getBoolean(returnField, true)) {
             if (options.getList("exclude") != null) {
 //                options.put("exclude", options.get("exclude") + "," + returnField);
-                options.getList("exclude").add(returnField);
+                List<Object> arr = options.getList("exclude");
+                arr.add(returnField);
+//                options.getList("exclude").add(returnField);
+                options.put("exclude", arr);
             } else {
                 options.put("exclude", Arrays.asList(returnField));
             }

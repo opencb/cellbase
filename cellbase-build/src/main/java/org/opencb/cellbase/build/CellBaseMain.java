@@ -6,7 +6,6 @@ import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.serializers.mongodb.MongoDBSerializer;
 import org.opencb.commons.bioformats.commons.exception.FileFormatException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -180,7 +179,8 @@ public class CellBaseMain {
                     int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
                     String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
                     if(conservationFilesDir != null) {
-                        ConservedRegionParser.parseConservedRegionFilesToJson(Paths.get(conservationFilesDir), conservationChunkSize,  Paths.get(conservationOutputFile));
+                        ConservedRegionParser conservedRegionParser = new ConservedRegionParser();
+                        conservedRegionParser.parse(Paths.get(conservationFilesDir), conservationChunkSize, Paths.get(conservationOutputFile));
                     }
                     break;
                 case "ppi":

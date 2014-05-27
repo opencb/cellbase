@@ -169,8 +169,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             queries.add(builder.get());
             ids.add(region.toString());
         }
-
-        options = addExcludeReturnFields("chunkIds", options);
+//        options = addExcludeReturnFields("chunkIds", options);
         return executeQueryList(ids, queries, options);
     }
 
