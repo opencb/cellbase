@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class CaddParser {
 
-    public static Float TableFloatToString(String floatName){
+    public static Float stringToFloat(String floatName){
         if (floatName.equals("NA")){
 
             return null;
@@ -75,11 +75,11 @@ public class CaddParser {
                                 //print this cadd
                             }
 
-                            Float EncExp = TableFloatToString(fields[29]);
-                            Float EncH3K27Ac = TableFloatToString(fields[30]);
-                            Float EncH3K4Me1 = TableFloatToString(fields[31]);
-                            Float EncH3K4Me3 = TableFloatToString(fields[32]);
-                            Float EncNucleo = TableFloatToString(fields[33]);
+                            Float EncExp = stringToFloat(fields[29]);
+                            Float EncH3K27Ac = stringToFloat(fields[30]);
+                            Float EncH3K4Me1 = stringToFloat(fields[31]);
+                            Float EncH3K4Me3 = stringToFloat(fields[32]);
+                            Float EncNucleo = stringToFloat(fields[33]);
 
                             Integer EncOCC = null;
                             if (!fields[34].equals("NA")){
@@ -88,17 +88,17 @@ public class CaddParser {
 
 
 
-                            Float EncOCCombPVal = TableFloatToString(fields[35]);
-                            Float EncOCDNasePVal = TableFloatToString(fields[36]);
-                            Float EncOCFairePVal = TableFloatToString(fields[37]);
-                            Float EncOCpolIIPVal = TableFloatToString(fields[38]);
-                            Float EncOCctcfPVal = TableFloatToString(fields[39]);
-                            Float EncOCmycPVal = TableFloatToString(fields[40]);
-                            Float EncOCDNaseSig = TableFloatToString(fields[41]);
-                            Float EncOCFaireSig = TableFloatToString(fields[42]);
-                            Float EncOCpolIISig = TableFloatToString(fields[43]);
-                            Float EncOCctcfSig = TableFloatToString(fields[44]);
-                            Float EncOCmycSig = TableFloatToString(fields[45]);
+                            Float EncOCCombPVal = stringToFloat(fields[35]);
+                            Float EncOCDNasePVal = stringToFloat(fields[36]);
+                            Float EncOCFairePVal = stringToFloat(fields[37]);
+                            Float EncOCpolIIPVal = stringToFloat(fields[38]);
+                            Float EncOCctcfPVal = stringToFloat(fields[39]);
+                            Float EncOCmycPVal = stringToFloat(fields[40]);
+                            Float EncOCDNaseSig = stringToFloat(fields[41]);
+                            Float EncOCFaireSig = stringToFloat(fields[42]);
+                            Float EncOCpolIISig = stringToFloat(fields[43]);
+                            Float EncOCctcfSig = stringToFloat(fields[44]);
+                            Float EncOCmycSig = stringToFloat(fields[45]);
                             List<CaddValues> caddValuesList = new ArrayList<>();
 
 
