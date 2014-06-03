@@ -117,6 +117,7 @@ public class CellBaseMain {
                     String gtfFile = commandLine.getOptionValue("gtf-file");
                     String genomeFastaFile = commandLine.getOptionValue("fasta-file", "");
                     String xrefFile = commandLine.getOptionValue("xref-file", "");
+                    String uniprotIdMapping = commandLine.getOptionValue("uniprot-id-mapping-file", "");
                     String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
                     String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
                     String mirnaFile = commandLine.getOptionValue("mirna-file", "");
@@ -126,7 +127,7 @@ public class CellBaseMain {
                         if(geneFilesDir != null && !geneFilesDir.equals("")) {
                             geneParser.parse(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
                         }else {
-                            geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
+                            geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
                         }
 //                    }
                     break;
@@ -146,6 +147,15 @@ public class CellBaseMain {
                         vp.parse(Paths.get(variationFilesDir)); //, Paths.get(outfile)
                     }
                     break;
+                case "variation-phen-annot":
+                    System.out.println("In variation phenotype annotation...");
+                    variationFilesDir = commandLine.getOptionValue("indir");
+                    if(variationFilesDir != null) {
+                        VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(serializer);
+//                    vp.parseCosmic(Paths.get(cosmicFilePath));
+                        variationPhenotypeAnnotationParser.parseEnsembl(Paths.get(variationFilesDir));
+                    }
+                    break;
                 case "protein":
                     System.out.println("In protein...");
                     String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
@@ -163,8 +173,8 @@ public class CellBaseMain {
                     String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
                     if(cosmicFilePath != null) {
                         MutationParser vp = new MutationParser(serializer);
-//                    vp.parse(Paths.get(cosmicFilePath));
-                        vp.parseEnsembl(Paths.get(cosmicFilePath));
+//                    vp.parseCosmic(Paths.get(cosmicFilePath));
+                        vp.parseCosmic(Paths.get(cosmicFilePath));
                     }
                     break;
 

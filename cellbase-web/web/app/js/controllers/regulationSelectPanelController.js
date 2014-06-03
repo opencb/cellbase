@@ -7,6 +7,7 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
     $scope.featureClassFilter = [];
     $scope.chromNames = mySharedService.chromNames;
 
+    $scope.typeOfData = "regulation";
 
     $scope.featureClassTypes = ["Histone", "Open Chromatin",  "Transcription Factor", "Polymerase", "microRNA" ];
 
@@ -55,6 +56,7 @@ var regulationsSelect = myApp.controller('regulationsSelect', ['$scope', 'myShar
         else {
             $scope.featureClassFilter.splice(pos, 1);
         }
+
 
         if($("[id='"+featureClass+"']").hasClass("btn-primary")){
             $("[id='"+featureClass+"']").removeClass("btn-primary");

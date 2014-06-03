@@ -18,7 +18,7 @@
 
     <servlet-mapping>
         <servlet-name>CellbaseServer</servlet-name>
-        <url-pattern>/rest/*</url-pattern>
+        <url-pattern>/webservices/rest/*</url-pattern>
     </servlet-mapping>
 
     <!-- General configuration -->

@@ -112,7 +112,7 @@ BEGIN {
 our $HOME = "/mnt/mysql/infrared_dbs";
 
 my $user_home = $ENV{'HOME'};
-our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_74";
+our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_75";
 our $ENSEMBL_REGISTRY = "$user_home/appl/cellbase/cellbase-build/installation-dir/bin/ensembl-scripts/registry.conf";
 
 our $BIOMART_LIB = "/mnt/mysql/ensembl_apis/biomart-perl";
@@ -145,9 +145,9 @@ our $INFRARED_PASS = "biopass";
 
 
 ## Vertebrates
-our $HOMO_SAPIENS_CORE = "homo_sapiens_core_74_37";
-our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_74_37";
-our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_74_37";
+our $HOMO_SAPIENS_CORE = "homo_sapiens_core_75_37";
+our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_75_37";
+our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_75_37";
 our $MUS_MUSCULUS_CORE = "mus_musculus_core_74_38";
 our $MUS_MUSCULUS_VARIATION = "mus_musculus_variation_74_38";
 our $MUS_MUSCULUS_FUNCTIONAL = "mus_musculus_funcgen_74_38";

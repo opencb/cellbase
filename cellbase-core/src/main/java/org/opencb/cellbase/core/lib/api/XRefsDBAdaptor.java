@@ -4,6 +4,8 @@ package org.opencb.cellbase.core.lib.api;
 import org.opencb.cellbase.core.common.XRefs;
 import org.opencb.cellbase.core.common.core.DBName;
 import org.opencb.cellbase.core.common.core.Xref;
+import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.List;
 
@@ -48,9 +50,13 @@ public interface XRefsDBAdaptor {
 
 	public List<List<Xref>> getAllByDBName(List<String> ids, String dbname);
 
-	public List<Xref> getByDBNameList(String id, List<String> dbnames);
+//	public List<Xref> getByDBNameList(String id, List<String> dbnames);
 
-	public List<List<Xref>> getAllByDBNameList(List<String> ids, List<String> dbnames);
+//	public List<List<Xref>> getAllByDBNameList(List<String> ids, List<String> dbnames);
+
+    public QueryResult getByDBNameList(String id, QueryOptions options);
+
+	public List<QueryResult> getAllByDBNameList(List<String> ids, QueryOptions options);
 
 
 	public XRefs getByDBName(String id, String dbname, String type);

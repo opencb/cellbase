@@ -23,7 +23,7 @@ args = parser.parse_args()
 
 ## Loading chromosomes info by species
 ## from species_info.json file, it's mandatory!
-f1 = open('species_info.json')
+f1 = open('species.json')
 text = f1.read()
 f1.close()
 species_info = json.loads(text)

@@ -21,7 +21,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     public GeneMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        mongoDBCollection = db.getCollection("core");
+        mongoDBCollection = db.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
@@ -163,14 +163,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             }
 
             if (biotypeIds.size() > 0) {
-                System.out.println("regions = [" + regions + "], options = [" + options + "]");
+//                System.out.println("regions = [" + regions + "], options = [" + options + "]");
                 builder = builder.and("biotype").in(biotypeIds);
             }
             queries.add(builder.get());
             ids.add(region.toString());
         }
 
-//        options = addExcludeReturnFields("transcripts", options);
+        options = addExcludeReturnFields("chunkIds", options);
         return executeQueryList(ids, queries, options);
     }
 
@@ -270,7 +270,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //        start.append("$lt", region.getEnd());
 //
 //        BasicDBList andArr = new BasicDBList();
-//        andArr.add(new BasicDBObject("chromosome", region.getChromosome()));
+//        andArr.add(new BasicDBObject("chromosome", region.getSequenceName()));
 //        andArr.add(new BasicDBObject("start", start));
 //
 //        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", andArr));
@@ -324,7 +324,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //        }
 //        return BasicDBList;
 //
-//        //		QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//        //		QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end")
 //        //				.greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
 //        //
 //        //		int numIntervals = (region.getEnd() - region.getStart()) / interval + 1;
@@ -359,7 +359,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //        //			intervalEnd = intervalStart + interval - 1;
 //        //		}
 //        //
-//        //		System.out.println(region.getChromosome());
+//        //		System.out.println(region.getSequenceName());
 //        //		System.out.println(region.getStart());
 //        //		System.out.println(region.getEnd());
 //        //		return intervalList.toString();

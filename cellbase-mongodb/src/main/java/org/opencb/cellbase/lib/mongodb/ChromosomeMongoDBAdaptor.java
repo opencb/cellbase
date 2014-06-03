@@ -21,7 +21,7 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
 
     public ChromosomeMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        mongoDBCollection = db.getCollection("info_stats");
+        mongoDBCollection = db.getCollection("genome_info");
     }
 
 

@@ -91,13 +91,13 @@ public interface SnpDBAdaptor {
 //	
 //	
 //	
-//	public List<SnpPhenotypeAnnotation> getAllSnpPhenotypeAnnotationBySnpName(String name);
+//	public List<VariationPhenotypeAnnotation> getAllSnpPhenotypeAnnotationBySnpName(String name);
 //	
-//	public List<List<SnpPhenotypeAnnotation>> getAllSnpPhenotypeAnnotationListBySnpNameList(List<String> nameList);
+//	public List<List<VariationPhenotypeAnnotation>> getAllSnpPhenotypeAnnotationListBySnpNameList(List<String> nameList);
 //	
-//	public List<SnpPhenotypeAnnotation> getAllSnpPhenotypeAnnotationByPosition(Position position);
+//	public List<VariationPhenotypeAnnotation> getAllSnpPhenotypeAnnotationByPosition(Position position);
 //	
-//	public List<List<SnpPhenotypeAnnotation>> getAllSnpPhenotypeAnnotationListByPositionList(List<Position> positionList);
+//	public List<List<VariationPhenotypeAnnotation>> getAllSnpPhenotypeAnnotationListByPositionList(List<Position> positionList);
 //	
 //	
 //	

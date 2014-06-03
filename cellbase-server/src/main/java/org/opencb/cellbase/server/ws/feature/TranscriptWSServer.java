@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -196,7 +197,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             // response.append("\"externalDb\":"+"\""+transcripts.get(i).getExternalDb()+"\",");
             // response.append("\"biotype\":"+"\""+transcripts.get(i).getBiotype()+"\",");
             // response.append("\"status\":"+"\""+transcripts.get(i).getStatus()+"\",");
-            // response.append("\"chromosome\":"+"\""+transcripts.get(i).getChromosome()+"\",");
+            // response.append("\"chromosome\":"+"\""+transcripts.get(i).getSequenceName()+"\",");
             // response.append("\"start\":"+transcripts.get(i).getStart()+",");
             // response.append("\"end\":"+transcripts.get(i).getEnd()+",");
             // response.append("\"strand\":"+"\""+transcripts.get(i).getStrand()+"\",");
@@ -258,6 +259,19 @@ public class TranscriptWSServer extends GenericRestWSServer {
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
             return generateResponse(query, "EXON",
                     dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getExonsByTranscriptId", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{transcriptId}/variation")
+    public Response getVariationsByTranscriptId(@PathParam("transcriptId") String query) {
+        try {
+            checkVersionAndSpecies();
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            return createOkResponse(variationDBAdaptor.getAllByTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonsByTranscriptId", e.toString());
@@ -329,19 +343,19 @@ public class TranscriptWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{transcriptId}/protein_feature")
-    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
-        try {
-            checkVersionAndSpecies();
-            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
-            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
-            return generateResponse(query, "PROTEIN_FEATURE", geneList);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByGene", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{transcriptId}/protein_feature")
+//    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
+//        try {
+//            checkVersionAndSpecies();
+//            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.version);
+//            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
+//            return generateResponse(query, "PROTEIN_FEATURE", geneList);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMutationByGene", e.toString());
+//        }
+//    }
 
     @GET
     @Path("/{transcriptId}/cdna")

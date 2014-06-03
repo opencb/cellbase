@@ -62,7 +62,7 @@ public class RegulatoryRegionParser {
 
     public void parse(Path regulatoryRegionPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
         // Create the SQLite databases
-//        createSQLiteRegulatoryFiles(regulatoryRegionPath);
+        createSQLiteRegulatoryFiles(regulatoryRegionPath);
 
         String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
 
@@ -132,7 +132,7 @@ public class RegulatoryRegionParser {
 
                     // remove 'chr' prefix
                     if (genericFeature.getChromosome() != null) {
-//                        genericFeature.setChromosome(genericFeature.getChromosome().replace("chr", ""));
+//                        genericFeature.setSequenceName(genericFeature.getSequenceName().replace("chr", ""));
                     }
 //                    bw.write(gson.toJson(genericFeature) + "\n");
                     serializer.serialize(genericFeature);
@@ -215,7 +215,7 @@ public class RegulatoryRegionParser {
         int BatchCount = 0;
 
         Path dbPath = Paths.get(filePath.toString() + ".db");
-        if (Files.exists(dbPath)) {
+        if (Files.exists(dbPath) && Files.size(dbPath) > 0) {
 //            Files.delete(dbPath);
             return;
         }
@@ -376,7 +376,7 @@ public class RegulatoryRegionParser {
         GenericFeature genericFeature = new GenericFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1));
+        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
         genericFeature.setSource(rs.getString(2));
         genericFeature.setFeatureType(rs.getString(3));
         genericFeature.setStart(rs.getInt(4));
@@ -398,7 +398,7 @@ public class RegulatoryRegionParser {
         GenericFeature genericFeature = new GenericFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1));
+        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
         genericFeature.setSource(rs.getString(2));
         genericFeature.setFeatureType(rs.getString(3));
         genericFeature.setStart(rs.getInt(4));
@@ -416,7 +416,7 @@ public class RegulatoryRegionParser {
         GenericFeature genericFeature = new GenericFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1));
+        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
         genericFeature.setSource(rs.getString(2));
         genericFeature.setFeatureType(rs.getString(3) + "_motif");
         genericFeature.setStart(rs.getInt(4));
@@ -437,7 +437,7 @@ public class RegulatoryRegionParser {
         GenericFeature genericFeature = new GenericFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1));
+        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
         genericFeature.setSource(rs.getString(2));
         genericFeature.setFeatureType(rs.getString(3));
         genericFeature.setStart(rs.getInt(4));

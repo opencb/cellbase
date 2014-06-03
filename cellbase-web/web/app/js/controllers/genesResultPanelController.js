@@ -225,14 +225,16 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     };
 
 
-    $scope.clearAll = function(){
+    $scope.clearAll = function () {
         $scope.showAll = false;
     };
     $scope.clear = function () {
         $scope.showGenePanel = false;
         $scope.showTranscriptPanel = false;
     };
-    $scope.setResult = function(){
+    $scope.setResult = function () {
+
+
         $scope.genesFilters = mySharedService.genesIdFilter;
         $scope.biotypeFilters = mySharedService.biotypesFilter;
         $scope.selectedSpecie = mySharedService.genesSpecie;
@@ -269,10 +271,10 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
         $scope.clear();
 
 
-        if($scope.numResults != 0){
+        if ($scope.numResults != 0) {
             $scope.toggleTree = [];
 
-            for(var i=0;i< 10; i++){
+            for (var i = 0; i < 10; i++) {
                 $scope.toggleTree.push(false);
             }
 
@@ -285,43 +287,42 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
             $scope.showGene(Object.keys($scope.genesAndTranscriptsData)[0], 0);
 
 
-
-            if($scope.selectedGene.transcripts.length != 0){
+            if ($scope.selectedGene.transcripts.length != 0) {
                 $scope.showTranscriptPanel = true;
                 $scope.selectedTranscript = $scope.selectedGene.transcripts[0];
             }
         }
-        else{
+        else {
 //            alert("No results with this data");
 //            alert("No correct data selected");
             $scope.paginationData = [];
         }
     };
     //save thee correct results and alert the incorrect
-    $scope.checkGeneFilter = function(genesIdFilter){
+    $scope.checkGeneFilter = function (genesIdFilter) {
         var genesIdError = [];
-        var genesFilters =  $scope.genesFilters.split(",");
+        var genesFilters = $scope.genesFilters.split(",");
         var error = false;
 
-        for(var i in genesIdFilter){
-            if(genesIdFilter[i] == undefined){
+        for (var i in genesIdFilter) {
+            if (genesIdFilter[i] == undefined) {
                 genesIdError.push(genesFilters[i]);
                 error = true
             }
-            else{
+            else {
                 $scope.genesAndTranscriptsData[genesIdFilter[i].id] = (genesIdFilter[i]);
             }
         }
-        if(error){
-        var messageError = "";
-        if(genesIdError.length != 0){
-            messageError = genesIdError[0];
-            for(var i=1;i<genesIdError.length;i++){
-                messageError = messageError + ", " + genesIdError[i];
+        if (error) {
+            var messageError = "";
+            if (genesIdError.length != 0) {
+                messageError = genesIdError[0];
+                for (var i = 1; i < genesIdError.length; i++) {
+                    messageError = messageError + ", " + genesIdError[i];
+                }
             }
-        }
-        messageError = messageError + " incorrect";
-        alert(messageError);
+            messageError = messageError + " incorrect";
+            alert(messageError);
         }
     };
     //obtain the list of the biotypes
@@ -338,17 +339,21 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     //===================== tree events ========================
 
 
-    $scope.showGene = function (geneId, index){
-        if($scope.toggleTree[index]){
+    $scope.showGene = function (geneId, index) {
+
+//        console.time("v5");
+        if ($scope.toggleTree[index]) {
             $scope.toggleTree[index] = false;
         }
-        else{
+        else {
             $scope.toggleTree[index] = true;
         }
         $scope.showSelectedGene(geneId);
-        if($scope.selectedGene.transcripts.length != 0){
-            $scope.showSelectedTranscript(geneId,$scope.selectedGene.transcripts[0].name);
+
+        if ($scope.selectedGene.transcripts.length != 0) {
+            $scope.showSelectedTranscript(geneId, $scope.selectedGene.transcripts[0].name);
         }
+//        console.timeEnd("v5");
     };
 
     $scope.showTranscript = function (geneId, transcriptName) {
@@ -365,15 +370,14 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
 //        else{
 //            $scope.toggleTree[index] = true;
 //        }
+
         if ($scope.lastDataShow != geneId) {
             $scope.lastDataShow = geneId;
             $scope.showGenePanel = true;
+
             $scope.selectedGene = CellbaseService.getGenesAllDataById($scope.selectedSpecie.shortName, geneId);
 
-
             $scope.showTranscriptPanel = false;
-
-
 
         }
         else {
@@ -381,40 +385,46 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
                 $scope.showGenePanel = true;
             }
         }
+
+
         $scope.selectedTranscripts = $scope.selectedGene.transcripts;
 
-        mySharedService.broadcastGenesRegionToGV($scope.selectedGene.chromosome+":"+$scope.selectedGene.start+"-"+$scope.selectedGene.end);
 
-        $scope.proteinsAllData = CellbaseService.getProteinsLinks($scope.selectedSpecie.shortName,$scope.selectedGene.name);
-
-        console.log($scope.proteinsAllData);
-
-        $scope.geneProteinId = "";
-        $scope.proteinsIdLinks = [];
-
-        if($scope.proteinsAllData.length != 0){
-
-            if($scope.proteinsAllData[0].interactorA.id == $scope.proteinsAllData[1].interactorA.id || $scope.proteinsAllData[0].interactorA.id == $scope.proteinsAllData[1].interactorB.id){
-                $scope.geneProteinId = $scope.proteinsAllData[0].interactorA.id;
-            }
-            else{
-                $scope.geneProteinId = $scope.proteinsAllData[0].interactorB.id;
-            }
-
-            for (var i in $scope.proteinsAllData){
-                if($scope.proteinsAllData[i].interactorA.id != $scope.geneProteinId){
-                    $scope.proteinsIdLinks.push($scope.proteinsAllData[i].interactorA.id);
-                }
-                else{
-                    $scope.proteinsIdLinks.push($scope.proteinsAllData[i].interactorB.id);
-                }
-            }
-            console.log( $scope.proteinsIdLinks);
-
-            mySharedService.broadcastGeneProteinsToNV($scope.geneProteinId,$scope.proteinsIdLinks);
-
+        if ($('#genes_GV').hasClass("active")) {
+            mySharedService.broadcastGenesRegionToGV($scope.selectedGene.chromosome + ":" + $scope.selectedGene.start + "-" + $scope.selectedGene.end);
         }
 
+        if ($('#genesNV').hasClass("active")) {
+            $scope.proteinsAllData = CellbaseService.getProteinsLinks($scope.selectedSpecie.shortName, $scope.selectedGene.name);
+
+//        console.log($scope.proteinsAllData);
+
+            $scope.geneProteinId = "";
+            $scope.proteinsIdLinks = [];
+
+            if ($scope.proteinsAllData.length != 0) {
+
+                if ($scope.proteinsAllData[0].interactorA.id == $scope.proteinsAllData[1].interactorA.id || $scope.proteinsAllData[0].interactorA.id == $scope.proteinsAllData[1].interactorB.id) {
+                    $scope.geneProteinId = $scope.proteinsAllData[0].interactorA.id;
+                }
+                else {
+                    $scope.geneProteinId = $scope.proteinsAllData[0].interactorB.id;
+                }
+
+                for (var i in $scope.proteinsAllData) {
+                    if ($scope.proteinsAllData[i].interactorA.id != $scope.geneProteinId) {
+                        $scope.proteinsIdLinks.push($scope.proteinsAllData[i].interactorA.id);
+                    }
+                    else {
+                        $scope.proteinsIdLinks.push($scope.proteinsAllData[i].interactorB.id);
+                    }
+                }
+//            console.log( $scope.proteinsIdLinks);
+
+                mySharedService.broadcastGeneProteinsToNV($scope.geneProteinId, $scope.proteinsIdLinks);
+
+            }
+        }
 
     };
 
@@ -434,8 +444,9 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
                 $scope.selectedTranscript = transcripts[i];
             }
         }
-
-        mySharedService.broadcastGenesRegionToGV($scope.selectedTranscript.chromosome+":"+$scope.selectedTranscript.start+"-"+$scope.selectedTranscript.end);
+        if ($('#genes_GV').hasClass("active")) {
+            mySharedService.broadcastGenesRegionToGV($scope.selectedTranscript.chromosome + ":" + $scope.selectedTranscript.start + "-" + $scope.selectedTranscript.end);
+        }
 
     };
 
@@ -452,12 +463,12 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     };
 
     $scope.expandAllGenesTree = function () {
-        for(var i in $scope.toggleTree){
+        for (var i in $scope.toggleTree) {
             $scope.toggleTree[i] = true;
         }
     };
     $scope.collapseAllGenesTree = function () {
-        for(var i in $scope.toggleTree){
+        for (var i in $scope.toggleTree) {
             $scope.toggleTree[i] = false;
         }
     };
@@ -471,7 +482,7 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     $scope.getWidth = function () {
         var resultPartWidth = $(document).width() - 220 - 260 - 60;
 
-        console.log(resultPartWidth);
+//        console.log(resultPartWidth);
         return  {width: resultPartWidth}
     };
     //tabs
@@ -486,10 +497,12 @@ var genesResult = myApp.controller('genesResult', ['$scope', 'mySharedService', 
     };
 
     $scope.changeResultTab = function () {
+
         $(function () {
             $('#genesResultTab a:first').tab('show')
         })
         $('#genesResultTab a').click(function (e) {
+
             e.preventDefault()
             $(this).tab('show')
         })

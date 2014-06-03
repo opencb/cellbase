@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -29,13 +30,14 @@ public class VariantWSServer extends GenericRestWSServer {
     public VariantWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
     }
+    
     @GET
     @Path("/{variants}/effect")
     public Response getEffectByPositionByGet(@PathParam("variants") String variants,
                                                       @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
         try {
             VariantEffectDBAdaptor variationMongoDBAdaptor = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(this.species, this.version);
-            System.out.println("variants = [" + variationMongoDBAdaptor+ "], excludeSOTerms = [" + excludeSOTerms + "]");
+            System.out.println("variants = [" + variants + "], excludeSOTerms = [" + excludeSOTerms + "]");
             return createOkResponse(variationMongoDBAdaptor.getAllEffectsByVariantList(GenomicVariant.parseVariants(variants), queryOptions));
 //            return getConsequenceTypeByPosition(variants, excludeSOTerms);
         } catch (Exception e) {
@@ -45,6 +47,21 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
 
+    @POST
+    @Consumes("application/x-www-form-urlencoded")
+    @Path("/effect")
+    public Response getEffectByPositionByPost(@FormParam("variants") String variants,
+                                                    @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
+        try {
+            VariantEffectDBAdaptor variationMongoDBAdaptor = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(this.species, this.version);
+            System.out.println("variants = [" + variants+ "], excludeSOTerms = [" + excludeSOTerms + "]");
+            return createOkResponse(variationMongoDBAdaptor.getAllEffectsByVariantList(GenomicVariant.parseVariants(variants), queryOptions));
+//            return getConsequenceTypeByPosition(variants, excludeSOTerms);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getConsequenceTypeByPositionByGet", e.toString());
+        }
+    }
 
 
 
@@ -120,6 +137,18 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
+    @GET
+    @Path("/{phenotype}/phenotype")
+    public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
+        try {
+            checkVersionAndSpecies();
+            VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.version);
+            return createOkResponse(va.getAllByPhenotype(phenotype,queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getVariantsByPhenotype", e.toString());
+        }
+    }
 
     @GET
     @Path("/{variants}/snp_phenotype")

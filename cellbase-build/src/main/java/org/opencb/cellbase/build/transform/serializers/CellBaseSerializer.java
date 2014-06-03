@@ -8,6 +8,7 @@ import org.opencb.cellbase.core.common.drug.DrugPartnerInteraction;
 import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
+import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
 import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
 
 /**
@@ -28,6 +29,8 @@ public interface CellBaseSerializer {
     public void serialize(GenericFeature genericFeature);
 
     public void serialize(GenomeSequenceChunk genomeSequenceChunk);
+
+    public void serialize(VariationPhenotypeAnnotation variationPhenotypeAnnotation);
 
     public void serialize(Mutation mutation);
 

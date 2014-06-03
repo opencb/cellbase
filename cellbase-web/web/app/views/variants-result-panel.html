@@ -14,9 +14,9 @@
     <!-------------- genes tree --------------->
     <div id="variantsResultTree" class="pull-left ocb-result-tree panel panel-default ocb-margin-l-ten">
         <div class="panel-heading">
-            <span style="margin-right:10px">Results</span>
+            <span class="ocb-margin-r-ten">Results</span>
             <span class="badge">{{snpDataSize}}</span>
-            <button style="margin-left:40px" type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="collapseAllVariantsTree()">
+            <button type="button" class="btn btn-info btn-xs ocb-margin-five ocb-margin-l-40" ng-click="collapseAllVariantsTree()">
                 <span class="glyphicon glyphicon-resize-small"></span></button>
             <button type="button" class="btn btn-info btn-xs ocb-margin-five" ng-click="expandAllVariantsTree()">
                 <span class="glyphicon glyphicon-resize-full"></span></button>
@@ -24,21 +24,22 @@
         <div class="panel-body">
             <div class="ocb-scroll-tree">
 
-                <div ng-repeat="variant in paginationData" class="list-group"
-                     style="margin-bottom:2px; font-size:11px">
-                    <a ng-click="showVariant(variant.id, $index);" class="list-group-item active"
-                       style="font-size:13px; background-color: #F2F2F2;color: #000000;border:1px solid #DBDBDB; font-weight: bold">
-                        {{variant.id}}
-                        <span class="badge pull-right" style="background-color: #999; color:#ffffff">{{variant.transcriptVariations.length}}</span>
+                <!--<div ng-repeat="variant in paginationData" class="ocb-list list-group" >-->
+                    <!--<a ng-click="showVariant(variant.id, $index);" class="list-group-item active ocb-list-in ocb-bold">-->
+                        <!--{{variant.id}}-->
+                        <!--<span class="badge pull-right ocb-list-button">{{variant.transcriptVariations.length}}</span>-->
 
-                        <a ng-show="toggleTree[$parent.$index]"
-                           ng-click="showTranscriptVar(variant.id, transcriptId.transcriptId)"
-                           ng-repeat="transcriptId in variant.transcriptVariations"
-                           class="list-group-item">
-                            <div style="margin-left: 20px">{{transcriptId.transcriptId}}</div>
-                        </a>
-                    </a>
-                </div>
+                        <!--<a ng-show="toggleTree[$parent.$index]"-->
+                           <!--ng-click="showTranscriptVar(variant.id, transcriptId.transcriptId)"-->
+                           <!--ng-repeat="transcriptId in variant.transcriptVariations"-->
+                           <!--class="list-group-item">-->
+                            <!--<div class="ocb-m-l-20">{{transcriptId.transcriptId}}</div>-->
+                        <!--</a>-->
+                    <!--</a>-->
+                <!--</div>-->
+
+                <witched-variants-list page-data="paginationData" toggle="toggleTree" show-first-level-data="showVariant" show-second-level-data="showTranscriptVar"></witched-variants-list>
+
             </div>
 
             <!----------------pagination----------------->
@@ -90,19 +91,13 @@
 
                 <!-----------------------variant and transcriptsVar panel--------------------------->
                 <!--<div class="list-group">-->
-                <div class="list-group" ng-show="showVariantPanel">
+                <div class="list-group  ocb-margin-b-5" ng-show="showVariantPanel">
                     <a class="list-group-item active ocb-text-center">Variant
                         information
-                        <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
-                                ng-click="showVariantPanel = false">&times;
-                        </button>
-                        <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
-                                ng-click="variantInfo = !variantInfo; openCloseVariantPanel()">{{variantPanelStatus}}
-                        </button>
                     </a>
 
                     <div class="ocb-panels-data-border" ng-show="!variantInfo">
-                        <variants-and-transc-var variant="selectedVariant" variant-more-info="variantPanelMore"
+                        <variants-and-transc-var variant="selectedVariant"
                                                  specie="selectedSpecie"
                                                  on-click="showTanscriptVarFromTable"
                                                  tab-function="goToTab"></variants-and-transc-var>
@@ -113,17 +108,10 @@
                 <div class="list-group" ng-show="showTranscriptVarPanel">
                     <a class="list-group-item active ocb-text-center">Transcript Variations
                         information
-                        <button type="button" class="btn btn-default btn-xs ocb-collapse-button"
-                                ng-click="showTranscriptVarPanel = false">x
-                        </button>
-                        <button type="button" class="btn btn-default btn-xs ocb-float-rigth"
-                                ng-click="transcriptVarInfo = !transcriptVarInfo; openCloseTranscriptVarPanel()">
-                            {{transcriptVarPanelStatus}}
-                        </button>
                     </a>
 
                     <div ng-show="!transcriptVarInfo" class="ocb-panels-data-border">
-                        <transcripts-var info="selectedTranscriptVar" info-more="transcriptVarPanelMore"
+                        <transcripts-var info="selectedTranscriptVar"
                                          specie="selectedSpecie"
                                          tab-function="goToTab"></transcripts-var>
                     </div>

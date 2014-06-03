@@ -1,19 +1,13 @@
 package org.opencb.cellbase.lib.mongodb;
 
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.*;
 import org.opencb.cellbase.lib.mongodb.network.PathwayMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.network.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.regulatory.RegulatoryRegionMongoDBAdaptor;
@@ -41,11 +35,11 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         resourceBundle = ResourceBundle.getBundle("mongodb");
 //			applicationProperties = new Config(resourceBundle);
         applicationProperties = new Properties();
-        if(resourceBundle != null) {
+        if (resourceBundle != null) {
             Set<String> keys = resourceBundle.keySet();
             Iterator<String> iterator = keys.iterator();
             String nextKey;
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 nextKey = iterator.next();
                 applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
             }
@@ -55,14 +49,14 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         String[] speciesArray = applicationProperties.getProperty("SPECIES").split(",");
         String[] alias = null;
         String version;
-        for(String species: speciesArray) {
+        for (String species : speciesArray) {
             species = species.toUpperCase();
-            version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
-            alias = applicationProperties.getProperty(species +"."+version+".ALIAS").split(",");
+            version = applicationProperties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
+            alias = applicationProperties.getProperty(species + "." + version + ".ALIAS").split(",");
 
 //                System.out.println("");
 //                System.out.println(species);
-            for(String al: alias) {
+            for (String al : alias) {
 //                System.out.print(al+' ');
                 speciesAlias.put(al, species);
             }
@@ -96,9 +90,14 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 mc = new MongoClient(new ServerAddress(applicationProperties.getProperty(dbPrefix + ".HOST",
                         "localhost"), Integer.parseInt(applicationProperties.getProperty(dbPrefix + ".PORT", "27017"))),
                         mongoClientOptions);
+//                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
+//                mc.setReadPreference(ReadPreference.primary());
+//                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
                 System.out.println(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
                 db = mc.getDB(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
-
+//db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
+//db.setReadPreference(ReadPreference.primary());
+                System.out.println("Debug String: "+mc.debugString());
                 String user = applicationProperties.getProperty(dbPrefix+".USERNAME");
                 String pass = applicationProperties.getProperty(dbPrefix+".PASSWORD");
                 if(!user.equals("") || !pass.equals("")){
@@ -116,12 +115,12 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     protected String getSpeciesVersionPrefix(String species, String version) {
         String speciesPrefix = null;
-        if(species != null && !species.equals("")) {
+        if (species != null && !species.equals("")) {
             // coding an alias to application code species
             species = speciesAlias.get(species);
             // if 'version' parameter has not been provided the default version is selected
-            if(version == null || version.trim().equals("")) {
-                version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
+            if (version == null || version.trim().equals("")) {
+                version = applicationProperties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
 //				logger.debug("HibernateDBAdaptorFactory in createSessionFactory(): 'version' parameter is null or empty, it's been set to: '"+version+"'");
             }
 
@@ -137,7 +136,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             if (applicationProperties == null) {
 //                applicationProperties = new Config();
                 applicationProperties = properties;
-            }else {
+            } else {
                 for (Object key : properties.keySet()) {
                     applicationProperties.setProperty((String) key, properties.getProperty((String) key));
                 }
@@ -246,14 +245,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species) {
-        // TODO Auto-generated method stub
-        return null;
+        return getProteinDBAdaptor(species, null);
     }
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species, String version) {
-        // TODO Auto-generated method stub
-        return null;
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return new ProteinMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
     }
 
     @Override
@@ -473,6 +476,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 speciesAlias.get(species), version);
     }
 
+
     public TfbsDBAdaptor getTfbsDBAdaptor(String species) {
         return getTfbsDBAdaptor(species, null);
     }
@@ -485,6 +489,23 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (TfbsDBAdaptor) new TfbsMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
+    }
+
+
+    @Override
+    public VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species) {
+        return getVariationPhenotypeAnnotationDBAdaptor(species, null);
+    }
+
+    @Override
+    public VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species, String version) {
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return (VariationPhenotypeAnnotationDBAdaptor) new VariationPhenotypeAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
                 speciesAlias.get(species), version);
     }
 }

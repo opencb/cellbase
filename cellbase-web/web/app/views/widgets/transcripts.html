@@ -14,7 +14,7 @@
         </p>
         <p class="ocb-line-height-5">
             <span class="text-primary ocb-text-width-180">Location:</span>
-            <span class="ocb-text-width-300"> {{data.chromosome}}:{{data.start}}-{{data.end}}</span>
+            <span class="ocb-text-width-300"> {{data.sequenceName}}:{{data.start}}-{{data.end}}</span>
 
             <span class="text-primary ocb-text-width-100">Strand:</span>
             <span> {{data.strand}}</span>
@@ -60,7 +60,7 @@
                     </thead>
                     <tbody ng-repeat="exon in data.exons">
                         <td><small>{{exon.id}}</small></td>
-                        <td><small>{{exon.chromosome}}:{{exon.start}}-{{exon.end}}</small></td>
+                        <td><small>{{exon.sequenceName}}:{{exon.start}}-{{exon.end}}</small></td>
                         <td><small>{{exon.strand}}</small></td>
                         <td><small>{{exon.phase}}</small></td>
                         <td><small>{{exon.exonNumber}}</small></td>
@@ -82,7 +82,7 @@
                     <tbody ng-repeat="tfbs in data.tfbs">
                         <td><small>{{tfbs.tfName}}</small></td>
                         <td><small>{{tfbs.pwm}}</small></td>
-                        <td><small>{{tfbs.chromosome}}:{{tfbs.start}}-{{tfbs.end}}</small></td>
+                        <td><small>{{tfbs.sequenceName}}:{{tfbs.start}}-{{tfbs.end}}</small></td>
                         <td><small>{{tfbs.strand}}</small></td>
                         <td><small>{{tfbs.relativeStart}}-{{relativeEnd}}</small></td>
                         <td><small>{{tfbs.score}}</small></td>
