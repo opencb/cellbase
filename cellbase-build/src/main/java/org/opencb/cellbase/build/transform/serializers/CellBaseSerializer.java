@@ -4,6 +4,7 @@ import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.GenericFeatureChunk;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
+import org.opencb.cellbase.core.common.drug.DrugPartnerInteraction;
 import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
@@ -31,6 +32,8 @@ public interface CellBaseSerializer {
     public void serialize(Mutation mutation);
 
     public void serialize(Interaction interaction);
+
+    public void serialize(DrugPartnerInteraction drugPartnerInteraction);
 
     public void close();
 

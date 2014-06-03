@@ -9,6 +9,7 @@ import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
+import org.opencb.cellbase.core.common.drug.DrugPartnerInteraction;
 import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
@@ -44,6 +45,7 @@ public class MongoDBSerializer implements CellBaseSerializer {
     private Map<String, BufferedWriter> variationBufferedWriter;
     private BufferedWriter mutationBufferedWriter;
     private BufferedWriter ppiBufferedWriter;
+    private BufferedWriter drugBufferedWriter;
 
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
@@ -163,6 +165,19 @@ public class MongoDBSerializer implements CellBaseSerializer {
     }
 
     @Override
+    public void serialize(DrugPartnerInteraction drugPartnerInteraction) {
+        try {
+            if(drugBufferedWriter == null) {
+                drugBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("drugbank.json"), Charset.defaultCharset());
+            }
+            drugBufferedWriter.write(jsonObjectWriter.writeValueAsString(drugPartnerInteraction));
+            drugBufferedWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        };
+    }
+
+    @Override
     public void serialize(GenericFeature genericFeature) {
         try {
             if(bufferedWriterMap.get("regulatory") == null) {
@@ -187,6 +202,7 @@ public class MongoDBSerializer implements CellBaseSerializer {
             closeBufferedWriter(genomeSequenceBufferedWriter);
             closeBufferedWriter(mutationBufferedWriter);
             closeBufferedWriter(ppiBufferedWriter);
+            closeBufferedWriter(drugBufferedWriter);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
