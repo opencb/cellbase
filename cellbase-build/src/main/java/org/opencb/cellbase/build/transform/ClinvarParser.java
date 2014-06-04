@@ -21,11 +21,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.ws.soap.SOAPFaultException;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by parce on 5/22/14.
@@ -55,28 +57,50 @@ public class ClinvarParser {
     public void parseClinvar() {
         try {
             ReleaseType clinvarRelease = unmarshalXML(clinvarXmlFile);
-            Map<SequenceLocationType,String> clinvarMap = new HashMap<>();
-            for (PublicSetType clinvarSet : clinvarRelease.getClinVarSet()) {
-                SequenceLocationType location = getSequenceLocation(clinvarSet);
-                if (location != null) {
-                    try {
-                        String clinvarJson = this.jsonMapper.writeValueAsString(clinvarSet);
-                        clinvarMap.put(location, clinvarJson);
-                        this.cuenta("Transformados");
-                    } catch (JsonProcessingException e) {
-                        // TODO: dejar un mensaje??
-                        this.cuenta("Error Procesado JSON");
-                        //e.printStackTrace();
-                    }
-
-                }
-            }
+            SortedMap<SequenceLocationType,String> clinvarMap;
+            clinvarMap = this.sortClinvarsetByLocation(clinvarRelease);
+            writeOutputFile(clinvarMap);
         } catch (JAXBException e) {
             // TODO: logger?
             System.out.println("Error unmarshalling clinvar xml file " + clinvarXmlFile);
             e.printStackTrace();
         }
     }
+
+    private void writeOutputFile(SortedMap<SequenceLocationType, String> clinvarMap) {
+        try (PrintWriter outputWriter = new PrintWriter(Files.newBufferedWriter(outputFile, Charset.defaultCharset(), StandardOpenOption.CREATE));) {
+            for (Map.Entry<SequenceLocationType,String> entry : clinvarMap.entrySet()) {
+                SequenceLocationType location = entry.getKey();
+                String clinvarJson = entry.getValue();
+                outputWriter.println(location.getChr() + "\t" + location.getStart() + "\t" + location.getReferenceAllele() + "\t" + location.getAlternateAllele() + "\t" + clinvarJson);
+            }
+        } catch (IOException e) {
+            // TODO: logger?
+            System.out.println("Error opening output file " + outputFile + " for writting: " + e.getMessage());
+        }
+    }
+
+
+    private SortedMap<SequenceLocationType,String> sortClinvarsetByLocation(ReleaseType clinvarRelease) {
+        SortedMap<SequenceLocationType,String> clinvarMap = new TreeMap<>(new SequenceLocationComparator());
+        for (PublicSetType clinvarSet : clinvarRelease.getClinVarSet()) {
+            SequenceLocationType location = getSequenceLocation(clinvarSet);
+            if (location != null) {
+                try {
+                    String clinvarJson = this.jsonMapper.writeValueAsString(clinvarSet);
+                    clinvarMap.put(location, clinvarJson);
+                    this.cuenta("Transformados");
+                } catch (JsonProcessingException e) {
+                    // TODO: dejar un mensaje??
+                    this.cuenta("Error Procesado JSON");
+                    //e.printStackTrace();
+                }
+
+            }
+        }
+        return clinvarMap;
+    }
+
 
     private static ReleaseType unmarshalXML(Path inputFile) throws JAXBException {
         JAXBElement<ReleaseType> obj = null;
@@ -155,6 +179,29 @@ public class ClinvarParser {
             cuentaCosas.put(key, new Long(1));
         } else {
             cuentaCosas.put(key, cuenta + 1);
+        }
+    }
+
+    class SequenceLocationComparator implements Comparator<SequenceLocationType> {
+
+        public int compare(SequenceLocationType loc1, SequenceLocationType loc2) {
+            if (!loc1.getAccession().equals(loc2.getAccession())) {
+                return loc1.getAccession().compareTo(loc2.getAccession());
+            } else {
+                return compareSameChromosome(loc1, loc2);
+            }
+        }
+
+        private int compareSameChromosome(SequenceLocationType loc1, SequenceLocationType loc2) {
+            if (!loc1.getStart().equals(loc2.getStart())) {
+                return loc1.getStart().compareTo(loc2.getStart());
+            } else if (!loc1.getReferenceAllele().equals(loc2.getReferenceAllele())) {
+                return loc1.getReferenceAllele().compareTo(loc2.getReferenceAllele());
+            } else if (!loc1.getAlternateAllele().equals(loc2.getAlternateAllele())) {
+                return loc1.getAlternateAllele().compareTo(loc2.getAlternateAllele());
+            } else {
+                return 0;
+            }
         }
     }
 }
