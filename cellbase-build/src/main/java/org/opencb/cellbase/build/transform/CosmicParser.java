@@ -3,11 +3,12 @@ package org.opencb.cellbase.build.transform;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.opencb.biodata.models.variant.clinical.cosmic;
+import org.opencb.biodata.models.variant.clinical.Cosmic;
 
 
 import java.io.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.*;
@@ -142,112 +143,144 @@ public class CosmicParser {
         // 25 Age
         // 26 Comments
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(cosmicFilePath.toFile())))) {
-            try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(oFilePath.toFile())))) {
+        try {
 
-                String line = "";
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(cosmicFilePath.toFile())));
+            String line = "";
 
-                reader.readLine(); // First line is the header -> ignore it
+            reader.readLine(); // First line is the header -> ignore it
 
-                while ((line = reader.readLine()) != null) {
-                    String ref = "";
-                    String alt = "";
-                    Float age=null;
+            List<Cosmic> myList = new ArrayList<Cosmic>(); // All Cosmic objects will be stored in a list
+            PrintWriter writerFull=new PrintWriter(new BufferedWriter(new FileWriter(Paths.get(oFilePath + "/outputCosmic_FULL.json").toFile())));
 
-                    String[] fields = line.split("\t",27);
+            while ((line = reader.readLine()) != null) {
+                String ref = "";
+                String alt = "";
+                Float age=null;
 
-                    // For each variant contained, check out the sign of the strand
+                String[] fields = line.split("\t",27);
 
-                    String Mutation_GRCh37_genome_position = fields[19];
-                    String Mutation_CDS = fields[13];
-                    if (checkValidVariant(Mutation_GRCh37_genome_position,Mutation_CDS,1)){ // This function filters complex changes
-                        // Get chr and pos from Genomic position
-                        String chr = Mutation_GRCh37_genome_position.split(":")[0];
-                        String initEnd = Mutation_GRCh37_genome_position.split(":")[1];
-                        String pos = initEnd.split("-")[0];
+                // For each variant contained, check out the sign of the strand
 
-                        String Gene_name = fields[0];
-                        String Accession_Number = fields[1];
-                        int gene_CDS_length = Integer.parseInt(fields[2]);
-                        String HGNC_id = fields[3];
-                        String Sample_name = fields[4];
-                        String ID_sample = fields[5];
-                        String ID_tumour = fields[6];
-                        String Primary_site = fields[7];
-                        String Site_subtype = fields[8];
-                        String Primary_histology = fields[9];
-                        String Histology_subtype = fields[10];
-                        String Genome_wide_screen = fields[11];
-                        String Mutation_ID = fields[12];
+                String Mutation_GRCh37_genome_position = fields[19];
+                String Mutation_CDS = fields[13];
+                if (checkValidVariant(Mutation_GRCh37_genome_position,Mutation_CDS,1)){ // This function filters complex changes
+                    // Get chr and pos from Genomic position
+                    String chr = Mutation_GRCh37_genome_position.split(":")[0];
+                    String initEnd = Mutation_GRCh37_genome_position.split(":")[1];
+                    String pos = initEnd.split("-")[0];
 
-                        String Mutation_AA = fields[14];
-                        String Mutation_Description = fields[15];
-                        String Mutation_zygosity = fields[16];
-                        String Mutation_NCBI36_genome_position = fields[17];
-                        String Mutation_NCBI36_strand = fields[18];
-                        String Mutation_GRCh37_strand = fields[20];
-                        String Mutation_somatic_status = fields[21];
-                        String Pubmed_PMID = fields[22];
-                        String Sample_source = fields[23];
-                        String Tumour_origin = fields[24];
-                        if(!fields[25].equals(""))
-                            age = Float.parseFloat(fields[25]);
-                        else
-                            age=null;
-                        String comments = fields[26];
+                    String Gene_name = fields[0];
+                    String Accession_Number = fields[1];
+                    int gene_CDS_length = Integer.parseInt(fields[2]);
+                    String HGNC_id = fields[3];
+                    String Sample_name = fields[4];
+                    String ID_sample = fields[5];
+                    String ID_tumour = fields[6];
+                    String Primary_site = fields[7];
+                    String Site_subtype = fields[8];
+                    String Primary_histology = fields[9];
+                    String Histology_subtype = fields[10];
+                    String Genome_wide_screen = fields[11];
+                    String Mutation_ID = fields[12];
 
-                        // Work on Mutation_CDS to extract alt and ref
-                        //Check type of variant (SNP or indel)
+                    String Mutation_AA = fields[14];
+                    String Mutation_Description = fields[15];
+                    String Mutation_zygosity = fields[16];
+                    String Mutation_NCBI36_genome_position = fields[17];
+                    String Mutation_NCBI36_strand = fields[18];
+                    String Mutation_GRCh37_strand = fields[20];
+                    String Mutation_somatic_status = fields[21];
+                    String Pubmed_PMID = fields[22];
+                    String Sample_source = fields[23];
+                    String Tumour_origin = fields[24];
+                    if(!fields[25].equals(""))
+                        age = Float.parseFloat(fields[25]);
+                    else
+                        age=null;
+                    String comments = fields[26];
 
-                        // http://www.hgvs.org/mutnomen/nucleotide.html Check format of this field
-                        if (Mutation_CDS.contains(">")) // Change (one or more nucleotides)
-                        {
+                    // Work on Mutation_CDS to extract alt and ref
+                    //Check type of variant (SNP or indel)
 
-                            // Get number of nucleotides of alternative
-                            alt = Mutation_CDS.split(">")[1];
-                            String refAux = Mutation_CDS.split(">")[0];
-                            Matcher matcher=Pattern.compile("((A|C|G|T)+)").matcher(refAux); // Although more than one nucleotide is allowed, in this version just one nucleotide change is allowed
+                    // http://www.hgvs.org/mutnomen/nucleotide.html Check format of this field
+                    if (Mutation_CDS.contains(">")) // Change (one or more nucleotides)
+                    {
 
-                            if(matcher.find()) // Either change or deletion
-                                ref=matcher.group(); // Get the first group (entire pattern -> group() is equivalente to group(0)
+                        // Get number of nucleotides of alternative
+                        alt = Mutation_CDS.split(">")[1];
+                        String refAux = Mutation_CDS.split(">")[0];
+                        Matcher matcher=Pattern.compile("((A|C|G|T)+)").matcher(refAux); // Although more than one nucleotide is allowed, in this version just one nucleotide change is allowed
 
-                        } else if (Mutation_CDS.contains("del")) // Deletion
-                        {
-                            ref = Mutation_CDS.split("del")[1];
-                            alt = "-";
+                        if(matcher.find()) // Either change or deletion
+                            ref=matcher.group(); // Get the first group (entire pattern -> group() is equivalente to group(0)
 
-                        } else // Insertion
-                        {
-                            ref = "-";
-                            alt = Mutation_CDS.split("ins")[1];
-                        }
+                    } else if (Mutation_CDS.contains("del")) // Deletion
+                    {
+                        ref = Mutation_CDS.split("del")[1];
+                        alt = "-";
 
-
-                        // Check strand
-                        if (Mutation_GRCh37_strand.equals("-")) // Negative strand
-                        {
-                            if (!alt.equals("-"))
-                                alt = getCDNA(alt);
-                            if (!ref.equals("-"))
-                                ref = getCDNA(ref);
-                        }
-
-                        // Create new COSMIC object
-                        cosmic cosmicVariant = new cosmic(alt, ref, chr, Integer.parseInt(pos), Gene_name, Mutation_GRCh37_strand, Primary_site, Mutation_zygosity, Mutation_AA, Tumour_origin, Histology_subtype, Sample_source, Accession_Number, Mutation_ID, Mutation_CDS, Sample_name, Primary_histology, Mutation_GRCh37_genome_position, Mutation_Description, Genome_wide_screen, ID_tumour, ID_sample, Mutation_somatic_status, Site_subtype, Mutation_NCBI36_strand, Mutation_NCBI36_genome_position, gene_CDS_length, HGNC_id, Pubmed_PMID, age, comments);
-
-                        // Convert to JSON and save it
-                        ObjectMapper jsonMapper = new ObjectMapper();
-                        jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                        writer.write(chr + "\t" + pos + "\t" + ref + "\t" + alt + "\t" + jsonMapper.writeValueAsString(cosmicVariant)+"\n");
-
+                    } else // Insertion
+                    {
+                        ref = "-";
+                        alt = Mutation_CDS.split("ins")[1];
                     }
 
+
+                    // Check strand
+                    if (Mutation_GRCh37_strand.equals("-")) // Negative strand
+                    {
+                        if (!alt.equals("-"))
+                            alt = getCDNA(alt);
+                        if (!ref.equals("-"))
+                            ref = getCDNA(ref);
+                    }
+
+                    // Create new COSMIC object
+                    Cosmic cosmicVariant = new Cosmic(alt, ref, chr, Integer.parseInt(pos), Gene_name, Mutation_GRCh37_strand, Primary_site, Mutation_zygosity, Mutation_AA, Tumour_origin, Histology_subtype, Sample_source, Accession_Number, Mutation_ID, Mutation_CDS, Sample_name, Primary_histology, Mutation_GRCh37_genome_position, Mutation_Description, Genome_wide_screen, ID_tumour, ID_sample, Mutation_somatic_status, Site_subtype, Mutation_NCBI36_strand, Mutation_NCBI36_genome_position, gene_CDS_length, HGNC_id, Pubmed_PMID, age, comments);
+                    myList.add(cosmicVariant);
+
+
+                    ObjectMapper jsonMapper = new ObjectMapper();
+                    jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                    writerFull.write(cosmicVariant.getChr() + "\t" + cosmicVariant.getPos() + "\t" + cosmicVariant.getReference() + "\t" + cosmicVariant.getAllele() + "\t" + jsonMapper.writeValueAsString(cosmicVariant)+"\n");
+
+
                 }
+
+            }
+
+            writerFull.close();
+            // Sort objects by chromosome and position
+            Collections.sort(myList); // Sort function extends Comparable (which has been overrided in Cosmic.java class)
+
+
+            // Move through the ordered list and save each variant grouped by chromosome (a file for a given chromosome)
+            PrintWriter writer=null;
+            String previousChromosome="";
+            for (Cosmic cosmicVariant : myList)
+            {
+                if(!cosmicVariant.getChr().equals(previousChromosome)) {
+                    if(!previousChromosome.equals(""))
+                        writer.close();
+                    previousChromosome=cosmicVariant.getChr();
+                    Path outputFile=Paths.get(oFilePath + "/outputCosmic_chr" +previousChromosome+".json");
+                    writer = new PrintWriter(new BufferedWriter(new FileWriter(outputFile.toFile())));
+                }
+
+
+                // Convert to JSON and save it
+                ObjectMapper jsonMapper = new ObjectMapper();
+                jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                writer.write(cosmicVariant.getChr() + "\t" + cosmicVariant.getPos() + "\t" + cosmicVariant.getReference() + "\t" + cosmicVariant.getAllele() + "\t" + jsonMapper.writeValueAsString(cosmicVariant)+"\n");
+
 
 
             }
 
-        } catch (IOException ex) {
+            writer.close();
+
+        }catch (IOException ex) {
             ex.printStackTrace();
         }
     }
