@@ -17,7 +17,7 @@ public class CosmicParserTest {
         // ejecucion
 
         Path ipath = Paths.get("/home/jpflorido/tmp/CosmicMutantExport_v68.tsv");
-        Path opath = Paths.get("/home/jpflorido/tmp/outputCosmic.json");
+        Path opath = Paths.get("/home/jpflorido/tmp/");
 
 
 
