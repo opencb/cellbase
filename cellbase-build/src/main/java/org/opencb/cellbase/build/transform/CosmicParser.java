@@ -64,8 +64,6 @@ public class CosmicParser {
         {
             String ref="";
             String alt="";
-            if(mutation_CDS.contains("c.1393C>T"))
-            {int petete=3;}
             alt = mutation_CDS.split(">")[1];
             String refAux = mutation_CDS.split(">")[0];
             Matcher matcher=Pattern.compile("((A|C|G|T)+)").matcher(refAux);
@@ -151,7 +149,8 @@ public class CosmicParser {
             reader.readLine(); // First line is the header -> ignore it
 
             List<Cosmic> myList = new ArrayList<Cosmic>(); // All Cosmic objects will be stored in a list
-            PrintWriter writerFull=new PrintWriter(new BufferedWriter(new FileWriter(Paths.get(oFilePath + "/outputCosmic_FULL.json").toFile())));
+
+
 
             while ((line = reader.readLine()) != null) {
                 String ref = "";
@@ -236,21 +235,16 @@ public class CosmicParser {
                             ref = getCDNA(ref);
                     }
 
+
+
                     // Create new COSMIC object
                     Cosmic cosmicVariant = new Cosmic(alt, ref, chr, Integer.parseInt(pos), Gene_name, Mutation_GRCh37_strand, Primary_site, Mutation_zygosity, Mutation_AA, Tumour_origin, Histology_subtype, Sample_source, Accession_Number, Mutation_ID, Mutation_CDS, Sample_name, Primary_histology, Mutation_GRCh37_genome_position, Mutation_Description, Genome_wide_screen, ID_tumour, ID_sample, Mutation_somatic_status, Site_subtype, Mutation_NCBI36_strand, Mutation_NCBI36_genome_position, gene_CDS_length, HGNC_id, Pubmed_PMID, age, comments);
                     myList.add(cosmicVariant);
-
-
-                    ObjectMapper jsonMapper = new ObjectMapper();
-                    jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                    writerFull.write(cosmicVariant.getChr() + "\t" + cosmicVariant.getPos() + "\t" + cosmicVariant.getReference() + "\t" + cosmicVariant.getAllele() + "\t" + jsonMapper.writeValueAsString(cosmicVariant)+"\n");
-
-
                 }
 
             }
 
-            writerFull.close();
+
             // Sort objects by chromosome and position
             Collections.sort(myList); // Sort function extends Comparable (which has been overrided in Cosmic.java class)
 
@@ -258,8 +252,32 @@ public class CosmicParser {
             // Move through the ordered list and save each variant grouped by chromosome (a file for a given chromosome)
             PrintWriter writer=null;
             String previousChromosome="";
-            for (Cosmic cosmicVariant : myList)
-            {
+            String genomePosition="";
+            String newGenomePosition="";
+            for (Cosmic cosmicVariant : myList) {
+                // In COSMIC database, X is referred as chr 23, Y as chr 24 and MT as chr 25. This is useful when sorting objects (see above).
+                // However, when printing to JSON, each object is transformed to that 23 becomes X, 24 becomes Y and 25 becomes MT
+
+                if (cosmicVariant.getChr().equals("23") || cosmicVariant.getChr().equals("24") || cosmicVariant.getChr().equals("25")) {
+                    if (cosmicVariant.getChr().equals("23"))
+                        cosmicVariant.setChr("X");
+                    else if (cosmicVariant.getChr().equals("24"))
+                        cosmicVariant.setChr("Y");
+                    else // Chromosome 25
+                        cosmicVariant.setChr("MT");
+
+                    // GRCh37 position
+                    genomePosition = cosmicVariant.getMutation_GRCh37_genome_position();
+                    newGenomePosition = cosmicVariant.getChr() + ":" + genomePosition.split(":")[1];
+                    cosmicVariant.setMutation_GRCh37_genome_position(newGenomePosition);
+
+                    // NCBI position
+                    genomePosition = cosmicVariant.getMutation_NCBI36_genome_position();
+                    if (!genomePosition.isEmpty()) {
+                        newGenomePosition = cosmicVariant.getChr() + ":" + genomePosition.split(":")[1];
+                        cosmicVariant.setMutation_NCBI36_genome_position(newGenomePosition);
+                    }
+                }
                 if(!cosmicVariant.getChr().equals(previousChromosome)) {
                     if(!previousChromosome.equals(""))
                         writer.close();
@@ -269,12 +287,12 @@ public class CosmicParser {
                 }
 
 
+
                 // Convert to JSON and save it
                 ObjectMapper jsonMapper = new ObjectMapper();
                 jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
                 writer.write(cosmicVariant.getChr() + "\t" + cosmicVariant.getPos() + "\t" + cosmicVariant.getReference() + "\t" + cosmicVariant.getAllele() + "\t" + jsonMapper.writeValueAsString(cosmicVariant)+"\n");
-
-
 
             }
 
