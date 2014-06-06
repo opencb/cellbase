@@ -1,10 +1,12 @@
 package org.opencb.cellbase.build.transform;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.sf.picard.reference.FastaSequenceIndex;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 import org.gbpa.mutalyzer.webservice.Mutalyzer;
+import org.gbpa.mutalyzer.webservice.MutalyzerService;
 import org.gbpa.mutalyzer.webservice.StringArray;
 import org.opencb.biodata.formats.feature.refseq.Refseq;
 import org.opencb.biodata.formats.variant.hgvs.Hgvs;
@@ -47,12 +49,22 @@ public class ClinvarParser {
 
     private ObjectMapper jsonMapper;
 
+    public ClinvarParser(Path clinvarXmlFile, Path outputFile) {
+        this.clinvarXmlFile = clinvarXmlFile;
+        this.outputFile = outputFile;
+        this.jsonMapper = new ObjectMapper();
+        this.jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        this.mutalyzerClient = new MutalyzerService().getMutalyzer();
+
+    }
 
     public ClinvarParser (Path clinvarXmlFile, Path genomeSequenceFastaFile, Path genomeSequenceFastaIndexFile, Path outputFile) {
-        this.clinvarXmlFile = clinvarXmlFile;
+        this(clinvarXmlFile, outputFile);
         this.genomeSequenceFastaFile =new IndexedFastaSequenceFile(genomeSequenceFastaFile.toFile(), new FastaSequenceIndex(genomeSequenceFastaIndexFile.toFile()));
-        this.outputFile = outputFile;
+
     }
+
 
     public void parseClinvar() {
         try {
@@ -136,7 +148,7 @@ public class ClinvarParser {
             // bucle para contar los hgvs del reference
             for (MeasureSetType.Measure.AttributeSet attributeSet : measure.getAttributeSet()) {
                 String attributeType = attributeSet.getAttribute().getType();
-                if (attributeType.startsWith(Hgvs.HGVS)) {
+                if (attributeType.substring(0, 4).equalsIgnoreCase(Hgvs.HGVS)) {
                     String hgvs = attributeSet.getAttribute().getValue();
                     if (hgvs.startsWith(Refseq.REFSEQ_CHROMOSOME_ACCESION_TAG)) {
                         // TODO: ¿no tendremos que comprobar aqui si el cromosoma es HG37 o 38?
@@ -149,6 +161,7 @@ public class ClinvarParser {
                             StringArray hgvsArray = mutalyzerClient.numberConversion("hg19", hgvs, null);
                             if (hgvsArray != null) {
                                 if ("[]".equals(hgvsArray.getString())) {
+                                    // TODO: probar si alguna vez entra aqui, que no estoy seguro
                                     hgvsArray = mutalyzerClient.numberConversion("hg18", hgvs, null);
                                 }
                                 if (hgvsArray.getString().get(0).startsWith(Refseq.REFSEQ_CHROMOSOME_ACCESION_TAG)) {
@@ -180,6 +193,10 @@ public class ClinvarParser {
         } else {
             cuentaCosas.put(key, cuenta + 1);
         }
+    }
+
+    public void setGenomeSequenceFastaFile(IndexedFastaSequenceFile indexedFastaFile) {
+        this.genomeSequenceFastaFile = indexedFastaFile;
     }
 
     class SequenceLocationComparator implements Comparator<SequenceLocationType> {
