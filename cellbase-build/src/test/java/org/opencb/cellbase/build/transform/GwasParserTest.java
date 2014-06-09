@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.utils;
+package org.opencb.cellbase.build.transform;
 
 import junit.framework.TestCase;
 
