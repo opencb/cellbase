@@ -17,6 +17,20 @@ import java.util.List;
  */
 public class CaddParser {
 
+    public static Float stringToFloat(String floatName){
+        if (floatName.equals("NA")){
+
+            return null;
+        }
+        else{
+            return Float.parseFloat(floatName);
+        }
+
+
+
+    }
+
+
     public static void parse(Path caddFilePath, Path oFilePath){
 
         Cadd Caddvariant = new Cadd ();
@@ -40,45 +54,51 @@ public class CaddParser {
 
                     } else {
                         String[] fields = line.split("\t");
-                        ref = fields[3];
+                        ref = fields[2];
                         alt = fields[4];
                         chr = fields[0];
                         pos = Integer.parseInt(fields[1]);
 
                         if (Caddvariant.getChr()!=null && (Caddvariant.getChr().equals(chr) && Caddvariant.getPos() == pos && Caddvariant.getReference().equals(ref) && Caddvariant.getAllele().equals(alt))) {
-                            List<CaddValues> caddinfo = Caddvariant.getValuesCadd();
+                            List <CaddValues> caddinfo = Caddvariant.getValuesCadd();
 
                             CaddValues values = new CaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
-                            System.out.println(Float.toString(values.getCscore()));
                             caddinfo.add(values);
-
                             Caddvariant.setValuesCadd(caddinfo);
+
                         } else {
                             if (Caddvariant.getChr()!=null) {
                                 ObjectMapper jsonMapper = new ObjectMapper();
                                 jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                                writer.write(chr+"\t"+Integer.toString(pos)+"\t"+ref+"\t"+alt+"\t"+jsonMapper.writeValueAsString(Caddvariant));
+                                writer.write(Caddvariant.getChr()+"\t"+Integer.toString(Caddvariant.getPos())+"\t"+Caddvariant.getReference()+"\t"+Caddvariant.getAllele()+"\t"+jsonMapper.writeValueAsString(Caddvariant)+"\n");
 
                                 //print this cadd
                             }
 
-                            float EncExp = Float.parseFloat(fields[29]);
-                            float EncH3K27Ac = Float.parseFloat(fields[30]);
-                            float EncH3K4Me1 = Float.parseFloat(fields[31]);
-                            float EncH3K4Me3 = Float.parseFloat(fields[32]);
-                            float EncNucleo = Float.parseFloat(fields[33]);
-                            int EncOCC = Integer.parseInt(fields[34]);
-                            float EncOCCombPVal = Float.parseFloat(fields[35]);
-                            float EncOCDNasePVal = Float.parseFloat(fields[36]);
-                            float EncOCFairePVal = Float.parseFloat(fields[37]);
-                            float EncOCpolIIPVal = Float.parseFloat(fields[38]);
-                            float EncOCctcfPVal = Float.parseFloat(fields[39]);
-                            float EncOCmycPVal = Float.parseFloat(fields[40]);
-                            float EncOCDNaseSig = Float.parseFloat(fields[41]);
-                            float EncOCFaireSig = Float.parseFloat(fields[42]);
-                            float EncOCpolIISig = Float.parseFloat(fields[43]);
-                            float EncOCctcfSig = Float.parseFloat(fields[44]);
-                            float EncOCmycSig = Float.parseFloat(fields[45]);
+                            Float EncExp = stringToFloat(fields[29]);
+                            Float EncH3K27Ac = stringToFloat(fields[30]);
+                            Float EncH3K4Me1 = stringToFloat(fields[31]);
+                            Float EncH3K4Me3 = stringToFloat(fields[32]);
+                            Float EncNucleo = stringToFloat(fields[33]);
+
+                            Integer EncOCC = null;
+                            if (!fields[34].equals("NA")){
+                                EncOCC = Integer.parseInt(fields[34]);
+                            }
+
+
+
+                            Float EncOCCombPVal = stringToFloat(fields[35]);
+                            Float EncOCDNasePVal = stringToFloat(fields[36]);
+                            Float EncOCFairePVal = stringToFloat(fields[37]);
+                            Float EncOCpolIIPVal = stringToFloat(fields[38]);
+                            Float EncOCctcfPVal = stringToFloat(fields[39]);
+                            Float EncOCmycPVal = stringToFloat(fields[40]);
+                            Float EncOCDNaseSig = stringToFloat(fields[41]);
+                            Float EncOCFaireSig = stringToFloat(fields[42]);
+                            Float EncOCpolIISig = stringToFloat(fields[43]);
+                            Float EncOCctcfSig = stringToFloat(fields[44]);
+                            Float EncOCmycSig = stringToFloat(fields[45]);
                             List<CaddValues> caddValuesList = new ArrayList<>();
 
 
@@ -86,11 +106,18 @@ public class CaddParser {
                             caddValuesList.add(values);
 
 
-                            Caddvariant = new Cadd(alt, ref, chr, pos, EncExp, EncH3K27Ac, EncH3K4Me1, EncH3K4Me3, EncNucleo, EncOCC, EncOCCombPVal, EncOCDNasePVal, EncOCFairePVal, EncOCpolIIPVal, EncOCctcfPVal, EncOCmycPVal, EncOCDNaseSig, EncOCFaireSig, EncOCpolIISig, EncOCctcfSig, EncOCmycSig, null);
+                            Caddvariant = new Cadd(alt, ref, chr, pos, EncExp, EncH3K27Ac, EncH3K4Me1, EncH3K4Me3, EncNucleo, EncOCC, EncOCCombPVal, EncOCDNasePVal, EncOCFairePVal, EncOCpolIIPVal, EncOCctcfPVal, EncOCmycPVal, EncOCDNaseSig, EncOCFaireSig, EncOCpolIISig, EncOCctcfSig, EncOCmycSig, caddValuesList);
 
                         }
                     }
                 }
+
+                ObjectMapper jsonMapper = new ObjectMapper();
+                jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                writer.write(Caddvariant.getChr()+"\t"+Integer.toString(Caddvariant.getPos())+"\t"+Caddvariant.getReference()+"\t"+Caddvariant.getAllele()+"\t"+jsonMapper.writeValueAsString(Caddvariant)+"\n");
+
+
+
             }
         } catch (IOException ex) {
             ex.printStackTrace();
