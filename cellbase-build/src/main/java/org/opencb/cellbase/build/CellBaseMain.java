@@ -6,6 +6,7 @@ import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.serializers.mongodb.MongoDBSerializer;
 import org.opencb.commons.bioformats.commons.exception.FileFormatException;
 
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +53,10 @@ public class CellBaseMain {
         options.addOption(OptionFactory.createOption("mirna-file", "Output directory to save the JSON result", false));
 
         // Mutation options
-        options.addOption(OptionFactory.createOption("cosmic-file", "Output directory to save the JSON result", false));
+        options.addOption(OptionFactory.createOption("cosmic-file", "Output directory to save the JSON result", false));        // Mutation options
+
+        // Drug options
+        options.addOption(OptionFactory.createOption("drug-file", "Output directory to save the JSON result", false));
 
         // Protein options
         options.addOption(OptionFactory.createOption("species", "s",  "Sapecies...", false, true));
@@ -193,6 +197,14 @@ public class CellBaseMain {
                         interactionParser.parse(Paths.get(psimiTabFile), commandLine.getOptionValue("species").toString());
                     }
                     break;
+                case "drug":
+                    System.out.println("In drug...");
+                    String drugFile = commandLine.getOptionValue("drug-file");
+                    if(drugFile != null) {
+                        DrugParser drugParser = new DrugParser(serializer);
+                        drugParser.parse(Paths.get(drugFile));
+                    }
+                    break;
                 case "all":
                     System.out.println("In all...");
                     String speciesDataDir = commandLine.getOptionValue("indir");
@@ -209,6 +221,8 @@ public class CellBaseMain {
         } catch (FileFormatException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (JAXBException e) {
             e.printStackTrace();
         }
 
