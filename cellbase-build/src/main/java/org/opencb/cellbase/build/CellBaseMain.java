@@ -69,25 +69,27 @@ public class CellBaseMain {
      * @param args
      */
     public static void main(String[] args) {
-        initOptions();
-        try {
+        String buildOption = null;
+        String serializationOutput = null;
 
+        initOptions();
+
+        try {
+            // Help option is checked manually, otherwise the parser will complain about obligatory options
             if(args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("cellbase-build.jar", "Some options are mandatory for all possible 'builds', while others are only mandatory for some specific 'builds':", options, "\nFor more information or reporting bugs contact me: imedina@cipf.es", true);
                 return;
             }
 
-
+            // Now CLI can be parsed
             parse(args, false);
 
-            String buildOption = null;
-            String serializationOutput = null;
+            // Setting the appropriate Logger level
+            System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, commandLine.getOptionValue("log-level", "INFO").toUpperCase());
 
-            /**
-             * This code create a serializer for a specific database, only MongoDB has been implemented so far,
-             * DI pattern could be applied to get other database outputs.
-             */
+            // This code create a serializer for a specific database, only MongoDB has been implemented so far,
+            // DI pattern could be applied to get other database outputs.
             if(commandLine.hasOption("serializer") && !commandLine.getOptionValue("serializer").equals("")) {
                 serializationOutput = commandLine.getOptionValue("serializer");
             }else {
