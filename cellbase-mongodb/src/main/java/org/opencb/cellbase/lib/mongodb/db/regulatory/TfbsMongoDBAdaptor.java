@@ -1,4 +1,4 @@
-package org.opencb.cellbase.lib.mongodb.regulatory;
+package org.opencb.cellbase.lib.mongodb.db.regulatory;
 
 import com.mongodb.*;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
@@ -11,7 +11,6 @@ import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.

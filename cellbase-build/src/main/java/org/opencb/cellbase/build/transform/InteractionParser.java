@@ -7,7 +7,7 @@ package org.opencb.cellbase.build.transform; /**
  */
 
 
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.common.protein.*;
 import org.opencb.cellbase.core.common.protein.Interactor;
 import psidev.psi.mi.tab.PsimiTabReader;

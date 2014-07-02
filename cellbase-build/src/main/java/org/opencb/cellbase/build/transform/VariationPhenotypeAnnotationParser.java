@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;

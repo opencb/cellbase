@@ -1,11 +1,11 @@
-package org.opencb.cellbase.lib.mongodb.network;
+package org.opencb.cellbase.lib.mongodb.db.network;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
-import org.opencb.cellbase.lib.mongodb.MongoDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptor;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;

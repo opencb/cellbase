@@ -1,14 +1,7 @@
 package org.opencb.cellbase.core.lib.api;
 
-import org.opencb.cellbase.core.common.ProteinRegion;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.commons.bioformats.network.biopax.ProteinInteraction;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.DbReferenceType;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.FeatureType;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.Protein;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.SequenceType;
 
 import java.util.List;
 

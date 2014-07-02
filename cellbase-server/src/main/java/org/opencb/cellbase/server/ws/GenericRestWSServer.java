@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.lib.mongodb.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.Species;
 import org.opencb.cellbase.server.exception.SpeciesException;

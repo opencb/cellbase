@@ -1,9 +1,8 @@
-package org.opencb.cellbase.lib.mongodb;
+package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;

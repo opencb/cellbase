@@ -1,8 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
-import org.opencb.cellbase.build.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.common.variation.Mutation;
 
 import java.io.BufferedReader;
@@ -11,7 +10,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.

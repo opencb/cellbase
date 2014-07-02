@@ -1,22 +1,22 @@
 package org.opencb.cellbase.build;
 
+import org.apache.commons.cli.*;
+import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.models.variant.effect.VariantEffect;
+import org.opencb.cellbase.build.loaders.mongodb.VariantEffectMongoDBLoader;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.json.JsonSerializer;
+import org.opencb.cellbase.build.transform.*;
+import org.opencb.commons.io.DataWriter;
+
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Logger;
-import org.apache.commons.cli.*;
-import org.opencb.biodata.models.variant.effect.VariantEffect;
-import org.opencb.cellbase.build.loaders.mongodb.VariantEffectMongoDBLoader;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
-import org.opencb.cellbase.build.serializers.json.JsonReader;
-import org.opencb.cellbase.build.serializers.json.JsonSerializer;
-import org.opencb.cellbase.build.serializers.mongodb.MongoDBSerializer;
-import org.opencb.cellbase.build.transform.*;
-import org.opencb.commons.bioformats.commons.exception.FileFormatException;
-import org.opencb.commons.io.DataWriter;
 
 public class CellBaseMain {
 
@@ -28,6 +28,9 @@ public class CellBaseMain {
     private static DataWriter newSerializer = null;
 
     private Logger logger;
+
+    private static String MONGODB_SERIALIZER = "org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer";
+    private static String JSON_SERIALIZER = "org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer";
 
     static {
         parser = new PosixParser();
@@ -65,7 +68,7 @@ public class CellBaseMain {
         options.addOption(OptionFactory.createOption("psimi-tab-file", "Input PsiMi tab file", false));
 
         // Variant effect options
-        options.addOption(OptionFactory.createOption("effect-file", "Input variant effect file", false));
+        options.addOption(OptionFactory.createOption("vep-file", "Input variant effect file", false));
 
 //        options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
 //        options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
@@ -91,41 +94,34 @@ public class CellBaseMain {
             parse(args, false);
 
             String buildOption = null;
-            String serializationOutput = null;
 
             /**
              * This code create a serializer for a specific database, only
              * MongoDB has been implemented so far, DI pattern could be applied
              * to get other database outputs.
              */
-            if (commandLine.hasOption("serializer") && !commandLine.getOptionValue("serializer").equals("")) {
-                serializationOutput = commandLine.getOptionValue("serializer");
-            } else {
-                serializationOutput = "mongodb";
-            }
-            serializer = getSerializer(serializationOutput, Paths.get(commandLine.getOptionValue("output")));
+//            if (commandLine.hasOption("serializer") && !commandLine.getOptionValue("serializer").equals("")) {
+//                serializationOutput = commandLine.getOptionValue("serializer");
+//            } else {
+//                serializationOutput = "mongodb";
+//            }
+            String serializarClass = commandLine.getOptionValue("serializer", "json");
+            Path outputPath = Paths.get(commandLine.getOptionValue("output"));
+            serializer = createCellBaseSerializer(serializarClass, outputPath);
+
+
+//            try {
+//                serializer = (CellBaseSerializer) Class.forName(MONGODB_SERIALIZER).newInstance();
+//                System.out.println(serializer);
+//            } catch (InstantiationException e) {
+//                e.printStackTrace();
+//            } catch (IllegalAccessException e) {
+//                e.printStackTrace();
+//            }
+
 
             buildOption = commandLine.getOptionValue("build");
             switch (buildOption) {
-                case "variant-effect":
-                    System.out.println("In variant-effect...");
-                    newSerializer = getSerializerNew(serializationOutput, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
-                    String effectFile = commandLine.getOptionValue("effect-file");
-                    
-                    if (effectFile != null && Files.exists(Paths.get(effectFile))) {
-                        if (newSerializer instanceof JsonSerializer) {
-                            VariantEffectParser effectParser = new VariantEffectParser(newSerializer);
-                            effectParser.parse(Paths.get(effectFile));
-                        } else if (newSerializer instanceof VariantEffectMongoDBLoader) {
-                            JsonReader<VariantEffect> effectParser = new JsonReader<>(Paths.get(effectFile), VariantEffect.class, newSerializer);
-                            effectParser.open();
-                            effectParser.pre();
-                            effectParser.parse();
-                            effectParser.post();
-                            effectParser.close();
-                        }
-                    }
-                    break;
                 case "genome-sequence":
                     System.out.println("In genome-sequence...");
                     String fastaFile = commandLine.getOptionValue("fasta-file");
@@ -178,6 +174,27 @@ public class CellBaseMain {
                         variationPhenotypeAnnotationParser.parseEnsembl(Paths.get(variationFilesDir));
                     }
                     break;
+                case "vep":
+                    System.out.println("In VEP parser...");
+                    newSerializer = getSerializerNew(serializarClass, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
+                    String effectFile = commandLine.getOptionValue("vep-file");
+                    VariantEffectParser effectParser = new VariantEffectParser(serializer);
+                    effectParser.parse(Paths.get(effectFile));
+
+//                    if (effectFile != null && Files.exists(Paths.get(effectFile))) {
+//                        if (newSerializer instanceof JsonSerializer) {
+//                            VariantEffectParser effectParser = new VariantEffectParser(newSerializer);
+//                            effectParser.parse(Paths.get(effectFile));
+//                        } else if (newSerializer instanceof VariantEffectMongoDBLoader) {
+//                            JsonReader<VariantEffect> effectParser = new JsonReader<>(Paths.get(effectFile), VariantEffect.class, newSerializer);
+//                            effectParser.open();
+//                            effectParser.pre();
+//                            effectParser.parse();
+//                            effectParser.post();
+//                            effectParser.close();
+//                        }
+//                    }
+                    break;
                 case "protein":
                     System.out.println("In protein...");
                     String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
@@ -227,6 +244,12 @@ public class CellBaseMain {
             serializer.close();
         } catch (ParseException | IOException | SQLException | ClassNotFoundException | NoSuchMethodException | FileFormatException | InterruptedException e) {
             e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
 
     }
@@ -246,15 +269,31 @@ public class CellBaseMain {
         }
     }
 
-    private static CellBaseSerializer getSerializer(String serializationOutput, Path outPath) throws IOException {
-        switch (serializationOutput) {
-            case "mongodb":
-                return new MongoDBSerializer(outPath);
-            default:
-                return null;
+    private static CellBaseSerializer createCellBaseSerializer(String serializerClass, Path outPath) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        if(serializerClass != null) {
+            // A default implementation for JSON is provided
+            if(serializerClass.equalsIgnoreCase("json")) {
+                System.out.println("JSON serializer");
+                return (CellBaseSerializer) Class.forName(JSON_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
+//                return new MongoDBSerializerOld(outPath);
+            }else {
+                System.out.println(MONGODB_SERIALIZER+" serializer");
+                return (CellBaseSerializer) Class.forName(MONGODB_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
+            }
         }
+        return serializer;
+
+//        switch (serializarClass) {
+//            case "json":
+//                return new MongoDBSerializer(outPath);
+//            case "mongodb":
+//                return new MongoDBSerializer(outPath);
+//            default:
+//                return null;
+//        }
+
     }
-    
+
     private static DataWriter getSerializerNew(String serializationOutput, Path outPath, Class clazz) throws IOException {
         switch (serializationOutput) {
             case "json":
@@ -269,7 +308,7 @@ public class CellBaseMain {
                 return null;
         }
     }
-    
+
 
     private static void parseAll(Path speciesInDir) throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
         Path genomeFastaPath = null;

@@ -1,4 +1,4 @@
-package org.opencb.cellbase.lib.mongodb;
+package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
@@ -11,10 +11,10 @@ import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.lib.mongodb.network.PathwayMongoDBAdaptor;
-import org.opencb.cellbase.lib.mongodb.network.ProteinProteinInteractionMongoDBAdaptor;
-import org.opencb.cellbase.lib.mongodb.regulatory.RegulatoryRegionMongoDBAdaptor;
-import org.opencb.cellbase.lib.mongodb.regulatory.TfbsMongoDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.db.network.PathwayMongoDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.db.network.ProteinProteinInteractionMongoDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.db.regulatory.RegulatoryRegionMongoDBAdaptor;
+import org.opencb.cellbase.lib.mongodb.db.regulatory.TfbsMongoDBAdaptor;
 
 import java.net.UnknownHostException;
 import java.util.*;

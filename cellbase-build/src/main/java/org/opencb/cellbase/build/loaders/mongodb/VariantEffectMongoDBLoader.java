@@ -2,26 +2,22 @@ package org.opencb.cellbase.build.loaders.mongodb;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import org.apache.commons.lang.StringUtils;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.effect.*;
+import org.opencb.commons.io.DataWriter;
+import org.opencb.commons.utils.CryptoUtils;
+import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDBCollection;
+import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.datastore.mongodb.MongoDataStoreManager;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.effect.ConsequenceType;
-import org.opencb.biodata.models.variant.effect.Frequencies;
-import org.opencb.biodata.models.variant.effect.ProteinSubstitutionScores;
-import org.opencb.biodata.models.variant.effect.RegulatoryEffect;
-import org.opencb.biodata.models.variant.effect.VariantEffect;
-import org.opencb.commons.io.DataWriter;
-import org.opencb.commons.utils.CryptoUtils;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDBCollection;
-import org.opencb.datastore.mongodb.MongoDBConfiguration;
-import org.opencb.datastore.mongodb.MongoDataStore;
-import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
 /**
  *

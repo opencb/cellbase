@@ -15,8 +15,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.opencb.commons</groupId>
-            <artifactId>bioformats</artifactId>
+            <groupId>org.opencb.biodata</groupId>
+            <artifactId>formats</artifactId>
         </dependency>
 
         <dependency>

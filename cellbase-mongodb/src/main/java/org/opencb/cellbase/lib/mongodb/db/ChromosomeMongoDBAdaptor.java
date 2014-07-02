@@ -1,4 +1,4 @@
-package org.opencb.cellbase.lib.mongodb;
+package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;

@@ -1,11 +1,10 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
-import org.opencb.cellbase.build.transform.utils.GenomeSequenceUtils;
+import org.opencb.biodata.formats.feature.gtf.Gtf;
+import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
+import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.common.core.*;
-import org.opencb.commons.bioformats.commons.exception.FileFormatException;
-import org.opencb.commons.bioformats.feature.gtf.Gtf;
-import org.opencb.commons.bioformats.feature.gtf.io.GtfReader;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

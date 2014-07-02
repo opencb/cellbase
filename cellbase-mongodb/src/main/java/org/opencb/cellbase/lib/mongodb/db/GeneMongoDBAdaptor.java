@@ -1,4 +1,4 @@
-package org.opencb.cellbase.lib.mongodb;
+package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
 import org.opencb.cellbase.core.common.Position;
@@ -155,7 +155,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             QueryBuilder builder = null;
             // If regions is 1 position then query can be optimize using chunks
             if (region.getStart() == region.getEnd()) {
-                builder = QueryBuilder.start("chunkIds").is(region.getChromosome() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CORE_CHUNK_SIZE", "5000")))).and("end")
+                builder = QueryBuilder.start("chunkIds").is(region.getChromosome() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CORE_CHUNK_SIZE", "5000"))) + "k").and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             } else {
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")

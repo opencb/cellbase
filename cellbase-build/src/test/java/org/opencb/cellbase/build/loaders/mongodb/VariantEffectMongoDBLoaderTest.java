@@ -225,7 +225,7 @@ public class VariantEffectMongoDBLoaderTest {
         effect1.setProteinSubstitutionScores(new ProteinSubstitutionScores(0.01f, 0.02f, 
                 ProteinSubstitutionScores.PolyphenEffect.BENIGN, ProteinSubstitutionScores.SiftEffect.TOLERATED));
         effect2.setProteinSubstitutionScores(new ProteinSubstitutionScores(0.05f, 0.06f, 
-                ProteinSubstitutionScores.PolyphenEffect.DAMAGING, ProteinSubstitutionScores.SiftEffect.DELETERIOUS));
+                ProteinSubstitutionScores.PolyphenEffect.PROBABLY_DAMAGING, ProteinSubstitutionScores.SiftEffect.DELETERIOUS));
         
         List<VariantEffect> batch = new LinkedList<>();
         batch.add(effect1);
@@ -265,7 +265,7 @@ public class VariantEffectMongoDBLoaderTest {
         DBObject scores2 = (DBObject) obj2.get("scores");
         assertEquals(0.05, (double) scores2.get("polyScore"), 1e-6);
         assertEquals(0.06, (double) scores2.get("siftScore"), 1e-6);
-        assertEquals(ProteinSubstitutionScores.PolyphenEffect.DAMAGING.name(), scores2.get("polyEff").toString());
+        assertEquals(ProteinSubstitutionScores.PolyphenEffect.PROBABLY_DAMAGING.name(), scores2.get("polyEff").toString());
         assertEquals(ProteinSubstitutionScores.SiftEffect.DELETERIOUS.name(), scores2.get("siftEff").toString());
     }
     

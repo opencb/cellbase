@@ -1,11 +1,11 @@
-package org.opencb.cellbase.build.serializers.mongodb;
+package org.opencb.cellbase.core.serializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
-import org.opencb.cellbase.build.transform.utils.FileUtils;
+import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
+import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
@@ -13,10 +13,9 @@ import org.opencb.cellbase.core.common.protein.Interaction;
 import org.opencb.cellbase.core.common.variation.Mutation;
 import org.opencb.cellbase.core.common.variation.Variation;
 import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
-import org.opencb.commons.bioformats.protein.uniprot.v201311jaxb.Entry;
+import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -27,15 +26,11 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: imedina
- * Date: 8/28/13
- * Time: 5:41 PM
- * To change this template use File | Settings | File Templates.
+ * Created by imedina on 17/06/14.
  */
-public class MongoDBSerializer implements CellBaseSerializer {
+public class DefaultJsonSerializer extends CellBaseSerializer {
 
-    private Path outdirPath;
+//    private Path outdirPath;
 
     private Map<String, BufferedWriter> bufferedWriterMap;
 
@@ -53,8 +48,9 @@ public class MongoDBSerializer implements CellBaseSerializer {
     private int chunkSize = 2000;
 
 
-    public MongoDBSerializer(Path path) throws IOException {
-        this.outdirPath = path;
+    public DefaultJsonSerializer(Path path) throws IOException {
+//        this.outdirPath = path;
+        super(path);
         init();
     }
 
@@ -75,8 +71,6 @@ public class MongoDBSerializer implements CellBaseSerializer {
 //                return super.nameForField(mapperConfig, annotatedField, s);    //To change body of overridden methods use File | Settings | File Templates.
 //            }
 //        };
-
-
     }
 
 
@@ -131,6 +125,21 @@ public class MongoDBSerializer implements CellBaseSerializer {
             }
             variationBufferedWriter.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
             variationBufferedWriter.get(variation.getChromosome()).newLine();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    @Override
+    public void serialize(VariantEffect variantEffect) {
+        try {
+            if(variationBufferedWriter.get(variantEffect.getChromosome()) == null) {
+                variationBufferedWriter.put(variantEffect.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variant_effect_chr" + variantEffect.getChromosome() + ".json"), Charset.defaultCharset()));
+            }
+            variationBufferedWriter.get(variantEffect.getChromosome()).write(jsonObjectWriter.writeValueAsString(variantEffect));
+            variationBufferedWriter.get(variantEffect.getChromosome()).newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
