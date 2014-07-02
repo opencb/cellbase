@@ -6,6 +6,7 @@ import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -38,10 +39,10 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
-                if(!dbname.equals("")) {
-                    queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
-                }
-                return createOkResponse(xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions));
+            if (!dbname.equals("")) {
+                queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
+            }
+            return createOkResponse(xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions));
 //            if (dbName.equals("")) {
 //                return generateResponse(query, "XREF", x.getAllByDBNameList(Splitter.on(",").splitToList(query), null));
 //            }
@@ -91,14 +92,14 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
-            List<List<Xref>> xrefs = x.getByStartsWithQueryList(Splitter.on(",").splitToList(query));
-            if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
-                List<List<Xref>> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query));
-                for (List<Xref> xrefList : snpXrefs) {
-                    xrefs.get(0).addAll(xrefList);
-                }
-            }
-            return generateResponse(query, "XREF", xrefs);
+//            if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
+//                List<List<Xref>> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query));
+//                for (List<Xref> xrefList : snpXrefs) {
+//                    xrefs.get(0).addAll(xrefList);
+//                }
+//            }
+//            return generateResponse(query, "XREF", xrefs);
+            return createOkResponse(x.getByStartsWithQueryList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getByEnsemblId", e.toString());
@@ -113,10 +114,10 @@ public class IdWSServer extends GenericRestWSServer {
             XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
             List<List<Xref>> xrefs = x.getByContainsQueryList(Splitter.on(",").splitToList(query));
             if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
-                List<List<Xref>> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query));
-                for (List<Xref> xrefList : snpXrefs) {
-                    xrefs.get(0).addAll(xrefList);
-                }
+                List<QueryResult> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query),queryOptions);
+//                for (List<Xref> xrefList : snpXrefs) {
+//                    xrefs.get(0).addAll(xrefList);
+//                }
             }
             return generateResponse(query, xrefs);
         } catch (Exception e) {

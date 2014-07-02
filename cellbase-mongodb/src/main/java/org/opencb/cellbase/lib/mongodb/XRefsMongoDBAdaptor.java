@@ -1,5 +1,6 @@
 package org.opencb.cellbase.lib.mongodb;
 
+import com.google.common.base.Splitter;
 import com.mongodb.*;
 import org.opencb.cellbase.core.common.XRefs;
 import org.opencb.cellbase.core.common.core.DBName;
@@ -91,26 +92,35 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
     }
 
     @Override
-    public List<Xref> getByStartsWithQuery(String likeQuery) {
-        // TODO Auto-generated method stub
+    public QueryResult getByStartsWithQuery(String id, QueryOptions options) {
+        return getByStartsWithQueryList(Arrays.asList(id), options).get(0);
+    }
+
+    @Override
+    public List<QueryResult> getByStartsWithQueryList(List<String> ids, QueryOptions options) {
+        List<DBObject> queries = new ArrayList<>();
+
+        for (String id : ids) {
+            QueryBuilder qb = QueryBuilder.start("transcripts.xrefs.id").is(java.util.regex.Pattern.compile("^" + id));
+            queries.add(qb.get());
+        }
+        int limit = options.getInt("limit", 50);
+        if (limit > 50) {
+            options.put("limit", 50);
+        }
+        System.out.println(options.getInt("limit"));
+        options.put("include", Arrays.asList("chromosome", "start", "end", "id", "name"));
+
+        return executeQueryList(ids, queries, options);
+    }
+
+    @Override
+    public QueryResult getByStartsWithSnpQuery(String id, QueryOptions options) {
         return null;
     }
 
     @Override
-    public List<List<Xref>> getByStartsWithQueryList(List<String> likeQuery) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Xref> getByStartsWithSnpQuery(String likeQuery) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Xref>> getByStartsWithSnpQueryList(List<String> likeQuery) {
-        // TODO Auto-generated method stub
+    public List<QueryResult> getByStartsWithSnpQueryList(List<String> ids, QueryOptions options) {
         return null;
     }
 
@@ -225,15 +235,17 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
                     new BasicDBObject("id", "$transcripts.xrefs.id")
                             .append("dbName", "$transcripts.xrefs.dbName")
                             .append("dbDisplayName", "$transcripts.xrefs.dbDisplayName")
-                            .append("description", "$transcripts.xrefs.description")));
+                            .append("description", "$transcripts.xrefs.description")
+            ));
             commands.add(group);
 
             DBObject project = new BasicDBObject("$project",
                     new BasicDBObject("_id", 0)
                             .append("id", "$_id.id")
-                            .append("dbName","$_id.dbName")
+                            .append("dbName", "$_id.dbName")
                             .append("dbDisplayName", "$_id.dbDisplayName")
-                            .append("description","$_id.description"));
+                            .append("description", "$_id.description")
+            );
             commands.add(project);
 
             //ArrayList to array
