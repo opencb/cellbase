@@ -87,6 +87,9 @@
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <encoding>UTF-8</encoding>
+                    <excludes>
+                        <exclude>**/DrugParser.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>

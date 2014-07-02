@@ -155,7 +155,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             QueryBuilder builder = null;
             // If regions is 1 position then query can be optimize using chunks
             if (region.getStart() == region.getEnd()) {
-                builder = QueryBuilder.start("chunkIds").is(region.getChromosome() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CORE_CHUNK_SIZE", "5000")))).and("end")
+                System.out.println(getChunkPrefix(region.getChromosome(), region.getStart(), 5000));
+                builder = QueryBuilder.start("chunkIds").is(getChunkPrefix(region.getChromosome(), region.getStart(), 5000)).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             } else {
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
@@ -163,13 +164,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             }
 
             if (biotypeIds.size() > 0) {
-//                System.out.println("regions = [" + regions + "], options = [" + options + "]");
                 builder = builder.and("biotype").in(biotypeIds);
             }
             queries.add(builder.get());
             ids.add(region.toString());
         }
-//        options = addExcludeReturnFields("chunkIds", options);
         return executeQueryList(ids, queries, options);
     }
 
