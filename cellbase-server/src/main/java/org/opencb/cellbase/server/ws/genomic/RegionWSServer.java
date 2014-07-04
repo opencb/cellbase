@@ -93,47 +93,30 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regions = Region.parseRegions(chregionId);
 
             if (hasHistogramQueryParam()) {
-//				long t1 = System.currentTimeMillis();
-                // Response resp = generateResponse(chregionId,
-                // getHistogramByFeatures(dbAdaptor.getAllByRegionList(regions)));
-//				Response resp = generateResponse(chregionId,
-//						geneDBAdaptor.getAllIntervalFrequencies(regions.get(0), getHistogramIntervalSize()));
                 queryOptions.put("interval", getHistogramIntervalSize());
                 List<QueryResult> res = geneDBAdaptor.getAllIntervalFrequencies(regions, queryOptions);
-//				logger.info("Old histogram: " + (System.currentTimeMillis() - t1) + ",  resp: " + res.toString());
                 return createOkResponse(res);
             } else {
-//				QueryOptions queryOptions = new QueryOptions("biotypes", StringUtils.toList(biotype, ","));
-//				queryOptions.put("biotype", biotype);
                 if(biotype != null && !biotype.equals("")) {
                     queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
                 }
-//				queryOptions.put("transcripts", transcripts.equalsIgnoreCase("true"));
-//                addExcludeReturnFields("transcripts.exons.sequence", queryOptions);
-//				return createOkResponse(chregionId, "GENE",	geneDBAdaptor.getAllByRegionList(regions, queryOptions));
-
-                System.out.println("queryOptions: "+queryOptions);
+                logger.debug("queryOptions: " + queryOptions);
                 return createOkResponse(geneDBAdaptor.getAllByRegionList(regions, queryOptions));
-//				if (transcripts != null) {
-//					if (biotype != null && !biotype.equals("")) {
-//					} else {
-//						return generateResponse(chregionId, "GENE", geneDBAdaptor.getAllByRegionList(regions, queryOptions));
-//					}
-
-//				} else {
-//					queryOptions.put("transcripts", false);
-//					return createOkResponse(chregionId, "GENE",	geneDBAdaptor.getAllByRegionList(regions, queryOptions));
-////					if (biotype != null && !biotype.equals("")) {
-////					} else {
-////						return generateResponse(chregionId, "GENE", geneDBAdaptor.getAllByRegionList(regions, queryOptions));
-////					}
-//				}
             }
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getGenesByRegion", e.toString());
         }
     }
+
+    @POST
+    @Path("/{chrRegionId}/gene")
+    public Response getGenesByRegionPost(@PathParam("chrRegionId") String chregionId,
+                                     @DefaultValue("true") @QueryParam("transcript") String transcripts,
+                                     @DefaultValue("") @QueryParam("biotype") String biotype) {
+        return getGenesByRegion(chregionId, transcripts, biotype);
+    }
+
 
     @GET
     @Path("/{chrRegionId}/transcript")
