@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.serializer;
 
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
+import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.common.core.Gene;
@@ -34,7 +35,7 @@ public abstract class CellBaseSerializer {
 
     public abstract void serialize(Variation variation);
 
-    public abstract void serialize(VariantEffect variantEffect);
+    public abstract void serialize(VariantAnnotation variantAnnotation);
 
     public abstract void serialize(GenericFeature genericFeature);
 

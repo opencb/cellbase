@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.DBObject;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
+import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
@@ -144,16 +145,16 @@ public class MongoDBSerializer extends CellBaseSerializer {
     }
 
     @Override
-    public void serialize(VariantEffect variantEffect) {
+    public void serialize(VariantAnnotation variantAnnotation) {
         try {
-            if(variationBufferedWriter.get(variantEffect.getChromosome()) == null) {
-                variationBufferedWriter.put(variantEffect.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variant_effect_chr" + variantEffect.getChromosome() + ".json"), Charset.defaultCharset()));
+            if(variationBufferedWriter.get(variantAnnotation.getChromosome()) == null) {
+                variationBufferedWriter.put(variantAnnotation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variant_effect_chr" + variantAnnotation.getChromosome() + ".json"), Charset.defaultCharset()));
             }
 //            variationBufferedWriter.get(variantEffect.getChromosome()).write(jsonObjectWriter.writeValueAsString(variantEffect));
 //            variationBufferedWriter.get(variantEffect.getChromosome()).newLine();
-            DBObject mongoDbSchema = variantEffectConverter.convertToStorageSchema(variantEffect);
-            variationBufferedWriter.get(variantEffect.getChromosome()).write(mongoDbSchema.toString());
-            variationBufferedWriter.get(variantEffect.getChromosome()).newLine();
+            DBObject mongoDbSchema = variantEffectConverter.convertToStorageSchema(variantAnnotation);
+            variationBufferedWriter.get(variantAnnotation.getChromosome()).write(mongoDbSchema.toString());
+            variationBufferedWriter.get(variantAnnotation.getChromosome()).newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {

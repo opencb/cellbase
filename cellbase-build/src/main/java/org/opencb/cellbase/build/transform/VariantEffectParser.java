@@ -1,9 +1,9 @@
 package org.opencb.cellbase.build.transform;
 
 import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.models.variant.effect.ConsequenceType;
 import org.opencb.biodata.models.variant.effect.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.effect.ProteinSubstitutionScores;
+import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -46,7 +46,7 @@ public class VariantEffectParser {
     public int parse(Path file) throws IOException {
         BufferedReader reader = FileUtils.newBufferedReader(file);
 
-        VariantEffect currentEffect = null;
+        VariantAnnotation currentAnnotation = null;
         String currentAlternativeAllele = null;
         int numEffectsWritten = 0;
         String[] vepLinefields, variantIdFields, variantLocationFields;
@@ -75,32 +75,32 @@ public class VariantEffectParser {
                     continue;
                 }
 
-                if (isNewVariant(variantChromosome, variantStart, variantEnd, variantIdFields[2], variantIdFields[3], currentEffect, currentAlternativeAllele)) {
+                if (isNewVariant(variantChromosome, variantStart, variantEnd, variantIdFields[2], variantIdFields[3], currentAnnotation, currentAlternativeAllele)) {
                     // We have to ignore the first "NewVariant" as is the first line of the file
-                    if (currentEffect != null && serializer != null) {
+                    if (currentAnnotation != null && serializer != null) {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
-                        serializer.serialize(currentEffect);
+                        serializer.serialize(currentAnnotation);
                         numEffectsWritten++;
                     }
 
-                    currentEffect = new VariantEffect(variantChromosome, variantStart, variantEnd, variantIdFields[2]);
+                    currentAnnotation = new VariantAnnotation(variantChromosome, variantStart, variantEnd, variantIdFields[2]);
                     currentAlternativeAllele = variantIdFields[3];
-                } else if (isNewAllele(variantChromosome, variantStart, variantEnd, variantIdFields[2], variantIdFields[3], currentEffect, currentAlternativeAllele)) {
+                } else if (isNewAllele(variantChromosome, variantStart, variantEnd, variantIdFields[2], variantIdFields[3], currentAnnotation, currentAlternativeAllele)) {
                     currentAlternativeAllele = variantIdFields[3];
                 }
 
-                parseLine(vepLinefields, currentEffect, currentAlternativeAllele);
+                parseLine(vepLinefields, currentAnnotation, currentAlternativeAllele);
             }
         }
 
         // Don't forget to serialize the last effect read!
-        if (currentEffect != null && serializer != null) {
+        if (currentAnnotation != null && serializer != null) {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
-            serializer.serialize(currentEffect);
+            serializer.serialize(currentAnnotation);
             numEffectsWritten++;
         }
 
@@ -109,7 +109,7 @@ public class VariantEffectParser {
     }
 
     private boolean isNewVariant(String chromosome, int start, int end, String referenceAllele, String alternateAllele,
-                                 VariantEffect current, String currentAllele) {
+                                 VariantAnnotation current, String currentAllele) {
         if (current == null) {
             return true;
         }
@@ -123,7 +123,7 @@ public class VariantEffectParser {
     }
 
     private boolean isNewAllele(String chromosome, int start, int end, String referenceAllele, String alternateAllele,
-                                VariantEffect current, String currentAllele) {
+                                VariantAnnotation current, String currentAllele) {
         if (current == null) {
             return true;
         }
@@ -135,19 +135,19 @@ public class VariantEffectParser {
                 && !alternateAllele.equals(currentAllele);
     }
 
-    private void parseLine(String[] fields, VariantEffect effect, String alternateAllele) {
-        ConsequenceType ct = new ConsequenceType(alternateAllele);
-        effect.addConsequenceType(alternateAllele, ct);
+    private void parseLine(String[] fields, VariantAnnotation variantAnnotation, String alternateAllele) {
+        VariantEffect variantEffect = new VariantEffect(alternateAllele);
+        variantAnnotation.addEffect(alternateAllele, variantEffect);
 
         // Gene and feature fields can be empty (marked with "-")
         if (!"-".equals(fields[3])) {
-            ct.setGeneId(fields[3]);
+            variantEffect.setGeneId(fields[3]);
         }
         if (!"-".equals(fields[4])) {
-            ct.setFeatureId(fields[4]);
+            variantEffect.setFeatureId(fields[4]);
         }
         if (!"-".equals(fields[5])) {
-            ct.setFeatureType(fields[5]);
+            variantEffect.setFeatureType(fields[5]);
         }
 
         // List of consequence types as SO codes
@@ -161,92 +161,92 @@ public class VariantEffectParser {
                 logger.warn("{0} is not a valid consequence type", consequencesName[i]);
             }
         }
-        ct.setConsequenceTypes(consequencesSo);
+        variantEffect.setConsequenceTypes(consequencesSo);
 
         // Fields related to position can be empty (marked with "-")
         if (!"-".equals(fields[7]) && StringUtils.isNumeric(fields[7])) {
-            ct.setcDnaPosition(Integer.parseInt(fields[7]));
+            variantEffect.setcDnaPosition(Integer.parseInt(fields[7]));
         }
         if (!"-".equals(fields[8]) && StringUtils.isNumeric(fields[8])) {
-            ct.setCdsPosition(Integer.parseInt(fields[8]));
+            variantEffect.setCdsPosition(Integer.parseInt(fields[8]));
         }
         if (!"-".equals(fields[9]) && StringUtils.isNumeric(fields[9])) {
-            ct.setProteinPosition(Integer.parseInt(fields[9]));
+            variantEffect.setProteinPosition(Integer.parseInt(fields[9]));
         }
 
         // Fields related to AA and codon changes can also be empty (marked with "-")
         if (!"-".equals(fields[10])) {
-            ct.setAminoacidChange(fields[10]);
+            variantEffect.setAminoacidChange(fields[10]);
         }
         if (!"-".equals(fields[11])) {
-            ct.setCodonChange(fields[11]);
+            variantEffect.setCodonChange(fields[11]);
         }
 
         // Variant ID
         if (!"-".equals(fields[12])) {
-            ct.setVariationId(fields[12]);
+            variantEffect.setVariationId(fields[12]);
         }
 
-        parseExtraFields(fields[13], effect, alternateAllele, ct);
+        parseExtraFields(fields[13], variantAnnotation, alternateAllele, variantEffect);
     }
 
-    private void parseExtraFields(String extra, VariantEffect effect, String alternateAllele, ConsequenceType ct) {
+    private void parseExtraFields(String extra, VariantAnnotation variantAnnotation, String alternateAllele, VariantEffect variantEffect) {
         for (String field : extra.split(";")) {
             String[] keyValue = field.split("=");
 
             switch (keyValue[0].toLowerCase()) {
                 case "aa_maf":
-                    effect.getFrequencies().setMafNhlbiEspAfricanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+                    variantAnnotation.getFrequencies().setMafNhlbiEspAfricanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "afr_maf":
-                    effect.getFrequencies().setMaf1000GAfrican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+                    variantAnnotation.getFrequencies().setMaf1000GAfrican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "amr_maf":
-                    effect.getFrequencies().setMaf1000GAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+                    variantAnnotation.getFrequencies().setMaf1000GAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "asn_maf":
-                    effect.getFrequencies().setMaf1000GAsian((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+                    variantAnnotation.getFrequencies().setMaf1000GAsian((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "biotype":
-                    ct.setFeatureBiotype(keyValue[1]);
+                    variantEffect.setFeatureBiotype(keyValue[1]);
                     break;
                 case "canonical":
-                    ct.setCanonical(keyValue[1].equalsIgnoreCase("YES") || keyValue[1].equalsIgnoreCase("Y"));
+                    variantEffect.setCanonical(keyValue[1].equalsIgnoreCase("YES") || keyValue[1].equalsIgnoreCase("Y"));
                     break;
                 case "ccds":
-                    ct.setCcdsId(keyValue[1]);
+                    variantEffect.setCcdsId(keyValue[1]);
                     break;
                 case "cell_type":
-                    effect.getRegulatoryEffect().setCellType(keyValue[1]);
+                    variantAnnotation.getRegulatoryEffect().setCellType(keyValue[1]);
                     break;
                 case "clin_sig":
-                    ct.setClinicalSignificance(keyValue[1]);
+                    variantEffect.setClinicalSignificance(keyValue[1]);
                     break;
                 case "distance":
-                    ct.setVariantToTranscriptDistance(Integer.parseInt(keyValue[1]));
+                    variantEffect.setVariantToTranscriptDistance(Integer.parseInt(keyValue[1]));
                     break;
                 case "domains":
-                    ct.setProteinDomains(keyValue[1].split(","));
+                    variantEffect.setProteinDomains(keyValue[1].split(","));
                     break;
                 case "ea_maf":
-                    effect.getFrequencies().setMafNhlbiEspEuropeanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+                    variantAnnotation.getFrequencies().setMafNhlbiEspEuropeanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "ensp":
-                    ct.setProteinId(keyValue[1]);
+                    variantEffect.setProteinId(keyValue[1]);
                     break;
                 case "eur_maf":
-                    effect.getFrequencies().setMaf1000GEuropean((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+                    variantAnnotation.getFrequencies().setMaf1000GEuropean((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "exon":
-                    ct.setExonNumber(keyValue[1]);
+                    variantEffect.setExonNumber(keyValue[1]);
                     break;
                 case "gmaf": // Format is GMAF=G:0.2640  or  GMAF=T:0.1221,-:0.0905
                     String[] freqs = keyValue[1].split(",");
                     for(String freq: freqs) {
                         String[] gmafFields = freq.split(":");
                         if(gmafFields[0].equals(alternateAllele)) {
-                            effect.getFrequencies().setAllele1000g(gmafFields[0]);
-                            effect.getFrequencies().setMaf1000G(Float.parseFloat(gmafFields[1]));
+                            variantAnnotation.getFrequencies().setAllele1000g(gmafFields[0]);
+                            variantAnnotation.getFrequencies().setMaf1000G(Float.parseFloat(gmafFields[1]));
                             break;
                         }
                     }
@@ -266,50 +266,50 @@ public class VariantEffectParser {
 //                    }
                     break;
                 case "hgvsc":
-                    ct.setHgvsc(keyValue[1]);
+                    variantEffect.setHgvsc(keyValue[1]);
                     break;
                 case "hgvsp":
-                    ct.setHgvsp(keyValue[1]);
+                    variantEffect.setHgvsp(keyValue[1]);
                     break;
                 case "high_inf_pos":
-                    effect.getRegulatoryEffect().setHighInformationPosition(keyValue[1].equalsIgnoreCase("YES") || keyValue[1].equalsIgnoreCase("Y"));
+                    variantAnnotation.getRegulatoryEffect().setHighInformationPosition(keyValue[1].equalsIgnoreCase("YES") || keyValue[1].equalsIgnoreCase("Y"));
                     break;
                 case "intron":
-                    ct.setIntronNumber(keyValue[1]);
+                    variantEffect.setIntronNumber(keyValue[1]);
                     break;
                 case "motif_name":
-                    effect.getRegulatoryEffect().setMotifName(keyValue[1]);
+                    variantAnnotation.getRegulatoryEffect().setMotifName(keyValue[1]);
                     break;
                 case "motif_pos":
-                    effect.getRegulatoryEffect().setMotifPosition(Integer.parseInt(keyValue[1]));
+                    variantAnnotation.getRegulatoryEffect().setMotifPosition(Integer.parseInt(keyValue[1]));
                     break;
                 case "motif_score_change":
-                    effect.getRegulatoryEffect().setMotifScoreChange(Float.parseFloat(keyValue[1]));
+                    variantAnnotation.getRegulatoryEffect().setMotifScoreChange(Float.parseFloat(keyValue[1]));
                     break;
                 case "polyphen": // Format is PolyPhen=possibly_damaging(0.859)
                     String[] polyphenFields = keyValue[1].split("[\\(\\)]");
-                    effect.getProteinSubstitutionScores().setPolyphenEffect(ProteinSubstitutionScores.PolyphenEffect.valueOf(polyphenFields[0].toUpperCase()));
-                    effect.getProteinSubstitutionScores().setPolyphenScore(Float.parseFloat(polyphenFields[1]));
+                    variantAnnotation.getProteinSubstitutionScores().setPolyphenEffect(ProteinSubstitutionScores.PolyphenEffect.valueOf(polyphenFields[0].toUpperCase()));
+                    variantAnnotation.getProteinSubstitutionScores().setPolyphenScore(Float.parseFloat(polyphenFields[1]));
                     break;
                 case "pubmed":
-                    ct.setPubmed(keyValue[1].split(","));
+                    variantEffect.setPubmed(keyValue[1].split(","));
                     break;
                 case "sift": // Format is SIFT=tolerated(0.07)
                     String[] siftFields = keyValue[1].split("[\\(\\)]");
-                    effect.getProteinSubstitutionScores().setSiftEffect(ProteinSubstitutionScores.SiftEffect.valueOf(siftFields[0].toUpperCase()));
-                    effect.getProteinSubstitutionScores().setSiftScore(Float.parseFloat(siftFields[1]));
+                    variantAnnotation.getProteinSubstitutionScores().setSiftEffect(ProteinSubstitutionScores.SiftEffect.valueOf(siftFields[0].toUpperCase()));
+                    variantAnnotation.getProteinSubstitutionScores().setSiftScore(Float.parseFloat(siftFields[1]));
                     break;
                 case "strand":
-                    ct.setFeatureStrand(keyValue[1]);
+                    variantEffect.setFeatureStrand(keyValue[1]);
                     break;
                 case "sv":
-                    ct.setStructuralVariantsId(keyValue[1].split(","));
+                    variantEffect.setStructuralVariantsId(keyValue[1].split(","));
                     break;
                 case "symbol":
-                    ct.setGeneName(keyValue[1]);
+                    variantEffect.setGeneName(keyValue[1]);
                     break;
                 case "symbol_source":
-                    ct.setGeneNameSource(keyValue[1]);
+                    variantEffect.setGeneNameSource(keyValue[1]);
                     break;
                 default:
                     // ALLELE_NUM, FREQS, IND, ZYG

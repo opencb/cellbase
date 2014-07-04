@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  *
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
-public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
+public class VariantEffectMongoDBLoader implements DataWriter<VariantAnnotation> {
 
     private String host;
     private int port;
@@ -72,15 +72,15 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
     }
 
     @Override
-    public boolean write(VariantEffect elem) {
+    public boolean write(VariantAnnotation elem) {
         return write(Arrays.asList(elem));
     }
 
     @Override
-    public boolean write(List<VariantEffect> batch) {
+    public boolean write(List<VariantAnnotation> batch) {
         boolean ok = true;
         
-        for (VariantEffect effect : batch) {
+        for (VariantAnnotation effect : batch) {
             String rowkey = buildRowkey(effect);
             BasicDBObject mongoEffect = new BasicDBObject("_id", rowkey)
                     .append("chr", effect.getChromosome())
@@ -92,11 +92,11 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
 
             BasicDBList alleles = new BasicDBList();
 
-            for (Map.Entry<String, List<ConsequenceType>> allelesConsequences : effect.getConsequenceTypes().entrySet()) {
+            for (Map.Entry<String, List<VariantEffect>> allelesConsequences : effect.getEffects().entrySet()) {
                 BasicDBObject alleleRoot = new BasicDBObject("alt", allelesConsequences.getKey());
                 BasicDBList cts = new BasicDBList();
 
-                for (ConsequenceType ct : allelesConsequences.getValue()) {
+                for (VariantEffect ct : allelesConsequences.getValue()) {
                     cts.add(getConsequenceTypeDBObject(ct));
                 }
 
@@ -108,9 +108,9 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
 
 //            QueryResult result = collection.insert(mongoEffect);
             QueryResult result = collection.update(new BasicDBObject("_id", rowkey), mongoEffect, true, true);
-            if (result.getError() != null) { 
+            if (result.getErrorMsg() != null) {
                 // TODO Do anything special when an error occurs?
-                Logger.getLogger(VariantEffectMongoDBLoader.class.getName()).log(Level.SEVERE, null, result.getError());
+                Logger.getLogger(VariantEffectMongoDBLoader.class.getName()).log(Level.SEVERE, null, result.getErrorMsg());
                 ok = false;
             }
         }
@@ -130,92 +130,92 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
     }
 
     
-    private BasicDBObject getConsequenceTypeDBObject(ConsequenceType ct) {
-        BasicDBObject object = new BasicDBObject("so", ct.getConsequenceTypes());
+    private BasicDBObject getConsequenceTypeDBObject(VariantEffect variantEffect) {
+        BasicDBObject object = new BasicDBObject("so", variantEffect.getConsequenceTypes());
 
-        if (ct.getGeneId() != null) {
-            object.append("geneId", ct.getGeneId());
+        if (variantEffect.getGeneId() != null) {
+            object.append("geneId", variantEffect.getGeneId());
         }
-        if (ct.getGeneName() != null) {
-            object.append("geneName", ct.getGeneName());
+        if (variantEffect.getGeneName() != null) {
+            object.append("geneName", variantEffect.getGeneName());
         }
-        if (ct.getGeneNameSource() != null) {
-            object.append("geneNameSource", ct.getGeneNameSource());
-        }
-
-        if (ct.getFeatureId() != null) {
-            object.append("featureId", ct.getFeatureId());
-        }
-        if (ct.getFeatureType() != null) {
-            object.append("featureType", ct.getFeatureType());
-        }
-        if (ct.getFeatureStrand() != null) {
-            object.append("featureStrand", ct.getFeatureStrand());
-        }
-        if (ct.getFeatureBiotype() != null) {
-            object.append("featureBiotype", ct.getFeatureBiotype());
+        if (variantEffect.getGeneNameSource() != null) {
+            object.append("geneNameSource", variantEffect.getGeneNameSource());
         }
 
-        if (ct.getcDnaPosition() >= 0) {
-            object.append("cdnaPos", ct.getcDnaPosition());
+        if (variantEffect.getFeatureId() != null) {
+            object.append("featureId", variantEffect.getFeatureId());
         }
-        if (ct.getCcdsId() != null) {
-            object.append("ccdsId", ct.getCcdsId());
+        if (variantEffect.getFeatureType() != null) {
+            object.append("featureType", variantEffect.getFeatureType());
         }
-        if (ct.getCdsPosition() >= 0) {
-            object.append("cdsPos", ct.getCdsPosition());
+        if (variantEffect.getFeatureStrand() != null) {
+            object.append("featureStrand", variantEffect.getFeatureStrand());
         }
-
-        if (ct.getProteinId() != null) {
-            object.append("proteinId", ct.getProteinId());
-        }
-        if (ct.getProteinPosition() >= 0) {
-            object.append("proteinPos", ct.getProteinPosition());
-        }
-        if (ct.getProteinDomains() != null) {
-            object.append("proteinDomains", StringUtils.join(ct.getProteinDomains(), ","));
+        if (variantEffect.getFeatureBiotype() != null) {
+            object.append("featureBiotype", variantEffect.getFeatureBiotype());
         }
 
-        if (ct.getAminoacidChange() != null) {
-            object.append("aaChange", ct.getAminoacidChange());
+        if (variantEffect.getcDnaPosition() >= 0) {
+            object.append("cdnaPos", variantEffect.getcDnaPosition());
         }
-        if (ct.getCodonChange() != null) {
-            object.append("codonChange", ct.getCodonChange());
+        if (variantEffect.getCcdsId() != null) {
+            object.append("ccdsId", variantEffect.getCcdsId());
         }
-
-        if (ct.getVariationId() != null) {
-            object.append("id", ct.getVariationId());
-        }
-        if (ct.getStructuralVariantsId() != null) {
-            object.append("svIds", StringUtils.join(ct.getStructuralVariantsId(), ","));
+        if (variantEffect.getCdsPosition() >= 0) {
+            object.append("cdsPos", variantEffect.getCdsPosition());
         }
 
-        if (ct.getHgvsc() != null) {
-            object.append("hgvsc", ct.getHgvsc());
+        if (variantEffect.getProteinId() != null) {
+            object.append("proteinId", variantEffect.getProteinId());
         }
-        if (ct.getHgvsp() != null) {
-            object.append("hgvsp", ct.getHgvsp());
+        if (variantEffect.getProteinPosition() >= 0) {
+            object.append("proteinPos", variantEffect.getProteinPosition());
         }
-
-        if (ct.getIntronNumber() != null) {
-            object.append("intron", ct.getIntronNumber());
-        }
-        if (ct.getExonNumber() != null) {
-            object.append("exon", ct.getExonNumber());
+        if (variantEffect.getProteinDomains() != null) {
+            object.append("proteinDomains", StringUtils.join(variantEffect.getProteinDomains(), ","));
         }
 
-        if (ct.getVariantToTranscriptDistance() >= 0) {
-            object.append("distance", ct.getVariantToTranscriptDistance());
+        if (variantEffect.getAminoacidChange() != null) {
+            object.append("aaChange", variantEffect.getAminoacidChange());
+        }
+        if (variantEffect.getCodonChange() != null) {
+            object.append("codonChange", variantEffect.getCodonChange());
         }
 
-        if (ct.getClinicalSignificance() != null) {
-            object.append("clinicSig", ct.getClinicalSignificance());
+        if (variantEffect.getVariationId() != null) {
+            object.append("id", variantEffect.getVariationId());
+        }
+        if (variantEffect.getStructuralVariantsId() != null) {
+            object.append("svIds", StringUtils.join(variantEffect.getStructuralVariantsId(), ","));
         }
 
-        if (ct.getPubmed() != null) {
-            object.append("pubmed", StringUtils.join(ct.getPubmed(), ","));
+        if (variantEffect.getHgvsc() != null) {
+            object.append("hgvsc", variantEffect.getHgvsc());
         }
-        object.append("canonical", ct.isCanonical());
+        if (variantEffect.getHgvsp() != null) {
+            object.append("hgvsp", variantEffect.getHgvsp());
+        }
+
+        if (variantEffect.getIntronNumber() != null) {
+            object.append("intron", variantEffect.getIntronNumber());
+        }
+        if (variantEffect.getExonNumber() != null) {
+            object.append("exon", variantEffect.getExonNumber());
+        }
+
+        if (variantEffect.getVariantToTranscriptDistance() >= 0) {
+            object.append("distance", variantEffect.getVariantToTranscriptDistance());
+        }
+
+        if (variantEffect.getClinicalSignificance() != null) {
+            object.append("clinicSig", variantEffect.getClinicalSignificance());
+        }
+
+        if (variantEffect.getPubmed() != null) {
+            object.append("pubmed", StringUtils.join(variantEffect.getPubmed(), ","));
+        }
+        object.append("canonical", variantEffect.isCanonical());
 
         return object;
     }
@@ -255,7 +255,7 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantEffect> {
         return object;
     }
 
-    private String buildRowkey(VariantEffect v) {
+    private String buildRowkey(VariantAnnotation v) {
         StringBuilder builder = new StringBuilder(v.getChromosome());
         builder.append("_");
         builder.append(v.getStart());
