@@ -6,7 +6,7 @@ import com.google.common.collect.HashBiMap;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.opencb.biodata.models.variant.effect.ConsequenceType;
+import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.core.serializer.CellBaseTypeConverter;
 
@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * Created by imedina on 17/06/14.
  */
-public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffect, DBObject> {
+public class VariantEffectConverter implements CellBaseTypeConverter<VariantAnnotation, DBObject> {
 
     private static final BiMap<String, String> featureTypes = HashBiMap.create();
     private static final BiMap<String, String> featureBiotypes = HashBiMap.create();
@@ -38,11 +38,11 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
     }
 
     @Override
-    public DBObject convertToStorageSchema(VariantEffect variantEffect) {
-        BasicDBObject mongoDbSchema = new BasicDBObject("chr", variantEffect.getChromosome())
-                .append("start", variantEffect.getStart())
-                .append("end", variantEffect.getEnd())
-                .append("ref", variantEffect.getReferenceAllele());
+    public DBObject convertToStorageSchema(VariantAnnotation variantAnnotation) {
+        BasicDBObject mongoDbSchema = new BasicDBObject("chr", variantAnnotation.getChromosome())
+                .append("start", variantAnnotation.getStart())
+                .append("end", variantAnnotation.getEnd())
+                .append("ref", variantAnnotation.getReferenceAllele());
 
 
 
@@ -51,7 +51,7 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
         BasicDBList consequenceTypeSchemaList = new BasicDBList();
 
         // 'keys' contains all the ALT alleles simulated
-        Set<String> keys= variantEffect.getConsequenceTypes().keySet();
+        Set<String> keys= variantAnnotation.getEffects().keySet();
         Iterator<String> iterator = keys.iterator();
 
         // If a critical position 4 ALT alleles are pre-computed: one of A, C, G or T, and the '-'
@@ -60,11 +60,11 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
         if(keys.size() >= 4) {
             while(iterator.hasNext()) {
                 String key = iterator.next();
-                List<ConsequenceType> consequenceTypes = variantEffect.getConsequenceTypes().get(key);
+                List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
 
                 BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", key);
                 BasicDBList consequenceTypeDBList = new BasicDBList();
-                for(ConsequenceType consequenceType: consequenceTypes) {
+                for(VariantEffect consequenceType: consequenceTypes) {
                     BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
                     consequenceTypeDBList.add(consequenceTypeItemDBObject);
                 }
@@ -79,16 +79,16 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
         }else {
             // If '-' is found then an allele independent position has been found and 1 allele and '-' are expected
             if(keys.contains("-")) {
-            System.out.println(keys+" "+variantEffect.getStart()+"-"+variantEffect.getEnd());
+            System.out.println(keys+" "+variantAnnotation.getStart()+"-"+variantAnnotation.getEnd());
                 boolean commonFound = false;
                 while(iterator.hasNext()) {
                     String key = iterator.next();
                     if(key.equals("-")) {
-                        List<ConsequenceType> consequenceTypes = variantEffect.getConsequenceTypes().get(key);
+                        List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
 
                         BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", key);
                         BasicDBList consequenceTypeDBList = new BasicDBList();
-                        for(ConsequenceType consequenceType: consequenceTypes) {
+                        for(VariantEffect consequenceType: consequenceTypes) {
                             BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
                             consequenceTypeDBList.add(consequenceTypeItemDBObject);
                         }
@@ -100,11 +100,11 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
                         // Only the first non '-' is stored
                         if(!commonFound) {
                             commonFound = true;
-                            List<ConsequenceType> consequenceTypes = variantEffect.getConsequenceTypes().get(key);
+                            List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
 
                             BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", "*");
                             BasicDBList consequenceTypeDBList = new BasicDBList();
-                            for(ConsequenceType consequenceType: consequenceTypes) {
+                            for(VariantEffect consequenceType: consequenceTypes) {
                                 // HGVS must be encoded with '*'
                                 if(consequenceType.getHgvsc() != null) {
                                     if(consequenceType.getFeatureStrand().equals("1")) {
@@ -138,11 +138,11 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
                 // 1077844
                 while(iterator.hasNext()) {
                     String key = iterator.next();
-                    List<ConsequenceType> consequenceTypes = variantEffect.getConsequenceTypes().get(key);
+                    List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
 
                     BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", key);
                     BasicDBList consequenceTypeDBList = new BasicDBList();
-                    for(ConsequenceType consequenceType: consequenceTypes) {
+                    for(VariantEffect consequenceType: consequenceTypes) {
                         BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
                         consequenceTypeDBList.add(consequenceTypeItemDBObject);
                     }
@@ -159,7 +159,7 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
     }
 
     @Override
-    public VariantEffect convertToDataModel(DBObject dbObject) {
+    public VariantAnnotation convertToDataModel(DBObject dbObject) {
         return null;
     }
 
@@ -167,57 +167,57 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantEffe
 
 
 
-    private BasicDBObject parseConsequenceTypeToDBObject(ConsequenceType consequenceType) {
+    private BasicDBObject parseConsequenceTypeToDBObject(VariantEffect variantEffect) {
         // We can save some disk not storing the ALT allele in each document: ("alt", consequenceType.getAllele())
         // This ALT allele MUST BE the same than the 'key'.
         // BasicDBObject consequenceTypeItemDBObject = new BasicDBObject("alt", consequenceType.getAllele());
         BasicDBObject consequenceTypeItemDBObject = new BasicDBObject();
-        consequenceTypeItemDBObject.append("gId", consequenceType.getGeneId())
-                .append("gName", consequenceType.getGeneName())
-                .append("gSrc", consequenceType.getGeneNameSource())
-                .append("ftId", consequenceType.getFeatureId())
-                .append("ftType", (featureTypes.containsKey(consequenceType.getFeatureType())) ? featureTypes.get(consequenceType.getFeatureType()) : consequenceType.getFeatureType())
-                .append("ftBio", (featureBiotypes.containsKey(consequenceType.getFeatureBiotype()) ? featureBiotypes.get(consequenceType.getFeatureBiotype()) : consequenceType.getFeatureBiotype()))
-                .append("ftStr", consequenceType.getFeatureStrand());
+        consequenceTypeItemDBObject.append("gId", variantEffect.getGeneId())
+                .append("gName", variantEffect.getGeneName())
+                .append("gSrc", variantEffect.getGeneNameSource())
+                .append("ftId", variantEffect.getFeatureId())
+                .append("ftType", (featureTypes.containsKey(variantEffect.getFeatureType())) ? featureTypes.get(variantEffect.getFeatureType()) : variantEffect.getFeatureType())
+                .append("ftBio", (featureBiotypes.containsKey(variantEffect.getFeatureBiotype()) ? featureBiotypes.get(variantEffect.getFeatureBiotype()) : variantEffect.getFeatureBiotype()))
+                .append("ftStr", variantEffect.getFeatureStrand());
 
-        if(consequenceType.getcDnaPosition() != -1)
-            consequenceTypeItemDBObject.append("cDnaPos", consequenceType.getcDnaPosition());
-        if(consequenceType.getCcdsId() != null)
-            consequenceTypeItemDBObject.append("ccdsId", consequenceType.getCcdsId());
-        if(consequenceType.getCdsPosition() != -1)
-            consequenceTypeItemDBObject.append("cdsPos", consequenceType.getCdsPosition());
-        if(consequenceType.getProteinId() != null)
-            consequenceTypeItemDBObject.append("pId", consequenceType.getProteinId());
-        if(consequenceType.getProteinPosition() != -1)
-            consequenceTypeItemDBObject.append("pPos", consequenceType.getProteinPosition());
-        if(consequenceType.getProteinDomains() != null)
-            consequenceTypeItemDBObject.append("pDom", Joiner.on(",").join(consequenceType.getProteinDomains()));
-        if(consequenceType.getAminoacidChange() != null)
-            consequenceTypeItemDBObject.append("aaCh", consequenceType.getAminoacidChange());
-        if(consequenceType.getCodonChange() != null)
-            consequenceTypeItemDBObject.append("codCh", consequenceType.getCodonChange());
-        if(consequenceType.getVariationId() != null)
-            consequenceTypeItemDBObject.append("snpId", consequenceType.getVariationId());
-        if(consequenceType.getStructuralVariantsId() != null)
-            consequenceTypeItemDBObject.append("svIds", Joiner.on(",").join(consequenceType.getStructuralVariantsId()));
-        if(consequenceType.getConsequenceTypes() != null)
-            consequenceTypeItemDBObject.append("ctTypes", consequenceType.getConsequenceTypes());
-        if(consequenceType.isCanonical() != false)
-            consequenceTypeItemDBObject.append("isCcan", consequenceType.isCanonical());
-        if(consequenceType.getHgvsc() != null)
-            consequenceTypeItemDBObject.append("hgvsc", consequenceType.getHgvsc());
-        if(consequenceType.getHgvsp() != null)
-            consequenceTypeItemDBObject.append("hgvsp", consequenceType.getHgvsp());
-        if(consequenceType.getIntronNumber() != null)
-            consequenceTypeItemDBObject.append("inNum", consequenceType.getIntronNumber());
-        if(consequenceType.getExonNumber() != null)
-            consequenceTypeItemDBObject.append("exNum", consequenceType.getExonNumber());
-        if(consequenceType.getVariantToTranscriptDistance() != -1)
-            consequenceTypeItemDBObject.append("varTrDist", consequenceType.getVariantToTranscriptDistance());
-        if(consequenceType.getClinicalSignificance() != null)
-            consequenceTypeItemDBObject.append("clinSig", consequenceType.getClinicalSignificance());
-        if(consequenceType.getPubmed() != null)
-            consequenceTypeItemDBObject.append("pubmeds", Joiner.on(",").join(consequenceType.getPubmed()));;
+        if(variantEffect.getcDnaPosition() != -1)
+            consequenceTypeItemDBObject.append("cDnaPos", variantEffect.getcDnaPosition());
+        if(variantEffect.getCcdsId() != null)
+            consequenceTypeItemDBObject.append("ccdsId", variantEffect.getCcdsId());
+        if(variantEffect.getCdsPosition() != -1)
+            consequenceTypeItemDBObject.append("cdsPos", variantEffect.getCdsPosition());
+        if(variantEffect.getProteinId() != null)
+            consequenceTypeItemDBObject.append("pId", variantEffect.getProteinId());
+        if(variantEffect.getProteinPosition() != -1)
+            consequenceTypeItemDBObject.append("pPos", variantEffect.getProteinPosition());
+        if(variantEffect.getProteinDomains() != null)
+            consequenceTypeItemDBObject.append("pDom", Joiner.on(",").join(variantEffect.getProteinDomains()));
+        if(variantEffect.getAminoacidChange() != null)
+            consequenceTypeItemDBObject.append("aaCh", variantEffect.getAminoacidChange());
+        if(variantEffect.getCodonChange() != null)
+            consequenceTypeItemDBObject.append("codCh", variantEffect.getCodonChange());
+        if(variantEffect.getVariationId() != null)
+            consequenceTypeItemDBObject.append("snpId", variantEffect.getVariationId());
+        if(variantEffect.getStructuralVariantsId() != null)
+            consequenceTypeItemDBObject.append("svIds", Joiner.on(",").join(variantEffect.getStructuralVariantsId()));
+        if(variantEffect.getConsequenceTypes() != null)
+            consequenceTypeItemDBObject.append("ctTypes", variantEffect.getConsequenceTypes());
+        if(variantEffect.isCanonical() != false)
+            consequenceTypeItemDBObject.append("isCcan", variantEffect.isCanonical());
+        if(variantEffect.getHgvsc() != null)
+            consequenceTypeItemDBObject.append("hgvsc", variantEffect.getHgvsc());
+        if(variantEffect.getHgvsp() != null)
+            consequenceTypeItemDBObject.append("hgvsp", variantEffect.getHgvsp());
+        if(variantEffect.getIntronNumber() != null)
+            consequenceTypeItemDBObject.append("inNum", variantEffect.getIntronNumber());
+        if(variantEffect.getExonNumber() != null)
+            consequenceTypeItemDBObject.append("exNum", variantEffect.getExonNumber());
+        if(variantEffect.getVariantToTranscriptDistance() != -1)
+            consequenceTypeItemDBObject.append("varTrDist", variantEffect.getVariantToTranscriptDistance());
+        if(variantEffect.getClinicalSignificance() != null)
+            consequenceTypeItemDBObject.append("clinSig", variantEffect.getClinicalSignificance());
+        if(variantEffect.getPubmed() != null)
+            consequenceTypeItemDBObject.append("pubmeds", Joiner.on(",").join(variantEffect.getPubmed()));;
 
         return consequenceTypeItemDBObject;
     }
