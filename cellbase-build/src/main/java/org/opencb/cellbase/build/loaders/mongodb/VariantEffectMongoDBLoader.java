@@ -23,6 +23,7 @@ import java.util.logging.Logger;
  *
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
+@Deprecated
 public class VariantEffectMongoDBLoader implements DataWriter<VariantAnnotation> {
 
     private String host;
