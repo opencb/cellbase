@@ -1,8 +1,8 @@
 package org.opencb.cellbase.build.transform;
 
+import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
-import org.opencb.cellbase.core.common.variation.Mutation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -98,7 +98,7 @@ public class MutationParser {
         }
     }
 
-    public class MutationMongoDB extends Mutation{
+    public class MutationMongoDB extends Mutation {
 
         private List<String> chunkIds;
 

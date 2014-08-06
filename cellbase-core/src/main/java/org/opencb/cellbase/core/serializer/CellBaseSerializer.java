@@ -1,15 +1,14 @@
 package org.opencb.cellbase.core.serializer;
 
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GenomeSequenceChunk;
+import org.opencb.biodata.models.protein.Interaction;
 import org.opencb.biodata.models.variant.effect.VariantAnnotation;
-import org.opencb.biodata.models.variant.effect.VariantEffect;
+import org.opencb.biodata.models.variation.Mutation;
+import org.opencb.biodata.models.variation.Variation;
+import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
 import org.opencb.cellbase.core.common.GenericFeature;
-import org.opencb.cellbase.core.common.core.Gene;
-import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
-import org.opencb.cellbase.core.common.protein.Interaction;
-import org.opencb.cellbase.core.common.variation.Mutation;
-import org.opencb.cellbase.core.common.variation.Variation;
-import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
 
 import java.nio.file.Path;
 

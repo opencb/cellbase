@@ -51,11 +51,25 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantAnno
         Set<String> keys= variantAnnotation.getEffects().keySet();
         Iterator<String> iterator = keys.iterator();
 
+        // Note:
+        // During the simulation 2 types of variants are simulated:
+        // - common: which means only one allele is simulated since no different results are produced by VEP. This is
+        //          the case of UPSTREAM, DOWNSTREAM and INTRONS variants
+        // - all: the 3 possible SNV and '-' are simulated. This is done for EXONS and REGULATORY regions
+//        System.out.println("num. alleles:\t"+keys.size());
+//        if(keys.size() == 3) {
+//            System.out.println("==3: "+variantAnnotation+":"+variantAnnotation.getStart()+" alleles: "+keys+"\n");
+//        }
+//        if(keys.size() == 2 && !keys.contains("T") && !keys.contains("C")) {
+//            System.out.println("==2: "+variantAnnotation+":"+variantAnnotation.getStart()+" alleles: "+keys+"\n");
+//        }
+
         // If the different allele at this genomic position can produce different results the 4 possible SNV ALT alleles
         // are pre-computed: one of these A, C, G or T; and '-'
         // No more are possible can be found (in theory), but maybe some funny SNPs like AA/TTA exist so
         // if "size >= 4" then all possible values are stored.
         if(keys.size() >= 4) {
+//            System.out.println(">=4: "+variantAnnotation+":"+variantAnnotation.getStart()+" alleles: "+keys+"\n");
             while(iterator.hasNext()) {
                 String key = iterator.next();
                 List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
@@ -75,68 +89,10 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantAnno
         // (to minimize the number of calls to VEP), or a few multiallelic SNPs were found at that position.
         // ALT allele must be stored as '*' allele when possible to save space.
         }else {
-            // If '-' is found then an allele independent position has been found and 1 allele and '-' are expected
-            if(keys.contains("-")) {
-                System.out.println(keys+" "+variantAnnotation.getStart()+"-"+variantAnnotation.getEnd());
-                boolean commonFound = false;
-                while(iterator.hasNext()) {
-                    String key = iterator.next();
-                    if(key.equals("-")) {
-                        List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
-
-                        BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", key);
-                        BasicDBList consequenceTypeDBList = new BasicDBList();
-                        for(VariantEffect consequenceType: consequenceTypes) {
-                            BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
-                            consequenceTypeDBList.add(consequenceTypeItemDBObject);
-                        }
-                        consequenceTypeDBObject.append("val", consequenceTypeDBList);
-
-                        // Add Consequence Type object of this ALT to the List
-                        consequenceTypeSchemaList.add(consequenceTypeDBObject);
-                    }else {
-                        // Only the first non '-' is stored using '*'
-                        if(!commonFound) {
-                            commonFound = true;
-                            List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
-
-                            BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", "*");
-                            BasicDBList consequenceTypeDBList = new BasicDBList();
-                            for(VariantEffect consequenceType: consequenceTypes) {
-                                // HGVS must be encoded with '*'
-                                if(consequenceType.getHgvsc() != null) {
-                                    if(consequenceType.getFeatureStrand().equals("1")) {
-                                        String s = consequenceType.getHgvsc().replace(">"+key, ">*");
-                                        consequenceType.setHgvsc(s);
-                                    }else {
-                                        String complement = "";
-                                        switch (key) {
-                                            case "A": complement = "T"; break;
-                                            case "T": complement = "A"; break;
-                                            case "C": complement = "G"; break;
-                                            case "G": complement = "C"; break;
-                                        }
-                                        String s = consequenceType.getHgvsc().replace(">"+complement, ">*");
-                                        consequenceType.setHgvsc(s);
-                                    }
-                                }
-                                BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
-                                consequenceTypeDBList.add(consequenceTypeItemDBObject);
-                            }
-                            consequenceTypeDBObject.append("val", consequenceTypeDBList);
-
-                            // Add Consequence Type object of this ALT to the List
-                            consequenceTypeSchemaList.add(consequenceTypeDBObject);
-                        }
-                    }
-                }
-            }
-            // If no '-' is found we process all of them.
-            else {
-                // 1077844
-                System.out.println(variantAnnotation.getStart());
-                while(iterator.hasNext()) {
-                    String key = iterator.next();
+            boolean commonFound = false;
+            while(iterator.hasNext()) {
+                String key = iterator.next();
+                if(key.equals("-")) {
                     List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
 
                     BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", key);
@@ -149,8 +105,120 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantAnno
 
                     // Add Consequence Type object of this ALT to the List
                     consequenceTypeSchemaList.add(consequenceTypeDBObject);
+                }else {
+                    // Only the first non '-' is stored using '*'
+                    if(!commonFound) {
+                        commonFound = true;
+                        List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
+
+                        BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", "*");
+                        BasicDBList consequenceTypeDBList = new BasicDBList();
+                        for(VariantEffect consequenceType: consequenceTypes) {
+                            // HGVS must be encoded with '*'
+                            if(consequenceType.getHgvsc() != null) {
+                                if(consequenceType.getFeatureStrand().equals("1")) {
+                                    String s = consequenceType.getHgvsc().replace(">"+key, ">*");
+                                    consequenceType.setHgvsc(s);
+                                }else {
+                                    String complement = "";
+                                    switch (key) {
+                                        case "A": complement = "T"; break;
+                                        case "T": complement = "A"; break;
+                                        case "C": complement = "G"; break;
+                                        case "G": complement = "C"; break;
+                                    }
+                                    String s = consequenceType.getHgvsc().replace(">"+complement, ">*");
+                                    consequenceType.setHgvsc(s);
+                                }
+                            }
+                            BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
+                            consequenceTypeDBList.add(consequenceTypeItemDBObject);
+                        }
+                        consequenceTypeDBObject.append("val", consequenceTypeDBList);
+
+                        // Add Consequence Type object of this ALT to the List
+                        consequenceTypeSchemaList.add(consequenceTypeDBObject);
+                    }
                 }
             }
+
+//            // If '-' is found then an allele independent position has been found and 1 allele and '-' are expected
+//            if(keys.contains("-")) {
+//                System.out.println("if: "+variantAnnotation+":"+variantAnnotation.getStart()+" alleles: "+keys+"\n");
+////                System.out.println(keys+" "+variantAnnotation.getStart()+"-"+variantAnnotation.getEnd());
+//                boolean commonFound = false;
+//                while(iterator.hasNext()) {
+//                    String key = iterator.next();
+//                    if(key.equals("-")) {
+//                        List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
+//
+//                        BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", key);
+//                        BasicDBList consequenceTypeDBList = new BasicDBList();
+//                        for(VariantEffect consequenceType: consequenceTypes) {
+//                            BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
+//                            consequenceTypeDBList.add(consequenceTypeItemDBObject);
+//                        }
+//                        consequenceTypeDBObject.append("val", consequenceTypeDBList);
+//
+//                        // Add Consequence Type object of this ALT to the List
+//                        consequenceTypeSchemaList.add(consequenceTypeDBObject);
+//                    }else {
+//                        // Only the first non '-' is stored using '*'
+//                        if(!commonFound) {
+//                            commonFound = true;
+//                            List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
+//
+//                            BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", "*");
+//                            BasicDBList consequenceTypeDBList = new BasicDBList();
+//                            for(VariantEffect consequenceType: consequenceTypes) {
+//                                // HGVS must be encoded with '*'
+//                                if(consequenceType.getHgvsc() != null) {
+//                                    if(consequenceType.getFeatureStrand().equals("1")) {
+//                                        String s = consequenceType.getHgvsc().replace(">"+key, ">*");
+//                                        consequenceType.setHgvsc(s);
+//                                    }else {
+//                                        String complement = "";
+//                                        switch (key) {
+//                                            case "A": complement = "T"; break;
+//                                            case "T": complement = "A"; break;
+//                                            case "C": complement = "G"; break;
+//                                            case "G": complement = "C"; break;
+//                                        }
+//                                        String s = consequenceType.getHgvsc().replace(">"+complement, ">*");
+//                                        consequenceType.setHgvsc(s);
+//                                    }
+//                                }
+//                                BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
+//                                consequenceTypeDBList.add(consequenceTypeItemDBObject);
+//                            }
+//                            consequenceTypeDBObject.append("val", consequenceTypeDBList);
+//
+//                            // Add Consequence Type object of this ALT to the List
+//                            consequenceTypeSchemaList.add(consequenceTypeDBObject);
+//                        }
+//                    }
+//                }
+//            }
+//            // If no '-' is found we process all of them.
+//            else {
+//                // 1077844
+//                System.out.println("else: "+variantAnnotation+":"+variantAnnotation.getStart()+" alleles: "+keys+"\n");
+//                while(iterator.hasNext()) {
+//                    String key = iterator.next();
+//                    List<VariantEffect> consequenceTypes = variantAnnotation.getEffects().get(key);
+//
+//                    BasicDBObject consequenceTypeDBObject = new BasicDBObject("alt", key);
+//                    BasicDBList consequenceTypeDBList = new BasicDBList();
+//                    for(VariantEffect consequenceType: consequenceTypes) {
+//                        BasicDBObject consequenceTypeItemDBObject = parseConsequenceTypeToDBObject(consequenceType);
+//                        consequenceTypeDBList.add(consequenceTypeItemDBObject);
+//                    }
+//                    consequenceTypeDBObject.append("val", consequenceTypeDBList);
+//
+//                    // Add Consequence Type object of this ALT to the List
+//                    consequenceTypeSchemaList.add(consequenceTypeDBObject);
+//                }
+//            }
         }
         mongoDbSchema.append("eff", consequenceTypeSchemaList);
 
@@ -224,7 +292,7 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantAnno
             consequenceTypeItemDBObject.append("svIds", Joiner.on(",").join(variantEffect.getStructuralVariantsId()));
         if(variantEffect.getConsequenceTypes() != null)
             consequenceTypeItemDBObject.append("ctTypes", variantEffect.getConsequenceTypes());
-        if(variantEffect.isCanonical() != false)
+        if(variantEffect.isCanonical())
             consequenceTypeItemDBObject.append("isCan", variantEffect.isCanonical());
         if(variantEffect.getHgvsc() != null)
             consequenceTypeItemDBObject.append("hgvsc", variantEffect.getHgvsc());
@@ -239,7 +307,7 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantAnno
         if(variantEffect.getClinicalSignificance() != null)
             consequenceTypeItemDBObject.append("clinSig", variantEffect.getClinicalSignificance());
         if(variantEffect.getPubmed() != null)
-            consequenceTypeItemDBObject.append("pubmeds", Joiner.on(",").join(variantEffect.getPubmed()));;
+            consequenceTypeItemDBObject.append("pubmeds", Joiner.on(",").join(variantEffect.getPubmed()));
 
         return consequenceTypeItemDBObject;
     }

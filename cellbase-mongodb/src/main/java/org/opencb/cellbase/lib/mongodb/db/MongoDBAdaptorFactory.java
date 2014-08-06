@@ -7,10 +7,7 @@ import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.*;
 import org.opencb.cellbase.lib.mongodb.db.network.PathwayMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.network.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.regulatory.RegulatoryRegionMongoDBAdaptor;
@@ -245,6 +242,24 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return (VariantEffectDBAdaptor) new VariantEffectMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
                 speciesAlias.get(species), version);
     }
+
+
+    @Override
+    public VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species) {
+        return getGenomicVariantAnnotationDBAdaptor(species, null);
+    }
+
+    @Override
+    public VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species, String version) {
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return (VariantAnnotationDBAdaptor) new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
+    }
+
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species) {

@@ -3,8 +3,8 @@ package org.opencb.cellbase.build.transform;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.core.common.core.*;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +66,8 @@ public class GeneParser {
         String chromSequence = "";
         String exonSequence = "";
 
-        GeneMongoDB gene = null;
+//        GeneMongoDB gene = null;
+        Gene gene = null;
         Transcript transcript;
         Exon exon = null;
         int cdna = 1;
@@ -153,16 +154,20 @@ public class GeneParser {
             if (gene == null || !geneId.equals(gene.getId())) {
                 // gene object can only be null the first time
                 if (gene != null) { // genes.size()>0
+
                     // Adding chunksIds
-                    int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
-                    int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
-                    for(int i=chunkStart; i<=chunkEnd; i++) {
-                        gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
-                    }
+//                    int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
+//                    int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
+//                    for(int i=chunkStart; i<=chunkEnd; i++) {
+//                        gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
+//                    }
                     serializer.serialize(gene);
                 }
 
-                gene = new GeneMongoDB(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
+//                gene = new GeneMongoDB(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
+//                        "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
+//                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(), mirnaGeneMap.get(geneId));
+                gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(), mirnaGeneMap.get(geneId));
                 // Do not change order!! size()-1 is the index of the gene ID
@@ -359,11 +364,11 @@ public class GeneParser {
         }
 
         // Adding chunksIds
-        int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
-        int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
-        for(int i=chunkStart; i<=chunkEnd; i++) {
-            gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
-        }
+//        int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
+//        int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
+//        for(int i=chunkStart; i<=chunkEnd; i++) {
+//            gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
+//        }
         // last gene must be written
         serializer.serialize(gene);
 
@@ -554,6 +559,7 @@ public class GeneParser {
         return mirnaGeneMap;
     }
 
+    @Deprecated
     class GeneMongoDB extends Gene {
         private List<String> chunkIds;
 

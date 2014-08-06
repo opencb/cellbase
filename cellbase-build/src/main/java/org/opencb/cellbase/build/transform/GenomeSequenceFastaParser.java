@@ -1,11 +1,11 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.biodata.models.core.Chromosome;
+import org.opencb.biodata.models.core.Cytoband;
+import org.opencb.biodata.models.core.GenomeSequenceChunk;
+import org.opencb.biodata.models.core.InfoStats;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
-import org.opencb.cellbase.core.common.core.Chromosome;
-import org.opencb.cellbase.core.common.core.Cytoband;
-import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
-import org.opencb.cellbase.core.common.core.InfoStats;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import java.io.*;
 import java.nio.charset.Charset;
