@@ -7,18 +7,36 @@
     <artifactId>cellbase</artifactId>
     <version>3.0.0</version>
     <packaging>pom</packaging>
+
     <name>CellBase project</name>
     <description>CellBase projects integrates several biological databases into a NoSQL database plus many WS to query</description>
     <url>http://www.opencb.org/subprojects/cellbase</url>
+
+    <modules>
+        <module>cellbase-build</module>
+        <module>cellbase-core</module>
+        <module>cellbase-mongodb</module>
+        <module>cellbase-server</module>
+    </modules>
+
+    <properties>
+        <cellbase.version>3.0.0</cellbase.version>
+        <compileSource>1.7</compileSource>
+    </properties>
+
+    <scm>
+        <url>https://github.com/opencb/cellbase</url>
+        <connection>scm:git:git://github.com/opencb/cellbase.git</connection>
+        <developerConnection>scm:git:git@github.com:opencb/cellbase.git</developerConnection>
+    </scm>
+
     <licenses>
         <license>
             <name>GNU GENERAL PUBLIC LICENSE Version 2</name>
             <url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
         </license>
     </licenses>
-    <scm>
-        <url>https://github.com/opencb/cellbase</url>
-    </scm>
+
     <developers>
         <developer>
             <id>imedina</id>
@@ -32,17 +50,13 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>cellbase-build</module>
-        <module>cellbase-core</module>
-        <module>cellbase-mongodb</module>
-        <module>cellbase-server</module>
-    </modules>
-
-    <properties>
-        <cellbase.version>3.0.0</cellbase.version>
-        <compileSource>1.7</compileSource>
-    </properties>
+    <mailingLists>
+        <mailingList>
+            <name>OpenCB Mailing List</name>
+            <archive>https://groups.google.com/forum/#!forum/opencb</archive>
+            <post>opencb@googlegroups.com</post>
+        </mailingList>
+    </mailingLists>
 
     <dependencyManagement>
         <dependencies>
@@ -145,6 +159,32 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <executions>
                     <execution>
@@ -156,7 +196,29 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.2</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
