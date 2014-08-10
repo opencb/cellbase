@@ -11,7 +11,8 @@
     </parent>
 
     <artifactId>cellbase-build</artifactId>
-    <version>3.0.0</version>
+    <version>${cellbase.version}</version>
+    <packaging>jar</packaging>
 
     <properties>
         <installation.dir>installation-dir</installation.dir>
@@ -27,7 +28,6 @@
             <groupId>org.opencb.commons</groupId>
             <artifactId>bioformats</artifactId>
         </dependency>
-
         <dependency>
             <groupId>psidev.psi.mi</groupId>
             <artifactId>psimitab</artifactId>

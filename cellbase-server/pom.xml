@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>cellbase-server</artifactId>
+    <version>${cellbase.version}</version>
     <packaging>war</packaging>
 
     <dependencies>
@@ -18,7 +19,6 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-mongodb</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

@@ -11,14 +11,14 @@
     </parent>
 
     <artifactId>cellbase-core</artifactId>
-    <version>3.0.0</version>
+    <version>${cellbase.version}</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.opencb.commons</groupId>
             <artifactId>bioformats</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
