@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+//import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceChunk;

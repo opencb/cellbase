@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.opencb</groupId>
+        <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
         <version>3.0.0</version>
         <relativePath>..</relativePath>
@@ -17,6 +17,14 @@
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.biodata</groupId>
+            <artifactId>models</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.biodata</groupId>
+            <artifactId>formats</artifactId>
         </dependency>
 
         <dependency>
