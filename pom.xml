@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <packaging>pom</packaging>
     <name>CellBase project</name>
     <description>CellBase projects integrates several biological databases into a NoSQL database plus many WS to query</description>
@@ -45,7 +45,7 @@
     </modules>
 
     <properties>
-        <cellbase.version>3.0.0</cellbase.version>
+        <cellbase.version>3.1.0</cellbase.version>
         <compileSource>1.7</compileSource>
     </properties>
 
