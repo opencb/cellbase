@@ -178,8 +178,8 @@ our $DROSOPHILA_MELANOGASTER_VARIATION = "drosophila_melanogaster_variation_76_5
 our $DROSOPHILA_MELANOGASTER_FUNCTIONAL = "drosophila_melanogaster_funcgen_76_546";
 our $DROSOPHILA_SIMULANS_CORE = "drosophila_simulans_core_18_76_14";
 our $DROSOPHILA_YAKUBA_CORE = "drosophila_yakuba_core_18_76_13";
-our $ANOPHELES_GAMBIAE_CORE = "anopheles_gambiae_core_18_76_3";
-our $ANOPHELES_GAMBIAE_VARIATION = "anopheles_gambiae_variation_18_76_3";
+our $ANOPHELES_GAMBIAE_CORE = "anopheles_gambiae_core_22_75_3";
+our $ANOPHELES_GAMBIAE_VARIATION = "anopheles_gambiae_variation_22_75_3";
 our $CAENORHABDITIS_ELEGANS_CORE = "caenorhabditis_elegans_core_76_240";
 
 ## Fungi
@@ -192,17 +192,17 @@ our $ASPERGILLUS_NIDULANS_CORE = "aspergillus_nidulans_core_18_76_6";
 our $ASPERGILLUS_ORYZAE_CORE = "aspergillus_oryzae_core_18_76_2";
 
 ## Protist
-our $PLASMODIUM_FALCIPARUM_CORE = "plasmodium_falciparum_core_18_76_3";
-our $PLASMODIUM_FALCIPARUM_VARIATION = "plasmodium_falciparum_variation_18_76_3";
+our $PLASMODIUM_FALCIPARUM_CORE = "plasmodium_falciparum_core_22_75_3";
+our $PLASMODIUM_FALCIPARUM_VARIATION = "plasmodium_falciparum_variation_22_75_3";
 our $LEISHMANIA_MAJOR_CORE = "leishmania_major_core_18_76_2";
 
 ## Plants
-our $ARABIDOPSIS_THALIANA_CORE = "arabidopsis_thaliana_core_18_76_10";
+our $ARABIDOPSIS_THALIANA_CORE = "arabidopsis_thaliana_core_22_75_10";
 our $ARABIDOPSIS_LYRATA_CORE = "arabidopsis_lyrata_core_18_76_10";
 our $BRACHYPODIUM_DISTACHYON_CORE = "brachypodium_distachyon_core_18_76_12";
-our $ORYZA_SATIVA_CORE = "oryza_sativa_core_18_76_6";
+our $ORYZA_SATIVA_CORE = "oryza_sativa_core_22_75_7";
 our $GLYCINE_MAX_CORE = "glycine_max_core_18_76_1";
-our $VITIS_VINIFERA_CORE = "vitis_vinifera_core_18_76_3";
+our $VITIS_VINIFERA_CORE = "vitis_vinifera_core_22_75_3";
 our $ZEA_MAYS_CORE = "zea_mays_core_18_76_6";
 
 
