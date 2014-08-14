@@ -186,7 +186,7 @@ our $CAENORHABDITIS_ELEGANS_CORE = "caenorhabditis_elegans_core_76_240";
 our $SACCHAROMYCES_CEREVISIAE_CORE = "saccharomyces_cerevisiae_core_76_4";
 our $SACCHAROMYCES_CEREVISIAE_VARIATION = "saccharomyces_cerevisiae_variation_76_4";
 our $SCHIZOSACCHAROMYCES_POMBE_CORE = "schizosaccharomyces_pombe_core_18_76_2";
-our $ASPERGILLUS_FUMIGATUS_CORE = "aspergillus_fumigatus_core_18_76_2";
+our $ASPERGILLUS_FUMIGATUS_CORE = "aspergillus_fumigatus_core_22_75_2";
 our $ASPERGILLUS_NIGER_CORE = "aspergillus_niger_core_18_76_1";
 our $ASPERGILLUS_NIDULANS_CORE = "aspergillus_nidulans_core_18_76_6";
 our $ASPERGILLUS_ORYZAE_CORE = "aspergillus_oryzae_core_18_76_2";
@@ -194,7 +194,7 @@ our $ASPERGILLUS_ORYZAE_CORE = "aspergillus_oryzae_core_18_76_2";
 ## Protist
 our $PLASMODIUM_FALCIPARUM_CORE = "plasmodium_falciparum_core_22_75_3";
 our $PLASMODIUM_FALCIPARUM_VARIATION = "plasmodium_falciparum_variation_22_75_3";
-our $LEISHMANIA_MAJOR_CORE = "leishmania_major_core_18_76_2";
+our $LEISHMANIA_MAJOR_CORE = "leishmania_major_core_22_75_2";
 
 ## Plants
 our $ARABIDOPSIS_THALIANA_CORE = "arabidopsis_thaliana_core_22_75_10";
