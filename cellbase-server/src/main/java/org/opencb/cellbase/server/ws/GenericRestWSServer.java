@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.lib.mongodb.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.Species;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -684,10 +684,17 @@ public class GenericRestWSServer implements IWSServer {
     protected Response createJsonResponse(Object obj) {
         endTime = System.currentTimeMillis() - startTime;
         queryResponse.put("time", endTime);
-        queryResponse.put("version", version);
-        queryResponse.put("species", species);
+//        queryResponse.put("version", version);
+//        queryResponse.put("species", species);
         queryResponse.put("queryOptions", queryOptions);
         queryResponse.put("response", obj);
+
+        // Quick fix to be copliant with new standard
+        queryResponse.put("error", queryResponse.get("errorMsg"));
+        queryResponse.put("warning", queryResponse.get("warningMsg"));
+        queryResponse.remove("errorMsg");
+        queryResponse.remove("warningMsg");
+        queryResponse.remove("dbVersion");
 
         try {
             return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));

@@ -1,9 +1,9 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
+import org.opencb.biodata.models.variation.*;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
-import org.opencb.cellbase.core.common.variation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -4,7 +4,7 @@ import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.cellbase.lib.mongodb.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
 
 import java.io.IOException;
 import java.util.List;

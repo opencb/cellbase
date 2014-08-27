@@ -1,15 +1,8 @@
-package org.opencb.cellbase.build.transform; /**
- * Created with IntelliJ IDEA.
- * User: mbleda
- * Date: 12/3/13
- * Time: 4:43 PM
- * To change this template use File | Settings | File Templates.
- */
+package org.opencb.cellbase.build.transform;
 
-
-import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
-import org.opencb.cellbase.core.common.protein.*;
-import org.opencb.cellbase.core.common.protein.Interactor;
+import org.opencb.biodata.models.protein.*;
+import org.opencb.biodata.models.protein.Interactor;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import psidev.psi.mi.tab.PsimiTabReader;
 import psidev.psi.mi.tab.model.*;
 
@@ -17,6 +10,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+/*** Created with IntelliJ IDEA.
+ * User: mbleda
+ * Date: 12/3/13
+ * Time: 4:43 PM
+ * To change this template use File | Settings | File Templates.
+ */
 public class InteractionParser {
 
     private CellBaseSerializer serializer;

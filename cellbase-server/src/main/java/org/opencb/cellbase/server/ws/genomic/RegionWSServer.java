@@ -81,6 +81,15 @@ public class RegionWSServer extends GenericRestWSServer {
         }
     }
 
+    @POST
+    @Consumes("application/x-www-form-urlencoded")
+    @Path("/gene")
+    public Response getGenesByRegionPost(@FormParam("region") String region) {
+//                                     @DefaultValue("true") @QueryParam("transcript") String transcripts,
+//                                     @DefaultValue("") @QueryParam("biotype") String biotype) {
+        return getGenesByRegion(region, "true", "");
+    }
+
     @GET
     @Path("/{chrRegionId}/gene")
     public Response getGenesByRegion(@PathParam("chrRegionId") String chregionId,

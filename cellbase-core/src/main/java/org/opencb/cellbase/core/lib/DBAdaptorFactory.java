@@ -118,7 +118,12 @@ public abstract class DBAdaptorFactory {
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species);
 	
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species, String version);
-	
+
+
+    public abstract VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species);
+
+    public abstract VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species, String version);
+
 	
 	public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
 	

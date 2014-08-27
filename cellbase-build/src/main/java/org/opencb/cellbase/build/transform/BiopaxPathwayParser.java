@@ -2,20 +2,18 @@ package org.opencb.cellbase.build.transform;
 
 
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.formats.network.biopax.BioPax;
+import org.opencb.biodata.formats.network.biopax.BioPaxParser;
 import org.opencb.cellbase.core.common.pathway.BiopaxPathway;
 import org.opencb.cellbase.core.common.pathway.Interaction;
 import org.opencb.cellbase.core.common.pathway.PhysicalEntity;
 import org.opencb.cellbase.core.common.pathway.SubPathway;
-import org.opencb.commons.bioformats.commons.exception.FileFormatException;
-import org.opencb.commons.bioformats.network.biopax.BioPax;
-import org.opencb.commons.bioformats.network.biopax.BioPaxParser;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -6,13 +6,12 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>..</relativePath>
     </parent>
 
     <artifactId>cellbase-build</artifactId>
     <version>${cellbase.version}</version>
-    <packaging>jar</packaging>
 
     <properties>
         <installation.dir>installation-dir</installation.dir>
@@ -25,8 +24,20 @@
             <artifactId>cellbase-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opencb.commons</groupId>
-            <artifactId>bioformats</artifactId>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.biodata</groupId>
+            <artifactId>biodata-models</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.biodata</groupId>
+            <artifactId>biodata-formats</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.datastore</groupId>
+            <artifactId>datastore-mongodb</artifactId>
         </dependency>
         <dependency>
             <groupId>psidev.psi.mi</groupId>

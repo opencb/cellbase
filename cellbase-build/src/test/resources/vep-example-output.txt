@@ -1,0 +1,237 @@
+## ENSEMBL VARIANT EFFECT PREDICTOR v75
+## Output produced at 2014-06-07 09:11:01
+## Connected to homo_sapiens_core_75_37 on ensembldb.ensembl.org
+## Using cache in /homes/imedina/.vep/homo_sapiens/75
+## Using API version 75, DB version 75
+## sift version sift5.0.2
+## polyphen version 2.2.2
+## Extra column keys:
+## AA_MAF : Frequency of existing variant in NHLBI-ESP African American population
+## AFR_MAF : Frequency of existing variant in 1000 Genomes Phase 1 combined African population
+## AMR_MAF : Frequency of existing variant in 1000 Genomes Phase 1 combined American population
+## ASN_MAF : Frequency of existing variant in 1000 Genomes Phase 1 combined Asian population
+## BIOTYPE : Biotype of transcript
+## CANONICAL : Indicates if transcript is canonical for this gene
+## CCDS : Indicates if transcript is a CCDS transcript
+## CLIN_SIG : Clinical significance of variant from dbSNP
+## DISTANCE : Shortest distance from variant to transcript
+## DOMAINS : The source and identifer of any overlapping protein domains
+## EA_MAF : Frequency of existing variant in NHLBI-ESP European American population
+## ENSP : Ensembl protein identifer
+## EUR_MAF : Frequency of existing variant in 1000 Genomes Phase 1 combined European population
+## EXON : Exon number(s) / total
+## GMAF : Minor allele and frequency of existing variant in 1000 Genomes Phase 1 combined population
+## HGVSc : HGVS coding sequence name
+## HGVSp : HGVS protein sequence name
+## HIGH_INF_POS : A flag indicating if the variant falls in a high information position of the TFBP
+## INTRON : Intron number(s) / total
+## MOTIF_NAME : The source and identifier of a transcription factor binding profile (TFBP) aligned at this position
+## MOTIF_POS : The relative position of the variation in the aligned TFBP
+## MOTIF_SCORE_CHANGE : The difference in motif score of the reference and variant sequences for the TFBP
+## PUBMED : Pubmed ID(s) of publications that cite existing variant
+## PolyPhen : PolyPhen prediction and/or score
+## SIFT : SIFT prediction and/or score
+## STRAND : Strand of the feature (1/-1)
+## SYMBOL : Gene symbol (e.g. HGNC)
+## SYMBOL_SOURCE : Source of gene symbol
+#Uploaded_variation	Location	Allele	Gene	Feature	Feature_type	Consequence	cDNA_position	CDS_position	Protein_position	Amino_acids	Codons	Existing_variation	Extra
+1_10001_T/-	1:10001	-	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1868;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4403;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2009;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4410;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1873;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/-	1:10001	-	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10001_T/A	1:10001	A	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1868;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4403;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2009;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4410;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1873;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/A	1:10001	A	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10001_T/C	1:10001	C	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1868;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4403;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2009;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4410;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1873;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/C	1:10001	C	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10001_T/G	1:10001	G	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1868;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4403;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2009;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4410;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1873;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4362;SYMBOL_SOURCE=HGNC
+1_10001_T/G	1:10001	G	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10002_A/-	1:10002	-	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1867;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4402;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2008;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4409;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1872;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/-	1:10002	-	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10002_A/C	1:10002	C	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1867;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4402;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2008;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4409;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1872;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/C	1:10002	C	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10002_A/G	1:10002	G	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1867;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4402;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2008;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4409;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1872;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/G	1:10002	G	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10002_A/T	1:10002	T	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1867;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4402;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2008;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4409;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1872;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4361;SYMBOL_SOURCE=HGNC
+1_10002_A/T	1:10002	T	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10003_A/-	1:10003	-	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1866;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4401;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2007;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4408;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/-	1:10003	-	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10003_A/C	1:10003	C	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1866;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4401;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2007;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4408;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/C	1:10003	C	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10003_A/G	1:10003	G	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1866;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4401;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2007;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4408;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/G	1:10003	G	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10003_A/T	1:10003	T	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1866;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4401;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2007;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4408;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1871;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4360;SYMBOL_SOURCE=HGNC
+1_10003_A/T	1:10003	T	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10004_C/-	1:10004	-	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1865;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4400;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2006;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1868;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4407;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/-	1:10004	-	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10004_C/A	1:10004	A	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1865;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4400;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2006;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1868;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4407;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/A	1:10004	A	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10004_C/G	1:10004	G	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1865;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4400;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2006;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1868;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4407;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/G	1:10004	G	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10004_C/T	1:10004	T	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1865;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4400;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2006;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1868;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4407;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1870;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4359;SYMBOL_SOURCE=HGNC
+1_10004_C/T	1:10004	T	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10005_C/-	1:10005	-	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1864;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4399;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2005;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1867;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4406;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/-	1:10005	-	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10005_C/A	1:10005	A	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1864;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4399;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2005;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1867;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4406;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/A	1:10005	A	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10005_C/G	1:10005	G	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1864;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4399;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2005;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1867;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4406;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/G	1:10005	G	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	
+1_10005_C/T	1:10005	T	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1864;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4399;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000227232	ENST00000541675	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000223972	ENST00000450305	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=2005;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000223972	ENST00000515242	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1867;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000227232	ENST00000538476	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4406;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000223972	ENST00000518655	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=transcribed_unprocessed_pseudogene;DISTANCE=1869;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000227232	ENST00000438504	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;CANONICAL=YES;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	ENSG00000227232	ENST00000423562	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4358;SYMBOL_SOURCE=HGNC
+1_10005_C/T	1:10005	T	-	ENSR00000668495	RegulatoryFeature	regulatory_region_variant	-	-	-	-	-	-	

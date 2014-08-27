@@ -1,24 +1,15 @@
 package org.opencb.cellbase.build.transform;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opencb.cellbase.build.transform.serializers.CellBaseSerializer;
-import org.opencb.cellbase.core.common.drug.*;
-//import org.opencb.commons.bioformats.drug.drugbank.DrugbankParser;
-//import org.opencb.commons.bioformats.drug.drugbank.v201312jaxb.*;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+//import org.opencb.commons.bioformats.drug.drugbank.DrugbankParser;
+//import org.opencb.commons.bioformats.drug.drugbank.v201312jaxb.*;
 
 //import drugbank.drugbank.*;
 //import drugbank.drugbank.DrugPartnerInteraction;
