@@ -313,17 +313,17 @@ public class VariantEffectConverter implements CellBaseTypeConverter<VariantAnno
     }
 
 
-    private BasicDBObject parseFrequencies(Frequencies frequencies) {
+    private BasicDBObject parseFrequencies(Map<String, Set<Frequency>> frequencies) {
         BasicDBObject frequencyItemDBObject = new BasicDBObject();
-        if(frequencies != null && frequencies.getAllele1000g() != null) {
-            frequencyItemDBObject.append("allele1000g", frequencies.getAllele1000g());
-            frequencyItemDBObject.append("maf1000G", frequencies.getMaf1000G());
-            frequencyItemDBObject.append("maf1000GAfrican", frequencies.getMaf1000GAfrican());
-            frequencyItemDBObject.append("maf1000GAmerican", frequencies.getMaf1000GAmerican());
-            frequencyItemDBObject.append("maf1000GAsian", frequencies.getMaf1000GAsian());
-            frequencyItemDBObject.append("maf1000GEuropean", frequencies.getMaf1000GEuropean());
-            frequencyItemDBObject.append("mafNhlbiEspAfricanAmerican", frequencies.getMafNhlbiEspAfricanAmerican());
-            frequencyItemDBObject.append("mafNhlbiEspEuropeanAmerican", frequencies.getMafNhlbiEspEuropeanAmerican());
+        if(frequencies != null) {
+//            frequencyItemDBObject.append("allele1000g", frequencies.get("").getAllele1000g());
+//            frequencyItemDBObject.append("maf1000G", frequencies.getMaf1000G());
+//            frequencyItemDBObject.append("maf1000GAfrican", frequencies.getMaf1000GAfrican());
+//            frequencyItemDBObject.append("maf1000GAmerican", frequencies.getMaf1000GAmerican());
+//            frequencyItemDBObject.append("maf1000GAsian", frequencies.getMaf1000GAsian());
+//            frequencyItemDBObject.append("maf1000GEuropean", frequencies.getMaf1000GEuropean());
+//            frequencyItemDBObject.append("mafNhlbiEspAfricanAmerican", frequencies.getMafNhlbiEspAfricanAmerican());
+//            frequencyItemDBObject.append("mafNhlbiEspEuropeanAmerican", frequencies.getMafNhlbiEspEuropeanAmerican());
         }
         return frequencyItemDBObject;
     }

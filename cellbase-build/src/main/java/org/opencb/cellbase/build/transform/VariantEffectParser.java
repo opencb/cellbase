@@ -25,6 +25,7 @@ import java.nio.file.Path;
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  * @author Ignacio Medina <imedina@ebi.ac.uk>
  */
+@Deprecated
 public class VariantEffectParser {
 
     //    private DataWriter serializer;
@@ -136,58 +137,58 @@ public class VariantEffectParser {
     }
 
     private void parseLine(String[] fields, VariantAnnotation variantAnnotation, String alternateAllele) {
-        VariantEffect variantEffect = new VariantEffect(alternateAllele);
-        variantAnnotation.addEffect(alternateAllele, variantEffect);
-
-        // Gene and feature fields can be empty (marked with "-")
-        if (!"-".equals(fields[3])) {
-            variantEffect.setGeneId(fields[3]);
-        }
-        if (!"-".equals(fields[4])) {
-            variantEffect.setFeatureId(fields[4]);
-        }
-        if (!"-".equals(fields[5])) {
-            variantEffect.setFeatureType(fields[5]);
-        }
-
-        // List of consequence types as SO codes
-        String[] consequencesName = fields[6].split(",");
-        int[] consequencesSo = new int[consequencesName.length];
-        for (int i = 0; i < consequencesName.length; i++) {
-            Integer so = ConsequenceTypeMappings.termToAccession.get(consequencesName[i]);
-            if (so != null) {
-                consequencesSo[i] = so;
-            } else {
-                logger.warn("{0} is not a valid consequence type", consequencesName[i]);
-            }
-        }
-        variantEffect.setConsequenceTypes(consequencesSo);
-
-        // Fields related to position can be empty (marked with "-")
-        if (!"-".equals(fields[7]) && StringUtils.isNumeric(fields[7])) {
-            variantEffect.setcDnaPosition(Integer.parseInt(fields[7]));
-        }
-        if (!"-".equals(fields[8]) && StringUtils.isNumeric(fields[8])) {
-            variantEffect.setCdsPosition(Integer.parseInt(fields[8]));
-        }
-        if (!"-".equals(fields[9]) && StringUtils.isNumeric(fields[9])) {
-            variantEffect.setProteinPosition(Integer.parseInt(fields[9]));
-        }
-
-        // Fields related to AA and codon changes can also be empty (marked with "-")
-        if (!"-".equals(fields[10])) {
-            variantEffect.setAminoacidChange(fields[10]);
-        }
-        if (!"-".equals(fields[11])) {
-            variantEffect.setCodonChange(fields[11]);
-        }
-
-        // Variant ID
-        if (!"-".equals(fields[12])) {
-            variantEffect.setVariationId(fields[12]);
-        }
-
-        parseExtraFields(fields[13], variantAnnotation, alternateAllele, variantEffect);
+//        VariantEffect variantEffect = new VariantEffect(alternateAllele);
+//        variantAnnotation.addEffect(alternateAllele, variantEffect);
+//
+//        // Gene and feature fields can be empty (marked with "-")
+//        if (!"-".equals(fields[3])) {
+//            variantEffect.setGeneId(fields[3]);
+//        }
+//        if (!"-".equals(fields[4])) {
+//            variantEffect.setFeatureId(fields[4]);
+//        }
+//        if (!"-".equals(fields[5])) {
+//            variantEffect.setFeatureType(fields[5]);
+//        }
+//
+//        // List of consequence types as SO codes
+//        String[] consequencesName = fields[6].split(",");
+//        int[] consequencesSo = new int[consequencesName.length];
+//        for (int i = 0; i < consequencesName.length; i++) {
+//            Integer so = ConsequenceTypeMappings.termToAccession.get(consequencesName[i]);
+//            if (so != null) {
+//                consequencesSo[i] = so;
+//            } else {
+//                logger.warn("{0} is not a valid consequence type", consequencesName[i]);
+//            }
+//        }
+//        variantEffect.setConsequenceTypes(consequencesSo);
+//
+//        // Fields related to position can be empty (marked with "-")
+//        if (!"-".equals(fields[7]) && StringUtils.isNumeric(fields[7])) {
+//            variantEffect.setcDnaPosition(Integer.parseInt(fields[7]));
+//        }
+//        if (!"-".equals(fields[8]) && StringUtils.isNumeric(fields[8])) {
+//            variantEffect.setCdsPosition(Integer.parseInt(fields[8]));
+//        }
+//        if (!"-".equals(fields[9]) && StringUtils.isNumeric(fields[9])) {
+//            variantEffect.setProteinPosition(Integer.parseInt(fields[9]));
+//        }
+//
+//        // Fields related to AA and codon changes can also be empty (marked with "-")
+//        if (!"-".equals(fields[10])) {
+//            variantEffect.setAminoacidChange(fields[10]);
+//        }
+//        if (!"-".equals(fields[11])) {
+//            variantEffect.setCodonChange(fields[11]);
+//        }
+//
+//        // Variant ID
+//        if (!"-".equals(fields[12])) {
+//            variantEffect.setVariationId(fields[12]);
+//        }
+//
+//        parseExtraFields(fields[13], variantAnnotation, alternateAllele, variantEffect);
     }
 
     private void parseExtraFields(String extra, VariantAnnotation variantAnnotation, String alternateAllele, VariantEffect variantEffect) {
@@ -196,16 +197,16 @@ public class VariantEffectParser {
 
             switch (keyValue[0].toLowerCase()) {
                 case "aa_maf":
-                    variantAnnotation.getFrequencies().setMafNhlbiEspAfricanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+//                    variantAnnotation.getFrequencies().setMafNhlbiEspAfricanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "afr_maf":
-                    variantAnnotation.getFrequencies().setMaf1000GAfrican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+//                    variantAnnotation.getFrequencies().setMaf1000GAfrican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "amr_maf":
-                    variantAnnotation.getFrequencies().setMaf1000GAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+//                    variantAnnotation.getFrequencies().setMaf1000GAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "asn_maf":
-                    variantAnnotation.getFrequencies().setMaf1000GAsian((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+//                    variantAnnotation.getFrequencies().setMaf1000GAsian((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "biotype":
                     variantEffect.setFeatureBiotype(keyValue[1]);
@@ -229,13 +230,13 @@ public class VariantEffectParser {
                     variantEffect.setProteinDomains(keyValue[1].split(","));
                     break;
                 case "ea_maf":
-                    variantAnnotation.getFrequencies().setMafNhlbiEspEuropeanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+//                    variantAnnotation.getFrequencies().setMafNhlbiEspEuropeanAmerican((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "ensp":
                     variantEffect.setProteinId(keyValue[1]);
                     break;
                 case "eur_maf":
-                    variantAnnotation.getFrequencies().setMaf1000GEuropean((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
+//                    variantAnnotation.getFrequencies().setMaf1000GEuropean((keyValue.length == 2) ? Float.parseFloat(keyValue[1]) : -1f);
                     break;
                 case "exon":
                     variantEffect.setExonNumber(keyValue[1]);
@@ -245,25 +246,11 @@ public class VariantEffectParser {
                     for(String freq: freqs) {
                         String[] gmafFields = freq.split(":");
                         if(gmafFields[0].equals(alternateAllele)) {
-                            variantAnnotation.getFrequencies().setAllele1000g(gmafFields[0]);
-                            variantAnnotation.getFrequencies().setMaf1000G(Float.parseFloat(gmafFields[1]));
+//                            variantAnnotation.getFrequencies().setAllele1000g(gmafFields[0]);
+//                            variantAnnotation.getFrequencies().setMaf1000G(Float.parseFloat(gmafFields[1]));
                             break;
                         }
                     }
-
-//                    if(freqs.length == 1) {
-//                        String[] gmafFields = keyValue[1].split(":");
-//                        effect.getFrequencies().setAllele1000g(gmafFields[0]);
-//                        effect.getFrequencies().setMaf1000G(Float.parseFloat(gmafFields[1]));
-//                    }else {
-//                        for(String freq: freqs) {
-//                            String[] gmafFields = freq.split(":");
-//                            if(gmafFields[0].equals(alternateAllele)) {
-//                                effect.getFrequencies().setAllele1000g(gmafFields[0]);
-//                                effect.getFrequencies().setMaf1000G(Float.parseFloat(gmafFields[1]));
-//                            }
-//                        }
-//                    }
                     break;
                 case "hgvsc":
                     variantEffect.setHgvsc(keyValue[1]);

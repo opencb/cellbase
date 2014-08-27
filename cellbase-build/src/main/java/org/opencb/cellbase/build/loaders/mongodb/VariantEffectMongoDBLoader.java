@@ -12,10 +12,7 @@ import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDataStore;
 import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -221,15 +218,16 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantAnnotation>
         return object;
     }
 
-    private BasicDBObject getFrequenciesDBObject(Frequencies frequencies) {
-        BasicDBObject object = new BasicDBObject("mafAllele", frequencies.getAllele1000g())
-                .append("gmaf", frequencies.getMaf1000G())
-                .append("afrMaf", frequencies.getMaf1000GAfrican())
-                .append("amrMaf", frequencies.getMaf1000GAmerican())
-                .append("asnMaf", frequencies.getMaf1000GAsian())
-                .append("eurMaf", frequencies.getMaf1000GEuropean())
-                .append("afrAmrMaf", frequencies.getMafNhlbiEspAfricanAmerican())
-                .append("eurAmrMaf", frequencies.getMafNhlbiEspEuropeanAmerican());
+    private BasicDBObject getFrequenciesDBObject(Map<String, Set<Frequency>> frequencies) {
+        BasicDBObject object = null;
+//        new BasicDBObject("mafAllele", frequencies.getAllele1000g())
+//                .append("gmaf", frequencies.getMaf1000G())
+//                .append("afrMaf", frequencies.getMaf1000GAfrican())
+//                .append("amrMaf", frequencies.getMaf1000GAmerican())
+//                .append("asnMaf", frequencies.getMaf1000GAsian())
+//                .append("eurMaf", frequencies.getMaf1000GEuropean())
+//                .append("afrAmrMaf", frequencies.getMafNhlbiEspAfricanAmerican())
+//                .append("eurAmrMaf", frequencies.getMafNhlbiEspEuropeanAmerican());
         return object;
     }
 

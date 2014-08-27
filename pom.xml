@@ -46,6 +46,7 @@
 
     <properties>
         <cellbase.version>3.1.0</cellbase.version>
+        <biodata.version>0.2.0</biodata.version>
         <compileSource>1.7</compileSource>
     </properties>
 
@@ -64,13 +65,13 @@
             </dependency>
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
-                <artifactId>models</artifactId>
-                <version>0.1</version>
+                <artifactId>biodata-models</artifactId>
+                <version>${biodata.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
-                <artifactId>formats</artifactId>
-                <version>0.1</version>
+                <artifactId>biodata-formats</artifactId>
+                <version>${biodata.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
