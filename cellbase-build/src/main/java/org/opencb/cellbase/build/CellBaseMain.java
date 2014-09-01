@@ -8,6 +8,8 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.serializers.json.JsonSerializer;
 import org.opencb.cellbase.build.transform.*;
 import org.opencb.commons.io.DataWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -17,7 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 public class CellBaseMain {
 
@@ -28,10 +29,10 @@ public class CellBaseMain {
     private static CellBaseSerializer serializer = null;
     private static DataWriter newSerializer = null;
 
-    private Logger logger;
+    private static Logger logger;
 
+    private static String JSON_SERIALIZER = "org.opencb.cellbase.core.serializer.DefaultJsonSerializer";
     private static String MONGODB_SERIALIZER = "org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer";
-    private static String JSON_SERIALIZER = "org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer";
 
     static {
         parser = new PosixParser();
@@ -99,33 +100,30 @@ public class CellBaseMain {
                 return;
             }
 
-
+            // Now we can parse the command line
             parse(args, false);
 
-            // Setting the appropriate Logger level
-            System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, commandLine.getOptionValue("log-level", "INFO").toUpperCase());
+            // This small hack allow to configure the appropriate Logger level from the command line, this is done
+            // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
+            System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, commandLine.getOptionValue("log-level", "info"));
+            logger = LoggerFactory.getLogger("org.opencb.cellbase.build.CellBaseMain");
 
 
             /**
-             * This code create a serializer for a specific database, only
-             * MongoDB has been implemented so far, DI pattern could be applied
-             * to get other database outputs.
+             * This code use Java reflection to create a data serializer for a specific database engine,
+             * only a default JSON and MongoDB serializers have been implemented so far, this DI pattern
+             * may be applied to get other database outputs.
+             * This is in charge of creating the specific data model for the database backend.
              */
-//            if (commandLine.hasOption("serializer") && !commandLine.getOptionValue("serializer").equals("")) {
-//                serializationOutput = commandLine.getOptionValue("serializer");
-//            } else {
-//                serializationOutput = "mongodb";
-//            }
-            String serializarClass = commandLine.getOptionValue("serializer", "json");
+            String serializerClass = commandLine.getOptionValue("serializer", "json");
             Path outputPath = Paths.get(commandLine.getOptionValue("output"));
-            serializer = createCellBaseSerializer(serializarClass, outputPath);
-
+            serializer = createCellBaseSerializer(serializerClass, outputPath);
 
 
             buildOption = commandLine.getOptionValue("build");
             switch (buildOption) {
                 case "genome-sequence":
-                    System.out.println("In genome-sequence...");
+                    logger.info("Processing genome-sequence...");
                     String fastaFile = commandLine.getOptionValue("fasta-file");
                     if (fastaFile != null && Files.exists(Paths.get(fastaFile))) {
                         GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(serializer);
@@ -133,7 +131,7 @@ public class CellBaseMain {
                     }
                     break;
                 case "gene":
-                    System.out.println("In gene...");
+//                    logger.info("Processing gene...");
                     String geneFilesDir = commandLine.getOptionValue("indir");
                     String gtfFile = commandLine.getOptionValue("gtf-file");
                     String genomeFastaFile = commandLine.getOptionValue("fasta-file", "");
@@ -153,7 +151,7 @@ public class CellBaseMain {
 //                    }
                     break;
                 case "regulation":
-                    System.out.println("In regulation");
+                    logger.info("Processing regulation");
                     String regulatoryRegionFilesDir = commandLine.getOptionValue("indir");
                     if (regulatoryRegionFilesDir != null) {
                         RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(serializer);
@@ -161,7 +159,7 @@ public class CellBaseMain {
                     }
                     break;
                 case "variation":
-                    System.out.println("In variation...");
+                    logger.info("Processing variation...");
                     String variationFilesDir = commandLine.getOptionValue("indir");
                     if (variationFilesDir != null) {
                         VariationParser vp = new VariationParser(serializer);
@@ -169,7 +167,7 @@ public class CellBaseMain {
                     }
                     break;
                 case "variation-phen-annot":
-                    System.out.println("In variation phenotype annotation...");
+                    logger.info("Processing variation phenotype annotation...");
                     variationFilesDir = commandLine.getOptionValue("indir");
                     if (variationFilesDir != null) {
                         VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(serializer);
@@ -178,8 +176,8 @@ public class CellBaseMain {
                     }
                     break;
                 case "vep":
-                    System.out.println("In VEP parser...");
-                    newSerializer = getSerializerNew(serializarClass, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
+                    logger.info("Processing VEP parser...");
+                    newSerializer = getSerializerNew(serializerClass, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
                     String effectFile = commandLine.getOptionValue("vep-file");
                     VariantEffectParser effectParser = new VariantEffectParser(serializer);
                     effectParser.parse(Paths.get(effectFile));
@@ -199,7 +197,7 @@ public class CellBaseMain {
 //                    }
                     break;
                 case "protein":
-                    System.out.println("In protein...");
+                    logger.info("Processing protein...");
                     String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
                     String species = commandLine.getOptionValue("species");
                     if (uniprotSplitFilesDir != null && Files.exists(Paths.get(uniprotSplitFilesDir))) {
@@ -208,7 +206,7 @@ public class CellBaseMain {
                     }
                     break;
                 case "mutation":
-                    System.out.println("In mutation");
+                    logger.info("Processing mutation");
                     /**
                      * File from Cosmic: CosmicCompleteExport_XXX.tsv
                      */
@@ -221,7 +219,7 @@ public class CellBaseMain {
                     break;
 
                 case "conservation":
-                    System.out.println("In conservation");
+                    logger.info("Processing conservation");
                     String conservationFilesDir = commandLine.getOptionValue("indir");
                     int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
                     String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
@@ -231,7 +229,7 @@ public class CellBaseMain {
                     }
                     break;
                 case "ppi":
-                    System.out.println("In PPI...");
+                    logger.info("Processing PPI...");
                     String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
                     if (psimiTabFile != null) {
                         InteractionParser interactionParser = new InteractionParser(serializer);
@@ -239,7 +237,7 @@ public class CellBaseMain {
                     }
                     break;
                 case "drug":
-                    System.out.println("In drug...");
+                    logger.info("Processing drug...");
                     String drugFile = commandLine.getOptionValue("drug-file");
                     if(drugFile != null) {
                         DrugParser drugParser = new DrugParser(serializer);
@@ -247,10 +245,12 @@ public class CellBaseMain {
                     }
                     break;
                 case "all":
-                    System.out.println("In all...");
+                    logger.info("Processing all...");
                     String speciesDataDir = commandLine.getOptionValue("indir");
 //                    String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
                     parseAll(Paths.get(speciesDataDir));
+                    break;
+                default: break;
 
             }
             serializer.close();
@@ -287,25 +287,14 @@ public class CellBaseMain {
         if(serializerClass != null) {
             // A default implementation for JSON is provided
             if(serializerClass.equalsIgnoreCase("json")) {
-                System.out.println("JSON serializer");
+                logger.debug("JSON serializer chosen");
                 return (CellBaseSerializer) Class.forName(JSON_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
-//                return new MongoDBSerializerOld(outPath);
             }else {
-                System.out.println(MONGODB_SERIALIZER+" serializer");
+                logger.debug("MongoDB serializer chosen");
                 return (CellBaseSerializer) Class.forName(MONGODB_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
             }
         }
         return serializer;
-
-//        switch (serializarClass) {
-//            case "json":
-//                return new MongoDBSerializer(outPath);
-//            case "mongodb":
-//                return new MongoDBSerializer(outPath);
-//            default:
-//                return null;
-//        }
-
     }
 
     private static DataWriter getSerializerNew(String serializationOutput, Path outPath, Class clazz) throws IOException {

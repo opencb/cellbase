@@ -1,36 +1,35 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.biodata.models.variation.*;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.biodata.models.variation.TranscriptVariation;
+import org.opencb.biodata.models.variation.Variation;
+import org.opencb.biodata.models.variation.Xref;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
 import java.util.*;
 
-public class VariationParser {
+public class VariationParser extends CellBaseParser {
 
-    private RandomAccessFile raf, rafvariationFeature, rafTranscriptVariation, rafvariationSynonym;
-
+    private RandomAccessFile raf, rafVariationFeature, rafTranscriptVariation, rafVariationSynonym;
     private Connection sqlConn = null;
     private PreparedStatement prepStmVariationFeature, prepStmTranscriptVariation, prepStmVariationSynonym;
 
-    private static final int CHUNK_SIZE = 1000;
+    private static final int DEFAULT_CHUNK_SIZE = 1000;
 
     private int LIMITROWS = 100000;
 
-    private CellBaseSerializer serializer;
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public VariationParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+        super(serializer);
     }
 
     //	public void parseCosmic(String species, String assembly, String source, String version, Path variationDirectoryPath, Path outfileJson) throws IOException, SQLException {
@@ -48,8 +47,8 @@ public class VariationParser {
         String[] variationSynonymFields = null;
         String chromosome;
 
-//        Variation variation = null;
-        VariationMongoDB variation = null;
+        Variation variation = null;
+//        VariationMongoDB variation = null;
         String[] allelesArray = null;
         String displayConsequenceType = null;
         List<String> consequenceTypes = null;
@@ -73,7 +72,7 @@ public class VariationParser {
         Map<String, String> seqRegionMap = VariationUtils.parseSeqRegionToMap(variationDirectoryPath);
         Map<String, String> sourceMap = VariationUtils.parseSourceToMap(variationDirectoryPath);
 
-        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
+        String chunkIdSuffix = DEFAULT_CHUNK_SIZE /1000 + "k";
         int countprocess = 0;
         int variationId = 0;
         String line = null;
@@ -159,7 +158,7 @@ public class VariationParser {
                     }
 
                     // we have all the necessary to construct the 'variation' object
-                    variation = new VariationMongoDB((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" ,
+                    variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "" ,
                             chromosome, "SNV",
                             (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0,
                             (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0,
@@ -176,15 +175,8 @@ public class VariationParser {
                             (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "",
                             (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
 
-                    // Adding chunksIds
-                    int chunkStart = (variation.getStart()) / CHUNK_SIZE;
-                    int chunkEnd = (variation.getEnd()) / CHUNK_SIZE;
-                    for(int i=chunkStart; i<=chunkEnd; i++) {
-                        variation.getChunkIds().add(variation.getChromosome()+"_"+i+"_"+chunkIdSuffix);
-                    }
-
                     if(++countprocess % 10000 == 0 && countprocess != 0) {
-                        System.out.println("Processed variations: " + countprocess);
+                        logger.debug("Processed variations: " + countprocess);
                     }
 
                     serializer.serialize(variation);
@@ -196,7 +188,7 @@ public class VariationParser {
         }
 
         // ONLY COMMENTED FOR SPEED UP DEVELOPMENT AS NO NEED TO COMPRESS EVERY RUN!!!
-//        gzipFiles(variationDirectoryPath);
+        gzipFiles(variationDirectoryPath);
 
         bwLog.close();
         bufferedReaderVariation.close();
@@ -204,11 +196,6 @@ public class VariationParser {
     }
 
     public void connect(Path variationDirectoryPath) throws SQLException, ClassNotFoundException, IOException {
-//		Class.forName("org.sqlite.JDBC");
-        //sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-//		sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
-        //sqlConn.setAutoCommit(false);
-
         Class.forName("org.sqlite.JDBC");
         sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationDirectoryPath.toAbsolutePath().toString()+"/variation_tables.db");
         if(!Files.exists(variationDirectoryPath.resolve("variation_tables.db")) || Files.size(variationDirectoryPath.resolve("variation_tables.db")) == 0) {
@@ -219,15 +206,13 @@ public class VariationParser {
             sqlConn.setAutoCommit(true);
         }
 
-//        sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-
         prepStmVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
         prepStmTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
         prepStmVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
 
-        rafvariationFeature = new RandomAccessFile(variationDirectoryPath.resolve("variation_feature.txt").toFile(), "r");
+        rafVariationFeature = new RandomAccessFile(variationDirectoryPath.resolve("variation_feature.txt").toFile(), "r");
         rafTranscriptVariation = new RandomAccessFile(variationDirectoryPath.resolve("transcript_variation.txt").toFile(), "r");
-        rafvariationSynonym = new RandomAccessFile(variationDirectoryPath.resolve("variation_synonym.txt").toFile(), "r");
+        rafVariationSynonym = new RandomAccessFile(variationDirectoryPath.resolve("variation_synonym.txt").toFile(), "r");
     }
 
     public void disconnect() throws SQLException, IOException {
@@ -239,9 +224,9 @@ public class VariationParser {
             sqlConn.close();
         }
 
-        rafvariationFeature.close();
+        rafVariationFeature.close();
         rafTranscriptVariation.close();
-        rafvariationSynonym.close();
+        rafVariationSynonym.close();
     }
 
     public List<String> queryByVariationId(int variationId, String tableName, Path variationFilePath) throws IOException, SQLException {
@@ -254,7 +239,7 @@ public class VariationParser {
             case "variation_feature":
                 prepStmVariationFeature.setInt(1, variationId);
                 rs = prepStmVariationFeature.executeQuery();
-                raf = rafvariationFeature;
+                raf = rafVariationFeature;
                 break;
             case "transcript_variation":
                 prepStmTranscriptVariation.setInt(1, variationId);
@@ -264,7 +249,7 @@ public class VariationParser {
             case "variation_synonym":
                 prepStmVariationSynonym.setInt(1, variationId);
                 rs = prepStmVariationSynonym.executeQuery();
-                raf = rafvariationSynonym;
+                raf = rafVariationSynonym;
                 break;
         }
 
@@ -330,7 +315,6 @@ public class VariationParser {
     }
 
     private void gunzipFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
-
         if(Files.exists(variationDirectoryPath.resolve("variation_feature.txt.gz"))) {
             Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("variation_feature.txt.gz").toAbsolutePath());
             process.waitFor();
@@ -348,7 +332,6 @@ public class VariationParser {
     }
 
     private void gzipFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
-
         if(Files.exists(variationDirectoryPath.resolve("variation_feature.txt"))) {
             Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("variation_feature.txt").toAbsolutePath());
             process.waitFor();
@@ -365,23 +348,23 @@ public class VariationParser {
         }
     }
 
-    class VariationMongoDB extends Variation {
-
-        private List<String> chunkIds;
-
-        public VariationMongoDB(String id, String chromosome, String type, int start, int end, String strand, String reference, String alternate, String alleleString, String ancestralAllele, String displayConsequenceType, List<String> consequencesTypes, List<TranscriptVariation> transcriptVariations, Phenotype phenotype, List<SampleGenotype> samples, List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, /*String featureId,*/ String minorAllele, String minorAlleleFreq, String validationStatus, String evidence) {
-            super(id, chromosome, type, start, end, strand, reference, alternate, alleleString, ancestralAllele, displayConsequenceType, consequencesTypes, transcriptVariations, phenotype, samples, populationFrequencies, xrefs, /*featureId,*/ minorAllele, minorAlleleFreq, validationStatus, evidence);
-            this.chunkIds = new ArrayList<>(5);
-        }
-
-        public List<String> getChunkIds() {
-            return chunkIds;
-        }
-
-        public void setChunkIds(List<String> chunkIds) {
-            this.chunkIds = chunkIds;
-        }
-    }
+//    class VariationMongoDB extends Variation {
+//
+//        private List<String> chunkIds;
+//
+//        public VariationMongoDB(String id, String chromosome, String type, int start, int end, String strand, String reference, String alternate, String alleleString, String ancestralAllele, String displayConsequenceType, List<String> consequencesTypes, List<TranscriptVariation> transcriptVariations, Phenotype phenotype, List<SampleGenotype> samples, List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, /*String featureId,*/ String minorAllele, String minorAlleleFreq, String validationStatus, String evidence) {
+//            super(id, chromosome, type, start, end, strand, reference, alternate, alleleString, ancestralAllele, displayConsequenceType, consequencesTypes, transcriptVariations, phenotype, samples, populationFrequencies, xrefs, /*featureId,*/ minorAllele, minorAlleleFreq, validationStatus, evidence);
+//            this.chunkIds = new ArrayList<>(5);
+//        }
+//
+//        public List<String> getChunkIds() {
+//            return chunkIds;
+//        }
+//
+//        public void setChunkIds(List<String> chunkIds) {
+//            this.chunkIds = chunkIds;
+//        }
+//    }
 
     @Deprecated
     public void createVariationDatabase(Path variationDirectoryPath) {

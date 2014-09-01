@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 //import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
@@ -17,8 +16,9 @@ import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.mongodb.serializer.converter.GeneConverter;
-import org.opencb.cellbase.lib.mongodb.serializer.converter.VariantEffectConverter;
+import org.opencb.cellbase.lib.mongodb.serializer.converters.GeneConverter;
+import org.opencb.cellbase.lib.mongodb.serializer.converters.VariantEffectConverter;
+import org.opencb.cellbase.lib.mongodb.serializer.converters.VariationConverter;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedWriter;
@@ -59,6 +59,7 @@ public class MongoDBSerializer extends CellBaseSerializer {
 
     private VariantEffectConverter variantEffectConverter;
     private GeneConverter geneConverter;
+    private VariationConverter variationConverter;
 
     public MongoDBSerializer(Path path) throws IOException {
 //        this.outdirPath = path;
@@ -86,6 +87,7 @@ public class MongoDBSerializer extends CellBaseSerializer {
 
         variantEffectConverter = new VariantEffectConverter();
         geneConverter = new GeneConverter();
+        variationConverter = new VariationConverter();
     }
 
 
@@ -108,10 +110,7 @@ public class MongoDBSerializer extends CellBaseSerializer {
             if(bufferedWriterMap.get("gene") == null) {
                 bufferedWriterMap.put("gene", Files.newBufferedWriter(outdirPath.resolve("gene.json"), Charset.defaultCharset()));
             }
-//            bufferedWriterMap.get("gene").write(jsonObjectWriter.writeValueAsString(gene));
-//            bufferedWriterMap.get("gene").newLine();
             DBObject mongoDbSchema = geneConverter.convertToStorageSchema(gene);
-//            bufferedWriterMap.get("gene").write(mongoDbSchema.toString());
             bufferedWriterMap.get("gene").write(jsonObjectWriter.writeValueAsString(mongoDbSchema));
             bufferedWriterMap.get("gene").newLine();
         } catch (JsonProcessingException e) {
@@ -142,7 +141,8 @@ public class MongoDBSerializer extends CellBaseSerializer {
             if(variationBufferedWriter.get(variation.getChromosome()) == null) {
                 variationBufferedWriter.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
             }
-            variationBufferedWriter.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
+            DBObject mongoDbDchema = variationConverter.convertToStorageSchema(variation);
+            variationBufferedWriter.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(mongoDbDchema));
             variationBufferedWriter.get(variation.getChromosome()).newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
