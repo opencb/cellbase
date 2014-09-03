@@ -181,10 +181,13 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <repositoryName>libs</repositoryName>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <useWildcardClassPath>true</useWildcardClassPath>
                     <programs>
                         <program>
                             <mainClass>org.opencb.cellbase.build.CellBaseMain</mainClass>
-                            <name>cellbase-cli</name>
+                            <name>cellbase-build.sh</name>
                         </program>
                     </programs>
                 </configuration>
