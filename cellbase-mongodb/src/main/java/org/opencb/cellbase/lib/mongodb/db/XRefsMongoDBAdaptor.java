@@ -10,6 +10,7 @@ import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdaptor {
 
@@ -101,7 +102,7 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
         List<DBObject> queries = new ArrayList<>();
 
         for (String id : ids) {
-            QueryBuilder qb = QueryBuilder.start("transcripts.xrefs.id").is(java.util.regex.Pattern.compile("^" + id));
+            QueryBuilder qb = QueryBuilder.start("transcripts.xrefs.id").regex(Pattern.compile("^" + id));
             queries.add(qb.get());
         }
         int limit = options.getInt("limit", 50);
