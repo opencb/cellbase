@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
+import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.Species;
@@ -15,10 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.IOException;
@@ -463,6 +462,30 @@ public class GenericRestWSServer implements IWSServer {
             mediaType = MediaType.valueOf("text/plain");
             return createOkResponse(stringBuilder.toString(), mediaType);
         }
+    }
+
+    @GET
+    @Path("/{species}/i")
+    public Response getSpeciesInfo2(@PathParam("species") String species, @DefaultValue("json") @QueryParam("of") String of) {
+        ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(species, this.version);
+        return createOkResponse(chromosomeDBAdaptor.speciesInfoTmp(species, queryOptions));
+    }
+
+    @GET
+    @Path("/speciesinfo")
+    public Response getSpeciesInfo() {
+        List<String> speciesList = new ArrayList<>(3);
+        speciesList.add("Homo sapiens");
+        speciesList.add("Mus musculus");
+        speciesList.add("Rattus norvegicus");
+
+        List<QueryResult> queryResults = new ArrayList<>(speciesList.size());
+        for(String specie: speciesList) {
+            ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(specie, this.version);
+            queryResults.add(chromosomeDBAdaptor.speciesInfoTmp(specie, queryOptions));
+
+        }
+        return createOkResponse(queryResults);
     }
 
     @GET

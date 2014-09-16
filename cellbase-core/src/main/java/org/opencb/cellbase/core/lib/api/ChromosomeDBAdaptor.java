@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface ChromosomeDBAdaptor {
 
+    public QueryResult speciesInfoTmp(String id, QueryOptions options);
+
 	public QueryResult getAll(QueryOptions options);
 
 	public QueryResult getById(String id, QueryOptions options);
