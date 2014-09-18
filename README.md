@@ -12,8 +12,8 @@ CONTACT
 ------- 
   You can contact any of the following developers:
 
-    * Ignacio Medina (imedina@ebi.ac.uk)
     * Javier Lopez (fjavier@bioinfomgp.org)
+    * Ignacio Medina (imedina@ebi.ac.uk)
 
 
 DOWNLOAD
