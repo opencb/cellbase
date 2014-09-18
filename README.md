@@ -41,6 +41,6 @@ BUILDING
 DOCUMENTATION
 -------------
 
-  You can find more info about CellBase project at:
+  You can find more info about CellBase project at: https://github.com/opencb/cellbase/wiki
 
   
