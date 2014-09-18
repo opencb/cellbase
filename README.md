@@ -31,7 +31,7 @@ DOWNLOAD
 BUILDING 
 --------
 
-  The build process is managed by Maven scripts. CellBase building requires Java 7 and a set of dependencies which are already uploaded to the Maven repository. CellBase also denpends on the ENSEMBL API version 76, which may be installed following this tutorial:
+  The build process is managed by Maven scripts. CellBase building requires Java 7 and a set of dependencies which are already uploaded to the Maven repository. CellBase also depends on the ENSEMBL API version 76, which may be installed following this tutorial:
 
 http://www.ensembl.org/info/docs/api/api_installation.html
   
