@@ -35,7 +35,7 @@ BUILDING
   
   Build CellBase:
   
-    $ mvn clean install
+    $ mvn clean install -DskipTests
 
 
 DOCUMENTATION
