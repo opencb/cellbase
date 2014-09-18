@@ -34,7 +34,8 @@ BUILDING
   The build process is managed by Maven scripts. CellBase building requires Java 7 and a set of dependencies which are already uploaded to the Maven repository. 
   
   Build CellBase:
-    $ mvn clean install
+  
+  $ mvn clean install
 
 
 DOCUMENTATION
