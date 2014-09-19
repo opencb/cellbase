@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
+import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
@@ -83,54 +84,63 @@ public class GenericRestWSServer implements IWSServer {
 
 
     /**
-     * DBAdaptorFactory creation, this object can be initialize with an
-     * HibernateDBAdaptorFactory or an HBaseDBAdaptorFactory. This object is a
-     * factory for creating adaptors like GeneDBAdaptor
-     */
-    protected static DBAdaptorFactory dbAdaptorFactory;
-
-    static {
-//        BasicConfigurator.configure();
-
-        // dbAdaptorFactory = new HibernateDBAdaptorFactory();
-        dbAdaptorFactory = new MongoDBAdaptorFactory();
-        System.out.println("static1");
-
-//		gson = new GsonBuilder().serializeNulls().setExclusionStrategies(new FeatureExclusionStrategy()).create();
-        jsonObjectMapper = new ObjectMapper();
-        jsonObjectWriter = jsonObjectMapper.writer();
-    }
-
-    /**
      * Loading properties file just one time to be more efficient. All methods
      * will check parameters so to avoid extra operations this config can load
      * versions and species
      */
     protected static Properties properties;
-    protected static Map<String, Set<String>> availableVersionSpeciesMap; // stores
+    protected static CellbaseConfiguration config;
 
     /** species for each version**/
     static {
         InputStream is = GenericRestWSServer.class.getClassLoader().getResourceAsStream("application.properties");
         properties = new Properties();
-        availableVersionSpeciesMap = new HashMap<>();
         try {
             properties.load(is);
-            if (properties != null && properties.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
-                // read all versions available
-                List<String> versionList = Splitter.on(",").splitToList(properties.getProperty("CELLBASE.AVAILABLE.VERSIONS"));
-                if (versionList != null) {
-                    for (String version : versionList) {
-                        availableVersionSpeciesMap.put(version.trim(), new HashSet<String>());
-                        String versionKey = "CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES";
-                        if (properties.containsKey(versionKey)) {
-                            // read the species available for each version
-                            List<String> speciesList = Splitter.on(",").splitToList(properties.getProperty(versionKey));
-                            if (speciesList != null) {
-                                for (String species : speciesList) {
-                                    availableVersionSpeciesMap.get(version.trim()).add(species.trim());
+            if (properties != null) {
+                config.setCoreChunkSize(Integer.parseInt(properties.getProperty("CORE_CHUNK_SIZE", "5000")));
+                config.setVariationChunkSize(Integer.parseInt(properties.getProperty("VARIATION_CHUNK_SIZE", "1000")));
+                config.setVariationChunkSize(Integer.parseInt(properties.getProperty("CELLBASE.GENOME_SEQUENCE.CHUNK_SIZE", "1000")));
+
+
+
+                if(properties.containsKey("CELLBASE.AVAILABLE.SPECIES")) {
+                    String[] speciesArray = properties.getProperty("CELLBASE.AVAILABLE.SPECIES").split(",");
+                    String[] alias = null;
+                    String version;
+                    for (String species : speciesArray) {
+                        species = species.toUpperCase();
+                        version = properties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
+                        alias = properties.getProperty(species + "." + version + ".ALIAS").split(",");
+
+                        //                System.out.println("");
+                        //                System.out.println(species);
+                        for (String al : alias) {
+                            config.addSpeciesAlias(al, species);
+                        }
+                        // For to recognize the species code
+                        config.addSpeciesAlias(species, species);
+                    }
+                }
+                if(properties.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
+                    // read all versions available
+                    List<String> versionList = Splitter.on(",").splitToList(properties.getProperty("CELLBASE.AVAILABLE.VERSIONS"));
+                    HashSet<String> currAvailableSet = new HashSet<String>();
+                    if (versionList != null) {
+                        for (String version : versionList) {
+                            String versionKey = "CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES";
+                            if (properties.containsKey(versionKey)) {
+                                // read the species available for each version
+                                List<String> speciesList = Splitter.on(",").splitToList(properties.getProperty(versionKey));
+                                if (speciesList != null) {
+                                    for (String species : speciesList) {
+                                        currAvailableSet.add(species.trim());
+                                    }
                                 }
                             }
+                            config.addAvailableVersionSpeciesMap(version.trim(), currAvailableSet);
+                            currAvailableSet.clear();
+
                         }
                     }
                 }
@@ -142,8 +152,30 @@ public class GenericRestWSServer implements IWSServer {
 
 
         // System.out.println("static2: "+availableVersions.toString());
-        System.out.println("static2: " + availableVersionSpeciesMap.toString());
+        System.out.println("static2: " + config.getAvailableVersionSpeciesMap().toString());
+
+
     }
+
+    /**
+     * DBAdaptorFactory creation, this object can be initialize with an
+     * HibernateDBAdaptorFactory or an HBaseDBAdaptorFactory. This object is a
+     * factory for creating adaptors like GeneDBAdaptor
+     */
+    protected static DBAdaptorFactory dbAdaptorFactory;
+
+    static {
+//        BasicConfigurator.configure();
+
+        // dbAdaptorFactory = new HibernateDBAdaptorFactory();
+        dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+        System.out.println("static1");
+
+//		gson = new GsonBuilder().serializeNulls().setExclusionStrategies(new FeatureExclusionStrategy()).create();
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectWriter = jsonObjectMapper.writer();
+    }
+
 
     /**
      * Preparing headers columns for text output

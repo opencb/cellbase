@@ -29,22 +29,28 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 //	public PathwayMongoDBAdaptor(String species, String version) {
 //		super(species, version);
 //	}
-	
-	
-	public PathwayMongoDBAdaptor(DB db) {
-		super(db);
-	}
-	
-	public PathwayMongoDBAdaptor(DB db, String species, String version) {
-		super(db, species, version);
-	}
+
+    private int genomeSequenceChunkSize = 2000;
+
+    public PathwayMongoDBAdaptor(DB db) {
+        super(db);
+    }
+
+    public PathwayMongoDBAdaptor(DB db, String species, String version) {
+        super(db, species, version);
+    }
+
+    public PathwayMongoDBAdaptor(DB db, String species, String version, int genomeSequenceChunkSize) {
+        super(db, species, version);
+        this.genomeSequenceChunkSize = genomeSequenceChunkSize;
+    }
 	
 	private int getChunk(int position){
-		return (position / Integer.parseInt(applicationProperties.getProperty("CELLBASE."+version.toUpperCase()+".GENOME_SEQUENCE.CHUNK_SIZE", "2000")));
+		return (position / genomeSequenceChunkSize);
 	}
 
 	private int getOffset(int position){
-		return ((position) % Integer.parseInt(applicationProperties.getProperty("CELLBASE."+version.toUpperCase()+".GENOME_SEQUENCE.CHUNK_SIZE", "2000")));
+		return ((position) % genomeSequenceChunkSize);
 	}
 	
 	@Override

@@ -14,14 +14,21 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     private DBCollection mongoVariationPhenotypeDBCollection;
 
-    public VariationMongoDBAdaptor(DB db) {
-        super(db);
-    }
+    private int variationChunkSize = 1000;
+
+    public VariationMongoDBAdaptor(DB db) { super(db); }
 
     public VariationMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("variation");
         mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
+    }
+
+    public VariationMongoDBAdaptor(DB db, String species, String version, int variationChunkSize) {
+        super(db, species, version);
+        mongoDBCollection = db.getCollection("variation");
+        mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
+        this.variationChunkSize = variationChunkSize;
     }
 
 
@@ -104,7 +111,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             if(region != null && !region.equals("")) {
                 // If regions is 1 position then query can be optimize using chunks
                 if (region.getStart() == region.getEnd()) {
-                    String chunkId = getChunkPrefix(region.getChromosome(), region.getStart(), Integer.parseInt(applicationProperties.getProperty("VARIATION_CHUNK_SIZE", "1000")));
+                    String chunkId = getChunkPrefix(region.getChromosome(), region.getStart(), variationChunkSize);
                     System.out.println(chunkId);
                     builder = QueryBuilder.start("chunkIds").is(chunkId).and("end")
                             .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());

@@ -28,6 +28,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     protected static Map<String, String> speciesAlias;
 
+    protected static Config config;
+
 
     static {
         // mongoDBFactory = new HashMap<String, HibernateDBAdaptor>(20);
@@ -69,42 +71,38 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
-    private DB createCellBaseMongoDB(String speciesVersionPrefix) {
+    public MongoDBAdaptorFactory(Config config){
+        super();
+        this.config = config;
+    }
+
+    private DB createCellBaseMongoDB(String dbName) {
         // logger.debug("HibernateDBAdaptorFactory in getGeneDBAdaptor(): creating Hibernate SessionFactory object for SPECIES.VERSION: '"+speciesVersionPrefix+"' ...");
         // long t1 = System.currentTimeMillis();
-        System.out.println(speciesVersionPrefix + "=>"
-                + applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
+//        System.out.println(speciesVersionPrefix + "=>"
+//                + applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
         // initial load and setup from hibernate.cfg.xml
         // Configuration cfg = new
         // Configuration().configure("cellbase-hibernate.cfg.xml");
         MongoClient mc = null;
         DB db = null;
-        if (speciesVersionPrefix != null && !speciesVersionPrefix.trim().equals("")) {
-            // read DB configuration for that SPECIES.VERSION, by default
-            // PRIMARY_DB is selected
-            String dbPrefix = applicationProperties.getProperty(speciesVersionPrefix + ".DB", "PRIMARY_DB");
+        if (dbName != null && !dbName.trim().equals("")) {
             try {
                 MongoClientOptions mongoClientOptions = new MongoClientOptions.Builder()
-                        .connectionsPerHost(
-                                Integer.parseInt(applicationProperties.getProperty(speciesVersionPrefix + ".MAX_POOL_SIZE", "10")))
-                        .connectTimeout(Integer.parseInt(applicationProperties.getProperty(speciesVersionPrefix + ".TIMEOUT", "10000")))
+                        .connectionsPerHost(config.maxPoolSize)
+                        .connectTimeout(config.timeout)
                         .build();
 
-                mc = new MongoClient(new ServerAddress(applicationProperties.getProperty(dbPrefix + ".HOST",
-                        "localhost"), Integer.parseInt(applicationProperties.getProperty(dbPrefix + ".PORT", "27017"))),
-                        mongoClientOptions);
+                mc = new MongoClient(new ServerAddress(config.host, config.port), mongoClientOptions);
 //                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
 //                mc.setReadPreference(ReadPreference.primary());
 //                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
-                System.out.println(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
-                db = mc.getDB(applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
+                db = mc.getDB(dbName);
 //db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
 //db.setReadPreference(ReadPreference.primary());
                 System.out.println("Debug String: "+mc.debugString());
-                String user = applicationProperties.getProperty(dbPrefix+".USERNAME");
-                String pass = applicationProperties.getProperty(dbPrefix+".PASSWORD");
-                if(!user.equals("") || !pass.equals("")){
-                    db.authenticate(user,pass.toCharArray());
+                if(!config.user.equals("") || !config.pass.equals("")){
+                    db.authenticate(config.user,config.pass.toCharArray());
                 }
             } catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -120,7 +118,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         String speciesPrefix = null;
         if (species != null && !species.equals("")) {
             // coding an alias to application code species
-            species = speciesAlias.get(species);
+            species = config.getSpeciesAlias().get(species);
             // if 'version' parameter has not been provided the default version is selected
             if (version == null || version.trim().equals("")) {
                 version = applicationProperties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
@@ -179,7 +177,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (GeneDBAdaptor) new GeneMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version, config.getCoreChunksize());
     }
 
     @Override
@@ -195,7 +193,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (TranscriptDBAdaptor) new TranscriptMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -211,7 +209,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (ChromosomeDBAdaptor) new ChromosomeMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -227,7 +225,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (ExonDBAdaptor) new ExonMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -243,7 +241,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (VariantEffectDBAdaptor) new VariantEffectMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
 
@@ -260,7 +258,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (VariantAnnotationDBAdaptor) new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
 
@@ -277,7 +275,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return new ProteinMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -305,7 +303,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (GenomeSequenceDBAdaptor) new GenomeSequenceMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -333,7 +331,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (XRefsDBAdaptor) new XRefsMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -349,7 +347,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (RegulatoryRegionDBAdaptor) new RegulatoryRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -377,7 +375,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (MutationDBAdaptor) new MutationMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -417,7 +415,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (PathwayDBAdaptor) new PathwayMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version, config.getGenomeSequenceChunkSize());
     }
 
 
@@ -434,7 +432,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (ProteinProteinInteractionDBAdaptor) new ProteinProteinInteractionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
 
@@ -449,7 +447,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //            mongoDBFactory.put(speciesVersionPrefix, db);
 //        }
 //        return (RegulatoryRegionDBAdaptor) new RegulatoryRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-//                speciesAlias.get(species), version);
+//                config.getSpeciesAlias().get(species), version);
 //    }
 
     public VariationDBAdaptor getVariationDBAdaptor(String species) {
@@ -463,7 +461,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (VariationDBAdaptor) new VariationMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version, config.getVariationChunksize());
     }
 
     public ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species) {
@@ -478,7 +476,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (ConservedRegionDBAdaptor) new ConservedRegionMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
     @Override
@@ -494,7 +492,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (ProteinFunctionPredictorDBAdaptor) new ProteinFunctionPredictorMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
 
@@ -510,7 +508,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (TfbsDBAdaptor) new TfbsMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 
 
@@ -527,6 +525,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesVersionPrefix, db);
         }
         return (VariationPhenotypeAnnotationDBAdaptor) new VariationPhenotypeAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+                config.getSpeciesAlias().get(species), version);
     }
 }
