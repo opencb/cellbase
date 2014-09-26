@@ -27,7 +27,7 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
         super(db, species, version);
         mongoDBCollection = db.getCollection("clinvar");
 
-        logger.info("GeneMongoDBAdaptor: in 'constructor'");
+        logger.info("ClinVarMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
@@ -80,19 +80,13 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
 
-        List<Object> biotypes = options.getList("biotype", null);
-        BasicDBList biotypeIds = new BasicDBList();
-        if (biotypes != null && biotypes.size() > 0) {
-            biotypeIds.addAll(biotypes);
-        }
-
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
 
             // If regions is 1 position then query can be optimize using chunks
-            QueryBuilder builder = QueryBuilder.start("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.chr").is(region.getChromosome()).and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.end")
+            QueryBuilder builder = QueryBuilder.start("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.chr").is(region.getChromosome()).and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.stop")
                     .greaterThanEquals(region.getStart()).and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.start").lessThanEquals(region.getEnd());
-
+            System.out.println(builder.get().toString());
             queries.add(builder.get());
             ids.add(region.toString());
         }
