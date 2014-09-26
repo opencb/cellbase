@@ -169,7 +169,12 @@ public abstract class DBAdaptorFactory {
 	
 	public abstract MutationDBAdaptor getMutationDBAdaptor(String species, String version);
 
-	
+
+    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species);
+
+    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String version);
+
+
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);
 	
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species, String version);
