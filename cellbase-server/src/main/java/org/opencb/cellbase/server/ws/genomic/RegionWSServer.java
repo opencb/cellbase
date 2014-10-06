@@ -97,7 +97,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                      @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             checkVersionAndSpecies();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
             List<Region> regions = Region.parseRegions(chregionId);
 
@@ -132,7 +132,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getTranscriptByRegion(@PathParam("chrRegionId") String chregionId, @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             checkVersionAndSpecies();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
             if (biotype != null && !biotype.equals("")) {
                 queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
@@ -150,7 +150,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getExonByRegion(@PathParam("chrRegionId") String chregionId) {
         try {
             checkVersionAndSpecies();
-            ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
+            ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
             return createOkResponse(exonDBAdaptor.getAllByRegionList(regions));
         } catch (Exception e) {
@@ -166,7 +166,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                    @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             checkVersionAndSpecies();
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
             // remove regions bigger than 10Mb
 //            if (regions != null) {
@@ -200,7 +200,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getMutationByRegion(@PathParam("chrRegionId") String query) {
         try {
             checkVersionAndSpecies();
-            MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
+            MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
@@ -227,7 +227,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query, @DefaultValue("") @QueryParam("source") String source) {
         try {
             checkVersionAndSpecies();
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
@@ -260,7 +260,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             StructuralVariationDBAdaptor structuralVariationDBAdaptor = dbAdaptorFactory
-                    .getStructuralVariationDBAdaptor(this.species, this.version);
+                    .getStructuralVariationDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
@@ -294,7 +294,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getCytobandByRegion(@PathParam("chrRegionId") String chregionId) {
         try {
             checkVersionAndSpecies();
-            CytobandDBAdaptor cytobandDBAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.version);
+            CytobandDBAdaptor cytobandDBAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
             return generateResponse(chregionId, cytobandDBAdaptor.getAllByRegionList(regions));
         } catch (Exception e) {
@@ -327,7 +327,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             List<Region> regions = Region.parseRegions(chregionId);
-            GenomeSequenceDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeSequenceDBAdaptor(this.species, this.version);
+            GenomeSequenceDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeSequenceDBAdaptor(this.species, this.assembly);
             queryOptions.put("strand", -1);
             return createOkResponse(dbAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
@@ -341,7 +341,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getTfByRegion(@PathParam("chrRegionId") String query) {
         try {
             checkVersionAndSpecies();
-            TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.version);
+            TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
@@ -367,7 +367,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
             queryOptions.put("featureType", (!featureType.equals("")) ? Splitter.on(",").splitToList(featureType) : null);
             queryOptions.put("featureClass",(!featureClass.equals("")) ? Splitter.on(",").splitToList(featureClass) : null);
-            RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.version);
+            RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.assembly);
 
             return createOkResponse(regulatoryRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
@@ -382,7 +382,7 @@ public class RegionWSServer extends GenericRestWSServer {
 //                                          @DefaultValue("") @QueryParam("type") String type) {
 //        try {
 //            checkVersionAndSpecies();
-//            RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.version);
+//            RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.assembly);
 //            /**
 //             * type ["open chromatin", "Polymerase", "HISTONE",
 //             * "Transcription Factor"]
@@ -418,7 +418,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                            @DefaultValue("") @QueryParam("source") String source) {
         try {
             checkVersionAndSpecies();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
+            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
@@ -443,7 +443,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getCpgIslandByRegion(@PathParam("chrRegionId") String query) {
         try {
             checkVersionAndSpecies();
-            CpGIslandDBAdaptor cpGIslandDBAdaptor = dbAdaptorFactory.getCpGIslandDBAdaptor(this.species, this.version);
+            CpGIslandDBAdaptor cpGIslandDBAdaptor = dbAdaptorFactory.getCpGIslandDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
@@ -481,7 +481,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
 
-            ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species, this.version);
+            ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
 //            if (hasHistogramQueryParam()) {

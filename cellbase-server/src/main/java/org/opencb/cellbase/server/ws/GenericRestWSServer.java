@@ -11,7 +11,7 @@ import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.QueryResponse;
-import org.opencb.cellbase.server.Species;
+import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.slf4j.Logger;
@@ -32,6 +32,7 @@ public class GenericRestWSServer implements IWSServer {
 
     // Common application parameters
     protected String version;
+    protected String assembly = null;
     protected String species;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
@@ -89,7 +90,9 @@ public class GenericRestWSServer implements IWSServer {
      * versions and species
      */
     protected static Properties properties;
-    protected static CellbaseConfiguration config;
+    protected static CellbaseConfiguration config = new CellbaseConfiguration();
+
+    protected static Logger anotherLogger = LoggerFactory.getLogger("GenericRestWSServer");
 
     /** species for each version**/
     static {
@@ -100,21 +103,46 @@ public class GenericRestWSServer implements IWSServer {
             if (properties != null) {
                 config.setCoreChunkSize(Integer.parseInt(properties.getProperty("CORE_CHUNK_SIZE", "5000")));
                 config.setVariationChunkSize(Integer.parseInt(properties.getProperty("VARIATION_CHUNK_SIZE", "1000")));
-                config.setVariationChunkSize(Integer.parseInt(properties.getProperty("CELLBASE.GENOME_SEQUENCE.CHUNK_SIZE", "1000")));
-
-
+                config.setGenomeSequenceChunkSize(Integer.parseInt(properties.getProperty("CELLBASE.GENOME_SEQUENCE.CHUNK_SIZE", "2000")));
+                config.setConservedRegionChunkSize(Integer.parseInt(properties.getProperty("CELLBASE.CONSERVED_REGION.CHUNK_SIZE", "2000")));
+                config.setVersion(properties.getProperty("CELLBASE.VERSION"));
 
                 if(properties.containsKey("CELLBASE.AVAILABLE.SPECIES")) {
                     String[] speciesArray = properties.getProperty("CELLBASE.AVAILABLE.SPECIES").split(",");
                     String[] alias = null;
-                    String version;
+                    String[] assemblies;
+                    String assemblyPrefix;
+                    String dbConfigurationId;
                     for (String species : speciesArray) {
                         species = species.toUpperCase();
-                        version = properties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
-                        alias = properties.getProperty(species + "." + version + ".ALIAS").split(",");
+                        if(properties.containsKey(species+".ASSEMBLY")) {
+                            assemblies = properties.getProperty(species+".ASSEMBLY").split(",");
+                            for(String assembly : assemblies) {
+                                assembly = assembly.toUpperCase();
+                                assemblyPrefix = species + "." + assembly;
+                                dbConfigurationId = properties.getProperty(assemblyPrefix + ".DB");
 
-                        //                System.out.println("");
-                        //                System.out.println(species);
+                                anotherLogger.info(dbConfigurationId + ".MAX_POOL_SIZE");
+                                anotherLogger.info(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE"));
+
+                                anotherLogger.info(assemblyPrefix + ".DATABASE");
+                                anotherLogger.info(properties.getProperty(assemblyPrefix + ".DATABASE"));
+
+                                config.addSpeciesConnection(species, assembly, properties.getProperty(dbConfigurationId + ".HOST"), properties.getProperty(assemblyPrefix + ".DATABASE"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".PORT")),
+                                                            properties.getProperty(dbConfigurationId + ".DRIVER_CLASS"),properties.getProperty(dbConfigurationId + ".USERNAME"),
+                                                            properties.getProperty(dbConfigurationId + ".PASSWORD"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE")),
+                                                            Integer.parseInt(properties.getProperty(dbConfigurationId + ".TIMEOUT")));
+                                config.addSpeciesInfo(species, assembly, properties.getProperty(species + ".TAXONOMY"));
+                            }
+                        } else {
+                            dbConfigurationId = properties.getProperty(species + ".DB");
+                            config.addSpeciesConnection(species, properties.getProperty(dbConfigurationId + ".HOST"), properties.getProperty(species + ".DB"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".PORT")),
+                                    properties.getProperty(dbConfigurationId + ".DRIVER_CLASS"),properties.getProperty(dbConfigurationId + ".USERNAME"),
+                                    properties.getProperty(dbConfigurationId + ".PASSWORD"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE")),
+                                    Integer.parseInt(properties.getProperty(dbConfigurationId + ".TIMEOUT")));
+                            config.addSpeciesInfo(species, properties.getProperty(species + ".TAXONOMY"));
+                        }
+                        alias = properties.getProperty(species + ".ALIAS").split(",");
                         for (String al : alias) {
                             config.addSpeciesAlias(al, species);
                         }
@@ -122,28 +150,28 @@ public class GenericRestWSServer implements IWSServer {
                         config.addSpeciesAlias(species, species);
                     }
                 }
-                if(properties.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
-                    // read all versions available
-                    List<String> versionList = Splitter.on(",").splitToList(properties.getProperty("CELLBASE.AVAILABLE.VERSIONS"));
-                    HashSet<String> currAvailableSet = new HashSet<String>();
-                    if (versionList != null) {
-                        for (String version : versionList) {
-                            String versionKey = "CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES";
-                            if (properties.containsKey(versionKey)) {
-                                // read the species available for each version
-                                List<String> speciesList = Splitter.on(",").splitToList(properties.getProperty(versionKey));
-                                if (speciesList != null) {
-                                    for (String species : speciesList) {
-                                        currAvailableSet.add(species.trim());
-                                    }
-                                }
-                            }
-                            config.addAvailableVersionSpeciesMap(version.trim(), currAvailableSet);
-                            currAvailableSet.clear();
-
-                        }
-                    }
-                }
+//                if(properties.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
+//                    // read all versions available
+//                    List<String> versionList = Splitter.on(",").splitToList(properties.getProperty("CELLBASE.AVAILABLE.VERSIONS"));
+//                    HashSet<String> currAvailableSet = new HashSet<String>();
+//                    if (versionList != null) {
+//                        for (String version : versionList) {
+//                            String versionKey = "CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES";
+//                            if (properties.containsKey(versionKey)) {
+//                                // read the species available for each version
+//                                List<String> speciesList = Splitter.on(",").splitToList(properties.getProperty(versionKey));
+//                                if (speciesList != null) {
+//                                    for (String species : speciesList) {
+//                                        currAvailableSet.add(species.trim());
+//                                    }
+//                                }
+//                            }
+//                            config.addAvailableVersionSpeciesMap(version.trim(), currAvailableSet);
+//                            currAvailableSet.clear();
+//
+//                        }
+//                    }
+//                }
             }
 
         } catch (IOException e) {
@@ -152,7 +180,7 @@ public class GenericRestWSServer implements IWSServer {
 
 
         // System.out.println("static2: "+availableVersions.toString());
-        System.out.println("static2: " + config.getAvailableVersionSpeciesMap().toString());
+//        System.out.println("static2: " + config.getAvailableVersionSpeciesMap().toString());
 
 
     }
@@ -243,7 +271,7 @@ public class GenericRestWSServer implements IWSServer {
     @Deprecated
     public GenericRestWSServer(@PathParam("version") String version,
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
-        this.version = version;
+        this.version = version.toUpperCase();
         this.species = "";
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
@@ -259,7 +287,7 @@ public class GenericRestWSServer implements IWSServer {
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
 
 
-        this.version = version;
+        this.version = version.toUpperCase();;
         this.species = species;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
@@ -395,11 +423,9 @@ public class GenericRestWSServer implements IWSServer {
 //            System.out.println("version: " + version);
 //        }
 
-        if (availableVersionSpeciesMap.containsKey(version)) {
-            if (!availableVersionSpeciesMap.get(version).contains(species)) {
-                throw new SpeciesException("Species not valid: '" + species + "' for version: '" + version + "'");
-            }
-        } else {
+//        if (availableVersionSpeciesMap.containsKey(version)) {
+//            if (!availableVersionSpeciesMap.get(version).contains(species)) {
+        if(!config.getVersion().equals(this.version)){
             throw new VersionException("Version not valid: '" + version + "'");
         }
     }
@@ -499,7 +525,7 @@ public class GenericRestWSServer implements IWSServer {
     @GET
     @Path("/{species}/i")
     public Response getSpeciesInfo2(@PathParam("species") String species, @DefaultValue("json") @QueryParam("of") String of) {
-        ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(species, this.version);
+        ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(species, this.assembly);
         return createOkResponse(chromosomeDBAdaptor.speciesInfoTmp(species, queryOptions));
     }
 
@@ -513,7 +539,7 @@ public class GenericRestWSServer implements IWSServer {
 
         List<QueryResult> queryResults = new ArrayList<>(speciesList.size());
         for(String specie: speciesList) {
-            ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(specie, this.version);
+            ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(specie, this.assembly);
             queryResults.add(chromosomeDBAdaptor.speciesInfoTmp(specie, queryOptions));
 
         }

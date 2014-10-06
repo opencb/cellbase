@@ -35,7 +35,7 @@ public class MutationWSServer  extends GenericRestWSServer {
     public Response getMutations(@DefaultValue("") @QueryParam("disease") String disease) {
         try {
             checkVersionAndSpecies();
-            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
+            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             queryOptions.put("disease", Splitter.on(",").splitToList(disease));
             return createOkResponse(variationDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
@@ -49,7 +49,7 @@ public class MutationWSServer  extends GenericRestWSServer {
     public Response getMutationDiseases(@PathParam("mutationId") String query) {
         try {
             checkVersionAndSpecies();
-            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
+            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllDiseases(queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
@@ -62,7 +62,7 @@ public class MutationWSServer  extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("mutationId") String query) {
         try {
             checkVersionAndSpecies();
-            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
+            MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();

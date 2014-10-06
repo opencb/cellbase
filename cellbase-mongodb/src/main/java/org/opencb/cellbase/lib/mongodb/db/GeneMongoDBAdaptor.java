@@ -18,15 +18,15 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     public GeneMongoDBAdaptor(DB db) { super(db); }
 
-    public GeneMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
+    public GeneMongoDBAdaptor(DB db, String species, String assembly) {
+        super(db, species, assembly);
         mongoDBCollection = db.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
-    public GeneMongoDBAdaptor(DB db, String species, String version, int coreChunkSize) {
-        super(db, species, version);
+    public GeneMongoDBAdaptor(DB db, String species, String assembly, int coreChunkSize) {
+        super(db, species, assembly);
         mongoDBCollection = db.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
@@ -106,7 +106,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult getAllBiotypes(QueryOptions options) {
-        String[] biotypes = applicationProperties.getProperty("CELLBASE."+version.toUpperCase()+".BIOTYPES").split(",");
+
+//        QueryBuilder builder = QueryBuilder.start("gene.biotype").(id);  //TODO query distinct biotypes in gene collection
+
+
+        String[] biotypes = applicationProperties.getProperty("CELLBASE.V3.BIOTYPES").split(",");
         QueryResult queryResult = new QueryResult();
         queryResult.setId("result");
         DBObject result = new BasicDBObject("biotypes", biotypes);

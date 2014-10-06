@@ -49,7 +49,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public QueryResult getAllConsequenceTypes(QueryOptions options) {
-        String[] consquenceTypes = applicationProperties.getProperty("CELLBASE."+version.toUpperCase()+".CONSEQUENCE_TYPES").split(",");
+        String[] consquenceTypes = applicationProperties.getProperty("CELLBASE.V3.CONSEQUENCE_TYPES").split(",");
         QueryResult queryResult = new QueryResult();
         queryResult.setId("result");
         DBObject result = new BasicDBObject("consequenceTypes", consquenceTypes);

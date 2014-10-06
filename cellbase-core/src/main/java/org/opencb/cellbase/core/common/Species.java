@@ -1,4 +1,4 @@
-package org.opencb.cellbase.server;
+package org.opencb.cellbase.core.common;
 
 public class Species {
 

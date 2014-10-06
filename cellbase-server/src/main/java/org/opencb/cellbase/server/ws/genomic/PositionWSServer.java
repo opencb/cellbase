@@ -69,7 +69,7 @@ public class PositionWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			List<Position> positionList = Position.parsePositions(query);
-			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
+			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 			QueryOptions queryOptions = new QueryOptions("exclude", null);
 			return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 //			return generateResponse(query, geneDBAdaptor.getAllByPositionList(positionList));
@@ -85,7 +85,7 @@ public class PositionWSServer extends GenericRestWSServer {
 		try {
 			checkVersionAndSpecies();
 			List<Position> positionList = Position.parsePositions(query);
-			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
+			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
 			return createOkResponse(transcriptDBAdaptor.getAllByPositionList(positionList, queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -110,7 +110,7 @@ public class PositionWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             List<Position> positionList = Position.parsePositions(query);
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));
         } catch (Exception e) {
             e.printStackTrace();

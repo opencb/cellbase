@@ -25,7 +25,7 @@ public class PathwayWSServerMongo extends GenericRestWSServer {
 		try {
 //			checkVersionAndSpecies();
 			
-			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.version);
+			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 	        String pathways = pathwayDBAdaptor.getPathways();
 	        return createOkResponse(pathways);
 	        
@@ -39,7 +39,7 @@ public class PathwayWSServerMongo extends GenericRestWSServer {
 	@Path("/tree")
 	public Response getTree() {
 		try {
-			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.version);
+			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 			String result = pathwayDBAdaptor.getTree();
 			return createOkResponse(result);
 		} catch (Exception e) {
@@ -52,7 +52,7 @@ public class PathwayWSServerMongo extends GenericRestWSServer {
 	@Path("/{pathwayId}/info")
 	public Response getPathwayInfo(@PathParam("pathwayId") String pathwayId) {
 		try {
-			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.version);
+			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 			String result = pathwayDBAdaptor.getPathway(pathwayId);
 			return createOkResponse(result);
 		} catch (Exception e) {
@@ -65,7 +65,7 @@ public class PathwayWSServerMongo extends GenericRestWSServer {
 	@Path("/search")
 	public Response search(@QueryParam("by") String searchBy, @QueryParam("text") String searchText , @QueryParam("onlyIds") boolean returnOnlyIds) {
 		try {
-			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.version);
+			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 			String result = pathwayDBAdaptor.search(searchBy, searchText, returnOnlyIds);
 			return createOkResponse(result);
 		} catch (Exception e) {
