@@ -1,30 +1,22 @@
 package org.opencb.cellbase.build.transform;
 
-import org.junit.Test;
-
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
+/**
+ * @author lcruz
+ */
 public class CaddParserTest {
-
     @Test
     public void testParse() throws Exception {
-        // setup
+    	String chrName = "X";
+        Path inputFilePath = Paths.get("/home/lcruz/Escritorio/whole_genome_SNVs_inclAnno_test_file.tsv.gz");
+        Path outputFilePath = Paths.get("/home/lcruz/Escritorio/test_cadd.json");
 
 
-        // ejecucion
-
-        Path ipath = Paths.get("/home/antonior/tmp/test_cadd.txt");
-        Path opath = Paths.get("/home/antonior/tmp/test_cadd.json");
-
-
-
-        CaddParser.parse(ipath,opath );
-
-        // comprobacion
-
+        CaddParser p = new CaddParser(inputFilePath, outputFilePath);
+        p.parse(chrName);
     }
 }
