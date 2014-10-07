@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ReleaseSet Dated="2014-04-01" Type="full">
+
+<ClinVarSet ID="1608878">
+  <RecordStatus>current</RecordStatus>
+  <Title>NC_000024.10:g.26583557C&gt;G AND Lung cancer</Title>
+  <ReferenceClinVarAssertion DateCreated="2014-03-18" DateLastUpdated="2014-03-30" ID="215312">
+    <ClinVarAccession Acc="RCV000088625" Version="1" Type="RCV" DateUpdated="2014-04-01"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance>
+      <ReviewStatus>classified by single submitter</ReviewStatus>
+      <Description>Uncertain significance</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>somatic</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+        <NumberTested>1</NumberTested>
+      </Sample>
+      <Method>
+        <MethodType>not provided</MethodType>
+      </Method>
+      <ObservedData ID="1338666">
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="102397">
+      <Measure Type="single nucleotide variant" ID="108140">
+        <Name>
+          <ElementValue Type="preferred name">NC_000024.10:g.26583557C&gt;G</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, top level" Change="g.26583557C&gt;G">NC_000024.10:g.26583557C&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, top level" Change="g.28729704C&gt;G">NC_000024.9:g.28729704C&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, top level, previous" Change="g.28729704C&gt;G">NC_000024.9:g.28729704C&gt;G</Attribute>
+        </AttributeSet>
+        <CytogeneticLocation>Yq11.23</CytogeneticLocation>
+        <SequenceLocation Assembly="GRCh38" Chr="Y" Accession="NC_000024.10" start="26583556" stop="26583557"/>
+        <SequenceLocation Assembly="GRCh37" Chr="Y" Accession="NC_000024.9" start="28729704" stop="28729704"/>
+        <XRef Type="rs" ID="207482185" DB="dbSNP"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="preferred name">NC_000024.10:g.26583557C&gt;G</ElementValue>
+      </Name>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="6276">
+      <Trait ID="2615" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Lung cancer</ElementValue>
+          <XRef ID="Lung+Cancer/4334" DB="Genetic Alliance"/>
+          <XRef ID="187875007" DB="SNOMED CT"/>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">Lung cancer</ElementValue>
+          <XRef ID="GTR000503099" DB="Centogene AG  - the Rare Disease Company,Centogene AG"/>
+        </Name>
+        <XRef ID="NBK1108" DB="GeneReviews"/>
+        <XRef ID="C0684249" DB="MedGen"/>
+        <XRef Type="MIM" ID="211980" DB="OMIM"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="213794">
+    <ClinVarSubmissionID localKey="NC_000024.9:g.28729704C&gt;G|LIMM_YCR_PGG" submitterDate="2012-06-20" submitter="Leeds Institute of Molecular Medicine (LIMM)"/>
+    <ClinVarAccession Acc="SCV000121545" Version="1" Type="SCV" OrgID="500266" DateUpdated="2014-03-19"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance>
+      <ReviewStatus>classified by single submitter</ReviewStatus>
+      <Description>unknown</Description>
+      <Comment>Converted during submission to Uncertain significance.</Comment>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>somatic</Origin>
+        <Species>human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+        <NumberTested>1</NumberTested>
+      </Sample>
+      <Method>
+        <MethodType>not provided</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <AttributeSet>
+          <Attribute Type="HGVS">NC_000024.9:g.28729704C&gt;G</Attribute>
+        </AttributeSet>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Lung cancer</ElementValue>
+        </Name>
+        <XRef DB="OMIM" ID="211980" Type="MIM"/>
+      </Trait>
+    </TraitSet>
+    <Comment>Lung squamous cell carcinoma</Comment>
+  </ClinVarAssertion>
+</ClinVarSet>
+
+</ReleaseSet>
