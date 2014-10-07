@@ -5,10 +5,7 @@ import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +118,12 @@ public abstract class DBAdaptorFactory {
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species);
 	
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species, String version);
-	
+
+
+    public abstract VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species);
+
+    public abstract VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species, String version);
+
 	
 	public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
 	
@@ -167,7 +169,12 @@ public abstract class DBAdaptorFactory {
 	
 	public abstract MutationDBAdaptor getMutationDBAdaptor(String species, String version);
 
-	
+
+    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species);
+
+    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String version);
+
+
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);
 	
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species, String version);
@@ -206,4 +213,9 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species);
 
     public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species, String version);
+
+
+    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species);
+
+    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species, String version);
 }

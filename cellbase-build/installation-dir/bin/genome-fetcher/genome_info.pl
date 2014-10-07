@@ -44,7 +44,7 @@ if($outfile eq "") {
 use lib "$ENSEMBL_LIBS/ensembl/modules";
 use lib "$ENSEMBL_LIBS/ensembl-variation/modules";
 use lib "$ENSEMBL_LIBS/ensembl-compara/modules";
-use lib "$ENSEMBL_LIBS/ensembl-functgenomics/modules";
+use lib "$ENSEMBL_LIBS/ensembl-funcgen/modules";
 use lib "$ENSEMBL_LIBS/bioperl-live";
 
 ## creating ensembl adaptors

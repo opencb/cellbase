@@ -1,14 +1,11 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
-import org.opencb.cellbase.build.transform.utils.GenomeSequenceUtils;
-import org.opencb.cellbase.core.common.core.*;
-import org.opencb.commons.bioformats.commons.exception.FileFormatException;
-import org.opencb.commons.bioformats.feature.gtf.Gtf;
-import org.opencb.commons.bioformats.feature.gtf.io.GtfReader;
+import org.opencb.biodata.formats.feature.gtf.Gtf;
+import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
+import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.models.core.*;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -19,30 +16,21 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
-public class GeneParser {
+public class GeneParser extends CellBaseParser {
 
     //	private Map<String, Integer> geneDict;
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
-    private RandomAccessFile rafChromosomeSequenceFile;
+//    private RandomAccessFile rafChromosomeSequenceFile;
 
-    private static final int CHUNK_SIZE = 5000;
-
-    private CellBaseSerializer serializer;
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public GeneParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
-        init();
-    }
+        super(serializer);
 
-    private void init() {
-        // genes = new ArrayList<Gene>(70000);
-        // geneDict = new HashMap<String, Integer>(70000);
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
     }
+
 
     public void parse(Path geneDirectoryPath, Path genomeSequenceDir)
             throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
@@ -53,13 +41,13 @@ public class GeneParser {
                 break;
             }
         }
-        parse(gtfFile, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), genomeSequenceDir);
+//        parse(gtfFile, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"), geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), geneDirectoryPath.resolve("Homo_sapiens.GRCh37.p12.fa.gz"));
+        parse(gtfFile, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"), geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), genomeSequenceDir);
     }
 
-    public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath)
+    public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath)
             throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
         Files.exists(gtfFile);
-        init();
 
         String geneId;
         String transcriptId;
@@ -67,16 +55,19 @@ public class GeneParser {
         String chromSequence = "";
         String exonSequence = "";
 
-        GeneMongoDB gene = null;
+        Gene gene = null;
         Transcript transcript;
         Exon exon = null;
+
         int cdna = 1;
         int cds = 1;
         String[] fields;
 
 //        Map<String, String> gseq = GenomeSequenceUtils.getGenomeSequence(genomeSequenceDir);
-//        System.out.println("toma!!");
 
+        /**
+            Loading Gene Description data
+         */
         Map<String, String> geneDescriptionMap = new HashMap<>();
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
             List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
@@ -86,6 +77,9 @@ public class GeneParser {
             }
         }
 
+        /**
+            Loading Gene Xref data
+         */
         Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
         if (xrefsFile != null && Files.exists(xrefsFile)) {
             List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
@@ -100,6 +94,28 @@ public class GeneParser {
             }
         }
 
+        /**
+            Loading Protein mapping into Xref data
+         */
+        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile)) {
+            BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
+            String line;
+            while ((line = br.readLine()) != null) {
+                fields = line.split("\t", -1);
+                if(fields.length >= 20 && fields[20].startsWith("ENST")) {
+                    if (!xrefMap.containsKey(fields[20])) {
+                        xrefMap.put(fields[20], new ArrayList<Xref>());
+                    }
+                    xrefMap.get(fields[20]).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
+                    xrefMap.get(fields[20]).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
+                }
+            }
+            br.close();
+        }
+
+        /*
+            Loading Gene Description data
+         */
         Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
         if(tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
             List<String> lines = Files.readAllLines(tfbsFile, Charset.defaultCharset());
@@ -124,9 +140,10 @@ public class GeneParser {
 //        Map<String, Long> chromSequenceOffsets = prepareChromosomeSequenceFile(genomeSequenceFilePath);
 
 
-        // BasicBSONList list = new BasicBSONList();
-        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
-        int cont = 0;
+        // Empty transcript and exon dictionaries
+        transcriptDict.clear();
+        exonDict.clear();
+
         GtfReader gtfReader = new GtfReader(gtfFile);
         Gtf gtf;
         while ((gtf = gtfReader.read()) != null) {
@@ -137,8 +154,8 @@ public class GeneParser {
 
             geneId = gtf.getAttributes().get("gene_id");
             transcriptId = gtf.getAttributes().get("transcript_id");
-            System.out.println(geneId);
-            /*
+
+            /**
 			 * If chromosome is changed (or it's the first chromosome)
 			 * we load the new chromosome sequence.
 			 */
@@ -154,16 +171,11 @@ public class GeneParser {
             if (gene == null || !geneId.equals(gene.getId())) {
                 // gene object can only be null the first time
                 if (gene != null) { // genes.size()>0
-                    // Adding chunksIds
-                    int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
-                    int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
-                    for(int i=chunkStart; i<=chunkEnd; i++) {
-                        gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
-                    }
+                    logger.debug("Serializing gene {}", geneId);
                     serializer.serialize(gene);
                 }
 
-                gene = new GeneMongoDB(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
+                gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(), mirnaGeneMap.get(geneId));
                 // Do not change order!! size()-1 is the index of the gene ID
@@ -175,8 +187,7 @@ public class GeneParser {
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), tfbsMap.get(transcriptId));
                 gene.getTranscripts().add(transcript);
-                // Do not change order!! size()-1 is the index of the transcript
-                // ID
+                // Do not change order!! size()-1 is the index of the transcript ID
                 transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);
             } else {
                 transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
@@ -204,8 +215,7 @@ public class GeneParser {
                     cdna = 1;
                     cds = 1;
                 } else {
-                    // with every exon we update cDNA length with the previous
-                    // exon length
+                    // with every exon we update cDNA length with the previous exon length
                     cdna += exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getEnd()
                             - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
                 }
@@ -359,13 +369,7 @@ public class GeneParser {
             }
         }
 
-        // Adding chunksIds
-        int chunkStart = (gene.getStart() - 5000) / CHUNK_SIZE;
-        int chunkEnd = (gene.getEnd() + 5000) / CHUNK_SIZE;
-        for(int i=chunkStart; i<=chunkEnd; i++) {
-            gene.getChunkIds().add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
-        }
-        // last gene must be written
+        // last gene must be serialized
         serializer.serialize(gene);
 
         // cleaning
@@ -541,9 +545,7 @@ public class GeneParser {
             // Second, read the miRNA matures, field #6
             mirnaMatures = fields[6].split(",");
             for(String s: mirnaMatures) {
-//				System.out.println(s);
                 mirnaMaturesFields = s.split("\\|");
-//				System.out.println("\t"+Arrays.toString(mirnaMaturesFields));
                 // Save directly into MiRNAGene object.
                 miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2]);
             }
@@ -555,31 +557,6 @@ public class GeneParser {
         return mirnaGeneMap;
     }
 
-    class GeneMongoDB extends Gene {
-        private List<String> chunkIds;
-
-        public GeneMongoDB() {
-            chunkIds = new ArrayList<>(50);
-        }
-
-        public GeneMongoDB(String id, String name, String biotype,
-                           String status, String chromosome, Integer start, Integer end,
-                           String strand, String source, String description,
-                           List<Transcript> transcripts, MiRNAGene mirna) {
-            super(id, name, biotype, status, chromosome, start, end, strand, source,
-                    description, transcripts, mirna);
-            chunkIds = new ArrayList<>(50);
-        }
-
-        public List<String> getChunkIds() {
-            return chunkIds;
-        }
-
-        public void setChunkIds(List<String> chunkIds) {
-            this.chunkIds = chunkIds;
-        }
-
-    }
 
     public void parseGff3ToJson(File getFile, File geneDescriptionFile, File xrefsFile, File outJsonFile)
             throws IOException, SecurityException, NoSuchMethodException, FileFormatException {

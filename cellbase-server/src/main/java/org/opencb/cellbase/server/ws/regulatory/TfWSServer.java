@@ -1,16 +1,9 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.common.core.Gene;
-import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
-import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.DbReferenceType;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.FeatureType;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.Protein;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -19,7 +12,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 

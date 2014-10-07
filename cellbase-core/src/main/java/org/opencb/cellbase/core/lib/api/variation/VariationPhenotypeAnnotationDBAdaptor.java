@@ -19,6 +19,7 @@ public interface VariationPhenotypeAnnotationDBAdaptor {
 
     public QueryResult getAllPhenotypes(QueryOptions options);
 
+    public QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
 
     public QueryResult getAllByGene(String gene, QueryOptions options);
 

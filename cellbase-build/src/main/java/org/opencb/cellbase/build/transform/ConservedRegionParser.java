@@ -1,17 +1,18 @@
 package org.opencb.cellbase.build.transform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opencb.cellbase.build.transform.utils.FileUtils;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.regulatory.ConservedRegion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
@@ -19,49 +20,78 @@ public class ConservedRegionParser {
 
 	private static int CHUNKSIZE = 2000;
 
-    private static ObjectMapper gson = new ObjectMapper();
-//	static Gson gson = new Gson();
+    private ObjectMapper gson;
+    private Logger logger;
 
-    public static void parseConservedRegionFilesToJson(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
-        Path inGzPath;
+    // Download data:
+    // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
+    // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
+
+    public ConservedRegionParser() {
+        logger = LoggerFactory.getLogger(ConservedRegionParser.class);
+        gson = new ObjectMapper();
+    }
+
+    public void parse(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
         Path outJsonPath;
 
-        List<String> chromosomes = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y");
-//        List<String> chromosomes = Arrays.asList("22");
+        Map<String, Path> files = new HashMap<>();
+        String chromosome;
+        Set<String> chromosomes = new HashSet<>();
 
+        // Reading all files in phastCons folder
+        DirectoryStream<Path> directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"));
+        for(Path path: directoryStream) {
+            chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
+            chromosomes.add(chromosome);
+            files.put(chromosome+"phastCons", path);
+        }
+
+        // Reading all files in phylop folder
+        directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phylop"));
+        for(Path path: directoryStream) {
+            chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
+            chromosomes.add(chromosome);
+            files.put(chromosome+"phylop", path);
+        }
+
+        /**
+         * Now we can iterate over all the chromosomes found and process the files
+         */
+        logger.debug("Chromosomes found {}", chromosomes.toString());
         for(String chr : chromosomes){
-
-            outJsonPath = outdirPath.resolve("conservation_"+chr+".json");
+            outJsonPath = outdirPath.resolve("conservation_"+chr+".json.gz");
             if(Files.exists(outJsonPath)){
                 Files.delete(outJsonPath);
             }
-            BufferedWriter bw = Files.newBufferedWriter(outJsonPath, Charset.defaultCharset(), StandardOpenOption.CREATE);
+//            BufferedWriter bw = Files.newBufferedWriter(outJsonPath, Charset.defaultCharset(), StandardOpenOption.CREATE);
+            BufferedWriter bw = FileUtils.newGzipBufferedWriter(outJsonPath);
 
-            inGzPath = getConservedRegionPath(conservedRegionPath.resolve(Paths.get("phastCons")), chr);
-            System.out.println("processing  "+chr+" "+inGzPath+"...");
-            processFile(inGzPath, "phastCons", bw);
+            logger.debug("Processing chromosome {}, file {}", chr, files.get(chr+"phastCons"));
+            processFile(files.get(chr+"phastCons"), "phastCons", bw);
 
-            inGzPath = getConservedRegionPath(conservedRegionPath.resolve(Paths.get("phylop")), chr);
-            System.out.println("processing  "+chr+" "+inGzPath+"...");
-            processFile(inGzPath, "phylop", bw);
+            logger.debug("Processing chromosome {}, file {}", chr, files.get(chr+"phylop"));
+            processFile(files.get(chr+"phylop"), "phylop", bw);
 
             bw.close();
         }
     }
 
 
-    private static void processFile(Path inGzPath, String conservedType, BufferedWriter bw) throws IOException {
+    private void processFile(Path inGzPath, String conservedType, BufferedWriter bw) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(inGzPath))));
 
         String line = null;
-        int start = 0, offset = 0, step = 1, end=0;
+        String chromosome = "";
+        int start = 0, end=0;
         boolean isFirst = true;
         float value;
-        String chromosome = "";
         Map<String, String> attributes = new HashMap<>();
-        ConservedRegion conservedRegion =  null;
+//        ConservedRegion conservedRegion =  null;
         List<Float> values = new ArrayList<>();
+
+        ConservedRegionChunk conservedRegion =  null;
 
         while ((line = br.readLine()) != null) {
             if (line.startsWith("fixedStep")) {
@@ -69,42 +99,71 @@ public class ConservedRegionParser {
                 if(conservedRegion != null){
                     conservedRegion.setEnd(end);
 //                    bw.write(gson.toJson(conservedRegion)+"\n");
+                    conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
                     bw.write(gson.writeValueAsString(conservedRegion)+"\n");
                 }
 
-                offset = 0;
+//                offset = 0;
                 attributes.clear();
-                String[] atrrFields = line.split(" ");
+                String[] attrFields = line.split(" ");
                 String[] attrKeyValue;
-                for (String attrField : atrrFields) {
+                for (String attrField : attrFields) {
                     if (!attrField.equalsIgnoreCase("fixedStep")) {
                         attrKeyValue = attrField.split("=");
                         attributes.put(attrKeyValue[0].toLowerCase(), attrKeyValue[1]);
                     }
                 }
-                start = Integer.parseInt(attributes.get("start"));
-                step = Integer.parseInt(attributes.get("step"));
                 chromosome = attributes.get("chrom").replace("chr", "");
+                start = Integer.parseInt(attributes.get("start"));
+                end = Integer.parseInt(attributes.get("start"));
+//                step = Integer.parseInt(attributes.get("step"));
 
-                values = new ArrayList<>();
-                // TODO
+                values = new ArrayList<>(2000);
+
 //                conservedRegion = new ConservedRegion(chromosome, start, 0, conservedType, values);
-                System.out.println(start);
+//                conservedRegion = new ConservedRegionChunk(chromosome, start, 0, conservedType, start/CHUNKSIZE, values);
+//                System.out.println(start);
 
             } else {
-                end = start + offset;
-                offset += step;
+                int startChunk = start/CHUNKSIZE;
+                end++;
+                int endChunk = end/CHUNKSIZE;
+
+                if(startChunk != endChunk) {
+//                    System.out.println("coords: "+start+", "+(end-1));
+//                    System.out.println("values length: "+values.size());
+                    conservedRegion = new ConservedRegionChunk(chromosome, start, end-1, conservedType, startChunk, values);
+                    bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+                    values.clear();
+                    start = end;
+                }
+
+//                offset += step;
                 value = Float.parseFloat(line.trim());
                 values.add(value);
             }
         }
         //write last
-        conservedRegion.setEnd(end);
+        conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
         bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+//        conservedRegion.setEnd(end);
         br.close();
-
     }
 
+//    @Deprecated
+//    public static Path getConservedRegionPath(Path conservedRegionFolderPath, String chrFile) {
+//        String file = "";
+//        String conservedRegion = conservedRegionFolderPath.getFileName().toString();
+//        switch (conservedRegion.toLowerCase()) {
+//            case "phastcons":
+//                file = "chr" + chrFile + ".phastCons46way.primates.wigFix.gz";
+//                break;
+//            case "phylop":
+//                file = "chr" + chrFile + ".phyloP46way.primate.wigFix.gz";
+//                break;
+//        }
+//        return conservedRegionFolderPath.resolve(file);
+//    }
 
 //    private static void processFileOld(Path inGzPath, Map<Integer, ConservedRegionChunk> conservedRegionChunks, String conservedType, int chunksize) throws IOException {
 //        if(chunksize <= 0) {
@@ -189,18 +248,5 @@ public class ConservedRegionParser {
 //        }
 //    }
 
-    public static Path getConservedRegionPath(Path conservedRegionFolderPath, String chrFile) {
-        String file = "";
-        String conservedRegion = conservedRegionFolderPath.getFileName().toString();
-        switch (conservedRegion.toLowerCase()) {
-            case "phastcons":
-                file = "chr" + chrFile + ".phastCons46way.primates.wigFix.gz";
-                break;
-            case "phylop":
-                file = "chr" + chrFile + ".phyloP46way.primate.wigFix.gz";
-                break;
-        }
-        return conservedRegionFolderPath.resolve(file);
-    }
 
 }

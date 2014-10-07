@@ -1,14 +1,16 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
-import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
+import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.commons.bioformats.protein.uniprot.v140jaxb.FeatureType;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -258,6 +260,19 @@ public class TranscriptWSServer extends GenericRestWSServer {
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
             return generateResponse(query, "EXON",
                     dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getExonsByTranscriptId", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{transcriptId}/variation")
+    public Response getVariationsByTranscriptId(@PathParam("transcriptId") String query) {
+        try {
+            checkVersionAndSpecies();
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            return createOkResponse(variationDBAdaptor.getAllByTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonsByTranscriptId", e.toString());

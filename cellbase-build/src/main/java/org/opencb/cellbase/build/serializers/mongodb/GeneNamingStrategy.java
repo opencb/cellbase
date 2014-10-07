@@ -15,6 +15,7 @@ import java.util.Map;
  * Time: 10:54
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class GeneNamingStrategy extends PropertyNamingStrategy {
 
     private static Map<String, String> fieldNames;

@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
-import org.opencb.cellbase.core.common.variation.VariationPhenotypeAnnotation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -204,11 +204,13 @@ public class VariationPhenotypeAnnotationParser {
 //        System.out.println(results.toString());
         return results;
     }
+
+
     private void createPhenFeatAttribTable(Path variationDirectoryPath) throws SQLException, IOException, ClassNotFoundException {
         String tableName = "phen_feat_attrib";
         Class.forName("org.sqlite.JDBC");
         sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationDirectoryPath.resolve("variation_phenotype.db").toString());
-        if(!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db"))) {
+        if(!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db")) || Files.size(variationDirectoryPath.resolve("variation_phenotype.db")) == 0) {
             sqlConn.setAutoCommit(false);
 
             Statement createTables = sqlConn.createStatement();

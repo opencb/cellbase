@@ -18,7 +18,7 @@ my $help = '0';
 # USAGE: ./core.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
-GetOptions ('species=s' => \$species, 'outdir=s' => \$outdir, 
+GetOptions ('species=s' => \$species, 'outdir=s' => \$outdir,
 			'ensembl-libs=s' => \$ENSEMBL_LIBS, 'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
 			'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
 			'ensembl-user=s' => \$ENSEMBL_USER, 'ensembl-pass=s' => \$ENSEMBL_PASS,
@@ -45,7 +45,7 @@ if(-d $outdir){
 use lib "$ENSEMBL_LIBS/ensembl/modules";
 use lib "$ENSEMBL_LIBS/ensembl-variation/modules";
 use lib "$ENSEMBL_LIBS/ensembl-compara/modules";
-use lib "$ENSEMBL_LIBS/ensembl-functgenomics/modules";
+use lib "$ENSEMBL_LIBS/ensembl-funcgen/modules";
 use lib "$ENSEMBL_LIBS/bioperl-live";
 
 ## creating ensembl adaptors
@@ -56,6 +56,16 @@ use Bio::EnsEMBL::Funcgen::DBSQL::DBAdaptor;
 
 ## loading the registry with the adaptors 
 Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
+#Bio::EnsEMBL::Registry->load_registry_from_db(
+#    -host => 'mysql.ebi.ac.uk',
+#    -port => 4157,
+#    -user => 'anonymous'
+#);
+#Bio::EnsEMBL::Registry->load_registry_from_db(
+#  -host    => 'ensembldb.ensembl.org',
+#  -user    => 'anonymous',
+#  -verbose => '0'
+#);
 ####################################################################
 
 ## variables definition
@@ -76,7 +86,7 @@ sub create_orthologous {
 }
 
 sub createCoreTables {
-	my ($gene, $exon, $dblink, $translation, %uniq, $gene_adaptor, $transcript_adaptor, $probefeature_adaptor);
+	my ($gene, $exon, $dblink, $translation, %uniq, $gene_adaptor, $transcript_adaptor, $translation_adaptor, $probefeature_adaptor);
 	my (@dbentries,@arr_dbnames);
 	my $orth_gene;
 	my %exon_trans = ();
@@ -86,8 +96,9 @@ sub createCoreTables {
 	%dbnames_cont = ();
 	%xrefs = ();
 
-	$gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species,"core","Gene");
-	$transcript_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species,"core","Transcript");
+	$gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Gene");
+	$transcript_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Transcript");
+	$translation_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "translation");
 	$probefeature_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "funcgen", "ProbeFeature");
 
     open (GENE_DESC, ">$outdir/gene_description.txt") || die "Cannot open gene_description.txt file";
@@ -140,7 +151,10 @@ sub createCoreTables {
 			$translation = $trans->translation();
 			if(defined($translation)) {
 				print XREFS $trans->stable_id()."\t".$translation->stable_id."\t".&get_dbname_short("Ensembl protein")."\t"."Ensembl protein"."\t".$trans->description()."\n";
-				
+#				foreach my $dblink(@{ $translation->get_all_xrefs }) {
+#				    print XREFS $trans->stable_id()."\t".$dblink->display_id()."\t".&get_dbname_short($dblink->db_display_name())."\t".$dblink->db_display_name()."\t".$dblink->description()."\n";
+#				}
+
 				%uniq = ();
 				foreach my $df(@{$translation->get_all_ProteinFeatures()}){
 					if( $df->interpro_ac() ne "" && not defined($uniq{$df->interpro_ac()})) {
@@ -150,7 +164,8 @@ sub createCoreTables {
 				}
 			}
 
-			foreach my $dblink(@{ $trans->get_all_DBLinks }) {
+#			foreach my $dblink(@{ $trans->get_all_DBLinks }) {
+			foreach my $dblink(@{ $trans->get_all_xrefs }) {
 				print XREFS $trans->stable_id()."\t".$dblink->display_id()."\t".&get_dbname_short($dblink->db_display_name())."\t".$dblink->db_display_name()."\t".$dblink->description()."\n";
 				
 				if($dblink->display_id() =~ /(\w+)\.\d$/){
@@ -165,7 +180,7 @@ sub createCoreTables {
 			}
 		}
 		########################################################################
-		
+		last;
 	}
 	close(GENE_DESC);
 	close(XREFS);

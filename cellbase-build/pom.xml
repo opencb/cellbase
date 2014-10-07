@@ -6,12 +6,12 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>..</relativePath>
     </parent>
 
     <artifactId>cellbase-build</artifactId>
-    <version>3.0.0</version>
+    <version>${cellbase.version}</version>
 
     <properties>
         <installation.dir>installation-dir</installation.dir>
@@ -24,35 +24,21 @@
             <artifactId>cellbase-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opencb.commons</groupId>
-            <artifactId>bioformats</artifactId>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-mongodb</artifactId>
         </dependency>
         <dependency>
             <groupId>org.opencb.biodata</groupId>
-            <artifactId>models</artifactId>
+            <artifactId>biodata-models</artifactId>
         </dependency>
         <dependency>
             <groupId>org.opencb.biodata</groupId>
-            <artifactId>formats</artifactId>
-            <version>0.1</version>
+            <artifactId>biodata-formats</artifactId>
         </dependency>
         <dependency>
             <groupId>org.opencb.datastore</groupId>
             <artifactId>datastore-mongodb</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.opencb.datastore</groupId>
-            <artifactId>datastore-core</artifactId>
-            <version>0.1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.opencb.datastore</groupId>
-            <artifactId>datastore-core</artifactId>
-            <version>0.1.0</version>
-        </dependency>
-
-
         <dependency>
             <groupId>psidev.psi.mi</groupId>
             <artifactId>psimitab</artifactId>
@@ -123,6 +109,9 @@
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                     <encoding>UTF-8</encoding>
+                    <excludes>
+                        <exclude>**/DrugParser.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -203,10 +192,13 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <repositoryName>libs</repositoryName>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <useWildcardClassPath>true</useWildcardClassPath>
                     <programs>
                         <program>
                             <mainClass>org.opencb.cellbase.build.CellBaseMain</mainClass>
-                            <name>cellbase-cli</name>
+                            <name>cellbase-build.sh</name>
                         </program>
                     </programs>
                 </configuration>

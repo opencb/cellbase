@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -71,4 +72,13 @@ public class FileUtils {
         return br;
     }
 
+    /**
+     * This method is able to determine whether a file is GZipped and return a BufferedReader in any case
+     * @param path to be read
+     * @return BufferedReader object
+     * @throws IOException
+     */
+    public static BufferedWriter newGzipBufferedWriter(Path path) throws IOException {
+        return new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(path.toFile()))));
+    }
 }

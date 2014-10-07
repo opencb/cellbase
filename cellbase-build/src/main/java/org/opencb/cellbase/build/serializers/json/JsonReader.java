@@ -101,11 +101,13 @@ public class JsonReader<T> implements DataReader<T> {
     }
     
     @Override
-    public T read() {
+    public List<T> read() {
         try {
+            List<T> listRecords = new ArrayList<>(1);
             if (parser.nextToken() != null) {
                 T variant = parser.readValueAs(clazz);
-                return variant;
+                listRecords.add(variant);
+                return listRecords;
             }
         } catch (IOException ex) {
             Logger.getLogger(JsonReader.class.getName()).log(Level.SEVERE, null, ex);
