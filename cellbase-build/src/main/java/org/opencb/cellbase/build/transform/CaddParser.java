@@ -2,6 +2,8 @@ package org.opencb.cellbase.build.transform;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variant.CADD.Cadd;
 import org.opencb.biodata.models.variant.CADD.CaddValues;
 
@@ -16,113 +18,147 @@ import java.util.List;
  * Created by antonior on 5/22/14.
  */
 public class CaddParser {
-
-    public static Float stringToFloat(String floatName){
-        if (floatName.equals("NA")){
-
-            return null;
-        }
-        else{
-            return Float.parseFloat(floatName);
-        }
-
-
-
+	public Path caddFilePath = null;
+	public Path outputFilePath = null;
+    
+    public CaddParser(){
+    	this.caddFilePath = null;
+    	this.outputFilePath = null;
     }
+    
+    public CaddParser(Path caddFilePath, Path outputFilePath) {
+		this.caddFilePath = caddFilePath;
+		this.outputFilePath = outputFilePath;
+	}
 
 
-    public static void parse(Path caddFilePath, Path oFilePath){
+    public void parse(String chrName){
+        Cadd caddVariant = new Cadd ();
 
-        Cadd Caddvariant = new Cadd ();
-
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(caddFilePath.toFile())))) {
-            try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(oFilePath.toFile())))) {
-
-                String line;
-                String[] header;
-                String ref;
-                String alt;
-                String chr;
-                int pos;
-
-                while ((line = reader.readLine()) != null) {
-                    if (line.startsWith("##")) {
-                        continue; // Header will just be ignored
-                    } else if (line.startsWith("#")) {
-                        header = line.split("\t");
-
-                    } else {
+        try {
+        	String line, ref, alt, chr;
+            int pos;
+            
+            PrintWriter writer = new PrintWriter(
+            		new BufferedWriter(
+            				new FileWriter(outputFilePath.toString())));
+            
+            try{
+            	TabixReader t = new TabixReader(caddFilePath.toString());
+        		TabixReader.Iterator tabixIterator;
+        		
+            	tabixIterator = t.query(chrName);
+    			line = tabixIterator.next();
+    			Boolean hasElements = false;
+    			
+    			while(line != null){
+    				if (!line.startsWith("##")){
                         String[] fields = line.split("\t");
                         ref = fields[2];
                         alt = fields[4];
                         chr = fields[0];
                         pos = Integer.parseInt(fields[1]);
 
-                        if (Caddvariant.getChr()!=null && (Caddvariant.getChr().equals(chr) && Caddvariant.getPos() == pos && Caddvariant.getReference().equals(ref) && Caddvariant.getAllele().equals(alt))) {
-                            List <CaddValues> caddinfo = Caddvariant.getValuesCadd();
+                        // If the variant is the same as the last iteration variant, don't print it
+                        if (caddVariant.getChr() != null &&
+                        		(caddVariant.getChr().equals(chr) && caddVariant.getPos() == pos &&
+                        		 caddVariant.getReference().equals(ref) && caddVariant.getAllele().equals(alt))) {
+                            List <CaddValues> caddinfo = caddVariant.getValuesCadd();
 
-                            CaddValues values = new CaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
+                            CaddValues values = 
+                            		new CaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
                             caddinfo.add(values);
-                            Caddvariant.setValuesCadd(caddinfo);
-
+                            caddVariant.setValuesCadd(caddinfo);
+                            hasElements = true;
                         } else {
-                            if (Caddvariant.getChr()!=null) {
+                            if (caddVariant.getChr() != null) {
                                 ObjectMapper jsonMapper = new ObjectMapper();
                                 jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                                writer.write(Caddvariant.getChr()+"\t"+Integer.toString(Caddvariant.getPos())+"\t"+Caddvariant.getReference()+"\t"+Caddvariant.getAllele()+"\t"+jsonMapper.writeValueAsString(Caddvariant)+"\n");
-
-                                //print this cadd
+                                writer.write(caddVariant.getChr() + "\t" +
+                                		Integer.toString(caddVariant.getPos()) + "\t" +
+                                		caddVariant.getReference() + "\t" + 
+                                		caddVariant.getAllele() + "\t" + 
+                                		jsonMapper.writeValueAsString(caddVariant)+"\n");
                             }
 
-                            Float EncExp = stringToFloat(fields[29]);
-                            Float EncH3K27Ac = stringToFloat(fields[30]);
-                            Float EncH3K4Me1 = stringToFloat(fields[31]);
-                            Float EncH3K4Me3 = stringToFloat(fields[32]);
-                            Float EncNucleo = stringToFloat(fields[33]);
+                            List<CaddValues> caddValuesList = new ArrayList<CaddValues>();
 
-                            Integer EncOCC = null;
-                            if (!fields[34].equals("NA")){
-                                EncOCC = Integer.parseInt(fields[34]);
-                            }
-
-
-
-                            Float EncOCCombPVal = stringToFloat(fields[35]);
-                            Float EncOCDNasePVal = stringToFloat(fields[36]);
-                            Float EncOCFairePVal = stringToFloat(fields[37]);
-                            Float EncOCpolIIPVal = stringToFloat(fields[38]);
-                            Float EncOCctcfPVal = stringToFloat(fields[39]);
-                            Float EncOCmycPVal = stringToFloat(fields[40]);
-                            Float EncOCDNaseSig = stringToFloat(fields[41]);
-                            Float EncOCFaireSig = stringToFloat(fields[42]);
-                            Float EncOCpolIISig = stringToFloat(fields[43]);
-                            Float EncOCctcfSig = stringToFloat(fields[44]);
-                            Float EncOCmycSig = stringToFloat(fields[45]);
-                            List<CaddValues> caddValuesList = new ArrayList<>();
-
-
-                            CaddValues values = new CaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
+                            CaddValues values = new CaddValues(
+                            		Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
                             caddValuesList.add(values);
 
-
-                            Caddvariant = new Cadd(alt, ref, chr, pos, EncExp, EncH3K27Ac, EncH3K4Me1, EncH3K4Me3, EncNucleo, EncOCC, EncOCCombPVal, EncOCDNasePVal, EncOCFairePVal, EncOCpolIIPVal, EncOCctcfPVal, EncOCmycPVal, EncOCDNaseSig, EncOCFaireSig, EncOCpolIISig, EncOCctcfSig, EncOCmycSig, caddValuesList);
-
+                            caddVariant = createCaddVariant(fields, caddValuesList);
+                            hasElements = true;
                         }
                     }
-                }
-
-                ObjectMapper jsonMapper = new ObjectMapper();
-                jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                writer.write(Caddvariant.getChr()+"\t"+Integer.toString(Caddvariant.getPos())+"\t"+Caddvariant.getReference()+"\t"+Caddvariant.getAllele()+"\t"+jsonMapper.writeValueAsString(Caddvariant)+"\n");
-
-
-
-            }
+                    
+                    line = tabixIterator.next();
+    			}
+    			
+    			// Print the last element if the variant list is not empty
+    			if(hasElements){
+    				ObjectMapper jsonMapper = new ObjectMapper();
+                    jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                    writer.write(caddVariant.getChr() + "\t" +
+                    		Integer.toString(caddVariant.getPos()) + "\t" + 
+                    		caddVariant.getReference() + "\t" + 
+                    		caddVariant.getAllele() + "\t" + 
+                    		jsonMapper.writeValueAsString(caddVariant) + "\n");	
+    			}
+            } catch (ArrayIndexOutOfBoundsException e) {
+				e.printStackTrace();
+			} finally {
+				writer.close();
+			}
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-
     }
+    
+    private Cadd createCaddVariant(String[] fields, List<CaddValues> caddValuesList){
+    	String ref = fields[2], alt = fields[4], chr = fields[0];
+        int pos = Integer.parseInt(fields[1]);
+    	
+        Float EncExp = stringToFloat(fields[29]);
+        Float EncH3K27Ac = stringToFloat(fields[30]);
+        Float EncH3K4Me1 = stringToFloat(fields[31]);
+        Float EncH3K4Me3 = stringToFloat(fields[32]);
+        Float EncNucleo = stringToFloat(fields[33]);
 
+        Integer EncOCC = null;
+        if (!fields[34].equals("NA")){
+            EncOCC = Integer.parseInt(fields[34]);
+        }
+
+        Float EncOCCombPVal = stringToFloat(fields[35]);
+        Float EncOCDNasePVal = stringToFloat(fields[36]);
+        Float EncOCFairePVal = stringToFloat(fields[37]);
+        Float EncOCpolIIPVal = stringToFloat(fields[38]);
+        Float EncOCctcfPVal = stringToFloat(fields[39]);
+        Float EncOCmycPVal = stringToFloat(fields[40]);
+        Float EncOCDNaseSig = stringToFloat(fields[41]);
+        Float EncOCFaireSig = stringToFloat(fields[42]);
+        Float EncOCpolIISig = stringToFloat(fields[43]);
+        Float EncOCctcfSig = stringToFloat(fields[44]);
+        Float EncOCmycSig = stringToFloat(fields[45]);
+    	
+    	Cadd caddVariant = new Cadd(
+        		alt, ref, chr, pos, EncExp, EncH3K27Ac, 
+        		EncH3K4Me1, EncH3K4Me3, EncNucleo, EncOCC,
+        		EncOCCombPVal, EncOCDNasePVal, EncOCFairePVal, 
+        		EncOCpolIIPVal, EncOCctcfPVal, EncOCmycPVal,
+        		EncOCDNaseSig, EncOCFaireSig, EncOCpolIISig,
+        		EncOCctcfSig, EncOCmycSig, caddValuesList);
+    	
+    	return caddVariant;
+    }
+    
+    private Float stringToFloat(String floatName){
+        if (floatName.equals("NA")){
+            return null;
+        }
+        else{
+            return Float.parseFloat(floatName);
+        }
+    }
 }
