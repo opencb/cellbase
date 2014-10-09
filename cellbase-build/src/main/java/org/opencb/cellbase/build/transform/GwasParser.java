@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,10 +32,10 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
  * @since October 08, 2014 
  */
 public class GwasParser {
-	public String inputFilePath = null;
-	public String outputFilePath = null;
-	public String dbSnpFilePath = null;
-	public String inputFileSorted = null;
+	public Path inputFilePath = null;
+	public Path outputFilePath = null;
+	public Path dbSnpFilePath = null;
+	public Path inputFileSorted = null;
 	public Map<String, Integer> mapChrTranslation = new HashMap<String, Integer>();
 	public static final String GWAS_HEADER_CONSTANT = "gwasHeader";
 	public static final String GWAS_STUDY_CONSTANT = "gwasStudy";
@@ -45,7 +47,7 @@ public class GwasParser {
 		mapChrTranslation.put("MT", 25);
 	}
 
-	public GwasParser(String inputFilePath, String outputFilePath, String dbSnpFilePath) {
+	public GwasParser(Path inputFilePath, Path outputFilePath, Path dbSnpFilePath) {
 		this.inputFilePath = inputFilePath;
 		this.outputFilePath = outputFilePath;
 		this.dbSnpFilePath = dbSnpFilePath;
@@ -56,30 +58,29 @@ public class GwasParser {
 	}
 
 	public void parseFile() {
-		File file = new File(inputFilePath);
-		File dbSnpFile = new File(dbSnpFilePath);
+		File file = new File(inputFilePath.toString());
+		File dbSnpFile = new File(dbSnpFilePath.toString());
 		if (file.exists() && dbSnpFile.exists()) {
 			String line;
 			try {
 				// Test if the output file folder exists
-				String outputFolder = outputFilePath.substring(0,
-						outputFilePath.lastIndexOf("/"));
+				String outputFolder = outputFilePath.toString().substring(0,
+						outputFilePath.toString().lastIndexOf("/"));
 				File folder = new File(outputFolder);
 				if (!folder.exists()) {
 					folder.mkdirs();
 				}
 
 				// Extract the name of the sorted temp file
-				String fileName = inputFilePath.substring(inputFilePath
-						.lastIndexOf("/"));
-				inputFileSorted = inputFilePath.substring(0,
-						inputFilePath.lastIndexOf("/"))
+				String fileName = inputFilePath.toString().substring(inputFilePath.toString().lastIndexOf("/"));
+				inputFileSorted = Paths.get(inputFilePath.toString().substring(0,
+						inputFilePath.toString().lastIndexOf("/"))
 						+ fileName.substring(0, fileName.lastIndexOf("."))
 						+ ".sorted"
-						+ fileName.substring(fileName.lastIndexOf("."));
+						+ fileName.substring(fileName.lastIndexOf(".")));
 
-				FileReader fr = new FileReader(inputFilePath);
-				FileWriter writer = new FileWriter(outputFilePath);
+				FileReader fr = new FileReader(inputFilePath.toString());
+				FileWriter writer = new FileWriter(outputFilePath.toString());
 				BufferedReader br = new BufferedReader(fr);
 
 				// Read the header
@@ -93,7 +94,7 @@ public class GwasParser {
 				/*String tabIndexPath = getClass().getClassLoader()
 						.getResource("resources/dbsnp").getPath()
 						+ "/dbSnp137-00-All.vcf.gz";*/
-				TabixReader t = new TabixReader(dbSnpFilePath);
+				TabixReader t = new TabixReader(dbSnpFilePath.toString());
 				TabixReader.Iterator tabixIterator;
 
 				try {
