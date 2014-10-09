@@ -68,6 +68,9 @@ public class CellBaseMain {
         // Drug options
         options.addOption(OptionFactory.createOption("drug-file", "Output directory to save the JSON result", false));
 
+        // ClinVar
+        options.addOption(OptionFactory.createOption("clinvar-file", "Output directory to save the JSON result", false));
+
         // Protein options
         options.addOption(OptionFactory.createOption("species", "s", "Species", false, true));
         options.addOption(OptionFactory.createOption("psimi-tab-file", "Input PsiMi tab file", false));
@@ -242,6 +245,14 @@ public class CellBaseMain {
                     if(drugFile != null) {
                         DrugParser drugParser = new DrugParser(serializer);
                         drugParser.parse(Paths.get(drugFile));
+                    }
+                    break;
+                case "clinvar":
+                    logger.info("Processing ClinVar...");
+                    String clinvarFile = commandLine.getOptionValue("clinvar-file");
+                    if(clinvarFile != null) {
+                        ClinVarParser clinVarParser = new ClinVarParser(serializer);
+                        clinVarParser.parse(Paths.get(clinvarFile));
                     }
                     break;
                 case "all":
