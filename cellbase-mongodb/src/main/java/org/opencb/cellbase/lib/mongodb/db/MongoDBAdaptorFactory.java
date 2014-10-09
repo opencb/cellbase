@@ -421,14 +421,15 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
-    public ClinVarDBAdaptor getClinVarDBAdaptor(String species, String version) {
-        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
-        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
-            DB db = createCellBaseMongoDB(speciesVersionPrefix);
-            mongoDBFactory.put(speciesVersionPrefix, db);
+    public ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly) {
+        String speciesAssemblyPrefix = getSpeciesAssemblyPrefix(species, assembly);
+        String speciesId = config.getAlias(species);
+        if (!mongoDBFactory.containsKey(speciesAssemblyPrefix)) {
+            DB db = createCellBaseMongoDB(speciesId, assembly);
+            mongoDBFactory.put(speciesAssemblyPrefix, db);
         }
-        return (ClinVarDBAdaptor) new ClinVarMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
-                speciesAlias.get(species), version);
+        return (ClinVarDBAdaptor) new ClinVarMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
+                speciesId, assembly);
     }
 
     @Override

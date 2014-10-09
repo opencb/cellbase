@@ -228,7 +228,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getClinvarByRegion(@PathParam("chrRegionId") String query) {
         try {
             checkVersionAndSpecies();
-            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.version);
+            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {

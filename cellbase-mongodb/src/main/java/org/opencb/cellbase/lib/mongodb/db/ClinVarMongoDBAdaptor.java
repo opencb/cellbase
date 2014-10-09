@@ -23,8 +23,8 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
         super(db);
     }
 
-    public ClinVarMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
+    public ClinVarMongoDBAdaptor(DB db, String species, String assembly) {
+        super(db, species, assembly);
         mongoDBCollection = db.getCollection("clinvar");
 
         logger.info("ClinVarMongoDBAdaptor: in 'constructor'");
