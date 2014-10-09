@@ -13,9 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
 /**
- * Created by antonior on 5/22/14.
+ * @author Antonio Rueda
+ * @author Luis Miguel Cruz.
+ * @since October 08, 2014 
  */
 public class CaddParser {
 	public Path caddFilePath = null;
@@ -30,7 +31,7 @@ public class CaddParser {
 		this.caddFilePath = caddFilePath;
 		this.outputFilePath = outputFilePath;
 	}
-
+    
 
     public void parse(String chrName){
         Cadd caddVariant = new Cadd ();
@@ -60,9 +61,9 @@ public class CaddParser {
                         pos = Integer.parseInt(fields[1]);
 
                         // If the variant is the same as the last iteration variant, don't print it
-                        if (caddVariant.getChr() != null &&
-                        		(caddVariant.getChr().equals(chr) && caddVariant.getPos() == pos &&
-                        		 caddVariant.getReference().equals(ref) && caddVariant.getAllele().equals(alt))) {
+                        if (caddVariant.getChromosome() != null &&
+                        		(caddVariant.getChromosome().equals(chr) && caddVariant.getStart() == pos &&
+                        		 caddVariant.getReference().equals(ref) && caddVariant.getAlternate().equals(alt))) {
                             List <CaddValues> caddinfo = caddVariant.getValuesCadd();
 
                             CaddValues values = 
@@ -71,13 +72,13 @@ public class CaddParser {
                             caddVariant.setValuesCadd(caddinfo);
                             hasElements = true;
                         } else {
-                            if (caddVariant.getChr() != null) {
+                            if (caddVariant.getChromosome() != null) {
                                 ObjectMapper jsonMapper = new ObjectMapper();
                                 jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                                writer.write(caddVariant.getChr() + "\t" +
+                                writer.write(/*caddVariant.getChr() + "\t" +
                                 		Integer.toString(caddVariant.getPos()) + "\t" +
                                 		caddVariant.getReference() + "\t" + 
-                                		caddVariant.getAllele() + "\t" + 
+                                		caddVariant.getAllele() + "\t" + */
                                 		jsonMapper.writeValueAsString(caddVariant)+"\n");
                             }
 
@@ -99,10 +100,10 @@ public class CaddParser {
     			if(hasElements){
     				ObjectMapper jsonMapper = new ObjectMapper();
                     jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                    writer.write(caddVariant.getChr() + "\t" +
+                    writer.write(/*caddVariant.getChr() + "\t" +
                     		Integer.toString(caddVariant.getPos()) + "\t" + 
                     		caddVariant.getReference() + "\t" + 
-                    		caddVariant.getAllele() + "\t" + 
+                    		caddVariant.getAllele() + "\t" + */
                     		jsonMapper.writeValueAsString(caddVariant) + "\n");	
     			}
             } catch (ArrayIndexOutOfBoundsException e) {
@@ -143,7 +144,7 @@ public class CaddParser {
         Float EncOCmycSig = stringToFloat(fields[45]);
     	
     	Cadd caddVariant = new Cadd(
-        		alt, ref, chr, pos, EncExp, EncH3K27Ac, 
+        		alt, ref, chr, pos, pos, EncExp, EncH3K27Ac, 
         		EncH3K4Me1, EncH3K4Me3, EncNucleo, EncOCC,
         		EncOCCombPVal, EncOCDNasePVal, EncOCFairePVal, 
         		EncOCpolIIPVal, EncOCctcfPVal, EncOCmycPVal,

@@ -6,9 +6,11 @@ import java.nio.file.Paths;
 import org.junit.Test;
 
 /**
- * @author lcruz
+ * @author Luis Miguel Cruz.
+ * @since October 08, 2014 
  */
 public class CaddParserTest {
+
     @Test
     public void testParse() throws Exception {
     	String chrName = "X";

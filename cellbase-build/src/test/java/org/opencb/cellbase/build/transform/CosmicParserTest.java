@@ -1,29 +1,23 @@
 package org.opencb.cellbase.build.transform;
 
-import org.junit.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.junit.Test;
 
-import static org.junit.Assert.*;
-
+/**
+ * @author Luis Miguel Cruz.
+ * @since October 08, 2014 
+ */
 public class CosmicParserTest {
 
     @Test
     public void testParse() throws Exception {
-        // setup
+        Path inputFilePath = Paths.get("/home/lcruz/Escritorio/CosmicMutantExport_v68.tsv");
+        Path outputFolderPath = Paths.get("/home/lcruz/Escritorio/Cosmic/");
 
 
-        // ejecucion
-
-        Path ipath = Paths.get("/home/jpflorido/tmp/CosmicMutantExport_v68.tsv");
-        Path opath = Paths.get("/home/jpflorido/tmp/");
-
-
-
-        CosmicParser.parse(ipath,opath);
-
-        // comprobacion
-
+        CosmicParser p = new CosmicParser(inputFilePath, outputFolderPath);
+        p.parse();
     }
 }

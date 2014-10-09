@@ -1,21 +1,33 @@
 package org.opencb.cellbase.build.transform;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.broad.tribble.readers.TabixReader;
+import org.opencb.biodata.models.variant.clinical.Gwas;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import org.broad.tribble.readers.TabixReader;
-import org.opencb.biodata.models.variant.clinical.Gwas;
-
-import java.io.*;
-import java.text.ParseException;
-import java.util.*;
 
 /**
- * @author lcruz
+ * @author Luis Miguel Cruz
  * @version 1.2.3
- * @since April 28, 2014
+ * @since October 08, 2014 
  */
 public class GwasParser {
 	public String inputFilePath = null;
@@ -100,11 +112,11 @@ public class GwasParser {
 							Gwas gwasVO = new Gwas(line.split("\t"));
 
 							// Obtain the reference and alternative from the chromosome and position
-							if (gwasVO.getChrId() != null
-									&& gwasVO.getChrPos() != null) {
-								tabixIterator = t.query(gwasVO.getChrId() + ":"
-										+ gwasVO.getChrPos() + "-"
-										+ gwasVO.getChrPos());
+							if (gwasVO.getChromosome() != null
+									&& gwasVO.getStart() != null) {
+								tabixIterator = t.query(gwasVO.getChromosome() + ":"
+										+ gwasVO.getStart() + "-"
+										+ gwasVO.getStart());
 								tabIndexString = tabixIterator.next();
 
 								while (tabIndexString != null && !founded) {
@@ -114,8 +126,8 @@ public class GwasParser {
 											tabIndexLine[2])) {
 										ref = tabIndexLine[3];
 										alt = tabIndexLine[4];
-										gwasVO.setRef(ref);
-										gwasVO.setAlt(alt);
+										gwasVO.setReference(ref);
+										gwasVO.setAlternate(alt);
 										founded = true;
 									}
 
@@ -132,17 +144,17 @@ public class GwasParser {
 									}*/
 									
 									if (!alt.contains(",")) {
-										if (mapVariants.containsKey(gwasVO.getChrId() + "::" + gwasVO.getChrPos()
+										if (mapVariants.containsKey(gwasVO.getChromosome() + "::" + gwasVO.getStart()
 												+ "::" + ref + "::" + alt)) {
-											List<Gwas> listAux = mapVariants.get(gwasVO.getChrId() + "::"
-															+ gwasVO.getChrPos() + "::" + ref + "::" + alt);
+											List<Gwas> listAux = mapVariants.get(gwasVO.getChromosome() + "::"
+															+ gwasVO.getStart() + "::" + ref + "::" + alt);
 											listAux.add(gwasVO);
-											mapVariants.put(gwasVO.getChrId() + "::" + gwasVO.getChrPos()
+											mapVariants.put(gwasVO.getChromosome() + "::" + gwasVO.getStart()
 													+ "::" + ref + "::" + alt, listAux);
 										} else {
 											List<Gwas> listAux = new LinkedList<Gwas>();
 											listAux.add(gwasVO);
-											mapVariants.put(gwasVO.getChrId() + "::" + gwasVO.getChrPos()
+											mapVariants.put(gwasVO.getChromosome() + "::" + gwasVO.getStart()
 													+ "::" + ref + "::" + alt, listAux);
 										}
 									} else {
@@ -150,22 +162,22 @@ public class GwasParser {
 												.split(",");
 
 										for (int pos = 0; pos < alternativeArray.length; pos++) {
-											if (mapVariants.containsKey(gwasVO.getChrId() + "::"
-													+ gwasVO.getChrPos() + "::" + ref + "::" + alternativeArray[pos])) {
-												List<Gwas> listAux = mapVariants.get(gwasVO.getChrId() + "::"
-																+ gwasVO.getChrPos() + "::" + ref + "::" 
+											if (mapVariants.containsKey(gwasVO.getChromosome() + "::"
+													+ gwasVO.getStart() + "::" + ref + "::" + alternativeArray[pos])) {
+												List<Gwas> listAux = mapVariants.get(gwasVO.getChromosome() + "::"
+																+ gwasVO.getStart() + "::" + ref + "::" 
 																+ alternativeArray[pos]);
 												
-												gwasVO.setAlt(alternativeArray[pos]);
+												gwasVO.setAlternate(alternativeArray[pos]);
 												listAux.add(gwasVO);
-												mapVariants.put(gwasVO.getChrId() + "::" + gwasVO.getChrPos()
+												mapVariants.put(gwasVO.getChromosome() + "::" + gwasVO.getStart()
 																+ "::" + ref + "::" + alt, listAux);
 											} else {
 												List<Gwas> listAux = new LinkedList<Gwas>();
 												
-												gwasVO.setAlt(alternativeArray[pos]);
+												gwasVO.setAlternate(alternativeArray[pos]);
 												listAux.add(gwasVO);
-												mapVariants.put(gwasVO.getChrId()+ "::"+ gwasVO.getChrPos()
+												mapVariants.put(gwasVO.getChromosome()+ "::"+ gwasVO.getStart()
 																+ "::" + ref + "::" + alt, listAux);
 											}
 										}
@@ -293,34 +305,74 @@ public class GwasParser {
         	
         	// Print the list of studies with its tests
         	gwasCurrent = null;
+        	outputLine = new StringBuilder();
+        	
         	if(listVariantStudies != null && listVariantStudies.size() > 0){
         		gwasCurrent = (listVariantStudies.get(0)).get(0);
         		
-        		outputLine =
+        		/*outputLine =
 				new StringBuilder(
 						gwasCurrent.getChrId()+"\t"+gwasCurrent.getChrPos()+"\t"+
 						gwasCurrent.getRef()+"\t"+gwasCurrent.getAlt()+"\t");
-        		outputLine.append("{\"gwas\":");
+        		outputLine.append("{\"gwas\":");*/
         		
-        		/*if(gwasCurrent.getChrId().equalsIgnoreCase("16") && 
-        				gwasCurrent.getChrPos().equals(new Integer("56997233"))){
-        			System.out.println("Hola q ase");*/
-        			if(listVariantStudies.size() < 2){
-        				// If we have only one study, iterate all the tests of this study
-            			listVariantTests = listVariantStudies.get(0);
+    			if(listVariantStudies.size() < 2){
+    				// If we have only one study, iterate all the tests of this study
+        			listVariantTests = listVariantStudies.get(0);
+                    
+                    if(listVariantTests.size() < 2){
+                    	// If there is only one test, print the whole object
+                    	jsonString = createJsonString(gwasCurrent, null);
+                    	outputLine.append(jsonString.substring(0, jsonString.length()-1));
+                    } else {
+                    	// If there is more than one test iterate the tests
+                    	jsonString = createJsonString(gwasCurrent, GWAS_HEADER_CONSTANT);
+                    	outputLine.append(jsonString.substring(0, jsonString.length()-1));
+                    	
+                    	jsonString = createJsonString(gwasCurrent, GWAS_STUDY_CONSTANT);
+                    	outputLine.append(","+jsonString.substring(1, jsonString.length()-1));
+                    	
+                    	outputLine.append(",\"tests\":[");
+                    	
+                    	for(int j=0; j<listVariantTests.size(); j++){
+                    		Gwas gwasTest = listVariantTests.get(j);
+            				jsonString = createJsonString(gwasTest, GWAS_TEST_CONSTANT);
+                        	outputLine.append(jsonString.substring(0, jsonString.length()-1));
+                        	
+                        	// Close the test JSON
+                            outputLine.append("}");
+                            if(j<listVariantTests.size()-1){
+                            	outputLine.append(",");	
+                            }
+                    	}
+                    	
+                    	// Close the test set
+                    	outputLine.append("]");
+                    }
+        		} else {
+        			// If we have more than one study, iterate all the studies
+        			/*outputLine =
+            				new StringBuilder(
+            						gwasCurrent.getChrId()+"\t"+gwasCurrent.getChrPos()+"\t"+
+            						gwasCurrent.getRef()+"\t"+gwasCurrent.getAlt()+"\t");
+                    outputLine.append("{\"gwas\":");*/
+                    jsonString = createJsonString(gwasCurrent, GWAS_HEADER_CONSTANT);
+                	outputLine.append(jsonString.substring(0, jsonString.length()-1));
+                	outputLine.append(",\"studies\":[");
+                    
+        			for(int i=0; i<listVariantStudies.size(); i++){
+        				Gwas gwasStudy = listVariantStudies.get(i).get(0);
+        				jsonString = createJsonString(gwasStudy, GWAS_STUDY_CONSTANT);
+                    	outputLine.append(jsonString.substring(0, jsonString.length()-1));
+        				
+            			listVariantTests = listVariantStudies.get(i);
                         
                         if(listVariantTests.size() < 2){
                         	// If there is only one test, print the whole object
-                        	jsonString = createJsonString(gwasCurrent, null);
-                        	outputLine.append(jsonString.substring(0, jsonString.length()-1));
+                        	jsonString = createJsonString(gwasStudy, GWAS_TEST_CONSTANT);
+                        	outputLine.append(","+jsonString.substring(1, jsonString.length()-1));
                         } else {
                         	// If there is more than one test iterate the tests
-                        	jsonString = createJsonString(gwasCurrent, GWAS_HEADER_CONSTANT);
-                        	outputLine.append(jsonString.substring(0, jsonString.length()-1));
-                        	
-                        	jsonString = createJsonString(gwasCurrent, GWAS_STUDY_CONSTANT);
-                        	outputLine.append(","+jsonString.substring(1, jsonString.length()-1));
-                        	
                         	outputLine.append(",\"tests\":[");
                         	
                         	for(int j=0; j<listVariantTests.size(); j++){
@@ -338,66 +390,24 @@ public class GwasParser {
                         	// Close the test set
                         	outputLine.append("]");
                         }
-            		} else {
-            			// If we have more than one study, iterate all the studies
-            			outputLine =
-                				new StringBuilder(
-                						gwasCurrent.getChrId()+"\t"+gwasCurrent.getChrPos()+"\t"+
-                						gwasCurrent.getRef()+"\t"+gwasCurrent.getAlt()+"\t");
-                        outputLine.append("{\"gwas\":");
-                        jsonString = createJsonString(gwasCurrent, GWAS_HEADER_CONSTANT);
-                    	outputLine.append(jsonString.substring(0, jsonString.length()-1));
-                    	outputLine.append(",\"studies\":[");
                         
-            			for(int i=0; i<listVariantStudies.size(); i++){
-            				Gwas gwasStudy = listVariantStudies.get(i).get(0);
-            				jsonString = createJsonString(gwasStudy, GWAS_STUDY_CONSTANT);
-                        	outputLine.append(jsonString.substring(0, jsonString.length()-1));
-            				
-                			listVariantTests = listVariantStudies.get(i);
-                            
-                            if(listVariantTests.size() < 2){
-                            	// If there is only one test, print the whole object
-                            	jsonString = createJsonString(gwasStudy, GWAS_TEST_CONSTANT);
-                            	outputLine.append(","+jsonString.substring(1, jsonString.length()-1));
-                            } else {
-                            	// If there is more than one test iterate the tests
-                            	outputLine.append(",\"tests\":[");
-                            	
-                            	for(int j=0; j<listVariantTests.size(); j++){
-                            		Gwas gwasTest = listVariantTests.get(j);
-                    				jsonString = createJsonString(gwasTest, GWAS_TEST_CONSTANT);
-                                	outputLine.append(jsonString.substring(0, jsonString.length()-1));
-                                	
-                                	// Close the test JSON
-                                    outputLine.append("}");
-                                    if(j<listVariantTests.size()-1){
-                                    	outputLine.append(",");	
-                                    }
-                            	}
-                            	
-                            	// Close the test set
-                            	outputLine.append("]");
-                            }
-                            
-                            // Close the study JSON
-                            outputLine.append("}");
-                            if(i<listVariantStudies.size()-1){
-                            	outputLine.append(",");	
-                            }
-            			}
-            			
-            			// Close the study set
-                        outputLine.append("]");
-            		}
+                        // Close the study JSON
+                        outputLine.append("}");
+                        if(i<listVariantStudies.size()-1){
+                        	outputLine.append(",");	
+                        }
+        			}
         			
-        			// Close the gwas JSON
-                	outputLine.append("}");
-                	// Close the gwas set
-                	outputLine.append("}");
-                    writer.write(outputLine.toString() + "\n");
+        			// Close the study set
+                    outputLine.append("]");
         		}
-        	//}
+    			
+    			// Close the gwas JSON
+            	outputLine.append("}");
+            	// Close the gwas set
+            	//outputLine.append("}");
+                writer.write(outputLine.toString() + "\n");
+    		}
         }
     }
 
@@ -405,8 +415,6 @@ public class GwasParser {
 		String jsonString = new String();
 
 		List<String> listIgnorableFields = new ArrayList<String>();
-		listIgnorableFields.add("ref");
-		listIgnorableFields.add("alt");
 
 		if (jsonType != null) {
 			if (jsonType.equalsIgnoreCase(GWAS_HEADER_CONSTANT)) {
@@ -429,8 +437,9 @@ public class GwasParser {
 			} else if (jsonType.equalsIgnoreCase(GWAS_STUDY_CONSTANT)) {
 				listIgnorableFields.add("replicationSampleSize");
 				listIgnorableFields.add("region");
-				listIgnorableFields.add("chrId");
-				listIgnorableFields.add("chrPos");
+				listIgnorableFields.add("chromosome");
+				listIgnorableFields.add("start");
+				listIgnorableFields.add("end");
 				listIgnorableFields.add("reportedGenes");
 				listIgnorableFields.add("mappedGene");
 				listIgnorableFields.add("upstreamGeneId");
@@ -451,11 +460,14 @@ public class GwasParser {
 				listIgnorableFields.add("pValueText");
 				listIgnorableFields.add("orBeta");
 				listIgnorableFields.add("percentCI");
+				listIgnorableFields.add("reference");
+				listIgnorableFields.add("alternate");
 			} else if (jsonType.equalsIgnoreCase(GWAS_TEST_CONSTANT)) {
 				listIgnorableFields.add("replicationSampleSize");
 				listIgnorableFields.add("region");
-				listIgnorableFields.add("chrId");
-				listIgnorableFields.add("chrPos");
+				listIgnorableFields.add("chromosome");
+				listIgnorableFields.add("start");
+				listIgnorableFields.add("end");
 				listIgnorableFields.add("reportedGenes");
 				listIgnorableFields.add("mappedGene");
 				listIgnorableFields.add("upstreamGeneId");
@@ -481,6 +493,8 @@ public class GwasParser {
 				listIgnorableFields.add("diseaseTrait");
 				listIgnorableFields.add("initialSampleSize");
 				listIgnorableFields.add("platform");
+				listIgnorableFields.add("reference");
+				listIgnorableFields.add("alternate");
 			}
 		}
 
@@ -491,7 +505,7 @@ public class GwasParser {
 		
 		// Filter the ignorable fields
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider();
-		filterProvider.addFilter("gwasVOFilter", SimpleBeanPropertyFilter.serializeAllExcept(ignorableFieldNames));
+		filterProvider.addFilter("gwasFilter", SimpleBeanPropertyFilter.serializeAllExcept(ignorableFieldNames));
 		filterProvider.setFailOnUnknownId(false);
 
 		// Create the JSON from the GWAS object
@@ -504,7 +518,6 @@ public class GwasParser {
 		try {
 			jsonString = jsonMapper.writeValueAsString(gwas);
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
