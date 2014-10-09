@@ -10,10 +10,10 @@ import org.gbpa.mutalyzer.webservice.MutalyzerService;
 import org.gbpa.mutalyzer.webservice.StringArray;
 import org.opencb.biodata.formats.feature.refseq.Refseq;
 import org.opencb.biodata.formats.variant.hgvs.Hgvs;
-import org.opencb.biodata.models.variant.clinical.clinvar.v1_5jaxb.MeasureSetType;
-import org.opencb.biodata.models.variant.clinical.clinvar.v1_5jaxb.PublicSetType;
-import org.opencb.biodata.models.variant.clinical.clinvar.v1_5jaxb.ReleaseType;
-import org.opencb.biodata.models.variant.clinical.clinvar.v1_5jaxb.SequenceLocationType;
+import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureSetType;
+import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
+import org.opencb.biodata.formats.variant.clinvar.v19jaxb.ReleaseType;
+import org.opencb.biodata.formats.variant.clinvar.v19jaxb.SequenceLocationType;
 
 
 import javax.sound.midi.Sequence;
