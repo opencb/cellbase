@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.broad.tribble.readers.TabixReader;
-import org.opencb.biodata.models.variant.CADD.Cadd;
-import org.opencb.biodata.models.variant.CADD.CaddValues;
+import org.opencb.biodata.models.variant.cadd.Cadd;
+import org.opencb.biodata.models.variant.cadd.CaddValues;
 
 import java.io.*;
 import java.nio.file.Path;
