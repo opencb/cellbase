@@ -9,6 +9,7 @@ import org.opencb.cellbase.core.common.variation.StructuralVariation;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
@@ -213,6 +214,32 @@ public class RegionWSServer extends GenericRestWSServer {
 //				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
                 List<QueryResult> queryResults = mutationDBAdaptor.getAllByRegionList(regions, queryOptions);
 //				return this.generateResponse(query, "MUTATION", mutationList);
+                return createOkResponse(queryResults);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getMutationByRegion", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{chrRegionId}/clinvar")
+    public Response getClinvarByRegion(@PathParam("chrRegionId") String query) {
+        try {
+            checkVersionAndSpecies();
+            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.version);
+            List<Region> regions = Region.parseRegions(query);
+
+            if (hasHistogramQueryParam()) {
+//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
+//						regions.get(0), getHistogramIntervalSize());
+//                QueryResult queryResult = mutationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
+//				return generateResponse(query, intervalList);
+                return null;
+            } else {
+                System.out.println("sdddajljkjkhhk");
+                List<QueryResult> queryResults = clinVarDBAdaptor.getAllByRegionList(regions, queryOptions);
                 return createOkResponse(queryResults);
             }
 

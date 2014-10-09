@@ -416,6 +416,22 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
+    public ClinVarDBAdaptor getClinVarDBAdaptor(String species) {
+        return getClinVarDBAdaptor(species, null);
+    }
+
+    @Override
+    public ClinVarDBAdaptor getClinVarDBAdaptor(String species, String version) {
+        String speciesVersionPrefix = getSpeciesVersionPrefix(species, version);
+        if (!mongoDBFactory.containsKey(speciesVersionPrefix)) {
+            DB db = createCellBaseMongoDB(speciesVersionPrefix);
+            mongoDBFactory.put(speciesVersionPrefix, db);
+        }
+        return (ClinVarDBAdaptor) new ClinVarMongoDBAdaptor(mongoDBFactory.get(speciesVersionPrefix),
+                speciesAlias.get(species), version);
+    }
+
+    @Override
     public CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species) {
         // TODO Auto-generated method stub
         return null;
