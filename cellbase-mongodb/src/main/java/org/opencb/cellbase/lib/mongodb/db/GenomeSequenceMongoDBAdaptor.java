@@ -15,6 +15,8 @@ import java.util.List;
 @Deprecated
 public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements GenomeSequenceDBAdaptor {
 
+    private int chunkSize;
+
     public GenomeSequenceMongoDBAdaptor(DB db) {
         super(db);
     }
@@ -24,14 +26,18 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
         mongoDBCollection = db.getCollection("genome_sequence");
     }
 
+    public GenomeSequenceMongoDBAdaptor(DB db, String species, String version, int chunkSize) {
+        super(db, species, version);
+        this.chunkSize = chunkSize;
+        mongoDBCollection = db.getCollection("genome_sequence");
+    }
+
     private int getChunk(int position) {
-        return (position / Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
-                + ".GENOME_SEQUENCE.CHUNK_SIZE", "2000")));
+        return this.chunkSize;
     }
 
     private int getOffset(int position) {
-        return ((position) % Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
-                + ".GENOME_SEQUENCE.CHUNK_SIZE", "2000")));
+        return this.chunkSize;
     }
 
     public static String getComplementarySequence(String sequence) {
@@ -56,8 +62,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         /****/
-        String chunkIdSuffix = Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
-                + ".GENOME_SEQUENCE.CHUNK_SIZE", "2000")) / 1000 + "k";
+        String chunkIdSuffix = this.chunkSize / 1000 + "k";
         /****/
 
         List<DBObject> queries = new ArrayList<>();

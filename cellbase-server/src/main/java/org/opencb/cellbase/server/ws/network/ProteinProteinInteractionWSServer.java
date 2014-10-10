@@ -43,7 +43,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                               @DefaultValue("") @QueryParam("detectionMethod") String detectionMethod) {
         try {
             checkVersionAndSpecies();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.version);
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
             if(interactor != null && !interactor.equals("")) {
                 queryOptions.put("interactor", Splitter.on(",").splitToList(interactor));
@@ -82,7 +82,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
         try {
             checkVersionAndSpecies();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.version);
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
             List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
             return createOkResponse(queryResults);
@@ -99,7 +99,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                                                   @DefaultValue("interactorA,interactorB") @QueryParam("include") String include) {
         try {
             checkVersionAndSpecies();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.version);
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
 //            queryOptions.put("include", Splitter.on(",").splitToList(include));
             queryOptions.put("include", include);

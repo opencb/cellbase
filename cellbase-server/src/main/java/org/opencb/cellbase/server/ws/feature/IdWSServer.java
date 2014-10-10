@@ -38,7 +38,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
         try {
             checkVersionAndSpecies();
-            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
+            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             if (!dbname.equals("")) {
                 queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
             }
@@ -60,7 +60,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getGeneByEnsemblId(@PathParam("id") String query) {
         try {
             checkVersionAndSpecies();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.version);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 
@@ -78,7 +78,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getSnpByFeatureId(@PathParam("id") String query) {
         try {
             checkVersionAndSpecies();
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.version);
+            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
@@ -91,7 +91,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getByLikeQuery(@PathParam("id") String query) {
         try {
             checkVersionAndSpecies();
-            XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
+            XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
 //            if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
 //                List<List<Xref>> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query));
 //                for (List<Xref> xrefList : snpXrefs) {
@@ -111,7 +111,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getByContainsQuery(@PathParam("id") String query) {
         try {
             checkVersionAndSpecies();
-            XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.version);
+            XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             List<List<Xref>> xrefs = x.getByContainsQueryList(Splitter.on(",").splitToList(query));
             if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
                 List<QueryResult> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query),queryOptions);
