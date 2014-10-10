@@ -4,8 +4,8 @@ import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.biodata.models.core.Cytoband;
 import org.opencb.biodata.models.core.GenomeSequenceChunk;
 import org.opencb.biodata.models.core.InfoStats;
+import org.opencb.cellbase.build.serializers.json.JsonSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -17,20 +17,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-public class GenomeSequenceFastaParser {
+public class GenomeSequenceFastaParser extends CellBaseParser {
 
-    private CellBaseSerializer serializer;
+    private Path genomeReferenceFastaFile;
 
 
     private int CHUNK_SIZE = 2000;
 
 
-    public GenomeSequenceFastaParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+    public GenomeSequenceFastaParser(Path genomeReferenceFastaFile, Path outFile) {
+        super(outFile);
+        this.genomeReferenceFastaFile = genomeReferenceFastaFile;
     }
 
 
-    public void parse(Path genomeReferenceFastaFile) {
+    @Override
+    public void parse() {
+
         try {
             String sequenceName = "";
             String sequenceType = "";
@@ -40,20 +43,16 @@ public class GenomeSequenceFastaParser {
 
             // Preparing input and output files
             BufferedReader br;
-//            if(genomeReferenceFastaFile.getName().endsWith(".gz")) {
-//                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(genomeReferenceFastaFile))));
-//            }else {
-//                br = Files.newBufferedReader(Paths.get(genomeReferenceFastaFile.getAbsolutePath()), Charset.defaultCharset());
-//            }
             br = FileUtils.newBufferedReader(genomeReferenceFastaFile);
 
             while ((line = br.readLine()) != null) {
+
                 if (!line.startsWith(">")) {
                     sequenceStringBuilder.append(line);
                 } else {
                     // new chromosome, save data
                     if (sequenceStringBuilder.length() > 0) {
-                        if(!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+                        if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
                             System.out.println(sequenceName);
                             serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
                         }
@@ -67,7 +66,7 @@ public class GenomeSequenceFastaParser {
                 }
             }
             // Last chromosome must be processed
-            if(!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+            if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
                 serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
             }
 
@@ -83,13 +82,14 @@ public class GenomeSequenceFastaParser {
         int end = CHUNK_SIZE - 1;
         String chunkSequence;
 
-        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
+        String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
         GenomeSequenceChunk genomeSequenceChunk;
 
         if (sequence.length() < CHUNK_SIZE) {//chromosome sequence length can be less than CHUNK_SIZE
             chunkSequence = sequence;
-            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+0+"_"+chunkIdSuffix, start, sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
-            serializer.serialize(genomeSequenceChunk);
+            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + 0 + "_" + chunkIdSuffix, start, sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
+//            serializer.serialize(genomeSequenceChunk);
+            write(genomeSequenceChunk);
             start += CHUNK_SIZE - 1;
         } else {
             while (start < sequence.length()) {
@@ -100,22 +100,25 @@ public class GenomeSequenceFastaParser {
                 if (start == 1) {
                     // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
                     chunkSequence = sequence.substring(start - 1, CHUNK_SIZE - 1);
-                    genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
-                    serializer.serialize(genomeSequenceChunk);
+                    genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+//                    serializer.serialize(genomeSequenceChunk);
+                    write(genomeSequenceChunk);
                     start += CHUNK_SIZE - 1;
 
                 } else {
                     // Regular chunk
                     if ((start + CHUNK_SIZE) < sequence.length()) {
                         chunkSequence = sequence.substring(start - 1, start + CHUNK_SIZE - 1);
-                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
-                        serializer.serialize(genomeSequenceChunk);
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+//                        serializer.serialize(genomeSequenceChunk);
+                        write(genomeSequenceChunk);
                         start += CHUNK_SIZE;
                     } else {
                         // Last chunk of the chromosome
                         chunkSequence = sequence.substring(start - 1, sequence.length());
-                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, sequence.length(), sequenceType, sequenceAssembly, chunkSequence);
-                        serializer.serialize(genomeSequenceChunk);
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start, sequence.length(), sequenceType, sequenceAssembly, chunkSequence);
+//                        serializer.serialize(genomeSequenceChunk);
+                        write(genomeSequenceChunk);
                         start = sequence.length();
                     }
                 }
@@ -130,8 +133,8 @@ public class GenomeSequenceFastaParser {
             StringBuilder sequenceStringBuilder;
             File[] files = genomeReferenceFastaDir.listFiles();
             BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(), StandardOpenOption.CREATE);
-            for(File file: files) {
-                if(file.getName().endsWith(".fa.gz")) {
+            for (File file : files) {
+                if (file.getName().endsWith(".fa.gz")) {
                     System.out.println(file.getAbsolutePath());
 
                     String chromosome = "";
@@ -170,14 +173,12 @@ public class GenomeSequenceFastaParser {
     }
 
 
-
-
     @Deprecated
     public void parseToJsonCclementina(File genomeReferenceFastaFile, File outJsonFile) {
-		/*infoStats*/
+        /*infoStats*/
         List<Chromosome> chromosomes = new ArrayList<Chromosome>();
         InfoStats infoStats = new InfoStats("cclementine", chromosomes);
-		/*infoStats*/
+        /*infoStats*/
         try {
             String chromosome = "";
             String line;
@@ -185,9 +186,9 @@ public class GenomeSequenceFastaParser {
             // Java 7 IO code
             BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(), StandardOpenOption.CREATE);
             BufferedReader br = Files.newBufferedReader(Paths.get(genomeReferenceFastaFile.toURI()), Charset.defaultCharset());
-			/*info_stats*/
+            /*info_stats*/
             BufferedWriter bw_stats = Files.newBufferedWriter(Paths.get(outJsonFile.getParent()).resolve("cclementina_info_stats.json"), Charset.defaultCharset(), StandardOpenOption.CREATE);
-			/*info_stats*/
+            /*info_stats*/
             while ((line = br.readLine()) != null) {
                 if (!line.startsWith(">")) {
                     sequenceStringBuilder.append(line);
@@ -211,7 +212,7 @@ public class GenomeSequenceFastaParser {
                         cytobands.add(new Cytoband("", "clementina", 1, len));
                         chromosomeObj.setCytobands(cytobands);
                         chromosomes.add(chromosomeObj);
-						/*infoStats*/
+                        /*infoStats*/
                     }
 
                     // initialize data structures
@@ -231,7 +232,7 @@ public class GenomeSequenceFastaParser {
 //			bw_stats.write(gson.toJson(infoStats));
             bw_stats.flush();
             bw_stats.close();
-			/*info_stats*/
+            /*info_stats*/
         } catch (IOException e) {
             e.printStackTrace();
         }

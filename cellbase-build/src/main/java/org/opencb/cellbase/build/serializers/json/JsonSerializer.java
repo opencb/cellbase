@@ -19,7 +19,6 @@ import org.opencb.commons.io.DataWriter;
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  * @param <T> Type of data to serialize
  */
-@Deprecated
 public class JsonSerializer<T> implements DataWriter<T> {
 
     private Path file;

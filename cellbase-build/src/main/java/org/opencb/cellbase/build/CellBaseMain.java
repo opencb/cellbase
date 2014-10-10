@@ -4,9 +4,9 @@ import org.apache.commons.cli.*;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.build.loaders.mongodb.VariantEffectMongoDBLoader;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.serializers.json.JsonSerializer;
 import org.opencb.cellbase.build.transform.*;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.io.DataWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +97,7 @@ public class CellBaseMain {
 
         try {
             // Help option is checked manually, otherwise the parser will complain about obligatory options
-            if(args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
+            if (args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("cellbase-build.jar", "Some options are mandatory for all possible 'builds', while others are only mandatory for some specific 'builds':", options, "\nFor more information or reporting bugs contact me: imedina@cipf.es", true);
                 return;
@@ -129,8 +129,10 @@ public class CellBaseMain {
                     logger.info("Processing genome-sequence...");
                     String fastaFile = commandLine.getOptionValue("fasta-file");
                     if (fastaFile != null && Files.exists(Paths.get(fastaFile))) {
-                        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(serializer);
-                        genomeSequenceFastaParser.parse(Paths.get(fastaFile));
+
+                        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(Paths.get(fastaFile), outputPath.resolve("genome_sequence.json"));
+                        genomeSequenceFastaParser.parse();
+                        genomeSequenceFastaParser.disconnect();
                     }
                     break;
                 case "gene":
@@ -145,10 +147,10 @@ public class CellBaseMain {
                     String mirnaFile = commandLine.getOptionValue("mirna-file", "");
 
 //                    if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
-                    GeneParser geneParser = new GeneParser(serializer);
-                    if(geneFilesDir != null && !geneFilesDir.equals("")) {
-                        geneParser.parse(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
-                    }else {
+                    GeneParser geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
+                    if (geneFilesDir != null && !geneFilesDir.equals("")) {
+                        geneParser.parse();
+                    } else {
                         geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
                     }
 //                    }
@@ -165,8 +167,8 @@ public class CellBaseMain {
                     logger.info("Processing variation...");
                     String variationFilesDir = commandLine.getOptionValue("indir");
                     if (variationFilesDir != null) {
-                        VariationParser vp = new VariationParser(serializer);
-                        vp.parse(Paths.get(variationFilesDir)); //, Paths.get(outfile)
+                        VariationParser vp = new VariationParser(Paths.get(variationFilesDir), null);
+                        vp.parse(); //, Paths.get(outfile)
                     }
                     break;
                 case "variation-phen-annot":
@@ -226,7 +228,7 @@ public class CellBaseMain {
                     String conservationFilesDir = commandLine.getOptionValue("indir");
                     int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
                     String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
-                    if(conservationFilesDir != null) {
+                    if (conservationFilesDir != null) {
                         ConservedRegionParser conservedRegionParser = new ConservedRegionParser();
                         conservedRegionParser.parse(Paths.get(conservationFilesDir), conservationChunkSize, Paths.get(conservationOutputFile));
                     }
@@ -242,7 +244,7 @@ public class CellBaseMain {
                 case "drug":
                     logger.info("Processing drug...");
                     String drugFile = commandLine.getOptionValue("drug-file");
-                    if(drugFile != null) {
+                    if (drugFile != null) {
                         DrugParser drugParser = new DrugParser(serializer);
                         drugParser.parse(Paths.get(drugFile));
                     }
@@ -250,7 +252,7 @@ public class CellBaseMain {
                 case "clinvar":
                     logger.info("Processing ClinVar...");
                     String clinvarFile = commandLine.getOptionValue("clinvar-file");
-                    if(clinvarFile != null) {
+                    if (clinvarFile != null) {
                         ClinVarParser clinVarParser = new ClinVarParser(serializer);
                         clinVarParser.parse(Paths.get(clinvarFile));
                     }
@@ -261,7 +263,8 @@ public class CellBaseMain {
 //                    String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
                     parseAll(Paths.get(speciesDataDir));
                     break;
-                default: break;
+                default:
+                    break;
 
             }
             serializer.close();
@@ -274,6 +277,8 @@ public class CellBaseMain {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (JAXBException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -295,12 +300,12 @@ public class CellBaseMain {
     }
 
     private static CellBaseSerializer createCellBaseSerializer(String serializerClass, Path outPath) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        if(serializerClass != null) {
+        if (serializerClass != null) {
             // A default implementation for JSON is provided
-            if(serializerClass.equalsIgnoreCase("json")) {
+            if (serializerClass.equalsIgnoreCase("json")) {
                 logger.debug("JSON serializer chosen");
                 return (CellBaseSerializer) Class.forName(JSON_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
-            }else {
+            } else {
                 logger.debug("MongoDB serializer chosen");
                 return (CellBaseSerializer) Class.forName(MONGODB_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
             }
@@ -332,16 +337,16 @@ public class CellBaseMain {
                 break;
             }
         }
-        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(serializer);
-        genomeSequenceFastaParser.parse(genomeFastaPath);
+        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(genomeFastaPath, null);
+        genomeSequenceFastaParser.parse();
 
-        GeneParser geneParser = new GeneParser(serializer);
-        geneParser.parse(speciesInDir.resolve("gene"), genomeFastaPath);
+        GeneParser geneParser = new GeneParser(speciesInDir.resolve("gene"), genomeFastaPath);
+        geneParser.parse();
 
         Path variationPath = speciesInDir.resolve("variation");
         if (variationPath.toFile().list().length > 2) {
-            VariationParser vp = new VariationParser(serializer);
-            vp.parse(variationPath);
+            VariationParser vp = new VariationParser(variationPath, null);
+            vp.parse();
         }
 
         Path regulationPath = speciesInDir.resolve("regulation");
