@@ -3,6 +3,7 @@ package org.opencb.cellbase.build.transform;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.Xref;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 
@@ -28,8 +29,8 @@ public class VariationParser extends CellBaseParser {
     private Path variationDirectoryPath;
 
 
-    public VariationParser(Path variationDirectoryPath, Path outPath) {
-        super(outPath);
+    public VariationParser(Path variationDirectoryPath, CellBaseSerializer serializer) {
+        super(serializer);
         this.variationDirectoryPath = variationDirectoryPath;
     }
 
@@ -181,7 +182,7 @@ public class VariationParser extends CellBaseParser {
                         logger.debug("Processed variations: " + countprocess);
                     }
 
-                    write(variation);
+                    serialize(variation);
                 } catch (Exception e) {
                     e.printStackTrace();
                     bwLog.write(line + "\n");

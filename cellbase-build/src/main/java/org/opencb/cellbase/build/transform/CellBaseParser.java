@@ -1,12 +1,10 @@
 package org.opencb.cellbase.build.transform;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.opencb.cellbase.build.serializers.json.JsonSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.sql.SQLException;
 
 /**
@@ -14,27 +12,26 @@ import java.sql.SQLException;
  */
 public abstract class CellBaseParser {
 
-    private JsonSerializer writer;
+    private CellBaseSerializer serializer;
 
     protected Logger logger;
 
-    public CellBaseParser(Path outFile) {
+    public CellBaseParser(CellBaseSerializer serializer) {
         logger = LoggerFactory.getLogger(this.getClass());
 
-        this.writer = new JsonSerializer(outFile);
-        this.writer.open();
-        this.writer.pre();
+        this.serializer = serializer;
+        this.serializer.open();
 
     }
 
     public abstract void parse() throws Exception;
 
-    protected boolean write(Object data) throws JsonProcessingException {
-        return this.writer.write(data);
+    protected boolean serialize(Object data) {
+        return this.serializer.serialize(data);
     }
 
     public boolean disconnect() throws Exception {
-        return this.writer.post() && this.writer.close();
+        return this.serializer.close();
     }
 
 }

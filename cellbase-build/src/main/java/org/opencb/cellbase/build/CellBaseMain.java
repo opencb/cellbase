@@ -3,11 +3,9 @@ package org.opencb.cellbase.build;
 import org.apache.commons.cli.*;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
-import org.opencb.cellbase.build.loaders.mongodb.VariantEffectMongoDBLoader;
-import org.opencb.cellbase.build.serializers.json.JsonSerializer;
+import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
 import org.opencb.cellbase.build.transform.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.commons.io.DataWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class CellBaseMain {
 
@@ -27,7 +24,7 @@ public class CellBaseMain {
     private static CommandLineParser parser;
 
     private static CellBaseSerializer serializer = null;
-    private static DataWriter newSerializer = null;
+    private static org.opencb.cellbase.build.serializers.CellBaseSerializer newSerializer = null;
 
     private static Logger logger;
 
@@ -130,7 +127,8 @@ public class CellBaseMain {
                     String fastaFile = commandLine.getOptionValue("fasta-file");
                     if (fastaFile != null && Files.exists(Paths.get(fastaFile))) {
 
-                        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(Paths.get(fastaFile), outputPath.resolve("genome_sequence.json"));
+                        CellBaseJsonSerializer gsfpSerializer = new CellBaseJsonSerializer(outputPath.resolve("genome_sequence.json"));
+                        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(Paths.get(fastaFile), gsfpSerializer);
                         genomeSequenceFastaParser.parse();
                         genomeSequenceFastaParser.disconnect();
                     }
@@ -167,7 +165,11 @@ public class CellBaseMain {
                     logger.info("Processing variation...");
                     String variationFilesDir = commandLine.getOptionValue("indir");
                     if (variationFilesDir != null) {
-                        VariationParser vp = new VariationParser(Paths.get(variationFilesDir), null);
+
+                        CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(null);
+
+
+                        VariationParser vp = new VariationParser(Paths.get(variationFilesDir), vSerializer);
                         vp.parse(); //, Paths.get(outfile)
                     }
                     break;
@@ -313,16 +315,17 @@ public class CellBaseMain {
         return serializer;
     }
 
-    private static DataWriter getSerializerNew(String serializationOutput, Path outPath, Class clazz) throws IOException {
+    private static org.opencb.cellbase.build.serializers.CellBaseSerializer getSerializerNew(String serializationOutput, Path outPath, Class clazz) throws IOException {
         switch (serializationOutput) {
             case "json":
-                return new JsonSerializer(outPath);
+                return new CellBaseJsonSerializer(outPath);
             case "mongodb":
-                if (clazz.equals(VariantEffect.class)) {
-                    Properties properties = new Properties();
-                    properties.load(CellBaseMain.class.getResource("/application.properties").openStream());
-                    return new VariantEffectMongoDBLoader(properties);
-                }
+//                if (clazz.equals(VariantEffect.class)) {
+//                    Properties properties = new Properties();
+//                    properties.load(CellBaseMain.class.getResource("/application.properties").openStream());
+//                    return new VariantEffectMongoDBLoader(properties);
+//                }
+                return null;
             default:
                 return null;
         }

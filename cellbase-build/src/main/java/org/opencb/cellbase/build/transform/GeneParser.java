@@ -177,7 +177,7 @@ public class GeneParser extends CellBaseParser {
                 // gene object can only be null the first time
                 if (gene != null) { // genes.size()>0
                     logger.debug("Serializing gene {}", geneId);
-                    write(gene);
+                    serialize(gene);
                 }
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
@@ -375,7 +375,7 @@ public class GeneParser extends CellBaseParser {
         }
 
         // last gene must be serialized
-        write(gene);
+        serialize(gene);
 
         // cleaning
         gtfReader.close();
