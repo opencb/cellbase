@@ -185,7 +185,7 @@ public class CellBaseMain {
                         variationPhenotypeAnnotationParser.parse();
                     }
                     break;
-                case "vep":
+                case "vep": // TODO aaleman:
                     logger.info("Processing VEP parser...");
                     newSerializer = getSerializerNew(serializerClass, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
                     String effectFile = commandLine.getOptionValue("vep-file");
@@ -211,8 +211,12 @@ public class CellBaseMain {
                     String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
                     String species = commandLine.getOptionValue("species");
                     if (uniprotSplitFilesDir != null && Files.exists(Paths.get(uniprotSplitFilesDir))) {
-                        ProteinParser proteinParser = new ProteinParser(serializer);
-                        proteinParser.parse(Paths.get(uniprotSplitFilesDir), species);
+
+                        CellBaseJsonSerializer pSerializer = new CellBaseJsonSerializer(outputPath.resolve("protein.json"));
+
+
+                        ProteinParser proteinParser = new ProteinParser(Paths.get(uniprotSplitFilesDir), species, pSerializer);
+                        proteinParser.parse();
                     }
                     break;
                 case "mutation":
