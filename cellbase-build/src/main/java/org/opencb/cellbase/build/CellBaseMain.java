@@ -133,7 +133,7 @@ public class CellBaseMain {
                         genomeSequenceFastaParser.disconnect();
                     }
                     break;
-                case "gene":
+                case "gene": // TODO aaleman:
 //                    logger.info("Processing gene...");
                     String geneFilesDir = commandLine.getOptionValue("indir");
                     String gtfFile = commandLine.getOptionValue("gtf-file");
@@ -176,9 +176,13 @@ public class CellBaseMain {
                     logger.info("Processing variation phenotype annotation...");
                     variationFilesDir = commandLine.getOptionValue("indir");
                     if (variationFilesDir != null) {
-                        VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(serializer);
+
+                        CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation_phenotype_annotation.json"));
+
+
+                        VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(Paths.get(variationFilesDir), vSerializer);
 //                    vp.parseCosmic(Paths.get(cosmicFilePath));
-                        variationPhenotypeAnnotationParser.parseEnsembl(Paths.get(variationFilesDir));
+                        variationPhenotypeAnnotationParser.parse();
                     }
                     break;
                 case "vep":
