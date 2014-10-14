@@ -83,7 +83,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             genomeSequenceBufferedWriter.write(jsonObjectWriter.writeValueAsString(genomeSequenceChunk));
             genomeSequenceBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -98,7 +98,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -113,7 +113,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -128,7 +128,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -143,7 +143,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -156,7 +156,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             variationPhenotypeAnnotationBufferedWriter.write(jsonObjectWriter.writeValueAsString(variationPhenotypeAnnotation));
             variationPhenotypeAnnotationBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -169,7 +169,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             mutationBufferedWriter.write(jsonObjectWriter.writeValueAsString(mutation));
             mutationBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -182,7 +182,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             ppiBufferedWriter.write(jsonObjectWriter.writeValueAsString(interaction));
             ppiBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -198,7 +198,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -213,7 +213,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             closeBufferedWriter(mutationBufferedWriter);
             closeBufferedWriter(ppiBufferedWriter);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
         ;
 

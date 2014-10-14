@@ -54,11 +54,8 @@ public class RegulatoryRegionParser extends CellBaseParser {
 
 //		GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame");
 //		GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT");
-
-
-        // TODO : fix this!!
-//        filePath = regulatoryRegionPath.resolve("mirna_uniq.gff.gz");
-//        createSQLiteRegulatoryFiles(filePath, "mirna_uniq", GFFColumnNames, GFFColumnTypes, true);
+        filePath = regulatoryRegionPath.resolve("mirna_uniq.gff.gz");
+        createSQLiteRegulatoryFiles(filePath, "mirna_uniq", GFFColumnNames, GFFColumnTypes, true);
 
     }
 
@@ -367,10 +364,9 @@ public class RegulatoryRegionParser extends CellBaseParser {
             case "motif_features":
                 genericFeature = getMotifFeature(rs);
                 break;
-            // TODO fix this!!
-//            case "mirna_uniq":
-//                genericFeature = getMirnaFeature(rs);
-//                break;
+            case "mirna_uniq":
+                genericFeature = getMirnaFeature(rs);
+                break;
         }
         return genericFeature;
     }
