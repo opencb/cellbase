@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.biodata.models.variation.Mutation;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -18,15 +18,19 @@ import java.util.List;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MutationParser {
+public class MutationParser extends CellBaseParser {
 
-    private CellBaseSerializer serializer;
 
     private static final int CHUNK_SIZE = 1000;
 
-    public MutationParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+    private Path cosmicMutationFile;
+
+
+    public MutationParser(Path cosmicMutationFile, CellBaseJsonSerializer serializer) {
+        super(serializer);
+        this.cosmicMutationFile = cosmicMutationFile;
     }
+
     // File: CosmicMutantExportCensus_v68.tsv.gz
     // 0 Gene name***
     // 1 Accession Number***
@@ -54,7 +58,8 @@ public class MutationParser {
     // 23 Tumour origin***
     // 24 Comments
 
-    public void parseCosmic(Path cosmicMutationFile) {
+    @Override
+    public void parse() {
         try {
 //            BufferedReader br;
 //            if(mutationFile.getName().endsWith(".gz")) {
@@ -65,7 +70,7 @@ public class MutationParser {
 
             BufferedReader br = FileUtils.newBufferedReader(cosmicMutationFile, Charset.defaultCharset());
 
-            String chunkIdSuffix = CHUNK_SIZE/1000+"k";
+            String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
             MutationMongoDB mutation;
             String line;
             String[] fields, regionFields;
@@ -73,22 +78,22 @@ public class MutationParser {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 fields = line.split("\t", -1);
-                if(!fields[18].equals("")) {
+                if (!fields[18].equals("")) {
                     regionFields = fields[18].split("[:-]");
-                    if(regionFields.length == 3) {
+                    if (regionFields.length == 3) {
                         String proteinStartString = fields[13].replaceAll("\\D", "");
 //                        System.out.println(fields[13]+" =>"+proteinStartString+"<=");
                         int proteinStart = (proteinStartString.length() > 0 && proteinStartString.length() < 8) ? Integer.parseInt(proteinStartString) : 0;
-                        mutation = new MutationMongoDB("COSM"+fields[11], regionFields[0], Integer.parseInt(regionFields[1]), Integer.parseInt(regionFields[2]),
+                        mutation = new MutationMongoDB("COSM" + fields[11], regionFields[0], Integer.parseInt(regionFields[1]), Integer.parseInt(regionFields[2]),
                                 fields[19], "", proteinStart, 0, fields[0], fields[1], fields[2], fields[4], fields[3], fields[22], fields[5],
                                 fields[6], fields[7], fields[8], fields[9], fields[10], fields[12],
                                 fields[13], fields[15], fields[20], fields[21], fields[23], fields[14], "cosmic");
                         int chunkStart = (mutation.getStart()) / CHUNK_SIZE;
                         int chunkEnd = (mutation.getEnd()) / CHUNK_SIZE;
-                        for(int i=chunkStart; i<=chunkEnd; i++) {
-                            mutation.getChunkIds().add(mutation.getChromosome()+"_"+i+"_"+chunkIdSuffix);
+                        for (int i = chunkStart; i <= chunkEnd; i++) {
+                            mutation.getChunkIds().add(mutation.getChromosome() + "_" + i + "_" + chunkIdSuffix);
                         }
-                        serializer.serialize(mutation);
+                        serialize(mutation);
                     }
                 }
             }

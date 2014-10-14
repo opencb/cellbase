@@ -211,24 +211,22 @@ public class CellBaseMain {
                     String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
                     String species = commandLine.getOptionValue("species");
                     if (uniprotSplitFilesDir != null && Files.exists(Paths.get(uniprotSplitFilesDir))) {
-
                         CellBaseJsonSerializer pSerializer = new CellBaseJsonSerializer(outputPath.resolve("protein.json"));
-
-
                         ProteinParser proteinParser = new ProteinParser(Paths.get(uniprotSplitFilesDir), species, pSerializer);
                         proteinParser.parse();
                     }
                     break;
-                case "mutation":
+                case "mutation": // TODO aaleman: fix parser
                     logger.info("Processing mutation");
                     /**
                      * File from Cosmic: CosmicCompleteExport_XXX.tsv
                      */
                     String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
                     if (cosmicFilePath != null) {
-                        MutationParser vp = new MutationParser(serializer);
-//                    vp.parseCosmic(Paths.get(cosmicFilePath));
-                        vp.parseCosmic(Paths.get(cosmicFilePath));
+
+                        CellBaseJsonSerializer mSerializer = new CellBaseJsonSerializer(outputPath.resolve("mutation.json"));
+                        MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
+                        vp.parse();
                     }
                     break;
 
