@@ -157,8 +157,10 @@ public class CellBaseMain {
                     logger.info("Processing regulation");
                     String regulatoryRegionFilesDir = commandLine.getOptionValue("indir");
                     if (regulatoryRegionFilesDir != null) {
-                        RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(serializer);
-                        regulatoryParser.parse(Paths.get(regulatoryRegionFilesDir));
+                        CellBaseJsonSerializer rSerializer = new CellBaseJsonSerializer(outputPath.resolve("regulatory_region.json"));
+
+                        RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(Paths.get(regulatoryRegionFilesDir), rSerializer);
+                        regulatoryParser.parse();
                     }
                     break;
                 case "variation":
@@ -354,8 +356,8 @@ public class CellBaseMain {
 
         Path regulationPath = speciesInDir.resolve("regulation");
         if (variationPath.toFile().list().length > 2) {
-            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(serializer);
-            regulatoryParser.parse(regulationPath);
+            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(regulationPath, null);
+            regulatoryParser.parse();
         }
     }
 
