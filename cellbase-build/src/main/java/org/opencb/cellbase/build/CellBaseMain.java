@@ -167,12 +167,9 @@ public class CellBaseMain {
                     logger.info("Processing variation...");
                     String variationFilesDir = commandLine.getOptionValue("indir");
                     if (variationFilesDir != null) {
-
-                        CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(null);
-
-
+                        CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation.json"));
                         VariationParser vp = new VariationParser(Paths.get(variationFilesDir), vSerializer);
-                        vp.parse(); //, Paths.get(outfile)
+                        vp.parse();
                     }
                     break;
                 case "variation-phen-annot":
