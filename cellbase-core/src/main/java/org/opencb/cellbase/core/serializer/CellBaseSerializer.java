@@ -46,6 +46,8 @@ public abstract class CellBaseSerializer {
 
     public abstract void serialize(Interaction interaction);
 
+    public abstract void serializeObject(Object object);
+
     public abstract void close();
 
 }

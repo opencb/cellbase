@@ -1,11 +1,9 @@
 package org.opencb.cellbase.build.transform;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variant.cadd.Cadd;
 import org.opencb.biodata.models.variant.cadd.CaddValues;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -19,31 +17,21 @@ import java.util.List;
  * @since October 08, 2014 
  */
 public class CaddParser {
-	public Path caddFilePath = null;
-	public Path outputFilePath = null;
-    
-    public CaddParser(){
-    	this.caddFilePath = null;
-    	this.outputFilePath = null;
-    }
-    
-    public CaddParser(Path caddFilePath, Path outputFilePath) {
-		this.caddFilePath = caddFilePath;
-		this.outputFilePath = outputFilePath;
-	}
-    
 
-    public void parse(String chrName){
+    private CellBaseSerializer serializer;
+    
+    public CaddParser(CellBaseSerializer serializer){
+    	this.serializer = serializer;
+    }
+
+
+    public void parse(Path caddFilePath, String chrName){
         Cadd caddVariant = new Cadd ();
 
         try {
         	String line, ref, alt, chr;
             int pos;
-            
-            PrintWriter writer = new PrintWriter(
-            		new BufferedWriter(
-            				new FileWriter(outputFilePath.toString())));
-            
+
             try{
             	TabixReader t = new TabixReader(caddFilePath.toString());
         		TabixReader.Iterator tabixIterator;
@@ -73,13 +61,7 @@ public class CaddParser {
                             hasElements = true;
                         } else {
                             if (caddVariant.getChromosome() != null) {
-                                ObjectMapper jsonMapper = new ObjectMapper();
-                                jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                                writer.write(/*caddVariant.getChr() + "\t" +
-                                		Integer.toString(caddVariant.getPos()) + "\t" +
-                                		caddVariant.getReference() + "\t" + 
-                                		caddVariant.getAllele() + "\t" + */
-                                		jsonMapper.writeValueAsString(caddVariant)+"\n");
+                                serializer.serializeObject(caddVariant);
                             }
 
                             List<CaddValues> caddValuesList = new ArrayList<CaddValues>();
@@ -98,18 +80,10 @@ public class CaddParser {
     			
     			// Print the last element if the variant list is not empty
     			if(hasElements){
-    				ObjectMapper jsonMapper = new ObjectMapper();
-                    jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                    writer.write(/*caddVariant.getChr() + "\t" +
-                    		Integer.toString(caddVariant.getPos()) + "\t" + 
-                    		caddVariant.getReference() + "\t" + 
-                    		caddVariant.getAllele() + "\t" + */
-                    		jsonMapper.writeValueAsString(caddVariant) + "\n");	
+                    serializer.serializeObject(caddVariant);
     			}
             } catch (ArrayIndexOutOfBoundsException e) {
 				e.printStackTrace();
-			} finally {
-				writer.close();
 			}
         } catch (IOException ex) {
             ex.printStackTrace();
