@@ -210,6 +210,11 @@ public class MongoDBSerializer extends CellBaseSerializer {
     }
 
     @Override
+    public void serializeObject(Object object) {
+
+    }
+
+    @Override
     public void serialize(GenericFeature genericFeature) {
         try {
             if(bufferedWriterMap.get("regulatory") == null) {

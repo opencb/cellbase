@@ -30,8 +30,6 @@ import java.util.Map;
  */
 public class DefaultJsonSerializer extends CellBaseSerializer {
 
-//    private Path outdirPath;
-
     private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
@@ -47,10 +45,17 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
 
     private int chunkSize = 2000;
 
+    private Path outputFileName;
 
-    public DefaultJsonSerializer(Path path) throws IOException {
-//        this.outdirPath = path;
-        super(path);
+
+    public DefaultJsonSerializer(Path outdirPath) throws IOException {
+        super(outdirPath);
+        init();
+    }
+
+    public DefaultJsonSerializer(Path outdirPath, Path outputFileName) throws IOException {
+        super(outdirPath);
+        this.outputFileName = outputFileName;
         init();
     }
 
@@ -200,6 +205,11 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+    }
+
+    @Override
+    public void serializeObject(Object object) {
+        // TODO: implement
     }
 
 
