@@ -83,7 +83,6 @@ public class GwasParser {
 
     private void addGwasRecordToVariantMap(Map<String, Gwas> variantMap, Gwas gwasRecord) {
         String ref = gwasRecord.getReference();
-        // TODO: test split with one alternate
         for (String alternate : gwasRecord.getAlternate().split(",")) {
             String variantKey = gwasRecord.getChromosome() + "::" + gwasRecord.getStart() + "::" + ref + "::" + alternate;
             if (variantMap.containsKey(variantKey)) {
@@ -98,7 +97,6 @@ public class GwasParser {
     private void updateGwasEntry(Map<String, Gwas> variantMap, Gwas gwasVO, String gwasKey) {
         Gwas gwas = variantMap.get(gwasKey);
         gwas.addStudies(gwasVO.getStudies());
-        // TODO: add studies is adding tests?
         variantMap.put(gwasKey, gwas);
     }
 }
