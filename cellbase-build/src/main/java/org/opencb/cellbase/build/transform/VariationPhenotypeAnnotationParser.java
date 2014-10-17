@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 
@@ -23,9 +23,8 @@ import java.util.*;
 /**
  * Created by imedina on 12/01/14.
  */
-public class VariationPhenotypeAnnotationParser {
+public class VariationPhenotypeAnnotationParser extends CellBaseParser {
 
-    private CellBaseSerializer serializer;
 
     private static final int CHUNK_SIZE = 1000;
     private int LIMIT_ROWS = 100000;
@@ -37,17 +36,21 @@ public class VariationPhenotypeAnnotationParser {
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
 
-    public VariationPhenotypeAnnotationParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+    private Path ensemblVariationDir;
 
+    public VariationPhenotypeAnnotationParser(Path ensemblVariationDir, CellBaseJsonSerializer serializer) {
+        super(serializer);
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         jsonObjectWriter = jsonObjectMapper.writer();
+
+        this.ensemblVariationDir = ensemblVariationDir;
     }
 
 
     // Ensembl: phenotype_feature_id 0| phenotype_id 1| source_id 2| study_id 3| type 4| object_id 5      | is_significant 6| seq_region_id 7| seq_region_start 8| seq_region_end 9| seq_region_strand 10
-    public void parseEnsembl(Path ensemblVariationDir) throws IOException, InterruptedException, SQLException, ClassNotFoundException {
+    @Override
+    public void parse() throws IOException, InterruptedException, SQLException, ClassNotFoundException {
         Map<String, String> seqRegionMap = VariationUtils.parseSeqRegionToMap(ensemblVariationDir);
         Map<String, String> phenotypeMap = VariationUtils.parsePhenotypeToMap(ensemblVariationDir);
         Map<String, String> sourceMap = VariationUtils.parseSourceToMap(ensemblVariationDir);
@@ -73,17 +76,17 @@ public class VariationPhenotypeAnnotationParser {
         float pValue = 0.0f;
         float oddsRatio = 0.0f;
 
-        String chunkIdSuffix = CHUNK_SIZE/1000+"k";
+        String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
 
         BufferedReader br = FileUtils.newBufferedReader(ensemblVariationDir.resolve("phenotype_feature.txt.gz"), Charset.defaultCharset());
         String[] fields = null;
         String[] rafFields = null;
         String line = null;
-        int count=0;
-        while((line = br.readLine()) != null) {
+        int count = 0;
+        while ((line = br.readLine()) != null) {
             fields = line.split("\t");
 
-            if(fields[4].equals("Variation")) {
+            if (fields[4].equals("Variation")) {
                 seqRegion = seqRegionMap.get(fields[7]);
                 phenotype = phenotypeMap.get(fields[1]);
                 source = sourceMap.get(fields[2]).split(",")[0];
@@ -97,11 +100,11 @@ public class VariationPhenotypeAnnotationParser {
                 pValue = -1f;
                 oddsRatio = -1f;
                 List<String> resultPhenAnnot = queryByVariationId(Integer.parseInt(fields[0]), ensemblVariationDir);
-                if(++count % 10000 == 0) {
+                if (++count % 10000 == 0) {
                     System.out.println(resultPhenAnnot);
 //                    if(count > 200000) break;
                 }
-                for(String result: resultPhenAnnot) {
+                for (String result : resultPhenAnnot) {
                     rafFields = result.split("\t", -1);
                     switch (rafFields[1]) {
                         case "10":
@@ -126,7 +129,7 @@ public class VariationPhenotypeAnnotationParser {
 
                 }
 
-                if(!phenotypeToGeneList.containsKey(phenotype)) {
+                if (!phenotypeToGeneList.containsKey(phenotype)) {
                     phenotypeToGeneList.put(phenotype, new HashSet<String>());
                 }
                 phenotypeToGeneList.get(phenotype).addAll(associatedGenes);
@@ -148,10 +151,10 @@ public class VariationPhenotypeAnnotationParser {
                 if (mutation.getChunkIds() == null) {
                     mutation.setChunkIds(new ArrayList<String>());
                 }
-                for(int i=chunkStart; i<=chunkEnd; i++) {
-                    mutation.getChunkIds().add(mutation.getChromosome()+"_"+i+"_"+chunkIdSuffix);
+                for (int i = chunkStart; i <= chunkEnd; i++) {
+                    mutation.getChunkIds().add(mutation.getChromosome() + "_" + i + "_" + chunkIdSuffix);
                 }
-                serializer.serialize(mutation);
+                serialize(mutation);
             }
         }
         raf.close();
@@ -162,7 +165,7 @@ public class VariationPhenotypeAnnotationParser {
 //        for (Object o : iter) {
 //            jsonObjectWriter.writeValueAsString(phenotypeToGeneList);
 //        }
-        for( Map.Entry<String, Set<String>> elem: phenotypeToGeneList.entrySet()) {
+        for (Map.Entry<String, Set<String>> elem : phenotypeToGeneList.entrySet()) {
             bw.write(jsonObjectWriter.writeValueAsString(elem).replace("\"key\"", "\"phenotype\"").replace("\"value\"", "\"associatedGenes\""));
             bw.newLine();
         }
@@ -188,13 +191,13 @@ public class VariationPhenotypeAnnotationParser {
         // Second go to file
         String line = null;
         List<String> results = new ArrayList<>();
-        if(offsets.size() > 0) {
+        if (offsets.size() > 0) {
 //            RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve("phenotype_feature_attrib.txt").toFile(), "r");
-            for(Long offset: offsets){
-                if(offset >= 0) {
+            for (Long offset : offsets) {
+                if (offset >= 0) {
                     raf.seek(offset);
                     line = raf.readLine();
-                    if(line != null) {
+                    if (line != null) {
                         results.add(line);
                     }
                 }
@@ -209,15 +212,15 @@ public class VariationPhenotypeAnnotationParser {
     private void createPhenFeatAttribTable(Path variationDirectoryPath) throws SQLException, IOException, ClassNotFoundException {
         String tableName = "phen_feat_attrib";
         Class.forName("org.sqlite.JDBC");
-        sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationDirectoryPath.resolve("variation_phenotype.db").toString());
-        if(!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db")) || Files.size(variationDirectoryPath.resolve("variation_phenotype.db")) == 0) {
+        sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationDirectoryPath.resolve("variation_phenotype.db").toString());
+        if (!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db")) || Files.size(variationDirectoryPath.resolve("variation_phenotype.db")) == 0) {
             sqlConn.setAutoCommit(false);
 
             Statement createTables = sqlConn.createStatement();
 
             // A table containing offset for files
-            createTables.executeUpdate("CREATE TABLE if not exists "+tableName+"(" + "variation_id INT , offset BIGINT)");
-            PreparedStatement ps = sqlConn.prepareStatement("INSERT INTO "+tableName+"(variation_id, offset) values (?, ?)");
+            createTables.executeUpdate("CREATE TABLE if not exists " + tableName + "(" + "variation_id INT , offset BIGINT)");
+            PreparedStatement ps = sqlConn.prepareStatement("INSERT INTO " + tableName + "(variation_id, offset) values (?, ?)");
 
             long offset = 0;
             int count = 0;
@@ -247,21 +250,21 @@ public class VariationPhenotypeAnnotationParser {
             sqlConn.commit();
 
             Statement stm = sqlConn.createStatement();
-            stm.executeUpdate("CREATE INDEX "+tableName+"_idx on "+tableName+"(variation_id)");
+            stm.executeUpdate("CREATE INDEX " + tableName + "_idx on " + tableName + "(variation_id)");
             sqlConn.commit();
         }
-        prepStmVariationFeature = sqlConn.prepareStatement("select offset from "+tableName+" where variation_id = ? order by offset ASC ");
+        prepStmVariationFeature = sqlConn.prepareStatement("select offset from " + tableName + " where variation_id = ? order by offset ASC ");
     }
 
     private void prepare(Path variationDirectoryPath) throws IOException, InterruptedException {
-        if(Files.exists(variationDirectoryPath.resolve("phenotype_feature_attrib.txt.gz"))) {
+        if (Files.exists(variationDirectoryPath.resolve("phenotype_feature_attrib.txt.gz"))) {
             Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("phenotype_feature_attrib.txt.gz").toAbsolutePath());
             process.waitFor();
         }
     }
 
     private void clean(Path variationDirectoryPath) throws IOException, InterruptedException {
-        if(Files.exists(variationDirectoryPath.resolve("phenotype_feature_attrib.txt"))) {
+        if (Files.exists(variationDirectoryPath.resolve("phenotype_feature_attrib.txt"))) {
             Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("phenotype_feature_attrib.txt").toAbsolutePath());
             process.waitFor();
         }
