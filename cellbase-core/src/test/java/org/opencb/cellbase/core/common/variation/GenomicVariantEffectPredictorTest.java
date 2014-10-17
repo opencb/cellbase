@@ -2,6 +2,7 @@ package org.opencb.cellbase.core.common.variation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.cellbase.core.common.core.Gene;
 
@@ -17,6 +18,7 @@ import java.util.List;
  * Time: 1:31 PM
  * To change this template use File | Settings | File Templates.
  */
+@Ignore
 public class GenomicVariantEffectPredictorTest {
 
     @Test
