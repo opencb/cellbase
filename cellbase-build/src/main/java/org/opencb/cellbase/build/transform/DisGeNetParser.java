@@ -45,13 +45,12 @@ public class DisGeNetParser {
     }
 
 
-    private void parse() {
+    public void parse() {
         Map<String, String> entrezIdToEnsemblIdMap = this.parserEntrezIdToEnsemblIdFile(this.EntrezIdToEnsemblIdFile);
         Map<String,DisGeNet> disGeNetMap = new HashMap<>();
 
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(this.disGeNetFilePath.toFile())));
-            String line;
             reader.readLine(); // First line is the header -> ignore it
 
 
@@ -108,7 +107,7 @@ public class DisGeNetParser {
 
     private void InsertNewElementToDisGeNetMap(Map<String, DisGeNet> disGeNetMap, String geneId, String geneSymbol, String geneName, String diseaseId, String diseaseName, Float score, Integer numberOfPubmeds, String associationType, Set<String> sources) {
         DisGeNet.Disease diseaseToAddToNewGene = new DisGeNet.Disease (diseaseId,diseaseName,score,numberOfPubmeds,associationType,sources);
-        List<DisGeNet.Disease> listofDisease = null;
+        List<DisGeNet.Disease> listofDisease =  new ArrayList<>();
         listofDisease.add(diseaseToAddToNewGene);
         DisGeNet disGeNet = new DisGeNet(geneId,geneName,geneSymbol,listofDisease);
         disGeNetMap.put(geneId,disGeNet);
@@ -118,7 +117,7 @@ public class DisGeNetParser {
         DisGeNet disGeNetRecord = disGeNetMap.get(geneId);
         Boolean disease_found = false;
         for (int i = 0; i < disGeNetRecord.getDiseases().size(); i++){
-            if (disGeNetRecord.getDiseases().get(i).getDiseaseId() == diseaseId){
+            if (disGeNetRecord.getDiseases().get(i).getDiseaseId().equals(diseaseId)){
                 disGeNetRecord.getDiseases().get(i).getAssociationTypes().add(associationType);
                 disGeNetRecord.getDiseases().get(i).getSources().addAll(sources);
                 disGeNetMap.put(geneId,disGeNetRecord);

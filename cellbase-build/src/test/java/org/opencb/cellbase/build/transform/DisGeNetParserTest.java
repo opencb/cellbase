@@ -23,25 +23,21 @@ public class DisGeNetParserTest {
 
     @BeforeClass
     public static void setUpClass() throws URISyntaxException, IOException {
-        URL resource_disnet_file = DisGeNetParserTest.class.getResource("/all_gene_disease_association_sample.txt");
+        URL resource_disnet_file = DisGeNetParserTest.class.getResource("/all_gene_disease_association_sample2.txt");
+        System.out.println(resource_disnet_file);
         filedisgenet = Paths.get(resource_disnet_file.toURI());
 
-        URL resource_entrezIdToEnsemblId_file = DisGeNetParserTest.class.getResource("/ entrezIdToEnsemblId_sample.txt");
+        URL resource_entrezIdToEnsemblId_file = DisGeNetParserTest.class.getResource("/entrezIdToEnsemblId_sample.txt");
+        System.out.println(resource_entrezIdToEnsemblId_file);
         fileEntrezIdToEnsemblId = Paths.get(resource_entrezIdToEnsemblId_file.toURI());
 
         serializer = new MongoDBSerializer(Paths.get("/tmp/"));
-
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-//        serializer.post();
-        serializer.close();
     }
 
     @Test
     public void testParse() throws Exception {
         System.out.println("parse");
         DisGeNetParser instance = new DisGeNetParser(filedisgenet,serializer, fileEntrezIdToEnsemblId);
+        instance.parse();
     }
 }
