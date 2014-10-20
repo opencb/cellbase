@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
 
 import java.io.BufferedReader;
@@ -20,17 +20,16 @@ import java.util.zip.GZIPInputStream;
  * Time: 10:14 AM
  */
 
-public class RegulatoryRegionParser {
+public class RegulatoryRegionParser extends CellBaseParser {
 
     static int CHUNK_SIZE = 2000;
+    private Path regulatoryRegionPath;
 
-//    private static Gson gson = new Gson();
+    public RegulatoryRegionParser(Path regulatoryRegionFilesDir, CellBaseJsonSerializer serializer) {
+        super(serializer);
 
-    private CellBaseSerializer serializer;
+        this.regulatoryRegionPath = regulatoryRegionFilesDir;
 
-
-    public RegulatoryRegionParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
     }
 
     public void createSQLiteRegulatoryFiles(Path regulatoryRegionPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
@@ -60,11 +59,12 @@ public class RegulatoryRegionParser {
 
     }
 
-    public void parse(Path regulatoryRegionPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
+    @Override
+    public void parse() throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
         // Create the SQLite databases
         createSQLiteRegulatoryFiles(regulatoryRegionPath);
 
-        String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
+        String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
 
         Path annotatedFilePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff.gz.db");
         Path motifFilePath = regulatoryRegionPath.resolve("MotifFeatures.gff.gz.db");
@@ -111,20 +111,20 @@ public class RegulatoryRegionParser {
 
             for (int i = 0; i < tableNames.size(); i++) {
 //				genericFeatureChunks = new HashMap<>();
-				chunksHash = new HashSet<>();
+                chunksHash = new HashSet<>();
                 genericFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
                 int c = 0;
                 for (GenericFeature genericFeature : genericFeatures) {
-					int firstChunkId =  getChunkId(genericFeature.getStart(), CHUNK_SIZE);
-					int lastChunkId  = getChunkId(genericFeature.getEnd(), CHUNK_SIZE);
+                    int firstChunkId = getChunkId(genericFeature.getStart(), CHUNK_SIZE);
+                    int lastChunkId = getChunkId(genericFeature.getEnd(), CHUNK_SIZE);
 
                     List<String> chunkIds = new ArrayList<>();
                     String chunkId;
-                    for(int j=firstChunkId; j<=lastChunkId; j++) {
-                        chunkId = chromosome+"_"+j+"_"+chunkIdSuffix;
+                    for (int j = firstChunkId; j <= lastChunkId; j++) {
+                        chunkId = chromosome + "_" + j + "_" + chunkIdSuffix;
                         chunkIds.add(chunkId);
                         //count chunks
-                        if(!chunksHash.contains(j)) {
+                        if (!chunksHash.contains(j)) {
                             chunksHash.add(j);
                         }
                     }
@@ -135,7 +135,7 @@ public class RegulatoryRegionParser {
 //                        genericFeature.setSequenceName(genericFeature.getSequenceName().replace("chr", ""));
                     }
 //                    bw.write(gson.toJson(genericFeature) + "\n");
-                    serializer.serialize(genericFeature);
+                    serialize(genericFeature);
                 }
 //				for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
 //					bw.write(gson.toJson(result.getValue()) + "\n");
