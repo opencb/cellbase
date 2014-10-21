@@ -1,25 +1,25 @@
 package org.opencb.cellbase.build.transform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opencb.cellbase.build.transform.utils.FileUtils;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
-import org.opencb.cellbase.core.common.regulatory.ConservedRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
-public class ConservedRegionParser {
-
+public class ConservedRegionParser extends CellBaseParser {
 	private static int CHUNKSIZE = 2000;
 
+	private final Path conservedRegionPath;
+	private int chunksize;
     private ObjectMapper gson;
     private Logger logger;
 
@@ -27,12 +27,15 @@ public class ConservedRegionParser {
     // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
-    public ConservedRegionParser() {
+    public ConservedRegionParser(CellBaseSerializer serializer, Path conservedRegionPath, int chunksize) {
+    	super(serializer);
         logger = LoggerFactory.getLogger(ConservedRegionParser.class);
         gson = new ObjectMapper();
+        this.conservedRegionPath = conservedRegionPath;
+        this.chunksize = chunksize;
     }
 
-    public void parse(Path conservedRegionPath, int chunksize, Path outdirPath) throws IOException {
+    public void parse() throws IOException {
         Path outJsonPath;
 
         Map<String, Path> files = new HashMap<>();
@@ -60,25 +63,16 @@ public class ConservedRegionParser {
          */
         logger.debug("Chromosomes found {}", chromosomes.toString());
         for(String chr : chromosomes){
-            outJsonPath = outdirPath.resolve("conservation_"+chr+".json.gz");
-            if(Files.exists(outJsonPath)){
-                Files.delete(outJsonPath);
-            }
-//            BufferedWriter bw = Files.newBufferedWriter(outJsonPath, Charset.defaultCharset(), StandardOpenOption.CREATE);
-            BufferedWriter bw = FileUtils.newGzipBufferedWriter(outJsonPath);
-
             logger.debug("Processing chromosome {}, file {}", chr, files.get(chr+"phastCons"));
-            processFile(files.get(chr+"phastCons"), "phastCons", bw);
+            processFile(files.get(chr+"phastCons"), "phastCons");
 
             logger.debug("Processing chromosome {}, file {}", chr, files.get(chr+"phylop"));
-            processFile(files.get(chr+"phylop"), "phylop", bw);
-
-            bw.close();
+            processFile(files.get(chr+"phylop"), "phylop");
         }
     }
 
 
-    private void processFile(Path inGzPath, String conservedType, BufferedWriter bw) throws IOException {
+    private void processFile(Path inGzPath, String conservedType) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(inGzPath))));
 
@@ -100,7 +94,8 @@ public class ConservedRegionParser {
                     conservedRegion.setEnd(end);
 //                    bw.write(gson.toJson(conservedRegion)+"\n");
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
-                    bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+                    //bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+                    serialize(conservedRegion);
                 }
 
 //                offset = 0;
@@ -133,7 +128,8 @@ public class ConservedRegionParser {
 //                    System.out.println("coords: "+start+", "+(end-1));
 //                    System.out.println("values length: "+values.size());
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end-1, conservedType, startChunk, values);
-                    bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+                    //bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+                    serialize(conservedRegion);
                     values.clear();
                     start = end;
                 }
@@ -145,7 +141,8 @@ public class ConservedRegionParser {
         }
         //write last
         conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
-        bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+        //bw.write(gson.writeValueAsString(conservedRegion)+"\n");
+        serialize(conservedRegion);
 //        conservedRegion.setEnd(end);
         br.close();
     }

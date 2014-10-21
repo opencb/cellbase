@@ -234,10 +234,11 @@ public class CellBaseMain {
                     logger.info("Processing conservation");
                     String conservationFilesDir = commandLine.getOptionValue("indir");
                     int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
-                    String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
+                    //String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
                     if (conservationFilesDir != null) {
-                        ConservedRegionParser conservedRegionParser = new ConservedRegionParser();
-                        conservedRegionParser.parse(Paths.get(conservationFilesDir), conservationChunkSize, Paths.get(conservationOutputFile));
+                        // TODO: change serializer class
+                        //ConservedRegionParser conservedRegionParser = new ConservedRegionParser(serializer, Paths.get(conservationFilesDir), conservationChunkSize);
+                        //conservedRegionParser.parse();
                     }
                     break;
                 case "ppi":
