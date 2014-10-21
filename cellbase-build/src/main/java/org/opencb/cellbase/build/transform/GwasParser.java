@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variant.clinical.Gwas;
@@ -39,7 +39,7 @@ public class GwasParser extends CellBaseParser {
                 logger.info("Ignoring gwas file header line ...");
 				inputReader.readLine();
 
-                Map<String, Gwas> variantMap = new HashMap<>();
+                Map<Variant, Gwas> variantMap = new TreeMap<>();
                 logger.info("Opening dbSNP tabix file " + dbSnpTabixFilePath + " ...");
                 TabixReader dbsnpTabixReader = new TabixReader(dbSnpTabixFilePath.toString());
 
@@ -76,7 +76,7 @@ public class GwasParser extends CellBaseParser {
 		}
 	}
 
-    private void printSummary(long processedGwasLines, long ignoredGwasLines, Map<String, Gwas> variantMap) {
+    private void printSummary(long processedGwasLines, long ignoredGwasLines, Map<Variant, Gwas> variantMap) {
         logger.info("");
         logger.info("Summary");
         logger.info("=======");
@@ -109,22 +109,64 @@ public class GwasParser extends CellBaseParser {
         return found;
     }
 
-    private void addGwasRecordToVariantMap(Map<String, Gwas> variantMap, Gwas gwasRecord) {
-        String ref = gwasRecord.getReference();
-        for (String alternate : gwasRecord.getAlternate().split(",")) {
-            String variantKey = gwasRecord.getChromosome() + "::" + gwasRecord.getStart() + "::" + ref + "::" + alternate;
+    private void addGwasRecordToVariantMap(Map<Variant, Gwas> variantMap, Gwas gwasRecord) {
+        String[] alternates = gwasRecord.getAlternate().split(",");
+        for (int i=0; i < alternates.length; i++) {
+            String alternate = alternates[i];
+            Variant variantKey =
+                    new Variant(gwasRecord.getChromosome(), gwasRecord.getStart(), gwasRecord.getReference(), alternate);
             if (variantMap.containsKey(variantKey)) {
                 updateGwasEntry(variantMap, gwasRecord, variantKey);
             } else {
+                // if a gwas record has several alternatives, it has to be cloned to avoid side effects (set gwasRecord
+                // alternative would update the previous instance of gwas record saved in the 'variantMap')
+                gwasRecord = cloneGwasRecordIfNecessary(gwasRecord, i);
                 gwasRecord.setAlternate(alternate);
                 variantMap.put(variantKey, gwasRecord);
             }
         }
     }
 
-    private void updateGwasEntry(Map<String, Gwas> variantMap, Gwas gwasVO, String gwasKey) {
+    private Gwas cloneGwasRecordIfNecessary(Gwas gwasRecord, int i) {
+        if (i > 0) {
+            gwasRecord = new Gwas(gwasRecord);
+        }
+        return gwasRecord;
+    }
+
+    private void updateGwasEntry(Map<Variant, Gwas> variantMap, Gwas gwasVO, Variant gwasKey) {
         Gwas gwas = variantMap.get(gwasKey);
         gwas.addStudies(gwasVO.getStudies());
         variantMap.put(gwasKey, gwas);
+    }
+
+    class Variant implements Comparable<Variant> {
+        private String chr;
+        private Integer start;
+        private String ref;
+        private String alt;
+
+        Variant(String chr, Integer start, String ref, String alt) {
+            this.ref = ref;
+            this.chr = chr;
+            this.start = start;
+            this.alt = alt;
+        }
+
+        public int compareTo(Variant anotherVariant) {
+            if (!chr.equals(anotherVariant.chr)) {
+                return chr.compareTo(anotherVariant.chr);
+            } else {
+                if (!start.equals(anotherVariant.start)) {
+                    return start.compareTo(anotherVariant.start);
+                } else {
+                    if (!ref.equals(anotherVariant.ref)) {
+                        return ref.compareTo(anotherVariant.ref);
+                    } else {
+                        return alt.compareTo(anotherVariant.alt);
+                    }
+                }
+            }
+        }
     }
 }
