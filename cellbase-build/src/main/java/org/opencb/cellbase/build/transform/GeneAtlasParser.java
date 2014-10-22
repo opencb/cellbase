@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.Expresion.GeneAtlas;
 import org.opencb.biodata.models.feature.DisGeNet;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -18,13 +19,14 @@ import java.util.*;
 /**
  * Created by antonior on 10/16/14.
  */
-public class GeneAtlasParser {
+public class GeneAtlasParser  extends CellBaseParser  {
     private  Path gene_atlas_directory_path;
-    private  CellBaseSerializer serializer;
 
-    public GeneAtlasParser(Path gene_atlas_directory_path, CellBaseSerializer serializer) {
+
+    public GeneAtlasParser(CellBaseSerializer serializer, Path gene_atlas_directory_path) {
+        super(serializer);
         this.gene_atlas_directory_path = gene_atlas_directory_path;
-        this.serializer = serializer;
+
     }
 
 
@@ -44,10 +46,8 @@ public class GeneAtlasParser {
             readFile(geneAtlasMap, Experiment4);
 
             Collection <GeneAtlas> allGeneAtlasRecords = geneAtlasMap.values();
-            for (GeneAtlas onegeneAtlas : allGeneAtlasRecords) {
-                ObjectMapper jsonMapper = new ObjectMapper();
-                jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                System.out.println(jsonMapper.writeValueAsString(onegeneAtlas));
+            for (GeneAtlas one_atlas_gene : allGeneAtlasRecords) {
+                serialize(one_atlas_gene);
 
             }
 

@@ -3,7 +3,8 @@ package org.opencb.cellbase.build.transform;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.feature.DisGeNet;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -13,15 +14,14 @@ import java.util.*;
 /**
  * Created by antonior on 10/15/14.
  */
-public class DisGeNetParser {
+public class DisGeNetParser  extends CellBaseParser {
     public Path disGeNetFilePath;
-    public CellBaseSerializer serializer;
     private Path EntrezIdToEnsemblIdFile;
 
 
-    public DisGeNetParser(Path disGeNetFilePath, CellBaseSerializer serializer,Path EntrezIdToEnsemblIdFile) {
+    public DisGeNetParser(CellBaseSerializer serializer, Path disGeNetFilePath, Path EntrezIdToEnsemblIdFile) {
+        super(serializer);
         this.disGeNetFilePath = disGeNetFilePath;
-        this.serializer = serializer;
         this.EntrezIdToEnsemblIdFile = EntrezIdToEnsemblIdFile;
     }
 
@@ -57,10 +57,8 @@ public class DisGeNetParser {
             FillDisGeNetMap(entrezIdToEnsemblIdMap, disGeNetMap, reader);
 
             Collection <DisGeNet> allDisGeNetRecords = disGeNetMap.values();
-            for (DisGeNet oneDisGeNet : allDisGeNetRecords){
-                ObjectMapper jsonMapper = new ObjectMapper();
-                jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                System.out.println(jsonMapper.writeValueAsString(oneDisGeNet));
+            for (DisGeNet one_disgenet : allDisGeNetRecords){
+                serialize(one_disgenet);
 
             }
 
