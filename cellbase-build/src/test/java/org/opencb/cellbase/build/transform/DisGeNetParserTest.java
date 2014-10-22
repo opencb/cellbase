@@ -3,7 +3,7 @@ package org.opencb.cellbase.build.transform;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
 
 import java.io.IOException;
@@ -31,13 +31,13 @@ public class DisGeNetParserTest {
         System.out.println(resource_entrezIdToEnsemblId_file);
         fileEntrezIdToEnsemblId = Paths.get(resource_entrezIdToEnsemblId_file.toURI());
 
-        serializer = new MongoDBSerializer(Paths.get("/tmp/"));
+        //serializer = new MongoDBSerializer(Paths.get("/tmp/"));
     }
 
     @Test
     public void testParse() throws Exception {
         System.out.println("parse");
-        DisGeNetParser instance = new DisGeNetParser(filedisgenet,serializer, fileEntrezIdToEnsemblId);
+        DisGeNetParser instance = new DisGeNetParser(serializer, filedisgenet, fileEntrezIdToEnsemblId);
         instance.parse();
     }
 }
