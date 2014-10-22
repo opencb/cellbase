@@ -30,24 +30,21 @@ public class CaddParser extends CellBaseParser{
             TabixReader.Iterator caddIterator = inputReader.query(chrName);
             Cadd caddVariant = null;
             for (String line; (line = caddIterator.next()) != null;) {
-                // TODO: las lineas con cabecera son las primeras, quizas podemos quitar esta comparacion, por rendimiento
-                if (!line.startsWith("##")){
-                    String[] fields = line.split("\t");
-                    String chr = fields[0];
-                    String ref = fields[2];
-                    String alt = fields[4];
+                String[] fields = line.split("\t");
+                String chr = fields[0];
+                String ref = fields[2];
+                String alt = fields[4];
 
-                    int pos = Integer.parseInt(fields[1]);
+                int pos = Integer.parseInt(fields[1]);
 
-                    // If the variant is the same as the last iteration variant, don't print it
-                    if (sameVariant(caddVariant, chr, pos, ref, alt)) {
-                        caddVariant.addCaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
-                    } else {
-                        if (caddVariant != null) {
-                            serialize(caddVariant);
-                        }
-                        caddVariant = createCaddVariant(fields);
+                // If the variant is the same as the last iteration variant, don't print it
+                if (sameVariant(caddVariant, chr, pos, ref, alt)) {
+                    caddVariant.addCaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
+                } else {
+                    if (caddVariant != null) {
+                        serialize(caddVariant);
                     }
+                    caddVariant = createCaddVariant(fields);
                 }
             }
             serialize(caddVariant);
