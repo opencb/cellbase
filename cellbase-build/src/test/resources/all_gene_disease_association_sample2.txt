@@ -1,0 +1,1000 @@
+geneId	geneSymbol	geneName	diseaseId	diseaseName	score	NumberOfPubmeds	associationType	source
+540	ATP7B	ATPase, Cu++ transporting, beta polypeptide	umls:C0019202	Hepatolenticular Degeneration	0.98987635081179	229	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+540	ATP7B	ATPase, Cu++ transporting, beta polypeptide	umls:C0019202	Hepatolenticular Degeneration	0.98987635081179	229	Biomarker	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+540	ATP7B	ATPase, Cu++ transporting, beta polypeptide	umls:C0019202	Hepatolenticular Degeneration	0.98987635081179	229	AlteredExpression	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+4160	MC4R	melanocortin 4 receptor	umls:C0028754	Obesity	0.94	234	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, GAD, BeFree
+4160	MC4R	melanocortin 4 receptor	umls:C0028754	Obesity	0.94	234	Biomarker	UNIPROT, CTD_human, MGD, RGD, GAD, BeFree
+3667	IRS1	insulin receptor substrate 1	umls:C0011860	Diabetes Mellitus, Type 2	0.907765918380142	106	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, GAD, BeFree
+3667	IRS1	insulin receptor substrate 1	umls:C0011860	Diabetes Mellitus, Type 2	0.907765918380142	106	Biomarker	UNIPROT, CTD_human, MGD, RGD, GAD, BeFree
+4204	MECP2	methyl CpG binding protein 2 (Rett syndrome)	umls:C0035372	Rett Syndrome	0.9	463	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4204	MECP2	methyl CpG binding protein 2 (Rett syndrome)	umls:C0035372	Rett Syndrome	0.9	463	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4204	MECP2	methyl CpG binding protein 2 (Rett syndrome)	umls:C0035372	Rett Syndrome	0.9	463	PostTranslationalModification	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4204	MECP2	methyl CpG binding protein 2 (Rett syndrome)	umls:C0035372	Rett Syndrome	0.9	463	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1080	CFTR	cystic fibrosis transmembrane conductance regulator (ATP-binding cassette sub-family C, member 7)	umls:C0010674	Cystic Fibrosis	0.9	1577	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1080	CFTR	cystic fibrosis transmembrane conductance regulator (ATP-binding cassette sub-family C, member 7)	umls:C0010674	Cystic Fibrosis	0.9	1577	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1080	CFTR	cystic fibrosis transmembrane conductance regulator (ATP-binding cassette sub-family C, member 7)	umls:C0010674	Cystic Fibrosis	0.9	1577	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+351	APP	amyloid beta (A4) precursor protein	umls:C0002395	Alzheimer Disease	0.882098944317947	1206	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+351	APP	amyloid beta (A4) precursor protein	umls:C0002395	Alzheimer Disease	0.882098944317947	1206	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+351	APP	amyloid beta (A4) precursor protein	umls:C0002395	Alzheimer Disease	0.882098944317947	1206	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+351	APP	amyloid beta (A4) precursor protein	umls:C0002395	Alzheimer Disease	0.882098944317947	1206	PostTranslationalModification	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5621	PRNP	prion protein	umls:C0022336	Creutzfeldt-Jakob Syndrome	0.873126274813283	309	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5621	PRNP	prion protein	umls:C0022336	Creutzfeldt-Jakob Syndrome	0.873126274813283	309	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5621	PRNP	prion protein	umls:C0022336	Creutzfeldt-Jakob Syndrome	0.873126274813283	309	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4210	MEFV	Mediterranean fever	umls:C0031069	Familial Mediterranean Fever	0.870222893842086	306	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4210	MEFV	Mediterranean fever	umls:C0031069	Familial Mediterranean Fever	0.870222893842086	306	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4210	MEFV	Mediterranean fever	umls:C0031069	Familial Mediterranean Fever	0.870222893842086	306	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3815	KIT	v-kit Hardy-Zuckerman 4 feline sarcoma viral oncogene homolog	umls:C0238198	Gastrointestinal Stromal Tumors	0.864849237562962	538	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3815	KIT	v-kit Hardy-Zuckerman 4 feline sarcoma viral oncogene homolog	umls:C0238198	Gastrointestinal Stromal Tumors	0.864849237562962	538	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3815	KIT	v-kit Hardy-Zuckerman 4 feline sarcoma viral oncogene homolog	umls:C0238198	Gastrointestinal Stromal Tumors	0.864849237562962	538	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5979	RET	ret proto-oncogene	umls:C0031511	Pheochromocytoma	0.86440660284863	144	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+5979	RET	ret proto-oncogene	umls:C0031511	Pheochromocytoma	0.86440660284863	144	Biomarker	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+1756	DMD	dystrophin	umls:C0013264	Muscular Dystrophy, Duchenne	0.854289360435614	697	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1756	DMD	dystrophin	umls:C0013264	Muscular Dystrophy, Duchenne	0.854289360435614	697	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1756	DMD	dystrophin	umls:C0013264	Muscular Dystrophy, Duchenne	0.854289360435614	697	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+551	AVP	arginine vasopressin	umls:C0687720	Diabetes Insipidus, Neurogenic	0.846362998729882	98	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+551	AVP	arginine vasopressin	umls:C0687720	Diabetes Insipidus, Neurogenic	0.846362998729882	98	Biomarker	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+2332	FMR1	fragile X mental retardation 1	umls:C0016667	Fragile X Syndrome	0.845146429352409	523	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2332	FMR1	fragile X mental retardation 1	umls:C0016667	Fragile X Syndrome	0.845146429352409	523	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2332	FMR1	fragile X mental retardation 1	umls:C0016667	Fragile X Syndrome	0.845146429352409	523	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5009	OTC	ornithine carbamoyltransferase	umls:C0268542	Ornithine Carbamoyltransferase Deficiency Disease	0.843288298606846	143	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+5009	OTC	ornithine carbamoyltransferase	umls:C0268542	Ornithine Carbamoyltransferase Deficiency Disease	0.843288298606846	143	Biomarker	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+5009	OTC	ornithine carbamoyltransferase	umls:C0268542	Ornithine Carbamoyltransferase Deficiency Disease	0.843288298606846	143	Therapeutic	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+6331	SCN5A	sodium channel, voltage-gated, type V, alpha subunit	umls:C1142166	Brugada Syndrome	0.841987298224544	186	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6331	SCN5A	sodium channel, voltage-gated, type V, alpha subunit	umls:C1142166	Brugada Syndrome	0.841987298224544	186	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2200	FBN1	fibrillin 1	umls:C0024796	Marfan Syndrome	0.841420961895782	301	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2200	FBN1	fibrillin 1	umls:C0024796	Marfan Syndrome	0.841420961895782	301	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2200	FBN1	fibrillin 1	umls:C0024796	Marfan Syndrome	0.841420961895782	301	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3717	JAK2	Janus kinase 2	umls:C0032463	Polycythemia Vera	0.840699648105982	306	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3717	JAK2	Janus kinase 2	umls:C0032463	Polycythemia Vera	0.840699648105982	306	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3717	JAK2	Janus kinase 2	umls:C0032463	Polycythemia Vera	0.840699648105982	306	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5314	PKHD1	polycystic kidney and hepatic disease 1 (autosomal recessive)	umls:C0085548	Polycystic Kidney, Autosomal Recessive	0.827352335669278	51	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+5314	PKHD1	polycystic kidney and hepatic disease 1 (autosomal recessive)	umls:C0085548	Polycystic Kidney, Autosomal Recessive	0.827352335669278	51	Biomarker	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+5314	PKHD1	polycystic kidney and hepatic disease 1 (autosomal recessive)	umls:C0085548	Polycystic Kidney, Autosomal Recessive	0.827352335669278	51	AlteredExpression	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+6261	RYR1	ryanodine receptor 1 (skeletal)	umls:C0024591	Malignant Hyperthermia	0.825625543425874	196	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6261	RYR1	ryanodine receptor 1 (skeletal)	umls:C0024591	Malignant Hyperthermia	0.825625543425874	196	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+443	ASPA	aspartoacylase	umls:C0206307	Canavan Disease	0.822817886907977	54	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+443	ASPA	aspartoacylase	umls:C0206307	Canavan Disease	0.822817886907977	54	Biomarker	UNIPROT, CTD_human, MGD, RGD, GAD, LHGDN, BeFree
+5781	PTPN11	protein tyrosine phosphatase, non-receptor type 11	umls:C0028326	Noonan Syndrome	0.822696035633372	162	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5781	PTPN11	protein tyrosine phosphatase, non-receptor type 11	umls:C0028326	Noonan Syndrome	0.822696035633372	162	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5781	PTPN11	protein tyrosine phosphatase, non-receptor type 11	umls:C0028326	Noonan Syndrome	0.822696035633372	162	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+472	ATM	ataxia telangiectasia mutated	umls:C0004135	Ataxia Telangiectasia	0.8207213137898	303	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+472	ATM	ataxia telangiectasia mutated	umls:C0004135	Ataxia Telangiectasia	0.8207213137898	303	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+472	ATM	ataxia telangiectasia mutated	umls:C0004135	Ataxia Telangiectasia	0.8207213137898	303	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4221	MEN1	multiple endocrine neoplasia I	umls:C0025267	Multiple Endocrine Neoplasia Type 1	0.820065473031273	297	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4221	MEN1	multiple endocrine neoplasia I	umls:C0025267	Multiple Endocrine Neoplasia Type 1	0.820065473031273	297	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4221	MEN1	multiple endocrine neoplasia I	umls:C0025267	Multiple Endocrine Neoplasia Type 1	0.820065473031273	297	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+411	ARSB	arylsulfatase B	umls:C0026709	Mucopolysaccharidosis VI	0.818173712508372	44	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+411	ARSB	arylsulfatase B	umls:C0026709	Mucopolysaccharidosis VI	0.818173712508372	44	Biomarker	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+3848	KRT1	keratin 1	umls:C0079153	Hyperkeratosis, Epidermolytic	0.812968113662163	41	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+3848	KRT1	keratin 1	umls:C0079153	Hyperkeratosis, Epidermolytic	0.812968113662163	41	Biomarker	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+5468	PPARG	peroxisome proliferator-activated receptor gamma	umls:C0028754	Obesity	0.811945734050271	137	GeneticVariation	UNIPROT, CTD_human, RGD, GAD, BeFree
+5468	PPARG	peroxisome proliferator-activated receptor gamma	umls:C0028754	Obesity	0.811945734050271	137	Biomarker	UNIPROT, CTD_human, RGD, GAD, BeFree
+6794	STK11	serine/threonine kinase 11	umls:C0031269	Peutz-Jeghers Syndrome	0.808636053450136	172	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6794	STK11	serine/threonine kinase 11	umls:C0031269	Peutz-Jeghers Syndrome	0.808636053450136	172	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1130	LYST	lysosomal trafficking regulator	umls:C0007965	Chediak-Higashi Syndrome	0.80819118146773	20	GeneticVariation	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+1130	LYST	lysosomal trafficking regulator	umls:C0007965	Chediak-Higashi Syndrome	0.80819118146773	20	Biomarker	UNIPROT, CTD_human, MGD, RGD, LHGDN, BeFree
+367	AR	androgen receptor	umls:C0039585	Androgen-Insensitivity Syndrome	0.806436419976767	187	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+367	AR	androgen receptor	umls:C0039585	Androgen-Insensitivity Syndrome	0.806436419976767	187	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+367	AR	androgen receptor	umls:C0039585	Androgen-Insensitivity Syndrome	0.806436419976767	187	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2717	GLA	galactosidase, alpha	umls:C0002986	Fabry Disease	0.800572717895077	262	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2717	GLA	galactosidase, alpha	umls:C0002986	Fabry Disease	0.800572717895077	262	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2717	GLA	galactosidase, alpha	umls:C0002986	Fabry Disease	0.800572717895077	262	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4763	NF1	neurofibromin 1	umls:C0027831	Neurofibromatosis 1	0.798709984166763	380	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4763	NF1	neurofibromin 1	umls:C0027831	Neurofibromatosis 1	0.798709984166763	380	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4763	NF1	neurofibromin 1	umls:C0027831	Neurofibromatosis 1	0.798709984166763	380	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7428	VHL	von Hippel-Lindau tumor suppressor, E3 ubiquitin protein ligase	umls:C0019562	von Hippel-Lindau Disease	0.793672835193082	259	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7428	VHL	von Hippel-Lindau tumor suppressor, E3 ubiquitin protein ligase	umls:C0019562	von Hippel-Lindau Disease	0.793672835193082	259	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7428	VHL	von Hippel-Lindau tumor suppressor, E3 ubiquitin protein ligase	umls:C0019562	von Hippel-Lindau Disease	0.793672835193082	259	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+368	ABCC6	ATP-binding cassette, sub-family C (CFTR/MRP), member 6	umls:C0033847	Pseudoxanthoma Elasticum	0.793202790724948	100	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+368	ABCC6	ATP-binding cassette, sub-family C (CFTR/MRP), member 6	umls:C0033847	Pseudoxanthoma Elasticum	0.793202790724948	100	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+368	ABCC6	ATP-binding cassette, sub-family C (CFTR/MRP), member 6	umls:C0033847	Pseudoxanthoma Elasticum	0.793202790724948	100	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5728	PTEN	phosphatase and tensin homolog	umls:C0018553	Hamartoma Syndrome, Multiple	0.786117111732561	207	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5728	PTEN	phosphatase and tensin homolog	umls:C0018553	Hamartoma Syndrome, Multiple	0.786117111732561	207	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5728	PTEN	phosphatase and tensin homolog	umls:C0018553	Hamartoma Syndrome, Multiple	0.786117111732561	207	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2670	GFAP	glial fibrillary acidic protein	umls:C0270726	Alexander Disease	0.78539457331532	95	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2670	GFAP	glial fibrillary acidic protein	umls:C0270726	Alexander Disease	0.78539457331532	95	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2670	GFAP	glial fibrillary acidic protein	umls:C0270726	Alexander Disease	0.78539457331532	95	AlteredExpression	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2158	F9	coagulation factor IX	umls:C0008533	Hemophilia B	0.784529904109877	305	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2158	F9	coagulation factor IX	umls:C0008533	Hemophilia B	0.784529904109877	305	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2158	F9	coagulation factor IX	umls:C0008533	Hemophilia B	0.784529904109877	305	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+410	ARSA	arylsulfatase A	umls:C0023522	Leukodystrophy, Metachromatic	0.783437648660554	180	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+410	ARSA	arylsulfatase A	umls:C0023522	Leukodystrophy, Metachromatic	0.783437648660554	180	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+410	ARSA	arylsulfatase A	umls:C0023522	Leukodystrophy, Metachromatic	0.783437648660554	180	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2022	ENG	endoglin	umls:C0039445	Telangiectasia, Hereditary Hemorrhagic	0.782776509091619	134	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2022	ENG	endoglin	umls:C0039445	Telangiectasia, Hereditary Hemorrhagic	0.782776509091619	134	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2022	ENG	endoglin	umls:C0039445	Telangiectasia, Hereditary Hemorrhagic	0.782776509091619	134	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7454	WAS	Wiskott-Aldrich syndrome	umls:C0043194	Wiskott-Aldrich Syndrome	0.78231722378708	123	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7454	WAS	Wiskott-Aldrich syndrome	umls:C0043194	Wiskott-Aldrich Syndrome	0.78231722378708	123	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7454	WAS	Wiskott-Aldrich syndrome	umls:C0043194	Wiskott-Aldrich Syndrome	0.78231722378708	123	AlteredExpression	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7454	WAS	Wiskott-Aldrich syndrome	umls:C0043194	Wiskott-Aldrich Syndrome	0.78231722378708	123	PostTranslationalModification	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3145	HMBS	hydroxymethylbilane synthase	umls:C0162565	Porphyria, Acute Intermittent	0.773978200583612	143	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3145	HMBS	hydroxymethylbilane synthase	umls:C0162565	Porphyria, Acute Intermittent	0.773978200583612	143	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3145	HMBS	hydroxymethylbilane synthase	umls:C0162565	Porphyria, Acute Intermittent	0.773978200583612	143	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4854	NOTCH3	notch 3	umls:C0751587	CADASIL	0.771717193470815	118	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4854	NOTCH3	notch 3	umls:C0751587	CADASIL	0.771717193470815	118	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2548	GAA	glucosidase, alpha; acid	umls:C0017921	Glycogen Storage Disease Type II	0.769964185380807	133	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2548	GAA	glucosidase, alpha; acid	umls:C0017921	Glycogen Storage Disease Type II	0.769964185380807	133	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2548	GAA	glucosidase, alpha; acid	umls:C0017921	Glycogen Storage Disease Type II	0.769964185380807	133	Therapeutic	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2548	GAA	glucosidase, alpha; acid	umls:C0017921	Glycogen Storage Disease Type II	0.769964185380807	133	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+215	ABCD1	ATP-binding cassette, sub-family D (ALD), member 1	umls:C0162309	Adrenoleukodystrophy	0.769709267411967	180	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+215	ABCD1	ATP-binding cassette, sub-family D (ALD), member 1	umls:C0162309	Adrenoleukodystrophy	0.769709267411967	180	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2261	FGFR3	fibroblast growth factor receptor 3	umls:C0001080	Achondroplasia	0.766361103483663	121	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2261	FGFR3	fibroblast growth factor receptor 3	umls:C0001080	Achondroplasia	0.766361103483663	121	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+4976	OPA1	optic atrophy 1 (autosomal dominant)	umls:C0338508	Optic Atrophy, Autosomal Dominant	0.76444206954086	82	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4976	OPA1	optic atrophy 1 (autosomal dominant)	umls:C0338508	Optic Atrophy, Autosomal Dominant	0.76444206954086	82	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4000	LMNA	lamin A/C	umls:C0033300	Progeria	0.762467186154509	115	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4000	LMNA	lamin A/C	umls:C0033300	Progeria	0.762467186154509	115	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4000	LMNA	lamin A/C	umls:C0033300	Progeria	0.762467186154509	115	PostTranslationalModification	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4000	LMNA	lamin A/C	umls:C0033300	Progeria	0.762467186154509	115	AlteredExpression	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5354	PLP1	proteolipid protein 1	umls:C0205711	Pelizaeus-Merzbacher Disease	0.760453961285253	145	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5354	PLP1	proteolipid protein 1	umls:C0205711	Pelizaeus-Merzbacher Disease	0.760453961285253	145	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+8878	SQSTM1	sequestosome 1	umls:C0029401	Osteitis Deformans	0.75926443994221	68	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+8878	SQSTM1	sequestosome 1	umls:C0029401	Osteitis Deformans	0.75926443994221	68	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+11136	SLC7A9	solute carrier family 7 (amino acid transporter light chain, bo,+ system), member 9	umls:C0010691	Cystinuria	0.757768999226246	45	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+11136	SLC7A9	solute carrier family 7 (amino acid transporter light chain, bo,+ system), member 9	umls:C0010691	Cystinuria	0.757768999226246	45	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5727	PTCH1	patched 1	umls:C0004779	Basal Cell Nevus Syndrome	0.757598487053356	125	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5727	PTCH1	patched 1	umls:C0004779	Basal Cell Nevus Syndrome	0.757598487053356	125	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6519	SLC3A1	solute carrier family 3 (amino acid transporter heavy chain), member 1	umls:C0010691	Cystinuria	0.757508782446998	64	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6519	SLC3A1	solute carrier family 3 (amino acid transporter heavy chain), member 1	umls:C0010691	Cystinuria	0.757508782446998	64	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3251	HPRT1	hypoxanthine phosphoribosyltransferase 1	umls:C0023374	Lesch-Nyhan Syndrome	0.7567385043446	117	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3251	HPRT1	hypoxanthine phosphoribosyltransferase 1	umls:C0023374	Lesch-Nyhan Syndrome	0.7567385043446	117	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3251	HPRT1	hypoxanthine phosphoribosyltransferase 1	umls:C0023374	Lesch-Nyhan Syndrome	0.7567385043446	117	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7466	WFS1	Wolfram syndrome 1 (wolframin)	umls:C0043207	Wolfram Syndrome	0.755822221421355	64	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7466	WFS1	Wolfram syndrome 1 (wolframin)	umls:C0043207	Wolfram Syndrome	0.755822221421355	64	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6559	SLC12A3	solute carrier family 12 (sodium/chloride transporter), member 3	umls:C0268450	Gitelman Syndrome	0.754084522657728	86	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6559	SLC12A3	solute carrier family 12 (sodium/chloride transporter), member 3	umls:C0268450	Gitelman Syndrome	0.754084522657728	86	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1717	DHCR7	7-dehydrocholesterol reductase	umls:C0175694	Smith-Lemli-Opitz Syndrome	0.753426032493997	70	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1717	DHCR7	7-dehydrocholesterol reductase	umls:C0175694	Smith-Lemli-Opitz Syndrome	0.753426032493997	70	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2235	FECH	ferrochelatase	umls:C0162568	Protoporphyria, Erythropoietic	0.751065897363711	99	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2235	FECH	ferrochelatase	umls:C0162568	Protoporphyria, Erythropoietic	0.751065897363711	99	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2235	FECH	ferrochelatase	umls:C0162568	Protoporphyria, Erythropoietic	0.751065897363711	99	Therapeutic	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7486	WRN	Werner syndrome, RecQ helicase-like	umls:C0043119	Werner Syndrome	0.749570456647747	77	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7486	WRN	Werner syndrome, RecQ helicase-like	umls:C0043119	Werner Syndrome	0.749570456647747	77	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7486	WRN	Werner syndrome, RecQ helicase-like	umls:C0043119	Werner Syndrome	0.749570456647747	77	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+695	BTK	Bruton agammaglobulinemia tyrosine kinase	umls:C0221026	Bruton type agammaglobulinemia	0.748366438468635	172	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+695	BTK	Bruton agammaglobulinemia tyrosine kinase	umls:C0221026	Bruton type agammaglobulinemia	0.748366438468635	172	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5080	PAX6	paired box 6	umls:C0003076	Aniridia	0.748029538723579	145	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5080	PAX6	paired box 6	umls:C0003076	Aniridia	0.748029538723579	145	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+538	ATP7A	ATPase, Cu++ transporting, alpha polypeptide	umls:C0022716	Menkes Kinky Hair Syndrome	0.745786264956897	87	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+538	ATP7A	ATPase, Cu++ transporting, alpha polypeptide	umls:C0022716	Menkes Kinky Hair Syndrome	0.745786264956897	87	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+538	ATP7A	ATPase, Cu++ transporting, alpha polypeptide	umls:C0022716	Menkes Kinky Hair Syndrome	0.745786264956897	87	AlteredExpression	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+860	RUNX2	runt-related transcription factor 2	umls:C0008928	Cleidocranial Dysplasia	0.74509473212067	74	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+860	RUNX2	runt-related transcription factor 2	umls:C0008928	Cleidocranial Dysplasia	0.74509473212067	74	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+860	RUNX2	runt-related transcription factor 2	umls:C0008928	Cleidocranial Dysplasia	0.74509473212067	74	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+641	BLM	Bloom syndrome, RecQ helicase-like	umls:C0005859	Bloom Syndrome	0.744459274113461	63	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+641	BLM	Bloom syndrome, RecQ helicase-like	umls:C0005859	Bloom Syndrome	0.744459274113461	63	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+641	BLM	Bloom syndrome, RecQ helicase-like	umls:C0005859	Bloom Syndrome	0.744459274113461	63	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2131	EXT1	exostosin glycosyltransferase 1	umls:C0015306	Exostoses, Multiple Hereditary	0.743527907249305	65	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2131	EXT1	exostosin glycosyltransferase 1	umls:C0015306	Exostoses, Multiple Hereditary	0.743527907249305	65	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5172	SLC26A4	solute carrier family 26 (anion exchanger), member 4	umls:C0271829	Pendred syndrome	0.743489791151871	113	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+5172	SLC26A4	solute carrier family 26 (anion exchanger), member 4	umls:C0271829	Pendred syndrome	0.743489791151871	113	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+6261	RYR1	ryanodine receptor 1 (skeletal)	umls:C0751951	Myopathy, Central Core	0.743173274158133	80	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6261	RYR1	ryanodine receptor 1 (skeletal)	umls:C0751951	Myopathy, Central Core	0.743173274158133	80	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+488	ATP2A2	ATPase, Ca++ transporting, cardiac muscle, slow twitch 2	umls:C0022595	Darier Disease	0.741940699626621	59	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+488	ATP2A2	ATPase, Ca++ transporting, cardiac muscle, slow twitch 2	umls:C0022595	Darier Disease	0.741940699626621	59	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+19	ABCA1	ATP-binding cassette, sub-family A (ABC1), member 1	umls:C0039292	Tangier Disease	0.741887274202805	100	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+19	ABCA1	ATP-binding cassette, sub-family A (ABC1), member 1	umls:C0039292	Tangier Disease	0.741887274202805	100	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6517	SLC2A4	solute carrier family 2 (facilitated glucose transporter), member 4	umls:C0011860	Diabetes Mellitus, Type 2	0.741333210866971	49	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+6517	SLC2A4	solute carrier family 2 (facilitated glucose transporter), member 4	umls:C0011860	Diabetes Mellitus, Type 2	0.741333210866971	49	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+5979	RET	ret proto-oncogene	umls:C0025269	Multiple Endocrine Neoplasia Type 2b	0.738641474802037	103	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5979	RET	ret proto-oncogene	umls:C0025269	Multiple Endocrine Neoplasia Type 2b	0.738641474802037	103	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5979	RET	ret proto-oncogene	umls:C0025269	Multiple Endocrine Neoplasia Type 2b	0.738641474802037	103	PostTranslationalModification	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7450	VWF	von Willebrand factor	umls:C1264039	von Willebrand Disease, Type 1	0.735097117139116	107	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+7450	VWF	von Willebrand factor	umls:C1264039	von Willebrand Disease, Type 1	0.735097117139116	107	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+4023	LPL	lipoprotein lipase	umls:C0023817	Hyperlipoproteinemia Type I	0.733568633750656	130	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4023	LPL	lipoprotein lipase	umls:C0023817	Hyperlipoproteinemia Type I	0.733568633750656	130	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2690	GHR	growth hormone receptor	umls:C0271568	Laron Syndrome	0.733063284133071	81	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2690	GHR	growth hormone receptor	umls:C0271568	Laron Syndrome	0.733063284133071	81	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3073	HEXA	hexosaminidase A (alpha polypeptide)	umls:C0039373	Tay-Sachs Disease	0.732106235707188	70	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3073	HEXA	hexosaminidase A (alpha polypeptide)	umls:C0039373	Tay-Sachs Disease	0.732106235707188	70	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5781	PTPN11	protein tyrosine phosphatase, non-receptor type 11	umls:C0175704	LEOPARD Syndrome	0.732090926380806	45	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5781	PTPN11	protein tyrosine phosphatase, non-receptor type 11	umls:C0175704	LEOPARD Syndrome	0.732090926380806	45	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5251	PHEX	phosphate regulating endopeptidase homolog, X-linked	umls:C0733682	Hypophosphatemic Rickets, X-Linked Dominant	0.731738942694839	83	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5251	PHEX	phosphate regulating endopeptidase homolog, X-linked	umls:C0733682	Hypophosphatemic Rickets, X-Linked Dominant	0.731738942694839	83	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7132	TNFRSF1A	tumor necrosis factor receptor superfamily, member 1A	umls:C1275126	Periodic fever, familial, autosomal dominant	0.730320184944683	90	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+7132	TNFRSF1A	tumor necrosis factor receptor superfamily, member 1A	umls:C1275126	Periodic fever, familial, autosomal dominant	0.730320184944683	90	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+4010	LMX1B	LIM homeobox transcription factor 1, beta	umls:C0027341	Nail-Patella Syndrome	0.730001018545742	40	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4010	LMX1B	LIM homeobox transcription factor 1, beta	umls:C0027341	Nail-Patella Syndrome	0.730001018545742	40	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6899	TBX1	T-box 1	umls:C0012236	DiGeorge Syndrome	0.72951892647015	85	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6899	TBX1	T-box 1	umls:C0012236	DiGeorge Syndrome	0.72951892647015	85	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+8518	IKBKAP	inhibitor of kappa light polypeptide gene enhancer in B-cells, kinase complex-associated protein	umls:C0013364	Dysautonomia, Familial	0.729309485709514	39	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+8518	IKBKAP	inhibitor of kappa light polypeptide gene enhancer in B-cells, kinase complex-associated protein	umls:C0013364	Dysautonomia, Familial	0.729309485709514	39	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+8929	PHOX2B	paired-like homeobox 2b	umls:C1275808	Congenital central hypoventilation syndrome	0.728396077576943	74	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+8929	PHOX2B	paired-like homeobox 2b	umls:C1275808	Congenital central hypoventilation syndrome	0.728396077576943	74	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+34	ACADM	acyl-CoA dehydrogenase, C-4 to C-12 straight chain	umls:C0220710	Medium chain acyl CoA dehydrogenase deficiency	0.728163604659784	37	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+34	ACADM	acyl-CoA dehydrogenase, C-4 to C-12 straight chain	umls:C0220710	Medium chain acyl CoA dehydrogenase deficiency	0.728163604659784	37	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+1387	CREBBP	CREB binding protein	umls:C0035934	Rubinstein-Taybi Syndrome	0.727985144271282	42	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1387	CREBBP	CREB binding protein	umls:C0035934	Rubinstein-Taybi Syndrome	0.727985144271282	42	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+659	BMPR2	bone morphogenetic protein receptor, type II (serine/threonine kinase)	umls:C2973725	Pulmonary arterial hypertension	0.727765918380142	101	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+659	BMPR2	bone morphogenetic protein receptor, type II (serine/threonine kinase)	umls:C2973725	Pulmonary arterial hypertension	0.727765918380142	101	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+25836	NIPBL	Nipped-B homolog (Drosophila)	umls:C0270972	De Lange Syndrome	0.727053777407126	45	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+25836	NIPBL	Nipped-B homolog (Drosophila)	umls:C0270972	De Lange Syndrome	0.727053777407126	45	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6197	RPS6KA3	ribosomal protein S6 kinase, 90kDa, polypeptide 3	umls:C0265252	Coffin-Lowry Syndrome	0.726885327534597	34	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6197	RPS6KA3	ribosomal protein S6 kinase, 90kDa, polypeptide 3	umls:C0265252	Coffin-Lowry Syndrome	0.726885327534597	34	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6197	RPS6KA3	ribosomal protein S6 kinase, 90kDa, polypeptide 3	umls:C0265252	Coffin-Lowry Syndrome	0.726885327534597	34	AlteredExpression	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7957	EPM2A	epilepsy, progressive myoclonus type 2A, Lafora disease (laforin)	umls:C0751783	Lafora Disease	0.72666080283305	50	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7957	EPM2A	epilepsy, progressive myoclonus type 2A, Lafora disease (laforin)	umls:C0751783	Lafora Disease	0.72666080283305	50	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7957	EPM2A	epilepsy, progressive myoclonus type 2A, Lafora disease (laforin)	umls:C0751783	Lafora Disease	0.72666080283305	50	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2581	GALC	galactosylceramidase	umls:C0023521	Leukodystrophy, Globoid Cell	0.72656903592633	71	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2581	GALC	galactosylceramidase	umls:C0023521	Leukodystrophy, Globoid Cell	0.72656903592633	71	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+55636	CHD7	chromodomain helicase DNA binding protein 7	umls:C0265354	CHARGE Syndrome	0.726140369274554	79	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+55636	CHD7	chromodomain helicase DNA binding protein 7	umls:C0265354	CHARGE Syndrome	0.726140369274554	79	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+114327	EFHC1	EF-hand domain (C-terminal) containing 1	umls:C0270853	Myoclonic Epilepsy, Juvenile	0.725502261862142	37	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+114327	EFHC1	EF-hand domain (C-terminal) containing 1	umls:C0270853	Myoclonic Epilepsy, Juvenile	0.725502261862142	37	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1201	CLN3	ceroid-lipofuscinosis, neuronal 3	umls:C2931674	Ceroid lipofuscinosis, neuronal 3, Juvenile	0.725078894020774	85	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1201	CLN3	ceroid-lipofuscinosis, neuronal 3	umls:C2931674	Ceroid lipofuscinosis, neuronal 3, Juvenile	0.725078894020774	85	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1121	CHM	choroideremia (Rab escort protein 1)	umls:C0008525	Choroideremia	0.724535202920285	44	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+1121	CHM	choroideremia (Rab escort protein 1)	umls:C0008525	Choroideremia	0.724535202920285	44	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4089	SMAD4	SMAD family member 4	umls:C0345893	Juvenile polyposis syndrome	0.724514820168966	60	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+4089	SMAD4	SMAD family member 4	umls:C0345893	Juvenile polyposis syndrome	0.724514820168966	60	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+1536	CYBB	cytochrome b-245, beta polypeptide	umls:C1844376	Granulomatous Disease, Chronic, X-Linked	0.724183219234317	88	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1536	CYBB	cytochrome b-245, beta polypeptide	umls:C1844376	Granulomatous Disease, Chronic, X-Linked	0.724183219234317	88	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3784	KCNQ1	potassium voltage-gated channel, KQT-like subfamily, member 1	umls:C0022387	Jervell-Lange Nielsen Syndrome	0.724103886863305	33	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3784	KCNQ1	potassium voltage-gated channel, KQT-like subfamily, member 1	umls:C0022387	Jervell-Lange Nielsen Syndrome	0.724103886863305	33	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3931	LCAT	lecithin-cholesterol acyltransferase	umls:C0023195	Lecithin Acyltransferase Deficiency	0.723583453304809	64	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3931	LCAT	lecithin-cholesterol acyltransferase	umls:C0023195	Lecithin Acyltransferase Deficiency	0.723583453304809	64	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5172	SLC26A4	solute carrier family 26 (anion exchanger), member 4	umls:C1863752	Enlarged Vestibular Aqueduct	0.723154786653033	74	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+5172	SLC26A4	solute carrier family 26 (anion exchanger), member 4	umls:C1863752	Enlarged Vestibular Aqueduct	0.723154786653033	74	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+7490	WT1	Wilms tumor 1	umls:C0950121	Denys-Drash Syndrome	0.722986336780505	68	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7490	WT1	Wilms tumor 1	umls:C0950121	Denys-Drash Syndrome	0.722986336780505	68	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5781	PTPN11	protein tyrosine phosphatase, non-receptor type 11	umls:C0349639	Leukemia, Myelomonocytic, Juvenile	0.722947995297601	40	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+5781	PTPN11	protein tyrosine phosphatase, non-receptor type 11	umls:C0349639	Leukemia, Myelomonocytic, Juvenile	0.722947995297601	40	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+6834	SURF1	surfeit 1	umls:C0023264	Leigh Disease	0.722782194830277	52	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6834	SURF1	surfeit 1	umls:C0023264	Leigh Disease	0.722782194830277	52	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3640	INSL3	insulin-like 3 (Leydig cell)	umls:C0010417	Cryptorchidism	0.72275651326855	33	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+3640	INSL3	insulin-like 3 (Leydig cell)	umls:C0010417	Cryptorchidism	0.72275651326855	33	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+378884	NHLRC1	NHL repeat containing E3 ubiquitin protein ligase 1	umls:C0751783	Lafora Disease	0.722350878773297	41	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+378884	NHLRC1	NHL repeat containing E3 ubiquitin protein ligase 1	umls:C0751783	Lafora Disease	0.722350878773297	41	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+378884	NHLRC1	NHL repeat containing E3 ubiquitin protein ligase 1	umls:C0751783	Lafora Disease	0.722350878773297	41	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2811	GP1BA	glycoprotein Ib (platelet), alpha polypeptide	umls:C0005129	Bernard-Soulier Syndrome	0.722215471573265	15	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2811	GP1BA	glycoprotein Ib (platelet), alpha polypeptide	umls:C0005129	Bernard-Soulier Syndrome	0.722215471573265	15	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3920	LAMP2	lysosomal-associated membrane protein 2	umls:C0878677	Glycogen Storage Disease Type IIb	0.722146736823068	33	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3920	LAMP2	lysosomal-associated membrane protein 2	umls:C0878677	Glycogen Storage Disease Type IIb	0.722146736823068	33	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3920	LAMP2	lysosomal-associated membrane protein 2	umls:C0878677	Glycogen Storage Disease Type IIb	0.722146736823068	33	AlteredExpression	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3074	HEXB	hexosaminidase B (beta polypeptide)	umls:C0036161	Sandhoff Disease	0.721585312376465	34	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3074	HEXB	hexosaminidase B (beta polypeptide)	umls:C0036161	Sandhoff Disease	0.721585312376465	34	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+8291	DYSF	dysferlin	umls:C1850808	Miyoshi myopathy	0.721496194874949	74	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8291	DYSF	dysferlin	umls:C1850808	Miyoshi myopathy	0.721496194874949	74	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1311	COMP	cartilage oligomeric matrix protein	umls:C0410538	Pseudoachondroplasia	0.721363437080121	64	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+1311	COMP	cartilage oligomeric matrix protein	umls:C0410538	Pseudoachondroplasia	0.721363437080121	64	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+1294	COL7A1	collagen, type VII, alpha 1	umls:C0079474	Recessive dystrophic epidermolysis bullosa	0.720899078350645	79	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1294	COL7A1	collagen, type VII, alpha 1	umls:C0079474	Recessive dystrophic epidermolysis bullosa	0.720899078350645	79	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3858	KRT10	keratin 10	umls:C0079153	Hyperkeratosis, Epidermolytic	0.72086073686774	56	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3858	KRT10	keratin 10	umls:C0079153	Hyperkeratosis, Epidermolytic	0.72086073686774	56	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4541	ND6	NADH dehydrogenase, subunit 6 (complex I)	umls:C0917796	Optic Atrophy, Hereditary, Leber	0.720799363228314	38	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+4541	ND6	NADH dehydrogenase, subunit 6 (complex I)	umls:C0917796	Optic Atrophy, Hereditary, Leber	0.720799363228314	38	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+1244	ABCC2	ATP-binding cassette, sub-family C (CFTR/MRP), member 2	umls:C0022350	Jaundice, Chronic Idiopathic	0.719758270725852	26	GeneticVariation	UNIPROT, CTD_human, RGD, LHGDN, BeFree
+1244	ABCC2	ATP-binding cassette, sub-family C (CFTR/MRP), member 2	umls:C0022350	Jaundice, Chronic Idiopathic	0.719758270725852	26	Biomarker	UNIPROT, CTD_human, RGD, LHGDN, BeFree
+6910	TBX5	T-box 5	umls:C0265264	Holt-Oram syndrome	0.719737887974533	43	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+6910	TBX5	T-box 5	umls:C0265264	Holt-Oram syndrome	0.719737887974533	43	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+5156	PDGFRA	platelet-derived growth factor receptor, alpha polypeptide	umls:C0238198	Gastrointestinal Stromal Tumors	0.719685158378375	261	GeneticVariation	UNIPROT, CTD_human, GAD, LHGDN, BeFree
+5156	PDGFRA	platelet-derived growth factor receptor, alpha polypeptide	umls:C0238198	Gastrointestinal Stromal Tumors	0.719685158378375	261	Biomarker	UNIPROT, CTD_human, GAD, LHGDN, BeFree
+5156	PDGFRA	platelet-derived growth factor receptor, alpha polypeptide	umls:C0238198	Gastrointestinal Stromal Tumors	0.719685158378375	261	AlteredExpression	UNIPROT, CTD_human, GAD, LHGDN, BeFree
+6949	TCOF1	Treacher Collins-Franceschetti syndrome 1	umls:C0242387	Mandibulofacial Dysostosis	0.7189009374223	41	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6949	TCOF1	Treacher Collins-Franceschetti syndrome 1	umls:C0242387	Mandibulofacial Dysostosis	0.7189009374223	41	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2538	G6PC	glucose-6-phosphatase, catalytic subunit	umls:C0017920	Glycogen Storage Disease Type I	0.718507962848224	53	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2538	G6PC	glucose-6-phosphatase, catalytic subunit	umls:C0017920	Glycogen Storage Disease Type I	0.718507962848224	53	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+7051	TGM1	transglutaminase 1	umls:C0020758	Lamellar ichthyosis, type 1	0.7183778544586	52	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+7051	TGM1	transglutaminase 1	umls:C0020758	Lamellar ichthyosis, type 1	0.7183778544586	52	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+779	CACNA1S	calcium channel, voltage-dependent, L type, alpha 1S subunit	umls:C0238358	Hypokalemic Periodic Paralysis	0.718303820897996	36	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+779	CACNA1S	calcium channel, voltage-dependent, L type, alpha 1S subunit	umls:C0238358	Hypokalemic Periodic Paralysis	0.718303820897996	36	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2990	GUSB	glucuronidase, beta	umls:C0085132	Mucopolysaccharidosis VII	0.718212053991276	64	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2990	GUSB	glucuronidase, beta	umls:C0085132	Mucopolysaccharidosis VII	0.718212053991276	64	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1896	EDA	ectodysplasin A	umls:C0162359	Ectodermal Dysplasia 1, Anhidrotic	0.717913495729124	69	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1896	EDA	ectodysplasin A	umls:C0162359	Ectodermal Dysplasia 1, Anhidrotic	0.717913495729124	69	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3664	IRF6	interferon regulatory factor 6	umls:C0175697	Van der Woude syndrome	0.717780737934296	49	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+3664	IRF6	interferon regulatory factor 6	umls:C0175697	Van der Woude syndrome	0.717780737934296	49	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+3784	KCNQ1	potassium voltage-gated channel, KQT-like subfamily, member 1	umls:C0035828	Romano-Ward Syndrome	0.717576595984068	57	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3784	KCNQ1	potassium voltage-gated channel, KQT-like subfamily, member 1	umls:C0035828	Romano-Ward Syndrome	0.717576595984068	57	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5308	PITX2	paired-like homeodomain 2	umls:C3495488	Axenfeld-Rieger syndrome	0.717482179672144	51	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+5308	PITX2	paired-like homeodomain 2	umls:C3495488	Axenfeld-Rieger syndrome	0.717482179672144	51	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+773	CACNA1A	calcium channel, voltage-dependent, P/Q type, alpha 1A subunit	umls:C1832884	Hemiplegic migraine, familial type 1	0.71731637920482	62	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+773	CACNA1A	calcium channel, voltage-dependent, P/Q type, alpha 1A subunit	umls:C1832884	Hemiplegic migraine, familial type 1	0.71731637920482	62	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+355	FAS	Fas cell surface death receptor	umls:C1328840	Autoimmune Lymphoproliferative Syndrome	0.71731637920482	65	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+355	FAS	Fas cell surface death receptor	umls:C1328840	Autoimmune Lymphoproliferative Syndrome	0.71731637920482	65	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6662	SOX9	SRY (sex determining region Y)-box 9	umls:C1861922	Campomelic Dysplasia	0.717147929332292	54	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6662	SOX9	SRY (sex determining region Y)-box 9	umls:C1861922	Campomelic Dysplasia	0.717147929332292	54	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6662	SOX9	SRY (sex determining region Y)-box 9	umls:C1861922	Campomelic Dysplasia	0.717147929332292	54	AlteredExpression	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+1287	COL4A5	collagen, type IV, alpha 5	umls:C1567742	ALPORT SYNDROME, X-LINKED	0.716420704418364	67	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1287	COL4A5	collagen, type IV, alpha 5	umls:C1567742	ALPORT SYNDROME, X-LINKED	0.716420704418364	67	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+583	BBS2	Bardet-Biedl syndrome 2	umls:C0752166	Bardet-Biedl Syndrome	0.715785246411155	40	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+583	BBS2	Bardet-Biedl syndrome 2	umls:C0752166	Bardet-Biedl Syndrome	0.715785246411155	40	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+57192	MCOLN1	mucolipin 1	umls:C0238286	Mucolipidosis Type IV	0.715690830099232	42	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+57192	MCOLN1	mucolipin 1	umls:C0238286	Mucolipidosis Type IV	0.715690830099232	42	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+825	CAPN3	calpain 3, (p94)	umls:C1869123	Limb-girdle muscular dystrophy type 2A	0.715525029631908	57	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+825	CAPN3	calpain 3, (p94)	umls:C1869123	Limb-girdle muscular dystrophy type 2A	0.715525029631908	57	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7299	TYR	tyrosinase	umls:C0268494	Oculocutaneous albinism type 1	0.715525029631908	57	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7299	TYR	tyrosinase	umls:C0268494	Oculocutaneous albinism type 1	0.715525029631908	57	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7390	UROS	uroporphyrinogen III synthase	umls:C0162530	Porphyria, Erythropoietic	0.715356579759379	48	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7390	UROS	uroporphyrinogen III synthase	umls:C0162530	Porphyria, Erythropoietic	0.715356579759379	48	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+1629	DBT	dihydrolipoamide branched chain transacylase E2	umls:C0024776	Maple Syrup Urine Disease	0.715185480481647	18	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1629	DBT	dihydrolipoamide branched chain transacylase E2	umls:C0024776	Maple Syrup Urine Disease	0.715185480481647	18	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+1629	DBT	dihydrolipoamide branched chain transacylase E2	umls:C0024776	Maple Syrup Urine Disease	0.715185480481647	18	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+686	BTD	biotinidase	umls:C0220754	Biotinidase Deficiency	0.714886922219495	18	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+686	BTD	biotinidase	umls:C0220754	Biotinidase Deficiency	0.714886922219495	18	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2263	FGFR2	fibroblast growth factor receptor 2	umls:C0010273	Craniofacial Dysostosis	0.714759463235075	52	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2263	FGFR2	fibroblast growth factor receptor 2	umls:C0010273	Craniofacial Dysostosis	0.714759463235075	52	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3265	HRAS	Harvey rat sarcoma viral oncogene homolog	umls:C0587248	Costello Syndrome	0.714330796583299	52	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3265	HRAS	Harvey rat sarcoma viral oncogene homolog	umls:C0587248	Costello Syndrome	0.714330796583299	52	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4233	MET	met proto-oncogene	umls:C2239176	Carcinoma, Hepatocellular	0.714254113617491	19	GeneticVariation	UNIPROT, CTD_human, RGD, LHGDN, BeFree
+4233	MET	met proto-oncogene	umls:C2239176	Carcinoma, Hepatocellular	0.714254113617491	19	Biomarker	UNIPROT, CTD_human, RGD, LHGDN, BeFree
+4233	MET	met proto-oncogene	umls:C2239176	Carcinoma, Hepatocellular	0.714254113617491	19	AlteredExpression	UNIPROT, CTD_human, RGD, LHGDN, BeFree
+4693	NDP	Norrie disease (pseudoglioma)	umls:C0266526	Norrie disease	0.714065280993644	44	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+4693	NDP	Norrie disease (pseudoglioma)	umls:C0266526	Norrie disease	0.714065280993644	44	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+2812	GP1BB	glycoprotein Ib (platelet), beta polypeptide	umls:C0005129	Bernard-Soulier Syndrome	0.713822797560511	7	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+2812	GP1BB	glycoprotein Ib (platelet), beta polypeptide	umls:C0005129	Bernard-Soulier Syndrome	0.713822797560511	7	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+3081	HGD	homogentisate 1,2-dioxygenase	umls:C0002066	Alkaptonuria	0.713695338576091	32	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3081	HGD	homogentisate 1,2-dioxygenase	umls:C0002066	Alkaptonuria	0.713695338576091	32	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+64840	PORCN	porcupine homolog (Drosophila)	umls:C0016395	Focal Dermal Hypoplasia	0.713526888703563	21	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+64840	PORCN	porcupine homolog (Drosophila)	umls:C0016395	Focal Dermal Hypoplasia	0.713526888703563	21	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+4534	MTM1	myotubularin 1	umls:C0410203	Myotubular myopathy, X-linked	0.713435121796843	49	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4534	MTM1	myotubularin 1	umls:C0410203	Myotubular myopathy, X-linked	0.713435121796843	49	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2632	GBE1	glucan (1,4-alpha-), branching enzyme 1	umls:C0017923	Glycogen Storage Disease Type IV	0.713396780313939	28	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2632	GBE1	glucan (1,4-alpha-), branching enzyme 1	umls:C0017923	Glycogen Storage Disease Type IV	0.713396780313939	28	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+445	ASS1	argininosuccinate synthase 1	umls:C0175683	Citrullinemia	0.713266671924315	39	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+445	ASS1	argininosuccinate synthase 1	umls:C0175683	Citrullinemia	0.713266671924315	39	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+8291	DYSF	dysferlin	umls:C1850889	Limb-girdle muscular dystrophy, type 2B	0.713136563534691	49	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8291	DYSF	dysferlin	umls:C1850889	Limb-girdle muscular dystrophy, type 2B	0.713136563534691	49	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+668	FOXL2	forkhead box L2	umls:C0220663	Blepharophimosis, Ptosis, and Epicanthus Inversus	0.712406689215559	32	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+668	FOXL2	forkhead box L2	umls:C0220663	Blepharophimosis, Ptosis, and Epicanthus Inversus	0.712406689215559	32	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+2218	FKTN	fukutin	umls:C0410174	Micropolygyria with Muscular Dystrophy	0.712240888748235	41	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2218	FKTN	fukutin	umls:C0410174	Micropolygyria with Muscular Dystrophy	0.712240888748235	41	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+201163	FLCN	folliculin	umls:C0346010	Birt-Hogg-Dube Syndrome	0.711942330486083	41	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+201163	FLCN	folliculin	umls:C0346010	Birt-Hogg-Dube Syndrome	0.711942330486083	41	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+175	AGA	aspartylglucosaminidase	umls:C0268225	Aspartylglucosaminuria	0.711643772223931	40	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+175	AGA	aspartylglucosaminidase	umls:C0268225	Aspartylglucosaminuria	0.711643772223931	40	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+24	ABCA4	ATP-binding cassette, sub-family A (ABC1), member 4	umls:C1855465	Stargardt disease 1	0.711643772223931	45	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+24	ABCA4	ATP-binding cassette, sub-family A (ABC1), member 4	umls:C1855465	Stargardt disease 1	0.711643772223931	45	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1476	CSTB	cystatin B (stefin B)	umls:C0751785	Unverricht-Lundborg Syndrome	0.711345213961779	38	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1476	CSTB	cystatin B (stefin B)	umls:C0751785	Unverricht-Lundborg Syndrome	0.711345213961779	38	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2705	GJB1	gap junction protein, beta 1, 32kDa	umls:C0393808	Charcot-Marie-Tooth disease, X-linked, 1	0.711046655699626	67	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2705	GJB1	gap junction protein, beta 1, 32kDa	umls:C0393808	Charcot-Marie-Tooth disease, X-linked, 1	0.711046655699626	67	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7415	VCP	valosin containing protein	umls:C1833662	Inclusion Body Myopathy With Early-Onset Paget Disease And Frontotemporal Dementia	0.711046655699626	39	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7415	VCP	valosin containing protein	umls:C1833662	Inclusion Body Myopathy With Early-Onset Paget Disease And Frontotemporal Dementia	0.711046655699626	39	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+114548	NLRP3	NLR family, pyrin domain containing 3	umls:C0268390	Muckle-Wells syndrome	0.710748097437474	37	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+114548	NLRP3	NLR family, pyrin domain containing 3	umls:C0268390	Muckle-Wells syndrome	0.710748097437474	37	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+582	BBS1	Bardet-Biedl syndrome 1	umls:C0752166	Bardet-Biedl Syndrome	0.710579647564946	30	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+582	BBS1	Bardet-Biedl syndrome 1	umls:C0752166	Bardet-Biedl Syndrome	0.710579647564946	30	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2706	GJB2	gap junction protein, beta 2, 26kDa	umls:C0265336	Keratitis, Ichthyosis, and Deafness (KID) Syndrome	0.710449539175322	35	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2706	GJB2	gap junction protein, beta 2, 26kDa	umls:C0265336	Keratitis, Ichthyosis, and Deafness (KID) Syndrome	0.710449539175322	35	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3630	INS	insulin	umls:C1833104	Diabetes Mellitus, Permanent Neonatal	0.710449539175322	36	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3630	INS	insulin	umls:C1833104	Diabetes Mellitus, Permanent Neonatal	0.710449539175322	36	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1280	COL2A1	collagen, type II, alpha 1	umls:C2745959	Spondyloepiphyseal dysplasia, congenita	0.71015098091317	36	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1280	COL2A1	collagen, type II, alpha 1	umls:C2745959	Spondyloepiphyseal dysplasia, congenita	0.71015098091317	36	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2719	GPC3	glypican 3	umls:C0796154	Simpson-Golabi-Behmel syndrome	0.71015098091317	34	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2719	GPC3	glypican 3	umls:C0796154	Simpson-Golabi-Behmel syndrome	0.71015098091317	34	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+585	BBS4	Bardet-Biedl syndrome 4	umls:C0752166	Bardet-Biedl Syndrome	0.710112639430266	19	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+585	BBS4	Bardet-Biedl syndrome 4	umls:C0752166	Bardet-Biedl Syndrome	0.710112639430266	19	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+8074	FGF23	fibroblast growth factor 23	umls:C0342642	Hypophosphatemic Rickets, Autosomal Dominant	0.709852422651018	34	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8074	FGF23	fibroblast growth factor 23	umls:C0342642	Hypophosphatemic Rickets, Autosomal Dominant	0.709852422651018	34	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1371	CPOX	coproporphyrinogen oxidase	umls:C0162531	Coproporphyria, Hereditary	0.70968397277849	28	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+1371	CPOX	coproporphyrinogen oxidase	umls:C0162531	Coproporphyria, Hereditary	0.70968397277849	28	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5376	PMP22	peripheral myelin protein 22	umls:C0393814	Tomaculous neuropathy	0.709553864388866	34	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5376	PMP22	peripheral myelin protein 22	umls:C0393814	Tomaculous neuropathy	0.709553864388866	34	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6452	SH3BP2	SH3-domain binding protein 2	umls:C0008029	Cherubism	0.709385414516338	23	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6452	SH3BP2	SH3-domain binding protein 2	umls:C0008029	Cherubism	0.709385414516338	23	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5076	PAX2	paired box 2	umls:C1852759	Papillorenal syndrome	0.709255306126714	32	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5076	PAX2	paired box 2	umls:C1852759	Papillorenal syndrome	0.709255306126714	32	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3689	ITGB2	integrin, beta 2 (complement component 3 receptor 3 and 4 subunit)	umls:C0398738	Leukocyte adhesion deficiency type 1	0.709255306126714	38	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3689	ITGB2	integrin, beta 2 (complement component 3 receptor 3 and 4 subunit)	umls:C0398738	Leukocyte adhesion deficiency type 1	0.709255306126714	38	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2697	GJA1	gap junction protein, alpha 1, 43kDa	umls:C0812437	Oculodentodigital Dysplasia	0.709255306126714	39	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2697	GJA1	gap junction protein, alpha 1, 43kDa	umls:C0812437	Oculodentodigital Dysplasia	0.709255306126714	39	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2324	FLT4	fms-related tyrosine kinase 4	umls:C1704423	Milroy's Disease	0.709255306126714	31	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2324	FLT4	fms-related tyrosine kinase 4	umls:C1704423	Milroy's Disease	0.709255306126714	31	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5264	PHYH	phytanoyl-CoA 2-hydroxylase	umls:C0034960	Refsum Disease	0.70921696464381	15	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5264	PHYH	phytanoyl-CoA 2-hydroxylase	umls:C0034960	Refsum Disease	0.70921696464381	15	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5621	PRNP	prion protein	umls:C0206042	Insomnia, Fatal Familial	0.709086856254186	24	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+5621	PRNP	prion protein	umls:C0206042	Insomnia, Fatal Familial	0.709086856254186	24	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+7369	UMOD	uromodulin	umls:C0268113	Juvenile gout	0.708956747864562	30	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7369	UMOD	uromodulin	umls:C0268113	Juvenile gout	0.708956747864562	30	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8195	MKKS	McKusick-Kaufman syndrome	umls:C0752166	Bardet-Biedl Syndrome	0.708788297992034	28	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+8195	MKKS	McKusick-Kaufman syndrome	umls:C0752166	Bardet-Biedl Syndrome	0.708788297992034	28	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+673	BRAF	v-raf murine sarcoma viral oncogene homolog B	umls:C1275081	Cardiofaciocutaneous syndrome	0.70865818960241	31	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+673	BRAF	v-raf murine sarcoma viral oncogene homolog B	umls:C1275081	Cardiofaciocutaneous syndrome	0.70865818960241	31	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+546	ATRX	alpha thalassemia/mental retardation syndrome X-linked	umls:C1845055	ATR-X syndrome	0.70865818960241	34	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+546	ATRX	alpha thalassemia/mental retardation syndrome X-linked	umls:C1845055	ATR-X syndrome	0.70865818960241	34	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9211	LGI1	leucine-rich, glioma inactivated 1	umls:C1838062	Epilepsy, Lateral Temporal Lobe, Autosomal Dominant	0.70865818960241	35	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9211	LGI1	leucine-rich, glioma inactivated 1	umls:C1838062	Epilepsy, Lateral Temporal Lobe, Autosomal Dominant	0.70865818960241	35	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+55612	FERMT1	fermitin family member 1	umls:C0406557	Poikiloderma of Kindler	0.708359631340258	28	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+55612	FERMT1	fermitin family member 1	umls:C0406557	Poikiloderma of Kindler	0.708359631340258	28	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+114548	NLRP3	NLR family, pyrin domain containing 3	umls:C0343068	Familial cold urticaria	0.708359631340258	28	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+114548	NLRP3	NLR family, pyrin domain containing 3	umls:C0343068	Familial cold urticaria	0.708359631340258	28	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6262	RYR2	ryanodine receptor 2 (cardiac)	umls:C1631597	Polymorphic catecholergic ventricular tachycardia	0.708359631340258	38	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6262	RYR2	ryanodine receptor 2 (cardiac)	umls:C1631597	Polymorphic catecholergic ventricular tachycardia	0.708359631340258	38	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4935	GPR143	G protein-coupled receptor 143	umls:C0342684	Ocular Albinism type 1	0.708359631340258	31	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4935	GPR143	G protein-coupled receptor 143	umls:C0342684	Ocular Albinism type 1	0.708359631340258	31	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1513	CTSK	cathepsin K	umls:C0238402	Pycnodysostosis	0.708359631340258	28	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1513	CTSK	cathepsin K	umls:C0238402	Pycnodysostosis	0.708359631340258	28	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3908	LAMA2	laminin, alpha 2	umls:C1263858	Muscular dystrophy congenital, merosin negative	0.708061073078106	29	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3908	LAMA2	laminin, alpha 2	umls:C1263858	Muscular dystrophy congenital, merosin negative	0.708061073078106	29	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5476	CTSA	cathepsin A	umls:C0268233	Neuraminidase deficiency with beta-galactosidase deficiency	0.708061073078106	28	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5476	CTSA	cathepsin A	umls:C0268233	Neuraminidase deficiency with beta-galactosidase deficiency	0.708061073078106	28	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6329	SCN4A	sodium channel, voltage-gated, type IV, alpha subunit	umls:C0238357	Paralysis, Hyperkalemic Periodic	0.707892623205578	24	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6329	SCN4A	sodium channel, voltage-gated, type IV, alpha subunit	umls:C0238357	Paralysis, Hyperkalemic Periodic	0.707892623205578	24	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3930	LBR	lamin B receptor	umls:C0030779	Pelger-Huet Anomaly	0.707892623205578	18	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+3930	LBR	lamin B receptor	umls:C0030779	Pelger-Huet Anomaly	0.707892623205578	18	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6584	SLC22A5	solute carrier family 22 (organic cation/carnitine transporter), member 5	umls:C0342788	Systemic carnitine deficiency	0.707762514815954	31	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6584	SLC22A5	solute carrier family 22 (organic cation/carnitine transporter), member 5	umls:C0342788	Systemic carnitine deficiency	0.707762514815954	31	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2201	FBN2	fibrillin 2	umls:C0220668	Congenital contractural arachnodactyly	0.707629757021126	17	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+2201	FBN2	fibrillin 2	umls:C0220668	Congenital contractural arachnodactyly	0.707629757021126	17	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+8626	TP63	tumor protein p63	umls:C0406709	Hay-Wells syndrome	0.707463956553802	27	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8626	TP63	tumor protein p63	umls:C0406709	Hay-Wells syndrome	0.707463956553802	27	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2645	GCK	glucokinase (hexokinase 4)	umls:C1841962	Maturity-Onset Diabetes of the Young, Type 2	0.707463956553802	34	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2645	GCK	glucokinase (hexokinase 4)	umls:C1841962	Maturity-Onset Diabetes of the Young, Type 2	0.707463956553802	34	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9839	ZEB2	zinc finger E-box binding homeobox 2	umls:C1856113	Mowat-Wilson syndrome	0.707463956553802	29	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9839	ZEB2	zinc finger E-box binding homeobox 2	umls:C1856113	Mowat-Wilson syndrome	0.707463956553802	29	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2068	ERCC2	excision repair cross-complementing rodent repair deficiency, complementation group 2	umls:C0268138	Xeroderma Pigmentosum, Complementation Group D	0.707463956553802	31	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2068	ERCC2	excision repair cross-complementing rodent repair deficiency, complementation group 2	umls:C0268138	Xeroderma Pigmentosum, Complementation Group D	0.707463956553802	31	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4281	MID1	midline 1 (Opitz/BBB syndrome)	umls:C2936904	Opitz GBBB Syndrome, X-Linked	0.707463956553802	27	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4281	MID1	midline 1 (Opitz/BBB syndrome)	umls:C2936904	Opitz GBBB Syndrome, X-Linked	0.707463956553802	27	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+846	CASR	calcium-sensing receptor	umls:C1832645	Hyperparathyroidism, Neonatal Severe Primary	0.707463956553802	29	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+846	CASR	calcium-sensing receptor	umls:C1832645	Hyperparathyroidism, Neonatal Severe Primary	0.707463956553802	29	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6331	SCN5A	sodium channel, voltage-gated, type V, alpha subunit	umls:C1859062	Long Qt Syndrome 3	0.707463956553802	41	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6331	SCN5A	sodium channel, voltage-gated, type V, alpha subunit	umls:C1859062	Long Qt Syndrome 3	0.707463956553802	41	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+54903	MKS1	Meckel syndrome, type 1	umls:C0265215	Meckel syndrome type 1	0.707331198758974	14	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+54903	MKS1	Meckel syndrome, type 1	umls:C0265215	Meckel syndrome type 1	0.707331198758974	14	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+2737	GLI3	GLI family zinc finger 3	umls:C0265306	Greig cephalopolysyndactyly syndrome	0.70716539829165	24	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2737	GLI3	GLI family zinc finger 3	umls:C0265306	Greig cephalopolysyndactyly syndrome	0.70716539829165	24	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4041	LRP5	low density lipoprotein receptor-related protein 5	umls:C0432252	Osteoporosis-pseudoglioma syndrome	0.70716539829165	28	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4041	LRP5	low density lipoprotein receptor-related protein 5	umls:C0432252	Osteoporosis-pseudoglioma syndrome	0.70716539829165	28	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8398	PLA2G6	phospholipase A2, group VI (cytosolic, calcium-independent)	umls:C0270724	Infantile Neuroaxonal Dystrophy	0.70716539829165	24	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8398	PLA2G6	phospholipase A2, group VI (cytosolic, calcium-independent)	umls:C0270724	Infantile Neuroaxonal Dystrophy	0.70716539829165	24	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6927	HNF1A	HNF1 homeobox A	umls:C1838100	Maturity-Onset Diabetes of the Young, Type 3	0.706866840029498	35	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6927	HNF1A	HNF1 homeobox A	umls:C1838100	Maturity-Onset Diabetes of the Young, Type 3	0.706866840029498	35	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2625	GATA3	GATA binding protein 3	umls:C1840333	Barakat syndrome	0.706866840029498	23	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2625	GATA3	GATA binding protein 3	umls:C1840333	Barakat syndrome	0.706866840029498	23	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6926	TBX3	T-box 3	umls:C1866994	Ulnar-mammary syndrome	0.706269723505193	21	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6926	TBX3	T-box 3	umls:C1866994	Ulnar-mammary syndrome	0.706269723505193	21	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3949	LDLR	low density lipoprotein receptor	umls:C0745103	HYPERCHOLESTEROLEMIA, FAMILIAL	0.706269723505193	49	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3949	LDLR	low density lipoprotein receptor	umls:C0745103	HYPERCHOLESTEROLEMIA, FAMILIAL	0.706269723505193	49	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1291	COL6A1	collagen, type VI, alpha 1	umls:C1834674	Bethlem myopathy	0.706269723505193	23	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1291	COL6A1	collagen, type VI, alpha 1	umls:C1834674	Bethlem myopathy	0.706269723505193	23	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+778	CACNA1F	calcium channel, voltage-dependent, L type, alpha 1F subunit	umls:C1848172	NIGHT BLINDNESS, CONGENITAL STATIONARY, TYPE 2A	0.705971165243041	23	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+778	CACNA1F	calcium channel, voltage-dependent, L type, alpha 1F subunit	umls:C1848172	NIGHT BLINDNESS, CONGENITAL STATIONARY, TYPE 2A	0.705971165243041	23	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7078	TIMP3	TIMP metallopeptidase inhibitor 3	umls:C1850938	Fundus Dystrophy, Pseudoinflammatory, Of Sorsby	0.705971165243041	22	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7078	TIMP3	TIMP metallopeptidase inhibitor 3	umls:C1850938	Fundus Dystrophy, Pseudoinflammatory, Of Sorsby	0.705971165243041	22	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+50485	SMARCAL1	SWI/SNF related, matrix associated, actin dependent regulator of chromatin, subfamily a-like 1	umls:C0877024	Schimke immunoosseous dysplasia	0.705971165243041	20	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+50485	SMARCAL1	SWI/SNF related, matrix associated, actin dependent regulator of chromatin, subfamily a-like 1	umls:C0877024	Schimke immunoosseous dysplasia	0.705971165243041	20	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+54808	DYM	dymeclin	umls:C1846431	Smith-McCort Dysplasia	0.705971165243041	22	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+54808	DYM	dymeclin	umls:C1846431	Smith-McCort Dysplasia	0.705971165243041	22	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10002	NR2E3	nuclear receptor subfamily 2, group E, member 3	umls:C1849394	Enhanced S-Cone Syndrome	0.705672606980889	20	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10002	NR2E3	nuclear receptor subfamily 2, group E, member 3	umls:C1849394	Enhanced S-Cone Syndrome	0.705672606980889	20	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+51099	ABHD5	abhydrolase domain containing 5	umls:C0268238	Triglyceride storage disease with impaired long-chain fatty acid oxidation	0.705672606980889	20	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+51099	ABHD5	abhydrolase domain containing 5	umls:C0268238	Triglyceride storage disease with impaired long-chain fatty acid oxidation	0.705672606980889	20	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1594	CYP27B1	cytochrome P450, family 27, subfamily B, polypeptide 1	umls:C0268689	Vitamin D Hydroxylation-Deficient Rickets, Type 1A	0.705672606980889	20	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1594	CYP27B1	cytochrome P450, family 27, subfamily B, polypeptide 1	umls:C0268689	Vitamin D Hydroxylation-Deficient Rickets, Type 1A	0.705672606980889	20	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+27019	DNAI1	dynein, axonemal, intermediate chain 1	umls:C0022521	Kartagener Syndrome	0.705672606980889	20	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+27019	DNAI1	dynein, axonemal, intermediate chain 1	umls:C0022521	Kartagener Syndrome	0.705672606980889	20	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1674	DES	desmin	umls:C1832370	Myopathy, Myofibrillar, Desmin-Related	0.705374048718737	30	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1674	DES	desmin	umls:C1832370	Myopathy, Myofibrillar, Desmin-Related	0.705374048718737	30	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+50943	FOXP3	forkhead box P3	umls:C0342288	Immunodysregulation, Polyendocrinopathy, and Enteropathy, X-Linked	0.705374048718737	20	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+50943	FOXP3	forkhead box P3	umls:C0342288	Immunodysregulation, Polyendocrinopathy, and Enteropathy, X-Linked	0.705374048718737	20	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+11277	TREX1	three prime repair exonuclease 1	umls:C0796126	Aicardi-Goutieres syndrome	0.705374048718737	18	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+11277	TREX1	three prime repair exonuclease 1	umls:C0796126	Aicardi-Goutieres syndrome	0.705374048718737	18	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10560	SLC19A2	solute carrier family 19 (thiamine transporter), member 2	umls:C0342287	Thiamine responsive megaloblastic anemia syndrome	0.705374048718737	18	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10560	SLC19A2	solute carrier family 19 (thiamine transporter), member 2	umls:C0342287	Thiamine responsive megaloblastic anemia syndrome	0.705374048718737	18	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6567	SLC16A2	solute carrier family 16, member 2 (thyroid hormone transporter)	umls:C0795889	Allan-Herndon-Dudley syndrome	0.705374048718737	21	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6567	SLC16A2	solute carrier family 16, member 2 (thyroid hormone transporter)	umls:C0795889	Allan-Herndon-Dudley syndrome	0.705374048718737	21	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6609	SMPD1	sphingomyelin phosphodiesterase 1, acid lysosomal	umls:C0268243	Niemann-Pick Disease, Type B	0.705205598846209	23	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+6609	SMPD1	sphingomyelin phosphodiesterase 1, acid lysosomal	umls:C0268243	Niemann-Pick Disease, Type B	0.705205598846209	23	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+84100	ARL6	ADP-ribosylation factor-like 6	umls:C0752166	Bardet-Biedl Syndrome	0.705205598846209	10	GeneticVariation	UNIPROT, CTD_human, RGD, LHGDN, BeFree
+84100	ARL6	ADP-ribosylation factor-like 6	umls:C0752166	Bardet-Biedl Syndrome	0.705205598846209	10	Biomarker	UNIPROT, CTD_human, RGD, LHGDN, BeFree
+462	SERPINC1	serpin peptidase inhibitor, clade C (antithrombin), member 1	umls:C0272375	Antithrombin III Deficiency	0.705075490456585	41	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+462	SERPINC1	serpin peptidase inhibitor, clade C (antithrombin), member 1	umls:C0272375	Antithrombin III Deficiency	0.705075490456585	41	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3736	KCNA1	potassium voltage-gated channel, shaker-related subfamily, member 1 (episodic ataxia with myokymia)	umls:C1719788	Episodic Ataxia, Type 1	0.705075490456585	26	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3736	KCNA1	potassium voltage-gated channel, shaker-related subfamily, member 1 (episodic ataxia with myokymia)	umls:C1719788	Episodic Ataxia, Type 1	0.705075490456585	26	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7172	TPMT	thiopurine S-methyltransferase	umls:C0342801	Thiopurine S methyltranferase deficiency	0.705075490456585	19	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7172	TPMT	thiopurine S-methyltransferase	umls:C0342801	Thiopurine S methyltranferase deficiency	0.705075490456585	19	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5213	PFKM	phosphofructokinase, muscle	umls:C0017926	Glycogen Storage Disease Type VII	0.704942732661757	10	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+5213	PFKM	phosphofructokinase, muscle	umls:C0017926	Glycogen Storage Disease Type VII	0.704942732661757	10	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+2261	FGFR3	fibroblast growth factor receptor 3	umls:C1864436	Muenke Syndrome	0.704776932194433	17	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2261	FGFR3	fibroblast growth factor receptor 3	umls:C1864436	Muenke Syndrome	0.704776932194433	17	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1947	EFNB1	ephrin-B1	umls:C0220767	Craniofrontonasal dysplasia	0.704776932194433	16	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1947	EFNB1	ephrin-B1	umls:C0220767	Craniofrontonasal dysplasia	0.704776932194433	16	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7274	TTPA	tocopherol (alpha) transfer protein	umls:C1848533	Ataxia with vitamin E deficiency	0.704776932194433	20	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7274	TTPA	tocopherol (alpha) transfer protein	umls:C1848533	Ataxia with vitamin E deficiency	0.704776932194433	20	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8910	SGCE	sarcoglycan, epsilon	umls:C1834570	Myoclonic dystonia	0.704776932194433	21	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8910	SGCE	sarcoglycan, epsilon	umls:C1834570	Myoclonic dystonia	0.704776932194433	21	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5167	ENPP1	ectonucleotide pyrophosphatase/phosphodiesterase 1	umls:C1865343	Ossification of the posterior longitudinal ligament of the spine	0.704644174399605	4	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, BeFree
+5167	ENPP1	ectonucleotide pyrophosphatase/phosphodiesterase 1	umls:C1865343	Ossification of the posterior longitudinal ligament of the spine	0.704644174399605	4	Biomarker	UNIPROT, CTD_human, MGD, GAD, BeFree
+3849	KRT2	keratin 2	umls:C0432306	Ichthyosis Bullosa of Siemens	0.704478373932281	16	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3849	KRT2	keratin 2	umls:C0432306	Ichthyosis Bullosa of Siemens	0.704478373932281	16	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8139	GAN	gigaxonin	umls:C1850386	Giant Axonal Neuropathy	0.704478373932281	17	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8139	GAN	gigaxonin	umls:C1850386	Giant Axonal Neuropathy	0.704478373932281	17	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3897	L1CAM	L1 cell adhesion molecule	umls:C0795953	MASA (Mental Retardation, Aphasia, Shuffling Gait, Adducted Thumbs) Syndrome	0.704478373932281	27	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3897	L1CAM	L1 cell adhesion molecule	umls:C0795953	MASA (Mental Retardation, Aphasia, Shuffling Gait, Adducted Thumbs) Syndrome	0.704478373932281	27	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5728	PTEN	phosphatase and tensin homolog	umls:C1168401	Carcinoma, squamous cell of head and neck	0.704478373932281	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5728	PTEN	phosphatase and tensin homolog	umls:C1168401	Carcinoma, squamous cell of head and neck	0.704478373932281	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4860	PNP	purine nucleoside phosphorylase	umls:C0268125	Purine Nucleoside Phosphorylase Deficiency	0.704478373932281	18	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4860	PNP	purine nucleoside phosphorylase	umls:C0268125	Purine Nucleoside Phosphorylase Deficiency	0.704478373932281	18	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+26119	LDLRAP1	low density lipoprotein receptor adaptor protein 1	umls:C1863512	Hypercholesterolemia, Autosomal Recessive	0.704478373932281	16	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+26119	LDLRAP1	low density lipoprotein receptor adaptor protein 1	umls:C1863512	Hypercholesterolemia, Autosomal Recessive	0.704478373932281	16	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2303	FOXC2	forkhead box C2 (MFH-1, mesenchyme forkhead 1)	umls:C0265345	Lymphedema distichiasis syndrome	0.704179815670129	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2303	FOXC2	forkhead box C2 (MFH-1, mesenchyme forkhead 1)	umls:C0265345	Lymphedema distichiasis syndrome	0.704179815670129	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4125	MAN2B1	mannosidase, alpha, class 2B, member 1	umls:C0024748	alpha-Mannosidosis	0.704179815670129	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4125	MAN2B1	mannosidase, alpha, class 2B, member 1	umls:C0024748	alpha-Mannosidosis	0.704179815670129	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3052	HCCS	holocytochrome c synthase	umls:C0796070	Microphthalmia, syndromic 7	0.704179815670129	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3052	HCCS	holocytochrome c synthase	umls:C0796070	Microphthalmia, syndromic 7	0.704179815670129	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6445	SGCG	sarcoglycan, gamma (35kDa dystrophin-associated glycoprotein)	umls:C0410173	Limb-girdle muscular dystrophy, type 2C	0.704179815670129	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6445	SGCG	sarcoglycan, gamma (35kDa dystrophin-associated glycoprotein)	umls:C0410173	Limb-girdle muscular dystrophy, type 2C	0.704179815670129	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6523	SLC5A1	solute carrier family 5 (sodium/glucose cotransporter), member 1	umls:C0268186	Glucose/Galactose Malabsorption	0.704179815670129	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6523	SLC5A1	solute carrier family 5 (sodium/glucose cotransporter), member 1	umls:C0268186	Glucose/Galactose Malabsorption	0.704179815670129	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1282	COL4A1	collagen, type IV, alpha 1	umls:C1867983	Familial porencephaly	0.704179815670129	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1282	COL4A1	collagen, type IV, alpha 1	umls:C1867983	Familial porencephaly	0.704179815670129	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4286	MITF	microphthalmia-associated transcription factor	umls:C1860339	Waardenburg syndrome type 2A	0.704179815670129	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4286	MITF	microphthalmia-associated transcription factor	umls:C1860339	Waardenburg syndrome type 2A	0.704179815670129	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+435	ASL	argininosuccinate lyase	umls:C0268547	Argininosuccinic Aciduria	0.704179815670129	18	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+435	ASL	argininosuccinate lyase	umls:C0268547	Argininosuccinic Aciduria	0.704179815670129	18	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2542	SLC37A4	solute carrier family 37 (glucose-6-phosphate transporter), member 4	umls:C0268146	Glycogen Storage Disease IB	0.704179815670129	28	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2542	SLC37A4	solute carrier family 37 (glucose-6-phosphate transporter), member 4	umls:C0268146	Glycogen Storage Disease IB	0.704179815670129	28	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3664	IRF6	interferon regulatory factor 6	umls:C0265259	Popliteal Pterygium Syndrome	0.704179815670129	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3664	IRF6	interferon regulatory factor 6	umls:C0265259	Popliteal Pterygium Syndrome	0.704179815670129	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+35	ACADS	acyl-CoA dehydrogenase, C-2 to C-3 short chain	umls:C0342783	Short chain Acyl CoA dehydrogenase deficiency	0.703881257407977	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+35	ACADS	acyl-CoA dehydrogenase, C-2 to C-3 short chain	umls:C0342783	Short chain Acyl CoA dehydrogenase deficiency	0.703881257407977	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2261	FGFR3	fibroblast growth factor receptor 3	umls:C1300257	Thanatophoric dysplasia, type 2	0.703881257407977	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2261	FGFR3	fibroblast growth factor receptor 3	umls:C1300257	Thanatophoric dysplasia, type 2	0.703881257407977	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9451	EIF2AK3	eukaryotic translation initiation factor 2-alpha kinase 3	umls:C0432217	Wolcott-Rallison syndrome	0.703881257407977	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9451	EIF2AK3	eukaryotic translation initiation factor 2-alpha kinase 3	umls:C0432217	Wolcott-Rallison syndrome	0.703881257407977	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3691	ITGB4	integrin, beta 4	umls:C1856934	Epidermolysis bullosa with pyloric atresia	0.703881257407977	16	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3691	ITGB4	integrin, beta 4	umls:C1856934	Epidermolysis bullosa with pyloric atresia	0.703881257407977	16	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7401	CLRN1	clarin 1	umls:C1568248	USHER SYNDROME, TYPE IIIA	0.703881257407977	17	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7401	CLRN1	clarin 1	umls:C1568248	USHER SYNDROME, TYPE IIIA	0.703881257407977	17	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3209	HOXA13	homeobox A13	umls:C1841679	Hand foot uterus syndrome	0.703881257407977	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3209	HOXA13	homeobox A13	umls:C1841679	Hand foot uterus syndrome	0.703881257407977	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4353	MPO	myeloperoxidase	umls:C0398595	Myeloperoxidase Deficiency	0.703881257407977	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4353	MPO	myeloperoxidase	umls:C0398595	Myeloperoxidase Deficiency	0.703881257407977	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5351	PLOD1	procollagen-lysine, 2-oxoglutarate 5-dioxygenase 1	umls:C0268342	Ehlers-Danlos syndrome type 6	0.703881257407977	16	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5351	PLOD1	procollagen-lysine, 2-oxoglutarate 5-dioxygenase 1	umls:C0268342	Ehlers-Danlos syndrome type 6	0.703881257407977	16	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2316	FLNA	filamin A, alpha	umls:C1844696	Oto-palato-digital syndrome, type 2	0.703881257407977	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2316	FLNA	filamin A, alpha	umls:C1844696	Oto-palato-digital syndrome, type 2	0.703881257407977	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+170302	ARX	aristaless related homeobox	umls:C1846171	Lissencephaly, X-Linked, 2	0.703582699145825	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+170302	ARX	aristaless related homeobox	umls:C1846171	Lissencephaly, X-Linked, 2	0.703582699145825	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5625	PRODH	proline dehydrogenase (oxidase) 1	umls:C0268529	Hyperprolinemia	0.703582699145825	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5625	PRODH	proline dehydrogenase (oxidase) 1	umls:C0268529	Hyperprolinemia	0.703582699145825	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+383	ARG1	arginase 1	umls:C0268548	Hyperargininemia	0.703582699145825	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+383	ARG1	arginase 1	umls:C0268548	Hyperargininemia	0.703582699145825	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+948	CD36	CD36 molecule (thrombospondin receptor)	umls:C1842090	Platelet Glycoprotein IV Deficiency	0.703582699145825	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+948	CD36	CD36 molecule (thrombospondin receptor)	umls:C1842090	Platelet Glycoprotein IV Deficiency	0.703582699145825	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7508	XPC	xeroderma pigmentosum, complementation group C	umls:C2752147	Xeroderma Pigmentosum, Complementation Group C	0.703582699145825	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7508	XPC	xeroderma pigmentosum, complementation group C	umls:C2752147	Xeroderma Pigmentosum, Complementation Group C	0.703582699145825	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5080	PAX6	paired box 6	umls:C0344559	Peters anomaly	0.703582699145825	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5080	PAX6	paired box 6	umls:C0344559	Peters anomaly	0.703582699145825	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2121	EVC	Ellis van Creveld syndrome	umls:C0013903	Ellis-Van Creveld Syndrome	0.703414249273297	4	GeneticVariation	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2121	EVC	Ellis van Creveld syndrome	umls:C0013903	Ellis-Van Creveld Syndrome	0.703414249273297	4	Biomarker	UNIPROT, CTD_human, MGD, LHGDN, BeFree
+2057	EPOR	erythropoietin receptor	umls:C1851490	Polycythemia, primary familial and congenital	0.703284140883673	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2057	EPOR	erythropoietin receptor	umls:C1851490	Polycythemia, primary familial and congenital	0.703284140883673	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+57190	SEPN1	selenoprotein N, 1	umls:C0410180	Rigid spine syndrome	0.703284140883673	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+57190	SEPN1	selenoprotein N, 1	umls:C0410180	Rigid spine syndrome	0.703284140883673	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3913	LAMB2	laminin, beta 2 (laminin S)	umls:C1836876	Pierson syndrome	0.703284140883673	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3913	LAMB2	laminin, beta 2 (laminin S)	umls:C1836876	Pierson syndrome	0.703284140883673	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+93986	FOXP2	forkhead box P2	umls:C0750927	Developmental verbal dyspraxia	0.703284140883673	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+93986	FOXP2	forkhead box P2	umls:C0750927	Developmental verbal dyspraxia	0.703284140883673	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+340024	SLC6A19	solute carrier family 6 (neutral amino acid transporter), member 19	umls:C0018609	Hartnup Disease	0.703284140883673	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+340024	SLC6A19	solute carrier family 6 (neutral amino acid transporter), member 19	umls:C0018609	Hartnup Disease	0.703284140883673	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4920	ROR2	receptor tyrosine kinase-like orphan receptor 2	umls:C1849334	Robinow syndrome, autosomal recessive	0.703284140883673	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4920	ROR2	receptor tyrosine kinase-like orphan receptor 2	umls:C1849334	Robinow syndrome, autosomal recessive	0.703284140883673	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+50945	TBX22	T-box 22	umls:C1844830	Cleft palate X-linked	0.703284140883673	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+50945	TBX22	T-box 22	umls:C1844830	Cleft palate X-linked	0.703284140883673	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7915	ALDH5A1	aldehyde dehydrogenase 5 family, member A1	umls:C0268631	succinic semialdehyde dehydrogenase deficiency	0.703284140883673	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7915	ALDH5A1	aldehyde dehydrogenase 5 family, member A1	umls:C0268631	succinic semialdehyde dehydrogenase deficiency	0.703284140883673	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7439	BEST1	bestrophin 1	umls:C2678493	Bestrophinopathy	0.703284140883673	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7439	BEST1	bestrophin 1	umls:C2678493	Bestrophinopathy	0.703284140883673	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+55630	SLC39A4	solute carrier family 39 (zinc transporter), member 4	umls:C0221036	Acrodermatitis enteropathica	0.703284140883673	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+55630	SLC39A4	solute carrier family 39 (zinc transporter), member 4	umls:C0221036	Acrodermatitis enteropathica	0.703284140883673	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+23474	ETHE1	ethylmalonic encephalopathy 1	umls:C1865349	Ethylmalonic encephalopathy	0.702985582621521	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+23474	ETHE1	ethylmalonic encephalopathy 1	umls:C1865349	Ethylmalonic encephalopathy	0.702985582621521	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1302	COL11A2	collagen, type XI, alpha 2	umls:C0432210	Nance Sweeney chondrodysplasia	0.702985582621521	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1302	COL11A2	collagen, type XI, alpha 2	umls:C0432210	Nance Sweeney chondrodysplasia	0.702985582621521	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2202	EFEMP1	EGF containing fibulin-like extracellular matrix protein 1	umls:C1832174	Doyne honeycomb retinal dystrophy	0.702985582621521	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2202	EFEMP1	EGF containing fibulin-like extracellular matrix protein 1	umls:C1832174	Doyne honeycomb retinal dystrophy	0.702985582621521	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6103	RPGR	retinitis pigmentosa GTPase regulator	umls:C1845667	Retinitis Pigmentosa 3	0.702985582621521	18	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6103	RPGR	retinitis pigmentosa GTPase regulator	umls:C1845667	Retinitis Pigmentosa 3	0.702985582621521	18	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6442	SGCA	sarcoglycan, alpha (50kDa dystrophin-associated glycoprotein)	umls:C1842550	Limb-girdle muscular dystrophy, type 2D	0.702985582621521	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6442	SGCA	sarcoglycan, alpha (50kDa dystrophin-associated glycoprotein)	umls:C1842550	Limb-girdle muscular dystrophy, type 2D	0.702985582621521	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+23230	VPS13A	vacuolar protein sorting 13 homolog A (S. cerevisiae)	umls:C0393576	Neuroacanthocytosis	0.702985582621521	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+23230	VPS13A	vacuolar protein sorting 13 homolog A (S. cerevisiae)	umls:C0393576	Neuroacanthocytosis	0.702985582621521	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+37	ACADVL	acyl-CoA dehydrogenase, very long chain	umls:C0342784	VLCAD deficiency	0.702985582621521	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+37	ACADVL	acyl-CoA dehydrogenase, very long chain	umls:C0342784	VLCAD deficiency	0.702985582621521	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4488	MSX2	msh homeobox 2	umls:C1868598	Parietal Foramina	0.702985582621521	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4488	MSX2	msh homeobox 2	umls:C1868598	Parietal Foramina	0.702985582621521	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2316	FLNA	filamin A, alpha	umls:C1848213	X-linked periventricular heterotopia	0.702985582621521	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2316	FLNA	filamin A, alpha	umls:C1848213	X-linked periventricular heterotopia	0.702985582621521	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+760	CA2	carbonic anhydrase II	umls:C0345407	Osteopetrosis with renal tubular acidosis	0.702985582621521	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+760	CA2	carbonic anhydrase II	umls:C0345407	Osteopetrosis with renal tubular acidosis	0.702985582621521	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2710	GK	glycerol kinase	umls:C0268418	Hyperglycerolemia	0.702985582621521	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2710	GK	glycerol kinase	umls:C0268418	Hyperglycerolemia	0.702985582621521	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+22954	TRIM32	tripartite motif containing 32	umls:C0270968	Limb-girdle muscular dystrophy type 2H	0.702687024359369	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+22954	TRIM32	tripartite motif containing 32	umls:C0270968	Limb-girdle muscular dystrophy type 2H	0.702687024359369	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+341640	FREM2	FRAS1 related extracellular matrix protein 2	umls:C0265233	Fraser Syndrome	0.702687024359369	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+341640	FREM2	FRAS1 related extracellular matrix protein 2	umls:C0265233	Fraser Syndrome	0.702687024359369	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1910	EDNRB	endothelin receptor type B	umls:C1848519	Waardenburg syndrome, type 4	0.702687024359369	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1910	EDNRB	endothelin receptor type B	umls:C1848519	Waardenburg syndrome, type 4	0.702687024359369	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7399	USH2A	Usher syndrome 2A (autosomal recessive, mild)	umls:C1848634	Usher Syndrome, Type IIA	0.702687024359369	18	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7399	USH2A	Usher syndrome 2A (autosomal recessive, mild)	umls:C1848634	Usher Syndrome, Type IIA	0.702687024359369	18	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1300	COL10A1	collagen, type X, alpha 1	umls:C0265289	Metaphyseal chondrodysplasia Schmid type	0.702687024359369	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1300	COL10A1	collagen, type X, alpha 1	umls:C0265289	Metaphyseal chondrodysplasia Schmid type	0.702687024359369	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5468	PPARG	peroxisome proliferator-activated receptor gamma	umls:C1720861	LIPODYSTROPHY, FAMILIAL PARTIAL, TYPE 3	0.702687024359369	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5468	PPARG	peroxisome proliferator-activated receptor gamma	umls:C1720861	LIPODYSTROPHY, FAMILIAL PARTIAL, TYPE 3	0.702687024359369	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2073	ERCC5	excision repair cross-complementing rodent repair deficiency, complementation group 5	umls:C0268141	Xeroderma Pigmentosum, Complementation Group G	0.702687024359369	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2073	ERCC5	excision repair cross-complementing rodent repair deficiency, complementation group 5	umls:C0268141	Xeroderma Pigmentosum, Complementation Group G	0.702687024359369	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6338	SCNN1B	sodium channel, non-voltage-gated 1, beta subunit	umls:C0221043	Liddle Syndrome	0.702687024359369	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6338	SCNN1B	sodium channel, non-voltage-gated 1, beta subunit	umls:C0221043	Liddle Syndrome	0.702687024359369	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4143	MAT1A	methionine adenosyltransferase I, alpha	umls:C0268621	Methionine Adenosyltransferase Deficiency	0.702687024359369	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4143	MAT1A	methionine adenosyltransferase I, alpha	umls:C0268621	Methionine Adenosyltransferase Deficiency	0.702687024359369	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+197131	UBR1	ubiquitin protein ligase E3 component n-recognin 1	umls:C0175692	Johanson Blizzard syndrome	0.702388466097217	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+197131	UBR1	ubiquitin protein ligase E3 component n-recognin 1	umls:C0175692	Johanson Blizzard syndrome	0.702388466097217	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+775	CACNA1C	calcium channel, voltage-dependent, L type, alpha 1C subunit	umls:C1832916	Timothy syndrome	0.702388466097217	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+775	CACNA1C	calcium channel, voltage-dependent, L type, alpha 1C subunit	umls:C1832916	Timothy syndrome	0.702388466097217	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6609	SMPD1	sphingomyelin phosphodiesterase 1, acid lysosomal	umls:C0268242	Niemann-Pick Disease, Type A	0.702388466097217	17	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6609	SMPD1	sphingomyelin phosphodiesterase 1, acid lysosomal	umls:C0268242	Niemann-Pick Disease, Type A	0.702388466097217	17	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1277	COL1A1	collagen, type I, alpha 1	umls:C0268362	Osteogenesis imperfecta, type 3	0.702388466097217	22	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1277	COL1A1	collagen, type I, alpha 1	umls:C0268362	Osteogenesis imperfecta, type 3	0.702388466097217	22	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2071	ERCC3	excision repair cross-complementing rodent repair deficiency, complementation group 3	umls:C0268136	Xeroderma Pigmentosum, Complementation Group B	0.702388466097217	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2071	ERCC3	excision repair cross-complementing rodent repair deficiency, complementation group 3	umls:C0268136	Xeroderma Pigmentosum, Complementation Group B	0.702388466097217	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+79813	EHMT1	euchromatic histone-lysine N-methyltransferase 1	umls:C0795833	Kleefstra Syndrome	0.702388466097217	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+79813	EHMT1	euchromatic histone-lysine N-methyltransferase 1	umls:C0795833	Kleefstra Syndrome	0.702388466097217	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2707	GJB3	gap junction protein, beta 3, 31kDa	umls:C0265961	Erythrokeratodermia Variabilis	0.702388466097217	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2707	GJB3	gap junction protein, beta 3, 31kDa	umls:C0265961	Erythrokeratodermia Variabilis	0.702388466097217	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1959	EGR2	early growth response 2	umls:C0393818	Charcot-Marie-Tooth disease, Type 4E	0.702388466097217	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1959	EGR2	early growth response 2	umls:C0393818	Charcot-Marie-Tooth disease, Type 4E	0.702388466097217	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5307	PITX1	paired-like homeodomain 1	umls:C0009081	Clubfoot	0.702388466097217	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5307	PITX1	paired-like homeodomain 1	umls:C0009081	Clubfoot	0.702388466097217	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+285362	SUMF1	sulfatase modifying factor 1	umls:C0268263	Multiple Sulfatase Deficiency Disease	0.702388466097217	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+285362	SUMF1	sulfatase modifying factor 1	umls:C0268263	Multiple Sulfatase Deficiency Disease	0.702388466097217	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+161742	SPRED1	sprouty-related, EVH1 domain containing 1	umls:C1969623	Legius syndrome	0.702388466097217	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+161742	SPRED1	sprouty-related, EVH1 domain containing 1	umls:C1969623	Legius syndrome	0.702388466097217	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6770	STAR	steroidogenic acute regulatory protein	umls:C0342474	Lipoid congenital adrenal hyperplasia	0.702089907835064	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6770	STAR	steroidogenic acute regulatory protein	umls:C0342474	Lipoid congenital adrenal hyperplasia	0.702089907835064	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+54808	DYM	dymeclin	umls:C0265286	Dyggve-Melchior-Clausen syndrome	0.702089907835064	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+54808	DYM	dymeclin	umls:C0265286	Dyggve-Melchior-Clausen syndrome	0.702089907835064	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6535	SLC6A8	solute carrier family 6 (neurotransmitter transporter), member 8	umls:C1845862	Creatine deficiency, X-linked	0.702089907835064	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6535	SLC6A8	solute carrier family 6 (neurotransmitter transporter), member 8	umls:C1845862	Creatine deficiency, X-linked	0.702089907835064	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8898	MTMR2	myotubularin related protein 2	umls:C1832399	Charcot-Marie-Tooth disease, Type 4B1	0.702089907835064	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8898	MTMR2	myotubularin related protein 2	umls:C1832399	Charcot-Marie-Tooth disease, Type 4B1	0.702089907835064	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7036	TFR2	transferrin receptor 2	umls:C1858664	Hemochromatosis, type 3	0.702089907835064	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7036	TFR2	transferrin receptor 2	umls:C1858664	Hemochromatosis, type 3	0.702089907835064	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+79147	FKRP	fukutin related protein	umls:C1847759	Muscular Dystrophy, Congenital, 1C	0.702089907835064	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+79147	FKRP	fukutin related protein	umls:C1847759	Muscular Dystrophy, Congenital, 1C	0.702089907835064	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+189	AGXT	alanine-glyoxylate aminotransferase	umls:C0268164	Primary hyperoxaluria type 1	0.702089907835064	18	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+189	AGXT	alanine-glyoxylate aminotransferase	umls:C0268164	Primary hyperoxaluria type 1	0.702089907835064	18	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+26580	BSCL2	Berardinelli-Seip congenital lipodystrophy 2 (seipin)	umls:C1720863	LIPODYSTROPHY, CONGENITAL GENERALIZED, TYPE 2	0.702089907835064	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+26580	BSCL2	Berardinelli-Seip congenital lipodystrophy 2 (seipin)	umls:C1720863	LIPODYSTROPHY, CONGENITAL GENERALIZED, TYPE 2	0.702089907835064	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10683	DLL3	delta-like 3 (Drosophila)	umls:C0265343	Jarcho-Levin syndrome	0.702089907835064	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10683	DLL3	delta-like 3 (Drosophila)	umls:C0265343	Jarcho-Levin syndrome	0.702089907835064	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10913	EDAR	ectodysplasin A receptor	umls:C0406702	Ectodermal Dysplasia, Hypohidrotic, Autosomal Recessive	0.702089907835064	13	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10913	EDAR	ectodysplasin A receptor	umls:C0406702	Ectodermal Dysplasia, Hypohidrotic, Autosomal Recessive	0.702089907835064	13	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3786	KCNQ3	potassium voltage-gated channel, KQT-like subfamily, member 3	umls:C1852581	Convulsions benign familial neonatal dominant form	0.702089907835064	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3786	KCNQ3	potassium voltage-gated channel, KQT-like subfamily, member 3	umls:C1852581	Convulsions benign familial neonatal dominant form	0.702089907835064	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2741	GLRA1	glycine receptor, alpha 1	umls:C1835614	Hyperexplexia hereditary	0.702089907835064	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2741	GLRA1	glycine receptor, alpha 1	umls:C1835614	Hyperexplexia hereditary	0.702089907835064	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+162417	NAGS	N-acetylglutamate synthase	umls:C0268543	N-acetyl glutamate synthetase deficiency	0.702089907835064	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+162417	NAGS	N-acetylglutamate synthase	umls:C0268543	N-acetyl glutamate synthetase deficiency	0.702089907835064	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2263	FGFR2	fibroblast growth factor receptor 2	umls:C1852406	Cutis Gyrata Syndrome of Beare And Stevenson	0.702089907835064	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2263	FGFR2	fibroblast growth factor receptor 2	umls:C1852406	Cutis Gyrata Syndrome of Beare And Stevenson	0.702089907835064	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7299	TYR	tyrosinase	umls:C1847024	Oculocutaneous albinism type 1B	0.701791349572912	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7299	TYR	tyrosinase	umls:C1847024	Oculocutaneous albinism type 1B	0.701791349572912	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3172	HNF4A	hepatocyte nuclear factor 4, alpha	umls:C1852093	Maturity-Onset Diabetes of the Young, Type 1	0.701791349572912	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3172	HNF4A	hepatocyte nuclear factor 4, alpha	umls:C1852093	Maturity-Onset Diabetes of the Young, Type 1	0.701791349572912	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1200	TPP1	tripeptidyl peptidase I	umls:C1876161	Ceroid Lipofuscinosis, Neuronal, 2	0.701791349572912	15	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1200	TPP1	tripeptidyl peptidase I	umls:C1876161	Ceroid Lipofuscinosis, Neuronal, 2	0.701791349572912	15	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4488	MSX2	msh homeobox 2	umls:C1858160	Craniosynostosis, Type 2	0.701791349572912	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4488	MSX2	msh homeobox 2	umls:C1858160	Craniosynostosis, Type 2	0.701791349572912	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+56172	ANKH	ANKH inorganic pyrophosphate transport regulator	umls:C1852502	Craniometaphyseal Dysplasia, Autosomal Dominant	0.701791349572912	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+56172	ANKH	ANKH inorganic pyrophosphate transport regulator	umls:C1852502	Craniometaphyseal Dysplasia, Autosomal Dominant	0.701791349572912	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1277	COL1A1	collagen, type I, alpha 1	umls:C0268358	Osteogenesis imperfecta, type 2A	0.701791349572912	33	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1277	COL1A1	collagen, type I, alpha 1	umls:C0268358	Osteogenesis imperfecta, type 2A	0.701791349572912	33	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4286	MITF	microphthalmia-associated transcription factor	umls:C0391816	Tietz syndrome	0.701791349572912	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4286	MITF	microphthalmia-associated transcription factor	umls:C0391816	Tietz syndrome	0.701791349572912	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1280	COL2A1	collagen, type II, alpha 1	umls:C0220685	Achondrogenesis type 2	0.701791349572912	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1280	COL2A1	collagen, type II, alpha 1	umls:C0220685	Achondrogenesis type 2	0.701791349572912	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+701	BUB1B	BUB1 mitotic checkpoint serine/threonine kinase B	umls:C1850343	Mosaic variegated aneuploidy syndrome	0.701791349572912	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+701	BUB1B	BUB1 mitotic checkpoint serine/threonine kinase B	umls:C1850343	Mosaic variegated aneuploidy syndrome	0.701791349572912	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+23414	ZFPM2	zinc finger protein, FOG family member 2	umls:C0039685	Tetralogy of Fallot	0.701791349572912	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+23414	ZFPM2	zinc finger protein, FOG family member 2	umls:C0039685	Tetralogy of Fallot	0.701791349572912	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+55775	TDP1	tyrosyl-DNA phosphodiesterase 1	umls:C1846574	Spinocerebellar ataxia, autosomal recessive, with axonal neuropathy	0.701791349572912	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+55775	TDP1	tyrosyl-DNA phosphodiesterase 1	umls:C1846574	Spinocerebellar ataxia, autosomal recessive, with axonal neuropathy	0.701791349572912	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1373	CPS1	carbamoyl-phosphate synthase 1, mitochondrial	umls:C0751753	Carbamoyl-Phosphate Synthase I Deficiency Disease	0.701791349572912	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1373	CPS1	carbamoyl-phosphate synthase 1, mitochondrial	umls:C0751753	Carbamoyl-Phosphate Synthase I Deficiency Disease	0.701791349572912	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10682	EBP	emopamil binding protein (sterol isomerase)	umls:C2931843	Chondrodysplasia punctata 2, X-linked dominant	0.701791349572912	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10682	EBP	emopamil binding protein (sterol isomerase)	umls:C2931843	Chondrodysplasia punctata 2, X-linked dominant	0.701791349572912	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3549	IHH	indian hedgehog	umls:C1862151	Brachydactyly type A1	0.701791349572912	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3549	IHH	indian hedgehog	umls:C1862151	Brachydactyly type A1	0.701791349572912	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7021	TFAP2B	transcription factor AP-2 beta (activating enhancer binding protein 2 beta)	umls:C1868570	Char syndrome	0.701791349572912	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7021	TFAP2B	transcription factor AP-2 beta (activating enhancer binding protein 2 beta)	umls:C1868570	Char syndrome	0.701791349572912	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3981	LIG4	ligase IV, DNA, ATP-dependent	umls:C1847827	LIG4 Syndrome	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3981	LIG4	ligase IV, DNA, ATP-dependent	umls:C1847827	LIG4 Syndrome	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+50617	ATP6V0A4	ATPase, H+ transporting, lysosomal V0 subunit a4	umls:C1864498	Renal tubular acidosis, distal, autosomal recessive	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+50617	ATP6V0A4	ATPase, H+ transporting, lysosomal V0 subunit a4	umls:C1864498	Renal tubular acidosis, distal, autosomal recessive	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7227	TRPS1	trichorhinophalangeal syndrome I	umls:C0432233	Giedion syndrome	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7227	TRPS1	trichorhinophalangeal syndrome I	umls:C0432233	Giedion syndrome	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+27031	NPHP3	nephronophthisis 3 (adolescent)	umls:C1858392	Nephronophthisis 3	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+27031	NPHP3	nephronophthisis 3 (adolescent)	umls:C1858392	Nephronophthisis 3	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4261	CIITA	class II, major histocompatibility complex, transactivator	umls:C2931418	Bare lymphocyte syndrome 2	0.70149279131076	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4261	CIITA	class II, major histocompatibility complex, transactivator	umls:C2931418	Bare lymphocyte syndrome 2	0.70149279131076	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3000	GUCY2D	guanylate cyclase 2D, membrane (retina-specific)	umls:C1866293	Retinal cone dystrophy 2	0.70149279131076	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3000	GUCY2D	guanylate cyclase 2D, membrane (retina-specific)	umls:C1866293	Retinal cone dystrophy 2	0.70149279131076	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10999	SLC27A4	solute carrier family 27 (fatty acid transporter), member 4	umls:C1837610	Ichthyosis prematurity syndrome	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10999	SLC27A4	solute carrier family 27 (fatty acid transporter), member 4	umls:C1837610	Ichthyosis prematurity syndrome	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1289	COL5A1	collagen, type V, alpha 1	umls:C0268335	Ehlers-Danlos syndrome type 1	0.70149279131076	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1289	COL5A1	collagen, type V, alpha 1	umls:C0268335	Ehlers-Danlos syndrome type 1	0.70149279131076	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3032	HADHB	hydroxyacyl-CoA dehydrogenase/3-ketoacyl-CoA thiolase/enoyl-CoA hydratase (trifunctional protein), beta subunit	umls:C0342786	Trifunctional Protein Deficiency	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3032	HADHB	hydroxyacyl-CoA dehydrogenase/3-ketoacyl-CoA thiolase/enoyl-CoA hydratase (trifunctional protein), beta subunit	umls:C0342786	Trifunctional Protein Deficiency	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9095	TBX19	T-box 19	umls:C0271583	ACTH Deficiency, Isolated	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9095	TBX19	T-box 19	umls:C0271583	ACTH Deficiency, Isolated	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+79628	SH3TC2	SH3 domain and tetratricopeptide repeats 2	umls:C1866636	Charcot-Marie-Tooth disease, Type 4C	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+79628	SH3TC2	SH3 domain and tetratricopeptide repeats 2	umls:C1866636	Charcot-Marie-Tooth disease, Type 4C	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7273	TTN	titin	umls:C1838244	Distal myopathy Markesbery-Griggs type	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7273	TTN	titin	umls:C1838244	Distal myopathy Markesbery-Griggs type	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10516	FBLN5	fibulin 5	umls:C0268351	Cutis Laxa, Autosomal Recessive, Type I	0.70149279131076	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10516	FBLN5	fibulin 5	umls:C0268351	Cutis Laxa, Autosomal Recessive, Type I	0.70149279131076	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5191	PEX7	peroxisomal biogenesis factor 7	umls:C1859133	Rhizomelic chondrodysplasia punctata, type 1	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5191	PEX7	peroxisomal biogenesis factor 7	umls:C1859133	Rhizomelic chondrodysplasia punctata, type 1	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+866	SERPINA6	serpin peptidase inhibitor, clade A (alpha-1 antiproteinase, antitrypsin), member 6	umls:C1852529	Corticosteroid-Binding Globulin Deficiency	0.70149279131076	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+866	SERPINA6	serpin peptidase inhibitor, clade A (alpha-1 antiproteinase, antitrypsin), member 6	umls:C1852529	Corticosteroid-Binding Globulin Deficiency	0.70149279131076	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4158	MC2R	melanocortin 2 receptor (adrenocorticotropic hormone)	umls:C1859974	Familial Glucocorticoid Deficiency 1	0.70149279131076	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4158	MC2R	melanocortin 2 receptor (adrenocorticotropic hormone)	umls:C1859974	Familial Glucocorticoid Deficiency 1	0.70149279131076	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3851	KRT4	keratin 4	umls:C1721005	Leukokeratosis, Hereditary Mucosal	0.70149279131076	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3851	KRT4	keratin 4	umls:C1721005	Leukokeratosis, Hereditary Mucosal	0.70149279131076	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4758	NEU1	sialidase 1 (lysosomal sialidase)	umls:C0268228	Neuraminidase 1 deficiency	0.70149279131076	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4758	NEU1	sialidase 1 (lysosomal sialidase)	umls:C0268228	Neuraminidase 1 deficiency	0.70149279131076	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+30061	SLC40A1	solute carrier family 40 (iron-regulated transporter), member 1	umls:C1853733	Hemochromatosis, type 4	0.70149279131076	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+30061	SLC40A1	solute carrier family 40 (iron-regulated transporter), member 1	umls:C1853733	Hemochromatosis, type 4	0.70149279131076	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+617	BCS1L	BC1 (ubiquinol-cytochrome c reductase) synthesis-like	umls:C1864002	Finnish lethal neonatal metabolic syndrome	0.70149279131076	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+617	BCS1L	BC1 (ubiquinol-cytochrome c reductase) synthesis-like	umls:C1864002	Finnish lethal neonatal metabolic syndrome	0.70149279131076	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2072	ERCC4	excision repair cross-complementing rodent repair deficiency, complementation group 4	umls:C0268140	Xeroderma Pigmentosum, Complementation Group F	0.701194233048608	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2072	ERCC4	excision repair cross-complementing rodent repair deficiency, complementation group 4	umls:C0268140	Xeroderma Pigmentosum, Complementation Group F	0.701194233048608	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+114902	C1QTNF5	C1q and tumor necrosis factor related protein 5	umls:C1854065	Late-Onset Retinal Degeneration	0.701194233048608	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+114902	C1QTNF5	C1q and tumor necrosis factor related protein 5	umls:C1854065	Late-Onset Retinal Degeneration	0.701194233048608	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3239	HOXD13	homeobox D13	umls:C1861367	Synpolydactyly 1	0.701194233048608	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3239	HOXD13	homeobox D13	umls:C1861367	Synpolydactyly 1	0.701194233048608	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+64072	CDH23	cadherin-related 23	umls:C1832394	Deafness, Autosomal Recessive 12	0.701194233048608	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+64072	CDH23	cadherin-related 23	umls:C1832394	Deafness, Autosomal Recessive 12	0.701194233048608	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9896	FIG4	FIG4 homolog, SAC1 lipid phosphatase domain containing (S. cerevisiae)	umls:C1970011	Charcot-Marie-Tooth Disease, Type 4j	0.701194233048608	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9896	FIG4	FIG4 homolog, SAC1 lipid phosphatase domain containing (S. cerevisiae)	umls:C1970011	Charcot-Marie-Tooth Disease, Type 4j	0.701194233048608	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+242	ALOX12B	arachidonate 12-lipoxygenase, 12R type	umls:C1855792	Ichthyosiform erythroderma, Brocq congenital, nonbullous form	0.701194233048608	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+242	ALOX12B	arachidonate 12-lipoxygenase, 12R type	umls:C1855792	Ichthyosiform erythroderma, Brocq congenital, nonbullous form	0.701194233048608	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1311	COMP	cartilage oligomeric matrix protein	umls:C1838280	Epiphyseal dysplasia, multiple, 1	0.701194233048608	10	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1311	COMP	cartilage oligomeric matrix protein	umls:C1838280	Epiphyseal dysplasia, multiple, 1	0.701194233048608	10	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1278	COL1A2	collagen, type I, alpha 2	umls:C0268362	Osteogenesis imperfecta, type 3	0.701194233048608	17	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1278	COL1A2	collagen, type I, alpha 2	umls:C0268362	Osteogenesis imperfecta, type 3	0.701194233048608	17	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2617	GARS	glycyl-tRNA synthetase	umls:C1832274	Charcot-Marie-Tooth disease, Type 2D	0.701194233048608	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2617	GARS	glycyl-tRNA synthetase	umls:C1832274	Charcot-Marie-Tooth disease, Type 2D	0.701194233048608	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6101	RP1	retinitis pigmentosa 1 (autosomal dominant)	umls:C0220701	Retinitis pigmentosa 1	0.701194233048608	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6101	RP1	retinitis pigmentosa 1 (autosomal dominant)	umls:C0220701	Retinitis pigmentosa 1	0.701194233048608	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6683	SPAST	spastin	umls:C1866855	Spastic paraplegia 4, autosomal dominant	0.701194233048608	29	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6683	SPAST	spastin	umls:C1866855	Spastic paraplegia 4, autosomal dominant	0.701194233048608	29	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8546	AP3B1	adaptor-related protein complex 3, beta 1 subunit	umls:C1842362	Hermansky Pudlak syndrome 2	0.701194233048608	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8546	AP3B1	adaptor-related protein complex 3, beta 1 subunit	umls:C1842362	Hermansky Pudlak syndrome 2	0.701194233048608	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5429	POLH	polymerase (DNA directed), eta	umls:C1848410	Xeroderma pigmentosum, variant type	0.701194233048608	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5429	POLH	polymerase (DNA directed), eta	umls:C1848410	Xeroderma pigmentosum, variant type	0.701194233048608	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+845	CASQ2	calsequestrin 2 (cardiac muscle)	umls:C2677794	Ventricular Tachycardia, Catecholaminergic Polymorphic, 2	0.701194233048608	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+845	CASQ2	calsequestrin 2 (cardiac muscle)	umls:C2677794	Ventricular Tachycardia, Catecholaminergic Polymorphic, 2	0.701194233048608	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1690	COCH	cochlin	umls:C1832425	Deafness, Autosomal Dominant 9	0.701194233048608	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1690	COCH	cochlin	umls:C1832425	Deafness, Autosomal Dominant 9	0.701194233048608	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1289	COL5A1	collagen, type V, alpha 1	umls:C0268336	Ehlers-Danlos syndrome type 2	0.701194233048608	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1289	COL5A1	collagen, type V, alpha 1	umls:C0268336	Ehlers-Danlos syndrome type 2	0.701194233048608	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+26121	PRPF31	pre-mRNA processing factor 31	umls:C1838601	Retinitis Pigmentosa 11	0.701194233048608	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+26121	PRPF31	pre-mRNA processing factor 31	umls:C1838601	Retinitis Pigmentosa 11	0.701194233048608	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+265	AMELX	amelogenin, X-linked	umls:C1845052	Amelogenesis imperfecta, hypoplastic/hypomaturation, X-linked 1	0.701194233048608	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+265	AMELX	amelogenin, X-linked	umls:C1845052	Amelogenesis imperfecta, hypoplastic/hypomaturation, X-linked 1	0.701194233048608	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1643	DDB2	damage-specific DNA binding protein 2, 48kDa	umls:C1848411	Xeroderma Pigmentosum, Complementation Group E	0.700895674786456	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1643	DDB2	damage-specific DNA binding protein 2, 48kDa	umls:C1848411	Xeroderma Pigmentosum, Complementation Group E	0.700895674786456	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2316	FLNA	filamin A, alpha	umls:C0265251	Oto-Palato-digital syndrome type 1	0.700895674786456	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2316	FLNA	filamin A, alpha	umls:C0265251	Oto-Palato-digital syndrome type 1	0.700895674786456	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4072	EPCAM	epithelial cell adhesion molecule	umls:C2750737	Diarrhea 5, With Tufting Enteropathy, Congenital	0.700895674786456	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4072	EPCAM	epithelial cell adhesion molecule	umls:C2750737	Diarrhea 5, With Tufting Enteropathy, Congenital	0.700895674786456	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+27130	INVS	inversin	umls:C1865872	Nephronophthisis 2	0.700895674786456	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+27130	INVS	inversin	umls:C1865872	Nephronophthisis 2	0.700895674786456	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+285590	SH3PXD2B	SH3 and PX domains 2B	umls:C1855305	Ter Haar syndrome	0.700895674786456	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+285590	SH3PXD2B	SH3 and PX domains 2B	umls:C1855305	Ter Haar syndrome	0.700895674786456	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2593	GAMT	guanidinoacetate N-methyltransferase	umls:C0574080	Guanidinoacetate methyltransferase deficiency	0.700895674786456	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2593	GAMT	guanidinoacetate N-methyltransferase	umls:C0574080	Guanidinoacetate methyltransferase deficiency	0.700895674786456	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1421	CRYGD	crystallin, gamma D	umls:C1861832	Cataract, Crystalline Aculeiform	0.700895674786456	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1421	CRYGD	crystallin, gamma D	umls:C1861832	Cataract, Crystalline Aculeiform	0.700895674786456	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+11081	KERA	keratocan	umls:C1857574	Cornea Plana 2	0.700895674786456	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+11081	KERA	keratocan	umls:C1857574	Cornea Plana 2	0.700895674786456	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+51	ACOX1	acyl-CoA oxidase 1, palmitoyl	umls:C1849678	Peroxisomal ACYL-COA oxidase deficiency	0.700895674786456	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+51	ACOX1	acyl-CoA oxidase 1, palmitoyl	umls:C1849678	Peroxisomal ACYL-COA oxidase deficiency	0.700895674786456	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1301	COL11A1	collagen, type XI, alpha 1	umls:C1858084	Stickler syndrome, type 2	0.700895674786456	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1301	COL11A1	collagen, type XI, alpha 1	umls:C1858084	Stickler syndrome, type 2	0.700895674786456	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8322	FZD4	frizzled class receptor 4	umls:C1851402	Exudative vitreoretinopathy 1	0.700895674786456	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8322	FZD4	frizzled class receptor 4	umls:C1851402	Exudative vitreoretinopathy 1	0.700895674786456	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3651	PDX1	pancreatic and duodenal homeobox 1	umls:C1833382	Maturity-Onset Diabetes of the Young, Type 4	0.700895674786456	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3651	PDX1	pancreatic and duodenal homeobox 1	umls:C1833382	Maturity-Onset Diabetes of the Young, Type 4	0.700895674786456	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+79147	FKRP	fukutin related protein	umls:C1846672	Muscular Dystrophy, Limb-Girdle, Type 2I	0.700895674786456	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+79147	FKRP	fukutin related protein	umls:C1846672	Muscular Dystrophy, Limb-Girdle, Type 2I	0.700895674786456	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7476	WNT7A	wingless-type MMTV integration site family, member 7A	umls:C1856728	Fuhrmann syndrome	0.700895674786456	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7476	WNT7A	wingless-type MMTV integration site family, member 7A	umls:C1856728	Fuhrmann syndrome	0.700895674786456	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5354	PLP1	proteolipid protein 1	umls:C1839264	Spastic paraplegia 2, X-linked	0.700895674786456	11	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5354	PLP1	proteolipid protein 1	umls:C1839264	Spastic paraplegia 2, X-linked	0.700895674786456	11	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+249	ALPL	alkaline phosphatase, liver/bone/kidney	umls:C0268413	Hypophosphatasia, Adult	0.700895674786456	23	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+249	ALPL	alkaline phosphatase, liver/bone/kidney	umls:C0268413	Hypophosphatasia, Adult	0.700895674786456	23	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1834	DSPP	dentin sialophosphoprotein	umls:C0399378	Dentinogenesis imperfecta, shields type 3	0.700895674786456	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1834	DSPP	dentin sialophosphoprotein	umls:C0399378	Dentinogenesis imperfecta, shields type 3	0.700895674786456	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6444	SGCD	sarcoglycan, delta (35kDa dystrophin-associated glycoprotein)	umls:C1832525	Limb-girdle muscular dystrophy type 2F	0.700895674786456	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6444	SGCD	sarcoglycan, delta (35kDa dystrophin-associated glycoprotein)	umls:C1832525	Limb-girdle muscular dystrophy type 2F	0.700895674786456	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+79648	MCPH1	microcephalin 1	umls:C1855081	Microcephaly, Primary Autosomal Recessive, 1	0.700895674786456	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+79648	MCPH1	microcephalin 1	umls:C1855081	Microcephaly, Primary Autosomal Recessive, 1	0.700895674786456	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6121	RPE65	retinal pigment epithelium-specific protein 65kDa	umls:C1859844	Amaurosis congenita of Leber, type 2	0.700895674786456	12	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6121	RPE65	retinal pigment epithelium-specific protein 65kDa	umls:C1859844	Amaurosis congenita of Leber, type 2	0.700895674786456	12	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4646	MYO6	myosin VI	umls:C1853441	Deafness, Autosomal Dominant 22	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4646	MYO6	myosin VI	umls:C1853441	Deafness, Autosomal Dominant 22	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+84059	GPR98	G protein-coupled receptor 98	umls:C2931213	Usher syndrome, type 2C	0.700597116524304	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+84059	GPR98	G protein-coupled receptor 98	umls:C2931213	Usher syndrome, type 2C	0.700597116524304	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5538	PPT1	palmitoyl-protein thioesterase 1	umls:C1850451	Ceroid Lipofuscinosis, Neuronal, 1	0.700597116524304	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5538	PPT1	palmitoyl-protein thioesterase 1	umls:C1850451	Ceroid Lipofuscinosis, Neuronal, 1	0.700597116524304	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+79158	GNPTAB	N-acetylglucosamine-1-phosphate transferase, alpha and beta subunits	umls:C2673377	Mucolipidosis II Alpha Beta	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+79158	GNPTAB	N-acetylglucosamine-1-phosphate transferase, alpha and beta subunits	umls:C2673377	Mucolipidosis II Alpha Beta	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5456	POU3F4	POU class 3 homeobox 4	umls:C1844678	Progressive hearing loss stapes fixation	0.700597116524304	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5456	POU3F4	POU class 3 homeobox 4	umls:C1844678	Progressive hearing loss stapes fixation	0.700597116524304	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6309	SC5D	sterol-C5-desaturase	umls:C1846421	Lathosterolosis	0.700597116524304	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6309	SC5D	sterol-C5-desaturase	umls:C1846421	Lathosterolosis	0.700597116524304	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+23746	AIPL1	aryl hydrocarbon receptor interacting protein-like 1	umls:C1858386	Leber Congenital Amaurosis 4	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+23746	AIPL1	aryl hydrocarbon receptor interacting protein-like 1	umls:C1858386	Leber Congenital Amaurosis 4	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7827	NPHS2	nephrosis 2, idiopathic, steroid-resistant (podocin)	umls:C1868672	Nephrotic syndrome, idiopathic, steroid-resistant	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7827	NPHS2	nephrosis 2, idiopathic, steroid-resistant (podocin)	umls:C1868672	Nephrotic syndrome, idiopathic, steroid-resistant	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+23418	CRB1	crumbs family member 1, photoreceptor morphogenesis associated	umls:C1838647	Retinitis Pigmentosa 12	0.700597116524304	14	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+23418	CRB1	crumbs family member 1, photoreceptor morphogenesis associated	umls:C1838647	Retinitis Pigmentosa 12	0.700597116524304	14	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+54345	SOX18	SRY (sex determining region Y)-box 18	umls:C1843004	Hypotrichosis-Lymphedema-Telangiectasia Syndrome	0.700597116524304	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+54345	SOX18	SRY (sex determining region Y)-box 18	umls:C1843004	Hypotrichosis-Lymphedema-Telangiectasia Syndrome	0.700597116524304	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2760	GM2A	GM2 ganglioside activator	umls:C0268275	Tay-Sachs Disease, AB Variant	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2760	GM2A	GM2 ganglioside activator	umls:C0268275	Tay-Sachs Disease, AB Variant	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6443	SGCB	sarcoglycan, beta (43kDa dystrophin-associated glycoprotein)	umls:C1858593	Limb-girdle muscular dystrophy, type 2E	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6443	SGCB	sarcoglycan, beta (43kDa dystrophin-associated glycoprotein)	umls:C1858593	Limb-girdle muscular dystrophy, type 2E	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3373	HYAL1	hyaluronoglucosaminidase 1	umls:C1291490	Hyaluronidase Deficiency	0.700597116524304	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3373	HYAL1	hyaluronoglucosaminidase 1	umls:C1291490	Hyaluronidase Deficiency	0.700597116524304	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+94	ACVRL1	activin A receptor type II-like 1	umls:C1838163	Osler-rendu-weber syndrome 2	0.700597116524304	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+94	ACVRL1	activin A receptor type II-like 1	umls:C1838163	Osler-rendu-weber syndrome 2	0.700597116524304	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6697	SPR	sepiapterin reductase (7,8-dihydrobiopterin:NADP+ oxidoreductase)	umls:C0268468	Dystonia, Dopa-Responsive, due to Sepiapterin Reductase Deficiency	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6697	SPR	sepiapterin reductase (7,8-dihydrobiopterin:NADP+ oxidoreductase)	umls:C0268468	Dystonia, Dopa-Responsive, due to Sepiapterin Reductase Deficiency	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9129	PRPF3	pre-mRNA processing factor 3	umls:C1832378	Retinitis Pigmentosa 18	0.700597116524304	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9129	PRPF3	pre-mRNA processing factor 3	umls:C1832378	Retinitis Pigmentosa 18	0.700597116524304	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4647	MYO7A	myosin VIIA	umls:C1838701	Deafness, Autosomal Recessive 2	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4647	MYO7A	myosin VIIA	umls:C1838701	Deafness, Autosomal Recessive 2	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3508	IGHMBP2	immunoglobulin mu binding protein 2	umls:C1858517	Spinal muscular atrophy with respiratory distress 1	0.700597116524304	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3508	IGHMBP2	immunoglobulin mu binding protein 2	umls:C1858517	Spinal muscular atrophy with respiratory distress 1	0.700597116524304	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4693	NDP	Norrie disease (pseudoglioma)	umls:C1844579	Exudative Vitreoretinopathy, Familial, X-Linked Recessive	0.700597116524304	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4693	NDP	Norrie disease (pseudoglioma)	umls:C1844579	Exudative Vitreoretinopathy, Familial, X-Linked Recessive	0.700597116524304	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2304	FOXE1	forkhead box E1 (thyroid transcription factor 2)	umls:C1855794	Bamforth syndrome	0.700597116524304	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2304	FOXE1	forkhead box E1 (thyroid transcription factor 2)	umls:C1855794	Bamforth syndrome	0.700597116524304	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+859	CAV3	caveolin 3	umls:C1832567	Muscular Dystrophy, Limb-Girdle, Type 1C	0.700597116524304	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+859	CAV3	caveolin 3	umls:C1832567	Muscular Dystrophy, Limb-Girdle, Type 1C	0.700597116524304	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6496	SIX3	SIX homeobox 3	umls:C1834877	Holoprosencephaly 2	0.700597116524304	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6496	SIX3	SIX homeobox 3	umls:C1834877	Holoprosencephaly 2	0.700597116524304	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6324	SCN1B	sodium channel, voltage-gated, type I, beta subunit	umls:C1858672	Generalized Epilepsy With Febrile Seizures Plus, Type 1	0.700597116524304	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6324	SCN1B	sodium channel, voltage-gated, type I, beta subunit	umls:C1858672	Generalized Epilepsy With Febrile Seizures Plus, Type 1	0.700597116524304	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+117531	TMC1	transmembrane channel-like 1	umls:C1847626	Deafness, Autosomal Dominant 36	0.700597116524304	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+117531	TMC1	transmembrane channel-like 1	umls:C1847626	Deafness, Autosomal Dominant 36	0.700597116524304	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1184	CLCN5	chloride channel, voltage-sensitive 5	umls:C1848336	Dent disease 1	0.700597116524304	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1184	CLCN5	chloride channel, voltage-sensitive 5	umls:C1848336	Dent disease 1	0.700597116524304	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7809	BSND	Bartter syndrome, infantile, with sensorineural deafness (Barttin)	umls:C1865270	Bartter Syndrome, Type 4A	0.700597116524304	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7809	BSND	Bartter syndrome, infantile, with sensorineural deafness (Barttin)	umls:C1865270	Bartter Syndrome, Type 4A	0.700597116524304	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1441	CSF3R	colony stimulating factor 3 receptor (granulocyte)	umls:C0543669	Neutrophilia, Hereditary	0.700597116524304	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1441	CSF3R	colony stimulating factor 3 receptor (granulocyte)	umls:C0543669	Neutrophilia, Hereditary	0.700597116524304	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4036	LRP2	low density lipoprotein receptor-related protein 2	umls:C1857277	Donnai-Barrow syndrome	0.700597116524304	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4036	LRP2	low density lipoprotein receptor-related protein 2	umls:C1857277	Donnai-Barrow syndrome	0.700597116524304	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10555	AGPAT2	1-acylglycerol-3-phosphate O-acyltransferase 2	umls:C1720862	LIPODYSTROPHY, CONGENITAL GENERALIZED, TYPE 1	0.700597116524304	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10555	AGPAT2	1-acylglycerol-3-phosphate O-acyltransferase 2	umls:C1720862	LIPODYSTROPHY, CONGENITAL GENERALIZED, TYPE 1	0.700597116524304	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4148	MATN3	matrilin 3	umls:C1846843	Epiphyseal dysplasia, multiple, 5	0.700298558262152	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4148	MATN3	matrilin 3	umls:C1846843	Epiphyseal dysplasia, multiple, 5	0.700298558262152	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2978	GUCA1A	guanylate cyclase activator 1A (retina)	umls:C1865869	Cone Dystrophy 3	0.700298558262152	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2978	GUCA1A	guanylate cyclase activator 1A (retina)	umls:C1865869	Cone Dystrophy 3	0.700298558262152	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+10594	PRPF8	pre-mRNA processing factor 8	umls:C1838702	Retinitis Pigmentosa 13	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+10594	PRPF8	pre-mRNA processing factor 8	umls:C1838702	Retinitis Pigmentosa 13	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5805	PTS	6-pyruvoyltetrahydropterin synthase	umls:C0878676	6-pyruvoyl-tetrahydropterin synthase deficiency	0.700298558262152	9	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5805	PTS	6-pyruvoyltetrahydropterin synthase	umls:C0878676	6-pyruvoyl-tetrahydropterin synthase deficiency	0.700298558262152	9	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5274	SERPINI1	serpin peptidase inhibitor, clade I (neuroserpin), member 1	umls:C1858680	Familial encephalopathy with neuroserpin inclusion bodies	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5274	SERPINI1	serpin peptidase inhibitor, clade I (neuroserpin), member 1	umls:C1858680	Familial encephalopathy with neuroserpin inclusion bodies	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+7287	TULP1	tubby like protein 1	umls:C1838603	Retinitis Pigmentosa 14	0.700298558262152	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+7287	TULP1	tubby like protein 1	umls:C1838603	Retinitis Pigmentosa 14	0.700298558262152	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1280	COL2A1	collagen, type II, alpha 1	umls:C1835437	Platyspondylic Lethal Skeletal Dysplasia, Torrance Type	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1280	COL2A1	collagen, type II, alpha 1	umls:C1835437	Platyspondylic Lethal Skeletal Dysplasia, Torrance Type	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1621	DBH	dopamine beta-hydroxylase (dopamine beta-monooxygenase)	umls:C0342687	Dopamine beta hydroxylase deficiency	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1621	DBH	dopamine beta-hydroxylase (dopamine beta-monooxygenase)	umls:C0342687	Dopamine beta hydroxylase deficiency	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+57165	GJC2	gap junction protein, gamma 2, 47kDa	umls:C1837355	Leukodystrophy, Hypomyelinating, 2	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+57165	GJC2	gap junction protein, gamma 2, 47kDa	umls:C1837355	Leukodystrophy, Hypomyelinating, 2	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1203	CLN5	ceroid-lipofuscinosis, neuronal 5	umls:C1850442	Ceroid lipofuscinosis, neuronal 5	0.700298558262152	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1203	CLN5	ceroid-lipofuscinosis, neuronal 5	umls:C1850442	Ceroid lipofuscinosis, neuronal 5	0.700298558262152	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5311	PKD2	polycystic kidney disease 2 (autosomal dominant)	umls:C2751306	Polycystic kidney disease, type 2	0.700298558262152	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5311	PKD2	polycystic kidney disease 2 (autosomal dominant)	umls:C2751306	Polycystic kidney disease, type 2	0.700298558262152	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+51151	SLC45A2	solute carrier family 45, member 2	umls:C1847836	Oculocutaneous Albinism, Type IV	0.700298558262152	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+51151	SLC45A2	solute carrier family 45, member 2	umls:C1847836	Oculocutaneous Albinism, Type IV	0.700298558262152	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8540	AGPS	alkylglycerone phosphate synthase	umls:C1838612	Rhizomelic chondrodysplasia punctata, type 3	0.700298558262152	4	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8540	AGPS	alkylglycerone phosphate synthase	umls:C1838612	Rhizomelic chondrodysplasia punctata, type 3	0.700298558262152	4	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6329	SCN4A	sodium channel, voltage-gated, type IV, alpha subunit	umls:C2750061	Hypokalemic Periodic Paralysis, Type 2	0.700298558262152	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6329	SCN4A	sodium channel, voltage-gated, type IV, alpha subunit	umls:C2750061	Hypokalemic Periodic Paralysis, Type 2	0.700298558262152	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5340	PLG	plasminogen	umls:C1968804	Plasminogen Deficiency, Type I	0.700298558262152	7	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5340	PLG	plasminogen	umls:C1968804	Plasminogen Deficiency, Type I	0.700298558262152	7	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+79659	DYNC2H1	dynein, cytoplasmic 2, heavy chain 1	umls:C0432197	Short rib-polydactyly syndrome, Verma-Naumoff type	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+79659	DYNC2H1	dynein, cytoplasmic 2, heavy chain 1	umls:C0432197	Short rib-polydactyly syndrome, Verma-Naumoff type	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9060	PAPSS2	3'-phosphoadenosine 5'-phosphosulfate synthase 2	umls:C2748515	Spondyloepimetaphyseal Dysplasia, Pakistani Type	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9060	PAPSS2	3'-phosphoadenosine 5'-phosphosulfate synthase 2	umls:C2748515	Spondyloepimetaphyseal Dysplasia, Pakistani Type	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+121512	FGD4	FYVE, RhoGEF and PH domain containing 4	umls:C1836336	Charcot-Marie-Tooth Disease, Type 4H	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+121512	FGD4	FYVE, RhoGEF and PH domain containing 4	umls:C1836336	Charcot-Marie-Tooth Disease, Type 4H	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4487	MSX1	msh homeobox 1	umls:C3489529	TOOTH AGENESIS, SELECTIVE, 1	0.700298558262152	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4487	MSX1	msh homeobox 1	umls:C3489529	TOOTH AGENESIS, SELECTIVE, 1	0.700298558262152	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2301	FOXE3	forkhead box E3	umls:C1862839	Anterior segment mesenchymal dysgenesis	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2301	FOXE3	forkhead box E3	umls:C1862839	Anterior segment mesenchymal dysgenesis	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3299	HSF4	heat shock transcription factor 4	umls:C0266537	Cataract, zonular	0.700298558262152	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+3299	HSF4	heat shock transcription factor 4	umls:C0266537	Cataract, zonular	0.700298558262152	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+60386	SLC25A19	solute carrier family 25 (mitochondrial thiamine pyrophosphate carrier), member 19	umls:C1846648	Amish lethal microcephaly	0.700298558262152	1	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+60386	SLC25A19	solute carrier family 25 (mitochondrial thiamine pyrophosphate carrier), member 19	umls:C1846648	Amish lethal microcephaly	0.700298558262152	1	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+5660	PSAP	prosaposin	umls:C0268262	Metachromatic Leukodystrophy due to Saposin B Deficiency	0.700298558262152	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+5660	PSAP	prosaposin	umls:C0268262	Metachromatic Leukodystrophy due to Saposin B Deficiency	0.700298558262152	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1302	COL11A2	collagen, type XI, alpha 2	umls:C1866095	Deafness, Autosomal Dominant 13	0.700298558262152	1	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1302	COL11A2	collagen, type XI, alpha 2	umls:C1866095	Deafness, Autosomal Dominant 13	0.700298558262152	1	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+8443	GNPAT	glyceronephosphate O-acyltransferase	umls:C1857242	Rhizomelic chondrodysplasia punctata, type 2	0.700298558262152	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+8443	GNPAT	glyceronephosphate O-acyltransferase	umls:C1857242	Rhizomelic chondrodysplasia punctata, type 2	0.700298558262152	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+6331	SCN5A	sodium channel, voltage-gated, type V, alpha subunit	umls:C1879286	Hereditary bundle branch system defect	0.700298558262152	6	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+6331	SCN5A	sodium channel, voltage-gated, type V, alpha subunit	umls:C1879286	Hereditary bundle branch system defect	0.700298558262152	6	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+170302	ARX	aristaless related homeobox	umls:C3463992	Epileptic Encephalopathy, Early Infantile, 1	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+170302	ARX	aristaless related homeobox	umls:C3463992	Epileptic Encephalopathy, Early Infantile, 1	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4247	MGAT2	mannosyl (alpha-1,6-)-glycoprotein beta-1,2-N-acetylglucosaminyltransferase	umls:C2931008	Congenital disorder of glycosylation type 2A	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4247	MGAT2	mannosyl (alpha-1,6-)-glycoprotein beta-1,2-N-acetylglucosaminyltransferase	umls:C2931008	Congenital disorder of glycosylation type 2A	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2998	GYS2	glycogen synthase 2 (liver)	umls:C1855861	Glycogen Storage Disease 0, Liver	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2998	GYS2	glycogen synthase 2 (liver)	umls:C1855861	Glycogen Storage Disease 0, Liver	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1296	COL8A2	collagen, type VIII, alpha 2	umls:C1850959	Corneal dystrophy, Fuchs' endothelial, 1	0.700298558262152	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+1296	COL8A2	collagen, type VIII, alpha 2	umls:C1850959	Corneal dystrophy, Fuchs' endothelial, 1	0.700298558262152	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+65018	PINK1	PTEN induced putative kinase 1	umls:C1853833	Parkinson Disease 6, Autosomal Recessive Early-Onset	0.700298558262152	19	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+65018	PINK1	PTEN induced putative kinase 1	umls:C1853833	Parkinson Disease 6, Autosomal Recessive Early-Onset	0.700298558262152	19	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+11315	PARK7	parkinson protein 7	umls:C1853445	Parkinson Disease 7, Autosomal Recessive Early-Onset	0.700298558262152	5	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+11315	PARK7	parkinson protein 7	umls:C1853445	Parkinson Disease 7, Autosomal Recessive Early-Onset	0.700298558262152	5	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+208	AKT2	v-akt murine thymoma viral oncogene homolog 2	umls:C0011860	Diabetes Mellitus, Type 2	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+208	AKT2	v-akt murine thymoma viral oncogene homolog 2	umls:C0011860	Diabetes Mellitus, Type 2	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+4292	MLH1	mutL homolog 1	umls:C1333991	Lynch Syndrome II	0.700298558262152	34	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+4292	MLH1	mutL homolog 1	umls:C1333991	Lynch Syndrome II	0.700298558262152	34	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+9381	OTOF	otoferlin	umls:C1832828	Deafness, Autosomal Recessive 9	0.700298558262152	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+9381	OTOF	otoferlin	umls:C1832828	Deafness, Autosomal Recessive 9	0.700298558262152	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+2177	FANCD2	Fanconi anemia, complementation group D2	umls:C3160738	FANCONI ANEMIA, COMPLEMENTATION GROUP D2	0.700298558262152	2	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+2177	FANCD2	Fanconi anemia, complementation group D2	umls:C3160738	FANCONI ANEMIA, COMPLEMENTATION GROUP D2	0.700298558262152	2	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+60506	NYX	nyctalopin	umls:C3495587	NIGHT BLINDNESS, CONGENITAL STATIONARY, TYPE 1A	0.700298558262152	3	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+60506	NYX	nyctalopin	umls:C3495587	NIGHT BLINDNESS, CONGENITAL STATIONARY, TYPE 1A	0.700298558262152	3	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+1509	CTSD	cathepsin D	umls:C1864669	Ceroid Lipofuscinosis, Neuronal, 10	0.7	2	GeneticVariation	UNIPROT, CTD_human, MGD
+1509	CTSD	cathepsin D	umls:C1864669	Ceroid Lipofuscinosis, Neuronal, 10	0.7	2	Biomarker	UNIPROT, CTD_human, MGD
+5071	PARK2	parkin RBR E3 ubiquitin protein ligase	umls:C1868675	Parkinson disease, juvenile, autosomal recessive	0.7	10	GeneticVariation	UNIPROT, CTD_human, MGD
+5071	PARK2	parkin RBR E3 ubiquitin protein ligase	umls:C1868675	Parkinson disease, juvenile, autosomal recessive	0.7	10	Biomarker	UNIPROT, CTD_human, MGD
+5071	PARK2	parkin RBR E3 ubiquitin protein ligase	umls:C1868675	Parkinson disease, juvenile, autosomal recessive	0.7	10	Therapeutic	UNIPROT, CTD_human, MGD
+7068	THRB	thyroid hormone receptor, beta	umls:C2937288	Thyroid Hormone Resistance, Generalized, Autosomal Dominant	0.7	15	GeneticVariation	UNIPROT, CTD_human, MGD
+7068	THRB	thyroid hormone receptor, beta	umls:C2937288	Thyroid Hormone Resistance, Generalized, Autosomal Dominant	0.7	15	Biomarker	UNIPROT, CTD_human, MGD
+54413	NLGN3	neuroligin 3	umls:C1845540	AUTISM, SUSCEPTIBILITY TO, X-LINKED 1	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+54413	NLGN3	neuroligin 3	umls:C1845540	AUTISM, SUSCEPTIBILITY TO, X-LINKED 1	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+7038	TG	thyroglobulin	umls:C0342194	Thyroid Dyshormonogenesis 3	0.7	5	GeneticVariation	UNIPROT, CTD_human, MGD
+7038	TG	thyroglobulin	umls:C0342194	Thyroid Dyshormonogenesis 3	0.7	5	Biomarker	UNIPROT, CTD_human, MGD
+7428	VHL	von Hippel-Lindau tumor suppressor, E3 ubiquitin protein ligase	umls:C1837915	Erythrocytosis, Familial, 2	0.7	2	GeneticVariation	UNIPROT, CTD_human, MGD
+7428	VHL	von Hippel-Lindau tumor suppressor, E3 ubiquitin protein ligase	umls:C1837915	Erythrocytosis, Familial, 2	0.7	2	Biomarker	UNIPROT, CTD_human, MGD
+4646	MYO6	myosin VI	umls:C1843028	Deafness, Autosomal Recessive 37	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+4646	MYO6	myosin VI	umls:C1843028	Deafness, Autosomal Recessive 37	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+4038	LRP4	low density lipoprotein receptor-related protein 4	umls:C1859309	Syndactyly Cenani Lenz type	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+4038	LRP4	low density lipoprotein receptor-related protein 4	umls:C1859309	Syndactyly Cenani Lenz type	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+79147	FKRP	fukutin related protein	umls:C3150413	MUSCULAR DYSTROPHY-DYSTROGLYCANOPATHY (CONGENITAL WITH BRAIN AND EYE ANOMALIES), TYPE A, 5	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+79147	FKRP	fukutin related protein	umls:C3150413	MUSCULAR DYSTROPHY-DYSTROGLYCANOPATHY (CONGENITAL WITH BRAIN AND EYE ANOMALIES), TYPE A, 5	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+6687	SPG7	spastic paraplegia 7 (pure and complicated autosomal recessive)	umls:C1846564	Spastic Paraplegia 7, Autosomal Recessive	0.7	2	GeneticVariation	UNIPROT, CTD_human, MGD
+6687	SPG7	spastic paraplegia 7 (pure and complicated autosomal recessive)	umls:C1846564	Spastic Paraplegia 7, Autosomal Recessive	0.7	2	Biomarker	UNIPROT, CTD_human, MGD
+2672	GFI1	growth factor independent 1 transcription repressor	umls:C2751288	Neutropenia, Severe Congenital, Autosomal Dominant 2	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+2672	GFI1	growth factor independent 1 transcription repressor	umls:C2751288	Neutropenia, Severe Congenital, Autosomal Dominant 2	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+1789	DNMT3B	DNA (cytosine-5-)-methyltransferase 3 beta	umls:C0398788	Immunodeficiency syndrome, variable	0.7	5	GeneticVariation	UNIPROT, CTD_human, MGD
+1789	DNMT3B	DNA (cytosine-5-)-methyltransferase 3 beta	umls:C0398788	Immunodeficiency syndrome, variable	0.7	5	Biomarker	UNIPROT, CTD_human, MGD
+675	BRCA2	breast cancer 2, early onset	umls:C1838457	Fanconi Anemia, Complementation Group D1	0.7	2	GeneticVariation	UNIPROT, CTD_human, MGD
+675	BRCA2	breast cancer 2, early onset	umls:C1838457	Fanconi Anemia, Complementation Group D1	0.7	2	Biomarker	UNIPROT, CTD_human, MGD
+672	BRCA1	breast cancer 1, early onset	umls:C2676676	BREAST-OVARIAN CANCER, FAMILIAL, SUSCEPTIBILITY TO, 1	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+672	BRCA1	breast cancer 1, early onset	umls:C2676676	BREAST-OVARIAN CANCER, FAMILIAL, SUSCEPTIBILITY TO, 1	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+1545	CYP1B1	cytochrome P450, family 1, subfamily B, polypeptide 1	umls:C1856439	Glaucoma 3, Primary Congenital, A	0.7	13	GeneticVariation	UNIPROT, CTD_human, MGD
+1545	CYP1B1	cytochrome P450, family 1, subfamily B, polypeptide 1	umls:C1856439	Glaucoma 3, Primary Congenital, A	0.7	13	Biomarker	UNIPROT, CTD_human, MGD
+7084	TK2	thymidine kinase 2, mitochondrial	umls:C3149750	MITOCHONDRIAL DNA DEPLETION SYNDROME 2 (MYOPATHIC TYPE)	0.7	4	GeneticVariation	UNIPROT, CTD_human, MGD
+7084	TK2	thymidine kinase 2, mitochondrial	umls:C3149750	MITOCHONDRIAL DNA DEPLETION SYNDROME 2 (MYOPATHIC TYPE)	0.7	4	Biomarker	UNIPROT, CTD_human, MGD
+4487	MSX1	msh homeobox 1	umls:C1837210	Orofacial Cleft 5	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+4487	MSX1	msh homeobox 1	umls:C1837210	Orofacial Cleft 5	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+117531	TMC1	transmembrane channel-like 1	umls:C1832978	Deafness, Autosomal Recessive 7	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+117531	TMC1	transmembrane channel-like 1	umls:C1832978	Deafness, Autosomal Recessive 7	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+2218	FKTN	fukutin	umls:C2751052	MUSCULAR DYSTROPHY-DYSTROGLYCANOPATHY (CONGENITAL WITHOUT MENTAL RETARDATION), TYPE B, 4	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+2218	FKTN	fukutin	umls:C2751052	MUSCULAR DYSTROPHY-DYSTROGLYCANOPATHY (CONGENITAL WITHOUT MENTAL RETARDATION), TYPE B, 4	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+10381	TUBB3	tubulin, beta 3 class III	umls:C2748801	Fibrosis Of Extraocular Muscles, Congenital, 3A, with or without Extraocular Involvement	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+10381	TUBB3	tubulin, beta 3 class III	umls:C2748801	Fibrosis Of Extraocular Muscles, Congenital, 3A, with or without Extraocular Involvement	0.7	1	Biomarker	UNIPROT, CTD_human, MGD
+8626	TP63	tumor protein p63	umls:C1858562	Ectrodactyly, Ectodermal Dysplasia, and Cleft Lip/Palate Syndrome 3	0.7	3	GeneticVariation	UNIPROT, CTD_human, MGD
+8626	TP63	tumor protein p63	umls:C1858562	Ectrodactyly, Ectodermal Dysplasia, and Cleft Lip/Palate Syndrome 3	0.7	3	Biomarker	UNIPROT, CTD_human, MGD
+7546	ZIC2	Zic family member 2	umls:C1864827	Holoprosencephaly 5	0.7	2	GeneticVariation	UNIPROT, CTD_human, MGD
+7546	ZIC2	Zic family member 2	umls:C1864827	Holoprosencephaly 5	0.7	2	Biomarker	UNIPROT, CTD_human, MGD
+1308	COL17A1	collagen, type XVII, alpha 1	umls:C0268374	Epidermolysis Bullosa, Junctional, Non-Herlitz Type	0.7	4	GeneticVariation	UNIPROT, CTD_human, MGD
+3691	ITGB4	integrin, beta 4	umls:C0268374	Epidermolysis Bullosa, Junctional, Non-Herlitz Type	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+3914	LAMB3	laminin, beta 3	umls:C0268374	Epidermolysis Bullosa, Junctional, Non-Herlitz Type	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD
+1308	COL17A1	collagen, type XVII, alpha 1	umls:C0268374	Epidermolysis Bullosa, Junctional, Non-Herlitz Type	0.7	4	Biomarker	UNIPROT, CTD_human, MGD
