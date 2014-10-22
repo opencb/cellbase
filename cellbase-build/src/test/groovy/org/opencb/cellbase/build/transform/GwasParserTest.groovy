@@ -12,9 +12,9 @@ import java.nio.file.Paths
  */
 class GwasParserTest extends Specification {
 
-    def serializedVariants
+    static def serializedVariants
 
-    def setup() {
+    def setupSpec() {
         // gwas file containing 10 lines, and a dbsnp subset containing all the snps of the gwas file
         def gwasTestFile = Paths.get(VariantEffectParserTest.class.getResource("/gwasTest.csv").toURI())
         def dbSnpFile = Paths.get(VariantEffectParserTest.class.getResource("/dbSnpTest.gz").toURI())

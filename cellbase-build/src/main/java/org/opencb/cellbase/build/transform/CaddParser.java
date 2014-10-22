@@ -2,137 +2,111 @@ package org.opencb.cellbase.build.transform;
 
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variant.cadd.Cadd;
-import org.opencb.biodata.models.variant.cadd.CaddValues;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * @author Antonio Rueda
  * @author Luis Miguel Cruz.
  * @since October 08, 2014 
  */
-public class CaddParser {
+public class CaddParser extends CellBaseParser{
 
-    private CellBaseSerializer serializer;
-    
-    public CaddParser(CellBaseSerializer serializer){
-    	this.serializer = serializer;
+
+    private final Path caddFilePath;
+    private final String chrName;
+
+    public CaddParser(CellBaseSerializer serializer, Path caddFilePath, String chrName){
+    	super(serializer);
+        this.caddFilePath = caddFilePath;
+        this.chrName = chrName;
     }
 
-
-    public void parse(Path caddFilePath, String chrName){
-        Cadd caddVariant = new Cadd ();
-
+    public void parse(){
         try {
-        	String line, ref, alt, chr;
-            int pos;
+            TabixReader inputReader = new TabixReader(caddFilePath.toString());
+            TabixReader.Iterator caddIterator = inputReader.query(chrName);
+            Cadd caddVariant = null;
+            for (String line; (line = caddIterator.next()) != null;) {
+                // TODO: las lineas con cabecera son las primeras, quizas podemos quitar esta comparacion, por rendimiento
+                if (!line.startsWith("##")){
+                    String[] fields = line.split("\t");
+                    String chr = fields[0];
+                    String ref = fields[2];
+                    String alt = fields[4];
 
-            try{
-            	TabixReader t = new TabixReader(caddFilePath.toString());
-        		TabixReader.Iterator tabixIterator;
-        		
-            	tabixIterator = t.query(chrName);
-    			line = tabixIterator.next();
-    			Boolean hasElements = false;
-    			
-    			while(line != null){
-    				if (!line.startsWith("##")){
-                        String[] fields = line.split("\t");
-                        ref = fields[2];
-                        alt = fields[4];
-                        chr = fields[0];
-                        pos = Integer.parseInt(fields[1]);
+                    int pos = Integer.parseInt(fields[1]);
 
-                        // If the variant is the same as the last iteration variant, don't print it
-                        if (caddVariant.getChromosome() != null &&
-                        		(caddVariant.getChromosome().equals(chr) && caddVariant.getStart() == pos &&
-                        		 caddVariant.getReference().equals(ref) && caddVariant.getAlternate().equals(alt))) {
-                            List <CaddValues> caddinfo = caddVariant.getValuesCadd();
-
-                            CaddValues values = 
-                            		new CaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
-                            caddinfo.add(values);
-                            caddVariant.setValuesCadd(caddinfo);
-                            hasElements = true;
-                        } else {
-                            if (caddVariant.getChromosome() != null) {
-                                serializer.serializeObject(caddVariant);
-                            }
-
-                            List<CaddValues> caddValuesList = new ArrayList<CaddValues>();
-
-                            CaddValues values = new CaddValues(
-                            		Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
-                            caddValuesList.add(values);
-
-                            caddVariant = createCaddVariant(fields, caddValuesList);
-                            hasElements = true;
+                    // If the variant is the same as the last iteration variant, don't print it
+                    if (sameVariant(caddVariant, chr, pos, ref, alt)) {
+                        caddVariant.addCaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
+                    } else {
+                        if (caddVariant != null) {
+                            serialize(caddVariant);
                         }
+                        caddVariant = createCaddVariant(fields);
                     }
-                    
-                    line = tabixIterator.next();
-    			}
-    			
-    			// Print the last element if the variant list is not empty
-    			if(hasElements){
-                    serializer.serializeObject(caddVariant);
-    			}
-            } catch (ArrayIndexOutOfBoundsException e) {
-				e.printStackTrace();
-			}
+                }
+            }
+            serialize(caddVariant);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
+
+    private boolean sameVariant(Cadd caddVariant, String chr, int pos, String ref, String alt) {
+        return caddVariant != null &&
+                (caddVariant.getChromosome().equals(chr) && caddVariant.getStart() == pos &&
+                        caddVariant.getReference().equals(ref) && caddVariant.getAlternate().equals(alt));
+    }
     
-    private Cadd createCaddVariant(String[] fields, List<CaddValues> caddValuesList){
+    private Cadd createCaddVariant(String[] fields){
     	String ref = fields[2], alt = fields[4], chr = fields[0];
         int pos = Integer.parseInt(fields[1]);
     	
-        Float EncExp = stringToFloat(fields[29]);
-        Float EncH3K27Ac = stringToFloat(fields[30]);
-        Float EncH3K4Me1 = stringToFloat(fields[31]);
-        Float EncH3K4Me3 = stringToFloat(fields[32]);
-        Float EncNucleo = stringToFloat(fields[33]);
+        Float encExp = stringToFloat(fields[29]);
+        Float encH3K27Ac = stringToFloat(fields[30]);
+        Float encH3K4Me1 = stringToFloat(fields[31]);
+        Float encH3K4Me3 = stringToFloat(fields[32]);
+        Float encNucleo = stringToFloat(fields[33]);
 
-        Integer EncOCC = null;
+        Integer encOCC = null;
         if (!fields[34].equals("NA")){
-            EncOCC = Integer.parseInt(fields[34]);
+            encOCC = Integer.parseInt(fields[34]);
         }
 
-        Float EncOCCombPVal = stringToFloat(fields[35]);
-        Float EncOCDNasePVal = stringToFloat(fields[36]);
-        Float EncOCFairePVal = stringToFloat(fields[37]);
-        Float EncOCpolIIPVal = stringToFloat(fields[38]);
-        Float EncOCctcfPVal = stringToFloat(fields[39]);
-        Float EncOCmycPVal = stringToFloat(fields[40]);
-        Float EncOCDNaseSig = stringToFloat(fields[41]);
-        Float EncOCFaireSig = stringToFloat(fields[42]);
-        Float EncOCpolIISig = stringToFloat(fields[43]);
-        Float EncOCctcfSig = stringToFloat(fields[44]);
-        Float EncOCmycSig = stringToFloat(fields[45]);
-    	
-    	Cadd caddVariant = new Cadd(
-        		alt, ref, chr, pos, pos, EncExp, EncH3K27Ac, 
-        		EncH3K4Me1, EncH3K4Me3, EncNucleo, EncOCC,
-        		EncOCCombPVal, EncOCDNasePVal, EncOCFairePVal, 
-        		EncOCpolIIPVal, EncOCctcfPVal, EncOCmycPVal,
-        		EncOCDNaseSig, EncOCFaireSig, EncOCpolIISig,
-        		EncOCctcfSig, EncOCmycSig, caddValuesList);
-    	
+        Float encOCCombPVal = stringToFloat(fields[35]);
+        Float encOCDNasePVal = stringToFloat(fields[36]);
+        Float encOCFairePVal = stringToFloat(fields[37]);
+        Float encOCpolIIPVal = stringToFloat(fields[38]);
+        Float encOCctcfPVal = stringToFloat(fields[39]);
+        Float encOCmycPVal = stringToFloat(fields[40]);
+        Float encOCDNaseSig = stringToFloat(fields[41]);
+        Float encOCFaireSig = stringToFloat(fields[42]);
+        Float encOCpolIISig = stringToFloat(fields[43]);
+        Float encOCctcfSig = stringToFloat(fields[44]);
+        Float encOCmycSig = stringToFloat(fields[45]);
+
+        Cadd caddVariant = new Cadd(
+                alt, ref, chr, pos, pos, encExp, encH3K27Ac,
+                encH3K4Me1, encH3K4Me3, encNucleo, encOCC,
+                encOCCombPVal, encOCDNasePVal, encOCFairePVal,
+                encOCpolIIPVal, encOCctcfPVal, encOCmycPVal,
+                encOCDNaseSig, encOCFaireSig, encOCpolIISig,
+                encOCctcfSig, encOCmycSig);
+
+    	caddVariant.addCaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
     	return caddVariant;
     }
     
     private Float stringToFloat(String floatName){
         if (floatName.equals("NA")){
             return null;
-        }
-        else{
+        } else{
             return Float.parseFloat(floatName);
         }
     }
