@@ -273,6 +273,110 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
+    private void solveCodingEffect(Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
+                                   Integer cdnaVariantStart, Integer cdnaVariantEnd, String variantRef, String variantAlt,
+                                   List<String> consequenceTypeList) {
+        // TODO: lo q hay dentro de esta funcion es copia pega de solveCodingExonEffect. Arreglarlo. Es basicamente igual,
+        // TODO: una vez aqui dentro ya se q la variante esta entre cdnaVariantStart y cdnaVariantEnd. Hay que comprobar
+        // TODO: los codones incio/fin. El resto es igual, solo q antes de ponerse a identificar el codon que modifica la variante
+        // TODO: hay que comprobar si es un splicing o no. En caso de ser un splicing q no se haga nada, no hay prediccion posible
+    Integer variantPhaseShift = (variantStart-(exonStart-previousCodonNucleotides.length())) % 3;
+        Integer modifiedCodonRelativeStart = variantStart-variantPhaseShift-exonStart;
+        String modifiedCodonPrefix;
+        String newCodon;
+        if(variantAlt.equals("-")) {  // Deletion
+            consequenceTypeList.add("feature_truncation");
+            if(variantStart >= exonStart && variantEnd <= exonEnd) {  // Deletion does not go beyond exon limits
+                if(modifiedCodonRelativeStart < 0) {
+                    modifiedCodonPrefix = previousCodonNucleotides+exonSequence.substring(0,variantStart-exonStart);
+                } else {
+                    modifiedCodonPrefix = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + variantPhaseShift);
+                }
+
+                if(variantRef.length()%3 == 0) {
+                    if (variantPhaseShift == 0) {  // Check deletion starts at the first position of a codon
+                        consequenceTypeList.add("inframe_deletion");  // TODO: check that I correctly interpreted the meaning of this consequence type
+                    } else {
+                        newCodon = modifiedCodonPrefix+exonSequence.substring(variantEnd-exonStart+1,variantEnd-exonStart+1+(3-modifiedCodonPrefix.length()));
+                        if(isStopCodon(newCodon)) {
+                            consequenceTypeList.add("stop_gained");
+                        }
+                    }
+                } else {
+                    consequenceTypeList.add("frameshift_variant");
+                    newCodon = modifiedCodonPrefix+exonSequence.substring(variantEnd-exonStart+1,variantEnd-exonStart+1+(3-modifiedCodonPrefix.length()));
+                    if(isStopCodon(newCodon)) {
+                        consequenceTypeList.add("stop_gained");
+                    }
+                }
+            }
+        } else {
+            if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
+                consequenceTypeList.add("feature_elongation");
+                if(variantAlt.length()%3 == 0) {
+                    if (variantPhaseShift == 0) {  // Check insertion starts at the first position of a codon
+                        consequenceTypeList.add("inframe_insertion");  // TODO: check that I correctly interpreted the meaning of this consequence type
+                        if (gainsStopCodon(variantAlt)) {
+                            consequenceTypeList.add("stop_gained");
+                        }
+                    } else {
+                        if (modifiedCodonRelativeStart < 0) {
+                            modifiedCodonPrefix = previousCodonNucleotides + exonSequence.substring(0, variantStart - exonStart);
+                        } else {
+                            modifiedCodonPrefix = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + variantPhaseShift);
+                        }
+                        if (gainsStopCodon(modifiedCodonPrefix + variantAlt)) {
+                            consequenceTypeList.add("stop_gained");
+                        }
+                    }
+                } else {
+                    consequenceTypeList.add("frameshift_variant");
+                    if (modifiedCodonRelativeStart < 0) {
+                        modifiedCodonPrefix = previousCodonNucleotides + exonSequence.substring(0, variantStart - exonStart);
+                    } else {
+                        modifiedCodonPrefix = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + variantPhaseShift);
+                    }
+                    if (gainsStopCodon(modifiedCodonPrefix + variantAlt)) {
+                        consequenceTypeList.add("stop_gained");
+                    }
+                }
+            } else {  // SNV
+                String referenceCodon = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + 3);
+                char[] modifiedCodonArray = referenceCodon.toCharArray();
+                modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
+                if(isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))){
+                    consequenceTypeList.add("synonymous_variant");
+                } else {
+                    consequenceTypeList.add("missense_variant");
+                }
+            }
+        }
+    }
+
+    private void solveCodingTranscriptEffect(Boolean splicing, String transcriptSequence, Integer cdnaCodingStart,
+                                             Integer cdnaCodingEnd, Integer cdnaVariantStart, Integer cdnaVariantEnd,
+                                             String variantRef, String variantAlt, List<String> consequenceTypeList) {
+        if(cdnaVariantStart < cdnaCodingStart) {
+            consequenceTypeList.add("5_prime_UTR_variant");
+            if(cdnaVariantEnd >= cdnaCodingStart) {
+                consequenceTypeList.add("initiator_codon_variant");
+                consequenceTypeList.add("coding_sequence_variant");
+            }
+        } else {
+            if(cdnaVariantStart <= cdnaCodingEnd) {
+                consequenceTypeList.add("coding_sequence_variant");
+                if(cdnaVariantEnd <= cdnaCodingEnd) {
+                    solveCodingEffect(splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
+                                      cdnaVariantEnd, variantRef, variantAlt, consequenceTypeList);
+                } else {
+                    consequenceTypeList.add("stop_lost");
+                }
+            } else {
+                consequenceTypeList.add("2_prime_UTR_variant");
+            }
+        }
+    }
+
     private Boolean solveJunction(Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, List<String> consequenceTypeList) {
         Boolean splicing = false;
         if(regionsOverlap(spliceSite1,spliceSite2,variantStart,variantEnd)) {
@@ -306,13 +410,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         BasicDBList transcriptInfoList, exonInfoList;
         BasicDBObject transcriptInfo, exonInfo;
         BasicDBObject geneInfo;
-        Integer geneStart, geneEnd, transcriptStart, transcriptEnd, exonStart, exonEnd, genomicCodingStart, genomicCodingEnd, cdnaCodingStart, cdnaCodingEnd, prevSpliceSite;
+        Integer geneStart, geneEnd, transcriptStart, transcriptEnd, exonStart, exonEnd, genomicCodingStart, genomicCodingEnd;
+        Integer cdnaCodingStart, cdnaCodingEnd, cdnaExonStart, cdnaExonEnd, cdnaVariantStart, cdnaVariantEnd, prevSpliceSite;
         Integer variantStart = variant.getPosition();
         Integer variantEnd = variant.getPosition()+variant.getReference().length()-1;  //TODO: Check deletion input format to ensure that variantEnd is correctly calculated
-        String geneStrand, transcriptStrand, exonSequence;
+        String geneStrand, transcriptStrand, exonSequence, transcriptSequence;
         String nextCodonNucleotides = "";
         long dbTimeStart, dbTimeEnd;
-        Boolean splicing, coding, exonsRemain;
+        Boolean splicing, coding, exonsRemain, variantAhead;
 
         int exonCounter;
 
@@ -367,49 +472,46 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         cdnaCodingEnd = (Integer) transcriptInfo.get("cdnaCodingEnd");
                         exonInfoList = (BasicDBList) transcriptInfo.get("exons");
                         splicing = false;
+                        variantAhead = true;
                         exonInfo = (BasicDBObject) exonInfoList.get(0);
                         exonStart = (Integer) exonInfo.get("start");
                         exonEnd = (Integer) exonInfo.get("end");
-                        exonSequence = (String) exonInfo.get("sequence");
-                        if (variantStart >= exonStart || variantEnd >= exonStart) {
-                            if (variantStart <= exonEnd || variantEnd <= exonEnd) { // Variant falls within exon coordinates
-                                solveExon(exonSequence, exonStart, exonEnd, genomicCodingStart, genomicCodingEnd, variantStart, variantEnd,
-                                          variant.getReference(), variant.getAlternative(), consequenceTypeList, nextCodonNucleotides);
-                            }
-                            nextCodonNucleotides = exonSequence.substring(exonSequence.length()-((exonSequence.length()+nextCodonNucleotides.length())%3));
-                            exonCounter = 1;
-                            if(exonCounter<exonInfoList.size()) {
-                                exonsRemain = true;
-                                exonInfo = (BasicDBObject) exonInfoList.get(exonCounter);
-                                exonStart = (Integer) exonInfo.get("start");
-                                prevSpliceSite = exonEnd;
-                                exonEnd = (Integer) exonInfo.get("end");
-                                exonSequence = (String) exonInfo.get("sequence");
-                                splicing = (splicing || solveJunction(prevSpliceSite,exonStart,variantStart,variantEnd,consequenceTypeList));
-                                while (exonsRemain && (variantStart >= exonStart || variantEnd >= exonStart)) {
-                                    if (variantStart <= exonEnd || variantEnd <= exonEnd) { // Variant falls within exon coordinates
-                                        solveExon(exonSequence, exonStart, exonEnd, genomicCodingStart, genomicCodingEnd, variantStart, variantEnd,
-                                                variant.getReference(), variant.getAlternative(), consequenceTypeList, nextCodonNucleotides);
-                                    }
-                                    exonCounter++;
-                                    if(exonCounter<exonInfoList.size()) {
-                                        nextCodonNucleotides = exonSequence.substring(exonSequence.length()-((exonSequence.length()+nextCodonNucleotides.length())%3));
-                                        exonInfo = (BasicDBObject) exonInfoList.get(exonCounter);
-                                        exonStart = (Integer) exonInfo.get("start");
-                                        prevSpliceSite = exonEnd;
-                                        exonEnd = (Integer) exonInfo.get("end");
-                                        exonSequence = (String) exonInfo.get("sequence");
-                                        solveJunction(prevSpliceSite,exonStart,variantStart,variantEnd,consequenceTypeList);
-                                    } else {
-                                        exonsRemain = false;
+                        cdnaExonEnd = exonEnd-exonStart+1;
+                        transcriptSequence = (String) exonInfo.get("sequence");
+
+                        exonCounter = 1;
+                        while(exonCounter<exonInfoList.size() && !splicing && variantAhead) {
+                            exonInfo = (BasicDBObject) exonInfoList.get(exonCounter);
+                            exonStart = (Integer) exonInfo.get("start");
+                            prevSpliceSite = exonEnd;
+                            exonEnd = (Integer) exonInfo.get("end");
+                            transcriptSequence = transcriptSequence + ((String) exonInfo.get("sequence"));
+                            splicing = (splicing || solveJunction(prevSpliceSite, exonStart, variantStart, variantEnd, consequenceTypeList));
+                            variantAhead = (variantStart >= exonStart || variantEnd >= exonStart);
+
+                            if(variantStart >= exonStart) {
+                                cdnaExonEnd += (exonEnd - exonStart + 1);
+                                if(variantStart <= exonEnd) {  // Variant start within the exon
+                                    cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
+                                    if(variantEnd <= exonEnd) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
+                                        cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
                                     }
                                 }
+                            } else {
+                                if(variantEnd <= exonEnd) {
+                                    if(variantEnd >= exonStart) {  // Only variant end within the exon  ----||||||||||E||||----
+                                        cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
+                                    } else {  // Variant does not include this exon, variant is located before this exon
+                                        variantAhead = false;
+                                    }
+                                } else {  // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
+                                    cdnaExonEnd += (exonEnd - exonStart + 1);
+                                }
                             }
+                            exonCounter++;
                         }
-
-                        if(!splicing) {
-
-                        }
+                        solveCodingTranscriptEffect(splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
+                                variant.getReference(), variant.getAlternative(), consequenceTypeList);
                     }
                 }
             }
