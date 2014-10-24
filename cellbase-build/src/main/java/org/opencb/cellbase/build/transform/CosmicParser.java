@@ -1,5 +1,8 @@
 package org.opencb.cellbase.build.transform;
 
+import org.opencb.biodata.models.variant.clinical.Cosmic;
+import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,9 +10,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.opencb.biodata.models.variant.clinical.Cosmic;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 
 
 /**
@@ -72,7 +72,9 @@ public class CosmicParser extends CellBaseParser {
                 // For each variant contained, check out the sign of the strand
                 if (checkValidVariant(fields[19], fields[13], 1)){ // This function filters complex changes
                     // Create new COSMIC object
-                    serialize(new Cosmic(fields));
+                    Cosmic c = new Cosmic(fields);
+                    serialize(c);
+                    System.out.println("Objeto: "+c);
                 }
             }
         }catch (IOException ex) {
