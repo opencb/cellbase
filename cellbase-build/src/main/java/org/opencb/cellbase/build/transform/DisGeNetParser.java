@@ -33,10 +33,10 @@ public class DisGeNetParser  extends CellBaseParser {
                 if (ensemblIds == null) {
                     ensemblIds = new ArrayList<>();
                     ensemblIds.add(fields[0]);
+                    entrezIdToEnsemblId.put(fields[1], ensemblIds);
                 } else {
                     ensemblIds.add(fields[0]);
                 }
-                entrezIdToEnsemblId.put(fields[1], ensemblIds);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -111,7 +111,6 @@ public class DisGeNetParser  extends CellBaseParser {
             if (disGeNetRecord.getDiseases().get(i).getDiseaseId().equals(diseaseId)){
                 disGeNetRecord.getDiseases().get(i).getAssociationTypes().add(associationType);
                 disGeNetRecord.getDiseases().get(i).getSources().addAll(sources);
-                disGeNetMap.put(geneId, disGeNetRecord);
                 disease_found = true;
             }
         }
@@ -120,6 +119,5 @@ public class DisGeNetParser  extends CellBaseParser {
                     new DisGeNet.Disease(diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
             disGeNetRecord.getDiseases().add(diseaseToAddToExitsGene);
         }
-        // TODO: no need to put the object again in the map?
     }
 }

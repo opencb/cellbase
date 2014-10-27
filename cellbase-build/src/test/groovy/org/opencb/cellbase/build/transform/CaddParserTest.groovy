@@ -15,13 +15,14 @@ class CaddParserTest extends Specification {
     def caddParserChr1
     def caddParserChrX
     def serializer
-    def serializedVariants = new ArrayList<Cadd>()
+    List<Cadd> serializedVariants
 
     def setup() {
         // custom test serializer that adds the serialized variants to a list
         serializer = Mock(CellBaseSerializer)
         serializedVariants = new ArrayList<Cadd>()
         serializer.serialize(_) >> { Cadd arg -> serializedVariants.add(arg) }
+
         def caddFile = Paths.get(VariantEffectParserTest.class.getResource("/caddTest.tsv.gz").toURI())
         caddParserChr1 = new CaddParser(serializer, caddFile, "1")
         caddParserChrX  = new CaddParser(serializer, caddFile, "X")
