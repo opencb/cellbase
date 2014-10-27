@@ -25,8 +25,15 @@ class CosmicParserTest extends Specification {
         cosmicParser = new CosmicParser(serializer, cosmicFile)
     }
 
+    def "Parse"() {
+        when:
+        cosmicParser.parse()
+        then: "serialize 4 variants"
+        4 * serializer.serialize(_)
+    }
+
     @Unroll
-    def "parsed variant #chr:#start-#end #ref #alt has #scores cosmic score values"() {
+    def "parsed variant #chr:#start-#end #ref #alt cosmic values"() {
         given:
         cosmicParser.parse()
 

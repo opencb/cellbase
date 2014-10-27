@@ -122,12 +122,14 @@ public class CosmicParser extends CellBaseParser {
 
     private boolean checkValidInsertion(String ins) {
         boolean validVariant = true;
-        
+
         if (ins.matches("\\d+")) {
             //c.503_508ins30
             validVariant = false;
+        } else if(ins.matches("[a-zA-Z]+.+")){
+            validVariant = false;
         }
-        
+
         return validVariant;
     }
 
@@ -143,13 +145,13 @@ public class CosmicParser extends CellBaseParser {
         } else if(mutationCDSArray[1].length() > deletionLength) {// c.503_508delCCT and deletionLength=1 (for example)
             validVariant = false;
         }
-        
+
         return validVariant;
     }
 
     private boolean checkValidSustitution(String mutation_CDS) {
         boolean validVariant = true;
-        
+
         // Avoid changes of type c.8668CC>G, c.8668CC>GG, c.8668CC>GGG, c.8668CSSSSSC>G, etc
         String ref = null;
         String alt = mutation_CDS.split(">")[1];
@@ -163,8 +165,11 @@ public class CosmicParser extends CellBaseParser {
         if(ref == null || ref.isEmpty() || alt.isEmpty() || ref.length() > 1 || alt.length() > 1) {
             // Avoid variants with more than a single change (in either ref or alt)
             validVariant = false; // for example,c.8668CC>G
+        } else if(alt.matches("\\d+")){
+            // Not valid if the substitution is a number
+            validVariant = false;
         }
-        
+
         return validVariant;
     }
 }
