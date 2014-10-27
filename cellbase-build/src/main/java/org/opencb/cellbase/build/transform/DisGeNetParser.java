@@ -21,11 +21,44 @@ public class DisGeNetParser  extends CellBaseParser {
         this.entrezIdToEnsemblIdFile = entrezIdToEnsemblIdFile;
     }
 
+    public void parse() {
+        Map<String, List<String>> entrezIdToEnsemblIdMap = parseEntrezIdToEnsemblIdFile(entrezIdToEnsemblIdFile);
+        Map<String,DisGeNet> disGeNetMap = new HashMap<>();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(disGeNetFilePath.toFile())))) {
+            logger.info("Parsing DisGeNet file " + disGeNetFilePath + " ...");
+            reader.readLine(); // First line is the header -> ignore it
+
+            long processedDisGeNetLines = fillDisGeNetMap(entrezIdToEnsemblIdMap, disGeNetMap, reader);
+            logger.info("Done");
+
+            logger.info("Seializing parsed variants ...");
+            Collection <DisGeNet> allDisGeNetRecords = disGeNetMap.values();
+            for (DisGeNet disGeNetRecord : allDisGeNetRecords){
+                serialize(disGeNetRecord);
+            }
+            logger.info("Done");
+            this.printSummary(processedDisGeNetLines, allDisGeNetRecords.size());
+
+        } catch (FileNotFoundException e) {
+            logger.error("DisGeNet file " + disGeNetFilePath + " not found");
+        } catch (IOException e) {
+            logger.error("Error reading DisGeNet file " + disGeNetFilePath + ": " + e.getMessage());
+        }
+    }
+
+    private void printSummary(long processedDisGeNetLines, long serializedGenes) {
+        logger.info("");
+        logger.info("Summary");
+        logger.info("=======");
+        logger.info("Processed " + processedDisGeNetLines + " disGeNet file lines");
+        logger.info("Serialized " + serializedGenes + " genes");
+    }
 
     private Map<String, List<String>> parseEntrezIdToEnsemblIdFile(Path entrezIdToEnsemblIdFile) {
+        logger.info("Parsing \"entrezId to Ensembl Id\" file " + entrezIdToEnsemblIdFile + " ...");
         Map<String, List<String>> entrezIdToEnsemblId = new HashMap<>();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(entrezIdToEnsemblIdFile.toFile())));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(entrezIdToEnsemblIdFile.toFile())))) {
             reader.readLine(); // First line is the header -> ignore it
             for (String line; (line = reader.readLine()) != null;) {
                 String[] fields = line.split("\t");
@@ -38,38 +71,21 @@ public class DisGeNetParser  extends CellBaseParser {
                     ensemblIds.add(fields[0]);
                 }
             }
+            reader.close();
+            logger.info("Done");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error("File " + entrezIdToEnsemblIdFile + " doesn't exist");
+            logger.error("Ensembl Ids won't be added to DisGeNet objects");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error reading "+ entrezIdToEnsemblIdFile + ": " + e.getMessage());
+            logger.error("Ensembl Ids won't be added to DisGeNet objects");
         }
-        // TODO: treat exceptions
         return entrezIdToEnsemblId;
     }
 
-    public void parse() {
-        Map<String, List<String>> entrezIdToEnsemblIdMap = this.parseEntrezIdToEnsemblIdFile(this.entrezIdToEnsemblIdFile);
-        Map<String,DisGeNet> disGeNetMap = new HashMap<>();
+    private long fillDisGeNetMap(Map<String, List<String>> entrezIdToEnsemblIdMap, Map<String, DisGeNet> disGeNetMap, BufferedReader reader) throws IOException {
+        long linesProcessed = 0;
 
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(this.disGeNetFilePath.toFile())));
-            reader.readLine(); // First line is the header -> ignore it
-
-            fillDisGeNetMap(entrezIdToEnsemblIdMap, disGeNetMap, reader);
-
-            Collection <DisGeNet> allDisGeNetRecords = disGeNetMap.values();
-            for (DisGeNet one_disgenet : allDisGeNetRecords){
-                serialize(one_disgenet);
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void fillDisGeNetMap(Map<String, List<String>> entrezIdToEnsemblIdMap, Map<String, DisGeNet> disGeNetMap, BufferedReader reader) throws IOException {
         String line;
         while ((line = reader.readLine()) != null){
             String[] fields = line.split("\t");
@@ -87,12 +103,16 @@ public class DisGeNetParser  extends CellBaseParser {
 
             if (geneId != null && geneId !=""){
                 if (disGeNetMap.get(geneId) != null){
-                    updateElementDisGeNetMap(disGeNetMap, geneId, ensemblGeneIds, diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
+                    updateElementDisGeNetMap(disGeNetMap, geneId, diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
                 } else {
                     insertNewElementToDisGeNetMap(disGeNetMap, geneId, ensemblGeneIds, geneSymbol, geneName, diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
                 }
             }
+
+            linesProcessed++;
         }
+
+        return linesProcessed;
     }
 
     private void insertNewElementToDisGeNetMap(Map<String, DisGeNet> disGeNetMap, String geneId, List<String> ensemblGeneIds, String geneSymbol, String geneName, String diseaseId, String diseaseName, Float score, Integer numberOfPubmeds, String associationType, Set<String> sources) {
@@ -104,7 +124,7 @@ public class DisGeNetParser  extends CellBaseParser {
         disGeNetMap.put(geneId, disGeNet);
     }
 
-    private void updateElementDisGeNetMap(Map<String, DisGeNet> disGeNetMap, String geneId, List<String> ensemblGeneIds, String diseaseId, String diseaseName, Float score, Integer numberOfPubmeds, String associationType, Set<String> sources) {
+    private void updateElementDisGeNetMap(Map<String, DisGeNet> disGeNetMap, String geneId, String diseaseId, String diseaseName, Float score, Integer numberOfPubmeds, String associationType, Set<String> sources) {
         DisGeNet disGeNetRecord = disGeNetMap.get(geneId);
         Boolean disease_found = false;
         for (int i = 0; i < disGeNetRecord.getDiseases().size(); i++){
