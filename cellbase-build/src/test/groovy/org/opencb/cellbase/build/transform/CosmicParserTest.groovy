@@ -45,10 +45,10 @@ class CosmicParserTest extends Specification {
         serializedVariants[variantNumber].alternate.equals(alt)
 
         where:
-        variantNumber || chr | start | end | ref | alt
-        0 || "1" | 87369101 | 87369101 | "G" | "T"
-        1 || "7" | 132719840 | 132719840 | "G" | "A"
-        2 || "19" | 58863845 | 58863845 | "C" | "A"
-        3 || "1" | 78047725 | 78047725 | "T" | "A"
+        variantNumber ||  chr | start     | end       | ref | alt
+        0             || "12" | 25398285  | 25398285  | "G" | "T"
+        1             || "1"  | 215793922 | 215793922 | "A" | "-"
+        2             || "4"  | 152069187 | 152069188 | "-" | "A"
+        3             || "17" | 7578478   | 7578478   | "C" | "T"
     }
 }

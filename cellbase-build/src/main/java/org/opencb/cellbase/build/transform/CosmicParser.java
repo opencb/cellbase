@@ -22,6 +22,12 @@ public class CosmicParser extends CellBaseParser {
     private final CellBaseSerializer serializer;
     private final Path cosmicFilePath;
     private Pattern pattern;
+    private long invalidPositionLines;
+    private long invalidSubstitutionLines;
+    private long invalidInsertionLines;
+    private long invalidDeletionLines;
+    private long invalidDuplicationLines;
+    private long invalidIntronicLines;
 
     public CosmicParser(CellBaseSerializer serializer, Path cosmicFilePath){
         super(serializer);
@@ -31,34 +37,9 @@ public class CosmicParser extends CellBaseParser {
     }
 
     public void parse() {
-        // COSMIC file is a tab-delimited file with the following fields (columns)
-        // 0 Gene name
-        // 1 Accession Number
-        // 2 Gene CDS length
-        // 3 HGNC ID
-        // 4 Sample name
-        // 5 ID sample
-        // 6 ID tumour
-        // 7 Primary site
-        // 8 Site subtype
-        // 9 Primary histology
-        // 10 Histology subtype
-        // 11 Genome-wide screen
-        // 12 Mutation ID
-        // 13 Mutation CDS
-        // 14 Mutation AA
-        // 15 Mutation Description
-        // 16 Mutation zygosity
-        // 17 Mutation NCBI36 genome position
-        // 18 Mutation NCBI36 strand
-        // 19 Mutation GRCh37 genome position
-        // 20 Mutation GRCh37 strand
-        // 21 Mutation somatic status
-        // 22 PubMed PMID
-        // 23 Sample source
-        // 24 Tumour origin
-        // 25 Age
-        // 26 Comments
+        logger.info("Parsing cosmic file ...");
+        long processedCosmicLines = 0, ignoredCosmicLines = 0;
+        this.invalidPositionLines = 0;
 
         try {
             BufferedReader cosmicReader = new BufferedReader(new InputStreamReader(new FileInputStream(cosmicFilePath.toFile())));
@@ -68,18 +49,36 @@ public class CosmicParser extends CellBaseParser {
 
             while ((line = cosmicReader.readLine()) != null) {
                 String[] fields = line.split("\t", 27);
+                processedCosmicLines++;
+                Cosmic cosmic = new Cosmic(fields);
 
                 // For each variant contained, check out the sign of the strand
-                if (checkValidVariant(fields[19], fields[13], 1)){ // This function filters complex changes
+                if (checkValidVariant(cosmic.getMutation_GRCh37_genome_position(), cosmic.getMutation_CDS(), 1)){ // This function filters complex changes
                     // Create new COSMIC object
-                    Cosmic c = new Cosmic(fields);
-                    serialize(c);
-                    System.out.println("Objeto: "+c);
+                    logger.info("Serialize mutation of "+cosmic.getChromosome()+":"+cosmic.getStart()+"-"+cosmic.getEnd());
+                    serialize(cosmic);
+                    System.out.println("Objeto: "+cosmic);
                 }
             }
         }catch (IOException ex) {
             ex.printStackTrace();
+        } finally {
+            logger.info("Done");
+            this.printSummary(processedCosmicLines, ignoredCosmicLines);
         }
+    }
+
+    private void printSummary(long processedCosmicLines, long ignoredCosmicLines) {
+        logger.info("");
+        logger.info("Summary");
+        logger.info("=======");
+        logger.info("Processed " + processedCosmicLines + " cosmic lines");
+        logger.info(ignoredCosmicLines + " cosmic lines ignored: ");
+        logger.info("\t\t--"+this.invalidPositionLines+" lines by invalid position");
+        logger.info("\t\t--"+this.invalidSubstitutionLines+" lines by invalid substitutions");
+        logger.info("\t\t--"+this.invalidDeletionLines+" lines by invalid deletions");
+        logger.info("\t\t--"+this.invalidDuplicationLines+" lines by duplications");
+        logger.info("\t\t--"+this.invalidIntronicLines+" lines by intronic values");
     }
 
     /**
@@ -94,16 +93,28 @@ public class CosmicParser extends CellBaseParser {
 
         if (genomePosition.equals(("")) || mutation_CDS.contains("?")) {
             validVariant = false;
+            this.invalidPositionLines++;
         } else if(mutation_CDS.contains(">")) {
             validVariant = checkValidSustitution(mutation_CDS);
+            if(!validVariant){
+                this.invalidSubstitutionLines++;
+            }
         } else if(mutation_CDS.contains("del")) {
             validVariant = checkValidDeletion(mutation_CDS, deletionLength);
+            if(!validVariant){
+                this.invalidDeletionLines++;
+            }
         } else if(mutation_CDS.contains("ins")) {
             validVariant = checkValidInsertion(mutation_CDS.split("ins")[1]);
+            this.invalidInsertionLines++;
         } else if(mutation_CDS.contains("dup")) {
             validVariant = checkValidDuplication(mutation_CDS);
+            if(!validVariant){
+                this.invalidDuplicationLines++;
+            }
         } else if(mutation_CDS.contains("Intronic")){
         	validVariant = false;
+            this.invalidIntronicLines++;
         }
 
         return validVariant;
@@ -166,7 +177,6 @@ public class CosmicParser extends CellBaseParser {
             // Avoid variants with more than a single change (in either ref or alt)
             validVariant = false; // for example,c.8668CC>G
         } else if(alt.matches("\\d+")){
-            // Not valid if the substitution is a number
             validVariant = false;
         }
 
