@@ -55,9 +55,7 @@ public class CosmicParser extends CellBaseParser {
                 // For each variant contained, check out the sign of the strand
                 if (checkValidVariant(cosmic.getMutation_GRCh37_genome_position(), cosmic.getMutation_CDS(), 1)){ // This function filters complex changes
                     // Create new COSMIC object
-                    logger.info("Serialize mutation of "+cosmic.getChromosome()+":"+cosmic.getStart()+"-"+cosmic.getEnd());
                     serialize(cosmic);
-                    System.out.println("Objeto: "+cosmic);
                 }
             }
         }catch (IOException ex) {
