@@ -32,7 +32,7 @@ public class ClinVarWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("clinVarAcc") String query) {
         try {
             checkVersionAndSpecies();
-            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.version);
+            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinVarDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();

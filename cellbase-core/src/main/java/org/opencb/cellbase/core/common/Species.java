@@ -1,13 +1,21 @@
-package org.opencb.cellbase.server;
+package org.opencb.cellbase.core.common;
 
 public class Species {
 
 	private String species;
 	private String common;
 	private String scientific;
-	private String assembly;
-	
-	public Species(String shortName, String commonName, String scientificName, String assembly) {
+    private String assembly;
+    private String taxonomy;
+
+    public Species(String species, String assembly, String taxonomy) {
+        super();
+        this.species = species;
+        this.assembly = assembly;
+        this.taxonomy = taxonomy;
+    }
+
+    public Species(String shortName, String commonName, String scientificName, String assembly) {
 		super();
 		this.species = shortName;
 		this.common = commonName;

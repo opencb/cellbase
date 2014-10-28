@@ -14,16 +14,23 @@ import java.util.*;
 
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor {
 
+    private int coreChunkSize = 5000;
 
-    public GeneMongoDBAdaptor(DB db) {
-        super(db);
-    }
+    public GeneMongoDBAdaptor(DB db) { super(db); }
 
-    public GeneMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
+    public GeneMongoDBAdaptor(DB db, String species, String assembly) {
+        super(db, species, assembly);
         mongoDBCollection = db.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
+    }
+
+    public GeneMongoDBAdaptor(DB db, String species, String assembly, int coreChunkSize) {
+        super(db, species, assembly);
+        mongoDBCollection = db.getCollection("gene");
+
+        logger.info("GeneMongoDBAdaptor: in 'constructor'");
+        this.coreChunkSize = coreChunkSize;
     }
 
     @Override
@@ -99,7 +106,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult getAllBiotypes(QueryOptions options) {
-        String[] biotypes = applicationProperties.getProperty("CELLBASE."+version.toUpperCase()+".BIOTYPES").split(",");
+
+//        QueryBuilder builder = QueryBuilder.start("gene.biotype").(id);  //TODO query distinct biotypes in gene collection
+
+
+        String[] biotypes = applicationProperties.getProperty("CELLBASE.V3.BIOTYPES").split(",");
         QueryResult queryResult = new QueryResult();
         queryResult.setId("result");
         DBObject result = new BasicDBObject("biotypes", biotypes);
@@ -155,7 +166,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             QueryBuilder builder = null;
             // If regions is 1 position then query can be optimize using chunks
             if (region.getStart() == region.getEnd()) {
-                builder = QueryBuilder.start("chunkIds").is(getChunkPrefix(region.getChromosome(), region.getStart(), Integer.parseInt(applicationProperties.getProperty("CORE_CHUNK_SIZE", "5000")))).and("end")
+                builder = QueryBuilder.start("chunkIds").is(getChunkPrefix(region.getChromosome(), region.getStart(), coreChunkSize)).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             } else {
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")

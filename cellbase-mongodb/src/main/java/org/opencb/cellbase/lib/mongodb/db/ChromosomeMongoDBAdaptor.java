@@ -1,9 +1,6 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBObject;
+import com.mongodb.*;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -19,11 +16,28 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
         super(db);
     }
 
-    public ChromosomeMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
+    public ChromosomeMongoDBAdaptor(DB db, String species, String assembly) {
+        super(db, species, assembly);
         mongoDBCollection = db.getCollection("genome_info");
     }
 
+
+    public QueryResult speciesInfoTmp(String id, QueryOptions options){
+        // reading application.properties file
+
+//        String[] speciesArray = applicationProperties.getProperty("SPECIES").split(",");
+
+//        List<DBObject> queries = new ArrayList<>(1);
+//        for (String id : idList) {
+        QueryBuilder builder = QueryBuilder.start("species").is(id);
+
+//        queries.add(builder.get());
+//        }
+
+//        options = addExcludeReturnFields("transcripts", options);
+        return executeQuery(id, builder.get(), options);
+
+    }
 
     @Override
     public QueryResult getAll(QueryOptions options) {

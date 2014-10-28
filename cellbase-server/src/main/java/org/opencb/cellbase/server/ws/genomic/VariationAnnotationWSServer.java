@@ -32,7 +32,7 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
                                              @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
 
         List<GenomicVariant> genomicVariantList = GenomicVariant.parseVariants(variants);
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.version);
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
 //        TabixReader currentTabix = null;
 //        String line = "";
 //        String document = "";

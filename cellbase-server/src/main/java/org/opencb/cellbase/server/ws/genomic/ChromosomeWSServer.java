@@ -30,7 +30,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomesAll() {
 		try {
 			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			return createOkResponse(dbAdaptor.getAll(queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -43,7 +43,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomes() {
 		try {
 			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			QueryOptions options = new QueryOptions();
 			options.put("include", "chromosomes.name");
 			return createOkResponse(dbAdaptor.getAll(options));
@@ -58,7 +58,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomes(@PathParam("chromosomeName") String query) {
 		try {
 			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			return createOkResponse(dbAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -71,7 +71,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomeSize(@PathParam("chromosomeName") String query) {
 		try {
 			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			QueryOptions options = new QueryOptions();
 			options.put("include", "size");
 			return createOkResponse(dbAdaptor.getById(query, options));
@@ -86,7 +86,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getByChromosomeName(@PathParam("chromosomeName") String query) {
 		try {
 			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
