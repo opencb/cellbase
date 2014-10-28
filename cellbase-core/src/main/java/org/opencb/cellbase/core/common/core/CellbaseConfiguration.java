@@ -21,7 +21,7 @@ public class CellbaseConfiguration {
     private int conservedRegionChunkSize = 2000;
     private Map<String, String> speciesAlias = new HashMap<>();
     private Map<String, Map<String,Species>> availableSpeciesInfo = new HashMap<>();
-    private Map<String, Map<String,ConnectionParameters>> availableSpeciesConnection = new HashMap<>();;
+    private Map<String, Map<String,ConnectionParameters>> availableSpeciesConnection = new HashMap<>();
 
     class ConnectionParameters {
         private String host;

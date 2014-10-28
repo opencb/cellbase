@@ -75,6 +75,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         geneticCode.get("TYR").add("TAT"); geneticCode.get("TYR").add("TAC");
         geneticCode.put("VAL",new ArrayList<String>());
         geneticCode.get("VAL").add("GTT"); geneticCode.get("VAL").add("GTC"); geneticCode.get("VAL").add("GTA"); geneticCode.get("VAL").add("GTG");
+        geneticCode.put("STOP",new ArrayList<String>());
+        geneticCode.get("STOP").add("TAA"); geneticCode.get("STOP").add("TGA"); geneticCode.get("STOP").add("TAG");
 
         for(String aa : geneticCode.keySet()) {
             for(String codon : geneticCode.get(aa)) {
@@ -150,11 +152,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 if(variantRef.length()%3 == 0) {
                     if (variantPhaseShift == 0) {  // Check deletion starts at the first position of a codon
                         consequenceTypeList.add("inframe_deletion");  // TODO: check that I correctly interpreted the meaning of this consequence type
-                    } else {
-                        newCodon = modifiedCodonPrefix+exonSequence.substring(variantEnd-exonStart+1,variantEnd-exonStart+1+(3-modifiedCodonPrefix.length()));
-                        if(isStopCodon(newCodon)) {
-                            consequenceTypeList.add("stop_gained");
-                        }
                     }
                 } else {
                     consequenceTypeList.add("frameshift_variant");
@@ -207,147 +204,137 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private void solveExon(String exonSequence, Integer exonStart, Integer exonEnd, Integer genomicCodingStart, Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
-                             String variantRef, String variantAlt, List<String> consequenceTypeList, String previousCodonNucleotides) {
-        if(genomicCodingStart <= exonStart) {
-            if(genomicCodingEnd >= exonEnd) {  // The whole exon is coding  -----CCCCCCCCCCCCC------
-                consequenceTypeList.add("coding_sequence_variant");
-                solveCodingExonEffect(previousCodonNucleotides, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
-            } else { // Exon contains UTR
-                if(genomicCodingEnd < exonStart) {  // Whole exon is 3'UTR   -----UUUUUUUUUUUUU------
-                    consequenceTypeList.add("3_prime_UTR_variant");
-                } else {  // Right part of the exon is UTR, left is coding  -----CCCCCCCUUUUUU------
-                    if (regionsOverlap(genomicCodingEnd, exonEnd, variantStart, variantEnd)) {  // Variant overlaps UTR
-                        consequenceTypeList.add("3_prime_UTR_variant");
-                        if (regionsOverlap(exonStart, genomicCodingEnd, variantStart, variantEnd)) {  // Variant also overlaps coding region
-                            consequenceTypeList.add("coding_sequence_variant");
-                        } else {  // Variant does not overlap coding region
-                            solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                        }
-                    } else {  // Variant just overlaps coding region
-                        consequenceTypeList.add("coding_sequence_variant");
-                        solveCodingEffect(prevNts, exonSequence, exonStart, genomicCodingEnd, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                    }
-                }
-            }
-        } else {
-            if (genomicCodingEnd >= exonEnd) {
-                if (genomicCodingStart > exonEnd) {  // Whole exon is 5'UTR  -----UUUUUUUUUUUUU------
-                    consequenceTypeList.add("5_prime_UTR_variant");
-                    solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                } else {  // Left part of the exon is 5'UTR, right part of the exon is coding  -----UUUUUUUCCCCCC------
-                    if (regionsOverlap(exonStart,genomicCodingStart,variantStart,variantEnd)) {  // Variant overlaps UTR
-                        consequenceTypeList.add("5_prime_UTR_variant");
-                        if (regionsOverlap(genomicCodingStart,exonEnd,variantStart,variantEnd)) {  // Variant also overlaps coding region
-                            consequenceTypeList.add("coding_sequence_variant");
-                        } else {  // Variant does not overlap coding region
-                            solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                        }
-                    } else {  // Variant just overlaps coding region
-                        consequenceTypeList.add("coding_sequence_variant");
-                        solveCodingEffect(prevNts, exonSequence, exonStart, genomicCodingEnd, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                    }
-                }
-            } else {  //  Exon contains 5'UTR-coding-3'UTR  -----UUUUCCCCCUUUU------
-                if (regionsOverlap(exonStart,genomicCodingStart,variantStart,variantEnd)) {  // Variant overlaps 5'UTR
-                    consequenceTypeList.add("5_prime_UTR_variant");
-                    if(regionsOverlap(genomicCodingStart,genomicCodingEnd,variantStart,variantEnd)) {  // Variant also overlaps codon region
-                        consequenceTypeList.add("coding_sequence_variant");
-                    } else {  // Variant just overlaps 5'UTR
-                        solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                    }
-                } else {
-                    if (regionsOverlap(genomicCodingEnd,exonEnd,variantStart,variantEnd)) {  // Variant overlaps 3'UTR
-                        consequenceTypeList.add("5_prime_UTR_variant");
-                        if (regionsOverlap(genomicCodingStart,genomicCodingEnd,variantStart,variantEnd)) {
-                            consequenceTypeList.add("coding_sequence_variant");
-                        } else {  // Variant just overlaps 3'UTR
-                            solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                        }
-                    } else {  // Variant just overlaps coding region
-                        consequenceTypeList.add("coding_sequence_variant");
-                        solveCodingEffect(prevNts, exonSequence, exonStart, genomicCodingEnd, variantEnd, variantRef, variantAlt, consequenceTypeList);
-                    }
-                }
-            }
-        }
-    }
+//    private void solveExon(String exonSequence, Integer exonStart, Integer exonEnd, Integer genomicCodingStart, Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
+//                             String variantRef, String variantAlt, List<String> consequenceTypeList, String previousCodonNucleotides) {
+//        if(genomicCodingStart <= exonStart) {
+//            if(genomicCodingEnd >= exonEnd) {  // The whole exon is coding  -----CCCCCCCCCCCCC------
+//                consequenceTypeList.add("coding_sequence_variant");
+//                solveCodingExonEffect(previousCodonNucleotides, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//            } else { // Exon contains UTR
+//                if(genomicCodingEnd < exonStart) {  // Whole exon is 3'UTR   -----UUUUUUUUUUUUU------
+//                    consequenceTypeList.add("3_prime_UTR_variant");
+//                } else {  // Right part of the exon is UTR, left is coding  -----CCCCCCCUUUUUU------
+//                    if (regionsOverlap(genomicCodingEnd, exonEnd, variantStart, variantEnd)) {  // Variant overlaps UTR
+//                        consequenceTypeList.add("3_prime_UTR_variant");
+//                        if (regionsOverlap(exonStart, genomicCodingEnd, variantStart, variantEnd)) {  // Variant also overlaps coding region
+//                            consequenceTypeList.add("coding_sequence_variant");
+//                        } else {  // Variant does not overlap coding region
+//                            solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                        }
+//                    } else {  // Variant just overlaps coding region
+//                        consequenceTypeList.add("coding_sequence_variant");
+//                        solveCodingEffect(prevNts, exonSequence, exonStart, genomicCodingEnd, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                    }
+//                }
+//            }
+//        } else {
+//            if (genomicCodingEnd >= exonEnd) {
+//                if (genomicCodingStart > exonEnd) {  // Whole exon is 5'UTR  -----UUUUUUUUUUUUU------
+//                    consequenceTypeList.add("5_prime_UTR_variant");
+//                    solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                } else {  // Left part of the exon is 5'UTR, right part of the exon is coding  -----UUUUUUUCCCCCC------
+//                    if (regionsOverlap(exonStart,genomicCodingStart,variantStart,variantEnd)) {  // Variant overlaps UTR
+//                        consequenceTypeList.add("5_prime_UTR_variant");
+//                        if (regionsOverlap(genomicCodingStart,exonEnd,variantStart,variantEnd)) {  // Variant also overlaps coding region
+//                            consequenceTypeList.add("coding_sequence_variant");
+//                        } else {  // Variant does not overlap coding region
+//                            solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                        }
+//                    } else {  // Variant just overlaps coding region
+//                        consequenceTypeList.add("coding_sequence_variant");
+//                        solveCodingEffect(prevNts, exonSequence, exonStart, genomicCodingEnd, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                    }
+//                }
+//            } else {  //  Exon contains 5'UTR-coding-3'UTR  -----UUUUCCCCCUUUU------
+//                if (regionsOverlap(exonStart,genomicCodingStart,variantStart,variantEnd)) {  // Variant overlaps 5'UTR
+//                    consequenceTypeList.add("5_prime_UTR_variant");
+//                    if(regionsOverlap(genomicCodingStart,genomicCodingEnd,variantStart,variantEnd)) {  // Variant also overlaps codon region
+//                        consequenceTypeList.add("coding_sequence_variant");
+//                    } else {  // Variant just overlaps 5'UTR
+//                        solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                    }
+//                } else {
+//                    if (regionsOverlap(genomicCodingEnd,exonEnd,variantStart,variantEnd)) {  // Variant overlaps 3'UTR
+//                        consequenceTypeList.add("5_prime_UTR_variant");
+//                        if (regionsOverlap(genomicCodingStart,genomicCodingEnd,variantStart,variantEnd)) {
+//                            consequenceTypeList.add("coding_sequence_variant");
+//                        } else {  // Variant just overlaps 3'UTR
+//                            solveStopCodonGain(prevNts, exonSequence, exonStart, exonEnd, variantStart, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                        }
+//                    } else {  // Variant just overlaps coding region
+//                        consequenceTypeList.add("coding_sequence_variant");
+//                        solveCodingEffect(prevNts, exonSequence, exonStart, genomicCodingEnd, variantEnd, variantRef, variantAlt, consequenceTypeList);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     private void solveCodingEffect(Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
                                    Integer cdnaVariantStart, Integer cdnaVariantEnd, String variantRef, String variantAlt,
-                                   List<String> consequenceTypeList) {
+                                   HashSet<String> consequenceTypeList) {
         // TODO: lo q hay dentro de esta funcion es copia pega de solveCodingExonEffect. Arreglarlo. Es basicamente igual,
         // TODO: una vez aqui dentro ya se q la variante esta entre cdnaVariantStart y cdnaVariantEnd. Hay que comprobar
         // TODO: los codones incio/fin. El resto es igual, solo q antes de ponerse a identificar el codon que modifica la variante
         // TODO: hay que comprobar si es un splicing o no. En caso de ser un splicing q no se haga nada, no hay prediccion posible
-    Integer variantPhaseShift = (variantStart-(exonStart-previousCodonNucleotides.length())) % 3;
-        Integer modifiedCodonRelativeStart = variantStart-variantPhaseShift-exonStart;
-        String modifiedCodonPrefix;
+        Integer variantPhaseShift = (cdnaVariantStart-cdnaCodingStart) % 3;
+        String modifiedCodonPrefix,altSuffix;
         String newCodon;
+
+        if(cdnaVariantStart<(cdnaCodingStart+4)) {
+            consequenceTypeList.add("initiator_codon_variant");
+        }
+
+        if(cdnaVariantEnd>(cdnaCodingEnd-4)) {
+            if(cdnaVariantStart==cdnaVariantEnd) {
+                int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+                String referenceCodon = transcriptSequence.substring(modifiedCodonStart, modifiedCodonStart + 3);
+                char[] modifiedCodonArray = referenceCodon.toCharArray();
+                modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
+                if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
+                    consequenceTypeList.add("stop_retained_variant");
+                } else {
+                    consequenceTypeList.add("stop_lost");
+                }
+            }  else {
+                consequenceTypeList.add("stop_lost");
+            }
+        }
+
         if(variantAlt.equals("-")) {  // Deletion
             consequenceTypeList.add("feature_truncation");
-            if(variantStart >= exonStart && variantEnd <= exonEnd) {  // Deletion does not go beyond exon limits
-                if(modifiedCodonRelativeStart < 0) {
-                    modifiedCodonPrefix = previousCodonNucleotides+exonSequence.substring(0,variantStart-exonStart);
-                } else {
-                    modifiedCodonPrefix = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + variantPhaseShift);
-                }
-
-                if(variantRef.length()%3 == 0) {
-                    if (variantPhaseShift == 0) {  // Check deletion starts at the first position of a codon
+            if(!splicing) {
+                if (variantRef.length() % 3 == 0) {
                         consequenceTypeList.add("inframe_deletion");  // TODO: check that I correctly interpreted the meaning of this consequence type
-                    } else {
-                        newCodon = modifiedCodonPrefix+exonSequence.substring(variantEnd-exonStart+1,variantEnd-exonStart+1+(3-modifiedCodonPrefix.length()));
-                        if(isStopCodon(newCodon)) {
-                            consequenceTypeList.add("stop_gained");
-                        }
-                    }
                 } else {
                     consequenceTypeList.add("frameshift_variant");
-                    newCodon = modifiedCodonPrefix+exonSequence.substring(variantEnd-exonStart+1,variantEnd-exonStart+1+(3-modifiedCodonPrefix.length()));
-                    if(isStopCodon(newCodon)) {
-                        consequenceTypeList.add("stop_gained");
-                    }
+//                    modifiedCodonPrefix = transcriptSequence.substring(cdnaVariantStart-variantPhaseShift, cdnaVariantStart);
+//                    if (gainsStopCodon(modifiedCodonPrefix+transcriptSequence.substring(cdnaVariantEnd+1,cdnaCodingEnd-2))) {
+//                        consequenceTypeList.add("stop_gained");
+//                    }
                 }
             }
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
                 consequenceTypeList.add("feature_elongation");
-                if(variantAlt.length()%3 == 0) {
-                    if (variantPhaseShift == 0) {  // Check insertion starts at the first position of a codon
+                if(!splicing) {
+                    if(variantAlt.length()%3 == 0) {
                         consequenceTypeList.add("inframe_insertion");  // TODO: check that I correctly interpreted the meaning of this consequence type
-                        if (gainsStopCodon(variantAlt)) {
-                            consequenceTypeList.add("stop_gained");
-                        }
                     } else {
-                        if (modifiedCodonRelativeStart < 0) {
-                            modifiedCodonPrefix = previousCodonNucleotides + exonSequence.substring(0, variantStart - exonStart);
-                        } else {
-                            modifiedCodonPrefix = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + variantPhaseShift);
-                        }
-                        if (gainsStopCodon(modifiedCodonPrefix + variantAlt)) {
-                            consequenceTypeList.add("stop_gained");
-                        }
-                    }
-                } else {
-                    consequenceTypeList.add("frameshift_variant");
-                    if (modifiedCodonRelativeStart < 0) {
-                        modifiedCodonPrefix = previousCodonNucleotides + exonSequence.substring(0, variantStart - exonStart);
-                    } else {
-                        modifiedCodonPrefix = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + variantPhaseShift);
-                    }
-                    if (gainsStopCodon(modifiedCodonPrefix + variantAlt)) {
-                        consequenceTypeList.add("stop_gained");
+                        consequenceTypeList.add("frameshift_variant");
                     }
                 }
             } else {  // SNV
-                String referenceCodon = exonSequence.substring(modifiedCodonRelativeStart, modifiedCodonRelativeStart + 3);
-                char[] modifiedCodonArray = referenceCodon.toCharArray();
-                modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
-                if(isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))){
-                    consequenceTypeList.add("synonymous_variant");
-                } else {
-                    consequenceTypeList.add("missense_variant");
+                if(!splicing) {
+                    int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+                    String referenceCodon = transcriptSequence.substring(modifiedCodonStart, modifiedCodonStart + 3);
+                    char[] modifiedCodonArray = referenceCodon.toCharArray();
+                    modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
+                    if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
+                        consequenceTypeList.add("synonymous_variant");
+                    } else {
+                        consequenceTypeList.add("missense_variant");
+                    }
                 }
             }
         }
@@ -355,7 +342,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
     private void solveCodingTranscriptEffect(Boolean splicing, String transcriptSequence, Integer cdnaCodingStart,
                                              Integer cdnaCodingEnd, Integer cdnaVariantStart, Integer cdnaVariantEnd,
-                                             String variantRef, String variantAlt, List<String> consequenceTypeList) {
+                                             String variantRef, String variantAlt, HashSet<String> consequenceTypeList) {
         if(cdnaVariantStart < cdnaCodingStart) {
             consequenceTypeList.add("5_prime_UTR_variant");
             if(cdnaVariantEnd >= cdnaCodingStart) {
@@ -372,12 +359,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     consequenceTypeList.add("stop_lost");
                 }
             } else {
-                consequenceTypeList.add("2_prime_UTR_variant");
+                consequenceTypeList.add("3_prime_UTR_variant");
             }
         }
     }
 
-    private Boolean solveJunction(Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, List<String> consequenceTypeList) {
+    private Boolean solveJunction(Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, HashSet<String> consequenceTypeList) {
         Boolean splicing = false;
         if(regionsOverlap(spliceSite1,spliceSite2,variantStart,variantEnd)) {
             consequenceTypeList.add("intron_variant");
@@ -404,7 +391,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         Logger logger = LoggerFactory.getLogger(this.getClass());
 
-        List<String> consequenceTypeList = new ArrayList<>();
+        HashSet<String> consequenceTypeList = new HashSet<>();
         QueryResult queryResult = null;
         QueryBuilder builder = null;
         BasicDBList transcriptInfoList, exonInfoList;
@@ -452,7 +439,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         consequenceTypeList.add("upstream_gene_variant_5kb");
                         // Variant overlaps with -2kb region
                         if(regionsOverlap(transcriptStart-2000, transcriptStart, variantStart, variantEnd)) {
-                            consequenceTypeList.add("upstream_gene_variant_5kb");
+                            consequenceTypeList.add("upstream_gene_variant_2kb");
                         }
                     }
                     // Variant overlaps with +5kb region
@@ -460,7 +447,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         consequenceTypeList.add("downstream_gene_variant_5kb");
                         // Variant overlaps with +2kb region
                         if(regionsOverlap(transcriptEnd, transcriptEnd+2000, variantStart, variantEnd)) {
-                            consequenceTypeList.add("downstream_gene_variant_5kb");
+                            consequenceTypeList.add("downstream_gene_variant_2kb");
                         }
                     }
 
@@ -478,6 +465,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         exonEnd = (Integer) exonInfo.get("end");
                         cdnaExonEnd = exonEnd-exonStart+1;
                         transcriptSequence = (String) exonInfo.get("sequence");
+                        cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
+                        cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
 
                         exonCounter = 1;
                         while(exonCounter<exonInfoList.size() && !splicing && variantAhead) {
