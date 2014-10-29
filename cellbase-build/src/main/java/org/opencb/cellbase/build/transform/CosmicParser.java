@@ -21,42 +21,56 @@ public class CosmicParser extends CellBaseParser {
 
     private final CellBaseSerializer serializer;
     private final Path cosmicFilePath;
-    private Pattern pattern;
+    //private Pattern nucleotideSequencePattern;
+    private static final String CHROMOSOME = "CHR";
+    private static final String START = "START";
+    private static final String END = "END";
+    private static final String REF = "REF";
+    private static final String ALT = "ALT";
+    private static final String X_CHROMSOME = "X";
+    private static final String Y_CHROMSOME = "Y";
+    private static final String MT_CHROMOSOME = "MT";
+    private Pattern mutationGRCh37GenomePositionPattern;
+    private Pattern snvPattern;
     private long invalidPositionLines;
     private long invalidSubstitutionLines;
     private long invalidInsertionLines;
     private long invalidDeletionLines;
     private long invalidDuplicationLines;
-    private long invalidIntronicLines;
+    private long invalidMutationCDSOtherReason;
 
     public CosmicParser(CellBaseSerializer serializer, Path cosmicFilePath){
         super(serializer);
         this.serializer = serializer;
         this.cosmicFilePath = cosmicFilePath;
-        pattern = Pattern.compile("((A|C|G|T)+)");
+        this.compileRegularExpressionPaterns();
+    }
+
+    private void compileRegularExpressionPaterns() {
+        //nucleotideSequencePattern = Pattern.compile("((A|C|G|T)+)");
+        mutationGRCh37GenomePositionPattern = Pattern.compile("(?<"+CHROMOSOME+">\\S+):(?<"+START+">\\d+)-(?<"+END+">\\d+)");
+        snvPattern = Pattern.compile("c\\.\\d+(_\\d+)?(?<"+REF+">(A|C|T|G)+)>(?<"+ALT+">(A|C|T|G)+)");
     }
 
     public void parse() {
         logger.info("Parsing cosmic file ...");
         long processedCosmicLines = 0, ignoredCosmicLines = 0;
-        this.invalidPositionLines = 0;
 
         try {
             BufferedReader cosmicReader = new BufferedReader(new InputStreamReader(new FileInputStream(cosmicFilePath.toFile())));
-            String line;
 
+            String line;
             cosmicReader.readLine(); // First line is the header -> ignore it
 
             while ((line = cosmicReader.readLine()) != null) {
-                String[] fields = line.split("\t", 27);
-                processedCosmicLines++;
-                Cosmic cosmic = new Cosmic(fields);
+                Cosmic cosmic = buildCosmic(line);
 
-                // For each variant contained, check out the sign of the strand
-                if (checkValidVariant(cosmic.getMutation_GRCh37_genome_position(), cosmic.getMutation_CDS(), 1)){ // This function filters complex changes
-                    // Create new COSMIC object
+                if (parseChromosomeStartAndEnd(cosmic) && parseVariant(cosmic))  {
                     serialize(cosmic);
+                } else {
+                    ignoredCosmicLines++;
                 }
+                processedCosmicLines++;
             }
         }catch (IOException ex) {
             ex.printStackTrace();
@@ -66,115 +80,242 @@ public class CosmicParser extends CellBaseParser {
         }
     }
 
+    private Cosmic buildCosmic(String line) {
+        // COSMIC file is a tab-delimited file with the following fields (columns)
+        // 0 Gene name
+        // 1 Accession Number
+        // 2 Gene CDS length
+        // 3 HGNC ID
+        // 4 Sample name
+        // 5 ID sample
+        // 6 ID tumour
+        // 7 Primary site
+        // 8 Site subtype
+        // 9 Primary histology
+        // 10 Histology subtype
+        // 11 Genome-wide screen
+        // 12 Mutation ID
+        // 13 Mutation CDS
+        // 14 Mutation AA
+        // 15 Mutation Description
+        // 16 Mutation zygosity
+        // 17 Mutation GRCh37 genome position
+        // 18 Mutation GRCh37 strand
+        // 19 Snp
+        // 20 FATHMM Prediction
+        // 21 Mutation somatic status
+        // 22 PubMed PMID
+        // 23 ID STUDY
+        // 24 Sample source
+        // 25 Tumour origin
+        // 26 Age
+        // 27 Comments
+        String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
+        Cosmic cosmic = new Cosmic();
+        cosmic.setGeneName(fields[0]);
+        cosmic.setAccessionNumber(fields[1]);
+        cosmic.setGeneCDSLength(Integer.parseInt(fields[2]));
+        cosmic.setHgncId(fields[3]);
+        cosmic.setSampleName(fields[4]);
+        cosmic.setIdSample(fields[5]);
+        cosmic.setID_tumour(fields[6]);
+        cosmic.setPrimarySite(fields[7]);
+        cosmic.setSiteSubtype(fields[8]);
+        cosmic.setPrimaryHistology(fields[9]);
+        cosmic.setHistologySubtype(fields[10]);
+        cosmic.setGenomeWideScreen(fields[11]);
+        cosmic.setMutationID(fields[12]);
+        cosmic.setMutationCDS(fields[13]);
+        cosmic.setMutationAA(fields[14]);
+        cosmic.setMutationDescription(fields[15]);
+        cosmic.setMutationZygosity(fields[16]);
+        cosmic.setMutationGRCh37GenomePosition(fields[17]);
+        cosmic.setMutationGRCh37Strand(fields[18]);
+        if(!fields[19].isEmpty() && fields[19].equalsIgnoreCase("y")){
+            cosmic.setSnp(true);
+        }
+        cosmic.setFathmmPrediction(fields[20]);
+        cosmic.setMutationSomaticStatus(fields[21]);
+        cosmic.setPubmedPMID(fields[22]);
+        if (!fields[23].isEmpty() && !fields[23].equals("NS")) {
+            cosmic.setIdStudy(Integer.parseInt(fields[23]));
+        }
+        cosmic.setSampleSource(fields[24]);
+        cosmic.setTumourOrigin(fields[25]);
+        if(!fields[26].isEmpty() && !fields[26].equals("NS")) {
+            cosmic.setAge(Float.parseFloat(fields[26]));
+        }
+        cosmic.setComments(fields[27]);
+        return cosmic;
+    }
+
+    public boolean parseChromosomeStartAndEnd(Cosmic cosmic) {
+        boolean success = false;
+        if(cosmic.getMutationGRCh37GenomePosition() != null && !cosmic.getMutationGRCh37GenomePosition().isEmpty()){
+            Matcher matcher = mutationGRCh37GenomePositionPattern.matcher(cosmic.getMutationGRCh37GenomePosition());
+            if (matcher.matches()) {
+                setCosmicChromosome(matcher.group(CHROMOSOME), cosmic);
+                cosmic.setStart(Integer.parseInt(matcher.group(START)));
+                cosmic.setEnd(Integer.parseInt(matcher.group(END)));
+                success = true;
+            }
+        }
+        if (!success) {
+            this.invalidPositionLines++;
+        }
+        return success;
+    }
+
+    private void setCosmicChromosome(String chromosome, Cosmic cosmic) {
+        switch (chromosome) {
+            case "23":
+                cosmic.setChromosome(X_CHROMSOME);
+                break;
+            case "24":
+                cosmic.setChromosome(Y_CHROMSOME);
+                break;
+            case "25":
+                cosmic.setChromosome(MT_CHROMOSOME);
+                break;
+            default:
+                cosmic.setChromosome(chromosome);
+        }
+    }
+
+//    public boolean calculateAltAndRef(Cosmic cosmic){
+//        if (cosmic.getMutationCDS().contains(">")) {
+//            // Change (one or more nucleotides). Get number of nucleotides of alternative
+//            cosmic.setAlternate(cosmic.getMutationCDS().split(">")[1]);
+//            cosmic.setReference(cosmic.getMutationCDS().split(">")[0]);
+//        } else if (cosmic.getMutationCDS().contains("del")) {
+//            // Deletion
+//            cosmic.setReference(cosmic.getMutationCDS().split("del")[1]);
+//            cosmic.setAlternate("-");
+//        }  else if (cosmic.getMutationCDS().contains("ins")) {
+//            // Insertion
+//            cosmic.setReference("-");
+//            cosmic.setAlternate(cosmic.getMutationCDS().split("ins")[1]);
+//        }
+//
+//        // Check strand
+//        // TODO: MutationCDS equals '-' ? Strand is stored in the field 'Mutation CRCh47 strand'
+//        if (cosmic.getMutationCDS().equals("-")) {
+//            // Negative strand
+//            if (!cosmic.getAlternate().equals("-")){
+//                cosmic.setAlternate(DNASequenceUtils.reverseComplement(cosmic.getAlternate()));
+//            } if (!cosmic.getReference().equals("-")){
+//                cosmic.setReference(DNASequenceUtils.reverseComplement(cosmic.getReference()));
+//            }
+//        }
+//    }
+
     private void printSummary(long processedCosmicLines, long ignoredCosmicLines) {
         logger.info("");
         logger.info("Summary");
         logger.info("=======");
         logger.info("Processed " + processedCosmicLines + " cosmic lines");
         logger.info(ignoredCosmicLines + " cosmic lines ignored: ");
-        logger.info("\t\t--"+this.invalidPositionLines+" lines by invalid position");
-        logger.info("\t\t--"+this.invalidSubstitutionLines+" lines by invalid substitutions");
-        logger.info("\t\t--"+this.invalidDeletionLines+" lines by invalid deletions");
-        logger.info("\t\t--"+this.invalidDuplicationLines+" lines by duplications");
-        logger.info("\t\t--"+this.invalidIntronicLines+" lines by intronic values");
+        if (invalidPositionLines > 0) {
+            logger.info("\t\t--" + invalidPositionLines + " lines by invalid position");
+        }
+        if (invalidSubstitutionLines > 0) {
+            logger.info("\t\t--" + invalidSubstitutionLines + " lines by invalid substitution CDS");
+        }
+        if (invalidInsertionLines > 0) {
+            logger.info("\t\t--" + invalidInsertionLines + " lines by invalid insertion CDS");
+        }
+        if (invalidDeletionLines > 0) {
+            logger.info("\t\t--" + invalidDeletionLines + " lines by invalid deletion CDS");
+        }
+        if (invalidDuplicationLines > 0) {
+            logger.info("\t\t--" + invalidDuplicationLines + " lines because mutation CDS is a duplication");
+        }
+        if (invalidMutationCDSOtherReason > 0) {
+            logger.info("\t\t--" + invalidMutationCDSOtherReason + " lines because mutation CDS is invalid for other reasons");
+        }
     }
 
     /**
-     * Check whether the variant is valid in this version: unknown variants (?) and a deletion of more than one nucleotide are avoided in this version
-     * @param mutation_CDS: string containing the change: c.8668C>G, c.6902_6903insA,c.503_508delTCTCTG
-     * @param genomePosition: genome position of the variant (GRCh37)
-     * @param deletionLength: maximum number of nucleotides allowed in deletions
+     * Check whether the variant is valid and parse it
      * @return true if valid mutation, false otherwise
      */
-    private boolean checkValidVariant(String genomePosition, String mutation_CDS, int deletionLength) {
+    private boolean parseVariant(Cosmic cosmic) {
         boolean validVariant = true;
 
-        if (genomePosition.equals(("")) || mutation_CDS.contains("?")) {
-            validVariant = false;
-            this.invalidPositionLines++;
-        } else if(mutation_CDS.contains(">")) {
-            validVariant = checkValidSustitution(mutation_CDS);
+        String mutationCds = cosmic.getMutationCDS();
+        if(mutationCds.contains(">")) {
+            validVariant = parseSnv(mutationCds, cosmic);
             if(!validVariant){
-                this.invalidSubstitutionLines++;
+                invalidSubstitutionLines++;
             }
-        } else if(mutation_CDS.contains("del")) {
-            validVariant = checkValidDeletion(mutation_CDS, deletionLength);
+        } else if(mutationCds.contains("del")) {
+            validVariant = parseDeletion(mutationCds, cosmic);
             if(!validVariant){
-                this.invalidDeletionLines++;
+                invalidDeletionLines++;
             }
-        } else if(mutation_CDS.contains("ins")) {
-            validVariant = checkValidInsertion(mutation_CDS.split("ins")[1]);
-            this.invalidInsertionLines++;
-        } else if(mutation_CDS.contains("dup")) {
-            validVariant = checkValidDuplication(mutation_CDS);
+        } else if(mutationCds.contains("ins")) {
+            validVariant = parseInsertion(mutationCds, cosmic);
+            if (!validVariant) {
+               invalidInsertionLines++;
+            }
+        } else if(mutationCds.contains("dup")) {
+            validVariant = parseDuplication(mutationCds);
             if(!validVariant){
-                this.invalidDuplicationLines++;
+                invalidDuplicationLines++;
             }
-        } else if(mutation_CDS.contains("Intronic")){
+        } else {
         	validVariant = false;
-            this.invalidIntronicLines++;
+            invalidMutationCDSOtherReason++;
         }
 
         return validVariant;
     }
     
-    private boolean checkValidDuplication(String dup){
-    	boolean validVariant = false;
-    	
-    	/*
-    	 * TODO: The only Duplication in Cosmic V68 is a structural variation.
-    	 * we are not going to modify a variation of more than one nucleotide 
-    	 */
-    	
-    	return validVariant;
+    private boolean parseDuplication(String dup){
+    	// TODO: The only Duplication in Cosmic V70 is a structural variation that is not going to be serialized
+    	return false;
     }
 
-    private boolean checkValidInsertion(String ins) {
+    private boolean parseInsertion(String mutationCds, Cosmic cosmic) {
         boolean validVariant = true;
-
-        if (ins.matches("\\d+")) {
+        String insertedNucleotides = mutationCds.split("ins")[1];
+        if (insertedNucleotides.matches("\\d+")) {
             //c.503_508ins30
             validVariant = false;
-        } else if(ins.matches("[a-zA-Z]+.+")){
-            validVariant = false;
+        } else {
+            cosmic.setReference("-");
+            cosmic.setAlternate(insertedNucleotides);
         }
 
         return validVariant;
     }
 
-    private boolean checkValidDeletion(String mutation_CDS, int deletionLength) {
+    private boolean parseDeletion(String mutationCds, Cosmic cosmic) {
         boolean validVariant = true;
-        String[] mutationCDSArray = mutation_CDS.split("del");
+        String[] mutationCDSArray = mutationCds.split("del");
 
         // For deletions, only deletions of, at most, deletionLength nucleotide are allowed
         if(mutationCDSArray.length < 2) { // c.503_508del (usually, deletions of several nucleotides)
+            // TODO: allow these variants
             validVariant = false;
         } else if(mutationCDSArray[1].matches("\\d+")) { //  c.503_508del30
             validVariant = false;
-        } else if(mutationCDSArray[1].length() > deletionLength) {// c.503_508delCCT and deletionLength=1 (for example)
-            validVariant = false;
+        } else {
+            cosmic.setReference(mutationCDSArray[1]);
+            cosmic.setAlternate("-");
         }
 
         return validVariant;
     }
 
-    private boolean checkValidSustitution(String mutation_CDS) {
+    private boolean parseSnv(String mutation_CDS, Cosmic cosmic) {
         boolean validVariant = true;
+        Matcher snvMatcher = snvPattern.matcher(mutation_CDS);
 
-        // Avoid changes of type c.8668CC>G, c.8668CC>GG, c.8668CC>GGG, c.8668CSSSSSC>G, etc
-        String ref = null;
-        String alt = mutation_CDS.split(">")[1];
-        String refAux = mutation_CDS.split(">")[0];
-
-        Matcher matcher = pattern.matcher(refAux);
-
-        if(matcher.find()) {// Either change or deletion
-            ref = matcher.group(); // Get the first group (entire pattern -> group() is equivalente to group(0)
-        }
-        if(ref == null || ref.isEmpty() || alt.isEmpty() || ref.length() > 1 || alt.length() > 1) {
-            // Avoid variants with more than a single change (in either ref or alt)
-            validVariant = false; // for example,c.8668CC>G
-        } else if(alt.matches("\\d+")){
+        if (snvMatcher.matches()) {
+            cosmic.setReference(snvMatcher.group(REF));
+            cosmic.setAlternate(snvMatcher.group(ALT));
+        } else {
             validVariant = false;
         }
 
