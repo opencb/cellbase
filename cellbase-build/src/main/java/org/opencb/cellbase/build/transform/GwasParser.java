@@ -43,18 +43,22 @@ public class GwasParser extends CellBaseParser {
                 TabixReader dbsnpTabixReader = new TabixReader(dbSnpTabixFilePath.toString());
 
                 long processedGwasLines = 0,
-                     ignoredGwasLines = 0;
+                     gwasLinesNotFoundInDbsnp = 0,
+                     malformedGwasLines = 0;
 
                 logger.info("Parsing gwas file ...");
                 for (String line; (line = inputReader.readLine())!= null;) {
                     if (!line.isEmpty()) {
                         processedGwasLines++;
-                        Gwas gwasRecord = buildGwasObject(line.split("\t"));
-
-                        if (gwasRecord.getChromosome() != null && gwasRecord.getStart() != null && getRefAndAltFromDbsnp(gwasRecord, dbsnpTabixReader)) {
-                            addGwasRecordToVariantMap(variantMap, gwasRecord);
-                        } else {
-                            ignoredGwasLines++;
+                        try {
+                            Gwas gwasRecord = buildGwasObject(line.split("\t"));
+                            if (gwasRecord.getChromosome() != null && gwasRecord.getStart() != null && getRefAndAltFromDbsnp(gwasRecord, dbsnpTabixReader)) {
+                                addGwasRecordToVariantMap(variantMap, gwasRecord);
+                            } else {
+                                gwasLinesNotFoundInDbsnp++;
+                            }
+                        } catch (NumberFormatException e) {
+                            malformedGwasLines++;
                         }
                     }
                 }
@@ -64,7 +68,7 @@ public class GwasParser extends CellBaseParser {
                     serialize(gwasOutputRecord);
                 }
                 logger.info("Done");
-                this.printSummary(processedGwasLines, ignoredGwasLines, variantMap);
+                this.printSummary(processedGwasLines, gwasLinesNotFoundInDbsnp, malformedGwasLines, variantMap);
 
 
             } catch (NumberFormatException e) {
@@ -75,27 +79,18 @@ public class GwasParser extends CellBaseParser {
 		}
 	}
 
-    private Gwas buildGwasObject(String[] values) {
+    private Gwas buildGwasObject(String[] values) throws NumberFormatException {
         Gwas gwas = new Gwas();
 
         gwas.setRegion(values[10].trim());
-        if(!values[11].isEmpty()){
-            if(values[11].equalsIgnoreCase("23")){
-                gwas.setChromosome("X");
-            } else if(values[11].equalsIgnoreCase("24")) {
-                gwas.setChromosome("Y");
-            } else if(values[11].equalsIgnoreCase("25")) {
-                gwas.setChromosome("MT");
-            } else {
-                gwas.setChromosome(values[11]);
-            }
-        }
+        setGwasChromosome(values[11], gwas);
 
         try{
             gwas.setStart(Integer.parseInt(values[12]));
-            gwas.setEnd(gwas.getStart());;
+            gwas.setEnd(gwas.getStart());
         } catch (NumberFormatException e){
-            logger.error("Malformed gwas line in chromosome position (it is not a valid number): "+values[12]);
+            logger.error("Malformed gwas line: invalid start " + values[12]);
+            throw e;
         }
 
         gwas.setReportedGenes(values[13].trim());
@@ -112,51 +107,90 @@ public class GwasParser extends CellBaseParser {
         gwas.setContext(values[24].trim());
         gwas.setIntergenic(values[25].trim());
         try {
-            gwas.setRiskAlleleFrequency(Float.parseFloat(values[26]));
+            if (!values[26].equals("NR")) {
+                gwas.setRiskAlleleFrequency(Float.parseFloat(values[26]));
+            }
         } catch (NumberFormatException e){
-            logger.warn("Malformed gwas line in Risk Allele Frequency (it is not a valid number): "+values[26]);
+            logger.error("Malformed gwas line: invalid Risk Allele Frequency " + values[26]);
+            throw e;
         }
         gwas.setCnv(values[33].trim());
-
-        // Add the study values
-        gwas.getStudies().get(0).setPubmedId(values[1].trim());
-        gwas.getStudies().get(0).setFirstAuthor(values[2].trim());
-        gwas.getStudies().get(0).setDate(values[3].trim());
-        gwas.getStudies().get(0).setJournal(values[4].trim());
-        gwas.getStudies().get(0).setLink(values[5].trim());
-        gwas.getStudies().get(0).setStudy(values[6].trim());
-        gwas.getStudies().get(0).setInitialSampleSize(values[8].trim());
-        gwas.getStudies().get(0).setReplicationSampleSize(values[9].trim());
-        gwas.getStudies().get(0).setPlatform(values[32].trim());
-
-        // Add the tray values
-        gwas.getStudies().get(0).getTraits().get(0).setDiseaseTrait(values[7].trim());
-        gwas.getStudies().get(0).getTraits().get(0).setDateAddedToCatalog(values[0].trim());
-
-        // Add the test values
-        try {
-            gwas.getStudies().get(0).getTraits().get(0).getTests().get(0).setpValue(Float.parseFloat(values[27]));
-        } catch (NumberFormatException e){
-            logger.warn("Malformed gwas line in P Value (it is not a valid number): "+values[27]);
-        }
-        try {
-            gwas.getStudies().get(0).getTraits().get(0).getTests().get(0).setpValueMlog(Float.parseFloat(values[28]));
-        } catch (NumberFormatException e){
-            logger.warn("Malformed gwas line in P Value Mlog (it is not a valid number): "+values[28]);
-        }
-        gwas.getStudies().get(0).getTraits().get(0).getTests().get(0).setpValueText(values[29].trim());
-        gwas.getStudies().get(0).getTraits().get(0).getTests().get(0).setOrBeta(values[30].trim());
-        gwas.getStudies().get(0).getTraits().get(0).getTests().get(0).setPercentCI(values[31].trim());
+        builgGwasStudy(values, gwas);
 
         return gwas;
     }
 
-    private void printSummary(long processedGwasLines, long ignoredGwasLines, Map<Variant, Gwas> variantMap) {
+    private void builgGwasStudy(String[] values, Gwas gwas) {
+        // Add the study values
+        Gwas.GwasStudy study = gwas.new GwasStudy();
+        study.setPubmedId(values[1].trim());
+        study.setFirstAuthor(values[2].trim());
+        study.setDate(values[3].trim());
+        study.setJournal(values[4].trim());
+        study.setLink(values[5].trim());
+        study.setStudy(values[6].trim());
+        study.setInitialSampleSize(values[8].trim());
+        study.setReplicationSampleSize(values[9].trim());
+        study.setPlatform(values[32].trim());
+        buildGwasStudyTrait(values, study);
+        gwas.addStudy(study);
+    }
+
+    private void buildGwasStudyTrait(String[] values, Gwas.GwasStudy study) {
+        // Add the trait values
+        Gwas.GwasStudy.GwasTrait trait = study.new GwasTrait();
+        trait.setDiseaseTrait(values[7].trim());
+        trait.setDateAddedToCatalog(values[0].trim());
+        buildGwasStudyTraitTest(values, trait);
+        study.addTrait(trait);
+    }
+
+    private void buildGwasStudyTraitTest(String[] values, Gwas.GwasStudy.GwasTrait trait) throws NumberFormatException {
+        // Add the test values
+        Gwas.GwasStudy.GwasTrait.GwasTest test = trait.new GwasTest();
+        try {
+            test.setpValue(Float.parseFloat(values[27]));
+        } catch (NumberFormatException e){
+            logger.error("Malformed gwas line: invalid P Value " + values[27]);
+            throw e;
+        }
+        try {
+            test.setpValueMlog(Float.parseFloat(values[28]));
+        } catch (NumberFormatException e){
+            logger.error("Malformed gwas line: invalid P Value Mlog " + values[28]);
+            throw e;
+        }
+        test.setpValueText(values[29].trim());
+        test.setOrBeta(values[30].trim());
+        test.setPercentCI(values[31].trim());
+        trait.addTest(test);
+    }
+
+    private void setGwasChromosome(String chromosome, Gwas gwas) {
+        if(!chromosome.isEmpty()){
+            switch(chromosome) {
+                case "23":
+                    gwas.setChromosome("X");
+                    break;
+                case "24":
+                    gwas.setChromosome("Y");
+                    break;
+                case "25":
+                    gwas.setChromosome("MT");
+                    break;
+                default:
+                    gwas.setChromosome(chromosome);
+            }
+        }
+    }
+
+    private void printSummary(long processedGwasLines, long gwasLinesNotFoundInDbsnp, long malformedGwasLines, Map<Variant, Gwas> variantMap) {
         logger.info("");
         logger.info("Summary");
         logger.info("=======");
         logger.info("Processed " + processedGwasLines + " gwas lines");
-        logger.info(ignoredGwasLines + " gwas lines ignored because variant not found in dbsnp");
+        logger.info(gwasLinesNotFoundInDbsnp + " gwas lines ignored because variant not found in dbsnp");
+        logger.info(malformedGwasLines + " gwas lines ignored because are malformed");
         logger.info("Serialized " + variantMap.size() + " variants");
     }
 

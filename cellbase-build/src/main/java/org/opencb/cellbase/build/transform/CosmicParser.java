@@ -21,15 +21,11 @@ public class CosmicParser extends CellBaseParser {
 
     private final CellBaseSerializer serializer;
     private final Path cosmicFilePath;
-    //private Pattern nucleotideSequencePattern;
     private static final String CHROMOSOME = "CHR";
     private static final String START = "START";
     private static final String END = "END";
     private static final String REF = "REF";
     private static final String ALT = "ALT";
-    private static final String X_CHROMSOME = "X";
-    private static final String Y_CHROMSOME = "Y";
-    private static final String MT_CHROMOSOME = "MT";
     private Pattern mutationGRCh37GenomePositionPattern;
     private Pattern snvPattern;
     private long invalidPositionLines;
@@ -47,7 +43,6 @@ public class CosmicParser extends CellBaseParser {
     }
 
     private void compileRegularExpressionPaterns() {
-        //nucleotideSequencePattern = Pattern.compile("((A|C|G|T)+)");
         mutationGRCh37GenomePositionPattern = Pattern.compile("(?<"+CHROMOSOME+">\\S+):(?<"+START+">\\d+)-(?<"+END+">\\d+)");
         snvPattern = Pattern.compile("c\\.\\d+(_\\d+)?(?<"+REF+">(A|C|T|G)+)>(?<"+ALT+">(A|C|T|G)+)");
     }
@@ -169,13 +164,13 @@ public class CosmicParser extends CellBaseParser {
     private void setCosmicChromosome(String chromosome, Cosmic cosmic) {
         switch (chromosome) {
             case "23":
-                cosmic.setChromosome(X_CHROMSOME);
+                cosmic.setChromosome("X");
                 break;
             case "24":
-                cosmic.setChromosome(Y_CHROMSOME);
+                cosmic.setChromosome("Y");
                 break;
             case "25":
-                cosmic.setChromosome(MT_CHROMOSOME);
+                cosmic.setChromosome("MT");
                 break;
             default:
                 cosmic.setChromosome(chromosome);
