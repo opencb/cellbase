@@ -12,6 +12,7 @@ import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.nio.file.Path;
+import java.text.NumberFormat;
 
 /**
  * Created by imedina on 26/09/14.
@@ -51,13 +52,14 @@ public class ClinVarParser extends CellBaseParser{
     }
 
     private void printSummary(long clinvarRecordsParsed, long serializedClinvarObjects) {
+        NumberFormat formatter = NumberFormat.getInstance();
         logger.info("");
         logger.info("Summary");
         logger.info("=======");
-        logger.info("Processed " + clinvarRecordsParsed + " clinvar records");
-        logger.info("Serialized " + serializedClinvarObjects + " '" + ClinvarPublicSet.class.getName() + "' objects");
+        logger.info("Processed " + formatter.format(clinvarRecordsParsed) + " clinvar records");
+        logger.info("Serialized " + formatter.format(serializedClinvarObjects) + " '" + ClinvarPublicSet.class.getName() + "' objects");
         if (clinvarRecordsParsed != serializedClinvarObjects) {
-            logger.info((clinvarRecordsParsed - serializedClinvarObjects) + " clinvar records not serialized because don't have complete Sequence Location for assembly " + GRCH37_ASSEMBLY);
+            logger.info(formatter.format(clinvarRecordsParsed - serializedClinvarObjects) + " clinvar records not serialized because don't have complete Sequence Location for assembly " + GRCH37_ASSEMBLY);
         }
     }
 

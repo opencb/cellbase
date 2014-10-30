@@ -18,6 +18,7 @@ import java.util.List;
  * Time: 7:56 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class MutationParser extends CellBaseParser {
 
 

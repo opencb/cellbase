@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.NumberFormat;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -21,11 +22,19 @@ public class GwasParser extends CellBaseParser {
 
     private final Path gwasFile;
     private final Path dbSnpTabixFilePath;
+    private int malformedPValueRecords;
+    private int malformedStartRecords;
+    private int malformedRiskAlleleFrequencyRecords;
+    private int malformedPValueMLogRecords;
 
     public GwasParser(CellBaseSerializer serializer, Path gwasFile, Path dbSnpTabixFilePath) {
         super(serializer);
         this.gwasFile = gwasFile;
         this.dbSnpTabixFilePath = dbSnpTabixFilePath;
+        this.malformedPValueRecords = 0;
+        this.malformedStartRecords = 0;
+        this.malformedRiskAlleleFrequencyRecords = 0;
+        this.malformedPValueMLogRecords = 0;
     }
 
 	public void parse() {
@@ -89,7 +98,7 @@ public class GwasParser extends CellBaseParser {
             gwas.setStart(Integer.parseInt(values[12]));
             gwas.setEnd(gwas.getStart());
         } catch (NumberFormatException e){
-            logger.error("Malformed gwas line: invalid start " + values[12]);
+            malformedStartRecords++;
             throw e;
         }
 
@@ -111,7 +120,7 @@ public class GwasParser extends CellBaseParser {
                 gwas.setRiskAlleleFrequency(Float.parseFloat(values[26]));
             }
         } catch (NumberFormatException e){
-            logger.error("Malformed gwas line: invalid Risk Allele Frequency " + values[26]);
+            malformedRiskAlleleFrequencyRecords++;
             throw e;
         }
         gwas.setCnv(values[33].trim());
@@ -151,13 +160,13 @@ public class GwasParser extends CellBaseParser {
         try {
             test.setpValue(Float.parseFloat(values[27]));
         } catch (NumberFormatException e){
-            logger.error("Malformed gwas line: invalid P Value " + values[27]);
+            malformedPValueRecords++;
             throw e;
         }
         try {
             test.setpValueMlog(Float.parseFloat(values[28]));
         } catch (NumberFormatException e){
-            logger.error("Malformed gwas line: invalid P Value Mlog " + values[28]);
+            malformedPValueMLogRecords++;
             throw e;
         }
         test.setpValueText(values[29].trim());
@@ -185,13 +194,18 @@ public class GwasParser extends CellBaseParser {
     }
 
     private void printSummary(long processedGwasLines, long gwasLinesNotFoundInDbsnp, long malformedGwasLines, Map<Variant, Gwas> variantMap) {
+        NumberFormat formatter = NumberFormat.getInstance();
         logger.info("");
         logger.info("Summary");
         logger.info("=======");
-        logger.info("Processed " + processedGwasLines + " gwas lines");
-        logger.info(gwasLinesNotFoundInDbsnp + " gwas lines ignored because variant not found in dbsnp");
-        logger.info(malformedGwasLines + " gwas lines ignored because are malformed");
-        logger.info("Serialized " + variantMap.size() + " variants");
+        logger.info("Processed " + formatter.format(processedGwasLines) + " gwas lines");
+        logger.info("Serialized " + formatter.format(variantMap.size()) + " variants");
+        logger.info(formatter.format(gwasLinesNotFoundInDbsnp) + " gwas lines ignored because variant not found in dbsnp");
+        logger.info(formatter.format(malformedGwasLines) + " gwas lines ignored because are malformed");
+        logger.info("\t - " + formatter.format(malformedStartRecords) + " because 'start' is not a valid integer");
+        logger.info("\t - " + formatter.format(malformedPValueRecords) + " because 'pValue' is not a valid float");
+        logger.info("\t - " + formatter.format(malformedPValueMLogRecords) + " because 'pValueMlog' is not a valid float");
+        logger.info("\t - " + formatter.format(malformedRiskAlleleFrequencyRecords) + " because 'risk allele frequency' is not a valid float");
     }
 
     private boolean getRefAndAltFromDbsnp(Gwas gwasVO, TabixReader dbsnpTabixReader)  {

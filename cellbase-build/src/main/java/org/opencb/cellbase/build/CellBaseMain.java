@@ -66,7 +66,11 @@ public class CellBaseMain {
         options.addOption(OptionFactory.createOption("drug-file", "Output directory to save the JSON result", false));
 
         // ClinVar
-        options.addOption(OptionFactory.createOption("clinvar-file", "Output directory to save the JSON result", false));
+        options.addOption(OptionFactory.createOption("clinvar-file", "Input Clinvar XML file", false));
+
+        // gwas
+        options.addOption(OptionFactory.createOption("gwas-file", "Input gwas file", false));
+        options.addOption(OptionFactory.createOption("dbsnp-file", "Input .gz dbsnp file, used in gwas parsing", false));
 
         // Protein options
         options.addOption(OptionFactory.createOption("species", "s", "Species", false, true));
@@ -216,20 +220,6 @@ public class CellBaseMain {
                         proteinParser.parse();
                     }
                     break;
-                case "mutation": // TODO aaleman: fix parser
-                    logger.info("Processing mutation");
-                    /**
-                     * File from Cosmic: CosmicCompleteExport_XXX.tsv
-                     */
-                    String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
-                    if (cosmicFilePath != null) {
-
-                        CellBaseJsonSerializer mSerializer = new CellBaseJsonSerializer(outputPath.resolve("mutation.json"));
-                        MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
-                        vp.parse();
-                    }
-                    break;
-
                 case "conservation":
                     logger.info("Processing conservation");
                     String conservationFilesDir = commandLine.getOptionValue("indir");
@@ -258,12 +248,13 @@ public class CellBaseMain {
                     }
                     break;
                 case "clinvar":
-                    logger.info("Processing ClinVar...");
-                    String clinvarFile = commandLine.getOptionValue("clinvar-file");
-                    if (clinvarFile != null) {
-//                        ClinVarParser clinVarParser = new ClinVarParser(serializer, clinvarFile);
-//                        clinVarParser.parse();
-                    }
+                    buildClinvar(outputPath);
+                    break;
+                case "cosmic":
+                    buildCosmic(outputPath);
+                    break;
+                case "gwas":
+                    buildGwas(outputPath);
                     break;
                 case "all":
                     logger.info("Processing all...");
@@ -290,6 +281,53 @@ public class CellBaseMain {
             e.printStackTrace();
         }
 
+    }
+
+    private static void buildGwas(Path outputPath) {
+        logger.info("Processing gwas...");
+        String gwasFile = commandLine.getOptionValue("gwas-file");
+        if (gwasFile != null) {
+            String dbSnpFile = commandLine.getOptionValue("dbsnp-file");
+            if (dbSnpFile != null) {
+                CellBaseJsonSerializer gwasJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("gwas.json"));
+                GwasParser gwasParser = new GwasParser(gwasJsonSerializer, Paths.get(gwasFile), Paths.get(dbSnpFile));
+                gwasParser.parse();
+            } else {
+                logger.error("'dbsnp-file' option is mandatory for 'gwas' builder");
+            }
+        } else {
+            logger.error("'gwas-file' option is mandatory for 'gwas' builder");
+        }
+    }
+
+    private static void buildCosmic(Path outputPath) {
+        logger.info("Processing Cosmic ...");
+        /**
+         * File from Cosmic: CosmicCompleteExport_XXX.tsv
+         */
+        String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
+        if (cosmicFilePath != null) {
+            CellBaseJsonSerializer cosmicSerializer = new CellBaseJsonSerializer(outputPath.resolve("cosmic.json"));
+            //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
+            //vp.parse();
+            CosmicParser cosmicParser = new CosmicParser(cosmicSerializer, Paths.get(cosmicFilePath));
+            cosmicParser.parse();
+        } else {
+            logger.error("'cosmic-file' option is mandatory for 'cosmic' builder");
+        }
+    }
+
+    private static void buildClinvar(Path outputPath) {
+        logger.info("Processing ClinVar...");
+        String clinvarFile = commandLine.getOptionValue("clinvar-file");
+        if (clinvarFile != null) {
+            CellBaseJsonSerializer clinvarJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("clinvar.json"));
+            ClinVarParser clinVarParser = new ClinVarParser(clinvarJsonSerializer, Paths.get(clinvarFile));
+            //ClinVarParser clinVarParser = new ClinVarParser(serializer, clinvarFile);
+            clinVarParser.parse();
+        } else {
+            logger.error("'clinvar-file' option is mandatory for 'clinvar' builder");
+        }
     }
 
     private static void parse(String[] args, boolean stopAtNoOption) throws ParseException, IOException {

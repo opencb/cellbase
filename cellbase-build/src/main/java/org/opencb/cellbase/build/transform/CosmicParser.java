@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.text.NumberFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -205,28 +206,30 @@ public class CosmicParser extends CellBaseParser {
 //    }
 
     private void printSummary(long processedCosmicLines, long ignoredCosmicLines) {
+        NumberFormat formatter = NumberFormat.getInstance();
         logger.info("");
         logger.info("Summary");
         logger.info("=======");
-        logger.info("Processed " + processedCosmicLines + " cosmic lines");
-        logger.info(ignoredCosmicLines + " cosmic lines ignored: ");
+        logger.info("Processed " + formatter.format(processedCosmicLines) + " cosmic lines");
+        logger.info("Serialized " + formatter.format(processedCosmicLines - ignoredCosmicLines) + " cosmic objects");
+        logger.info(formatter.format(ignoredCosmicLines) + " cosmic lines ignored: ");
         if (invalidPositionLines > 0) {
-            logger.info("\t\t--" + invalidPositionLines + " lines by invalid position");
+            logger.info("\t-" +  formatter.format(invalidPositionLines) + " lines by invalid position");
         }
         if (invalidSubstitutionLines > 0) {
-            logger.info("\t\t--" + invalidSubstitutionLines + " lines by invalid substitution CDS");
+            logger.info("\t-" +  formatter.format(invalidSubstitutionLines) + " lines by invalid substitution CDS");
         }
         if (invalidInsertionLines > 0) {
-            logger.info("\t\t--" + invalidInsertionLines + " lines by invalid insertion CDS");
+            logger.info("\t-" +  formatter.format(invalidInsertionLines) + " lines by invalid insertion CDS");
         }
         if (invalidDeletionLines > 0) {
-            logger.info("\t\t--" + invalidDeletionLines + " lines by invalid deletion CDS");
+            logger.info("\t-" +  formatter.format(invalidDeletionLines) + " lines by invalid deletion CDS");
         }
         if (invalidDuplicationLines > 0) {
-            logger.info("\t\t--" + invalidDuplicationLines + " lines because mutation CDS is a duplication");
+            logger.info("\t-" +  formatter.format(invalidDuplicationLines) + " lines because mutation CDS is a duplication");
         }
         if (invalidMutationCDSOtherReason > 0) {
-            logger.info("\t\t--" + invalidMutationCDSOtherReason + " lines because mutation CDS is invalid for other reasons");
+            logger.info("\t-" +  formatter.format(invalidMutationCDSOtherReason) + " lines because mutation CDS is invalid for other reasons");
         }
     }
 
