@@ -261,8 +261,8 @@ public class CellBaseMain {
                     logger.info("Processing ClinVar...");
                     String clinvarFile = commandLine.getOptionValue("clinvar-file");
                     if (clinvarFile != null) {
-                        ClinVarParser clinVarParser = new ClinVarParser(serializer);
-                        clinVarParser.parse(Paths.get(clinvarFile));
+//                        ClinVarParser clinVarParser = new ClinVarParser(serializer, clinvarFile);
+//                        clinVarParser.parse();
                     }
                     break;
                 case "all":
