@@ -15,15 +15,17 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001.ebi.ac.uk", "hsapiens_cb_v3", 27017, "mongo", "biouser",
-                "B10p@ss", 10, 10);
+//        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001.ebi.ac.uk", "hsapiens_cb_v3", 27017, "mongo", "biouser",
+//                "B10p@ss", 10, 10);
+        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "test", 27017, "mongo", "", "", 10, 10);
+
         config.addSpeciesAlias("hsapiens","hsapiens");
 
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("13", 32889622, "G", "A"), new QueryOptions());
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("3", 32889622, "G", "A"), new QueryOptions());
 
     }
 }
