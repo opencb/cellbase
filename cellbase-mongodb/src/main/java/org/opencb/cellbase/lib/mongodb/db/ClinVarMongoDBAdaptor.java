@@ -96,7 +96,9 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
     public QueryResult getListAccessions(QueryOptions queryOptions) {
         QueryBuilder builder = QueryBuilder.start();
         queryOptions.put("include", Arrays.asList("referenceClinVarAssertion.clinVarAccession.acc"));
-        return executeQuery("", builder.get(), queryOptions);
+        QueryResult queryResult = executeQuery("", builder.get(), queryOptions);
+
+
     }
 
 }
