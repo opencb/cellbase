@@ -92,4 +92,13 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
         }
         return executeQueryList(ids, queries, options);
     }
+
+    public QueryResult getListAccessions(QueryOptions queryOptions) {
+        QueryBuilder builder = QueryBuilder.start();
+        queryOptions.put("include", Arrays.asList("referenceClinVarAssertion.clinVarAccession.acc"));
+//        queryOptions.put("limit", 10);
+        return executeQuery("", builder.get(), queryOptions);
+
+    }
+
 }

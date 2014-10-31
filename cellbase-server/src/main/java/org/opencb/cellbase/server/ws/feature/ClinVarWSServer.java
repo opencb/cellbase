@@ -40,4 +40,19 @@ public class ClinVarWSServer extends GenericRestWSServer {
         }
     }
 
+    @GET
+    @Path("/listAcc")
+    public Response getListAccessions() {
+
+
+        try {
+            checkVersionAndSpecies();
+            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinVarDBAdaptor.getListAccessions(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getListAccessions", e.toString());
+        }
+    }
+
 }
