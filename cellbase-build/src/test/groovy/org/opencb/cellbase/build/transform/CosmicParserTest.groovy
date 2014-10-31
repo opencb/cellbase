@@ -36,7 +36,7 @@ class CosmicParserTest extends Specification {
     }
 
     @Unroll
-    def "parsed variant #chr:#start-#end #ref #alt cosmic values"() {
+    def "parsed variant #variantNumber has coordinates #chr:#start-#end, reference #ref  and alternate #alt"() {
         expect:
         serializedVariants[variantNumber].chromosome.equals(chr)
         serializedVariants[variantNumber].start.equals(start)
@@ -56,10 +56,7 @@ class CosmicParserTest extends Specification {
     }
 
     @Unroll
-    def "parsed fields variant #chr:#start-#end #ref #alt #fathmm #pubmed #idStudy #age cosmic values"() {
-        given:
-        cosmicParser.parse()
-
+    def "parsed variant #chr:#start-#end #ref #alt has fathcm '#fathmm', pubmedid #pubmed, study id #idStudy and age #age"() {
         expect:
         serializedVariants[variantNumber].chromosome.equals(chr)
         serializedVariants[variantNumber].start.equals(start)
