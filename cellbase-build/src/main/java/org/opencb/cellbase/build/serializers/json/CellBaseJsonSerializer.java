@@ -1,5 +1,6 @@
 package org.opencb.cellbase.build.serializers.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,9 +29,16 @@ public class CellBaseJsonSerializer implements CellBaseSerializer {
     private OutputStream stream;
 
     public CellBaseJsonSerializer(Path file) {
+        this(file, true);
+    }
+
+    public CellBaseJsonSerializer(Path file, boolean includeEmptyAndNullValues) {
         this.file = file;
         this.factory = new JsonFactory();
         this.jsonObjectMapper = new ObjectMapper(this.factory);
+        if (!includeEmptyAndNullValues) {
+            this.jsonObjectMapper.setSerializationInclusion(Include.NON_EMPTY);
+        }
     }
 
     @Override
@@ -38,6 +46,7 @@ public class CellBaseJsonSerializer implements CellBaseSerializer {
         try {
             stream = new GZIPOutputStream(new FileOutputStream(Paths.get(file.toAbsolutePath().toString() + ".json.gz").toFile()));
             generator = factory.createGenerator(stream);
+
         } catch (IOException ex) {
             Logger.getLogger(CellBaseJsonSerializer.class.getName()).log(Level.SEVERE, null, ex);
             return false;

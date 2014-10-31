@@ -289,7 +289,7 @@ public class CellBaseMain {
         if (gwasFile != null) {
             String dbSnpFile = commandLine.getOptionValue("dbsnp-file");
             if (dbSnpFile != null) {
-                CellBaseJsonSerializer gwasJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("gwas.json"));
+                CellBaseJsonSerializer gwasJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("gwas"), false);
                 GwasParser gwasParser = new GwasParser(gwasJsonSerializer, Paths.get(gwasFile), Paths.get(dbSnpFile));
                 gwasParser.parse();
             } else {
@@ -307,7 +307,7 @@ public class CellBaseMain {
          */
         String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
         if (cosmicFilePath != null) {
-            CellBaseJsonSerializer cosmicSerializer = new CellBaseJsonSerializer(outputPath.resolve("cosmic.json"));
+            CellBaseJsonSerializer cosmicSerializer = new CellBaseJsonSerializer(outputPath.resolve("cosmic"), false);
             //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
             //vp.parse();
             CosmicParser cosmicParser = new CosmicParser(cosmicSerializer, Paths.get(cosmicFilePath));
@@ -321,7 +321,7 @@ public class CellBaseMain {
         logger.info("Processing ClinVar...");
         String clinvarFile = commandLine.getOptionValue("clinvar-file");
         if (clinvarFile != null) {
-            CellBaseJsonSerializer clinvarJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("clinvar.json"));
+            CellBaseJsonSerializer clinvarJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("clinvar"), false);
             ClinVarParser clinVarParser = new ClinVarParser(clinvarJsonSerializer, Paths.get(clinvarFile));
             //ClinVarParser clinVarParser = new ClinVarParser(serializer, clinvarFile);
             clinVarParser.parse();
