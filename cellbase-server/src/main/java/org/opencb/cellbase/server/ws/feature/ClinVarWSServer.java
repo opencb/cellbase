@@ -43,8 +43,6 @@ public class ClinVarWSServer extends GenericRestWSServer {
     @GET
     @Path("/listAcc")
     public Response getListAccessions() {
-
-
         try {
             checkVersionAndSpecies();
             ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
