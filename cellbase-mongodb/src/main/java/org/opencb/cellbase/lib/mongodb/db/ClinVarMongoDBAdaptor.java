@@ -1,9 +1,6 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.DB;
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.*;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
@@ -97,8 +94,25 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
         QueryBuilder builder = QueryBuilder.start();
         queryOptions.put("include", Arrays.asList("referenceClinVarAssertion.clinVarAccession.acc"));
         QueryResult queryResult = executeQuery("", builder.get(), queryOptions);
+        BasicDBList accInfoList = (BasicDBList) queryResult.getResult();
+        List<String> accList = new ArrayList<>(accInfoList.size());
+        BasicDBObject accInfo;
+        QueryResult listAccessionsToReturn = new QueryResult();
 
+        for(Object accInfoObject: accInfoList) {
+            accInfo = (BasicDBObject) accInfoObject;
+            accInfo = (BasicDBObject) accInfo.get("referenceClinVarAssertion");
+            accInfo = (BasicDBObject) accInfo.get("clinVarAccession");
+            accList.add((String) accInfo.get("acc"));
+        }
 
+        // setting listAccessionsToReturn fields
+        listAccessionsToReturn.setId(queryResult.getId());
+        listAccessionsToReturn.setDBTime(queryResult.getDBTime());
+        listAccessionsToReturn.setNumResults(queryResult.getNumResults());
+        listAccessionsToReturn.setResult(accList);
+
+        return listAccessionsToReturn;
     }
 
 }
