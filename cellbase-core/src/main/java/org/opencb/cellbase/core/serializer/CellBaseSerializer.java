@@ -19,14 +19,17 @@ import java.nio.file.Path;
  * Time: 5:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class CellBaseSerializer {
+public abstract class CellBaseSerializer implements AutoCloseable {
 
     protected Path outdirPath;
+
+    public CellBaseSerializer() {
+
+    }
 
     public CellBaseSerializer(Path outdirPath) {
         this.outdirPath = outdirPath;
     }
-
 
     public abstract void serialize(Gene gene);
 
