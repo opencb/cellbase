@@ -45,7 +45,13 @@ public class ClinVarParser extends CellBaseParser{
                 clinvarRecordsParsed++;
             }
             logger.info("Done");
+            try {
+                this.disconnect();
+            } catch (Exception e) {
+                logger.error("Disconnecting parser: " + e.getMessage());
+            }
             this.printSummary(clinvarRecordsParsed, serializedClinvarObjects);
+
         } catch (JAXBException e) {
             logger.error("Error unmarshalling clinvar Xml file "+ clinvarXmlFile + ": " + e.getMessage());
         }
@@ -69,8 +75,8 @@ public class ClinVarParser extends CellBaseParser{
         SequenceLocationType sequenceLocation = obtainAssembly37SequenceLocation(publicSet);
         if (sequenceLocation != null) {
             clinvarPublicSet = new ClinvarPublicSet(RefseqUtils.refseqNCAccessionToChromosome(sequenceLocation.getAccession()),
-                    sequenceLocation.getStart().longValue(),
-                    sequenceLocation.getStop().longValue(),
+                    sequenceLocation.getStart().intValue(),
+                    sequenceLocation.getStop().intValue(),
                     sequenceLocation.getReferenceAllele(),
                     sequenceLocation.getAlternateAllele(),
                     publicSet);
@@ -99,6 +105,17 @@ public class ClinVarParser extends CellBaseParser{
 
     private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException {
         return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v19);
+    }
+
+    @Override
+    public boolean disconnect() {
+        boolean disconnected = false;
+        try {
+            disconnected = super.disconnect();
+        } catch (Exception e) {
+            logger.error("Disconnecting serializer: " + e.getMessage());
+        }
+        return disconnected;
     }
 
 //    public void parse(Path uniprotFilesDir) throws IOException {

@@ -68,10 +68,11 @@ public class CosmicParser extends CellBaseParser {
                 }
                 processedCosmicLines++;
             }
-        }catch (IOException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
             logger.info("Done");
+            this.disconnect();
             this.printSummary(processedCosmicLines, ignoredCosmicLines);
         }
     }
@@ -318,5 +319,16 @@ public class CosmicParser extends CellBaseParser {
         }
 
         return validVariant;
+    }
+
+    @Override
+    public boolean disconnect() {
+        boolean disconnected = false;
+        try {
+            disconnected = super.disconnect();
+        } catch (Exception e) {
+            logger.error("Disconnecting parser: " + e.getMessage());
+        }
+        return disconnected;
     }
 }

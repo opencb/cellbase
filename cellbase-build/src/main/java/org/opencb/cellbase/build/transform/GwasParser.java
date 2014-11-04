@@ -71,12 +71,14 @@ public class GwasParser extends CellBaseParser {
                         }
                     }
                 }
+                dbsnpTabixReader.close();
 
                 logger.info("Serializing parsed variants ...");
                 for (Gwas gwasOutputRecord : variantMap.values()) {
                     serialize(gwasOutputRecord);
                 }
                 logger.info("Done");
+                this.disconnect();
                 this.printSummary(processedGwasLines, gwasLinesNotFoundInDbsnp, malformedGwasLines, variantMap);
 
 
@@ -263,6 +265,18 @@ public class GwasParser extends CellBaseParser {
         variantMap.put(gwasKey, gwas);
     }
 
+    @Override
+    public boolean disconnect() {
+        boolean disconnected = false;
+        try {
+            disconnected = super.disconnect();
+        } catch (Exception e) {
+            logger.error("Disconnecting parser: " + e.getMessage());
+        }
+        return disconnected;
+    }
+
+    // TODO: use another different class
     class Variant implements Comparable<Variant> {
         private String chr;
         private Integer start;
