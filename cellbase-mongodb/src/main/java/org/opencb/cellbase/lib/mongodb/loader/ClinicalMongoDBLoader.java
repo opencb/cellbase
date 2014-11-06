@@ -1,11 +1,12 @@
 package org.opencb.cellbase.lib.mongodb.loader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoException;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.clinical.Cosmic;
 import org.opencb.biodata.models.variant.clinical.Gwas;
 import org.opencb.cellbase.core.common.variation.ClinicalVariation;
-import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.lib.mongodb.serializer.CellbaseMongoDBSerializer;
 
 import java.io.*;
@@ -20,17 +21,15 @@ import java.util.zip.GZIPInputStream;
  */
 public class ClinicalMongoDBLoader extends MongoDBLoader {
 
-    // TODO: database name
-    private static final String CELLBASE_DATABASE = "cellbase";
     private Path clinicalJsonFilesDir;
     private Path clinvarJsonFile;
     private Path gwasJsonFile;
     private Path cosmicJsonFile;
-    private Map<GenomicVariant, ClinicalVariation> variantMap;
+    private Map<Variant, ClinicalVariation> variantMap;
 
 
-    public ClinicalMongoDBLoader(String host, int port, String user, String password, Path clinicalJsonFilesDir) {
-        super(user, port, password, host);
+    public ClinicalMongoDBLoader(CellbaseMongoDBSerializer serializer, Path clinicalJsonFilesDir) {
+        super(serializer);
         this.clinicalJsonFilesDir = clinicalJsonFilesDir;
         this.variantMap = new HashMap<>();
     }
@@ -39,32 +38,37 @@ public class ClinicalMongoDBLoader extends MongoDBLoader {
     public void load() {
         if (checkClinicalFiles()) {
             logger.info("Creating MongoDB Serializer ...");
-            try (CellbaseMongoDBSerializer serializer = new CellbaseMongoDBSerializer(host, port, CELLBASE_DATABASE, user, password)){
+            try {
                 logger.info("Initializing serializer ...");
                 serializer.init();
                 logger.info("done");
-
                 parseJsonFiles();
-                serializeParsedVariants(serializer);
+                serializeParsedVariants();
             } catch (UnknownHostException e) {
-                logger.error("Unable to connect to host " + host + ":" + port + "\n" + e.getMessage());
+                logger.error("Unable to connect to host " + serializer.getHost() + ":" + serializer.getPort() + "\n" + e.getMessage());
             } catch (FileNotFoundException e) {
                 logger.error("File not found: " + e.getMessage());
             } catch (IOException e) {
                 logger.error("Exception parsing input file: " + e.getMessage());
+            } finally {
+                logger.info("Closing serializer ...");
+                serializer.close();
+                logger.info("Done");
             }
         }
     }
 
-    private void serializeParsedVariants(CellbaseMongoDBSerializer serializer) {
+    private void serializeParsedVariants() {
+        logger.info("Serializing variants ...");
         try {
             for (ClinicalVariation variant : variantMap.values()) {
                 serializer.serialize(variant);
             }
+            logger.info("done");
         } catch (IOException e) {
             logger.error("Error serializing variant: " + e.getMessage());
-        } finally {
-            serializer.close();
+        } catch (MongoException.DuplicateKey e) {
+            logger.error("Error serializing variant, duplicated key:\n" + e.getMessage());
         }
     }
 
@@ -80,12 +84,11 @@ public class ClinicalMongoDBLoader extends MongoDBLoader {
             ObjectMapper jsonMapper = new ObjectMapper();
             for (String line; (line = br.readLine()) != null; ) {
                 ClinvarPublicSet clinvarSet = jsonMapper.readValue(line, ClinvarPublicSet.class);
-                GenomicVariant variant =
-                        new GenomicVariant(clinvarSet.getChromosome(), clinvarSet.getStart(), clinvarSet.getReference(), clinvarSet.getAlternate());
+                Variant variant =
+                        new Variant(clinvarSet.getChromosome(), clinvarSet.getStart(), clinvarSet.getEnd(), clinvarSet.getReference(), clinvarSet.getAlternate());
                 ClinicalVariation clinicalVariation = variantMap.get(variant);
                 if (clinicalVariation != null) {
                     clinicalVariation.addClinvar(clinvarSet);
-                    // TODO: comprobar que aqui no hace falta el put
                 } else {
                     clinicalVariation = new ClinicalVariation(clinvarSet);
                     variantMap.put(variant, clinicalVariation);
@@ -104,12 +107,11 @@ public class ClinicalMongoDBLoader extends MongoDBLoader {
             ObjectMapper jsonMapper = new ObjectMapper();
             for (String line; (line = br.readLine()) != null; ) {
                 Cosmic cosmic = jsonMapper.readValue(line, Cosmic.class);
-                GenomicVariant variant =
-                        new GenomicVariant(cosmic.getChromosome(), cosmic.getStart(), cosmic.getReference(), cosmic.getAlternate());
+                Variant variant =
+                        new Variant(cosmic.getChromosome(), cosmic.getStart(), cosmic.getEnd(), cosmic.getReference(), cosmic.getAlternate());
                 ClinicalVariation clinicalVariation = variantMap.get(variant);
                 if (clinicalVariation != null) {
                     clinicalVariation.addCosmic(cosmic);
-                    // TODO: comprobar que aqui no hace falta el put
                 } else {
                     clinicalVariation = new ClinicalVariation(cosmic);
                     variantMap.put(variant, clinicalVariation);
@@ -128,12 +130,11 @@ public class ClinicalMongoDBLoader extends MongoDBLoader {
             ObjectMapper jsonMapper = new ObjectMapper();
             for (String line; (line = br.readLine()) != null; ) {
                 Gwas gwas = jsonMapper.readValue(line, Gwas.class);
-                GenomicVariant variant =
-                        new GenomicVariant(gwas.getChromosome(), gwas.getStart(), gwas.getReference(), gwas.getAlternate());
+                Variant variant =
+                        new Variant(gwas.getChromosome(), gwas.getStart(), gwas.getEnd(), gwas.getReference(), gwas.getAlternate());
                 ClinicalVariation clinicalVariation = variantMap.get(variant);
                 if (clinicalVariation != null) {
                     clinicalVariation.addGwas(gwas);
-                    // TODO: comprobar que aqui no hace falta el put
                 } else {
                     clinicalVariation = new ClinicalVariation(gwas);
                     variantMap.put(variant, clinicalVariation);

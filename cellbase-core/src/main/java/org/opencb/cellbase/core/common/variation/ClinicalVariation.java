@@ -108,4 +108,28 @@ public class ClinicalVariation {
         }
         gwasList.add(gwas);
     }
+
+    public List<ClinvarPublicSet> getClinvarList() {
+        return clinvarList;
+    }
+
+    public void setClinvarList(List<ClinvarPublicSet> clinvarList) {
+        this.clinvarList = clinvarList;
+    }
+
+    public List<Cosmic> getCosmicList() {
+        return cosmicList;
+    }
+
+    public void setCosmicList(List<Cosmic> cosmicList) {
+        this.cosmicList = cosmicList;
+    }
+
+    public List<Gwas> getGwasList() {
+        return gwasList;
+    }
+
+    public void setGwasList(List<Gwas> gwasList) {
+        this.gwasList = gwasList;
+    }
 }
