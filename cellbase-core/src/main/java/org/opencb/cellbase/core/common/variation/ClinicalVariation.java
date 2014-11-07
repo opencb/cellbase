@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.common.variation;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
 import org.opencb.biodata.models.variant.clinical.Cosmic;
 import org.opencb.biodata.models.variant.clinical.Gwas;
@@ -17,8 +18,11 @@ public class ClinicalVariation {
     private int end;
     private String reference;
     private String alternate;
+    @JsonIgnoreProperties({"chromosome", "start", "end", "reference", "alternate"})
     private List<ClinvarPublicSet> clinvarList;
+    @JsonIgnoreProperties({"chromosome", "start", "end", "reference", "alternate"})
     private List<Cosmic> cosmicList;
+    @JsonIgnoreProperties({"chromosome", "start", "end", "reference", "alternate"})
     private List<Gwas> gwasList;
 
     public ClinicalVariation(String chromosome, int start, int end, String reference, String alternate) {
@@ -31,20 +35,17 @@ public class ClinicalVariation {
 
     public ClinicalVariation(ClinvarPublicSet clinvarSet) {
         this(clinvarSet.getChromosome(), clinvarSet.getStart(), clinvarSet.getEnd(), clinvarSet.getReference(), clinvarSet.getAlternate());
-        this.clinvarList = new ArrayList<>();
-        this.clinvarList.add(clinvarSet);
+        this.addClinvar(clinvarSet);
     }
 
     public ClinicalVariation(Cosmic cosmic) {
         this(cosmic.getChromosome(), cosmic.getStart(), cosmic.getEnd(), cosmic.getReference(), cosmic.getAlternate());
-        this.cosmicList = new ArrayList<>();
-        this.cosmicList.add(cosmic);
+        this.addCosmic(cosmic);
     }
 
     public ClinicalVariation(Gwas gwas) {
         this(gwas.getChromosome(), gwas.getStart(), gwas.getEnd(), gwas.getReference(), gwas.getAlternate());
-        this.gwasList = new ArrayList<>();
-        this.gwasList.add(gwas);
+        this.addGwas(gwas);
     }
 
 
@@ -131,5 +132,9 @@ public class ClinicalVariation {
 
     public void setGwasList(List<Gwas> gwasList) {
         this.gwasList = gwasList;
+    }
+
+    public String getVariantString() {
+        return chromosome + ":" + start + "-" + end + ":" + reference + "->" + alternate;
     }
 }

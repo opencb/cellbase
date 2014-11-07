@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.mongodb.loader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import com.mongodb.MongoInternalException;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.clinical.Cosmic;
@@ -62,7 +63,11 @@ public class ClinicalMongoDBLoader extends MongoDBLoader {
         logger.info("Serializing variants ...");
         try {
             for (ClinicalVariation variant : variantMap.values()) {
-                serializer.serialize(variant);
+                try {
+                    serializer.serialize(variant);
+                } catch (MongoInternalException e) {
+                    logger.error("Error serializing variant " + variant.getVariantString() + ":\n" + e.getMessage());
+                }
             }
             logger.info("done");
         } catch (IOException e) {
