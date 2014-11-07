@@ -1,9 +1,7 @@
 package org.opencb.cellbase.lib.mongodb.loader
 
-import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import org.opencb.cellbase.lib.mongodb.serializer.CellbaseMongoDBSerializer
 
-//import org.opencb.cellbase.lib.mongodb.serializer.CellbaseMongoDBSerializer
 import spock.lang.Specification
 
 import java.nio.file.Paths
