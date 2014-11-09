@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.biodata.models.feature.ConservedRegionFeature;
+import org.opencb.biodata.models.feature.ConservedRegionFeature.ConservedRegionSource;
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 
 import java.io.BufferedReader;
@@ -19,7 +20,7 @@ import java.util.zip.GZIPInputStream;
  * @since 03/11/2014
  */
 public class ParserWig extends CellBaseParser{
-    private final Path phylopFolder;
+    private final Path wigs_folder;
     private int chunksize;
     private String type;
     private Float[] arrayValues;
@@ -27,29 +28,29 @@ public class ParserWig extends CellBaseParser{
     private String regEx;
     Pattern pattern;
 
-    public ParserWig(CellBaseSerializer serializer, Path phylopFolder, int chunksize, String type){
+    public ParserWig(CellBaseSerializer serializer, Path ConsFolder, int chunksize, String type){
         super(serializer);
-        this.phylopFolder = phylopFolder;
+        this.wigs_folder = ConsFolder;
         this.chunksize = chunksize;
         this.type = type;
 
-        regEx = new String(".*chrom=chr(.*) start=(.*) step=(.*)");
+        regEx = ".*chrom=chr(.*) start=(.*) step=(.*)";
         pattern = Pattern.compile(regEx);
     }
 
     public void parse() throws Exception {
-        if (Files.exists(phylopFolder)) {
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(phylopFolder.resolve(type));
+        if (Files.exists(wigs_folder)) {
+            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(wigs_folder.resolve(type));
 
             Map<String, Path> files = new HashMap<>();
             String chromosome;
             Set<String> chromosomes = new HashSet<>();
 
-            // Reading all files in phylop folder
-            for (Path phylopFile : directoryStream) {
-                chromosome = phylopFile.getFileName().toString().split("\\.")[0].replace("chr", "");
+            // Reading all files in conservation folder
+            for (Path wig_file : directoryStream) {
+                chromosome = wig_file.getFileName().toString().split("\\.")[0].replace("chr", "");
                 chromosomes.add(chromosome);
-                files.put(chromosome + type, phylopFile);
+                files.put(chromosome + type, wig_file);
             }
 
             logger.debug("Chromosomes found {}", chromosomes.toString());
@@ -64,97 +65,64 @@ public class ParserWig extends CellBaseParser{
 
     private void processFile(Path inputFilePath) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(inputFilePath))));
-        String line = br.readLine();
-        Integer positionNumber = null, auxPositionNumber = null;
+        String line;
+        Integer position = null;
+        Integer previous_chunk = -1;
+        String chunk_chr = "";
 
         // Build the first object
-        ConservedRegionFeature currentConservedRegion =  buildConservedRegionFeature(line, positionNumber);
-        positionNumber = Integer.parseInt(line.split("start=")[1].split(" ")[0]);
         ConservedRegionFeature newConservedRegion = null;
-        boolean printedLastChunk = true;
 
-        while ((line = br.readLine()) != null) {
-            if (line.startsWith("fixedStep")) {
-                newConservedRegion = buildConservedRegionFeature(line, auxPositionNumber);
-                Integer currentChunk = calculateChunk(newConservedRegion.getStart());
-
-                if(lastInsertedChunk.compareTo(currentChunk) != 0){
-                    currentConservedRegion = serializeAndChangeCurrentChunk(currentChunk, currentConservedRegion,
-                            newConservedRegion);
-                    printedLastChunk = true;
+        while ((line = br.readLine()) != null) if (line.startsWith("fixedStep")) {
+            // set position to one before of the start position
+            position = SetNewPositionAfterJump(line);
+            // set chromosome of the chunks, it will change if there is more than one chromosome in the same file
+            chunk_chr = SetChromosomeAfterJump(line);
+        } else {
+            // set the new position
+            position++;
+            // set chunk id
+            Integer position_chunk = (position / chunksize);
+            // if position belong to a new chunk print the position before and initialize a new one
+            if (!Objects.equals(previous_chunk, position_chunk)) {
+                previous_chunk = position_chunk;
+                if (newConservedRegion != null) {
+                    serialize(newConservedRegion);
                 }
-            } else {
-                printedLastChunk = false;
 
-                if(positionNumber > currentConservedRegion.getEnd()){
-                    Integer start = (positionNumber/chunksize)*chunksize;
-                    newConservedRegion = new ConservedRegionFeature(currentConservedRegion.getChromosome(),
-                           start, start + chunksize - 1, currentConservedRegion.getChunk() + 1);
-                    newConservedRegion.addSource(type);
+                //Initialize a new chunk
+                Integer start = (position / chunksize) * chunksize;
+                Integer end = start + chunksize - 1;
+                newConservedRegion = new ConservedRegionFeature(chunk_chr, start, end, position_chunk);
 
-                    if(lastInsertedChunk.compareTo(start/chunksize) != 0){
-                        currentConservedRegion = serializeAndChangeCurrentChunk(start/chunksize, currentConservedRegion,
-                                newConservedRegion);
-                        printedLastChunk = true;
-                    }
+                Float[] values = new Float[chunksize];
+                newConservedRegion.addSource(type, Arrays.asList(values));
 
-                    arrayValues[positionNumber%chunksize] = Float.parseFloat(line.trim());
-                } else {
-                    arrayValues[positionNumber%chunksize] = Float.parseFloat(line.trim());
-                    positionNumber++;
-                }
             }
+            if (newConservedRegion != null) {
+                newConservedRegion.getSources().get(0).getValues().set(position % chunksize, Float.parseFloat(line.trim()));
+            }
+
         }
 
-        if(!printedLastChunk){
-            currentConservedRegion.getSource(type).addValues(Arrays.asList(arrayValues));
-            //currentConservedRegion.addValues(Arrays.asList(arrayValues));
-            System.out.println(currentConservedRegion);
-            serialize(currentConservedRegion);
-        }
-
+        serialize(newConservedRegion);
         br.close();
         this.disconnect();
     }
 
-    private ConservedRegionFeature serializeAndChangeCurrentChunk(Integer currentChunk,
-                    ConservedRegionFeature currentConservedRegion, ConservedRegionFeature newConservedRegion) {
-        lastInsertedChunk = currentChunk;
-        currentConservedRegion.getSource(type).addValues(Arrays.asList(arrayValues));
-        //currentConservedRegion.addValues(Arrays.asList(arrayValues));
-        serialize(currentConservedRegion);
-
-        currentConservedRegion = newConservedRegion;
-        arrayValues = new Float[chunksize];
-
-        return currentConservedRegion;
-    }
-
-
-    private ConservedRegionFeature buildConservedRegionFeature(String line, Integer positionNumber){
+    private String SetChromosomeAfterJump(String line) {
         Matcher matcher = pattern.matcher(line);
         matcher.matches();
-
-        String chr = matcher.group(1);
-        positionNumber = Integer.parseInt(matcher.group(2));
-        int step = Integer.parseInt(matcher.group(3));
-
-        // Calculate the current chunk
-        int chunkNumber = calculateChunk(positionNumber);
-        int startChunk = chunkNumber * chunksize;
-        int endChunk = startChunk + chunksize - 1;
-        ConservedRegionFeature conservedRegionFeature = new ConservedRegionFeature(chr, startChunk, endChunk, chunkNumber);
-        conservedRegionFeature.addSource(type);
-
-        // Set the last chunk used to insert
-        lastInsertedChunk = chunkNumber;
-
-        return conservedRegionFeature;
+        return matcher.group(1);
     }
 
-    private Integer calculateChunk(Integer startPosition){
-        return startPosition/chunksize;
+    private Integer SetNewPositionAfterJump(String line) {
+        Matcher matcher = pattern.matcher(line);
+        matcher.matches();
+        return Integer.parseInt(matcher.group(2))-1;
     }
+
+
 
     @Override
     public boolean disconnect() {
