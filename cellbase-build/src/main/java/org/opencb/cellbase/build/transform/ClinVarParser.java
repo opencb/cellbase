@@ -1,12 +1,12 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.biodata.formats.feature.RefseqAccession;
-import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureSetType;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.ReleaseType;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.SequenceLocationType;
+import org.opencb.biodata.formats.clinical.clinvar.ClinvarParser;
+import org.opencb.biodata.formats.clinical.clinvar.ClinvarPublicSet;
+import org.opencb.biodata.formats.clinical.clinvar.v19jaxb.MeasureSetType;
+import org.opencb.biodata.formats.clinical.clinvar.v19jaxb.PublicSetType;
+import org.opencb.biodata.formats.clinical.clinvar.v19jaxb.ReleaseType;
+import org.opencb.biodata.formats.clinical.clinvar.v19jaxb.SequenceLocationType;
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 
 import javax.xml.bind.JAXBElement;

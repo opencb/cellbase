@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.broad.tribble.readers.TabixReader;
-import org.opencb.biodata.models.variant.clinical.Gwas;
+import org.opencb.biodata.formats.clinical.Gwas;
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 
 import java.io.BufferedReader;
