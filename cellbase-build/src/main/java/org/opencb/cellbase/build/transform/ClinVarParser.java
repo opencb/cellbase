@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.biodata.formats.feature.refseq.RefseqUtils;
+import org.opencb.biodata.formats.feature.RefseqAccession;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureSetType;
@@ -74,7 +74,7 @@ public class ClinVarParser extends CellBaseParser{
         ClinvarPublicSet clinvarPublicSet = null;
         SequenceLocationType sequenceLocation = obtainAssembly37SequenceLocation(publicSet);
         if (sequenceLocation != null) {
-            clinvarPublicSet = new ClinvarPublicSet(RefseqUtils.refseqNCAccessionToChromosome(sequenceLocation.getAccession()),
+            clinvarPublicSet = new ClinvarPublicSet(new RefseqAccession(sequenceLocation.getAccession()).getChromosome(),
                     sequenceLocation.getStart().intValue(),
                     sequenceLocation.getStop().intValue(),
                     sequenceLocation.getReferenceAllele(),
