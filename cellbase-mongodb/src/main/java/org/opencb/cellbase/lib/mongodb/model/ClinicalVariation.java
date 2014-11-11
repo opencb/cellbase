@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.common.variation;
+package org.opencb.cellbase.lib.mongodb.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;

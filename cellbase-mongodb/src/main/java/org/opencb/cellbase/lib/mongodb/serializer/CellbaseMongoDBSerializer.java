@@ -14,7 +14,7 @@ import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.core.common.variation.ClinicalVariation;
+import org.opencb.cellbase.lib.mongodb.model.ClinicalVariation;
 
 import java.io.IOException;
 import java.net.UnknownHostException;

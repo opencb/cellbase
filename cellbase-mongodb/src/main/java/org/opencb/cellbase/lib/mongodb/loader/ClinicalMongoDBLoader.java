@@ -7,7 +7,7 @@ import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.clinical.Cosmic;
 import org.opencb.biodata.models.variant.clinical.Gwas;
-import org.opencb.cellbase.core.common.variation.ClinicalVariation;
+import org.opencb.cellbase.lib.mongodb.model.ClinicalVariation;
 import org.opencb.cellbase.lib.mongodb.serializer.CellbaseMongoDBSerializer;
 
 import java.io.*;
