@@ -29,7 +29,6 @@ public class GeneAtlasParser  extends CellBaseParser  {
 
     }
 
-
     public void parse() {
         Map<String,GeneAtlas> geneAtlasMap = new HashMap<>();
         try {
@@ -50,7 +49,6 @@ public class GeneAtlasParser  extends CellBaseParser  {
                 serialize(one_atlas_gene);
 
             }
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -75,14 +73,8 @@ public class GeneAtlasParser  extends CellBaseParser  {
                 }
                 else{
                     updateGeneAtlasMap(geneAtlasMap, experiment, line, header);
-
-
                 }
-
             }
-
-
-
         }
     }
 
@@ -90,10 +82,10 @@ public class GeneAtlasParser  extends CellBaseParser  {
         List<String> fields = Arrays.asList(line.split("\t"));
         String geneid = fields.get(0);
         String genename = fields.get(1);
-        List<GeneAtlas.tissue> tissueList = new ArrayList<>();
+        List<GeneAtlas.Tissue> tissueList = new ArrayList<>();
 
         for (int i = 2; i < fields.size(); i++ ){
-            GeneAtlas.tissue tissueToAddList = new GeneAtlas.tissue(header[i], experiment,Float.parseFloat(fields.get(i)));
+            GeneAtlas.Tissue tissueToAddList = new GeneAtlas.Tissue(header[i], experiment,Float.parseFloat(fields.get(i)));
             tissueList.add(tissueToAddList);
         }
 

@@ -133,7 +133,7 @@ public class GwasParser extends CellBaseParser {
 
     private void builgGwasStudy(String[] values, Gwas gwas) {
         // Add the study values
-        Gwas.GwasStudy study = gwas.new GwasStudy();
+        Gwas.GwasStudy study = new Gwas.GwasStudy();
         study.setPubmedId(values[1].trim());
         study.setFirstAuthor(values[2].trim());
         study.setDate(values[3].trim());
@@ -149,7 +149,7 @@ public class GwasParser extends CellBaseParser {
 
     private void buildGwasStudyTrait(String[] values, Gwas.GwasStudy study) {
         // Add the trait values
-        Gwas.GwasStudy.GwasTrait trait = study.new GwasTrait();
+        Gwas.GwasStudy.GwasTrait trait = new Gwas.GwasStudy.GwasTrait();
         trait.setDiseaseTrait(values[7].trim());
         trait.setDateAddedToCatalog(values[0].trim());
         buildGwasStudyTraitTest(values, trait);
@@ -158,7 +158,7 @@ public class GwasParser extends CellBaseParser {
 
     private void buildGwasStudyTraitTest(String[] values, Gwas.GwasStudy.GwasTrait trait) throws NumberFormatException {
         // Add the test values
-        Gwas.GwasStudy.GwasTrait.GwasTest test = trait.new GwasTest();
+        Gwas.GwasStudy.GwasTrait.GwasTest test = new Gwas.GwasStudy.GwasTrait.GwasTest();
         try {
             test.setpValue(Float.parseFloat(values[27]));
         } catch (NumberFormatException e){

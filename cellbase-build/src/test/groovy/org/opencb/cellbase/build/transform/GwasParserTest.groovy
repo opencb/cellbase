@@ -80,10 +80,10 @@ class GwasParserTest extends Specification {
     @Unroll
     def "parsed variant #variantNumber #chr:#start #reference #alternate contains '#trait' trait is #variantContainsTrait"() {
         expect:
-        serializedVariants[variantNumber].studies.first().traits.diseaseTrait.contains(trait) == variantContainsTrait
+        serializedVariants[variantNumber].studies.first().traits.diseaseTrait.contains(diseaseOrTrait) == variantContainsTrait
 
         where:
-        variantNumber || chr  | start    | reference | alternate | trait                         | variantContainsTrait
+        variantNumber || chr  | start    | reference | alternate | diseaseOrTrait                | variantContainsTrait
         0             || "11" | 89011046 | "G"       | "A"       | "Blue vs. green eyes"         | true
         0             || "11" | 89011046 | "G"       | "A"       | "Skin sensitivity to sun"     | true
         0             || "11" | 89011046 | "G"       | "A"       | "Red vs non-red hair color"   | false
