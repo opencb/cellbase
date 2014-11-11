@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform
 
-import org.opencb.biodata.models.feature.DisGeNet
+import org.opencb.biodata.formats.feature.DisGeNet
 import org.opencb.cellbase.build.serializers.CellBaseSerializer
 import spock.lang.Shared
 import spock.lang.Specification

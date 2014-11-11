@@ -1,9 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opencb.biodata.models.Expresion.GeneAtlas;
-import org.opencb.biodata.models.feature.DisGeNet;
+import org.opencb.biodata.formats.expression.GeneExpressionAtlas;
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 
 
@@ -19,18 +16,18 @@ import java.util.*;
 /**
  * Created by antonior on 10/16/14.
  */
-public class GeneAtlasParser  extends CellBaseParser  {
+public class GeneExpressionAtlasParser extends CellBaseParser  {
     private  Path gene_atlas_directory_path;
 
 
-    public GeneAtlasParser(CellBaseSerializer serializer, Path gene_atlas_directory_path) {
+    public GeneExpressionAtlasParser(CellBaseSerializer serializer, Path gene_atlas_directory_path) {
         super(serializer);
         this.gene_atlas_directory_path = gene_atlas_directory_path;
 
     }
 
     public void parse() {
-        Map<String,GeneAtlas> geneAtlasMap = new HashMap<>();
+        Map<String, GeneExpressionAtlas> geneAtlasMap = new HashMap<>();
         try {
             String Experiment1 = "EncodeCellLines";
             readFile(geneAtlasMap, Experiment1);
@@ -44,8 +41,8 @@ public class GeneAtlasParser  extends CellBaseParser  {
             String Experiment4 = "TwentySevenTissues";
             readFile(geneAtlasMap, Experiment4);
 
-            Collection <GeneAtlas> allGeneAtlasRecords = geneAtlasMap.values();
-            for (GeneAtlas one_atlas_gene : allGeneAtlasRecords) {
+            Collection <GeneExpressionAtlas> allGeneAtlasRecords = geneAtlasMap.values();
+            for (GeneExpressionAtlas one_atlas_gene : allGeneAtlasRecords) {
                 serialize(one_atlas_gene);
 
             }
@@ -55,7 +52,7 @@ public class GeneAtlasParser  extends CellBaseParser  {
         }
     }
 
-    private void readFile(Map<String, GeneAtlas> geneAtlasMap, String experiment) throws IOException {
+    private void readFile(Map<String, GeneExpressionAtlas> geneAtlasMap, String experiment) throws IOException {
         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(this.gene_atlas_directory_path.resolve(experiment));
         for (Path file_path : directoryStream) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file_path.toFile())));
@@ -78,14 +75,14 @@ public class GeneAtlasParser  extends CellBaseParser  {
         }
     }
 
-    private void updateGeneAtlasMap(Map<String, GeneAtlas> geneAtlasMap, String experiment, String line, String[] header) {
+    private void updateGeneAtlasMap(Map<String, GeneExpressionAtlas> geneAtlasMap, String experiment, String line, String[] header) {
         List<String> fields = Arrays.asList(line.split("\t"));
         String geneid = fields.get(0);
         String genename = fields.get(1);
-        List<GeneAtlas.Tissue> tissueList = new ArrayList<>();
+        List<GeneExpressionAtlas.Tissue> tissueList = new ArrayList<>();
 
         for (int i = 2; i < fields.size(); i++ ){
-            GeneAtlas.Tissue tissueToAddList = new GeneAtlas.Tissue(header[i], experiment,Float.parseFloat(fields.get(i)));
+            GeneExpressionAtlas.Tissue tissueToAddList = new GeneExpressionAtlas.Tissue(header[i], experiment,Float.parseFloat(fields.get(i)));
             tissueList.add(tissueToAddList);
         }
 
@@ -95,7 +92,7 @@ public class GeneAtlasParser  extends CellBaseParser  {
         }
         else {
 
-            GeneAtlas geneAtlasInstance = new GeneAtlas(geneid, genename, tissueList);
+            GeneExpressionAtlas geneAtlasInstance = new GeneExpressionAtlas(geneid, genename, tissueList);
             geneAtlasMap.put(geneid,geneAtlasInstance);
 
         }

@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform
 
-import org.opencb.biodata.models.variant.cadd.Cadd
+import org.opencb.biodata.formats.variant.Cadd
 import org.opencb.cellbase.build.serializers.CellBaseSerializer
 import spock.lang.Specification
 import spock.lang.Unroll

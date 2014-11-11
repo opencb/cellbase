@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.biodata.models.feature.DisGeNet;
+import org.opencb.biodata.formats.feature.DisGeNet;
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
 
 import java.io.*;
@@ -23,7 +23,7 @@ public class DisGeNetParser  extends CellBaseParser {
 
     public void parse() {
         Map<String, List<String>> entrezIdToEnsemblIdMap = parseEntrezIdToEnsemblIdFile(entrezIdToEnsemblIdFile);
-        Map<String,DisGeNet> disGeNetMap = new HashMap<>();
+        Map<String, DisGeNet> disGeNetMap = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(disGeNetFilePath.toFile())))) {
             logger.info("Parsing DisGeNet file " + disGeNetFilePath + " ...");
