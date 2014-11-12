@@ -4,6 +4,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.QueryBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
@@ -281,11 +282,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         String modifiedCodonPrefix,altSuffix;
         String newCodon;
 
-        if(cdnaVariantStart<(cdnaCodingStart+4)) {
+        if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3)) {
             consequenceTypeList.add("initiator_codon_variant");
         }
 
-        if(cdnaVariantEnd>(cdnaCodingEnd-4)) {
+        if(cdnaVariantEnd != null && cdnaVariantEnd>(cdnaCodingEnd-3)) {
             if(cdnaVariantStart==cdnaVariantEnd) {
                 int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
                 String referenceCodon = transcriptSequence.substring(modifiedCodonStart, modifiedCodonStart + 3);
@@ -327,7 +328,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {  // SNV
                 if(!splicing) {
                     int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
-                    String referenceCodon = transcriptSequence.substring(modifiedCodonStart, modifiedCodonStart + 3);
+                    String referenceCodon = transcriptSequence.substring(modifiedCodonStart-1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
                     char[] modifiedCodonArray = referenceCodon.toCharArray();
                     modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
                     if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
@@ -340,19 +341,21 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private void solveCodingTranscriptEffect(Boolean splicing, String transcriptSequence, Integer cdnaCodingStart,
-                                             Integer cdnaCodingEnd, Integer cdnaVariantStart, Integer cdnaVariantEnd,
-                                             String variantRef, String variantAlt, HashSet<String> consequenceTypeList) {
-        if(cdnaVariantStart < cdnaCodingStart) {
+    private void solveCodingTranscriptEffect(Boolean splicing, String transcriptSequence, Integer genomicCodingStart,
+                                             Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
+                                             Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
+                                             Integer cdnaVariantEnd, String variantRef, String variantAlt,
+                                             HashSet<String> consequenceTypeList) {
+        if(variantStart < genomicCodingStart) {
             consequenceTypeList.add("5_prime_UTR_variant");
-            if(cdnaVariantEnd >= cdnaCodingStart) {
+            if(variantEnd >= genomicCodingStart) {  // Deletion that removes initiator codon
                 consequenceTypeList.add("initiator_codon_variant");
                 consequenceTypeList.add("coding_sequence_variant");
             }
         } else {
-            if(cdnaVariantStart <= cdnaCodingEnd) {
-                consequenceTypeList.add("coding_sequence_variant");
-                if(cdnaVariantEnd <= cdnaCodingEnd) {
+            if(variantStart <= genomicCodingEnd) {
+                if(variantEnd <= genomicCodingEnd) {
+                    consequenceTypeList.add("coding_sequence_variant");
                     solveCodingEffect(splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
                                       cdnaVariantEnd, variantRef, variantAlt, consequenceTypeList);
                 } else {
@@ -364,26 +367,36 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private Boolean solveJunction(Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, HashSet<String> consequenceTypeList) {
+    private void solveJunction(Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, HashSet<String> consequenceTypeList,
+                                                Boolean[] junctionSolution) {
         Boolean splicing = false;
+        Boolean intron = false;
+        Boolean notdonor = true;
+        Boolean notacceptor = true;
+
         if(regionsOverlap(spliceSite1,spliceSite2,variantStart,variantEnd)) {
             consequenceTypeList.add("intron_variant");
+            intron = true;
         }
-        if(regionsOverlap(spliceSite1-3,spliceSite1+8,variantStart,variantEnd)) {
+        if(regionsOverlap(spliceSite1-3,spliceSite1+7,variantStart,variantEnd)) {
             consequenceTypeList.add("splice_region_variant");
             splicing = true;
-            if(regionsOverlap(spliceSite1,spliceSite1+2,variantStart,variantEnd)) {
+            if(regionsOverlap(spliceSite1,spliceSite1+1,variantStart,variantEnd)) {
                 consequenceTypeList.add("splice_donor_variant");
+                notdonor = false;
             }
         }
-        if(regionsOverlap(spliceSite2-8,spliceSite2+3,variantStart,variantEnd)) {
+        if(regionsOverlap(spliceSite2-7,spliceSite2+3,variantStart,variantEnd)) {
             consequenceTypeList.add("splice_region_variant");
             splicing = true;
-            if(regionsOverlap(spliceSite2-2,spliceSite2,variantStart,variantEnd)) {
+            if(regionsOverlap(spliceSite2-1,spliceSite2,variantStart,variantEnd)) {
                 consequenceTypeList.add("splice_acceptor_variant");
+                notacceptor = false;
             }
         }
-        return splicing;
+
+        junctionSolution[0] = splicing;
+        junctionSolution[1] = (intron && notdonor && notacceptor);
     }
 
     @Override
@@ -405,6 +418,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         String nextCodonNucleotides = "";
         long dbTimeStart, dbTimeEnd;
         Boolean splicing, coding, exonsRemain, variantAhead;
+        Boolean[] junctionSolution = {false, false};
 
         int exonCounter;
 
@@ -435,18 +449,18 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
                 if(transcriptStrand.equals("+")) {
                     // Variant overlaps with -5kb region
-                    if(regionsOverlap(transcriptStart-5000, transcriptStart, variantStart, variantEnd)) {
+                    if(regionsOverlap(transcriptStart-5000, transcriptStart-1, variantStart, variantEnd)) {
                         consequenceTypeList.add("upstream_gene_variant_5kb");
                         // Variant overlaps with -2kb region
-                        if(regionsOverlap(transcriptStart-2000, transcriptStart, variantStart, variantEnd)) {
+                        if(regionsOverlap(transcriptStart-2000, transcriptStart-1, variantStart, variantEnd)) {
                             consequenceTypeList.add("upstream_gene_variant_2kb");
                         }
                     }
                     // Variant overlaps with +5kb region
-                    if(regionsOverlap(transcriptEnd, transcriptEnd+5000, variantStart, variantEnd)) {
+                    if(regionsOverlap(transcriptEnd+1, transcriptEnd+5000, variantStart, variantEnd)) {
                         consequenceTypeList.add("downstream_gene_variant_5kb");
                         // Variant overlaps with +2kb region
-                        if(regionsOverlap(transcriptEnd, transcriptEnd+2000, variantStart, variantEnd)) {
+                        if(regionsOverlap(transcriptEnd+1, transcriptEnd+2000, variantStart, variantEnd)) {
                             consequenceTypeList.add("downstream_gene_variant_2kb");
                         }
                     }
@@ -458,25 +472,43 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         cdnaCodingStart = (Integer) transcriptInfo.get("cdnaCodingStart");
                         cdnaCodingEnd = (Integer) transcriptInfo.get("cdnaCodingEnd");
                         exonInfoList = (BasicDBList) transcriptInfo.get("exons");
-                        splicing = false;
-                        variantAhead = true;
                         exonInfo = (BasicDBObject) exonInfoList.get(0);
                         exonStart = (Integer) exonInfo.get("start");
                         exonEnd = (Integer) exonInfo.get("end");
-                        cdnaExonEnd = exonEnd-exonStart+1;
                         transcriptSequence = (String) exonInfo.get("sequence");
-                        cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
-                        cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
+                        variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
+                        cdnaExonEnd = (exonEnd - exonStart + 1);
+                        cdnaVariantStart = null;
+                        cdnaVariantEnd = null;
+                        junctionSolution[0] = false;
+                        junctionSolution[1] = false;
+                        splicing = false;
+
+                        if(variantStart >= exonStart) {
+                            if(variantStart <= exonEnd) {  // Variant start within the exon
+                                cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
+                                if(variantEnd <= exonEnd) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
+                                    cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
+                                }
+                            }
+                        } else {
+                            if(variantEnd <= exonEnd) {
+//                                if(variantEnd >= exonStart) {  // Only variant end within the exon  ----||||||||||E||||----
+                                // We do not contemplate that variant end can be located before this exon since this is the first exon
+                                cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
+//                                }
+                            } // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
+                        }
 
                         exonCounter = 1;
-                        while(exonCounter<exonInfoList.size() && !splicing && variantAhead) {
-                            exonInfo = (BasicDBObject) exonInfoList.get(exonCounter);
+                        while(exonCounter<exonInfoList.size() && !splicing && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
+                            exonInfo = (BasicDBObject) exonInfoList.get(exonCounter);          // next exon has been loaded
                             exonStart = (Integer) exonInfo.get("start");
-                            prevSpliceSite = exonEnd;
+                            prevSpliceSite = exonEnd+1;
                             exonEnd = (Integer) exonInfo.get("end");
                             transcriptSequence = transcriptSequence + ((String) exonInfo.get("sequence"));
-                            splicing = (splicing || solveJunction(prevSpliceSite, exonStart, variantStart, variantEnd, consequenceTypeList));
-                            variantAhead = (variantStart >= exonStart || variantEnd >= exonStart);
+                            solveJunction(prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList, junctionSolution);
+                            splicing = (splicing || junctionSolution[0]);
 
                             if(variantStart >= exonStart) {
                                 cdnaExonEnd += (exonEnd - exonStart + 1);
@@ -499,8 +531,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             }
                             exonCounter++;
                         }
-                        solveCodingTranscriptEffect(splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
-                                variant.getReference(), variant.getAlternative(), consequenceTypeList);
+                        if(!junctionSolution[1]) {
+                            solveCodingTranscriptEffect(splicing, transcriptSequence, genomicCodingStart, genomicCodingEnd,
+                                    variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
+                                    variant.getReference(), variant.getAlternative(), consequenceTypeList);
+                        }
                     }
                 }
             }
