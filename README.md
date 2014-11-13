@@ -12,7 +12,7 @@ CONTACT
 ------- 
   You can contact any of the following developers:
 
-    * Javier Lopez (fjavier@bioinfomgp.org)
+    * Javier Lopez (fjlopez@ebi.ac.uk)
     * Ignacio Medina (imedina@ebi.ac.uk)
 
 
