@@ -341,13 +341,15 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private void solveCodingTranscriptEffect(Boolean splicing, String transcriptSequence, Integer genomicCodingStart,
+    private void solveCodingTranscriptEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
                                              Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                              Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
                                              Integer cdnaVariantEnd, String variantRef, String variantAlt,
                                              HashSet<String> consequenceTypeList) {
         if(variantStart < genomicCodingStart) {
-            consequenceTypeList.add("5_prime_UTR_variant");
+            if(transcriptStart<genomicCodingStart) { // Check transcript has 5 UTR
+                consequenceTypeList.add("5_prime_UTR_variant");
+            }
             if(variantEnd >= genomicCodingStart) {  // Deletion that removes initiator codon
                 consequenceTypeList.add("initiator_codon_variant");
                 consequenceTypeList.add("coding_sequence_variant");
@@ -359,10 +361,15 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     solveCodingEffect(splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
                                       cdnaVariantEnd, variantRef, variantAlt, consequenceTypeList);
                 } else {
+                    if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
+                        consequenceTypeList.add("3_prime_UTR_variant");
+                    }
                     consequenceTypeList.add("stop_lost");
                 }
             } else {
-                consequenceTypeList.add("3_prime_UTR_variant");
+                if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
+                    consequenceTypeList.add("3_prime_UTR_variant");
+                }
             }
         }
     }
@@ -532,7 +539,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             exonCounter++;
                         }
                         if(!junctionSolution[1]) {
-                            solveCodingTranscriptEffect(splicing, transcriptSequence, genomicCodingStart, genomicCodingEnd,
+                            solveCodingTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
                                     variant.getReference(), variant.getAlternative(), consequenceTypeList);
                         }
