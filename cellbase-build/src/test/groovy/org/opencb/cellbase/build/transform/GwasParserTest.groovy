@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform
 
-import org.opencb.biodata.formats.clinical.Gwas
 import org.opencb.cellbase.build.serializers.CellBaseSerializer
+import org.opencb.cellbase.build.transform.formats.Gwas
 import spock.lang.Specification
 import spock.lang.Unroll
 

@@ -1,8 +1,9 @@
 package org.opencb.cellbase.build.transform;
 
 import org.broad.tribble.readers.TabixReader;
-import org.opencb.biodata.formats.variant.Cadd;
+
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.transform.formats.Cadd;
 
 import java.io.*;
 import java.nio.file.Path;

@@ -1,8 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.biodata.models.feature.ConservedRegionFeature;
-import org.opencb.biodata.models.feature.ConservedRegionFeature.ConservedRegionSource;
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.build.transform.formats.ConservedRegionFeature;
 
 import java.io.BufferedReader;
 import java.io.IOException;
