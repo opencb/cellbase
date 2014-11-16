@@ -1,7 +1,6 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -23,14 +22,14 @@ public class ProteinWSServer extends GenericRestWSServer {
 	
 //	@GET
 //	@Path("/{proteinId}/info")
-//	public Response getByEnsemblId(@PathParam("proteinId") String query) {
+//	public Response getAllByAccessions(@PathParam("proteinId") String query) {
 //		try {
-//			checkVersionAndSpecies();
+//			checkParams();
 //			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 //			return generateResponse(query, "PROTEIN", adaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query)));
 //		} catch (Exception e) {
 //			e.printStackTrace();
-//			return createErrorResponse("getByEnsemblId", e.toString());
+//			return createErrorResponse("getAllByAccessions", e.toString());
 //		}
 //	}
 	
@@ -38,7 +37,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 	@Path("/{proteinId}/fullinfo")
 	public Response getFullInfoByEnsemblId(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("sources") String sources) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
@@ -51,14 +50,14 @@ public class ProteinWSServer extends GenericRestWSServer {
 	@Path("/all")
 	public Response getAll() {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 			
 			return createJsonResponse("{}");
 //			return generateResponse("", "PROTEIN", adaptor.getAll());
 		} catch (Exception e) {
 			e.printStackTrace();
-			return createErrorResponse("getByEnsemblId", e.toString());
+			return createErrorResponse("getAllByAccessions", e.toString());
 		}
 	}
 
@@ -66,7 +65,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     @Path("/{proteinId}/name")
     public Response getproteinByName(@PathParam("proteinId") String id) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(id), queryOptions));
         } catch (Exception e) {
@@ -91,7 +90,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 //	@Path("/{proteinId}/feature")
 //	public Response getFeatures(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("type") String type) {
 //		try {
-//			checkVersionAndSpecies();
+//			checkParams();
 //			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 //			return generateResponse(query, "PROTEIN_FEATURE", adaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query)));
 //		} catch (Exception e) {
@@ -104,7 +103,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 //    @Path("/{proteinName}/function_prediction")
 //    public Response getFunctionalPredictions(@PathParam("proteinName") String query, @DefaultValue("") @QueryParam("source") String source) {
 //        try {
-//            checkVersionAndSpecies();
+//            checkParams();
 //            queryOptions.put("disease", Splitter.on(",").splitToList(source));
 //            ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 //            return generateResponse(query, "PROTEIN_FEATURE", adaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query)));
@@ -124,7 +123,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 //	@Path("/{proteinId}/xref")
 //	public Response getXrefs(@PathParam("proteinId") String proteinId, @DefaultValue("") @QueryParam("dbname") String dbname) {
 //		try {
-//			checkVersionAndSpecies();
+//			checkParams();
 //			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 //			return generateResponse(proteinId, "XREF", adaptor.getAllProteinXrefsByProteinNameList(Splitter.on(",").splitToList(proteinId)));
 //		} catch (Exception e) {
@@ -143,7 +142,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 //	@Path("/{proteinId}/interaction")
 //	public Response getInteraction(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("source") String source) {
 //		try {
-//			checkVersionAndSpecies();
+//			checkParams();
 //			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 //			if(source != null && !source.equals("")) {
 //				return generateResponse(query, "PROTEIN_INTERACTION", adaptor.getAllProteinInteractionsByProteinNameList(Splitter.on(",").splitToList(query), source));

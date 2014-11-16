@@ -23,7 +23,7 @@ public class PathwayWSServerMongo extends GenericRestWSServer {
 	@Path("/list")
 	public Response getAllPathways() {
 		try {
-//			checkVersionAndSpecies();
+//			checkParams();
 			
 			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 	        String pathways = pathwayDBAdaptor.getPathways();
