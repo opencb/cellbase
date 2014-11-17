@@ -1,5 +1,6 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
+
 import org.junit.Test;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
