@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats;
+package org.opencb.cellbase.build.transform.formats.clinical;
 
 /**
  * @author by antonior on 5/22/14.

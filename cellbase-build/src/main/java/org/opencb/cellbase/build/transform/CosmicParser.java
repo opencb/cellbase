@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.cellbase.build.serializers.CellBaseSerializer;
-import org.opencb.cellbase.build.transform.formats.Cosmic;
+import org.opencb.cellbase.build.transform.formats.clinical.Cosmic;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform
 
-import org.opencb.cellbase.build.transform.formats.ClinvarPublicSet
+import org.opencb.cellbase.build.transform.formats.clinical.ClinvarPublicSet
 import org.opencb.cellbase.build.serializers.CellBaseSerializer
 import spock.lang.Shared
 import spock.lang.Specification

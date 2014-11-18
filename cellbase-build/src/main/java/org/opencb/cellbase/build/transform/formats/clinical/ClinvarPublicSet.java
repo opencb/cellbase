@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats;
+package org.opencb.cellbase.build.transform.formats.clinical;
 
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
 
