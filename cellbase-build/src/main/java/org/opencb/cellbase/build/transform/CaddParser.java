@@ -2,7 +2,7 @@ package org.opencb.cellbase.build.transform;
 
 import org.broad.tribble.readers.TabixReader;
 
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.formats.Cadd;
 
 import java.io.*;
@@ -105,7 +105,7 @@ public class CaddParser extends CellBaseParser{
         if (floatName.equals("NA")){
             return null;
         } else{
-            return Float.parseFloat(floatName);
+            return Float.valueOf(floatName);
         }
     }
 }

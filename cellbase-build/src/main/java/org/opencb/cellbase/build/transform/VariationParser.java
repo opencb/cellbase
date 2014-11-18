@@ -3,7 +3,7 @@ package org.opencb.cellbase.build.transform;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.Xref;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 
@@ -222,20 +222,27 @@ public class VariationParser extends CellBaseParser {
         rafVariationSynonym = new RandomAccessFile(variationDirectoryPath.resolve("variation_synonym.txt").toFile(), "r");
     }
 
-    public boolean disconnect() throws Exception {
+    public void disconnect() {
         super.disconnect();
-        if (sqlConn != null && !sqlConn.isClosed()) {
-            prepStmVariationFeature.close();
-            prepStmTranscriptVariation.close();
-            prepStmVariationSynonym.close();
+        try {
+            if (sqlConn != null && !sqlConn.isClosed()) {
+                prepStmVariationFeature.close();
+                prepStmTranscriptVariation.close();
+                prepStmVariationSynonym.close();
 
-            sqlConn.close();
+                sqlConn.close();
+            }
+        } catch (SQLException e) {
+            logger.error("Error closing connections: " + e.getMessage());
         }
 
-        rafVariationFeature.close();
-        rafTranscriptVariation.close();
-        rafVariationSynonym.close();
-        return true;
+        try {
+            rafVariationFeature.close();
+            rafTranscriptVariation.close();
+            rafVariationSynonym.close();
+        } catch (IOException e) {
+            logger.error("Error closing file: " + e.getMessage());
+        }
     }
 
     public List<String> queryByVariationId(int variationId, String tableName, Path variationFilePath) throws IOException, SQLException {

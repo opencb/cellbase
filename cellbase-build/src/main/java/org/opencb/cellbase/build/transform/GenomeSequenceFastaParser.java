@@ -1,10 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.biodata.models.core.Cytoband;
 import org.opencb.biodata.models.core.GenomeSequenceChunk;
-import org.opencb.biodata.models.core.InfoStats;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 
 import java.io.*;
@@ -13,8 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 public class GenomeSequenceFastaParser extends CellBaseParser {

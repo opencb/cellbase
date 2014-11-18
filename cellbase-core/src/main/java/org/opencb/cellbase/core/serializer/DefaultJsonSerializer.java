@@ -1,6 +1,8 @@
 package org.opencb.cellbase.core.serializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -16,20 +18,24 @@ import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Created by imedina on 17/06/14.
  */
 public class DefaultJsonSerializer extends CellBaseSerializer {
 
+    private final boolean includeEmtpyValues;
     private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
@@ -40,22 +46,28 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     private BufferedWriter mutationBufferedWriter;
     private BufferedWriter ppiBufferedWriter;
 
+
+    private GZIPOutputStream gzipOutputStream;
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
 
     private int chunkSize = 2000;
 
     private Path outputFileName;
-
+    private JsonGenerator generator;
 
     public DefaultJsonSerializer(Path outdirPath) throws IOException {
-        super(outdirPath);
-        init();
+        this(outdirPath, true);
     }
 
-    public DefaultJsonSerializer(Path outdirPath, Path outputFileName) throws IOException {
+    public DefaultJsonSerializer(Path outdirPath, boolean includeEmptyValues) throws IOException {
+        this(outdirPath, null, includeEmptyValues);
+    }
+
+    public DefaultJsonSerializer(Path outdirPath, Path outputFileName, boolean includeEmptyValues) throws IOException {
         super(outdirPath);
         this.outputFileName = outputFileName;
+        this.includeEmtpyValues = includeEmptyValues;
         init();
     }
 
@@ -208,8 +220,22 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     }
 
     @Override
-    public void serializeObject(Object object) {
-        // TODO: implement
+    public void serialize(Object elem) {
+        try {
+            if (generator == null) {
+                JsonFactory jsonFactory = new JsonFactory();
+                jsonObjectMapper = new ObjectMapper(jsonFactory);
+                if (!includeEmtpyValues) {
+                    jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+                }
+                gzipOutputStream = new GZIPOutputStream(new FileOutputStream(outdirPath.resolve(outputFileName).toAbsolutePath().toString() + ".json.gz"));
+                generator = jsonFactory.createGenerator(gzipOutputStream);
+            }
+            generator.writeObject(elem);
+            generator.writeRaw('\n');
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
 
@@ -225,7 +251,6 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ;
 
         Iterator<String> iter = bufferedWriterMap.keySet().iterator();
         while(iter.hasNext()) {
@@ -248,6 +273,16 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+
+        if (gzipOutputStream != null) {
+            try {
+                gzipOutputStream.flush();
+                generator.flush();
+                generator.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

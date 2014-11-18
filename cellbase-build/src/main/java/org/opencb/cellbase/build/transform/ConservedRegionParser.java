@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

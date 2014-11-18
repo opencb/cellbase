@@ -19,7 +19,6 @@ import java.nio.file.Path;
  * Time: 5:37 PM
  * To change this template use File | Settings | File Templates.
  */
-@Deprecated
 public abstract class CellBaseSerializer {
 
     protected Path outdirPath;
@@ -47,8 +46,7 @@ public abstract class CellBaseSerializer {
 
     public abstract void serialize(Interaction interaction);
 
-    public abstract void serializeObject(Object object);
-
+    public abstract void serialize(Object object);
     public abstract void close();
 
 }

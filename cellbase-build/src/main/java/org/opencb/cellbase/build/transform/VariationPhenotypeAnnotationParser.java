@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
-import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 
@@ -38,7 +38,7 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
 
     private Path ensemblVariationDir;
 
-    public VariationPhenotypeAnnotationParser(Path ensemblVariationDir, CellBaseJsonSerializer serializer) {
+    public VariationPhenotypeAnnotationParser(Path ensemblVariationDir, CellBaseSerializer serializer) {
         super(serializer);
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

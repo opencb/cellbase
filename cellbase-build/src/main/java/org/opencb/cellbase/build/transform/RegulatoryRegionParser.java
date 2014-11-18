@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
 
 import java.io.BufferedReader;
@@ -25,7 +25,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
     static int CHUNK_SIZE = 2000;
     private Path regulatoryRegionPath;
 
-    public RegulatoryRegionParser(Path regulatoryRegionFilesDir, CellBaseJsonSerializer serializer) {
+    public RegulatoryRegionParser(Path regulatoryRegionFilesDir, CellBaseSerializer serializer) {
         super(serializer);
 
         this.regulatoryRegionPath = regulatoryRegionFilesDir;

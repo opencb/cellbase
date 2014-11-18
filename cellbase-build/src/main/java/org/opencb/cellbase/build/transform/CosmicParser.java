@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.formats.clinical.Cosmic;
 
 import java.io.BufferedReader;
@@ -319,16 +319,5 @@ public class CosmicParser extends CellBaseParser {
         }
 
         return validVariant;
-    }
-
-    @Override
-    public boolean disconnect() {
-        boolean disconnected = false;
-        try {
-            disconnected = super.disconnect();
-        } catch (Exception e) {
-            logger.error("Disconnecting parser: " + e.getMessage());
-        }
-        return disconnected;
     }
 }

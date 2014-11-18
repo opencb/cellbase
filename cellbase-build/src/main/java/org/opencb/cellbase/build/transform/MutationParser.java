@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.opencb.biodata.models.variation.Mutation;
-import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -27,7 +27,7 @@ public class MutationParser extends CellBaseParser {
     private Path cosmicMutationFile;
 
 
-    public MutationParser(Path cosmicMutationFile, CellBaseJsonSerializer serializer) {
+    public MutationParser(Path cosmicMutationFile, CellBaseSerializer serializer) {
         super(serializer);
         this.cosmicMutationFile = cosmicMutationFile;
     }

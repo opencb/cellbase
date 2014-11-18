@@ -3,9 +3,9 @@ package org.opencb.cellbase.build;
 import org.apache.commons.cli.*;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.variant.effect.VariantEffect;
-import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
 import org.opencb.cellbase.build.transform.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -254,7 +254,7 @@ public class CellBaseMain {
         String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
         String species = commandLine.getOptionValue("species");
         if (uniprotSplitFilesDir != null && Files.exists(Paths.get(uniprotSplitFilesDir))) {
-            CellBaseJsonSerializer pSerializer = new CellBaseJsonSerializer(outputPath.resolve("protein.json"));
+            DefaultJsonSerializer pSerializer = new DefaultJsonSerializer(outputPath.resolve("protein.json"));
             ProteinParser proteinParser = new ProteinParser(Paths.get(uniprotSplitFilesDir), species, pSerializer);
             proteinParser.parse();
         }
@@ -263,7 +263,6 @@ public class CellBaseMain {
     private static void buildVep(String serializerClass) throws IOException {
         // TODO: VariantEffectParser should extend CellbaseParser
         logger.info("Processing VEP parser...");
-        newSerializer = getSerializerNew(serializerClass, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
         String effectFile = commandLine.getOptionValue("vep-file");
         VariantEffectParser effectParser = new VariantEffectParser(serializer);
         effectParser.parse(Paths.get(effectFile));
@@ -287,9 +286,7 @@ public class CellBaseMain {
         logger.info("Processing variation phenotype annotation...");
         String variationFilesDir = commandLine.getOptionValue("indir");
         if (variationFilesDir != null) {
-
-            CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation_phenotype_annotation.json"));
-
+            DefaultJsonSerializer vSerializer = new DefaultJsonSerializer(outputPath.resolve("variation_phenotype_annotation.json"));
 
             VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(Paths.get(variationFilesDir), vSerializer);
 //                    vp.parseCosmic(Paths.get(cosmicFilePath));
@@ -301,7 +298,7 @@ public class CellBaseMain {
         logger.info("Processing variation...");
         String variationFilesDir = commandLine.getOptionValue("indir");
         if (variationFilesDir != null) {
-            CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation.json"));
+            DefaultJsonSerializer vSerializer = new DefaultJsonSerializer(outputPath.resolve("variation.json"));
             VariationParser vp = new VariationParser(Paths.get(variationFilesDir), vSerializer);
             vp.parse();
         }
@@ -311,7 +308,7 @@ public class CellBaseMain {
         logger.info("Processing regulation");
         String regulatoryRegionFilesDir = commandLine.getOptionValue("indir");
         if (regulatoryRegionFilesDir != null) {
-            CellBaseJsonSerializer rSerializer = new CellBaseJsonSerializer(outputPath.resolve("regulatory_region.json"));
+            DefaultJsonSerializer rSerializer = new DefaultJsonSerializer(outputPath.resolve("regulatory_region.json"));
 
             RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(Paths.get(regulatoryRegionFilesDir), rSerializer);
             regulatoryParser.parse();
@@ -344,21 +341,20 @@ public class CellBaseMain {
         logger.info("Processing genome-sequence...");
         String fastaFile = commandLine.getOptionValue("fasta-file");
         if (fastaFile != null && Files.exists(Paths.get(fastaFile))) {
-
-            CellBaseJsonSerializer gsfpSerializer = new CellBaseJsonSerializer(outputPath.resolve("genome_sequence.json"));
+            DefaultJsonSerializer gsfpSerializer = new DefaultJsonSerializer(outputPath.resolve("genome_sequence.json"));
             GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(Paths.get(fastaFile), gsfpSerializer);
             genomeSequenceFastaParser.parse();
             genomeSequenceFastaParser.disconnect();
         }
     }
 
-    private static void buildGwas(Path outputPath) {
+    private static void buildGwas(Path outputPath) throws IOException {
         logger.info("Processing gwas...");
         String gwasFile = commandLine.getOptionValue("gwas-file");
         if (gwasFile != null) {
             String dbSnpFile = commandLine.getOptionValue("dbsnp-file");
             if (dbSnpFile != null) {
-                CellBaseJsonSerializer gwasJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("gwas"), false);
+                DefaultJsonSerializer gwasJsonSerializer = new DefaultJsonSerializer(outputPath, Paths.get("gwas"), false);
                 GwasParser gwasParser = new GwasParser(gwasJsonSerializer, Paths.get(gwasFile), Paths.get(dbSnpFile));
                 gwasParser.parse();
             } else {
@@ -369,11 +365,11 @@ public class CellBaseMain {
         }
     }
 
-    private static void buildCosmic(Path outputPath) {
+    private static void buildCosmic(Path outputPath) throws IOException {
         logger.info("Processing Cosmic ...");
         String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
         if (cosmicFilePath != null) {
-            CellBaseJsonSerializer cosmicSerializer = new CellBaseJsonSerializer(outputPath.resolve("cosmic"), false);
+            DefaultJsonSerializer cosmicSerializer = new DefaultJsonSerializer(outputPath, Paths.get("cosmic"), false);
             //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
             //vp.parse();
             // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
@@ -384,11 +380,11 @@ public class CellBaseMain {
         }
     }
 
-    private static void buildClinvar(Path outputPath) {
+    private static void buildClinvar(Path outputPath) throws IOException {
         logger.info("Processing ClinVar...");
         String clinvarFile = commandLine.getOptionValue("clinvar-file");
         if (clinvarFile != null) {
-            CellBaseJsonSerializer clinvarJsonSerializer = new CellBaseJsonSerializer(outputPath.resolve("clinvar"), false);
+            DefaultJsonSerializer clinvarJsonSerializer = new DefaultJsonSerializer(outputPath, Paths.get("clinvar"), false);
             ClinVarParser clinVarParser = new ClinVarParser(clinvarJsonSerializer, Paths.get(clinvarFile));
             //ClinVarParser clinVarParser = new ClinVarParser(serializer, clinvarFile);
             clinVarParser.parse();
@@ -418,21 +414,5 @@ public class CellBaseMain {
             }
         }
         return serializer;
-    }
-
-    private static org.opencb.cellbase.build.serializers.CellBaseSerializer getSerializerNew(String serializationOutput, Path outPath, Class clazz) throws IOException {
-        switch (serializationOutput) {
-            case "json":
-                return new CellBaseJsonSerializer(outPath);
-            case "mongodb":
-//                if (clazz.equals(VariantEffect.class)) {
-//                    Properties properties = new Properties();
-//                    properties.load(CellBaseMain.class.getResource("/application.properties").openStream());
-//                    return new VariantEffectMongoDBLoader(properties);
-//                }
-                return null;
-            default:
-                return null;
-        }
     }
 }

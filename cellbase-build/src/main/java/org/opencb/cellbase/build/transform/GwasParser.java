@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.broad.tribble.readers.TabixReader;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.formats.clinical.Gwas;
 
 import java.io.BufferedReader;
@@ -263,17 +263,6 @@ public class GwasParser extends CellBaseParser {
         Gwas gwas = variantMap.get(gwasKey);
         gwas.addStudies(gwasVO.getStudies());
         variantMap.put(gwasKey, gwas);
-    }
-
-    @Override
-    public boolean disconnect() {
-        boolean disconnected = false;
-        try {
-            disconnected = super.disconnect();
-        } catch (Exception e) {
-            logger.error("Disconnecting parser: " + e.getMessage());
-        }
-        return disconnected;
     }
 
     // TODO: use another different class

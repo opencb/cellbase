@@ -19,6 +19,7 @@ import java.util.zip.GZIPOutputStream;
  * @param <T> Type of data to serialize
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
+@Deprecated
 public class CellBaseJsonSerializer implements CellBaseSerializer {
 
     private Path file;

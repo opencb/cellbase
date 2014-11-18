@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class BiopaxPathwayParser {
 	BioPax bioPax = null;
 	protected Map<String, String> parentMap = new HashMap<String, String>();

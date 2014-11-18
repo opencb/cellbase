@@ -7,7 +7,7 @@ import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureSetType;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.ReleaseType;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.SequenceLocationType;
-import org.opencb.cellbase.build.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -35,7 +35,7 @@ public class ClinVarParser extends CellBaseParser{
 
             long serializedClinvarObjects = 0,
                     clinvarRecordsParsed = 0;
-            logger.info("Serializing clinvar records that have Sequence Location for Assemlby " + GRCH37_ASSEMBLY + " ...");
+            logger.info("Serializing clinvar records that have Sequence Location for Assembly " + GRCH37_ASSEMBLY + " ...");
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 ClinvarPublicSet clinvarPublicSet = buildClinvarPublicSet(publicSet);
                 if (clinvarPublicSet != null) {
@@ -107,16 +107,6 @@ public class ClinVarParser extends CellBaseParser{
         return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v19);
     }
 
-    @Override
-    public boolean disconnect() {
-        boolean disconnected = false;
-        try {
-            disconnected = super.disconnect();
-        } catch (Exception e) {
-            logger.error("Disconnecting serializer: " + e.getMessage());
-        }
-        return disconnected;
-    }
 
 //    public void parse(Path uniprotFilesDir) throws IOException {
 //        Files.exists(uniprotFilesDir);

@@ -4,7 +4,7 @@ import org.opencb.biodata.formats.protein.uniprot.UniprotParser;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.OrganismNameType;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Uniprot;
-import org.opencb.cellbase.build.serializers.json.CellBaseJsonSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +22,7 @@ public class ProteinParser extends CellBaseParser {
     private Path uniprotFilesDir;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public ProteinParser(Path uniprotFilesDir, String species, CellBaseJsonSerializer serializer) {
+    public ProteinParser(Path uniprotFilesDir, String species, CellBaseSerializer serializer) {
         super(serializer);
 
         this.uniprotFilesDir = uniprotFilesDir;

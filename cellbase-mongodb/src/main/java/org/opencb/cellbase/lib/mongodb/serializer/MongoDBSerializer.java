@@ -210,9 +210,7 @@ public class MongoDBSerializer extends CellBaseSerializer {
     }
 
     @Override
-    public void serializeObject(Object object) {
-
-    }
+    public void serialize(Object object) { }
 
     @Override
     public void serialize(GenericFeature genericFeature) {
