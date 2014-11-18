@@ -92,7 +92,6 @@ public class CellBaseMain {
      */
     public static void main(String[] args) {
         String buildOption = null;
-        String serializationOutput = null;
 
         initOptions();
 
@@ -127,125 +126,34 @@ public class CellBaseMain {
             buildOption = commandLine.getOptionValue("build");
             switch (buildOption) {
                 case "genome-sequence":
-                    logger.info("Processing genome-sequence...");
-                    String fastaFile = commandLine.getOptionValue("fasta-file");
-                    if (fastaFile != null && Files.exists(Paths.get(fastaFile))) {
-
-                        CellBaseJsonSerializer gsfpSerializer = new CellBaseJsonSerializer(outputPath.resolve("genome_sequence.json"));
-                        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(Paths.get(fastaFile), gsfpSerializer);
-                        genomeSequenceFastaParser.parse();
-                        genomeSequenceFastaParser.disconnect();
-                    }
+                    buildGenomeSequence(outputPath);
                     break;
-                case "gene": // TODO aaleman:
-//                    logger.info("Processing gene...");
-                    String geneFilesDir = commandLine.getOptionValue("indir");
-                    String gtfFile = commandLine.getOptionValue("gtf-file");
-                    String genomeFastaFile = commandLine.getOptionValue("fasta-file", "");
-                    String xrefFile = commandLine.getOptionValue("xref-file", "");
-                    String uniprotIdMapping = commandLine.getOptionValue("uniprot-id-mapping-file", "");
-                    String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
-                    String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
-                    String mirnaFile = commandLine.getOptionValue("mirna-file", "");
-
-//                    if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
-                    GeneParser geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
-                    if (geneFilesDir != null && !geneFilesDir.equals("")) {
-                        geneParser.parse();
-                    } else {
-                        geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
-                    }
-//                    }
+                case "gene":
+                    buildGene();
                     break;
                 case "regulation":
-                    logger.info("Processing regulation");
-                    String regulatoryRegionFilesDir = commandLine.getOptionValue("indir");
-                    if (regulatoryRegionFilesDir != null) {
-                        CellBaseJsonSerializer rSerializer = new CellBaseJsonSerializer(outputPath.resolve("regulatory_region.json"));
-
-                        RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(Paths.get(regulatoryRegionFilesDir), rSerializer);
-                        regulatoryParser.parse();
-                    }
+                    buildRegulation(outputPath);
                     break;
                 case "variation":
-                    logger.info("Processing variation...");
-                    String variationFilesDir = commandLine.getOptionValue("indir");
-                    if (variationFilesDir != null) {
-                        CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation.json"));
-                        VariationParser vp = new VariationParser(Paths.get(variationFilesDir), vSerializer);
-                        vp.parse();
-                    }
+                    buildVariation(outputPath);
                     break;
                 case "variation-phen-annot":
-                    logger.info("Processing variation phenotype annotation...");
-                    variationFilesDir = commandLine.getOptionValue("indir");
-                    if (variationFilesDir != null) {
-
-                        CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation_phenotype_annotation.json"));
-
-
-                        VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(Paths.get(variationFilesDir), vSerializer);
-//                    vp.parseCosmic(Paths.get(cosmicFilePath));
-                        variationPhenotypeAnnotationParser.parse();
-                    }
+                    buildVariationPhenotypeAnnotation(outputPath);
                     break;
-                case "vep": // TODO aaleman:
-                    logger.info("Processing VEP parser...");
-                    newSerializer = getSerializerNew(serializerClass, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
-                    String effectFile = commandLine.getOptionValue("vep-file");
-                    VariantEffectParser effectParser = new VariantEffectParser(serializer);
-                    effectParser.parse(Paths.get(effectFile));
-
-//                    if (effectFile != null && Files.exists(Paths.get(effectFile))) {
-//                        if (newSerializer instanceof JsonSerializer) {
-//                            VariantEffectParser effectParser = new VariantEffectParser(newSerializer);
-//                            effectParser.parse(Paths.get(effectFile));
-//                        } else if (newSerializer instanceof VariantEffectMongoDBLoader) {
-//                            JsonReader<VariantEffect> effectParser = new JsonReader<>(Paths.get(effectFile), VariantEffect.class, newSerializer);
-//                            effectParser.open();
-//                            effectParser.pre();
-//                            effectParser.parse();
-//                            effectParser.post();
-//                            effectParser.close();
-//                        }
-//                    }
+                case "vep":
+                    buildVep(serializerClass);
                     break;
                 case "protein":
-                    logger.info("Processing protein...");
-                    String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
-                    String species = commandLine.getOptionValue("species");
-                    if (uniprotSplitFilesDir != null && Files.exists(Paths.get(uniprotSplitFilesDir))) {
-                        CellBaseJsonSerializer pSerializer = new CellBaseJsonSerializer(outputPath.resolve("protein.json"));
-                        ProteinParser proteinParser = new ProteinParser(Paths.get(uniprotSplitFilesDir), species, pSerializer);
-                        proteinParser.parse();
-                    }
+                    buildProtein(outputPath);
                     break;
                 case "conservation":
-                    logger.info("Processing conservation");
-                    String conservationFilesDir = commandLine.getOptionValue("indir");
-                    int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
-                    //String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
-                    if (conservationFilesDir != null) {
-                        // TODO: change serializer class
-                        //ConservedRegionParser conservedRegionParser = new ConservedRegionParser(serializer, Paths.get(conservationFilesDir), conservationChunkSize);
-                        //conservedRegionParser.parse();
-                    }
+                    buildConservation();
                     break;
                 case "ppi":
-                    logger.info("Processing PPI...");
-                    String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
-                    if (psimiTabFile != null) {
-                        InteractionParser interactionParser = new InteractionParser(serializer);
-                        interactionParser.parse(Paths.get(psimiTabFile), commandLine.getOptionValue("species").toString());
-                    }
+                    buildPpi();
                     break;
                 case "drug":
-                    logger.info("Processing drug...");
-                    String drugFile = commandLine.getOptionValue("drug-file");
-                    if (drugFile != null) {
-                        DrugParser drugParser = new DrugParser(serializer);
-                        drugParser.parse(Paths.get(drugFile));
-                    }
+                    buildDrug();
                     break;
                 case "clinvar":
                     buildClinvar(outputPath);
@@ -257,14 +165,10 @@ public class CellBaseMain {
                     buildGwas(outputPath);
                     break;
                 case "all":
-                    logger.info("Processing all...");
-                    String speciesDataDir = commandLine.getOptionValue("indir");
-//                    String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
-                    parseAll(Paths.get(speciesDataDir));
+                    buildAll();
                     break;
                 default:
                     break;
-
             }
             serializer.close();
         } catch (ParseException | IOException | SQLException | ClassNotFoundException | NoSuchMethodException | FileFormatException | InterruptedException e) {
@@ -281,6 +185,171 @@ public class CellBaseMain {
             e.printStackTrace();
         }
 
+    }
+
+    private static void buildAll() throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
+        logger.info("Processing all...");
+        Path speciesInDir = Paths.get(commandLine.getOptionValue("indir"));
+//                    String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
+        Path genomeFastaPath = null;
+        for (String fileName : speciesInDir.resolve("sequence").toFile().list()) {
+            if (fileName.endsWith(".fa") || fileName.endsWith(".fa.gz")) {
+                genomeFastaPath = speciesInDir.resolve("sequence").resolve(fileName);
+                break;
+            }
+        }
+        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(genomeFastaPath, null);
+        genomeSequenceFastaParser.parse();
+
+        GeneParser geneParser = new GeneParser(speciesInDir.resolve("gene"), genomeFastaPath);
+        geneParser.parse();
+
+        Path variationPath = speciesInDir.resolve("variation");
+        if (variationPath.toFile().list().length > 2) {
+            VariationParser vp = new VariationParser(variationPath, null);
+            vp.parse();
+        }
+
+        Path regulationPath = speciesInDir.resolve("regulation");
+        if (variationPath.toFile().list().length > 2) {
+            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(regulationPath, null);
+            regulatoryParser.parse();
+        }
+    }
+
+    private static void buildDrug() throws JAXBException, IOException {
+        // TODO: DrugParser should extend CellbaseParser
+        logger.info("Processing drug...");
+        String drugFile = commandLine.getOptionValue("drug-file");
+        if (drugFile != null) {
+            DrugParser drugParser = new DrugParser(serializer);
+            drugParser.parse(Paths.get(drugFile));
+        }
+    }
+
+    private static void buildPpi() throws IOException {
+        // TODO: InteractionParser should extend CellbaseParser
+        logger.info("Processing PPI...");
+        String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
+        if (psimiTabFile != null) {
+            InteractionParser interactionParser = new InteractionParser(serializer);
+            interactionParser.parse(Paths.get(psimiTabFile), commandLine.getOptionValue("species").toString());
+        }
+    }
+
+    private static void buildConservation() {
+        logger.info("Processing conservation");
+        String conservationFilesDir = commandLine.getOptionValue("indir");
+        int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
+        //String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
+        if (conservationFilesDir != null) {
+            // TODO: change serializer class
+            //ConservedRegionParser conservedRegionParser = new ConservedRegionParser(serializer, Paths.get(conservationFilesDir), conservationChunkSize);
+            //conservedRegionParser.parse();
+        }
+    }
+
+    private static void buildProtein(Path outputPath) throws IOException {
+        logger.info("Processing protein...");
+        String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
+        String species = commandLine.getOptionValue("species");
+        if (uniprotSplitFilesDir != null && Files.exists(Paths.get(uniprotSplitFilesDir))) {
+            CellBaseJsonSerializer pSerializer = new CellBaseJsonSerializer(outputPath.resolve("protein.json"));
+            ProteinParser proteinParser = new ProteinParser(Paths.get(uniprotSplitFilesDir), species, pSerializer);
+            proteinParser.parse();
+        }
+    }
+
+    private static void buildVep(String serializerClass) throws IOException {
+        // TODO: VariantEffectParser should extend CellbaseParser
+        logger.info("Processing VEP parser...");
+        newSerializer = getSerializerNew(serializerClass, Paths.get(commandLine.getOptionValue("output")), VariantEffect.class);
+        String effectFile = commandLine.getOptionValue("vep-file");
+        VariantEffectParser effectParser = new VariantEffectParser(serializer);
+        effectParser.parse(Paths.get(effectFile));
+
+//                    if (effectFile != null && Files.exists(Paths.get(effectFile))) {
+//                        if (newSerializer instanceof JsonSerializer) {
+//                            VariantEffectParser effectParser = new VariantEffectParser(newSerializer);
+//                            effectParser.parse(Paths.get(effectFile));
+//                        } else if (newSerializer instanceof VariantEffectMongoDBLoader) {
+//                            JsonReader<VariantEffect> effectParser = new JsonReader<>(Paths.get(effectFile), VariantEffect.class, newSerializer);
+//                            effectParser.open();
+//                            effectParser.pre();
+//                            effectParser.parse();
+//                            effectParser.post();
+//                            effectParser.close();
+//                        }
+//                    }
+    }
+
+    private static void buildVariationPhenotypeAnnotation(Path outputPath) throws IOException, InterruptedException, SQLException, ClassNotFoundException {
+        logger.info("Processing variation phenotype annotation...");
+        String variationFilesDir = commandLine.getOptionValue("indir");
+        if (variationFilesDir != null) {
+
+            CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation_phenotype_annotation.json"));
+
+
+            VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(Paths.get(variationFilesDir), vSerializer);
+//                    vp.parseCosmic(Paths.get(cosmicFilePath));
+            variationPhenotypeAnnotationParser.parse();
+        }
+    }
+
+    private static void buildVariation(Path outputPath) throws IOException, InterruptedException, SQLException, ClassNotFoundException {
+        logger.info("Processing variation...");
+        String variationFilesDir = commandLine.getOptionValue("indir");
+        if (variationFilesDir != null) {
+            CellBaseJsonSerializer vSerializer = new CellBaseJsonSerializer(outputPath.resolve("variation.json"));
+            VariationParser vp = new VariationParser(Paths.get(variationFilesDir), vSerializer);
+            vp.parse();
+        }
+    }
+
+    private static void buildRegulation(Path outputPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
+        logger.info("Processing regulation");
+        String regulatoryRegionFilesDir = commandLine.getOptionValue("indir");
+        if (regulatoryRegionFilesDir != null) {
+            CellBaseJsonSerializer rSerializer = new CellBaseJsonSerializer(outputPath.resolve("regulatory_region.json"));
+
+            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(Paths.get(regulatoryRegionFilesDir), rSerializer);
+            regulatoryParser.parse();
+        }
+    }
+
+    private static void buildGene() throws IOException, NoSuchMethodException, FileFormatException, InterruptedException {
+        // TODO: GeneParser should extend CellbaseParser
+        //                    logger.info("Processing gene...");
+        String geneFilesDir = commandLine.getOptionValue("indir");
+        String gtfFile = commandLine.getOptionValue("gtf-file");
+        String genomeFastaFile = commandLine.getOptionValue("fasta-file", "");
+        String xrefFile = commandLine.getOptionValue("xref-file", "");
+        String uniprotIdMapping = commandLine.getOptionValue("uniprot-id-mapping-file", "");
+        String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
+        String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
+        String mirnaFile = commandLine.getOptionValue("mirna-file", "");
+
+//                    if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
+        GeneParser geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
+        if (geneFilesDir != null && !geneFilesDir.equals("")) {
+            geneParser.parse();
+        } else {
+            geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
+        }
+//                    }
+    }
+
+    private static void buildGenomeSequence(Path outputPath) throws Exception {
+        logger.info("Processing genome-sequence...");
+        String fastaFile = commandLine.getOptionValue("fasta-file");
+        if (fastaFile != null && Files.exists(Paths.get(fastaFile))) {
+
+            CellBaseJsonSerializer gsfpSerializer = new CellBaseJsonSerializer(outputPath.resolve("genome_sequence.json"));
+            GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(Paths.get(fastaFile), gsfpSerializer);
+            genomeSequenceFastaParser.parse();
+            genomeSequenceFastaParser.disconnect();
+        }
     }
 
     private static void buildGwas(Path outputPath) {
@@ -302,14 +371,12 @@ public class CellBaseMain {
 
     private static void buildCosmic(Path outputPath) {
         logger.info("Processing Cosmic ...");
-        /**
-         * File from Cosmic: CosmicCompleteExport_XXX.tsv
-         */
         String cosmicFilePath = commandLine.getOptionValue("cosmic-file");
         if (cosmicFilePath != null) {
             CellBaseJsonSerializer cosmicSerializer = new CellBaseJsonSerializer(outputPath.resolve("cosmic"), false);
             //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
             //vp.parse();
+            // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
             CosmicParser cosmicParser = new CosmicParser(cosmicSerializer, Paths.get(cosmicFilePath));
             cosmicParser.parse();
         } else {
@@ -333,13 +400,7 @@ public class CellBaseMain {
     private static void parse(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
         parser = new PosixParser();
         commandLine = parser.parse(options, args, stopAtNoOption);
-
-        //		if(commandLine.hasOption("outdir")) {
-        //			this.outdir = commandLine.getOptionValue("outdir");
-        //		}
-        //		if(commandLine.hasOption("log-level")) {
-        //			logger.setLevel(Integer.parseInt(commandLine.getOptionValue("log-level")));
-        //		}
+        // TODO: delete this? ->
         if (args.length > 0 && "variation".equals(args[1])) {
             System.out.println("variation SQL test");
         }
@@ -374,33 +435,4 @@ public class CellBaseMain {
                 return null;
         }
     }
-
-
-    private static void parseAll(Path speciesInDir) throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
-        Path genomeFastaPath = null;
-        for (String fileName : speciesInDir.resolve("sequence").toFile().list()) {
-            if (fileName.endsWith(".fa") || fileName.endsWith(".fa.gz")) {
-                genomeFastaPath = speciesInDir.resolve("sequence").resolve(fileName);
-                break;
-            }
-        }
-        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(genomeFastaPath, null);
-        genomeSequenceFastaParser.parse();
-
-        GeneParser geneParser = new GeneParser(speciesInDir.resolve("gene"), genomeFastaPath);
-        geneParser.parse();
-
-        Path variationPath = speciesInDir.resolve("variation");
-        if (variationPath.toFile().list().length > 2) {
-            VariationParser vp = new VariationParser(variationPath, null);
-            vp.parse();
-        }
-
-        Path regulationPath = speciesInDir.resolve("regulation");
-        if (variationPath.toFile().list().length > 2) {
-            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(regulationPath, null);
-            regulatoryParser.parse();
-        }
-    }
-
 }
