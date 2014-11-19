@@ -19,27 +19,24 @@ import java.util.zip.GZIPInputStream;
  * @since 03/11/2014
  */
 public class WigParser extends CellBaseParser{
-    private final Path wigs_folder;
-    private int chunksize;
+    private final Path wigsFolder;
+    private int chunkSize;
     private String type;
-    private Float[] arrayValues;
-    private Integer lastInsertedChunk;
-    private String regEx;
-    Pattern pattern;
+    private Pattern pattern;
 
-    public WigParser(CellBaseSerializer serializer, Path ConsFolder, int chunksize, String type){
+    public WigParser(CellBaseSerializer serializer, Path conservationFilesFolder, int chunkSize, String type){
         super(serializer);
-        this.wigs_folder = ConsFolder;
-        this.chunksize = chunksize;
+        this.wigsFolder = conservationFilesFolder;
+        this.chunkSize = chunkSize;
         this.type = type;
 
-        regEx = ".*chrom=chr(.*) start=(.*) step=(.*)";
+        String regEx = ".*chrom=chr(.*) start=(.*) step=(.*)";
         pattern = Pattern.compile(regEx);
     }
 
     public void parse() throws Exception {
-        if (Files.exists(wigs_folder)) {
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(wigs_folder.resolve(type));
+        if (Files.exists(wigsFolder)) {
+            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(wigsFolder.resolve(type));
 
             Map<String, Path> files = new HashMap<>();
             String chromosome;
@@ -55,10 +52,9 @@ public class WigParser extends CellBaseParser{
             logger.debug("Chromosomes found {}", chromosomes.toString());
             for (String chr : chromosomes) {
                 logger.debug("Processing chromosome {}, file {}", chr, files.get(chr + type));
-                lastInsertedChunk = null;
-                arrayValues = new Float[chunksize];
                 processFile(files.get(chr + type));
             }
+            this.disconnect();
         }
     }
 
@@ -74,14 +70,14 @@ public class WigParser extends CellBaseParser{
 
         while ((line = br.readLine()) != null) if (line.startsWith("fixedStep")) {
             // set position to one before of the start position
-            position = SetNewPositionAfterJump(line);
+            position = setNewPositionAfterJump(line);
             // set chromosome of the chunks, it will change if there is more than one chromosome in the same file
-            chunk_chr = SetChromosomeAfterJump(line);
+            chunk_chr = setChromosomeAfterJump(line);
         } else {
             // set the new position
             position++;
             // set chunk id
-            Integer position_chunk = (position / chunksize);
+            Integer position_chunk = (position / chunkSize);
             // if position belong to a new chunk print the position before and initialize a new one
             if (!Objects.equals(previous_chunk, position_chunk)) {
                 previous_chunk = position_chunk;
@@ -90,32 +86,31 @@ public class WigParser extends CellBaseParser{
                 }
 
                 //Initialize a new chunk
-                Integer start = (position / chunksize) * chunksize;
-                Integer end = start + chunksize - 1;
+                Integer start = (position / chunkSize) * chunkSize;
+                Integer end = start + chunkSize - 1;
                 newConservedRegion = new ConservedRegionFeature(chunk_chr, start, end, position_chunk);
 
-                Float[] values = new Float[chunksize];
+                Float[] values = new Float[chunkSize];
                 newConservedRegion.addSource(type, Arrays.asList(values));
 
             }
             if (newConservedRegion != null) {
-                newConservedRegion.getSources().get(0).getValues().set(position % chunksize, Float.parseFloat(line.trim()));
+                newConservedRegion.getSources().get(0).getValues().set(position % chunkSize, Float.parseFloat(line.trim()));
             }
 
         }
 
         serialize(newConservedRegion);
         br.close();
-        this.disconnect();
     }
 
-    private String SetChromosomeAfterJump(String line) {
+    private String setChromosomeAfterJump(String line) {
         Matcher matcher = pattern.matcher(line);
         matcher.matches();
         return matcher.group(1);
     }
 
-    private Integer SetNewPositionAfterJump(String line) {
+    private Integer setNewPositionAfterJump(String line) {
         Matcher matcher = pattern.matcher(line);
         matcher.matches();
         return Integer.parseInt(matcher.group(2))-1;
