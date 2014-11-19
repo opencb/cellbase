@@ -28,7 +28,7 @@ class DisGeNetParserTest extends Specification {
         def disGeNetFile = Paths.get(VariantEffectParserTest.class.getResource("/disGeNetTest.csv").toURI())
         def entrezIdToEnsemlIdFile = Paths.get(VariantEffectParserTest.class.getResource("/entrezIdToEnsemblIdTest.csv").toURI())
 
-        disGeNetParser = new DisGeNetParser(serializer, disGeNetFile, entrezIdToEnsemlIdFile)
+        disGeNetParser = new DisGeNetParser(disGeNetFile, entrezIdToEnsemlIdFile, serializer)
     }
 
     def "Parse"() {

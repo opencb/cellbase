@@ -15,7 +15,7 @@ public class DisGeNetParser  extends CellBaseParser {
     private Path entrezIdToEnsemblIdFile;
 
 
-    public DisGeNetParser(CellBaseSerializer serializer, Path disGeNetFilePath, Path entrezIdToEnsemblIdFile) {
+    public DisGeNetParser(Path disGeNetFilePath, Path entrezIdToEnsemblIdFile, CellBaseSerializer serializer) {
         super(serializer);
         this.disGeNetFilePath = disGeNetFilePath;
         this.entrezIdToEnsemblIdFile = entrezIdToEnsemblIdFile;
