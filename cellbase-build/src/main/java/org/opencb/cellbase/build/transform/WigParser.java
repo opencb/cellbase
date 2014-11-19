@@ -18,7 +18,7 @@ import java.util.zip.GZIPInputStream;
  * @author lcruz
  * @since 03/11/2014
  */
-public class ParserWig extends CellBaseParser{
+public class WigParser extends CellBaseParser{
     private final Path wigs_folder;
     private int chunksize;
     private String type;
@@ -27,7 +27,7 @@ public class ParserWig extends CellBaseParser{
     private String regEx;
     Pattern pattern;
 
-    public ParserWig(CellBaseSerializer serializer, Path ConsFolder, int chunksize, String type){
+    public WigParser(CellBaseSerializer serializer, Path ConsFolder, int chunksize, String type){
         super(serializer);
         this.wigs_folder = ConsFolder;
         this.chunksize = chunksize;

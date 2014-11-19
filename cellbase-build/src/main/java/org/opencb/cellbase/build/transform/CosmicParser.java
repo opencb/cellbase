@@ -19,8 +19,7 @@ import java.util.regex.Pattern;
  * @since October 08, 2014 
  */
 public class CosmicParser extends CellBaseParser {
-
-    private final CellBaseSerializer serializer;
+    
     private final Path cosmicFilePath;
     private static final String CHROMOSOME = "CHR";
     private static final String START = "START";
@@ -38,7 +37,6 @@ public class CosmicParser extends CellBaseParser {
 
     public CosmicParser(CellBaseSerializer serializer, Path cosmicFilePath){
         super(serializer);
-        this.serializer = serializer;
         this.cosmicFilePath = cosmicFilePath;
         this.compileRegularExpressionPaterns();
     }
