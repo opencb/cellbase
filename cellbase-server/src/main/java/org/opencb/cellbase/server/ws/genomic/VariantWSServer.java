@@ -3,10 +3,10 @@ package org.opencb.cellbase.server.ws.genomic;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.common.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -234,6 +234,25 @@ public class VariantWSServer extends GenericRestWSServer {
         sb.append("http://docs.bioinfo.cipf.es/projects/cellbase/wiki/Genomic_rest_ws_api#Variant");
 
         return createOkResponse(sb.toString());
+    }
+
+    @GET
+    //@Consumes("application/x-www-form-urlencoded")
+    @Path("/{variants}/annotationGBPA")
+    public Response getAnnotationByVariants(@PathParam("variants") String variants) {
+        try {
+            checkVersionAndSpecies();
+            VariationDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+
+            List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
+            logger.debug("queryOptions: " + queryOptions);
+            List<QueryResult> variationQueryResultList = variantDBAdaptor.getIdByVariants(variantList, queryOptions);
+
+            return createOkResponse(variationQueryResultList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getAnnotationByVariants", e.toString());
+        }
     }
 
 }
