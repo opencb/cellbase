@@ -20,7 +20,7 @@ public class GeneExpressionAtlasParser extends CellBaseParser  {
     private  Path gene_atlas_directory_path;
 
 
-    public GeneExpressionAtlasParser(CellBaseSerializer serializer, Path gene_atlas_directory_path) {
+    public GeneExpressionAtlasParser(Path gene_atlas_directory_path, CellBaseSerializer serializer) {
         super(serializer);
         this.gene_atlas_directory_path = gene_atlas_directory_path;
 
