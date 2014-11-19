@@ -25,7 +25,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/list")
 	public Response getAllPathways(@QueryParam("subpathways") String subpathways, @QueryParam("search") String search) {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			boolean onlyTopLevel = false;
 			if (subpathways!=null) {
 				onlyTopLevel=!Boolean.parseBoolean(subpathways);
@@ -45,7 +45,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/info")
 	public Response getPathwayInfo(@PathParam("pathwayId") String query) {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			StringBuilder sb = new StringBuilder();
 			PathwayDBAdaptor bioPaxDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 			Pathway pathway = bioPaxDBAdaptor.getPathway(query, "Reactome");
@@ -62,7 +62,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Produces("image/jpeg")
 	public Response getPathwayImage(@PathParam("pathwayId") String query) {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			PathwayDBAdaptor bioPaxDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 			Pathway pathway = bioPaxDBAdaptor.getPathway(query, "Reactome");
 			
@@ -119,7 +119,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/annotation")
 	public Response getPathwayAnnotation() {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return null;
 		} catch (Exception e) {
@@ -132,7 +132,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/element")
 	public Response getAllElements(@PathParam("pathwayId") String query) {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return generateResponse(query, adaptor.getAllByTfGeneNameList(StringUtils.toList(query, ","), null, Integer.MIN_VALUE, Integer.MIN_VALUE));
 		} catch (Exception e) {
@@ -146,7 +146,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/gene")
 	public Response getAllGenes(@PathParam("pathwayId") String query) {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return generateResponse(query, adaptor.getAllByTfGeneNameList(StringUtils.toList(query, ","), null, Integer.MIN_VALUE, Integer.MIN_VALUE));
 		} catch (Exception e) {
@@ -159,7 +159,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/protein")
 	public Response getAllByTfbs(@PathParam("pathwayId") String query) {
 		try {
-			checkVersionAndSpecies();
+			checkParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return generateResponse(query, adaptor.getAllByTfGeneNameList(StringUtils.toList(query, ","), null, Integer.MIN_VALUE, Integer.MIN_VALUE));
 		} catch (Exception e) {

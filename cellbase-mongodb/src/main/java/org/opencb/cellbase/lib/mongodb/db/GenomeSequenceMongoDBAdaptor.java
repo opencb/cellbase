@@ -33,11 +33,11 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
     }
 
     private int getChunk(int position) {
-        return this.chunkSize;
+        return (position / this.chunkSize);
     }
 
     private int getOffset(int position) {
-        return this.chunkSize;
+        return (position % this.chunkSize);
     }
 
     public static String getComplementarySequence(String sequence) {
@@ -119,7 +119,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 
             String subStr = "";
 
-            if (getChunk(region.getEnd()) > 0) {
+            if (getChunk(region.getStart()) > 0) {
                 if (sb.toString().length() > 0 && sb.toString().length() >= endStr) {
                     subStr = sb.toString().substring(startStr, endStr);
                 }

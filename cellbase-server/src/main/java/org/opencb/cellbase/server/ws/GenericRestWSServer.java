@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.ApiParam;
+import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
@@ -11,7 +13,6 @@ import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.QueryResponse;
-import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.slf4j.Logger;
@@ -23,66 +24,75 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
-@Path("/{version}")
+@Path("/{version}/{species}")
 @Produces("text/plain")
 public class GenericRestWSServer implements IWSServer {
 
     // Common application parameters
+    @DefaultValue("")
+    @PathParam("version")
+    @ApiParam(name = "version", value = "Excluded fields will not be returned. Comma separated JSON paths must be provided",
+            defaultValue = "v3")
     protected String version;
-    protected String assembly = null;
+
+    @DefaultValue("")
+    @PathParam("species")
+    @ApiParam(name = "species", value = "Excluded fields will not be returned. Comma separated JSON paths must be provided",
+            defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus")
     protected String species;
+
+    protected String assembly = null;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
 
-    // Common output parameters
-    protected String resultSeparator;
-    protected String querySeparator;
-
     protected QueryOptions queryOptions;
-    //	protected List<String> exclude = new ArrayList<>();
-    //	protected List<String> include = new ArrayList<>();
 
-    // output format file type: null or txt or text, xml, excel
-    protected String fileFormat;
-
-    // file name without extension which server will give back when file format
-    // is !null
+    // file name without extension which server will give back when file format is !null
     private String filename;
 
-    // output content format: txt or text, json, xml, das
+    @DefaultValue("")
+    @QueryParam("exclude")
+    @ApiParam(name = "excluded fields", value = "Excluded fields will not be returned. Comma separated JSON paths must be provided")
+    protected String exclude;
+
+    @DefaultValue("")
+    @QueryParam("include")
+    @ApiParam(name = "included fields", value = "Included fields are the only to be returned. Comma separated JSON path must be provided")
+    protected String include;
+
+    @DefaultValue("-1")
+    @QueryParam("limit")
+    @ApiParam(name = "limit", value = "Max number of results to be returned. No limit applied when -1 [-1]")
+    protected int limit;
+
+    @DefaultValue("-1")
+    @QueryParam("skip")
+    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1 [-1]")
+    protected int skip;
+
+    @DefaultValue("false")
+    @QueryParam("count")
+    @ApiParam(name = "count", value = "The total number of results is returned [false]")
+    protected String count;
+
+    @DefaultValue("json")
+    @QueryParam("of")
+    @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json", allowableValues = "json,pb (Not implemented yet)")
     protected String outputFormat;
 
-    // in file output produces a zip file, in text outputs generates a gzipped
-    // output
-    protected String outputCompress;
-
-    // only in text format
-    protected String outputRowNames;
-    protected String outputHeader;
-
-    protected String user;
-    protected String password;
-
-    protected Type listType;
-
-    //	protected static Gson gson;
     protected static ObjectMapper jsonObjectMapper;
     protected static ObjectWriter jsonObjectWriter;
 
-    // protected Logger logger;
-//    protected Logger logger = Logger.getLogger(this.getClass());
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private static final String NEW_LINE = "newline";
-    private static final String TAB = "tab";
-
-    protected QueryResponse queryResponse;
     protected long startTime;
     protected long endTime;
+    protected QueryResponse queryResponse;
 
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Loading properties file just one time to be more efficient. All methods
@@ -92,9 +102,10 @@ public class GenericRestWSServer implements IWSServer {
     protected static Properties properties;
     protected static CellbaseConfiguration config = new CellbaseConfiguration();
 
-    protected static Logger anotherLogger = LoggerFactory.getLogger("GenericRestWSServer");
 
-    /** species for each version**/
+    /**
+     *  Species for each version
+     */
     static {
         InputStream is = GenericRestWSServer.class.getClassLoader().getResourceAsStream("application.properties");
         properties = new Properties();
@@ -118,27 +129,33 @@ public class GenericRestWSServer implements IWSServer {
                         if(properties.containsKey(species+".ASSEMBLY")) {
                             assemblies = properties.getProperty(species+".ASSEMBLY").split(",");
                             for(String assembly : assemblies) {
+                                System.out.println("WS assembly = " + assembly);
                                 assembly = assembly.toUpperCase();
                                 assemblyPrefix = species + "." + assembly;
+
                                 dbConfigurationId = properties.getProperty(assemblyPrefix + ".DB");
-
-                                anotherLogger.info(dbConfigurationId + ".MAX_POOL_SIZE");
-                                anotherLogger.info(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE"));
-
-                                anotherLogger.info(assemblyPrefix + ".DATABASE");
-                                anotherLogger.info(properties.getProperty(assemblyPrefix + ".DATABASE"));
-
-                                config.addSpeciesConnection(species, assembly, properties.getProperty(dbConfigurationId + ".HOST"), properties.getProperty(assemblyPrefix + ".DATABASE"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".PORT")),
-                                                            properties.getProperty(dbConfigurationId + ".DRIVER_CLASS"),properties.getProperty(dbConfigurationId + ".USERNAME"),
-                                                            properties.getProperty(dbConfigurationId + ".PASSWORD"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE")),
-                                                            Integer.parseInt(properties.getProperty(dbConfigurationId + ".TIMEOUT")));
+                                System.out.println("WS dbConfigurationId = " + dbConfigurationId);
+                                config.addSpeciesConnection(species, assembly,
+                                        properties.getProperty(dbConfigurationId + ".HOST"),
+                                        properties.getProperty(assemblyPrefix + ".DATABASE"),
+                                        Integer.parseInt(properties.getProperty(dbConfigurationId + ".PORT")),
+                                        properties.getProperty(dbConfigurationId + ".DRIVER_CLASS"),
+                                        properties.getProperty(dbConfigurationId + ".USERNAME"),
+                                        properties.getProperty(dbConfigurationId + ".PASSWORD"),
+                                        Integer.parseInt(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE", "10")),
+                                        Integer.parseInt(properties.getProperty(dbConfigurationId + ".TIMEOUT")));
                                 config.addSpeciesInfo(species, assembly, properties.getProperty(species + ".TAXONOMY"));
                             }
                         } else {
                             dbConfigurationId = properties.getProperty(species + ".DB");
-                            config.addSpeciesConnection(species, properties.getProperty(dbConfigurationId + ".HOST"), properties.getProperty(species + ".DB"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".PORT")),
-                                    properties.getProperty(dbConfigurationId + ".DRIVER_CLASS"),properties.getProperty(dbConfigurationId + ".USERNAME"),
-                                    properties.getProperty(dbConfigurationId + ".PASSWORD"), Integer.parseInt(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE")),
+                            config.addSpeciesConnection(species,
+                                    properties.getProperty(dbConfigurationId + ".HOST"),
+                                    properties.getProperty(species + ".DB"),
+                                    Integer.parseInt(properties.getProperty(dbConfigurationId + ".PORT")),
+                                    properties.getProperty(dbConfigurationId + ".DRIVER_CLASS"),
+                                    properties.getProperty(dbConfigurationId + ".USERNAME"),
+                                    properties.getProperty(dbConfigurationId + ".PASSWORD"),
+                                    Integer.parseInt(properties.getProperty(dbConfigurationId + ".MAX_POOL_SIZE", "10")),
                                     Integer.parseInt(properties.getProperty(dbConfigurationId + ".TIMEOUT")));
                             config.addSpeciesInfo(species, properties.getProperty(species + ".TAXONOMY"));
                         }
@@ -177,12 +194,6 @@ public class GenericRestWSServer implements IWSServer {
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-
-
-        // System.out.println("static2: "+availableVersions.toString());
-//        System.out.println("static2: " + config.getAvailableVersionSpeciesMap().toString());
-
-
     }
 
     /**
@@ -193,93 +204,13 @@ public class GenericRestWSServer implements IWSServer {
     protected static DBAdaptorFactory dbAdaptorFactory;
 
     static {
-//        BasicConfigurator.configure();
-
+        // BasicConfigurator.configure();
         // dbAdaptorFactory = new HibernateDBAdaptorFactory();
         dbAdaptorFactory = new MongoDBAdaptorFactory(config);
-        System.out.println("static1");
+        System.out.println("Static block #1");
 
-//		gson = new GsonBuilder().serializeNulls().setExclusionStrategies(new FeatureExclusionStrategy()).create();
         jsonObjectMapper = new ObjectMapper();
         jsonObjectWriter = jsonObjectMapper.writer();
-    }
-
-
-    /**
-     * Preparing headers columns for text output
-     */
-    protected static Map<String, String> headers;
-
-    static {
-        System.out.println("static 3: Adding headers to static Map...");
-        headers = new HashMap<String, String>();
-        headers.put("GENE",
-                "Ensembl gene,external name,external name source,biotype,status,chromosome,start,end,strand,source,description"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "TRANSCRIPT",
-                "Ensembl ID,external name,external name source,biotype,status,chromosome,start,end,strand,coding region start,coding region end,cdna coding start,cdna coding end,description"
-                        .replaceAll(",", "\t"));
-        headers.put("EXON", "Ensembl ID,chromosome,start,end,strand".replaceAll(",", "\t"));
-        headers.put("SNP",
-                "rsID,chromosome,position,Ensembl consequence type,SO consequence type,sequence".replaceAll(",", "\t"));
-        headers.put(
-                "SNP_PHENOTYPE",
-                "SNP name,source,associated gene name,risk allele,risk allele freq in controls,p-value,phenotype name,phenotype description,study name,study type,study URL,study description"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "SNP_POPULATION_FREQUENCY",
-                "SNP name,population,source,ref allele,ref allele freq,other allele,other allele freq,ref allele homozygote,ref allele homozygote freq,allele heterozygote,allele heterozygote freq,ref other allele homozygote, ref other allele homozygote freq"
-                        .replaceAll(",", "\t"));
-        headers.put("SNP_REGULATORY",
-                "SNP name,feature name,feature type,chromsome,start,end,strand,Ensembl transcript ID,Ensembl gene ID,gene name,biotype"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "GENOMIC_VARIANT_EFFECT",
-                "chromosome,position,reference allele,alternative allele,feature ID,feature name,feature type,feature chromsomome,feature start,feature end,feature strand,SNP name,ancestral allele,alternative allele,Ensembl gene ID,Ensembl transcript ID,gene name,SO consequence type ID,SO consequence type name,consequence type description,consequence type category,aminoacid position,aminoacid change,codon change"
-                        .replaceAll(",", "\t"));
-        headers.put("SNP_CONSEQUENCE_TYPE",
-                "SNP name,chromosome,start,end,strand,allele,transcript ID,gene,SO accession,SO term,label,description"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "MUTATION",
-                "chromosome,start,end,gene_name,uniprot_name,ensembl_transcript,primary_site,site_subtype,primary_histology,mutation_cds,mutation_aa,mutation_description,mutation_zigosity,pubmed_id,description,source"
-                        .replaceAll(",", "\t"));
-        headers.put("STRUCTURAL_VARIATION",
-                "display_id,chromosome,start,end,strand,so_term,study_name,study_url,study_description,source,source_description"
-                        .replaceAll(",", "\t"));
-        headers.put("TFBS",
-                "TF name,target gene name,chromosome,start,end,cell type,sequence,score".replaceAll(",", "\t"));
-        headers.put("MIRNA_GENE", "miRBase accession,miRBase ID,status,sequence,source".replaceAll(",", "\t"));
-        headers.put("MIRNA_MATURE", "miRBase accession,miRBase ID,sequence".replaceAll(",", "\t"));
-        headers.put("MIRNA_TARGET",
-                "miRBase ID,gene target name,chromosome,start,end,strand,pubmed ID,source".replaceAll(",", "\t"));
-        headers.put("MIRNA_DISEASE", "miRBase ID,disease name,pubmed ID,description".replaceAll(",", "\t"));
-        headers.put("REGULATORY_REGION", "name,type,chromosome,start,end,cell type,source".replaceAll(",", "\t"));
-        headers.put("PROTEIN", "UniProt accession,protein name,full name,gene name,organism".replaceAll(",", "\t"));
-        headers.put("PROTEIN_FEATURE",
-                "feature type,aa start,aa end,original,variation,identifier,description".replaceAll(",", "\t"));
-        headers.put("XREF", "ID,description".replaceAll(",", "\t"));
-        headers.put("PATHWAY", "".replaceAll(",", "\t"));
-    }
-
-    @Deprecated
-    public GenericRestWSServer(@PathParam("version") String version) {
-        this.version = version;
-    }
-
-    @Deprecated
-    public GenericRestWSServer(@PathParam("version") String version,
-                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
-        this.version = version.toUpperCase();
-        this.species = "";
-        this.uriInfo = uriInfo;
-        this.httpServletRequest = hsr;
-
-        init(version, this.species, uriInfo);
-        // if(version != null && this.species != null) {
-        // }
-        // System.out.println("constructor");
     }
 
     public GenericRestWSServer(@PathParam("version") String version,
@@ -295,9 +226,6 @@ public class GenericRestWSServer implements IWSServer {
         init(version, species, uriInfo);
 
         logger.info("GenericrestWSServer: in 'constructor'");
-
-        // if(version != null && species != null) {
-        // }
     }
 
     protected void init(String version, String species, UriInfo uriInfo) throws VersionException, IOException {
@@ -305,12 +233,10 @@ public class GenericRestWSServer implements IWSServer {
         startTime = System.currentTimeMillis();
         queryResponse = new QueryResponse();
 
-
         // load properties file
         // ResourceBundle databaseConfig =
         // ResourceBundle.getBundle("org.bioinfo.infrared.ws.application");
         // config = new Config(databaseConfig);
-
 
         // mediaType = MediaType.valueOf("text/plain");
         queryOptions = new QueryOptions();
@@ -318,94 +244,14 @@ public class GenericRestWSServer implements IWSServer {
         // logger.setLevel(Logger.DEBUG_LEVEL);
         logger.info("GenericrestWSServer: in 'init' method");
 
-        /**
-         * Check version parameter, must be: v1, v2, ... If 'latest' then is
-         * converted to appropriate version
-         */
-        // if(version != null && version.equals("latest") &&
-        // config.getProperty("CELLBASE.LATEST.VERSION") != null) {
-        // version = config.getProperty("CELLBASE.LATEST.VERSION");
-        // System.out.println("version init: "+version);
-        // }
-
         System.out.println("uriInfo.getQueryParameters(): "+uriInfo.getQueryParameters());
-        // this code MUST be run before the checking
-        parseCommonQueryParameters(uriInfo.getQueryParameters());
-    }
-
-    /**
-     * This method parse common query parameters from the URL
-     *
-     * @param multivaluedMap
-     */
-    private void parseCommonQueryParameters(MultivaluedMap<String, String> multivaluedMap) {
-        if (multivaluedMap.get("result_separator") != null) {
-            if (multivaluedMap.get("result_separator").get(0).equalsIgnoreCase(NEW_LINE)) {
-                resultSeparator = "\n";
-            } else {
-                if (multivaluedMap.get("result_separator").get(0).equalsIgnoreCase(TAB)) {
-                    resultSeparator = "\t";
-                } else {
-                    resultSeparator = multivaluedMap.get("result_separator").get(0);
-                }
-            }
-        } else {
-            resultSeparator = "//";
-        }
-
-        if (multivaluedMap.get("query_separator") != null) {
-            if (multivaluedMap.get("query_separator").get(0).equalsIgnoreCase(NEW_LINE)) {
-                querySeparator = "\n";
-            } else {
-                if (multivaluedMap.get("query_separator").get(0).equalsIgnoreCase(TAB)) {
-                    querySeparator = "\t";
-                } else {
-                    querySeparator = multivaluedMap.get("query_separator").get(0);
-                }
-            }
-        } else {
-            querySeparator = "\n";
-        }
-
-        queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
-		queryOptions.put("exclude", (multivaluedMap.get("exclude") != null) ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0)) : null);
-		queryOptions.put("include", (multivaluedMap.get("include") != null) ? Splitter.on(",").splitToList(multivaluedMap.get("include").get(0)) : null);
-        queryOptions.put("limit", (multivaluedMap.get("limit") != null) ? multivaluedMap.get("limit").get(0) : -1);
-        queryOptions.put("skip", (multivaluedMap.get("skip") != null) ? multivaluedMap.get("skip").get(0) : -1);
-        queryOptions.put("count", (multivaluedMap.get("count") != null) ? Boolean.parseBoolean(multivaluedMap.get("count").get(0)) : false);
-//        queryOptions.put("include", (multivaluedMap.get("include") != null) ? multivaluedMap.get("include").get(0) : "");
-//        queryOptions.put("exclude", (multivaluedMap.get("exclude") != null) ? multivaluedMap.get("exclude").get(0) : "");
-
-        fileFormat = (multivaluedMap.get("fileformat") != null) ? multivaluedMap.get("fileformat").get(0) : "";
-        outputFormat = (multivaluedMap.get("of") != null) ? multivaluedMap.get("of").get(0) : "json";
-        // outputFormat = (multivaluedMap.get("contentformat") != null) ?
-        // multivaluedMap.get("contentformat").get(0) : "txt";
-        filename = (multivaluedMap.get("filename") != null) ? multivaluedMap.get("filename").get(0) : "result";
-        outputRowNames = (multivaluedMap.get("outputrownames") != null) ? multivaluedMap.get("outputrownames").get(0) : "false";
-        outputHeader = (multivaluedMap.get("header") != null) ? multivaluedMap.get("header").get(0) : "true";
-        outputCompress = (multivaluedMap.get("outputcompress") != null) ? multivaluedMap.get("outputcompress").get(0) : "false";
-
-        user = (multivaluedMap.get("user") != null) ? multivaluedMap.get("user").get(0) : "anonymous";
-        password = (multivaluedMap.get("password") != null) ? multivaluedMap.get("password").get(0) : "";
-    }
-
-    protected QueryOptions addExcludeReturnFields(String returnField, QueryOptions options) {
-        if (options != null && !options.getBoolean(returnField, true)) {
-            if (options.get("exclude") != null) {
-                options.put("exclude", options.get("exclude") + "," + returnField);
-            } else {
-                options.put("exclude", returnField);
-            }
-        }
-        return options;
     }
 
     /**
      * Overriden methods
      */
-
     @Override
-    public void checkVersionAndSpecies() throws VersionException, SpeciesException {
+    public void checkParams() throws VersionException, SpeciesException {
         if (version == null) {
             throw new VersionException("Version not valid: '" + version + "'");
         }
@@ -426,8 +272,22 @@ public class GenericRestWSServer implements IWSServer {
 //        if (availableVersionSpeciesMap.containsKey(version)) {
 //            if (!availableVersionSpeciesMap.get(version).contains(species)) {
         if(!config.getVersion().equals(this.version)){
+            System.out.println("config = " + config.getVersion());
             throw new VersionException("Version not valid: '" + version + "'");
         }
+
+//        parseCommonQueryParameters(uriInfo.getQueryParameters());
+        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+        queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
+
+        queryOptions.put("exclude", (exclude != null && !exclude.equals("")) ? Splitter.on(",").splitToList(exclude) : null);
+        queryOptions.put("include", (include != null && !include.equals("")) ? Splitter.on(",").splitToList(include) : null);
+        queryOptions.put("limit", (limit > 0) ? limit : -1);
+        queryOptions.put("skip", (skip > 0) ? skip : -1);
+        queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);
+
+        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
+        filename = (multivaluedMap.get("filename") != null) ? multivaluedMap.get("filename").get(0) : "result";
     }
 
     @Override
@@ -444,7 +304,6 @@ public class GenericRestWSServer implements IWSServer {
     /**
      * Auxiliar methods
      */
-
     @GET
     @Path("/{species}")
     public Response getCategories(@PathParam("species") String species) {
@@ -575,97 +434,7 @@ public class GenericRestWSServer implements IWSServer {
     protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
         return createOkResponse("TODO: generateResponse is drepecated");
     }
-//    @SuppressWarnings("unchecked")
-//    protected Response generateResponse(String queryString, List features) throws IOException {
-//        return generateResponse(queryString, null, features);
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-//        logger.debug("CellBase - GenerateResponse, QueryString: "
-//                + ((queryString.length() > 50) ? queryString.substring(0, 49) + "..." : queryString));
-//
-//        // default mediaType
-//        MediaType mediaType = MediaType.valueOf("text/plain");
-//        String response = "outputformat 'of' parameter not valid: " + outputFormat;
-//
-//        switch (outputFormat.toLowerCase()) {
-//            case "txt":
-//            case "text":
-//                // TODO
-//                break;
-//            case "xml":
-//                mediaType = MediaType.TEXT_XML_TYPE;
-////                response = ListUtils.toString(features, resultSeparator);
-//                response = Joiner.on(resultSeparator).join(features);
-//            case "das":
-//                mediaType = MediaType.TEXT_XML_TYPE;
-////                response = ListUtils.toString(features, resultSeparator);
-//                response = Joiner.on(resultSeparator).join(features);
-//            case "json":
-//                //			mediaType = MediaType.valueOf("application/json");
-//                //			response = gson.toJson(features);
-//                createJsonResponse(queryString);
-//                break;
-//        }
-//
-//        // if (outputFormat != null) {
-//        // // if((outputFormat.equalsIgnoreCase("json") ||
-//        // // outputFormat.equalsIgnoreCase("jsonp"))) {
-//        // if (outputFormat.equalsIgnoreCase("json")) {
-//        // // mediaType = MediaType.APPLICATION_JSON_TYPE;
-//        // mediaType = MediaType.valueOf("application/javascript");
-//        // response = gson.toJson(features);
-//        // // if(features != null && features.size() > 0) {
-//        // // response = gson.toJson(features);
-//        // // o:
-//        // // JsonWriter jsonWriter = new JsonWriter(new
-//        // // FeatureExclusionStrategy());
-//        // // response = jsonWriter.serialize(features);
-//        // // }
-//        //
-//        // // if(outputFormat.equals("jsonp")) {
-//        // // mediaType = MediaType.valueOf("application/javascript");
-//        // // response = convertToJson(response);
-//        // // }GENE
-//        // } else {
-//        // if (outputFormat.equalsIgnoreCase("txt") ||
-//        // outputFormat.equalsIgnoreCase("text")) { // ||
-//        // // outputFormat.equalsIgnoreCase("jsontext")
-//        // // if(outputFormat.equalsIgnoreCase("jsontext")) {
-//        // // mediaType = MediaType.valueOf("application/javascript");
-//        // // response = convertToJsonText(response);
-//        // // }else {
-//        // // mediaType = MediaType.TEXT_PLAIN_TYPE;
-//        //
-//        // // CONCATENAR el nombre de la query
-//        // // String[] query.split(",");
-//        // mediaType = MediaType.valueOf("text/plain");
-//        // if (headerTag != null && headers.containsKey(headerTag) &&
-//        // outputHeader != null
-//        // && outputHeader.equalsIgnoreCase("true")) {
-//        // // response = "#" + headers.get(headerTag) + "\n" +
-//        // // StringWriter.serialize(features);
-//        // } else {
-//        // // response = StringWriter.serialize(features);
-//        // }
-//        // // }
-//        // }
-//        //
-//        // if (outputFormat.equalsIgnoreCase("xml")) {
-//        // mediaType = MediaType.TEXT_XML_TYPE;
-//        // response = ListUtils.toString(features, resultSeparator);
-//        // }
-//        //
-//        // if (outputFormat.equalsIgnoreCase("das")) {
-//        // mediaType = MediaType.TEXT_XML_TYPE;
-//        // response = ListUtils.toString(features, resultSeparator);
-//        // }
-//        // }
-//        // }
-//
-//        return createResponse(response, mediaType);
-//    }
+
 
     @Deprecated
 //    protected Response createResponse(String response, MediaType mediaType) throws IOException {
@@ -864,7 +633,6 @@ public class GenericRestWSServer implements IWSServer {
     /**
      * TO DELETE
      */
-
     @Deprecated
     private boolean isSpecieAvailable(String species) {
         List<Species> speciesList = getSpeciesList();
@@ -877,48 +645,4 @@ public class GenericRestWSServer implements IWSServer {
         }
         return false;
     }
-
-    @Deprecated
-    protected Response generateErrorResponse(String errorMessage) {
-        return Response.ok("An error occurred: " + errorMessage, MediaType.valueOf("text/plain")).build();
-    }
-
-    @Deprecated
-    protected List<String> getPathsNicePrint() {
-        return new ArrayList<String>();
-    }
-
-    // protected Response generateResponse(Criteria criteria) throws IOException
-    // {
-    // List result = criteria.list();
-    // this.getSession().close();
-    // return generateResponse("", result);
-    // }
-    //
-    // protected Response generateResponse(Query query) throws IOException {
-    // List result = query.list();
-    // this.getSession().close();
-    // return generateResponse("", result);
-    // }
-
-    @Deprecated
-    private String convertToJsonText(String response) {
-        String jsonpQueryParam = (uriInfo.getQueryParameters().get("callbackParam") != null) ? uriInfo
-                .getQueryParameters().get("callbackParam").get(0) : "callbackParam";
-        response = "var " + jsonpQueryParam + " = \"" + response + "\"";
-        return response;
-    }
-
-    @Deprecated
-    protected String convertToJson(String response) {
-        String jsonpQueryParam = (uriInfo.getQueryParameters().get("callbackParam") != null) ? uriInfo
-                .getQueryParameters().get("callbackParam").get(0) : "callbackParam";
-        response = "var " + jsonpQueryParam + " = (" + response + ")";
-        return response;
-    }
-
-    // protected Session getSession(){
-    // return HibernateUtil.getSessionFactory().openSession();
-    // }
-
 }

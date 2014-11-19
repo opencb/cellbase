@@ -40,7 +40,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/all")
     public Response getAll() {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             return createOkResponse(Arrays.asList(transcriptDBAdaptor.getAll(queryOptions)));
         } catch (Exception e) {
@@ -53,13 +53,13 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/info")
     public Response getByEnsemblId(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
                     this.assembly);
             return createOkResponse(transcriptDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getAllByAccessions", e.toString());
         }
     }
 
@@ -69,7 +69,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
 //		return createJsonResponse("{}");
 
-//			checkVersionAndSpecies();
+//			checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<String> queryStrList = Splitter.on(",").splitToList(query);
 //			List<List<Gene>> queryGeneList = geneDBAdaptor.getAllByIdList(queryStrList, queryOptions);
@@ -237,7 +237,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/gene")
     public Response getGeneById(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
@@ -256,7 +256,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/exon")
     public Response getExonsByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
             return generateResponse(query, "EXON",
                     dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
@@ -270,7 +270,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/variation")
     public Response getVariationsByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
@@ -283,7 +283,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/sequence")
     public Response getSequencesByIdList(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
                     this.assembly);
 //            return generateResponse(query, transcriptDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query)));
@@ -298,7 +298,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/region")
     public Response getRegionsByIdList(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
                     this.assembly);
 //            return generateResponse(query, transcriptDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query)));
@@ -313,7 +313,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/mutation")
     public Response getMutationByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
 //            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor
 //                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
@@ -332,7 +332,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                                @DefaultValue("") @QueryParam("aaPosition") String aaPosition,
                                                                @DefaultValue("") @QueryParam("aaChange") String aaChange) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             queryOptions.put("aaPosition", aaPosition);
             queryOptions.put("aaChange", aaChange);
             ProteinFunctionPredictorDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinFunctionPredictorDBAdaptor(this.species, this.assembly);
@@ -348,7 +348,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //    @Path("/{transcriptId}/protein_feature")
 //    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
 //        try {
-//            checkVersionAndSpecies();
+//            checkParams();
 //            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 //            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
 //            return generateResponse(query, "PROTEIN_FEATURE", geneList);
@@ -362,7 +362,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/cdna")
     public Response getCdnaByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //			List<String> transcripts = StringUtils.toList(query, ",");
 //			List<List<Exon>> exonListList = dbAdaptor.getByEnsemblTranscriptIdList(transcripts);
