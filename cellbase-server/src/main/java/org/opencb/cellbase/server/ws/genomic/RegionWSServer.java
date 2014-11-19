@@ -338,7 +338,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             List<Region> regions = Region.parseRegions(chregionId);
-            GenomeSequenceDBAdaptor genomeSequenceDBAdaptor = dbAdaptorFactory.getGenomeSequenceDBAdaptor(this.species,	this.version);
+            GenomeSequenceDBAdaptor genomeSequenceDBAdaptor = dbAdaptorFactory.getGenomeSequenceDBAdaptor(this.species,	this.assembly);
             queryOptions.put("strand", strandParam);
             return createOkResponse(genomeSequenceDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
