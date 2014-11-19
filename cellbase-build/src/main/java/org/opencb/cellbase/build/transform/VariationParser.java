@@ -196,7 +196,6 @@ public class VariationParser extends CellBaseParser {
         try {
             bwLog.close();
             bufferedReaderVariation.close();
-            this.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }

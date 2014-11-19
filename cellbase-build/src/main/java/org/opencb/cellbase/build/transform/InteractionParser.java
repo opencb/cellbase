@@ -16,15 +16,18 @@ import java.util.*;
  * Time: 4:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class InteractionParser {
+public class InteractionParser extends CellBaseParser{
 
-    private CellBaseSerializer serializer;
+    private final String species;
+    private final Path psimiTabFile;
 
-    public InteractionParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+    public InteractionParser(Path psimiTabFile, String species, CellBaseSerializer serializer) {
+        super(serializer);
+        this.species = species;
+        this.psimiTabFile = psimiTabFile;
     }
 
-    public void parse(Path filePath, String species) throws IOException {
+    public void parse() throws IOException {
 
         boolean isSpeciesA = false;
         boolean isSpeciesB = false;
@@ -36,7 +39,7 @@ public class InteractionParser {
         Interactor interactorB = null;
 
         PsimiTabReader intactPsimiTabReader = new PsimiTabReader();
-        Iterator<BinaryInteraction> iterator = intactPsimiTabReader.iterate(filePath.toFile());
+        Iterator<BinaryInteraction> iterator = intactPsimiTabReader.iterate(psimiTabFile.toFile());
 
         // Iterate through Interaction PSIMI TAB
         while (iterator.hasNext()) {
@@ -238,7 +241,7 @@ public class InteractionParser {
                 interaction.setInteractorB(interactorB);
 
 //            intactInteractions.add(interaction);
-                serializer.serialize(interaction);
+                serialize(interaction);
             }
         }
     }

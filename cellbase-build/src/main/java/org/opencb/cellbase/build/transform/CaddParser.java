@@ -19,7 +19,7 @@ public class CaddParser extends CellBaseParser{
     private final Path caddFilePath;
     private final String chrName;
 
-    public CaddParser(CellBaseSerializer serializer, Path caddFilePath, String chrName){
+    public CaddParser(Path caddFilePath, String chrName, CellBaseSerializer serializer){
     	super(serializer);
         this.caddFilePath = caddFilePath;
         this.chrName = chrName;

@@ -5,26 +5,18 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.zip.GZIPInputStream;
 
 public class GenomeSequenceFastaParser extends CellBaseParser {
 
     private Path genomeReferenceFastaFile;
 
-
-    private int CHUNK_SIZE = 2000;
-
+    private static final int CHUNK_SIZE = 2000;
 
     public GenomeSequenceFastaParser(Path genomeReferenceFastaFile, CellBaseSerializer serializer) {
         super(serializer);
         this.genomeReferenceFastaFile = genomeReferenceFastaFile;
     }
-
 
     @Override
     public void parse() {
@@ -116,50 +108,6 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
                 end = start + CHUNK_SIZE - 1;
                 chunk++;
             }
-        }
-    }
-
-    public void parseFastaGzipFilesToJson(File genomeReferenceFastaDir, File outJsonFile) {
-        try {
-            StringBuilder sequenceStringBuilder;
-            File[] files = genomeReferenceFastaDir.listFiles();
-            BufferedWriter bw = Files.newBufferedWriter(Paths.get(outJsonFile.toURI()), Charset.defaultCharset(), StandardOpenOption.CREATE);
-            for (File file : files) {
-                if (file.getName().endsWith(".fa.gz")) {
-                    System.out.println(file.getAbsolutePath());
-
-                    String chromosome = "";
-                    String line;
-                    sequenceStringBuilder = new StringBuilder();
-                    // Java 7 IO code
-                    BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
-                    while ((line = br.readLine()) != null) {
-                        if (!line.startsWith(">")) {
-                            sequenceStringBuilder.append(line);
-                        } else {
-                            // new chromosome
-                            // save data
-                            if (sequenceStringBuilder.length() > 0) {
-                                System.out.println(chromosome);
-//								serializeGenomeSequence(chromosome, sequenceStringBuilder.toString(), bw);
-                                serializeGenomeSequence(chromosome, "", "", sequenceStringBuilder.toString());
-                            }
-
-                            // initialize data structures
-                            chromosome = line.replace(">", "").split(" ")[0];
-                            sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
-                        }
-                    }
-                    // Last chromosome must be processed
-//					serializeGenomeSequence(chromosome, sequenceStringBuilder.toString(), bw);
-                    serializeGenomeSequence(chromosome, "", "", sequenceStringBuilder.toString());
-                    br.close();
-                }
-            }
-            bw.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

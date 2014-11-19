@@ -25,7 +25,7 @@ class CosmicParserTest extends Specification {
         serializer.serialize(_) >> { Cosmic arg -> serializedVariants.add(arg) }
         def cosmicFile = Paths.get(VariantEffectParserTest.class.getResource("/cosmicTest.csv").toURI())
 
-        cosmicParser = new CosmicParser(serializer, cosmicFile)
+        cosmicParser = new CosmicParser(cosmicFile, serializer)
     }
 
     def "Parse"() {

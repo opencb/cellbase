@@ -24,7 +24,7 @@ class GwasParserTest extends Specification {
         serializedVariants = new ArrayList<Gwas>()
         serializer.serialize(_) >> { Gwas arg -> serializedVariants.add(arg) }
 
-        def gwasParser = new GwasParser(serializer, gwasTestFile, dbSnpFile)
+        def gwasParser = new GwasParser(gwasTestFile, dbSnpFile, serializer)
         gwasParser.parse()
     }
 

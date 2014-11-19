@@ -22,7 +22,7 @@ public class ClinVarParser extends CellBaseParser{
     public static final String GRCH37_ASSEMBLY = "GRCh37";
     private Path clinvarXmlFile;
 
-    public ClinVarParser(CellBaseSerializer serializer, Path clinvarXmlFile) {
+    public ClinVarParser(Path clinvarXmlFile, CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXmlFile = clinvarXmlFile;
     }
@@ -45,11 +45,6 @@ public class ClinVarParser extends CellBaseParser{
                 clinvarRecordsParsed++;
             }
             logger.info("Done");
-            try {
-                this.disconnect();
-            } catch (Exception e) {
-                logger.error("Disconnecting parser: " + e.getMessage());
-            }
             this.printSummary(clinvarRecordsParsed, serializedClinvarObjects);
 
         } catch (JAXBException e) {

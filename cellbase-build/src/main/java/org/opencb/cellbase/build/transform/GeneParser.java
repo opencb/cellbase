@@ -4,6 +4,7 @@ import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.*;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
@@ -17,16 +18,14 @@ import java.util.zip.GZIPInputStream;
 
 public class GeneParser extends CellBaseParser {
 
-    //	private Map<String, Integer> geneDict;
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
     private Path geneDirectoryPath;
     private Path genomeSequenceDir;
-//    private RandomAccessFile rafChromosomeSequenceFile;
 
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceDir) {
-        super(null);
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceDir, CellBaseSerializer serializer) {
+        super(serializer);
         this.geneDirectoryPath = geneDirectoryPath;
         this.genomeSequenceDir = genomeSequenceDir;
 

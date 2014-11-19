@@ -24,8 +24,8 @@ class CaddParserTest extends Specification {
         serializer.serialize(_) >> { Cadd arg -> serializedVariants.add(arg) }
 
         def caddFile = Paths.get(VariantEffectParserTest.class.getResource("/caddTest.tsv.gz").toURI())
-        caddParserChr1 = new CaddParser(serializer, caddFile, "1")
-        caddParserChrX  = new CaddParser(serializer, caddFile, "X")
+        caddParserChr1 = new CaddParser(caddFile, "1", serializer)
+        caddParserChrX  = new CaddParser(caddFile, "X", serializer)
     }
 
     def "Parse"() {

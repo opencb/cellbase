@@ -2,7 +2,6 @@ package org.opencb.cellbase.build;
 
 import org.apache.commons.cli.*;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.models.variant.effect.VariantEffect;
 import org.opencb.cellbase.build.transform.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
@@ -200,14 +199,17 @@ public class CellBaseMain {
         }
         GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(genomeFastaPath, null);
         genomeSequenceFastaParser.parse();
+        genomeSequenceFastaParser.disconnect();
 
-        GeneParser geneParser = new GeneParser(speciesInDir.resolve("gene"), genomeFastaPath);
+        GeneParser geneParser = new GeneParser(speciesInDir.resolve("gene"), genomeFastaPath, serializer);
         geneParser.parse();
+        geneParser.disconnect();
 
         Path variationPath = speciesInDir.resolve("variation");
         if (variationPath.toFile().list().length > 2) {
             VariationParser vp = new VariationParser(variationPath, null);
             vp.parse();
+            vp.disconnect();
         }
 
         Path regulationPath = speciesInDir.resolve("regulation");
@@ -228,12 +230,12 @@ public class CellBaseMain {
     }
 
     private static void buildPpi() throws IOException {
-        // TODO: InteractionParser should extend CellbaseParser
         logger.info("Processing PPI...");
         String psimiTabFile = commandLine.getOptionValue("psimi-tab-file");
         if (psimiTabFile != null) {
-            InteractionParser interactionParser = new InteractionParser(serializer);
-            interactionParser.parse(Paths.get(psimiTabFile), commandLine.getOptionValue("species").toString());
+            InteractionParser interactionParser = new InteractionParser(Paths.get(psimiTabFile), commandLine.getOptionValue("species"), serializer);
+            interactionParser.parse();
+            interactionParser.disconnect();
         }
     }
 
@@ -254,43 +256,30 @@ public class CellBaseMain {
         String uniprotSplitFilesDir = commandLine.getOptionValue("indir");
         String species = commandLine.getOptionValue("species");
         if (uniprotSplitFilesDir != null && Files.exists(Paths.get(uniprotSplitFilesDir))) {
-            DefaultJsonSerializer pSerializer = new DefaultJsonSerializer(outputPath.resolve("protein.json"));
+            DefaultJsonSerializer pSerializer = new DefaultJsonSerializer(outputPath, Paths.get("protein.json"));
             ProteinParser proteinParser = new ProteinParser(Paths.get(uniprotSplitFilesDir), species, pSerializer);
             proteinParser.parse();
+            proteinParser.disconnect();
         }
     }
 
     private static void buildVep(String serializerClass) throws IOException {
-        // TODO: VariantEffectParser should extend CellbaseParser
         logger.info("Processing VEP parser...");
         String effectFile = commandLine.getOptionValue("vep-file");
-        VariantEffectParser effectParser = new VariantEffectParser(serializer);
-        effectParser.parse(Paths.get(effectFile));
-
-//                    if (effectFile != null && Files.exists(Paths.get(effectFile))) {
-//                        if (newSerializer instanceof JsonSerializer) {
-//                            VariantEffectParser effectParser = new VariantEffectParser(newSerializer);
-//                            effectParser.parse(Paths.get(effectFile));
-//                        } else if (newSerializer instanceof VariantEffectMongoDBLoader) {
-//                            JsonReader<VariantEffect> effectParser = new JsonReader<>(Paths.get(effectFile), VariantEffect.class, newSerializer);
-//                            effectParser.open();
-//                            effectParser.pre();
-//                            effectParser.parse();
-//                            effectParser.post();
-//                            effectParser.close();
-//                        }
-//                    }
+        VariantEffectParser effectParser = new VariantEffectParser(Paths.get(effectFile), serializer);
+        effectParser.parse();
+        effectParser.disconnect();
     }
 
     private static void buildVariationPhenotypeAnnotation(Path outputPath) throws IOException, InterruptedException, SQLException, ClassNotFoundException {
         logger.info("Processing variation phenotype annotation...");
         String variationFilesDir = commandLine.getOptionValue("indir");
         if (variationFilesDir != null) {
-            DefaultJsonSerializer vSerializer = new DefaultJsonSerializer(outputPath.resolve("variation_phenotype_annotation.json"));
+            DefaultJsonSerializer vSerializer = new DefaultJsonSerializer(outputPath);
 
             VariationPhenotypeAnnotationParser variationPhenotypeAnnotationParser = new VariationPhenotypeAnnotationParser(Paths.get(variationFilesDir), vSerializer);
-//                    vp.parseCosmic(Paths.get(cosmicFilePath));
             variationPhenotypeAnnotationParser.parse();
+            variationPhenotypeAnnotationParser.disconnect();
         }
     }
 
@@ -298,26 +287,27 @@ public class CellBaseMain {
         logger.info("Processing variation...");
         String variationFilesDir = commandLine.getOptionValue("indir");
         if (variationFilesDir != null) {
-            DefaultJsonSerializer vSerializer = new DefaultJsonSerializer(outputPath.resolve("variation.json"));
+            DefaultJsonSerializer vSerializer = new DefaultJsonSerializer(outputPath, Paths.get("variation.json"));
             VariationParser vp = new VariationParser(Paths.get(variationFilesDir), vSerializer);
             vp.parse();
+            vp.disconnect();
         }
     }
 
     private static void buildRegulation(Path outputPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
-        logger.info("Processing regulation");
+        logger.info("Processing regulation...");
         String regulatoryRegionFilesDir = commandLine.getOptionValue("indir");
         if (regulatoryRegionFilesDir != null) {
-            DefaultJsonSerializer rSerializer = new DefaultJsonSerializer(outputPath.resolve("regulatory_region.json"));
+            DefaultJsonSerializer serializer = new DefaultJsonSerializer(outputPath);
 
-            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(Paths.get(regulatoryRegionFilesDir), rSerializer);
+            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(Paths.get(regulatoryRegionFilesDir), serializer);
             regulatoryParser.parse();
+            regulatoryParser.disconnect();
         }
     }
 
     private static void buildGene() throws IOException, NoSuchMethodException, FileFormatException, InterruptedException {
-        // TODO: GeneParser should extend CellbaseParser
-        //                    logger.info("Processing gene...");
+        logger.info("Processing gene...");
         String geneFilesDir = commandLine.getOptionValue("indir");
         String gtfFile = commandLine.getOptionValue("gtf-file");
         String genomeFastaFile = commandLine.getOptionValue("fasta-file", "");
@@ -328,12 +318,14 @@ public class CellBaseMain {
         String mirnaFile = commandLine.getOptionValue("mirna-file", "");
 
 //                    if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
-        GeneParser geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile));
+        // TODO: should use only parse method
+        GeneParser geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile), serializer);
         if (geneFilesDir != null && !geneFilesDir.equals("")) {
             geneParser.parse();
         } else {
             geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
         }
+        geneParser.disconnect();
 //                    }
     }
 
@@ -355,7 +347,7 @@ public class CellBaseMain {
             String dbSnpFile = commandLine.getOptionValue("dbsnp-file");
             if (dbSnpFile != null) {
                 DefaultJsonSerializer gwasJsonSerializer = new DefaultJsonSerializer(outputPath, Paths.get("gwas"), false);
-                GwasParser gwasParser = new GwasParser(gwasJsonSerializer, Paths.get(gwasFile), Paths.get(dbSnpFile));
+                GwasParser gwasParser = new GwasParser(Paths.get(gwasFile), Paths.get(dbSnpFile), gwasJsonSerializer);
                 gwasParser.parse();
             } else {
                 logger.error("'dbsnp-file' option is mandatory for 'gwas' builder");
@@ -373,8 +365,9 @@ public class CellBaseMain {
             //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
             //vp.parse();
             // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
-            CosmicParser cosmicParser = new CosmicParser(cosmicSerializer, Paths.get(cosmicFilePath));
+            CosmicParser cosmicParser = new CosmicParser(Paths.get(cosmicFilePath), cosmicSerializer);
             cosmicParser.parse();
+            cosmicParser.disconnect();
         } else {
             logger.error("'cosmic-file' option is mandatory for 'cosmic' builder");
         }
@@ -385,9 +378,9 @@ public class CellBaseMain {
         String clinvarFile = commandLine.getOptionValue("clinvar-file");
         if (clinvarFile != null) {
             DefaultJsonSerializer clinvarJsonSerializer = new DefaultJsonSerializer(outputPath, Paths.get("clinvar"), false);
-            ClinVarParser clinVarParser = new ClinVarParser(clinvarJsonSerializer, Paths.get(clinvarFile));
-            //ClinVarParser clinVarParser = new ClinVarParser(serializer, clinvarFile);
+            ClinVarParser clinVarParser = new ClinVarParser(Paths.get(clinvarFile), clinvarJsonSerializer);
             clinVarParser.parse();
+            clinVarParser.disconnect();
         } else {
             logger.error("'clinvar-file' option is mandatory for 'clinvar' builder");
         }

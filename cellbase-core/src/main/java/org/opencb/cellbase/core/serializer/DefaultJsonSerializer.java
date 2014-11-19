@@ -64,6 +64,10 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         this(outdirPath, null, includeEmptyValues);
     }
 
+    public DefaultJsonSerializer(Path outdirPath, Path outputFileName) throws IOException {
+        this(outdirPath, outputFileName, true);
+    }
+
     public DefaultJsonSerializer(Path outdirPath, Path outputFileName, boolean includeEmptyValues) throws IOException {
         super(outdirPath);
         this.outputFileName = outputFileName;
@@ -207,7 +211,6 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     public void serialize(GenericFeature genericFeature) {
         try {
             if(bufferedWriterMap.get("regulatory") == null) {
-                System.out.println(outdirPath.toString());
                 bufferedWriterMap.put("regulatory", Files.newBufferedWriter(outdirPath.resolve("regulatory_region.json"), Charset.defaultCharset()));
             }
             bufferedWriterMap.get("regulatory").write(jsonObjectWriter.writeValueAsString(genericFeature));

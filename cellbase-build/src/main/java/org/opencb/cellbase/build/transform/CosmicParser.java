@@ -35,7 +35,7 @@ public class CosmicParser extends CellBaseParser {
     private long invalidDuplicationLines;
     private long invalidMutationCDSOtherReason;
 
-    public CosmicParser(CellBaseSerializer serializer, Path cosmicFilePath){
+    public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer){
         super(serializer);
         this.cosmicFilePath = cosmicFilePath;
         this.compileRegularExpressionPaterns();
@@ -70,7 +70,6 @@ public class CosmicParser extends CellBaseParser {
             ex.printStackTrace();
         } finally {
             logger.info("Done");
-            this.disconnect();
             this.printSummary(processedCosmicLines, ignoredCosmicLines);
         }
     }

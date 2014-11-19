@@ -27,7 +27,7 @@ public class GwasParser extends CellBaseParser {
     private int malformedRiskAlleleFrequencyRecords;
     private int malformedPValueMLogRecords;
 
-    public GwasParser(CellBaseSerializer serializer, Path gwasFile, Path dbSnpTabixFilePath) {
+    public GwasParser(Path gwasFile, Path dbSnpTabixFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.gwasFile = gwasFile;
         this.dbSnpTabixFilePath = dbSnpTabixFilePath;

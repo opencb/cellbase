@@ -24,7 +24,7 @@ public class WigParser extends CellBaseParser{
     private String type;
     private Pattern pattern;
 
-    public WigParser(CellBaseSerializer serializer, Path conservationFilesFolder, int chunkSize, String type){
+    public WigParser(Path conservationFilesFolder, int chunkSize, String type, CellBaseSerializer serializer){
         super(serializer);
         this.wigsFolder = conservationFilesFolder;
         this.chunkSize = chunkSize;
@@ -54,7 +54,6 @@ public class WigParser extends CellBaseParser{
                 logger.debug("Processing chromosome {}, file {}", chr, files.get(chr + type));
                 processFile(files.get(chr + type));
             }
-            this.disconnect();
         }
     }
 
