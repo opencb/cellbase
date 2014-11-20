@@ -22,7 +22,7 @@
 
     <properties>
         <cellbase.version>3.1.0</cellbase.version>
-        <biodata.version>0.2.0</biodata.version>
+        <biodata.version>0.3.0-beta</biodata.version>
         <compileSource>1.7</compileSource>
     </properties>
 

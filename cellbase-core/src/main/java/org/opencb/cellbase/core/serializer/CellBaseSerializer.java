@@ -4,7 +4,7 @@ import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceChunk;
 import org.opencb.biodata.models.protein.Interaction;
-import org.opencb.biodata.models.variant.effect.VariantAnnotation;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;

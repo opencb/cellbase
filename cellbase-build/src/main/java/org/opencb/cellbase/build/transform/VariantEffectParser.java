@@ -1,10 +1,10 @@
 package org.opencb.cellbase.build.transform;
 
 import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.models.variant.effect.ConsequenceTypeMappings;
-import org.opencb.biodata.models.variant.effect.ProteinSubstitutionScores;
-import org.opencb.biodata.models.variant.effect.VariantAnnotation;
-import org.opencb.biodata.models.variant.effect.VariantEffect;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
+import org.opencb.biodata.models.variant.annotation.ProteinSubstitutionScores;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.annotation.VariantEffect;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
