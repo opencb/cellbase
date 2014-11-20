@@ -31,7 +31,7 @@ class DisGeNetParserTest extends Specification {
         disGeNetParser = new DisGeNetParser(disGeNetFile, entrezIdToEnsemlIdFile, serializer)
     }
 
-    def "Parse"() {
+    def "parse"() {
         when: "parse disgenet file"
         disGeNetParser.parse()
 
@@ -40,7 +40,7 @@ class DisGeNetParserTest extends Specification {
     }
 
     @Unroll
-    def "Serialized gene #geneSymbol has name '#geneName',ensembl id(s) #ensemblGeneIds and #diseases disease(s)"() {
+    def "serialized gene #geneSymbol has name '#geneName',ensembl id(s) #ensemblGeneIds and #diseases disease(s)"() {
         expect:
         def disGeNet = serializedGenes.find{ gene -> gene.geneSymbol.equals(geneSymbol) }
         disGeNet.geneName == geneName
@@ -55,7 +55,7 @@ class DisGeNetParserTest extends Specification {
     }
 
     @Unroll
-    def "Serialized gene #geneSymbol has disease #diseaseId with name #diseaseName, score #score, #numPubMeds pubmeds, association types #associationTypes and sources #sources"() {
+    def "serialized gene #geneSymbol has disease #diseaseId with name #diseaseName, score #score, #pubmeds pubmeds, association types #associationTypes and sources #sources"() {
         expect:
         def disGeNet = serializedGenes.find{ gene -> gene.geneSymbol.equals(geneSymbol) }
         def disease = disGeNet.diseases.find{ disease -> disease.diseaseId.equals(diseaseId) }
@@ -68,9 +68,9 @@ class DisGeNetParserTest extends Specification {
         where:
         geneSymbol || diseaseId       | diseaseName                                           | score             | pubmeds | associationTypes                                       | sources
         "BLM"      || "umls:C0005859" | "Bloom Syndrome"                                      | 0.744459274113461 | 63      | ["GeneticVariation", "Biomarker", "AlteredExpression"] | ["UNIPROT", "CTD_human", "MGD", "GAD", "LHGDN", "BeFree"]
-        "DYM"      || "umls:C1846431" | "Smith-McCort Dysplasia"                              | 0.705971165243041 | 22      | ["GeneticVariation", "Biomarker"]                      |  ["UNIPROT", "CTD_human", "MGD", "BeFree"]
-        "DYM"      || "umls:C0265286" | "Dyggve-Melchior-Clausen syndrome"                    | 0.702089907835064 | 8       | ["GeneticVariation", "Biomarker"]                      |  ["UNIPROT", "CTD_human", "MGD", "BeFree"]
-        "LAMB3"    || "umls:C0268374" | "Epidermolysis Bullosa, Junctional, Non-Herlitz Type" | 0.7               | 1       | ["GeneticVariation"]                                   |  ["UNIPROT", "CTD_human", "MGD"]
+        "DYM"      || "umls:C1846431" | "Smith-McCort Dysplasia"                              | 0.705971165243041 | 22      | ["GeneticVariation", "Biomarker"]                      | ["UNIPROT", "CTD_human", "MGD", "BeFree"]
+        "DYM"      || "umls:C0265286" | "Dyggve-Melchior-Clausen syndrome"                    | 0.702089907835064 | 8       | ["GeneticVariation", "Biomarker"]                      | ["UNIPROT", "CTD_human", "MGD", "BeFree"]
+        "LAMB3"    || "umls:C0268374" | "Epidermolysis Bullosa, Junctional, Non-Herlitz Type" | 0.7               | 1       | ["GeneticVariation"]                                   | ["UNIPROT", "CTD_human", "MGD"]
     }
 
 
