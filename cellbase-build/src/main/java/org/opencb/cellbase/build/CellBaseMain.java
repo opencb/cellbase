@@ -5,6 +5,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.build.transform.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
+import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,12 +24,8 @@ public class CellBaseMain {
     private static CommandLineParser parser;
 
     private static CellBaseSerializer serializer = null;
-    private static org.opencb.cellbase.build.serializers.CellBaseSerializer newSerializer = null;
 
     private static Logger logger;
-
-    private static String JSON_SERIALIZER = "org.opencb.cellbase.core.serializer.DefaultJsonSerializer";
-    private static String MONGODB_SERIALIZER = "org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer";
 
     static {
         parser = new PosixParser();
@@ -110,17 +107,8 @@ public class CellBaseMain {
             System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, commandLine.getOptionValue("log-level", "info"));
             logger = LoggerFactory.getLogger("org.opencb.cellbase.build.CellBaseMain");
 
-
-            /**
-             * This code use Java reflection to create a data serializer for a specific database engine,
-             * only a default JSON and MongoDB serializers have been implemented so far, this DI pattern
-             * may be applied to get other database outputs.
-             * This is in charge of creating the specific data model for the database backend.
-             */
-            String serializerClass = commandLine.getOptionValue("serializer", "json");
             Path outputPath = Paths.get(commandLine.getOptionValue("output"));
-            serializer = createCellBaseSerializer(serializerClass, outputPath);
-
+            createCellBaseSerializer(outputPath);
 
             buildOption = commandLine.getOptionValue("build");
             switch (buildOption) {
@@ -140,7 +128,7 @@ public class CellBaseMain {
                     buildVariationPhenotypeAnnotation(outputPath);
                     break;
                 case "vep":
-                    buildVep(serializerClass);
+                    buildVep();
                     break;
                 case "protein":
                     buildProtein(outputPath);
@@ -169,7 +157,6 @@ public class CellBaseMain {
                 default:
                     break;
             }
-            serializer.close();
         } catch (ParseException | IOException | SQLException | ClassNotFoundException | NoSuchMethodException | FileFormatException | InterruptedException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -239,15 +226,14 @@ public class CellBaseMain {
         }
     }
 
-    private static void buildConservation() {
-        logger.info("Processing conservation");
+    private static void buildConservation() throws IOException {
+        logger.info("Processing conservation...");
         String conservationFilesDir = commandLine.getOptionValue("indir");
         int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue("chunksize", "0"));
-        //String conservationOutputFile = commandLine.getOptionValue("output", "/tmp/conservation.json");
         if (conservationFilesDir != null) {
-            // TODO: change serializer class
-            //ConservedRegionParser conservedRegionParser = new ConservedRegionParser(serializer, Paths.get(conservationFilesDir), conservationChunkSize);
-            //conservedRegionParser.parse();
+            ConservedRegionParser conservedRegionParser = new ConservedRegionParser(Paths.get(conservationFilesDir), conservationChunkSize, serializer);
+            conservedRegionParser.parse();
+            conservedRegionParser.disconnect();
         }
     }
 
@@ -263,7 +249,7 @@ public class CellBaseMain {
         }
     }
 
-    private static void buildVep(String serializerClass) throws IOException {
+    private static void buildVep() throws IOException {
         logger.info("Processing VEP parser...");
         String effectFile = commandLine.getOptionValue("vep-file");
         VariantEffectParser effectParser = new VariantEffectParser(Paths.get(effectFile), serializer);
@@ -317,7 +303,6 @@ public class CellBaseMain {
         String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
         String mirnaFile = commandLine.getOptionValue("mirna-file", "");
 
-//                    if(gtfFile != null && Files.exists(Paths.get(gtfFile))) {
         // TODO: should use only parse method
         GeneParser geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile), serializer);
         if (geneFilesDir != null && !geneFilesDir.equals("")) {
@@ -389,23 +374,19 @@ public class CellBaseMain {
     private static void parse(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
         parser = new PosixParser();
         commandLine = parser.parse(options, args, stopAtNoOption);
-        // TODO: delete this? ->
-        if (args.length > 0 && "variation".equals(args[1])) {
-            System.out.println("variation SQL test");
-        }
     }
 
-    private static CellBaseSerializer createCellBaseSerializer(String serializerClass, Path outPath) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    private static void createCellBaseSerializer(Path outPath) throws IOException  {
+        String serializerClass = commandLine.getOptionValue("serializer", "json");
         if (serializerClass != null) {
             // A default implementation for JSON is provided
             if (serializerClass.equalsIgnoreCase("json")) {
                 logger.debug("JSON serializer chosen");
-                return (CellBaseSerializer) Class.forName(JSON_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
+                serializer = new DefaultJsonSerializer(outPath);
             } else {
                 logger.debug("MongoDB serializer chosen");
-                return (CellBaseSerializer) Class.forName(MONGODB_SERIALIZER).getConstructor(Path.class).newInstance(outPath);
+                serializer = new MongoDBSerializer(outPath);
             }
         }
-        return serializer;
     }
 }

@@ -14,6 +14,7 @@ import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.commons.utils.FileUtils;
 
@@ -23,11 +24,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -39,22 +40,21 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
-    // Variation data is too big to be stored in a single file,
-    // data is split in different files
-    private Map<String, BufferedWriter> variationBufferedWriter;
     private BufferedWriter variationPhenotypeAnnotationBufferedWriter;
     private BufferedWriter mutationBufferedWriter;
     private BufferedWriter ppiBufferedWriter;
-
-
+    
+    // variation and conservation data are too big to be stored in a single file, data is split in different files
+    private Map<String, BufferedWriter> variationBufferedWriter;
+    private Map<String, JsonGenerator> conservedRegionJsonWriters;
+    
     private GZIPOutputStream gzipOutputStream;
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
 
-    private int chunkSize = 2000;
-
     private Path outputFileName;
     private JsonGenerator generator;
+
 
     public DefaultJsonSerializer(Path outdirPath) throws IOException {
         this(outdirPath, true);
@@ -223,6 +223,23 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     }
 
     @Override
+    public void serialize(ConservedRegionChunk conservedRegionChunk) {
+        try {
+            if (conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()) == null) {
+                JsonFactory conservedRegionJsonFactory = new JsonFactory();
+                GZIPOutputStream gzipOutputStream =
+                        new GZIPOutputStream(new FileOutputStream(outdirPath.resolve("conservation_" + conservedRegionChunk.getChromosome() + ".json.gz").toAbsolutePath().toString()));
+                JsonGenerator generator = conservedRegionJsonFactory.createGenerator(gzipOutputStream);
+                conservedRegionJsonWriters.put(conservedRegionChunk.getChromosome(), generator);
+            }
+            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).writeObject(conservedRegionChunk);
+            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).writeRaw('\n');
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void serialize(Object elem) {
         try {
             if (generator == null) {
@@ -279,11 +296,25 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             }
         }
 
-        if (gzipOutputStream != null) {
+        if (generator != null) {
             try {
-                gzipOutputStream.flush();
                 generator.flush();
                 generator.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        closeConservationWriters();
+    }
+
+    private void closeConservationWriters() {
+        if (conservedRegionJsonWriters != null) {
+            try {
+                for (JsonGenerator conservationWriter : conservedRegionJsonWriters.values()) {
+                    conservationWriter.flush();
+                    conservationWriter.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

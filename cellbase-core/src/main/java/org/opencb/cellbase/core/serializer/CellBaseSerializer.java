@@ -8,6 +8,7 @@ import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
 
 import java.nio.file.Path;
@@ -45,6 +46,8 @@ public abstract class CellBaseSerializer {
     public abstract void serialize(Mutation mutation);
 
     public abstract void serialize(Interaction interaction);
+
+    public abstract void serialize(ConservedRegionChunk conservedRegionChunk);
 
     public abstract void serialize(Object object);
     public abstract void close();
