@@ -12,15 +12,15 @@ import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 public class VariationPhenotypeAnnotationMongoDBAdaptorTest {
     protected static DBAdaptorFactory dbAdaptorFactory;
 
-    static {
-        dbAdaptorFactory = new MongoDBAdaptorFactory();
-    }
-
-    @Test
-    public void testRegion() throws Exception {
-        QueryOptions queryOptions = new QueryOptions();
-        VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor("hsapiens", "V3");
-        QueryResult result = va.getAllByPhenotype("Hip", queryOptions);
-        System.out.println();
-    }
+//    static {
+//        dbAdaptorFactory = new MongoDBAdaptorFactory();
+//    }
+//
+//    @Test
+//    public void testRegion() throws Exception {
+//        QueryOptions queryOptions = new QueryOptions();
+//        VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor("hsapiens", "V3");
+//        QueryResult result = va.getAllByPhenotype("Hip", queryOptions);
+//        System.out.println();
+//    }
 }

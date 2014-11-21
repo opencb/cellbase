@@ -242,12 +242,22 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getAnnotationByVariants(@PathParam("variants") String variants) {
         try {
             checkVersionAndSpecies();
-            VariationDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
-            List<QueryResult> variationQueryResultList = variantDBAdaptor.getIdByVariants(variantList, queryOptions);
 
+            VariationDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+            List<QueryResult> variationQueryResultList = variantDBAdaptor.getIdByVariants(variantList, queryOptions);
+            /*System.out.println();
+            for(BasicDBObject obj: variationQueryResultList.get(0).getResult()){
+
+            }
+            Iterator it = variationQueryResultList.get(0).getResult().
+            variationQueryResultList.get(0).getResult().toString();*/
+
+/*
+            ClinicalVarDBAdaptor clinicalVarDBAdaptor = dbAdaptorFactory.getClinicalVarDBAdaptor(this.species, this.assembly);
+            List<QueryResult> variationQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariant(variantList, queryOptions);
+*/
             return createOkResponse(variationQueryResultList);
         } catch (Exception e) {
             e.printStackTrace();

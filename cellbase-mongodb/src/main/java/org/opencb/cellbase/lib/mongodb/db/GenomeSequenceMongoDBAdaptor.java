@@ -33,11 +33,11 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
     }
 
     private int getChunk(int position) {
-        return this.chunkSize;
+        return (position / this.chunkSize);
     }
 
     private int getOffset(int position) {
-        return this.chunkSize;
+        return (position % this.chunkSize);
     }
 
     public static String getComplementarySequence(String sequence) {
