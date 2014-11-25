@@ -19,8 +19,8 @@ public class UtilsWSServer extends GenericRestWSServer {
 //		super(uriInfo);
 //	}
 	
-	public UtilsWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
-		super(version, uriInfo, hsr);
+	public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+		super(version, species, uriInfo, hsr);
 	}
 	
 //	public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo) throws VersionException, IOException {

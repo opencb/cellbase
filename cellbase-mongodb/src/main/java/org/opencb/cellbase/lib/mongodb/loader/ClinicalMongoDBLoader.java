@@ -3,10 +3,10 @@ package org.opencb.cellbase.lib.mongodb.loader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 import com.mongodb.MongoInternalException;
-import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
+import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.clinical.Cosmic;
-import org.opencb.biodata.models.variant.clinical.Gwas;
+import org.opencb.cellbase.core.common.clinical.Cosmic;
+import org.opencb.cellbase.core.common.clinical.Gwas;
 import org.opencb.cellbase.lib.mongodb.model.ClinicalVariation;
 import org.opencb.cellbase.lib.mongodb.serializer.CellbaseMongoDBSerializer;
 

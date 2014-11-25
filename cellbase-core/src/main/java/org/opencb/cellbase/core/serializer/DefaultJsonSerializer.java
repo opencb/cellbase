@@ -1,6 +1,8 @@
 package org.opencb.cellbase.core.serializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -12,10 +14,12 @@ import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -25,32 +29,49 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
+import java.util.zip.GZIPOutputStream;
+
 /**
  * Created by imedina on 17/06/14.
  */
 public class DefaultJsonSerializer extends CellBaseSerializer {
 
-//    private Path outdirPath;
-
+    private final boolean includeEmtpyValues;
     private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
-    // Variation data is too big to be stored in a single file,
-    // data is split in different files
-    private Map<String, BufferedWriter> variationBufferedWriter;
     private BufferedWriter variationPhenotypeAnnotationBufferedWriter;
     private BufferedWriter mutationBufferedWriter;
     private BufferedWriter ppiBufferedWriter;
-
+    
+    // variation and conservation data are too big to be stored in a single file, data is split in different files
+    private Map<String, BufferedWriter> variationBufferedWriter;
+    private Map<String, JsonGenerator> conservedRegionJsonWriters;
+    
+    private GZIPOutputStream gzipOutputStream;
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
 
-    private int chunkSize = 2000;
+    private Path outputFileName;
+    private JsonGenerator generator;
 
 
-    public DefaultJsonSerializer(Path path) throws IOException {
-//        this.outdirPath = path;
-        super(path);
+    public DefaultJsonSerializer(Path outdirPath) throws IOException {
+        this(outdirPath, true);
+    }
+
+    public DefaultJsonSerializer(Path outdirPath, boolean includeEmptyValues) throws IOException {
+        this(outdirPath, null, includeEmptyValues);
+    }
+
+    public DefaultJsonSerializer(Path outdirPath, Path outputFileName) throws IOException {
+        this(outdirPath, outputFileName, true);
+    }
+
+    public DefaultJsonSerializer(Path outdirPath, Path outputFileName, boolean includeEmptyValues) throws IOException {
+        super(outdirPath);
+        this.outputFileName = outputFileName;
+        this.includeEmtpyValues = includeEmptyValues;
         init();
     }
 
@@ -83,7 +104,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             genomeSequenceBufferedWriter.write(jsonObjectWriter.writeValueAsString(genomeSequenceChunk));
             genomeSequenceBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -98,7 +119,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -113,7 +134,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -128,7 +149,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -143,7 +164,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -156,7 +177,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             variationPhenotypeAnnotationBufferedWriter.write(jsonObjectWriter.writeValueAsString(variationPhenotypeAnnotation));
             variationPhenotypeAnnotationBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -169,7 +190,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             mutationBufferedWriter.write(jsonObjectWriter.writeValueAsString(mutation));
             mutationBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -182,7 +203,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             ppiBufferedWriter.write(jsonObjectWriter.writeValueAsString(interaction));
             ppiBufferedWriter.newLine();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         };
     }
 
@@ -190,7 +211,6 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     public void serialize(GenericFeature genericFeature) {
         try {
             if(bufferedWriterMap.get("regulatory") == null) {
-                System.out.println(outdirPath.toString());
                 bufferedWriterMap.put("regulatory", Files.newBufferedWriter(outdirPath.resolve("regulatory_region.json"), Charset.defaultCharset()));
             }
             bufferedWriterMap.get("regulatory").write(jsonObjectWriter.writeValueAsString(genericFeature));
@@ -198,7 +218,43 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void serialize(ConservedRegionChunk conservedRegionChunk) {
+        try {
+            if (conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()) == null) {
+                JsonFactory conservedRegionJsonFactory = new JsonFactory();
+                GZIPOutputStream gzipOutputStream =
+                        new GZIPOutputStream(new FileOutputStream(outdirPath.resolve("conservation_" + conservedRegionChunk.getChromosome() + ".json.gz").toAbsolutePath().toString()));
+                JsonGenerator generator = conservedRegionJsonFactory.createGenerator(gzipOutputStream);
+                conservedRegionJsonWriters.put(conservedRegionChunk.getChromosome(), generator);
+            }
+            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).writeObject(conservedRegionChunk);
+            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).writeRaw('\n');
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void serialize(Object elem) {
+        try {
+            if (generator == null) {
+                JsonFactory jsonFactory = new JsonFactory();
+                jsonObjectMapper = new ObjectMapper(jsonFactory);
+                if (!includeEmtpyValues) {
+                    jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+                }
+                gzipOutputStream = new GZIPOutputStream(new FileOutputStream(outdirPath.resolve(outputFileName).toAbsolutePath().toString() + ".json.gz"));
+                generator = jsonFactory.createGenerator(gzipOutputStream);
+            }
+            generator.writeObject(elem);
+            generator.writeRaw('\n');
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -213,9 +269,8 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             closeBufferedWriter(mutationBufferedWriter);
             closeBufferedWriter(ppiBufferedWriter);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
-        ;
 
         Iterator<String> iter = bufferedWriterMap.keySet().iterator();
         while(iter.hasNext()) {
@@ -238,6 +293,30 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+
+        if (generator != null) {
+            try {
+                generator.flush();
+                generator.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        closeConservationWriters();
+    }
+
+    private void closeConservationWriters() {
+        if (conservedRegionJsonWriters != null) {
+            try {
+                for (JsonGenerator conservationWriter : conservedRegionJsonWriters.values()) {
+                    conservationWriter.flush();
+                    conservationWriter.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

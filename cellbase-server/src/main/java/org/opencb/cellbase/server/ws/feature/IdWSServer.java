@@ -1,12 +1,15 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.opencb.cellbase.core.common.core.Xref;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -20,24 +23,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author imedina
+ */
 @Path("/{version}/{species}/feature/id")
-@Produces("text/plain")
+@Produces("application/json")
+@Api(value = "Xref", description = "XRef RESTful Web Services API")
 public class IdWSServer extends GenericRestWSServer {
 
-    private List<String> exclude = new ArrayList<>();
-
     public IdWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                      @DefaultValue("") @QueryParam("exclude") String exclude,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
-        this.exclude = Arrays.asList(exclude.trim().split(","));
     }
 
     @GET
     @Path("/{id}/xref")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the XRefs IDs", response = QueryResponse.class)
     public Response getByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             if (!dbname.equals("")) {
                 queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
@@ -51,7 +55,7 @@ public class IdWSServer extends GenericRestWSServer {
 //            }
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getAllByAccessions", e.toString());
         }
     }
 
@@ -59,7 +63,7 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/gene")
     public Response getGeneByEnsemblId(@PathParam("id") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
@@ -69,7 +73,7 @@ public class IdWSServer extends GenericRestWSServer {
 //			return generateResponse(query, "GENE",  x.getAllByNameList(Splitter.on(",").splitToList(query),exclude));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getAllByAccessions", e.toString());
         }
     }
 
@@ -77,12 +81,12 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/snp")
     public Response getSnpByFeatureId(@PathParam("id") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getAllByAccessions", e.toString());
         }
     }
 
@@ -90,7 +94,7 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/starts_with")
     public Response getByLikeQuery(@PathParam("id") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
 //            if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
 //                List<List<Xref>> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query));
@@ -102,7 +106,7 @@ public class IdWSServer extends GenericRestWSServer {
             return createOkResponse(x.getByStartsWithQueryList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getAllByAccessions", e.toString());
         }
     }
 
@@ -110,7 +114,7 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/contains")
     public Response getByContainsQuery(@PathParam("id") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             List<List<Xref>> xrefs = x.getByContainsQueryList(Splitter.on(",").splitToList(query));
             if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
@@ -122,7 +126,7 @@ public class IdWSServer extends GenericRestWSServer {
             return generateResponse(query, xrefs);
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getAllByAccessions", e.toString());
         }
     }
 

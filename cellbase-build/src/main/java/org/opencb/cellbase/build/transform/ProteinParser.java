@@ -16,17 +16,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-public class ProteinParser {
+public class ProteinParser extends CellBaseParser {
 
-    private CellBaseSerializer serializer;
-
+    private String species;
+    private Path uniprotFilesDir;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public ProteinParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+    public ProteinParser(Path uniprotFilesDir, String species, CellBaseSerializer serializer) {
+        super(serializer);
+
+        this.uniprotFilesDir = uniprotFilesDir;
+        this.species = species;
     }
 
-    public void parse(Path uniprotFilesDir, String species) throws IOException {
+
+    @Override
+    public void parse() throws IOException {
         Files.exists(uniprotFilesDir);
 
         UniprotParser up = new UniprotParser();
@@ -39,17 +44,17 @@ public class ProteinParser {
                 }
             });
 
-            for(File file: files) {
+            for (File file : files) {
                 Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniprotParser.UNIPROT_CONTEXT_v201311);
 
-                for(Entry entry: uniprot.getEntry()) {
+                for (Entry entry : uniprot.getEntry()) {
 //                    System.out.println(entry.getOrganism().getName().get(0).getValue());
                     String entryOrganism = null;
                     Iterator<OrganismNameType> iter = entry.getOrganism().getName().iterator();
-                    while(iter.hasNext()) {
+                    while (iter.hasNext()) {
                         entryOrganism = iter.next().getValue();
 //                        if(entryOrganism.contains(species)) {
-                        if(entryOrganism.equals(species)) {
+                        if (entryOrganism.equals(species)) {
                             serializer.serialize(entry);
                         }
                     }

@@ -14,6 +14,7 @@ import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.mongodb.serializer.converters.GeneConverter;
@@ -208,6 +209,12 @@ public class MongoDBSerializer extends CellBaseSerializer {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         };
     }
+
+    @Override
+    public void serialize(ConservedRegionChunk conservedRegionChunk) { }
+
+    @Override
+    public void serialize(Object object) { }
 
     @Override
     public void serialize(GenericFeature genericFeature) {

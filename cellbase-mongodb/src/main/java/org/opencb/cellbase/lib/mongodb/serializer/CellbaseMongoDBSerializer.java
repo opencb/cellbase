@@ -12,6 +12,7 @@ import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.mongodb.model.ClinicalVariation;
@@ -77,6 +78,12 @@ public class CellbaseMongoDBSerializer extends CellBaseSerializer {
 
     @Override
     public void serialize(Interaction interaction) {}
+
+    @Override
+    public void serialize(ConservedRegionChunk conservedRegionChunk) {}
+
+    @Override
+    public void serialize(Object object) {}
 
     public void serialize(ClinicalVariation variation) throws IOException {
         if (clinicalCollection == null) {

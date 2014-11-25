@@ -1,0 +1,9 @@
+geneId	geneSymbol	geneName	diseaseId	diseaseName	score	NumberOfPubmeds	associationType	source
+641	BLM	Bloom syndrome, RecQ helicase-like	umls:C0005859	Bloom Syndrome	0.744459274113461	63	GeneticVariation	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+641	BLM	Bloom syndrome, RecQ helicase-like	umls:C0005859	Bloom Syndrome	0.744459274113461	63	Biomarker	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+641	BLM	Bloom syndrome, RecQ helicase-like	umls:C0005859	Bloom Syndrome	0.744459274113461	63	AlteredExpression	UNIPROT, CTD_human, MGD, GAD, LHGDN, BeFree
+54808	DYM	dymeclin	umls:C1846431	Smith-McCort Dysplasia	0.705971165243041	22	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+54808	DYM	dymeclin	umls:C1846431	Smith-McCort Dysplasia	0.705971165243041	22	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+54808	DYM	dymeclin	umls:C0265286	Dyggve-Melchior-Clausen syndrome	0.702089907835064	8	GeneticVariation	UNIPROT, CTD_human, MGD, BeFree
+54808	DYM	dymeclin	umls:C0265286	Dyggve-Melchior-Clausen syndrome	0.702089907835064	8	Biomarker	UNIPROT, CTD_human, MGD, BeFree
+3914	LAMB3	laminin, beta 3	umls:C0268374	Epidermolysis Bullosa, Junctional, Non-Herlitz Type	0.7	1	GeneticVariation	UNIPROT, CTD_human, MGD

@@ -42,8 +42,8 @@ public class VariantEffectParserTest {
     @Test
     public void testParse() throws Exception {
         System.out.println("parse");
-        VariantEffectParser instance = new VariantEffectParser(serializer);
-        int numEffectsWritten = instance.parse(file);
+        VariantEffectParser instance = new VariantEffectParser(file, serializer);
+        instance.parse();
 //        Assert.assertEquals(3, numEffectsWritten);
     }
     

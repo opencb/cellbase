@@ -1,9 +1,9 @@
 package org.opencb.cellbase.lib.mongodb.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.opencb.biodata.formats.variant.clinvar.ClinvarPublicSet;
-import org.opencb.biodata.models.variant.clinical.Cosmic;
-import org.opencb.biodata.models.variant.clinical.Gwas;
+import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
+import org.opencb.cellbase.core.common.clinical.Cosmic;
+import org.opencb.cellbase.core.common.clinical.Gwas;
 
 import java.util.ArrayList;
 import java.util.List;
