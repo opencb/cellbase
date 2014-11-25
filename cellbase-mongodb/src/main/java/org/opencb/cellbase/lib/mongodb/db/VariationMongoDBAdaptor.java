@@ -1,5 +1,6 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
+import com.google.common.base.Joiner;
 import com.mongodb.*;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
@@ -8,9 +9,7 @@ import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class VariationMongoDBAdaptor extends MongoDBAdaptor implements VariationDBAdaptor {
 
@@ -252,6 +251,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     @Override
     public List<QueryResult> getIdByVariants(List<GenomicVariant> variations, QueryOptions options){
         List<DBObject> queries = new ArrayList<>(variations.size());
+        List<QueryResult> results = new ArrayList<>(variations.size());
 
         for (GenomicVariant variation : variations) {
             QueryBuilder builder = QueryBuilder.start("chromosome").is(variation.getChromosome());
@@ -264,8 +264,23 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         }
 
         // Return only a query with the id value
-        options.put("include", Arrays.asList("id"));
+        //options.put("include", Arrays.asList("id"));
 
-        return executeQueryList(variations, queries, options, mongoDBCollection);
+        results = executeQueryList(variations, queries, options, mongoDBCollection);
+
+
+        for (QueryResult result: results){
+            List<String> idList = new LinkedList();
+
+            BasicDBList idListObject = (BasicDBList) result.getResult();
+            for (Object idObject : idListObject) {
+                DBObject variantObject = (DBObject) idObject;
+                idList.add(variantObject.get("id").toString());
+            }
+
+            result.setResult(Joiner.on(",").skipNulls().join(idList));
+        }
+
+        return results;
     }
 }

@@ -1,13 +1,12 @@
 package org.opencb.cellbase.server.ws.genomic;
 
+import org.opencb.biodata.models.variant.annotation.ConsequenceType;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationPhenotypeAnnotationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.*;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -243,26 +242,51 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             checkVersionAndSpecies();
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
+            List<QueryResult> completeResult = new ArrayList<>(variantList.size());
+            List<org.opencb.biodata.models.variation.GenomicVariant> variantList2 = org.opencb.biodata.models.variation.GenomicVariant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
             VariationDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<QueryResult> variationQueryResultList = variantDBAdaptor.getIdByVariants(variantList, queryOptions);
-            /*System.out.println();
-            for(BasicDBObject obj: variationQueryResultList.get(0).getResult()){
+
+            ClinicalVarDBAdaptor clinicalVarDBAdaptor = dbAdaptorFactory.getClinicalVarDBAdaptor(this.species, this.assembly);
+            List<QueryResult> clinicalQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariant(variantList, queryOptions);
+
+            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
+            List<QueryResult> variationConsequenceTypeList = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantList(variantList2, queryOptions);
+
+            VariantAnnotation  variantAnnotation = null;
+
+            Integer i=0;
+            for(QueryResult clinicalQueryResult: clinicalQueryResultList){
+                Map<String,Object> phenotype = new HashMap<>();
+                if(clinicalQueryResult.getResult() != null) {
+                    phenotype = (Map<String, Object>) clinicalQueryResult.getResult();
+                }
+                Set<ConsequenceType> consequenceTypeSet = (Set<ConsequenceType>) variationConsequenceTypeList.get(i).getResult();
+                List<ConsequenceType> consequenceTypeList = new ArrayList<>();
+                consequenceTypeList.addAll(consequenceTypeSet);
+
+                String id = null;
+                if(variationQueryResultList.get(i).getResult() != null) {
+                    id = variationQueryResultList.get(i).getResult().toString();
+                }
+
+                variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(),
+                        variantList.get(i).getPosition(),variantList.get(i).getPosition(),variantList.get(i).getReference(),variantList.get(i).getAlternative());
+
+                variantAnnotation.setId(id);
+                variantAnnotation.setClinicalData(phenotype);
+                variantAnnotation.setConsequenceTypes(consequenceTypeList);
+                clinicalQueryResult.setResult(variantAnnotation);
 
             }
-            Iterator it = variationQueryResultList.get(0).getResult().
-            variationQueryResultList.get(0).getResult().toString();*/
 
-/*
-            ClinicalVarDBAdaptor clinicalVarDBAdaptor = dbAdaptorFactory.getClinicalVarDBAdaptor(this.species, this.assembly);
-            List<QueryResult> variationQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariant(variantList, queryOptions);
-*/
-            return createOkResponse(variationQueryResultList);
+
+            return createOkResponse(clinicalQueryResultList);
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getAnnotationByVariants", e.toString());
         }
     }
-
 }
