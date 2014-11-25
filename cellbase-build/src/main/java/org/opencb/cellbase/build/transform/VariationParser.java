@@ -182,7 +182,7 @@ public class VariationParser extends CellBaseParser {
                         logger.debug("Processed variations: " + countprocess);
                     }
 
-                    serialize(variation);
+                    serializer.serialize(variation);
                 } catch (Exception e) {
                     e.printStackTrace();
                     bwLog.write(line + "\n");

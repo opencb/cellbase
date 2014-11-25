@@ -80,7 +80,7 @@ public class VariantEffectParser extends CellBaseParser {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
-                        serialize(currentAnnotation);
+                        serializer.serialize(currentAnnotation);
                         numEffectsWritten++;
                     }
 
@@ -99,7 +99,7 @@ public class VariantEffectParser extends CellBaseParser {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
-            serialize(currentAnnotation);
+            serializer.serialize(currentAnnotation);
             numEffectsWritten++;
         }
 

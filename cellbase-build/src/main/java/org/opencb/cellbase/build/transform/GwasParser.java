@@ -75,7 +75,7 @@ public class GwasParser extends CellBaseParser {
 
                 logger.info("Serializing parsed variants ...");
                 for (Gwas gwasOutputRecord : variantMap.values()) {
-                    serialize(gwasOutputRecord);
+                    serializer.serialize(gwasOutputRecord);
                 }
                 logger.info("Done");
                 this.disconnect();

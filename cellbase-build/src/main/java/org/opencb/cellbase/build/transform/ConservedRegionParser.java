@@ -87,7 +87,7 @@ public class ConservedRegionParser extends CellBaseParser {
                 if(conservedRegion != null){
                     conservedRegion.setEnd(end);
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
-                    serialize(conservedRegion);
+                    serializer.serialize(conservedRegion);
                 }
 
 //                offset = 0;
@@ -112,7 +112,7 @@ public class ConservedRegionParser extends CellBaseParser {
 
                 if(startChunk != endChunk) {
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end-1, conservedType, startChunk, values);
-                    serialize(conservedRegion);
+                    serializer.serialize(conservedRegion);
                     values.clear();
                     start = end;
                 }
@@ -123,7 +123,7 @@ public class ConservedRegionParser extends CellBaseParser {
         }
         //write last
         conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
-        serialize(conservedRegion);
+        serializer.serialize(conservedRegion);
         br.close();
     }
 }

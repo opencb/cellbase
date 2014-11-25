@@ -50,6 +50,7 @@ public abstract class CellBaseSerializer {
     public abstract void serialize(ConservedRegionChunk conservedRegionChunk);
 
     public abstract void serialize(Object object);
+
     public abstract void close();
 
 }

@@ -39,7 +39,7 @@ public class ClinVarParser extends CellBaseParser{
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 ClinvarPublicSet clinvarPublicSet = buildClinvarPublicSet(publicSet);
                 if (clinvarPublicSet != null) {
-                    serialize(clinvarPublicSet);
+                    serializer.serialize(clinvarPublicSet);
                     serializedClinvarObjects++;
                 }
                 clinvarRecordsParsed++;

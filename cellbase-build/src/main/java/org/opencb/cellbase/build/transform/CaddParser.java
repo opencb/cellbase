@@ -43,12 +43,12 @@ public class CaddParser extends CellBaseParser{
                     caddVariant.addCaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
                 } else {
                     if (caddVariant != null) {
-                        serialize(caddVariant);
+                        serializer.serialize(caddVariant);
                     }
                     caddVariant = createCaddVariant(fields);
                 }
             }
-            serialize(caddVariant);
+            serializer.serialize(caddVariant);
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
         } catch (IOException ex) {

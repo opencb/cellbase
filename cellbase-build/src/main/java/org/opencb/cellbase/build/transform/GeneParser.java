@@ -20,36 +20,37 @@ public class GeneParser extends CellBaseParser {
 
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
-    private Path geneDirectoryPath;
-    private Path genomeSequenceDir;
+
+    private Path gtfFile;
+    private Path geneDescriptionFile;
+    private Path xrefsFile;
+    private Path uniprotIdMappingFile;
+    private Path tfbsFile;
+    private Path mirnaFile;
+    private Path genomeSequenceFilePath;
 
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceDir, CellBaseSerializer serializer) {
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseSerializer serializer) {
+        this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),  geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), genomeSequenceFastaFile, serializer);
+        getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
+
+    }
+
+    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath, CellBaseSerializer serializer) {
         super(serializer);
-        this.geneDirectoryPath = geneDirectoryPath;
-        this.genomeSequenceDir = genomeSequenceDir;
+        this.gtfFile = gtfFile;
+        this.geneDescriptionFile = geneDescriptionFile;
+        this.xrefsFile = xrefsFile;
+        this.uniprotIdMappingFile = uniprotIdMappingFile;
+        this.tfbsFile = tfbsFile;
+        this.mirnaFile = mirnaFile;
+        this.genomeSequenceFilePath = genomeSequenceFilePath;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
     }
 
-    @Override
-    public void parse() {
-        Path gtfFile = null;
-        for (String fileName : geneDirectoryPath.toFile().list()) {
-            if (fileName.endsWith(".gtf") || fileName.endsWith(".gtf.gz")) {
-                gtfFile = geneDirectoryPath.resolve(fileName);
-                break;
-            }
-        }
-        try {
-            parse(gtfFile, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"), geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), genomeSequenceDir);
-        } catch (IOException | NoSuchMethodException | FileFormatException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void parse(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath)
+    public void parse()
             throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
         Files.exists(gtfFile);
 
@@ -176,7 +177,7 @@ public class GeneParser extends CellBaseParser {
                 // gene object can only be null the first time
                 if (gene != null) { // genes.size()>0
                     logger.debug("Serializing gene {}", geneId);
-                    serialize(gene);
+                    serializer.serialize(gene);
                 }
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
@@ -374,7 +375,7 @@ public class GeneParser extends CellBaseParser {
         }
 
         // last gene must be serialized
-        serialize(gene);
+        serializer.serialize(gene);
 
         // cleaning
         gtfReader.close();
@@ -817,6 +818,15 @@ public class GeneParser extends CellBaseParser {
         @Override
         public int compare(Object exon1, Object exon2) {
             return ((Exon) exon1).getStart() - ((Exon) exon2).getStart();
+        }
+    }
+
+    private void getGtfFileFromGeneDirectoryPath(Path geneDirectoryPath) {
+        for (String fileName : geneDirectoryPath.toFile().list()) {
+            if (fileName.endsWith(".gtf") || fileName.endsWith(".gtf.gz")) {
+                gtfFile = geneDirectoryPath.resolve(fileName);
+                break;
+            }
         }
     }
 }

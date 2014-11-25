@@ -94,7 +94,7 @@ public class MutationParser extends CellBaseParser {
                         for (int i = chunkStart; i <= chunkEnd; i++) {
                             mutation.getChunkIds().add(mutation.getChromosome() + "_" + i + "_" + chunkIdSuffix);
                         }
-                        serialize(mutation);
+                        serializer.serialize(mutation);
                     }
                 }
             }

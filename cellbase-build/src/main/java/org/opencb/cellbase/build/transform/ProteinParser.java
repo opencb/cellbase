@@ -55,7 +55,7 @@ public class ProteinParser extends CellBaseParser {
                         entryOrganism = iter.next().getValue();
 //                        if(entryOrganism.contains(species)) {
                         if (entryOrganism.equals(species)) {
-                            serialize(entry);
+                            serializer.serialize(entry);
                         }
                     }
                 }

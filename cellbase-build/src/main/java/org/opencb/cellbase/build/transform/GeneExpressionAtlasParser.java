@@ -43,7 +43,7 @@ public class GeneExpressionAtlasParser extends CellBaseParser  {
 
             Collection <GeneExpressionAtlas> allGeneAtlasRecords = geneAtlasMap.values();
             for (GeneExpressionAtlas one_atlas_gene : allGeneAtlasRecords) {
-                serialize(one_atlas_gene);
+                serializer.serialize(one_atlas_gene);
 
             }
 

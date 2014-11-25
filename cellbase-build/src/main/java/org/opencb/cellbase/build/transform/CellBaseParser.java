@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class CellBaseParser {
 
-    private CellBaseSerializer serializer;
+    protected CellBaseSerializer serializer;
 
     protected Logger logger;
 
@@ -18,14 +18,9 @@ public abstract class CellBaseParser {
 
         this.serializer = serializer;
         //this.serializer.open();
-
     }
 
     public abstract void parse() throws Exception;
-
-    protected void serialize(Object data) {
-        this.serializer.serialize(data);
-    }
 
     public void disconnect() {
         try {

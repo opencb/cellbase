@@ -303,22 +303,21 @@ public class CellBaseMain {
         String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
         String mirnaFile = commandLine.getOptionValue("mirna-file", "");
 
-        // TODO: should use only parse method
-        GeneParser geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile), serializer);
+        GeneParser geneParser;
         if (geneFilesDir != null && !geneFilesDir.equals("")) {
-            geneParser.parse();
+            geneParser = new GeneParser(Paths.get(geneFilesDir), Paths.get(genomeFastaFile), serializer);
         } else {
-            geneParser.parse(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile));
+            geneParser = new GeneParser(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile), serializer);
         }
+        geneParser.parse();
         geneParser.disconnect();
-//                    }
     }
 
     private static void buildGenomeSequence(Path outputPath) throws Exception {
         logger.info("Processing genome-sequence...");
         String fastaFile = commandLine.getOptionValue("fasta-file");
         if (fastaFile != null && Files.exists(Paths.get(fastaFile))) {
-            DefaultJsonSerializer gsfpSerializer = new DefaultJsonSerializer(outputPath.resolve("genome_sequence.json"));
+            DefaultJsonSerializer gsfpSerializer = new DefaultJsonSerializer(outputPath, Paths.get("genome_sequence.json"));
             GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(Paths.get(fastaFile), gsfpSerializer);
             genomeSequenceFastaParser.parse();
             genomeSequenceFastaParser.disconnect();

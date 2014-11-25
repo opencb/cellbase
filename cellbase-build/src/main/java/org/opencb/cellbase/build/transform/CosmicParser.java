@@ -60,7 +60,7 @@ public class CosmicParser extends CellBaseParser {
                 Cosmic cosmic = buildCosmic(line);
 
                 if (parseChromosomeStartAndEnd(cosmic) && parseVariant(cosmic))  {
-                    serialize(cosmic);
+                    serializer.serialize(cosmic);
                 } else {
                     ignoredCosmicLines++;
                 }

@@ -35,7 +35,7 @@ public class DisGeNetParser  extends CellBaseParser {
             logger.info("Seializing parsed variants ...");
             Collection <DisGeNet> allDisGeNetRecords = disGeNetMap.values();
             for (DisGeNet disGeNetRecord : allDisGeNetRecords){
-                serialize(disGeNetRecord);
+                serializer.serialize(disGeNetRecord);
             }
             logger.info("Done");
             this.printSummary(processedDisGeNetLines, allDisGeNetRecords.size());

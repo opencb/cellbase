@@ -241,7 +241,7 @@ public class InteractionParser extends CellBaseParser{
                 interaction.setInteractorB(interactorB);
 
 //            intactInteractions.add(interaction);
-                serialize(interaction);
+                serializer.serialize(interaction);
             }
         }
     }

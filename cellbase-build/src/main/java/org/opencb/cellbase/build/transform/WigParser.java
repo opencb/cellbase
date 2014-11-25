@@ -81,7 +81,7 @@ public class WigParser extends CellBaseParser{
             if (!Objects.equals(previous_chunk, position_chunk)) {
                 previous_chunk = position_chunk;
                 if (newConservedRegion != null) {
-                    serialize(newConservedRegion);
+                    serializer.serialize(newConservedRegion);
                 }
 
                 //Initialize a new chunk
@@ -99,7 +99,7 @@ public class WigParser extends CellBaseParser{
 
         }
 
-        serialize(newConservedRegion);
+        serializer.serialize(newConservedRegion);
         br.close();
     }
 

@@ -135,7 +135,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
 //                        genericFeature.setSequenceName(genericFeature.getSequenceName().replace("chr", ""));
                     }
 //                    bw.write(gson.toJson(genericFeature) + "\n");
-                    serialize(genericFeature);
+                    serializer.serialize(genericFeature);
                 }
 //				for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
 //					bw.write(gson.toJson(result.getValue()) + "\n");
