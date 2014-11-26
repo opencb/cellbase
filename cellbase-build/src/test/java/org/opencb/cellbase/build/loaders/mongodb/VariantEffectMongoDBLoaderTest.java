@@ -5,7 +5,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.opencb.biodata.models.variant.effect.*;
+import org.opencb.biodata.models.variant.annotation.*;
 import org.opencb.biodata.models.variation.ConsequenceType;
 
 import java.net.UnknownHostException;

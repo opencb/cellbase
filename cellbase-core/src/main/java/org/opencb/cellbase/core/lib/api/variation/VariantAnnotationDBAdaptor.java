@@ -11,10 +11,8 @@ import java.util.List;
  */
 public interface VariantAnnotationDBAdaptor {
 
-    @Deprecated
     public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options);
 
-    @Deprecated
     public List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options);
 
 
