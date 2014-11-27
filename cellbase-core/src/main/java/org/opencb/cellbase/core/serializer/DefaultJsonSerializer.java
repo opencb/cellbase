@@ -36,7 +36,6 @@ import java.util.zip.GZIPOutputStream;
  */
 public class DefaultJsonSerializer extends CellBaseSerializer {
 
-    private final boolean includeEmtpyValues;
     private Map<String, BufferedWriter> bufferedWriterMap;
 
     private BufferedWriter genomeSequenceBufferedWriter;
@@ -52,26 +51,16 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     private ObjectMapper jsonObjectMapper;
     private ObjectWriter jsonObjectWriter;
 
-    private Path outputFileName;
     private JsonGenerator generator;
 
 
     public DefaultJsonSerializer(Path outdirPath) throws IOException {
-        this(outdirPath, true);
-    }
-
-    public DefaultJsonSerializer(Path outdirPath, boolean includeEmptyValues) throws IOException {
-        this(outdirPath, null, includeEmptyValues);
+        this(outdirPath, null);
     }
 
     public DefaultJsonSerializer(Path outdirPath, Path outputFileName) throws IOException {
-        this(outdirPath, outputFileName, true);
-    }
-
-    public DefaultJsonSerializer(Path outdirPath, Path outputFileName, boolean includeEmptyValues) throws IOException {
         super(outdirPath);
         this.outputFileName = outputFileName;
-        this.includeEmtpyValues = includeEmptyValues;
         init();
     }
 
@@ -245,10 +234,10 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             if (generator == null) {
                 JsonFactory jsonFactory = new JsonFactory();
                 jsonObjectMapper = new ObjectMapper(jsonFactory);
-                if (!includeEmtpyValues) {
+                if (!serializeEmptyValues) {
                     jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
                 }
-                gzipOutputStream = new GZIPOutputStream(new FileOutputStream(outdirPath.resolve(outputFileName).toAbsolutePath().toString() + ".json.gz"));
+                gzipOutputStream = new GZIPOutputStream(new FileOutputStream(outdirPath.resolve(outputFileName).toAbsolutePath().toString() + ".gz"));
                 generator = jsonFactory.createGenerator(gzipOutputStream);
             }
             generator.writeObject(elem);

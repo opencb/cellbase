@@ -23,11 +23,16 @@ import java.nio.file.Path;
 public abstract class CellBaseSerializer {
 
     protected Path outdirPath;
+    protected Path outputFileName;
+    protected boolean serializeEmptyValues;
 
     public CellBaseSerializer(Path outdirPath) {
         this.outdirPath = outdirPath;
     }
 
+    public void setOutputFileName(Path outputFileName) {
+        this.outputFileName = outputFileName;
+    }
 
     public abstract void serialize(Gene gene);
 
@@ -53,4 +58,7 @@ public abstract class CellBaseSerializer {
 
     public abstract void close();
 
+    public void setSerializeEmptyValues(boolean serializeEmptyValues) {
+        this.serializeEmptyValues = serializeEmptyValues;
+    }
 }

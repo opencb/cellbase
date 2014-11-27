@@ -23,17 +23,18 @@ import java.nio.file.Path;
  * To change this template use File | Settings | File Templates.
  */
 
-public class DrugParser {
+public class DrugParser extends CellBaseParser{
 
-    private CellBaseSerializer serializer;
+    private final Path drugbankPath;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public DrugParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+    public DrugParser(Path drugbankPath, CellBaseSerializer serializer) {
+        super(serializer);
+        this.drugbankPath = drugbankPath;
     }
 
-    public void parse(Path drugbankPath) throws JAXBException, IOException {
+    public void parse() throws JAXBException, IOException {
 //
 ////        System.out.println("Number of drugs: "+ drugs.getDrug().size());
 ////        System.out.println("Number of partners: "+ drugs.getPartners().getPartner().size());

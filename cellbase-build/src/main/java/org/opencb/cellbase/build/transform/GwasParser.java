@@ -204,10 +204,18 @@ public class GwasParser extends CellBaseParser {
         logger.info("Serialized " + formatter.format(variantMap.size()) + " variants");
         logger.info(formatter.format(gwasLinesNotFoundInDbsnp) + " gwas lines ignored because variant not found in dbsnp");
         logger.info(formatter.format(malformedGwasLines) + " gwas lines ignored because are malformed");
-        logger.info("\t - " + formatter.format(malformedStartRecords) + " because 'start' is not a valid integer");
-        logger.info("\t - " + formatter.format(malformedPValueRecords) + " because 'pValue' is not a valid float");
-        logger.info("\t - " + formatter.format(malformedPValueMLogRecords) + " because 'pValueMlog' is not a valid float");
-        logger.info("\t - " + formatter.format(malformedRiskAlleleFrequencyRecords) + " because 'risk allele frequency' is not a valid float");
+        if (malformedStartRecords != 0) {
+            logger.info("\t - " + formatter.format(malformedStartRecords) + " because 'start' is not a valid integer");
+        }
+        if (malformedPValueRecords != 0) {
+            logger.info("\t - " + formatter.format(malformedPValueRecords) + " because 'pValue' is not a valid float");
+        }
+        if (malformedPValueMLogRecords != 0) {
+            logger.info("\t - " + formatter.format(malformedPValueMLogRecords) + " because 'pValueMlog' is not a valid float");
+        }
+        if (malformedRiskAlleleFrequencyRecords != 0) {
+            logger.info("\t - " + formatter.format(malformedRiskAlleleFrequencyRecords) + " because 'risk allele frequency' is not a valid float");
+        }
     }
 
     private boolean getRefAndAltFromDbsnp(Gwas gwasVO, TabixReader dbsnpTabixReader)  {
