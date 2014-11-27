@@ -67,7 +67,7 @@ public class CellBaseMain {
         options.addOption(OptionFactory.createOption(COSMIC_FILE_OPTION, "Input COSMIC file", false));
 
         // Drug options
-        options.addOption(OptionFactory.createOption("drug-file", "Output directory to save the JSON result", false));
+        options.addOption(OptionFactory.createOption(DRUG_FILE_OPTION, "Output directory to save the JSON result", false));
 
         // ClinVar
         options.addOption(OptionFactory.createOption(CLINVAR_FILE_OPTION, "Input Clinvar XML file", false));
