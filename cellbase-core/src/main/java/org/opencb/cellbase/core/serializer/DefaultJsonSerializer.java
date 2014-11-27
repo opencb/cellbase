@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 
 import java.util.zip.GZIPOutputStream;
@@ -36,23 +35,15 @@ import java.util.zip.GZIPOutputStream;
  */
 public class DefaultJsonSerializer extends CellBaseSerializer {
 
-    private Map<String, BufferedWriter> bufferedWriterMap;
+    protected Map<String, BufferedWriter> writers;
 
-    private BufferedWriter genomeSequenceBufferedWriter;
-    private BufferedWriter variationPhenotypeAnnotationBufferedWriter;
-    private BufferedWriter mutationBufferedWriter;
-    private BufferedWriter ppiBufferedWriter;
-    
     // variation and conservation data are too big to be stored in a single file, data is split in different files
-    private Map<String, BufferedWriter> variationBufferedWriter;
+    protected Map<String, BufferedWriter> variationWriters;
     private Map<String, JsonGenerator> conservedRegionJsonWriters;
-    
-    private GZIPOutputStream gzipOutputStream;
+
     private ObjectMapper jsonObjectMapper;
-    private ObjectWriter jsonObjectWriter;
-
+    protected ObjectWriter jsonObjectWriter;
     private JsonGenerator generator;
-
 
     public DefaultJsonSerializer(Path outdirPath) throws IOException {
         this(outdirPath, null);
@@ -64,47 +55,40 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         init();
     }
 
-    private void init() throws IOException {
+    protected void init() throws IOException {
         FileUtils.checkPath(outdirPath);
 
-        bufferedWriterMap = new Hashtable<>(50);
-        variationBufferedWriter = new HashMap<>(40);
+        writers = new Hashtable<>(50);
+        variationWriters = new HashMap<>(40);
+        conservedRegionJsonWriters = new HashMap<>(40);
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-//        jsonObjectMapper.setPropertyNamingStrategy(new GeneNamingStrategy());
-
         jsonObjectWriter = jsonObjectMapper.writer();
-//        PropertyNamingStrategy propertyNamingStrategy = new PropertyNamingStrategy() {
-//            @Override
-//            public String nameForField(MapperConfig<?> mapperConfig, AnnotatedField annotatedField, String s) {
-//                return super.nameForField(mapperConfig, annotatedField, s);    //To change body of overridden methods use File | Settings | File Templates.
-//            }
-//        };
     }
 
 
     @Override
     public void serialize(GenomeSequenceChunk genomeSequenceChunk) {
         try {
-            if(genomeSequenceBufferedWriter == null) {
-                genomeSequenceBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("genome_sequence.json"), Charset.defaultCharset());
+            if(writers.get("genome_sequence") == null) {
+                writers.put("genome_sequence", Files.newBufferedWriter(outdirPath.resolve("genome_sequence.json"), Charset.defaultCharset()));
             }
-            genomeSequenceBufferedWriter.write(jsonObjectWriter.writeValueAsString(genomeSequenceChunk));
-            genomeSequenceBufferedWriter.newLine();
+            writers.get("genome_sequence").write(jsonObjectWriter.writeValueAsString(genomeSequenceChunk));
+            writers.get("genome_sequence").newLine();
         } catch (IOException e) {
             e.printStackTrace();
-        };
+        }
     }
 
     @Override
     public void serialize(Gene gene) {
         try {
-            if(bufferedWriterMap.get("gene") == null) {
-                bufferedWriterMap.put("gene", Files.newBufferedWriter(outdirPath.resolve("gene.json"), Charset.defaultCharset()));
+            if(writers.get("gene") == null) {
+                writers.put("gene", Files.newBufferedWriter(outdirPath.resolve("gene.json"), Charset.defaultCharset()));
             }
-            bufferedWriterMap.get("gene").write(jsonObjectWriter.writeValueAsString(gene));
-            bufferedWriterMap.get("gene").newLine();
+            writers.get("gene").write(jsonObjectWriter.writeValueAsString(gene));
+            writers.get("gene").newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -115,11 +99,11 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     @Override
     public void serialize(Entry protein) {
         try {
-            if(bufferedWriterMap.get("protein") == null) {
-                bufferedWriterMap.put("protein", Files.newBufferedWriter(outdirPath.resolve("protein.json"), Charset.defaultCharset()));
+            if(writers.get("protein") == null) {
+                writers.put("protein", Files.newBufferedWriter(outdirPath.resolve("protein.json"), Charset.defaultCharset()));
             }
-            bufferedWriterMap.get("protein").write(jsonObjectWriter.writeValueAsString(protein));
-            bufferedWriterMap.get("protein").newLine();
+            writers.get("protein").write(jsonObjectWriter.writeValueAsString(protein));
+            writers.get("protein").newLine();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -130,13 +114,11 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     @Override
     public void serialize(Variation variation) {
         try {
-            if(variationBufferedWriter.get(variation.getChromosome()) == null) {
-                variationBufferedWriter.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
+            if(variationWriters.get(variation.getChromosome()) == null) {
+                variationWriters.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
             }
-            variationBufferedWriter.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
-            variationBufferedWriter.get(variation.getChromosome()).newLine();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            variationWriters.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
+            variationWriters.get(variation.getChromosome()).newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -145,13 +127,11 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     @Override
     public void serialize(VariantAnnotation variantAnnotation) {
         try {
-            if(variationBufferedWriter.get(variantAnnotation.getChromosome()) == null) {
-                variationBufferedWriter.put(variantAnnotation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variant_effect_chr" + variantAnnotation.getChromosome() + ".json"), Charset.defaultCharset()));
+            if(variationWriters.get(variantAnnotation.getChromosome()) == null) {
+                variationWriters.put(variantAnnotation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variant_effect_chr" + variantAnnotation.getChromosome() + ".json"), Charset.defaultCharset()));
             }
-            variationBufferedWriter.get(variantAnnotation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variantAnnotation));
-            variationBufferedWriter.get(variantAnnotation.getChromosome()).newLine();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            variationWriters.get(variantAnnotation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variantAnnotation));
+            variationWriters.get(variantAnnotation.getChromosome()).newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -160,52 +140,50 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     @Override
     public void serialize(VariationPhenotypeAnnotation variationPhenotypeAnnotation) {
         try {
-            if(variationPhenotypeAnnotationBufferedWriter == null) {
-                variationPhenotypeAnnotationBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("variation_phenotype_annotation.json"), Charset.defaultCharset());
+            if(writers.get("variationPhenotype") == null) {
+                writers.put("variationPhenotype", Files.newBufferedWriter(outdirPath.resolve("variation_phenotype_annotation.json"), Charset.defaultCharset()));
             }
-            variationPhenotypeAnnotationBufferedWriter.write(jsonObjectWriter.writeValueAsString(variationPhenotypeAnnotation));
-            variationPhenotypeAnnotationBufferedWriter.newLine();
+            writers.get("variationPhenotype").write(jsonObjectWriter.writeValueAsString(variationPhenotypeAnnotation));
+            writers.get("variationPhenotype").newLine();
         } catch (IOException e) {
             e.printStackTrace();
-        };
+        }
     }
 
     @Override
     public void serialize(Mutation mutation) {
         try {
-            if(mutationBufferedWriter == null) {
-                mutationBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("mutation.json"), Charset.defaultCharset());
+            if(writers.get("mutation") == null) {
+                writers.put("mutation", Files.newBufferedWriter(outdirPath.resolve("mutation.json"), Charset.defaultCharset()));
             }
-            mutationBufferedWriter.write(jsonObjectWriter.writeValueAsString(mutation));
-            mutationBufferedWriter.newLine();
+            writers.get("mutation").write(jsonObjectWriter.writeValueAsString(mutation));
+            writers.get("mutation").newLine();
         } catch (IOException e) {
             e.printStackTrace();
-        };
+        }
     }
 
     @Override
     public void serialize(Interaction interaction) {
         try {
-            if(ppiBufferedWriter == null) {
-                ppiBufferedWriter = Files.newBufferedWriter(outdirPath.resolve("protein_protein_interaction.json"), Charset.defaultCharset());
+            if(writers.get("ppi") == null) {
+                writers.put("ppi", Files.newBufferedWriter(outdirPath.resolve("protein_protein_interaction.json"), Charset.defaultCharset()));
             }
-            ppiBufferedWriter.write(jsonObjectWriter.writeValueAsString(interaction));
-            ppiBufferedWriter.newLine();
+            writers.get("ppi").write(jsonObjectWriter.writeValueAsString(interaction));
+            writers.get("ppi").newLine();
         } catch (IOException e) {
             e.printStackTrace();
-        };
+        }
     }
 
     @Override
     public void serialize(GenericFeature genericFeature) {
         try {
-            if(bufferedWriterMap.get("regulatory") == null) {
-                bufferedWriterMap.put("regulatory", Files.newBufferedWriter(outdirPath.resolve("regulatory_region.json"), Charset.defaultCharset()));
+            if(writers.get("regulatory") == null) {
+                writers.put("regulatory", Files.newBufferedWriter(outdirPath.resolve("regulatory_region.json"), Charset.defaultCharset()));
             }
-            bufferedWriterMap.get("regulatory").write(jsonObjectWriter.writeValueAsString(genericFeature));
-            bufferedWriterMap.get("regulatory").newLine();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            writers.get("regulatory").write(jsonObjectWriter.writeValueAsString(genericFeature));
+            writers.get("regulatory").newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -216,9 +194,9 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         try {
             if (conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()) == null) {
                 JsonFactory conservedRegionJsonFactory = new JsonFactory();
-                GZIPOutputStream gzipOutputStream =
+                GZIPOutputStream gzOutputStream =
                         new GZIPOutputStream(new FileOutputStream(outdirPath.resolve("conservation_" + conservedRegionChunk.getChromosome() + ".json.gz").toAbsolutePath().toString()));
-                JsonGenerator generator = conservedRegionJsonFactory.createGenerator(gzipOutputStream);
+                JsonGenerator generator = conservedRegionJsonFactory.createGenerator(gzOutputStream);
                 conservedRegionJsonWriters.put(conservedRegionChunk.getChromosome(), generator);
             }
             conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).writeObject(conservedRegionChunk);
@@ -237,8 +215,8 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
                 if (!serializeEmptyValues) {
                     jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
                 }
-                gzipOutputStream = new GZIPOutputStream(new FileOutputStream(outdirPath.resolve(outputFileName).toAbsolutePath().toString() + ".gz"));
-                generator = jsonFactory.createGenerator(gzipOutputStream);
+                GZIPOutputStream gzOutputStream = new GZIPOutputStream(new FileOutputStream(outdirPath.resolve(outputFileName).toAbsolutePath().toString() + ".gz"));
+                generator = jsonFactory.createGenerator(gzOutputStream);
             }
             generator.writeObject(elem);
             generator.writeRaw('\n');
@@ -250,40 +228,8 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
 
     @Override
     public void close() {
-        String id;
-        try {
-
-            closeBufferedWriter(genomeSequenceBufferedWriter);
-            closeBufferedWriter(variationPhenotypeAnnotationBufferedWriter);
-            closeBufferedWriter(mutationBufferedWriter);
-            closeBufferedWriter(ppiBufferedWriter);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Iterator<String> iter = bufferedWriterMap.keySet().iterator();
-        while(iter.hasNext()) {
-            id = iter.next();
-            if(bufferedWriterMap.get(id) != null) {
-                try {
-                    bufferedWriterMap.get(id).close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        iter = variationBufferedWriter.keySet().iterator();
-        while(iter.hasNext()) {
-            id = iter.next();
-            if(variationBufferedWriter.get(id) != null) {
-                try {
-                    variationBufferedWriter.get(id).close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        closeBufferedWriters();
+        closeVariationWriters();
 
         if (generator != null) {
             try {
@@ -297,6 +243,26 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
         closeConservationWriters();
     }
 
+    private void closeBufferedWriters() {
+        for (BufferedWriter bw : writers.values()) {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void closeVariationWriters() {
+        for (BufferedWriter bw : variationWriters.values()) {
+            try {
+                bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void closeConservationWriters() {
         if (conservedRegionJsonWriters != null) {
             try {
@@ -307,12 +273,6 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private void closeBufferedWriter(BufferedWriter bufferedWriter) throws IOException {
-        if(bufferedWriter != null) {
-            bufferedWriter.close();
         }
     }
 }
