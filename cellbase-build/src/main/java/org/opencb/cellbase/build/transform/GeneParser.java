@@ -284,8 +284,8 @@ public class GeneParser extends CellBaseParser {
                         exon.setGenomicCodingEnd(gtf.getEnd());
 
                         // cDNA coordinates
-                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
+                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
 
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
@@ -331,7 +331,7 @@ public class GeneParser extends CellBaseParser {
                         }
                         // only first time
                         if (transcript.getCdnaCodingStart() == 0) {
-                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
                         }
                     }
 
@@ -347,22 +347,22 @@ public class GeneParser extends CellBaseParser {
                     if (exon.getStrand().equals("+")) {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingEnd(gtf.getEnd());
-                        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
                         transcript.setGenomicCodingEnd(gtf.getEnd());
-                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
                         transcript.setCdsLength(cds);
                     } else {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingStart(gtf.getStart());
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
                         transcript.setGenomicCodingStart(gtf.getStart());
-                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
                         transcript.setCdsLength(cds);
                     }
                 }
