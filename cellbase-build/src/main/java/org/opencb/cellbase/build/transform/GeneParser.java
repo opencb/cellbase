@@ -331,7 +331,7 @@ public class GeneParser extends CellBaseParser {
                         }
                         // only first time
                         if (transcript.getCdnaCodingStart() == 0) {
-                            transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
+                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
                         }
                     }
 
