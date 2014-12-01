@@ -19,12 +19,18 @@ import java.text.NumberFormat;
  */
 public class ClinVarParser extends CellBaseParser{
 
-    public static final String GRCH37_ASSEMBLY = "GRCh37";
+    private static final String ASSEMBLY_PREFIX = "GRCh";
+    public static final String GRCH37_ASSEMBLY = "37";
+    public static final String GRCH38_ASSEMBLY = "38";
+
+    private final String selectedAssembly;
+
     private Path clinvarXmlFile;
 
-    public ClinVarParser(Path clinvarXmlFile, CellBaseSerializer serializer) {
+    public ClinVarParser(Path clinvarXmlFile, String assembly, CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXmlFile = clinvarXmlFile;
+        this.selectedAssembly = ASSEMBLY_PREFIX + assembly;
     }
 
     public void parse() {
@@ -35,7 +41,7 @@ public class ClinVarParser extends CellBaseParser{
 
             long serializedClinvarObjects = 0,
                     clinvarRecordsParsed = 0;
-            logger.info("Serializing clinvar records that have Sequence Location for Assembly " + GRCH37_ASSEMBLY + " ...");
+            logger.info("Serializing clinvar records that have Sequence Location for Assembly " + selectedAssembly + " ...");
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 ClinvarPublicSet clinvarPublicSet = buildClinvarPublicSet(publicSet);
                 if (clinvarPublicSet != null) {
@@ -60,7 +66,7 @@ public class ClinVarParser extends CellBaseParser{
         logger.info("Processed " + formatter.format(clinvarRecordsParsed) + " clinvar records");
         logger.info("Serialized " + formatter.format(serializedClinvarObjects) + " '" + ClinvarPublicSet.class.getName() + "' objects");
         if (clinvarRecordsParsed != serializedClinvarObjects) {
-            logger.info(formatter.format(clinvarRecordsParsed - serializedClinvarObjects) + " clinvar records not serialized because don't have complete Sequence Location for assembly " + GRCH37_ASSEMBLY);
+            logger.info(formatter.format(clinvarRecordsParsed - serializedClinvarObjects) + " clinvar records not serialized because don't have complete Sequence Location for assembly " + selectedAssembly);
         }
     }
 
@@ -91,7 +97,7 @@ public class ClinVarParser extends CellBaseParser{
     }
 
     private boolean validLocation(SequenceLocationType location) {
-        return location.getAssembly().startsWith(GRCH37_ASSEMBLY) && 
+        return location.getAssembly().startsWith(selectedAssembly) &&
                 location.getReferenceAllele() != null && 
                 location.getAlternateAllele() != null &&
                 location.getStart() != null &&
@@ -101,34 +107,4 @@ public class ClinVarParser extends CellBaseParser{
     private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException {
         return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v19);
     }
-
-
-//    public void parse(Path uniprotFilesDir) throws IOException {
-//        Files.exists(uniprotFilesDir);
-//        objectMapper = new ObjectMapper();
-//        ClinvarParser clinVarParser = new ClinvarParser();
-//        try {
-//            File[] files = uniprotFilesDir.toFile().listFiles(new FilenameFilter() {
-//                @Override
-//                public boolean accept(File dir, String name) {
-//                    return name.endsWith(".xml");
-//                }
-//            });
-//
-//            for(File file: files) {
-////                System.out.println("processing... "+file.toString());
-//                JAXBElement<ReleaseType> uniprot =
-//                for(PublicSetType publicSetType: uniprot.getValue().getClinVarSet()) {
-//                    System.out.println(objectMapper.writeValueAsString(publicSetType));
-////                return;
-//                }
-//            }
-//
-//        } catch (JAXBException e) {
-//            e.printStackTrace();
-//        } finally {
-////			pw.close();
-//        }
-//
-//    }
 }

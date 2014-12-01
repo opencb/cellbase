@@ -148,7 +148,11 @@ public class CellBaseParserFactory {
         Path clinvarFile = getInputFileFromCommandLine(CellBaseMain.CLINVAR_FILE_OPTION);
         serializer.setOutputFileName(Paths.get("clinvar.json"));
         serializer.setSerializeEmptyValues(false);
-        return new ClinVarParser(clinvarFile, serializer);
+        String assembly = getMandatoryOptionValue(CellBaseMain.ASSEMBLY_OPTION);
+        if (!assembly.equals(ClinVarParser.GRCH37_ASSEMBLY) && !assembly.equals(ClinVarParser.GRCH38_ASSEMBLY)) {
+            throw new ParseException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY);
+        }
+        return new ClinVarParser(clinvarFile, assembly, serializer);
     }
 
     private static Path getInputFileFromCommandLine(String option) throws ParseException {

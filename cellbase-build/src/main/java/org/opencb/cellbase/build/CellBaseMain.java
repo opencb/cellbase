@@ -27,6 +27,7 @@ public class CellBaseMain {
     public static final String DBSNP_FILE_OPTION = "dbsnp-file";
     public static final String CHUNK_SIZE_OPTION = "chunksize";
     public static final String DRUG_FILE_OPTION = "drug-file";
+    public static final String ASSEMBLY_OPTION = "assembly";
     private static Options options;
     private static CommandLine commandLine;
     private static CommandLineParser parser;
@@ -71,6 +72,7 @@ public class CellBaseMain {
 
         // ClinVar
         options.addOption(OptionFactory.createOption(CLINVAR_FILE_OPTION, "Input Clinvar XML file", false));
+        options.addOption(OptionFactory.createOption(ASSEMBLY_OPTION, "Human Genome Assembly. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY, false));
 
         // gwas
         options.addOption(OptionFactory.createOption(GWAS_FILE_OPTION, "Input gwas file", false));
