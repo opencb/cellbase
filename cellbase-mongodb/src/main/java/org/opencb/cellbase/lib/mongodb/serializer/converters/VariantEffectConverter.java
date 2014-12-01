@@ -6,7 +6,7 @@ import com.google.common.collect.HashBiMap;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.opencb.biodata.models.variant.effect.*;
+import org.opencb.biodata.models.variant.annotation.*;
 import org.opencb.cellbase.core.serializer.CellBaseTypeConverter;
 
 import java.util.*;

@@ -1,7 +1,9 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -11,6 +13,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,6 +36,7 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
 
         List<GenomicVariant> genomicVariantList = GenomicVariant.parseVariants(variants);
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
+
 //        TabixReader currentTabix = null;
 //        String line = "";
 //        String document = "";
@@ -63,6 +67,18 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
 //        }
 //        return Response.ok(line);
         return createOkResponse(variantAnnotationDBAdaptor.getAllEffectsByVariantList(genomicVariantList, queryOptions));
+    }
+
+    @GET
+    @Path("/{variants}/consequencetype")
+    public Response getAllConsequenceTypesByVariantList(@PathParam("variants") String variants,
+                                             @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
+
+        List<GenomicVariant> genomicVariantList = GenomicVariant.parseVariants(variants);
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
+
+
+        return createOkResponse(variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantList(genomicVariantList, queryOptions));
     }
 
 }

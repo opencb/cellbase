@@ -150,28 +150,6 @@ public class GenericRestWSServer implements IWSServer {
                         config.addSpeciesAlias(species, species);
                     }
                 }
-//                if(properties.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
-//                    // read all versions available
-//                    List<String> versionList = Splitter.on(",").splitToList(properties.getProperty("CELLBASE.AVAILABLE.VERSIONS"));
-//                    HashSet<String> currAvailableSet = new HashSet<String>();
-//                    if (versionList != null) {
-//                        for (String version : versionList) {
-//                            String versionKey = "CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES";
-//                            if (properties.containsKey(versionKey)) {
-//                                // read the species available for each version
-//                                List<String> speciesList = Splitter.on(",").splitToList(properties.getProperty(versionKey));
-//                                if (speciesList != null) {
-//                                    for (String species : speciesList) {
-//                                        currAvailableSet.add(species.trim());
-//                                    }
-//                                }
-//                            }
-//                            config.addAvailableVersionSpeciesMap(version.trim(), currAvailableSet);
-//                            currAvailableSet.clear();
-//
-//                        }
-//                    }
-//                }
             }
 
         } catch (IOException e) {

@@ -4,7 +4,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.effect.*;
+import org.opencb.biodata.models.variant.annotation.*;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.utils.CryptoUtils;
 import org.opencb.datastore.core.QueryResult;

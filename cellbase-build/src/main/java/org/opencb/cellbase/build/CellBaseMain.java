@@ -2,7 +2,7 @@ package org.opencb.cellbase.build;
 
 import org.apache.commons.cli.*;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.models.variant.effect.VariantEffect;
+import org.opencb.biodata.models.variant.annotation.VariantEffect;
 import org.opencb.cellbase.build.loaders.mongodb.VariantEffectMongoDBLoader;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.serializers.json.JsonSerializer;
