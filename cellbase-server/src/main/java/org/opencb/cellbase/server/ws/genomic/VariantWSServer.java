@@ -3,7 +3,6 @@ package org.opencb.cellbase.server.ws.genomic;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.common.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
@@ -97,7 +96,7 @@ public class VariantWSServer extends GenericRestWSServer {
         List<QueryResult> genomicVariantConsequenceTypes = null;
         VariantEffectDBAdaptor gv = null;
         try {
-            checkVersionAndSpecies();
+            checkParams();
 //			System.out.println("PAKO: "+ variants);
             genomicVariantList = GenomicVariant.parseVariants(variants);
             if (genomicVariantList != null && excludes != null) {
@@ -141,7 +140,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{phenotype}/phenotype")
     public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.assembly);
             return createOkResponse(va.getAllByPhenotype(phenotype,queryOptions));
         } catch (Exception e) {
@@ -165,7 +164,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     public Response getSnpPhenotypesByPosition(String variants, String outputFormat) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.assembly);
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             List<Position> positionList = new ArrayList<Position>(variantList.size());
@@ -197,7 +196,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     public Response getMutationPhenotypesByPosition(String variants, String outputFormat) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             List<Position> positionList = new ArrayList<Position>(variantList.size());

@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 
 public interface IWSServer {
 
-	public void checkVersionAndSpecies() throws VersionException, SpeciesException;
+	public void checkParams() throws VersionException, SpeciesException;
 		
 	public String stats();
 	

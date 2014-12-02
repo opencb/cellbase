@@ -29,4 +29,7 @@ public interface ClinVarDBAdaptor {
     public QueryResult getAllByRegion(Region region, QueryOptions options);
 
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+
+    public QueryResult getListAccessions(QueryOptions queryOptions);
+
 }

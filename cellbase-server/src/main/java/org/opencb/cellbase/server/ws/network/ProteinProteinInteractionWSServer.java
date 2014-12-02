@@ -14,7 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +41,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                               @DefaultValue("") @QueryParam("status") String status,
                               @DefaultValue("") @QueryParam("detectionMethod") String detectionMethod) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
             if(interactor != null && !interactor.equals("")) {
@@ -81,7 +80,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     @Path("/{interaction}/info")
     public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
             List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
@@ -98,7 +97,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     public Response getInteractorsByInteractionId(@PathParam("interaction") String interaction,
                                                   @DefaultValue("interactorA,interactorB") @QueryParam("include") String include) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
 //            queryOptions.put("include", Splitter.on(",").splitToList(include));

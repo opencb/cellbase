@@ -1,6 +1,8 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -16,10 +18,11 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 
 /**
- * Created by imedina on 26/09/14.
+ * @author imedina
  */
 @Path("/{version}/{species}/feature/clinvar")
-@Produces("text/plain")
+@Produces("application/json")
+@Api(value = "ClinVar", description = "ClinVar RESTful Web Services API")
 public class ClinVarWSServer extends GenericRestWSServer {
 
     public ClinVarWSServer(@PathParam("version") String version, @PathParam("species") String species,
@@ -29,14 +32,29 @@ public class ClinVarWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{clinVarAcc}/info")
-    public Response getByEnsemblId(@PathParam("clinVarAcc") String query) {
+    @ApiOperation(httpMethod = "GET", value = "Resource to get the ClinVar info from a list of accessions")
+    public Response getAllByAccessions(@PathParam("clinVarAcc") String query) {
         try {
-            checkVersionAndSpecies();
+            checkParams();
             ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinVarDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getByEnsemblId", e.toString());
+            return createErrorResponse("getAllByAccessions", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/listAcc")
+    @ApiOperation(httpMethod = "GET", value = "Resource to list all accessions")
+    public Response getAllListAccessions() {
+        try {
+            checkParams();
+            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinVarDBAdaptor.getListAccessions(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getAllListAccessions", e.toString());
         }
     }
 
