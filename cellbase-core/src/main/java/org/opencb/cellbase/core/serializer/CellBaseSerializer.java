@@ -8,6 +8,7 @@ import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
 
 import java.nio.file.Path;
@@ -22,11 +23,16 @@ import java.nio.file.Path;
 public abstract class CellBaseSerializer {
 
     protected Path outdirPath;
+    protected Path outputFileName;
+    protected boolean serializeEmptyValues;
 
     public CellBaseSerializer(Path outdirPath) {
         this.outdirPath = outdirPath;
     }
 
+    public void setOutputFileName(Path outputFileName) {
+        this.outputFileName = outputFileName;
+    }
 
     public abstract void serialize(Gene gene);
 
@@ -46,6 +52,13 @@ public abstract class CellBaseSerializer {
 
     public abstract void serialize(Interaction interaction);
 
+    public abstract void serialize(ConservedRegionChunk conservedRegionChunk);
+
+    public abstract void serialize(Object object);
+
     public abstract void close();
 
+    public void setSerializeEmptyValues(boolean serializeEmptyValues) {
+        this.serializeEmptyValues = serializeEmptyValues;
+    }
 }
