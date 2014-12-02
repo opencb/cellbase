@@ -1,6 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
-import org.opencb.biodata.formats.feature.RefseqAccession;
+import org.opencb.biodata.formats.feature.refseq.RefseqAccession;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.cellbase.build.transform.formats.clinical.ClinvarPublicSet;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureSetType;
