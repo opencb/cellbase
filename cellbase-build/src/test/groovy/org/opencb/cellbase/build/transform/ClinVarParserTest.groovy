@@ -25,7 +25,7 @@ class ClinVarParserTest extends Specification {
         serializer.serialize(_) >> { ClinvarPublicSet arg -> serializedVariants.add(arg) }
         def clinvarXmlFile = Paths.get(VariantEffectParserTest.class.getResource("/clinvar_v19_test.xml").toURI())
 
-        clinvarParser = new ClinVarParser(clinvarXmlFile, serializer)
+        clinvarParser = new ClinVarParser(clinvarXmlFile, ClinVarParser.GRCH37_ASSEMBLY, serializer)
     }
 
     def "Parse"() {

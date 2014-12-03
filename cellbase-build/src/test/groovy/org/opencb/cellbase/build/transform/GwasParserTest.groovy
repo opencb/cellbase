@@ -12,7 +12,7 @@ import java.nio.file.Paths
  */
 class GwasParserTest extends Specification {
 
-    static def serializedVariants
+    static List<Gwas> serializedVariants
 
     def setupSpec() {
         // gwas file containing 10 lines, and a dbsnp subset containing all the snps of the gwas file
@@ -29,87 +29,59 @@ class GwasParserTest extends Specification {
     }
 
     @Unroll
-    def "parsed variant #variantNumber #chr:#start #reference #alternate has #studies studies"() {
+    def "parsed variant #chr:#start #reference #alternate has #studies studies, #traits traits and #tests tests"() {
         expect:
-        serializedVariants[variantNumber].chromosome.equals(chr)
-        serializedVariants[variantNumber].start.equals(start)
-        serializedVariants[variantNumber].reference.equals(reference)
-        serializedVariants[variantNumber].alternate.equals(alternate)
-        serializedVariants[variantNumber].studies.size().equals(studies)
+        def gwas = serializedVariants.find{ gwas -> gwas.chromosome == chr && gwas.start == start &&
+                                                    gwas.reference == reference && gwas.alternate == alternate }
+        gwas.studies.size() == studies
+        gwas.studies.first().traits.size() == traits
+        gwas.studies.first().traits.first().tests.size() == tests
 
         where:
-        variantNumber || chr  | start    | reference | alternate | studies
-        0             || "11" | 89011046 | "G"       | "A"       |  1
-        1             || "16" | 89986117 | "C"       | "G"       |  1
-        2             || "16" | 89986117 | "C"       | "T"       |  1
-        3             || "9"  | 16915021 | "T"       | "C"       |  3
-    }
-
-    @Unroll
-    def "parsed variant #variantNumber #chr:#start #reference #alternate has #traits traits"() {
-        expect:
-        // 4 * serializer.serialize(_)
-        serializedVariants[variantNumber].chromosome.equals(chr)
-        serializedVariants[variantNumber].studies.first().traits.size().equals(traits)
-
-
-        where:
-        variantNumber || chr  | start    | reference | alternate | traits
-        0             || "11" | 89011046 | "G"       | "A"       | 2
-        1             || "16" | 89986117 | "C"       | "G"       | 4
-        2             || "16" | 89986117 | "C"       | "T"       | 4
-        3             || "9"  | 16915021 | "T"       | "C"       | 1
-    }
-
-    @Unroll
-    def "parsed variant #variantNumber #chr:#start #reference #alternate has #tests tests"() {
-        expect:
-        // 4 * serializer.serialize(_)
-        serializedVariants[variantNumber].chromosome.equals(chr)
-        serializedVariants[variantNumber].studies.first().traits.first().tests.size().equals(tests)
-
-
-        where:
-        variantNumber || chr  | start    | reference | alternate | tests
-        0             || "11" | 89011046 | "G"       | "A"       | 1
-        1             || "16" | 89986117 | "C"       | "G"       | 1
-        2             || "16" | 89986117 | "C"       | "T"       | 1
-        3             || "9"  | 16915021 | "T"       | "C"       | 2
+        chr  | start    | reference | alternate || studies | traits | tests
+        "11" | 89011046 | "G"       | "A"       ||  1      | 2      | 1
+        "16" | 89986117 | "C"       | "G"       ||  1      | 4      | 1
+        "16" | 89986117 | "C"       | "T"       ||  1      | 4      | 1
+        "9"  | 16915021 | "T"       | "C"       ||  3      | 1      | 2
     }
 
     @Unroll
     def "parsed variant #variantNumber #chr:#start #reference #alternate contains '#diseaseOrTrait' trait is #variantContainsTrait"() {
         expect:
-        serializedVariants[variantNumber].studies.first().traits.diseaseTrait.contains(diseaseOrTrait) == variantContainsTrait
+        def gwas = serializedVariants.find{ gwas -> gwas.chromosome == chr && gwas.start == start &&
+                                                    gwas.reference == reference && gwas.alternate == alternate }
+        gwas.studies.first().traits.diseaseTrait.contains(diseaseOrTrait) == variantContainsTrait
 
         where:
-        variantNumber || chr  | start    | reference | alternate | diseaseOrTrait                | variantContainsTrait
-        0             || "11" | 89011046 | "G"       | "A"       | "Blue vs. green eyes"         | true
-        0             || "11" | 89011046 | "G"       | "A"       | "Skin sensitivity to sun"     | true
-        0             || "11" | 89011046 | "G"       | "A"       | "Red vs non-red hair color"   | false
-        0             || "11" | 89011046 | "G"       | "A"       | "Blond vs. brown hair color"  | false
-        0             || "11" | 89011046 | "G"       | "A"       | "Freckles"                    | false
-        1             || "16" | 89986117 | "C"       | "T"       | "Blue vs. green eyes"         | false
-        1             || "16" | 89986117 | "C"       | "T"       | "Skin sensitivity to sun"     | true
-        1             || "16" | 89986117 | "C"       | "T"       | "Red vs non-red hair color"   | true
-        1             || "16" | 89986117 | "C"       | "T"       | "Blond vs. brown hair color"  | true
-        1             || "16" | 89986117 | "C"       | "T"       | "Freckles"                    | true
-        2             || "16" | 89986117 | "C"       | "T"       | "Blue vs. green eyes"         | false
-        2             || "16" | 89986117 | "C"       | "T"       | "Skin sensitivity to sun"     | true
-        2             || "16" | 89986117 | "C"       | "T"       | "Red vs non-red hair color"   | true
-        2             || "16" | 89986117 | "C"       | "T"       | "Blond vs. brown hair color"  | true
-        2             || "16" | 89986117 | "C"       | "T"       | "Freckles"                    | true
+        chr  | start    | reference | alternate | diseaseOrTrait                || variantContainsTrait
+        "11" | 89011046 | "G"       | "A"       | "Blue vs. green eyes"         || true
+        "11" | 89011046 | "G"       | "A"       | "Skin sensitivity to sun"     || true
+        "11" | 89011046 | "G"       | "A"       | "Red vs non-red hair color"   || false
+        "11" | 89011046 | "G"       | "A"       | "Blond vs. brown hair color"  || false
+        "11" | 89011046 | "G"       | "A"       | "Freckles"                    || false
+        "16" | 89986117 | "C"       | "T"       | "Blue vs. green eyes"         || false
+        "16" | 89986117 | "C"       | "T"       | "Skin sensitivity to sun"     || true
+        "16" | 89986117 | "C"       | "T"       | "Red vs non-red hair color"   || true
+        "16" | 89986117 | "C"       | "T"       | "Blond vs. brown hair color"  || true
+        "16" | 89986117 | "C"       | "T"       | "Freckles"                    || true
+        "16" | 89986117 | "C"       | "T"       | "Blue vs. green eyes"         || false
+        "16" | 89986117 | "C"       | "T"       | "Skin sensitivity to sun"     || true
+        "16" | 89986117 | "C"       | "T"       | "Red vs non-red hair color"   || true
+        "16" | 89986117 | "C"       | "T"       | "Blond vs. brown hair color"  || true
+        "16" | 89986117 | "C"       | "T"       | "Freckles"                    || true
     }
 
     @Unroll
     def "parsed variant #variantNumber #chr:#start #reference #alternate contains '#test' test"() {
         expect:
-        serializedVariants[variantNumber].studies.first().traits.first().tests.pValueText.contains(test)
+        def gwas = serializedVariants.find{ gwas -> gwas.chromosome == chr && gwas.start == start &&
+                                                    gwas.reference == reference && gwas.alternate == alternate }
+        gwas.studies.first().traits.first().tests.pValueText.contains(test)
 
         where:
-        variantNumber || chr  | start    | reference | alternate | test
-        3             || "9"  | 16915021 | "T"       | "C"       | "(All invasive)"
-        3             || "9"  | 16915021 | "T"       | "C"       | "(Serious invasive)"
+        chr  | start    | reference | alternate || test
+        "9"  | 16915021 | "T"       | "C"       || "(All invasive)"
+        "9"  | 16915021 | "T"       | "C"       || "(Serious invasive)"
     }
 
 }

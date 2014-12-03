@@ -1,6 +1,8 @@
 package org.opencb.cellbase.build.transform;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.broad.tribble.readers.TabixReader;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.formats.clinical.Gwas;
 
@@ -10,8 +12,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * @author Luis Miguel Cruz
@@ -22,19 +24,13 @@ public class GwasParser extends CellBaseParser {
 
     private final Path gwasFile;
     private final Path dbSnpTabixFilePath;
-    private int malformedPValueRecords;
-    private int malformedStartRecords;
-    private int malformedRiskAlleleFrequencyRecords;
-    private int malformedPValueMLogRecords;
+    private int invalidStartRecords;
 
     public GwasParser(Path gwasFile, Path dbSnpTabixFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.gwasFile = gwasFile;
         this.dbSnpTabixFilePath = dbSnpTabixFilePath;
-        this.malformedPValueRecords = 0;
-        this.malformedStartRecords = 0;
-        this.malformedRiskAlleleFrequencyRecords = 0;
-        this.malformedPValueMLogRecords = 0;
+        this.invalidStartRecords = 0;
     }
 
 	public void parse() {
@@ -47,7 +43,7 @@ public class GwasParser extends CellBaseParser {
                 logger.info("Ignoring gwas file header line ...");
 				inputReader.readLine();
 
-                Map<Variant, Gwas> variantMap = new TreeMap<>();
+                Map<Variant, Gwas> variantMap = new HashMap<>();
                 logger.info("Opening dbSNP tabix file " + dbSnpTabixFilePath + " ...");
                 TabixReader dbsnpTabixReader = new TabixReader(dbSnpTabixFilePath.toString());
 
@@ -59,16 +55,12 @@ public class GwasParser extends CellBaseParser {
                 for (String line; (line = inputReader.readLine())!= null;) {
                     if (!line.isEmpty()) {
                         processedGwasLines++;
-                        try {
                             Gwas gwasRecord = buildGwasObject(line.split("\t"));
-                            if (gwasRecord.getChromosome() != null && gwasRecord.getStart() != null && getRefAndAltFromDbsnp(gwasRecord, dbsnpTabixReader)) {
+                            if (gwasRecord != null && gwasRecord.getChromosome() != null && getRefAndAltFromDbsnp(gwasRecord, dbsnpTabixReader)) {
                                 addGwasRecordToVariantMap(variantMap, gwasRecord);
                             } else {
                                 gwasLinesNotFoundInDbsnp++;
                             }
-                        } catch (NumberFormatException e) {
-                            malformedGwasLines++;
-                        }
                     }
                 }
                 dbsnpTabixReader.close();
@@ -82,28 +74,23 @@ public class GwasParser extends CellBaseParser {
                 this.printSummary(processedGwasLines, gwasLinesNotFoundInDbsnp, malformedGwasLines, variantMap);
 
 
-            } catch (NumberFormatException e) {
-                logger.error("Malformed gwas line: " + e.getMessage());
-			} catch (IOException e) {
+            } catch (IOException e) {
                 logger.error("Unable to parse " + gwasFile + " using dbSNP file " + dbSnpTabixFilePath + ": " + e.getMessage());
             }
 		}
 	}
 
-    private Gwas buildGwasObject(String[] values) throws NumberFormatException {
+    private Gwas buildGwasObject(String[] values) {
         Gwas gwas = new Gwas();
-
-        gwas.setRegion(values[10].trim());
-        setGwasChromosome(values[11], gwas);
-
-        try{
+        if (NumberUtils.isDigits(values[12])) {
             gwas.setStart(Integer.parseInt(values[12]));
             gwas.setEnd(gwas.getStart());
-        } catch (NumberFormatException e){
-            malformedStartRecords++;
-            throw e;
+        } else {
+            invalidStartRecords++;
+            return null;
         }
-
+        gwas.setRegion(values[10].trim());
+        setGwasChromosome(values[11], gwas);
         gwas.setReportedGenes(values[13].trim());
         gwas.setMappedGene(values[14].trim());
         gwas.setUpstreamGeneId(values[15].trim());
@@ -117,13 +104,8 @@ public class GwasParser extends CellBaseParser {
         gwas.setSnpIdCurrent(values[23].trim());
         gwas.setContext(values[24].trim());
         gwas.setIntergenic(values[25].trim());
-        try {
-            if (!values[26].equals("NR")) {
-                gwas.setRiskAlleleFrequency(Float.parseFloat(values[26]));
-            }
-        } catch (NumberFormatException e){
-            malformedRiskAlleleFrequencyRecords++;
-            throw e;
+        if (NumberUtils.isNumber(values[26])) {
+            gwas.setRiskAlleleFrequency(Float.parseFloat(values[26]));
         }
         gwas.setCnv(values[33].trim());
         builgGwasStudy(values, gwas);
@@ -156,20 +138,14 @@ public class GwasParser extends CellBaseParser {
         study.addTrait(trait);
     }
 
-    private void buildGwasStudyTraitTest(String[] values, Gwas.GwasStudy.GwasTrait trait) throws NumberFormatException {
+    private void buildGwasStudyTraitTest(String[] values, Gwas.GwasStudy.GwasTrait trait) {
         // Add the test values
         Gwas.GwasStudy.GwasTrait.GwasTest test = new Gwas.GwasStudy.GwasTrait.GwasTest();
-        try {
+        if (NumberUtils.isNumber(values[27])) {
             test.setpValue(Float.parseFloat(values[27]));
-        } catch (NumberFormatException e){
-            malformedPValueRecords++;
-            throw e;
         }
-        try {
+        if (NumberUtils.isNumber(values[28])) {
             test.setpValueMlog(Float.parseFloat(values[28]));
-        } catch (NumberFormatException e){
-            malformedPValueMLogRecords++;
-            throw e;
         }
         test.setpValueText(values[29].trim());
         test.setOrBeta(values[30].trim());
@@ -192,6 +168,8 @@ public class GwasParser extends CellBaseParser {
                 default:
                     gwas.setChromosome(chromosome);
             }
+        } else {
+            System.out.println("INVALID");
         }
     }
 
@@ -203,18 +181,8 @@ public class GwasParser extends CellBaseParser {
         logger.info("Processed " + formatter.format(processedGwasLines) + " gwas lines");
         logger.info("Serialized " + formatter.format(variantMap.size()) + " variants");
         logger.info(formatter.format(gwasLinesNotFoundInDbsnp) + " gwas lines ignored because variant not found in dbsnp");
-        logger.info(formatter.format(malformedGwasLines) + " gwas lines ignored because are malformed");
-        if (malformedStartRecords != 0) {
-            logger.info("\t - " + formatter.format(malformedStartRecords) + " because 'start' is not a valid integer");
-        }
-        if (malformedPValueRecords != 0) {
-            logger.info("\t - " + formatter.format(malformedPValueRecords) + " because 'pValue' is not a valid float");
-        }
-        if (malformedPValueMLogRecords != 0) {
-            logger.info("\t - " + formatter.format(malformedPValueMLogRecords) + " because 'pValueMlog' is not a valid float");
-        }
-        if (malformedRiskAlleleFrequencyRecords != 0) {
-            logger.info("\t - " + formatter.format(malformedRiskAlleleFrequencyRecords) + " because 'risk allele frequency' is not a valid float");
+        if (invalidStartRecords != 0) {
+            logger.info(formatter.format(invalidStartRecords) + " gwas lines ignored because have no valid 'start' value");
         }
     }
 
@@ -247,7 +215,7 @@ public class GwasParser extends CellBaseParser {
         for (int i=0; i < alternates.length; i++) {
             String alternate = alternates[i];
             Variant variantKey =
-                    new Variant(gwasRecord.getChromosome(), gwasRecord.getStart(), gwasRecord.getReference(), alternate);
+                    new Variant(gwasRecord.getChromosome(), gwasRecord.getStart(), gwasRecord.getEnd(), gwasRecord.getReference(), alternate);
             if (variantMap.containsKey(variantKey)) {
                 updateGwasEntry(variantMap, gwasRecord, variantKey);
             } else {
@@ -271,36 +239,5 @@ public class GwasParser extends CellBaseParser {
         Gwas gwas = variantMap.get(gwasKey);
         gwas.addStudies(gwasVO.getStudies());
         variantMap.put(gwasKey, gwas);
-    }
-
-    // TODO: use another different class
-    class Variant implements Comparable<Variant> {
-        private String chr;
-        private Integer start;
-        private String ref;
-        private String alt;
-
-        Variant(String chr, Integer start, String ref, String alt) {
-            this.ref = ref;
-            this.chr = chr;
-            this.start = start;
-            this.alt = alt;
-        }
-
-        public int compareTo(Variant anotherVariant) {
-            if (!chr.equals(anotherVariant.chr)) {
-                return chr.compareTo(anotherVariant.chr);
-            } else {
-                if (!start.equals(anotherVariant.start)) {
-                    return start.compareTo(anotherVariant.start);
-                } else {
-                    if (!ref.equals(anotherVariant.ref)) {
-                        return ref.compareTo(anotherVariant.ref);
-                    } else {
-                        return alt.compareTo(anotherVariant.alt);
-                    }
-                }
-            }
-        }
     }
 }
