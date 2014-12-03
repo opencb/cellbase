@@ -78,7 +78,7 @@ class GwasParserTest extends Specification {
     }
 
     @Unroll
-    def "parsed variant #variantNumber #chr:#start #reference #alternate contains '#trait' trait is #variantContainsTrait"() {
+    def "parsed variant #variantNumber #chr:#start #reference #alternate contains '#diseaseOrTrait' trait is #variantContainsTrait"() {
         expect:
         serializedVariants[variantNumber].studies.first().traits.diseaseTrait.contains(diseaseOrTrait) == variantContainsTrait
 
