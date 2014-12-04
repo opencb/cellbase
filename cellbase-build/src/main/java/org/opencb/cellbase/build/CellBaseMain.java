@@ -28,21 +28,13 @@ public class CellBaseMain {
     public static final String CHUNK_SIZE_OPTION = "chunksize";
     public static final String DRUG_FILE_OPTION = "drug-file";
     public static final String ASSEMBLY_OPTION = "assembly";
+
     private static Options options;
     private static CommandLine commandLine;
-    private static CommandLineParser parser;
 
-    private static CellBaseSerializer serializer = null;
+    private static CellBaseSerializer serializer;
 
     private static Logger logger;
-
-    static {
-        parser = new PosixParser();
-    }
-
-    public CellBaseMain() {
-        initOptions();
-    }
 
     private static void initOptions() {
         options = new Options();
@@ -93,11 +85,8 @@ public class CellBaseMain {
         options.addOption(OptionFactory.createOption("config", "Path to serializer configuration file (if applies)", false));
     }
 
-    /**
-     * @param args
-     */
     public static void main(String[] args) {
-        String buildOption = null;
+        String buildOption;
 
         initOptions();
 
@@ -172,7 +161,7 @@ public class CellBaseMain {
     }
 
     private static void parseCommandLineArgs(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
-        parser = new PosixParser();
+        CommandLineParser parser = new PosixParser();
         commandLine = parser.parse(options, args, stopAtNoOption);
     }
 
