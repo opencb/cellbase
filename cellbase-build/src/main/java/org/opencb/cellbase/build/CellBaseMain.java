@@ -109,7 +109,7 @@ public class CellBaseMain {
                 return;
             }
 
-            parseArgs(args, false);
+            parseCommandLineArgs(args, false);
 
             // This small hack allow to configure the appropriate Logger level from the command line, this is done
             // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
@@ -171,7 +171,7 @@ public class CellBaseMain {
         return genomeFastaPath;
     }
 
-    private static void parseArgs(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
+    private static void parseCommandLineArgs(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
         parser = new PosixParser();
         commandLine = parser.parse(options, args, stopAtNoOption);
     }

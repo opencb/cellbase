@@ -38,10 +38,10 @@ public class CosmicParser extends CellBaseParser {
     public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer){
         super(serializer);
         this.cosmicFilePath = cosmicFilePath;
-        this.compileRegularExpressionPaterns();
+        this.compileRegularExpressionPatterns();
     }
 
-    private void compileRegularExpressionPaterns() {
+    private void compileRegularExpressionPatterns() {
         mutationGRCh37GenomePositionPattern = Pattern.compile("(?<"+CHROMOSOME+">\\S+):(?<"+START+">\\d+)-(?<"+END+">\\d+)");
         snvPattern = Pattern.compile("c\\.\\d+(_\\d+)?(?<"+REF+">(A|C|T|G)+)>(?<"+ALT+">(A|C|T|G)+)");
     }
@@ -176,67 +176,12 @@ public class CosmicParser extends CellBaseParser {
         }
     }
 
-//    public boolean calculateAltAndRef(Cosmic cosmic){
-//        if (cosmic.getMutationCDS().contains(">")) {
-//            // Change (one or more nucleotides). Get number of nucleotides of alternative
-//            cosmic.setAlternate(cosmic.getMutationCDS().split(">")[1]);
-//            cosmic.setReference(cosmic.getMutationCDS().split(">")[0]);
-//        } else if (cosmic.getMutationCDS().contains("del")) {
-//            // Deletion
-//            cosmic.setReference(cosmic.getMutationCDS().split("del")[1]);
-//            cosmic.setAlternate("-");
-//        }  else if (cosmic.getMutationCDS().contains("ins")) {
-//            // Insertion
-//            cosmic.setReference("-");
-//            cosmic.setAlternate(cosmic.getMutationCDS().split("ins")[1]);
-//        }
-//
-//        // Check strand
-//        // TODO: MutationCDS equals '-' ? Strand is stored in the field 'Mutation CRCh47 strand'
-//        if (cosmic.getMutationCDS().equals("-")) {
-//            // Negative strand
-//            if (!cosmic.getAlternate().equals("-")){
-//                cosmic.setAlternate(DNASequenceUtils.reverseComplement(cosmic.getAlternate()));
-//            } if (!cosmic.getReference().equals("-")){
-//                cosmic.setReference(DNASequenceUtils.reverseComplement(cosmic.getReference()));
-//            }
-//        }
-//    }
-
-    private void printSummary(long processedCosmicLines, long ignoredCosmicLines) {
-        NumberFormat formatter = NumberFormat.getInstance();
-        logger.info("");
-        logger.info("Summary");
-        logger.info("=======");
-        logger.info("Processed " + formatter.format(processedCosmicLines) + " cosmic lines");
-        logger.info("Serialized " + formatter.format(processedCosmicLines - ignoredCosmicLines) + " cosmic objects");
-        logger.info(formatter.format(ignoredCosmicLines) + " cosmic lines ignored: ");
-        if (invalidPositionLines > 0) {
-            logger.info("\t-" +  formatter.format(invalidPositionLines) + " lines by invalid position");
-        }
-        if (invalidSubstitutionLines > 0) {
-            logger.info("\t-" +  formatter.format(invalidSubstitutionLines) + " lines by invalid substitution CDS");
-        }
-        if (invalidInsertionLines > 0) {
-            logger.info("\t-" +  formatter.format(invalidInsertionLines) + " lines by invalid insertion CDS");
-        }
-        if (invalidDeletionLines > 0) {
-            logger.info("\t-" +  formatter.format(invalidDeletionLines) + " lines by invalid deletion CDS");
-        }
-        if (invalidDuplicationLines > 0) {
-            logger.info("\t-" +  formatter.format(invalidDuplicationLines) + " lines because mutation CDS is a duplication");
-        }
-        if (invalidMutationCDSOtherReason > 0) {
-            logger.info("\t-" +  formatter.format(invalidMutationCDSOtherReason) + " lines because mutation CDS is invalid for other reasons");
-        }
-    }
-
     /**
      * Check whether the variant is valid and parse it
      * @return true if valid mutation, false otherwise
      */
     private boolean parseVariant(Cosmic cosmic) {
-        boolean validVariant = true;
+        boolean validVariant;
 
         String mutationCds = cosmic.getMutationCDS();
         if(mutationCds.contains(">")) {
@@ -252,7 +197,7 @@ public class CosmicParser extends CellBaseParser {
         } else if(mutationCds.contains("ins")) {
             validVariant = parseInsertion(mutationCds, cosmic);
             if (!validVariant) {
-               invalidInsertionLines++;
+                invalidInsertionLines++;
             }
         } else if(mutationCds.contains("dup")) {
             validVariant = parseDuplication(mutationCds);
@@ -260,13 +205,13 @@ public class CosmicParser extends CellBaseParser {
                 invalidDuplicationLines++;
             }
         } else {
-        	validVariant = false;
+            validVariant = false;
             invalidMutationCDSOtherReason++;
         }
 
         return validVariant;
     }
-    
+
     private boolean parseDuplication(String dup){
     	// TODO: The only Duplication in Cosmic V70 is a structural variation that is not going to be serialized
     	return false;
@@ -316,5 +261,33 @@ public class CosmicParser extends CellBaseParser {
         }
 
         return validVariant;
+    }
+
+    private void printSummary(long processedCosmicLines, long ignoredCosmicLines) {
+        NumberFormat formatter = NumberFormat.getInstance();
+        logger.info("");
+        logger.info("Summary");
+        logger.info("=======");
+        logger.info("Processed " + formatter.format(processedCosmicLines) + " cosmic lines");
+        logger.info("Serialized " + formatter.format(processedCosmicLines - ignoredCosmicLines) + " cosmic objects");
+        logger.info(formatter.format(ignoredCosmicLines) + " cosmic lines ignored: ");
+        if (invalidPositionLines > 0) {
+            logger.info("\t-" +  formatter.format(invalidPositionLines) + " lines by invalid position");
+        }
+        if (invalidSubstitutionLines > 0) {
+            logger.info("\t-" +  formatter.format(invalidSubstitutionLines) + " lines by invalid substitution CDS");
+        }
+        if (invalidInsertionLines > 0) {
+            logger.info("\t-" +  formatter.format(invalidInsertionLines) + " lines by invalid insertion CDS");
+        }
+        if (invalidDeletionLines > 0) {
+            logger.info("\t-" +  formatter.format(invalidDeletionLines) + " lines by invalid deletion CDS");
+        }
+        if (invalidDuplicationLines > 0) {
+            logger.info("\t-" +  formatter.format(invalidDuplicationLines) + " lines because mutation CDS is a duplication");
+        }
+        if (invalidMutationCDSOtherReason > 0) {
+            logger.info("\t-" +  formatter.format(invalidMutationCDSOtherReason) + " lines because mutation CDS is invalid for other reasons");
+        }
     }
 }
