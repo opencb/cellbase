@@ -1,7 +1,7 @@
 package org.opencb.cellbase.build.transform
 
 import org.opencb.cellbase.core.serializer.CellBaseSerializer
-import org.opencb.cellbase.build.transform.formats.clinical.Gwas
+import org.opencb.cellbase.build.transform.formats.clinical.gwas.Gwas
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -38,15 +38,16 @@ class GwasParserTest extends Specification {
         gwas.studies.first().traits.first().tests.size() == tests
 
         where:
-        chr  | start    | reference | alternate || studies | traits | tests
-        "11" | 89011046 | "G"       | "A"       ||  1      | 2      | 1
-        "16" | 89986117 | "C"       | "G"       ||  1      | 4      | 1
-        "16" | 89986117 | "C"       | "T"       ||  1      | 4      | 1
-        "9"  | 16915021 | "T"       | "C"       ||  3      | 1      | 2
+        chr  | start     | reference | alternate || studies | traits | tests
+        "11" | 89011046  | "G"       | "A"       ||  1      | 2      | 1
+        "16" | 89986117  | "C"       | "G"       ||  1      | 4      | 1
+        "16" | 89986117  | "C"       | "T"       ||  1      | 4      | 1
+        "9"  | 16915021  | "T"       | "C"       ||  3      | 1      | 2
+        "X"  | 102302457 | "A"       | "G"       ||  1      | 1      | 1
     }
 
     @Unroll
-    def "parsed variant #variantNumber #chr:#start #reference #alternate contains '#diseaseOrTrait' trait is #variantContainsTrait"() {
+    def "parsed variant #chr:#start #reference #alternate contains '#diseaseOrTrait' trait is #variantContainsTrait"() {
         expect:
         def gwas = serializedVariants.find{ gwas -> gwas.chromosome == chr && gwas.start == start &&
                                                     gwas.reference == reference && gwas.alternate == alternate }
@@ -72,7 +73,7 @@ class GwasParserTest extends Specification {
     }
 
     @Unroll
-    def "parsed variant #variantNumber #chr:#start #reference #alternate contains '#test' test"() {
+    def "parsed variant #chr:#start #reference #alternate contains '#test' test"() {
         expect:
         def gwas = serializedVariants.find{ gwas -> gwas.chromosome == chr && gwas.start == start &&
                                                     gwas.reference == reference && gwas.alternate == alternate }
