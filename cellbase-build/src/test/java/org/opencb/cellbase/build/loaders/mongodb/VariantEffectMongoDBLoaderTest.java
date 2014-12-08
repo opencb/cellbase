@@ -3,6 +3,7 @@ package org.opencb.cellbase.build.loaders.mongodb;
 import com.mongodb.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.annotation.*;
 import org.opencb.biodata.models.variation.ConsequenceType;
@@ -18,6 +19,7 @@ import static org.junit.Assert.*;
  *
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
+@Ignore
 public class VariantEffectMongoDBLoaderTest {
     
     private static String host = "localhost";
