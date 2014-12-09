@@ -108,9 +108,9 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 db = mc.getDB(config.getDatabase(speciesId, assembly));
 //db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
 //db.setReadPreference(ReadPreference.primary());
-                System.out.println("Debug String: "+mc.debugString());
+//                System.out.println("Debug String: "+mc.debugString());
                 if(!config.getUsername(speciesId,assembly).equals("") || !config.getPass(speciesId, assembly).equals("")){
-                    System.out.println("User: "+config.getUsername(speciesId,assembly)+", Password: "+config.getPass(speciesId, assembly)+"");
+//                    System.out.println("User: "+config.getUsername(speciesId,assembly)+", Password: "+config.getPass(speciesId, assembly)+"");
                     db.authenticate(config.getUsername(speciesId,assembly), config.getPass(speciesId, assembly).toCharArray());
                 }
             } catch (UnknownHostException e) {
