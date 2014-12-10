@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
+import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
@@ -12,10 +13,8 @@ import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -24,8 +23,18 @@ import java.util.zip.GZIPInputStream;
 public class VariantAnnotationMongoDBAdaptorTest {
 
 
+    private int countLines(String fileName) throws IOException {
+        System.out.println("Counting lines...");
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
+        int lines = 0;
+        while (reader.readLine() != null) lines++;
+        reader.close();
+
+        return lines;
+    }
+
     @Test
-    public void testGetAllConsequenceTypesByVariant() {
+    public void testGetAllConsequenceTypesByVariant() throws IOException {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
@@ -41,9 +50,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         String line = null;
 
-        BufferedReader br = null;
+        String INPUTFILE = "/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
 
-        QueryResult queryResult;
+        QueryResult queryResult = null;
+        BufferedWriter bw = Files.newBufferedWriter(Paths.get("/tmp/22.uva.vcf"), Charset.defaultCharset());
 
         // Use ebi cellbase to test these
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("14", 19108198, "-", "GGTCTAGCATG"), new QueryOptions());
@@ -68,15 +78,85 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //            e.printStackTrace();
 //        }
 
-        VcfRawReader vcfReader = new VcfRawReader("/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf");
+        bw.write("#CHR\tPOS\tALT\tENSG\tFEA_TYPE\tBIOTYPE\tSTRAND\tCT\tCDNA\tCDS\tA_POS\tA_CHANGE\tCODON\n");
+
+        VcfRawReader vcfReader = new VcfRawReader(INPUTFILE);
         if(vcfReader.open()) {
+
             List<VcfRecord> vcfRecordList= vcfReader.read(1000);
+            int nLines = countLines(INPUTFILE);
+            int lineCounter = 0;
+            System.out.println("Processing vcf lines...");
             while(vcfRecordList.size()>0) {
                 for(VcfRecord vcfRecord : vcfRecordList) {
                     queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), vcfRecord.getPosition(),
                             vcfRecord.getReference(), vcfRecord.getAlternate()), new QueryOptions());
+
+                    for(ConsequenceType consequenceType : (List<ConsequenceType>) queryResult.getResult()) {
+                        String pos;
+                        if(vcfRecord.getReference().length()>1) {
+                            pos = vcfRecord.getPosition()+"-"+(vcfRecord.getPosition()+vcfRecord.getReference().length()-1);
+                        }
+
+                        String feaType;
+                        String strand;
+                        switch (consequenceType.getSOName()) {
+                            case "TF_binding_site_variant":
+                                feaType = "MotifFeature";
+                                strand = "-";
+                                break;
+                            case "regulatory_region_variant":
+                                feaType = "RegulatoryFeature";
+                                strand = "-";
+                                break;
+                            case "intergenic_variant":
+                                feaType = "-";
+                                strand = "-";
+                                break;
+                            default:
+                                feaType = "Transcript";
+                                if(consequenceType.getStrand().equals("+")) {
+                                    strand = "1";
+                                } else {
+                                    strand = "-1";
+                                }
+                        }
+
+
+                        String cDnaPosition;
+                        if(consequenceType.getcDnaPosition() == null) {
+                            cDnaPosition = "-";
+                        } else {
+                            cDnaPosition = Integer.toString(consequenceType.getcDnaPosition());
+                        }
+
+                        String cdsPosition;
+                        if(consequenceType.getCdsPosition() == null) {
+                            cdsPosition = "-";
+                        } else {
+                            cdsPosition = Integer.toString(consequenceType.getCdsPosition());
+                        }
+
+                        String aPosition;
+                        if(consequenceType.getaPosition() == null) {
+                            aPosition = "-";
+                        } else {
+                            aPosition = Integer.toString(consequenceType.getaPosition());
+                        }
+
+                        bw.write(vcfRecord.getChromosome()+"\t"+vcfRecord.getPosition()+"\t"+vcfRecord.getAlternate()+"\t"+
+                                consequenceType.getEnsemblGeneId("-")+"\t"+feaType+"\t"+consequenceType.getBiotype("-")+"\t"+
+                                consequenceType.getSOName()+"\t"+cDnaPosition+"\t"+
+                                cdsPosition+"\t"+aPosition+"\t"+
+                                consequenceType.getCodon("-")+"\n");
+                    }
+
                 }
+
                 vcfRecordList = vcfReader.read(1000);
+                lineCounter += 1000;
+                System.out.print(lineCounter+"/"+nLines);
+
             }
         }
     }

@@ -250,7 +250,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private void solvePositiveCodingEffect(String geneName, String ensemblGeneId, String ensemblTranscriptId, Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
+    private void solvePositiveCodingEffect(ConsequenceType consequenceTypeTemplate, Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
                                            Integer cdnaVariantStart, Integer cdnaVariantEnd, String variantRef, String variantAlt,
                                            HashSet<ConsequenceType> consequenceTypeList) {
         // TODO: lo q hay dentro de esta funcion es copia pega de solveCodingExonEffect. Arreglarlo. Es basicamente igual,
@@ -262,7 +262,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         String newCodon;
 
         if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3)) {  // cdnaVariantStart=null if variant is intronic
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "initiator_codon_variant"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(),
+                    "initiator_codon_variant"));
         }
 
         if(cdnaVariantEnd != null && cdnaVariantEnd>(cdnaCodingEnd-3)) {
@@ -272,22 +273,22 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 char[] modifiedCodonArray = referenceCodon.toCharArray();
                 modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
                 if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_retained_variant"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_retained_variant"));
                 } else {
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_lost"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_lost"));
                 }
             }  else {
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_lost"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_lost"));
             }
         }
 
         if(variantAlt.equals("-")) {  // Deletion
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "feature_truncation"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "feature_truncation"));
             if(!splicing) {
                 if (variantRef.length() % 3 == 0) {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "inframe_deletion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "inframe_deletion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
                 } else {
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "frameshift_variant"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "frameshift_variant"));
 //                    modifiedCodonPrefix = transcriptSequence.substring(cdnaVariantStart-variantPhaseShift, cdnaVariantStart);
 //                    if (gainsStopCodon(modifiedCodonPrefix+transcriptSequence.substring(cdnaVariantEnd+1,cdnaCodingEnd-2))) {
 //                        consequenceTypeList.add("stop_gained");
@@ -296,12 +297,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             }
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "feature_elongation"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "feature_elongation"));
                 if(!splicing) {
                     if(variantAlt.length()%3 == 0) {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "inframe_insertion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "inframe_insertion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
                     } else {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "frameshift_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "frameshift_variant"));
                     }
                 }
             } else {  // SNV
@@ -311,16 +312,16 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     char[] modifiedCodonArray = referenceCodon.toCharArray();
                     modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
                     if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "synonymous_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "synonymous_variant"));
                     } else {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "missense_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "missense_variant"));
                     }
                 }
             }
         }
     }
 
-    private void solveNegativeCodingEffect(String geneName, String ensemblGeneId, String ensemblTranscriptId, Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
+    private void solveNegativeCodingEffect(ConsequenceType consequenceTypeTemplate, Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
                                            Integer cdnaVariantStart, Integer cdnaVariantEnd, String variantRef, String variantAlt,
                                            HashSet<ConsequenceType> consequenceTypeList) {
         // TODO: lo q hay dentro de esta funcion es copia pega de solveCodingExonEffect. Arreglarlo. Es basicamente igual,
@@ -332,7 +333,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         String newCodon;
 
         if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3)) {  // cdnaVariantStart=null if variant is intronic
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "initiator_codon_variant"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "initiator_codon_variant"));
         }
 
         if(cdnaVariantEnd != null && cdnaVariantEnd>(cdnaCodingEnd-3)) {
@@ -346,22 +347,22 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 char[] modifiedCodonArray = referenceCodon.clone();
                 modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
                 if (isSynonymousCodon.get(String.valueOf(referenceCodon)).get(String.valueOf(modifiedCodonArray))) {
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_retained_variant"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_retained_variant"));
                 } else {
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_lost"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_lost"));
                 }
             }  else {
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_lost"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_lost"));
             }
         }
 
         if(variantAlt.equals("-")) {  // Deletion
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "feature_truncation"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "feature_truncation"));
             if(!splicing) {
                 if (variantRef.length() % 3 == 0) {
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "inframe_deletion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "inframe_deletion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
                 } else {
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "frameshift_variant"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "frameshift_variant"));
 //                    modifiedCodonPrefix = transcriptSequence.substring(cdnaVariantStart-variantPhaseShift, cdnaVariantStart);
 //                    if (gainsStopCodon(modifiedCodonPrefix+transcriptSequence.substring(cdnaVariantEnd+1,cdnaCodingEnd-2))) {
 //                        consequenceTypeList.add("stop_gained");
@@ -370,12 +371,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             }
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "feature_elongation"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "feature_elongation"));
                 if(!splicing) {
                     if(variantAlt.length()%3 == 0) {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "inframe_insertion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "inframe_insertion"));  // TODO: check that I correctly interpreted the meaning of this consequence type
                     } else {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "frameshift_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "frameshift_variant"));
                     }
                 }
             } else {  // SNV
@@ -389,82 +390,82 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     char[] modifiedCodonArray = referenceCodon.clone();
                     modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
                     if (isSynonymousCodon.get(String.valueOf(referenceCodon)).get(String.valueOf(modifiedCodonArray))) {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "synonymous_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "synonymous_variant"));
                     } else {
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "missense_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "missense_variant"));
                     }
                 }
             }
         }
     }
 
-    private void solveCodingPositiveTranscriptEffect(String geneName, String ensemblGeneId, String ensemblTranscriptId, Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
+    private void solveCodingPositiveTranscriptEffect(ConsequenceType consequenceTypeTemplate, Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
                                                      Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                                      Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
                                                      Integer cdnaVariantEnd, String variantRef, String variantAlt,
                                                      HashSet<ConsequenceType> consequenceTypeList) {
         if(variantStart < genomicCodingStart) {
             if(transcriptStart<genomicCodingStart) { // Check transcript has 5 UTR
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "5_prime_UTR_variant"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "5_prime_UTR_variant"));
             }
             if(variantEnd >= genomicCodingStart) {  // Deletion that removes initiator codon
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "initiator_codon_variant"));
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "coding_sequence_variant"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "initiator_codon_variant"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "coding_sequence_variant"));
             }
         } else {
             if(variantStart <= genomicCodingEnd) {  // Variant start within coding region
                 if(variantEnd <= genomicCodingEnd) {  // Variant end also within coding region
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "coding_sequence_variant"));
-                    solvePositiveCodingEffect(geneName, ensemblGeneId, ensemblTranscriptId, splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "coding_sequence_variant"));
+                    solvePositiveCodingEffect(consequenceTypeTemplate, splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
                             cdnaVariantEnd, variantRef, variantAlt, consequenceTypeList);
                 } else {
                     if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "3_prime_UTR_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "3_prime_UTR_variant"));
                     }
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_lost"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_lost"));
                 }
             } else {
                 if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "3_prime_UTR_variant"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "3_prime_UTR_variant"));
                 }
             }
         }
     }
 
-    private void solveCodingNegativeTranscriptEffect(String geneName, String ensemblGeneId, String ensemblTranscriptId, Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
+    private void solveCodingNegativeTranscriptEffect(ConsequenceType consequenceTypeTemplate, Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
                                                      Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                                      Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
                                                      Integer cdnaVariantEnd, String variantRef, String variantAlt,
                                                      HashSet<ConsequenceType> consequenceTypeList) {
         if(variantEnd > genomicCodingEnd) {
             if(transcriptEnd>genomicCodingEnd) { // Check transcript has 5 UTR
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "5_prime_UTR_variant"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "5_prime_UTR_variant"));
             }
             if(variantStart <= genomicCodingEnd) {  // Deletion that removes initiator codon
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "initiator_codon_variant"));
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "coding_sequence_variant"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "initiator_codon_variant"));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "coding_sequence_variant"));
             }
         } else {
             if(variantEnd >= genomicCodingStart) {  // Variant end within coding region
                 if(variantStart >= genomicCodingStart) {  // Variant start also within coding region
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "coding_sequence_variant"));
-                    solveNegativeCodingEffect(geneName, ensemblGeneId, ensemblTranscriptId, splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "coding_sequence_variant"));
+                    solveNegativeCodingEffect(consequenceTypeTemplate, splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
                             cdnaVariantEnd, variantRef, variantAlt, consequenceTypeList);
                 } else {
                     if(transcriptStart<genomicCodingStart) {// Check transcript has 3 UTR)
-                        consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "3_prime_UTR_variant"));
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "3_prime_UTR_variant"));
                     }
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "stop_lost"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "stop_lost"));
                 }
             } else {
                 if(transcriptStart>genomicCodingStart) {// Check transcript has 3 UTR)
-                    consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "3_prime_UTR_variant"));
+                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "3_prime_UTR_variant"));
                 }
             }
         }
     }
 
-    private void solveJunction(String geneName, String ensemblGeneId, String ensemblTranscriptId, Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, HashSet<ConsequenceType> consequenceTypeList,
+    private void solveJunction(ConsequenceType consequenceTypeTemplate, Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, HashSet<ConsequenceType> consequenceTypeList,
                                                 String leftSpliceSiteTag, String rightSpliceSiteTag, Boolean[] junctionSolution) {
 //        Boolean splicing = false;
 //        Boolean intron = false;
@@ -474,25 +475,25 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         junctionSolution[0] = false;
         junctionSolution[1] = false;
         if(regionsOverlap(spliceSite1,spliceSite2,variantStart,variantEnd)) {
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "intron_variant"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "intron_variant"));
 //            intron = true;
             if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
                 junctionSolution[1] = true;
             }
         }
         if(regionsOverlap(spliceSite1-3,spliceSite1+7,variantStart,variantEnd)) {
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "splice_region_variant"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "splice_region_variant"));
             junctionSolution[0] = true;
             if(regionsOverlap(spliceSite1,spliceSite1+1,variantStart,variantEnd)) {
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, leftSpliceSiteTag));  // donor/acceptor depending on transcript strand
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(),  consequenceTypeTemplate.getcDnaPosition(), leftSpliceSiteTag));  // donor/acceptor depending on transcript strand
 //                notdonor = false;
             }
         }
         if(regionsOverlap(spliceSite2-7,spliceSite2+3,variantStart,variantEnd)) {
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "splice_region_variant"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(),  consequenceTypeTemplate.getcDnaPosition(), "splice_region_variant"));
             junctionSolution[0] = true;
             if(regionsOverlap(spliceSite2-1,spliceSite2,variantStart,variantEnd)) {
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, rightSpliceSiteTag));  // donor/acceptor depending on transcript strand
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(),  consequenceTypeTemplate.getcDnaPosition(), rightSpliceSiteTag));  // donor/acceptor depending on transcript strand
 //                notacceptor = false;
             }
         }
@@ -525,8 +526,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         int transcriptBiotype;
         long dbTimeStart, dbTimeEnd;
         Boolean splicing, coding, exonsRemain, variantAhead, exonVariant, TFBSFound;
-
         int exonCounter,i;
+        ConsequenceType consequenceTypeTemplate = new ConsequenceType();
 
         // Get all genes surrounding the variant +-5kb
         builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
@@ -553,6 +554,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             geneStrand = (String) geneInfo.get("strand");
             geneName = (String) geneInfo.get("name");
             ensemblGeneId = (String) geneInfo.get("id");
+            consequenceTypeTemplate.setGeneName((String) geneInfo.get("name"));
+            consequenceTypeTemplate.setEnsemblGeneId((String) geneInfo.get("id"));
 
 
             transcriptInfoList = (BasicDBList) geneInfo.get("transcripts");
@@ -563,10 +566,13 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 transcriptEnd = (Integer) transcriptInfo.get("end");
                 transcriptStrand = (String) transcriptInfo.get("strand");
                 transcriptBiotype = biotypes.get((String) transcriptInfo.get("biotype"));
+                consequenceTypeTemplate.setcDnaPosition(null);
+                consequenceTypeTemplate.setStrand((String) geneInfo.get("strand"));
+                consequenceTypeTemplate.setBiotype((String) transcriptInfo.get("biotype"));
 
                 if(transcriptStrand.equals("+")) {
                     solveTranscriptFlankingRegions(consequenceTypeList, transcriptStart, transcriptEnd, variantStart,
-                            variantEnd, ensemblTranscriptId, geneName, ensemblGeneId, "upstream_gene_variant",
+                            variantEnd, consequenceTypeTemplate, "upstream_gene_variant",
                             "downstream_gene_variant");
 
                     // Check variant falls within transcript start/end coordinates
@@ -587,8 +593,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 35:
                             case 36:
                                 solveCodingPositiveTranscript(variant, consequenceTypeList, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, ensemblTranscriptId,
-                                        geneName, ensemblGeneId);
+                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 break;
                             case 30:
                                 consequenceTypeList.add(new ConsequenceType(geneName,ensemblGeneId,ensemblTranscriptId, "NMD_transcript_variant"));
@@ -608,8 +613,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 34:
                                 consequenceTypeList.add(new ConsequenceType(geneName,ensemblGeneId,ensemblTranscriptId, "non_coding_transcript_variant"));
                                 exonVariant = solveNonCodingPositiveTranscript(variant, consequenceTypeList, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, ensemblTranscriptId,
-                                        geneName, ensemblGeneId);
+                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 if(transcriptBiotype==18 && exonVariant) {
                                     consequenceTypeList.add(new ConsequenceType(geneName,ensemblGeneId,ensemblTranscriptId, "mature_miRNA_variant"));
                                 }
@@ -620,7 +624,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     }
                 } else {
                     solveTranscriptFlankingRegions(consequenceTypeList, transcriptStart, transcriptEnd, variantStart,
-                            variantEnd, ensemblTranscriptId, geneName, ensemblGeneId, "downstream_gene_variant",
+                            variantEnd, consequenceTypeTemplate, "downstream_gene_variant",
                             "upstream_gene_variant");
                     // Check variant falls within transcript start/end coordinates
                     if(regionsOverlap(transcriptStart,transcriptEnd,variantStart,variantEnd)) {
@@ -640,8 +644,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 35:
                             case 36:
                                 solveCodingNegativeTranscript(variant, consequenceTypeList, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, ensemblTranscriptId,
-                                        geneName, ensemblGeneId);
+                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 break;
                             case 30:
                                 consequenceTypeList.add(new ConsequenceType(geneName,ensemblGeneId,ensemblTranscriptId, "NMD_transcript_variant"));
@@ -661,8 +664,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 34:
                                 consequenceTypeList.add(new ConsequenceType(geneName,ensemblGeneId,ensemblTranscriptId, "non_coding_transcript_variant"));
                                 exonVariant = solveNonCodingNegativeTranscript(variant, consequenceTypeList, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, ensemblTranscriptId,
-                                        geneName, ensemblGeneId);
+                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 if(transcriptBiotype==18 && exonVariant) {
                                     consequenceTypeList.add(new ConsequenceType(geneName,ensemblGeneId,ensemblTranscriptId, "mature_miRNA_variant"));
                                 }
@@ -688,6 +690,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(TFBSFound) {
                 consequenceTypeList.add(new ConsequenceType("TF_binding_site_variant"));
             }
+        }
+
+        if(consequenceTypeList.size()==0) {
+            consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
         }
 
         // setting queryResult fields
@@ -754,27 +760,28 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
     private void solveTranscriptFlankingRegions(HashSet<ConsequenceType> consequenceTypeList, Integer transcriptStart,
                                                 Integer transcriptEnd, Integer variantStart, Integer variantEnd,
-                                                String ensemblTranscriptId, String geneName, String ensemblGeneId,
+                                                ConsequenceType consequenceTypeTemplate,
                                                 String leftRegionTag, String rightRegionTag) {
         // Variant overlaps with -5kb region
         if(regionsOverlap(transcriptStart-5000, transcriptStart-1, variantStart, variantEnd)) {
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "5KB_"+leftRegionTag));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), "5KB_"+leftRegionTag));
             // Variant overlaps with -2kb region
             if(regionsOverlap(transcriptStart-2000, transcriptStart-1, variantStart, variantEnd)) {
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, leftRegionTag));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), leftRegionTag));
             }
         }
         // Variant overlaps with +5kb region
         if(regionsOverlap(transcriptEnd+1, transcriptEnd+5000, variantStart, variantEnd)) {
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "5KB_"+rightRegionTag));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), "5KB_"+rightRegionTag));
             // Variant overlaps with +2kb region
             if(regionsOverlap(transcriptEnd+1, transcriptEnd+2000, variantStart, variantEnd)) {
-                consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, rightRegionTag));
+                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), rightRegionTag));
             }
         }
     }
 
-    private void solveCodingPositiveTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd, String ensemblTranscriptId, String geneName, String ensemblGeneId) {
+    private void solveCodingPositiveTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd,
+                                               ConsequenceType consequenceTypeTemplate) {
         Integer genomicCodingStart;
         Integer genomicCodingEnd;
         Integer cdnaCodingStart;
@@ -813,6 +820,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(variantStart >= exonStart) {
             if(variantStart <= exonEnd) {  // Variant start within the exon
                 cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
+                consequenceTypeTemplate.setcDnaPosition(cdnaVariantStart);
                 if(variantEnd <= exonEnd) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
                 }
@@ -833,7 +841,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             prevSpliceSite = exonEnd+1;
             exonEnd = (Integer) exonInfo.get("end");
             transcriptSequence = transcriptSequence + ((String) exonInfo.get("sequence"));
-            solveJunction(geneName, ensemblGeneId, ensemblTranscriptId, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
+            solveJunction(consequenceTypeTemplate, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
                     "splice_donor_variant", "splice_acceptor_variant", junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
@@ -841,6 +849,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 cdnaExonEnd += (exonEnd - exonStart + 1);
                 if(variantStart <= exonEnd) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
+                    consequenceTypeTemplate.setcDnaPosition(cdnaVariantStart);
                     if(variantEnd <= exonEnd) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
                     }
@@ -859,13 +868,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             exonCounter++;
         }
         if(!junctionSolution[1]) {
-            solveCodingPositiveTranscriptEffect(geneName, ensemblGeneId, ensemblTranscriptId, splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
+            solveCodingPositiveTranscriptEffect(consequenceTypeTemplate, splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
                     variant.getReference(), variant.getAlternative(), consequenceTypeList);
         }
     }
 
-    private void solveCodingNegativeTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd, String ensemblTranscriptId, String geneName, String ensemblGeneId) {
+    private void solveCodingNegativeTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd,
+                                               ConsequenceType consequenceTypeTemplate) {
         Integer genomicCodingStart;
         Integer genomicCodingEnd;
         Integer cdnaCodingStart;
@@ -906,6 +916,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(variantEnd <= exonEnd) {
             if(variantEnd >= exonStart) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exonStart);
+                consequenceTypeTemplate.setcDnaPosition(cdnaVariantStart);
                 if(variantStart >= exonStart) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exonStart);
                 }
@@ -915,6 +926,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 //                                if(variantEnd >= exonStart) {  // Only variant end within the exon  ----||||||||||E||||----
                 // We do not contemplate that variant end can be located before this exon since this is the first exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exonStart);
+                consequenceTypeTemplate.setcDnaPosition(cdnaVariantStart);
 //                                }
             } // Variant includes the whole exon. Variant end is located before the exon, variant start is located after the exon
         }
@@ -926,7 +938,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             prevSpliceSite = exonEnd+1;
             exonEnd = (Integer) exonInfo.get("end");
             transcriptSequence = ((String) exonInfo.get("sequence"))+transcriptSequence;
-            solveJunction(geneName, ensemblGeneId, ensemblTranscriptId, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
+            solveJunction(consequenceTypeTemplate, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
                     "splice_acceptor_variant", "splice_donor_variant", junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
@@ -934,6 +946,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 cdnaExonEnd += (exonEnd - exonStart + 1);
                 if(variantEnd >= exonStart) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exonStart);
+                    consequenceTypeTemplate.setcDnaPosition(cdnaVariantStart);
                     if(variantStart >= exonStart) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exonStart);
                     }
@@ -952,13 +965,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             exonCounter++;
         }
         if(!junctionSolution[1]) {
-            solveCodingNegativeTranscriptEffect(geneName, ensemblGeneId, ensemblTranscriptId, splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
+            solveCodingNegativeTranscriptEffect(consequenceTypeTemplate, splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
                     variant.getReference(), variant.getAlternative(), consequenceTypeList);
         }
     }
 
-    private Boolean solveNonCodingPositiveTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd, String ensemblTranscriptId, String geneName, String ensemblGeneId) {
+    private Boolean solveNonCodingPositiveTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd,
+                                                     ConsequenceType consequenceTypeTemplate) {
         Integer genomicCodingStart;
         Integer genomicCodingEnd;
         Integer cdnaCodingStart;
@@ -1014,7 +1028,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             prevSpliceSite = exonEnd+1;
             exonEnd = (Integer) exonInfo.get("end");
             transcriptSequence = transcriptSequence + ((String) exonInfo.get("sequence"));
-            solveJunction(geneName, ensemblGeneId, ensemblTranscriptId, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
+            solveJunction(consequenceTypeTemplate, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
                     "splice_donor_variant", "splice_acceptor_variant", junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
@@ -1040,14 +1054,15 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             exonCounter++;
         }
         if(!junctionSolution[1]) {
-            consequenceTypeList.add(new ConsequenceType(geneName,ensemblGeneId,ensemblTranscriptId, "non_coding_transcript_exon_variant"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "non_coding_transcript_exon_variant"));
         }
 
         return junctionSolution[1];
 
     }
 
-    private Boolean solveNonCodingNegativeTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd, String ensemblTranscriptId, String geneName, String ensemblGeneId) {
+    private Boolean solveNonCodingNegativeTranscript(GenomicVariant variant, HashSet<ConsequenceType> consequenceTypeList, BasicDBObject transcriptInfo, Integer transcriptStart, Integer transcriptEnd, Integer variantStart, Integer variantEnd,
+                                                     ConsequenceType consequenceTypeTemplate) {
         Integer genomicCodingStart;
         Integer genomicCodingEnd;
         Integer cdnaCodingStart;
@@ -1108,7 +1123,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             prevSpliceSite = exonEnd+1;
             exonEnd = (Integer) exonInfo.get("end");
             transcriptSequence = ((String) exonInfo.get("sequence"))+transcriptSequence;
-            solveJunction(geneName, ensemblGeneId, ensemblTranscriptId, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
+            solveJunction(consequenceTypeTemplate, prevSpliceSite, exonStart-1, variantStart, variantEnd, consequenceTypeList,
                     "splice_acceptor_variant", "splice_donor_variant", junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
@@ -1134,7 +1149,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             exonCounter++;
         }
         if(!junctionSolution[1]) {
-            consequenceTypeList.add(new ConsequenceType(geneName, ensemblGeneId, ensemblTranscriptId, "non_coding_transcript_exon_variant"));
+            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(), consequenceTypeTemplate.getEnsemblGeneId(), consequenceTypeTemplate.getEnsemblTranscriptId(), consequenceTypeTemplate.getStrand(), consequenceTypeTemplate.getBiotype(), consequenceTypeTemplate.getcDnaPosition(), "non_coding_transcript_exon_variant"));
         }
 
         return junctionSolution[1];
