@@ -3,11 +3,11 @@ package org.opencb.cellbase.build.transform;
 import org.apache.commons.lang.math.NumberUtils;
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.build.transform.formats.clinical.gwas.GwasStudy;
-import org.opencb.cellbase.build.transform.formats.clinical.gwas.GwasTest;
-import org.opencb.cellbase.build.transform.formats.clinical.gwas.GwasTrait;
+import org.opencb.cellbase.core.common.clinical.gwas.GwasStudy;
+import org.opencb.cellbase.core.common.clinical.gwas.GwasTest;
+import org.opencb.cellbase.core.common.clinical.gwas.GwasTrait;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.build.transform.formats.clinical.gwas.Gwas;
+import org.opencb.cellbase.core.common.clinical.gwas.Gwas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

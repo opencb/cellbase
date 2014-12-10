@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats.clinical.gwas;
+package org.opencb.cellbase.core.common.clinical.gwas;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,8 @@ public class GwasTrait {
     private String diseaseTrait;
     private String dateAddedToCatalog;
     private List<GwasTest> tests;
+
+    public GwasTrait() {}
 
     public GwasTrait(String diseaseTrait, String dateAddedToCatalog) {
         this.diseaseTrait = diseaseTrait;

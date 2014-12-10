@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats.clinical.gwas;
+package org.opencb.cellbase.core.common.clinical.gwas;
 
 /**
 * Created by parce on 5/12/14.
@@ -10,6 +10,8 @@ public class GwasTest {
     private String pValueText;
     private String orBeta;
     private String percentCI;
+
+    public GwasTest() {}
 
     public GwasTest(Float pValue, Float pValueMlog, String pValueText, String orBeta, String percentCI) {
         this.pValue = pValue;
