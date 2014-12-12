@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.lib.api.variation;
 
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
+import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
@@ -54,5 +55,7 @@ public interface VariationDBAdaptor {
     public QueryResult getAllIntervalFrequencies(Region region, QueryOptions options);
 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
+
+    public List<QueryResult> getIdByVariants(List<GenomicVariant> variations, QueryOptions options);
 
 }

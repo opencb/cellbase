@@ -1,13 +1,11 @@
 package org.opencb.cellbase.core.common.variation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Files;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.cellbase.core.common.core.Gene;
 
 import java.io.File;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 

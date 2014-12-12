@@ -1,5 +1,6 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
+import com.google.common.base.Joiner;
 import com.mongodb.*;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
@@ -245,5 +246,41 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     @Override
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         return super.getAllIntervalFrequencies(regions, queryOptions);
+    }
+
+    @Override
+    public List<QueryResult> getIdByVariants(List<GenomicVariant> variations, QueryOptions options){
+        List<DBObject> queries = new ArrayList<>(variations.size());
+        List<QueryResult> results = new ArrayList<>(variations.size());
+
+        for (GenomicVariant variation : variations) {
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(variation.getChromosome());
+            builder = builder.and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+            if(variation.getReference() != null){
+                builder = builder.and("reference").is(variation.getReference());
+            }
+
+            queries.add(builder.get());
+        }
+
+        // Return only a query with the id value
+        //options.put("include", Arrays.asList("id"));
+
+        results = executeQueryList(variations, queries, options, mongoDBCollection);
+
+
+        for (QueryResult result: results){
+            List<String> idList = new LinkedList();
+
+            BasicDBList idListObject = (BasicDBList) result.getResult();
+            for (Object idObject : idListObject) {
+                DBObject variantObject = (DBObject) idObject;
+                idList.add(variantObject.get("id").toString());
+            }
+
+            result.setResult(Joiner.on(",").skipNulls().join(idList));
+        }
+
+        return results;
     }
 }
