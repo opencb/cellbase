@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats.clinical.gwas;
+package org.opencb.cellbase.core.common.clinical.gwas;
 
 /**
  * Created by lcruz on 26/05/14.
@@ -34,6 +34,8 @@ public class Gwas {
     private Float riskAlleleFrequency;
     private String cnv;
     private List<GwasStudy> studies;
+
+    public Gwas() {}
 
     public Gwas(String chromosome, Integer start, Integer end, String reference, String alternate, String region,
                 String reportedGenes, String mappedGene, String upstreamGeneId, String downstreamGeneId, String snpGeneIds,

@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats.clinical;
+package org.opencb.cellbase.core.common.clinical;
 
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
 
@@ -22,9 +22,7 @@ public class ClinvarPublicSet {
         this.clinvarSet = clinvarSet;
     }
 
-    public ClinvarPublicSet() {
-
-    }
+    public ClinvarPublicSet() {}
 
     public String getChromosome() {
         return chromosome;

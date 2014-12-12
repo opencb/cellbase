@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats.clinical;
+package org.opencb.cellbase.core.common.clinical;
 
 /**
  * @author by antonior on 5/22/14.
@@ -102,9 +102,7 @@ public class Cosmic {
 
     private Integer idStudy;
 
-    public Cosmic(){
-
-    }
+    public Cosmic() {}
 
     // ----------------------- GETTERS / SETTERS --------------------------------
     
