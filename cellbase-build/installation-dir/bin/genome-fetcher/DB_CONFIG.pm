@@ -90,6 +90,7 @@ BEGIN {
 			$GLYCINE_MAX_CORE
 			$VITIS_VINIFERA_CORE
 			$ZEA_MAYS_CORE
+			$SOLANUM_LYCOPERSICUM_CORE
 
 			$GGO_CORE
 			$CAVIA_PORCELLUS_CORE
@@ -213,6 +214,7 @@ our $ORYZA_SATIVA_CORE = "oryza_sativa_core_24_77_7";
 our $GLYCINE_MAX_CORE = "glycine_max_core_24_77_1";
 our $VITIS_VINIFERA_CORE = "vitis_vinifera_core_24_77_3";
 our $ZEA_MAYS_CORE = "zea_mays_core_24_77_6";
+our $SOLANUM_LYCOPERSICUM_CORE = "solanum_lycopersicum_core_24_77_240";
 
 our $CAVIA_PORCELLUS_CORE = "cavia_porcellus_core_56_3a";
 our $PONGO_PYGMAEUS_CORE = "pongo_pygmaeus_core_56_1c";
