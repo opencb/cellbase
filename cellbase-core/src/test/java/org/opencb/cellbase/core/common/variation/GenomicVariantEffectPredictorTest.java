@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.common.variation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.core.Gene;
 
 import java.io.File;

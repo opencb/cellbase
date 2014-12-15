@@ -2,9 +2,10 @@ package org.opencb.cellbase.server.ws.genomic;
 
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.core.Transcript;
-import org.opencb.cellbase.core.common.variation.GenomicVariant;
+
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.*;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -237,13 +238,12 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     //@Consumes("application/x-www-form-urlencoded")
-    @Path("/{variants}/annotationGBPA")
+    @Path("/{variants}/annotation")
     public Response getAnnotationByVariants(@PathParam("variants") String variants) {
         try {
             checkParams();
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
-            List<QueryResult> completeResult = new ArrayList<>(variantList.size());
-            List<org.opencb.biodata.models.variation.GenomicVariant> variantList2 = org.opencb.biodata.models.variation.GenomicVariant.parseVariants(variants);
+            List<GenomicVariant> variantList2 = GenomicVariant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
             VariationDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
@@ -255,7 +255,7 @@ public class VariantWSServer extends GenericRestWSServer {
             VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
             List<QueryResult> variationConsequenceTypeList = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantList(variantList2, queryOptions);
 
-            VariantAnnotation  variantAnnotation = null;
+            VariantAnnotation  variantAnnotation;
 
             Integer i=0;
             for(QueryResult clinicalQueryResult: clinicalQueryResultList){
@@ -263,9 +263,9 @@ public class VariantWSServer extends GenericRestWSServer {
                 if(clinicalQueryResult.getResult() != null) {
                     phenotype = (Map<String, Object>) clinicalQueryResult.getResult();
                 }
-                Set<ConsequenceType> consequenceTypeSet = (Set<ConsequenceType>) variationConsequenceTypeList.get(i).getResult();
-                List<ConsequenceType> consequenceTypeList = new ArrayList<>();
-                consequenceTypeList.addAll(consequenceTypeSet);
+
+                List<ConsequenceType> consequenceTypeList =
+                        new ArrayList<>((Set<ConsequenceType>) variationConsequenceTypeList.get(i).getResult());
 
                 String id = null;
                 if(variationQueryResultList.get(i).getResult() != null) {
@@ -281,7 +281,6 @@ public class VariantWSServer extends GenericRestWSServer {
                 clinicalQueryResult.setResult(variantAnnotation);
 
             }
-
 
             return createOkResponse(clinicalQueryResultList);
         } catch (Exception e) {
