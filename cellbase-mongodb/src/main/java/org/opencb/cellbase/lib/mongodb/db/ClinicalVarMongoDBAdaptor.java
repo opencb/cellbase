@@ -77,11 +77,11 @@ public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements Clinica
 
     @Override
     public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options) {
-        return getAllByGenomicVariant(Arrays.asList(variant), options).get(0);
+        return getAllByGenomicVariantList(Arrays.asList(variant), options).get(0);
     }
 
     @Override
-    public List<QueryResult> getAllByGenomicVariant(List<GenomicVariant> variantList, QueryOptions options) {
+    public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(variantList.size());
         List<QueryResult> queryResultList;

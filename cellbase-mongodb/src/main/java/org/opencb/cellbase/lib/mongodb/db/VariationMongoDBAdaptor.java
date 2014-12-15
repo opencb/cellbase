@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import com.google.common.base.Joiner;
 import com.mongodb.*;
+import com.mongodb.util.StringBuilderPool;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
@@ -249,13 +250,13 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
-    public List<QueryResult> getIdByVariants(List<GenomicVariant> variations, QueryOptions options){
+    public List<QueryResult> getIdByVariantList(List<GenomicVariant> variations, QueryOptions options){
         List<DBObject> queries = new ArrayList<>(variations.size());
-        List<QueryResult> results = new ArrayList<>(variations.size());
+        List<QueryResult> results;
 
         for (GenomicVariant variation : variations) {
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(variation.getChromosome());
-            builder = builder.and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+            String chunkId = getChunkPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
+            QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
             if(variation.getReference() != null){
                 builder = builder.and("reference").is(variation.getReference());
             }

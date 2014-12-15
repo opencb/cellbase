@@ -29,7 +29,7 @@ public interface ClinicalVarDBAdaptor {
 
     public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options);
 
-    public List<QueryResult> getAllByGenomicVariant(List<GenomicVariant> variantList, QueryOptions options);
+    public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options);
 
 
 

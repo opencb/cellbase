@@ -57,6 +57,6 @@ public interface VariationDBAdaptor {
 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 
-    public List<QueryResult> getIdByVariants(List<GenomicVariant> variations, QueryOptions options);
+    public List<QueryResult> getIdByVariantList(List<GenomicVariant> variations, QueryOptions options);
 
 }
