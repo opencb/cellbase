@@ -2,9 +2,9 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import com.google.common.base.Joiner;
 import com.mongodb.*;
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
