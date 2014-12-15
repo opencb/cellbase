@@ -182,45 +182,44 @@ our $OVIS_ARIES_CORE = "ovis_aries_core_78_31";
 our $ORYZIAS_LATIPES_CORE = "oryzias_latipes_core_78_1";
 
 ## Metazoa
-our $DROSOPHILA_MELANOGASTER_CORE = "drosophila_melanogaster_core_78_546";
-our $DROSOPHILA_MELANOGASTER_VARIATION = "drosophila_melanogaster_variation_78_546";
-our $DROSOPHILA_MELANOGASTER_FUNCTIONAL = "drosophila_melanogaster_funcgen_78_546";
-our $DROSOPHILA_SIMULANS_CORE = "drosophila_simulans_core_18_78_14";
-our $DROSOPHILA_YAKUBA_CORE = "drosophila_yakuba_core_18_78_13";
-our $ANOPHELES_GAMBIAE_CORE = "anopheles_gambiae_core_22_75_3";
-our $ANOPHELES_GAMBIAE_VARIATION = "anopheles_gambiae_variation_22_75_3";
-our $CAENORHABDITIS_ELEGANS_CORE = "caenorhabditis_elegans_core_78_240";
+our $DROSOPHILA_MELANOGASTER_CORE = "drosophila_melanogaster_core_24_77_546";
+our $DROSOPHILA_MELANOGASTER_VARIATION = "drosophila_melanogaster_variation_24_77_546";
+our $DROSOPHILA_MELANOGASTER_FUNCTIONAL = "drosophila_melanogaster_funcgen_24_77_546";
+our $DROSOPHILA_SIMULANS_CORE = "drosophila_simulans_core_24_77_14";
+our $DROSOPHILA_YAKUBA_CORE = "drosophila_yakuba_core_24_77_13";
+our $ANOPHELES_GAMBIAE_CORE = "anopheles_gambiae_core_24_77_4";
+our $ANOPHELES_GAMBIAE_VARIATION = "anopheles_gambiae_variation_24_77_4";
+our $CAENORHABDITIS_ELEGANS_CORE = "caenorhabditis_elegans_core_24_77_240";
 
 ## Fungi
-our $SACCHAROMYCES_CEREVISIAE_CORE = "saccharomyces_cerevisiae_core_78_4";
-our $SACCHAROMYCES_CEREVISIAE_VARIATION = "saccharomyces_cerevisiae_variation_78_4";
-our $SCHIZOSACCHAROMYCES_POMBE_CORE = "schizosaccharomyces_pombe_core_18_78_2";
-our $ASPERGILLUS_FUMIGATUS_CORE = "aspergillus_fumigatus_core_22_75_2";
-our $ASPERGILLUS_NIGER_CORE = "aspergillus_niger_core_18_78_1";
-our $ASPERGILLUS_NIDULANS_CORE = "aspergillus_nidulans_core_18_78_6";
-our $ASPERGILLUS_ORYZAE_CORE = "aspergillus_oryzae_core_18_78_2";
+our $SACCHAROMYCES_CEREVISIAE_CORE = "saccharomyces_cerevisiae_core_24_77_4";
+our $SACCHAROMYCES_CEREVISIAE_VARIATION = "saccharomyces_cerevisiae_variation_24_77_4";
+our $SCHIZOSACCHAROMYCES_POMBE_CORE = "schizosaccharomyces_pombe_core_24_77_2";
+our $ASPERGILLUS_FUMIGATUS_CORE = "aspergillus_fumigatus_core_24_77_2";
+our $ASPERGILLUS_NIGER_CORE = "aspergillus_niger_core_24_77_1";
+our $ASPERGILLUS_NIDULANS_CORE = "aspergillus_nidulans_core_24_77_6";
+our $ASPERGILLUS_ORYZAE_CORE = "aspergillus_oryzae_core_24_77_2";
 
 ## Protist
-our $PLASMODIUM_FALCIPARUM_CORE = "plasmodium_falciparum_core_22_75_3";
-our $PLASMODIUM_FALCIPARUM_VARIATION = "plasmodium_falciparum_variation_22_75_3";
-our $LEISHMANIA_MAJOR_CORE = "leishmania_major_core_22_75_2";
+our $PLASMODIUM_FALCIPARUM_CORE = "plasmodium_falciparum_core_24_77_3";
+our $PLASMODIUM_FALCIPARUM_VARIATION = "plasmodium_falciparum_variation_24_77_3";
+our $LEISHMANIA_MAJOR_CORE = "leishmania_major_core_24_77_2";
 
 ## Plants
-our $ARABIDOPSIS_THALIANA_CORE = "arabidopsis_thaliana_core_22_75_10";
-our $ARABIDOPSIS_LYRATA_CORE = "arabidopsis_lyrata_core_18_78_10";
-our $BRACHYPODIUM_DISTACHYON_CORE = "brachypodium_distachyon_core_18_78_12";
-our $ORYZA_SATIVA_CORE = "oryza_sativa_core_22_75_7";
-our $GLYCINE_MAX_CORE = "glycine_max_core_18_78_1";
-our $VITIS_VINIFERA_CORE = "vitis_vinifera_core_22_75_3";
-our $ZEA_MAYS_CORE = "zea_mays_core_18_78_6";
-
+our $ARABIDOPSIS_THALIANA_CORE = "arabidopsis_thaliana_core_24_77_10";
+our $ARABIDOPSIS_LYRATA_CORE = "arabidopsis_lyrata_core_24_77_10";
+our $BRACHYPODIUM_DISTACHYON_CORE = "brachypodium_distachyon_core_24_77_12";
+our $ORYZA_SATIVA_CORE = "oryza_sativa_core_24_77_7";
+our $GLYCINE_MAX_CORE = "glycine_max_core_24_77_1";
+our $VITIS_VINIFERA_CORE = "vitis_vinifera_core_24_77_3";
+our $ZEA_MAYS_CORE = "zea_mays_core_24_77_6";
 
 our $CAVIA_PORCELLUS_CORE = "cavia_porcellus_core_56_3a";
 our $PONGO_PYGMAEUS_CORE = "pongo_pygmaeus_core_56_1c";
 our $ORNITHORHYNCHUS_ANATINUS_CORE = "ornithorhynchus_anatinus_core_56_1k";
 
-our $COMPARA = "ensembl_compara_71";
-our $GO = "ensembl_ontology_56";
+our $COMPARA = "ensembl_compara_78";
+our $GO = "ensembl_ontology_78";
 
 
 # adding biocarta (http://cgap.nci.nih.gov/Info/CGAPDownload) ==> awk -F':' '// {if($1 == "UNIGENE") uni= $2;if($1 == "BIOCARTA") print uni" "$2}' Hs_GeneData.dat > unigene2biocarta.txt
