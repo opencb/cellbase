@@ -99,7 +99,9 @@ public class CellBaseMain {
             // Help option is checked manually, otherwise the parser will complain about obligatory options
             if(args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
                 HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("cellbase-build.jar", "Some options are mandatory for all possible 'builds', while others are only mandatory for some specific 'builds':", options, "\nFor more information or reporting bugs contact me: imedina@cipf.es", true);
+                formatter.printHelp("cellbase-build.jar", "Some options are mandatory for all possible 'builds', " +
+                        "while others are only mandatory for some specific 'builds':", options,
+                        "\nFor more information or reporting bugs contact me: imedina@cipf.es", true);
                 return;
             }
 
