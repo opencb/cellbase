@@ -1,4 +1,4 @@
-package org.opencb.cellbase.build.transform.formats.clinical.gwas;
+package org.opencb.cellbase.core.common.clinical.gwas;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,8 @@ public class GwasStudy {
     private String replicationSampleSize;
     private String platform;
     private List<GwasTrait> traits;
+
+    public GwasStudy() {}
 
     public GwasStudy(String pubmedId, String firstAuthor, String date, String journal, String link, String study, String initialSampleSize, String replicationSampleSize, String platform) {
         this.pubmedId = pubmedId;
