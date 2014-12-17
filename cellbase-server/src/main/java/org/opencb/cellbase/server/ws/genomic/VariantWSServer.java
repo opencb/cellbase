@@ -263,8 +263,7 @@ public class VariantWSServer extends GenericRestWSServer {
                     phenotype = (Map<String, Object>) clinicalQueryResult.getResult();
                 }
 
-                List<ConsequenceType> consequenceTypeList =
-                        new ArrayList<>((Set<ConsequenceType>) variationConsequenceTypeList.get(i).getResult());
+                List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>)variationConsequenceTypeList.get(i).getResult();
 
                 String id = null;
                 if(variationQueryResultList.get(i).getResult() != null) {
