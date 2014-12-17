@@ -250,7 +250,7 @@ public class MongoDBAdaptor extends DBAdaptor {
 
         // Select which fields are excluded and included in MongoDB query
         BasicDBObject returnFields = getReturnFields(options);
-        System.out.println(returnFields.toString());
+//        System.out.println(returnFields.toString());
         // Time parameters
 //		long timeStart = System.currentTimeMillis();
         long dbTimeStart, dbTimeEnd;
