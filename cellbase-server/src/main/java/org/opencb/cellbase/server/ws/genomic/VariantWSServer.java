@@ -238,12 +238,11 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     //@Consumes("application/x-www-form-urlencoded")
-    @Path("/{variants}/annotation")
+    @Path("/{variants}/full_annotation")
     public Response getAnnotationByVariants(@PathParam("variants") String variants) {
         try {
             checkParams();
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
-            List<GenomicVariant> variantList2 = GenomicVariant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
             VariationDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
@@ -253,7 +252,7 @@ public class VariantWSServer extends GenericRestWSServer {
             List<QueryResult> clinicalQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
 
             VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
-            List<QueryResult> variationConsequenceTypeList = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantList(variantList2, queryOptions);
+            List<QueryResult> variationConsequenceTypeList = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantList(variantList, queryOptions);
 
             VariantAnnotation  variantAnnotation;
 

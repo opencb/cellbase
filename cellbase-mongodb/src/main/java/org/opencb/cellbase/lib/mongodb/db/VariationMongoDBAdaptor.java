@@ -264,9 +264,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             queries.add(builder.get());
         }
 
-        // Return only a query with the id value
-        //options.put("include", Arrays.asList("id"));
-
         results = executeQueryList(variations, queries, options, mongoDBCollection);
 
 
