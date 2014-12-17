@@ -95,23 +95,49 @@ public class VariantAnnotationMongoDBAdaptorTest {
                     for(ConsequenceType consequenceType : (List<ConsequenceType>) queryResult.getResult()) {
                         String pos;
                         if(vcfRecord.getReference().length()>1) {
-                            pos = vcfRecord.getPosition()+"-"+(vcfRecord.getPosition()+vcfRecord.getReference().length()-1);
+                            if(consequenceType.getStrand()!=null && consequenceType.getStrand().equals("+")) {
+                                pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + vcfRecord.getReference().length() - 1);
+                            } else {
+                                pos = (vcfRecord.getPosition() - vcfRecord.getReference().length() + 1)+"-"+vcfRecord.getPosition();
+                            }
+                        } else {
+                            pos = Integer.toString(vcfRecord.getPosition());
                         }
 
                         String feaType;
                         String strand;
+                        String cDnaPosition;
+                        String cdsPosition;
+                        String aPosition;
+                        String aChange;
+                        String codon;
                         switch (consequenceType.getSOName()) {
                             case "TF_binding_site_variant":
                                 feaType = "MotifFeature";
                                 strand = "-";
+                                cDnaPosition = "-";
+                                cdsPosition = "-";
+                                aPosition = "-";
+                                aChange = "-";
+                                codon = "-";
                                 break;
                             case "regulatory_region_variant":
                                 feaType = "RegulatoryFeature";
                                 strand = "-";
+                                cDnaPosition = "-";
+                                cdsPosition = "-";
+                                aPosition = "-";
+                                aChange = "-";
+                                codon = "-";
                                 break;
                             case "intergenic_variant":
                                 feaType = "-";
                                 strand = "-";
+                                cDnaPosition = "-";
+                                cdsPosition = "-";
+                                aPosition = "-";
+                                aChange = "-";
+                                codon = "-";
                                 break;
                             default:
                                 feaType = "Transcript";
@@ -120,39 +146,39 @@ public class VariantAnnotationMongoDBAdaptorTest {
                                 } else {
                                     strand = "-1";
                                 }
+                                if(consequenceType.getcDnaPosition() == null) {
+                                    cDnaPosition = "-";
+                                } else {
+                                    cDnaPosition = Integer.toString(consequenceType.getcDnaPosition());
+                                }
+                                if(consequenceType.getCdsPosition() == null) {
+                                    cdsPosition = "-";
+                                } else {
+                                    cdsPosition = Integer.toString(consequenceType.getCdsPosition());
+                                }
+                                if(consequenceType.getaPosition() == null) {
+                                    aPosition = "-";
+                                } else {
+                                    aPosition = Integer.toString(consequenceType.getaPosition());
+                                }
+                                if(consequenceType.getaChange() == null) {
+                                    aChange = "-";
+                                } else {
+                                    aChange = consequenceType.getaChange();
+                                }
+                                if(consequenceType.getCodon() == null) {
+                                    codon = "-";
+                                } else {
+                                    codon = consequenceType.getCodon();
+                                }
+
                         }
-
-
-                        String cDnaPosition;
-                        if(consequenceType.getcDnaPosition() == null) {
-                            cDnaPosition = "-";
-                        } else {
-                            cDnaPosition = Integer.toString(consequenceType.getcDnaPosition());
-                        }
-
-                        String cdsPosition;
-                        if(consequenceType.getCdsPosition() == null) {
-                            cdsPosition = "-";
-                        } else {
-                            cdsPosition = Integer.toString(consequenceType.getCdsPosition());
-                        }
-
-                        String aPosition;
-                        if(consequenceType.getaPosition() == null) {
-                            aPosition = "-";
-                        } else {
-                            aPosition = Integer.toString(consequenceType.getaPosition());
-                        }
-
-                        bw.write(vcfRecord.getChromosome()+"\t"+vcfRecord.getPosition()+"\t"+vcfRecord.getAlternate()+"\t"+
+                        bw.write(vcfRecord.getChromosome()+"\t"+pos+"\t"+vcfRecord.getAlternate()+"\t"+
                                 consequenceType.getEnsemblGeneId("-")+"\t"+feaType+"\t"+consequenceType.getBiotype("-")+"\t"+
-                                consequenceType.getSOName()+"\t"+cDnaPosition+"\t"+
-                                cdsPosition+"\t"+aPosition+"\t"+
-                                consequenceType.getCodon("-")+"\n");
+                                strand+"\t"+consequenceType.getSOName()+"\t"+cDnaPosition+"\t"+
+                                cdsPosition+"\t"+aPosition+"\t"+aChange+"\t"+codon+"\n");
                     }
-
                 }
-
                 vcfRecordList = vcfReader.read(1000);
                 lineCounter += 1000;
                 System.out.print(lineCounter+"/"+nLines);
