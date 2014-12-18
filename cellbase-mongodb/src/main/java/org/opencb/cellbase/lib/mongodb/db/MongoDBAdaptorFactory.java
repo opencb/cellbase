@@ -434,6 +434,23 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
+    public ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species) {
+        return getClinicalVarDBAdaptor(species, null);
+    }
+
+    @Override
+    public ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species, String assembly) {
+        String speciesAssemblyPrefix = getSpeciesAssemblyPrefix(species, assembly);
+        String speciesId = config.getAlias(species);
+        if (!mongoDBFactory.containsKey(speciesAssemblyPrefix)) {
+            DB db = createCellBaseMongoDB(speciesId, assembly);
+            mongoDBFactory.put(speciesAssemblyPrefix, db);
+        }
+        return (ClinicalVarDBAdaptor) new ClinicalVarMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
+                speciesId, assembly);
+    }
+
+    @Override
     public CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species) {
         // TODO Auto-generated method stub
         return null;
