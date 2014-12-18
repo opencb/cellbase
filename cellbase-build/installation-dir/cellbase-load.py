@@ -59,9 +59,9 @@ def import_collection(user, password, database, collection, coll_file_json):
 
     if os.path.exists(coll_file_json):
         if user != "" and password != "":
-            mongoimport_cmd = "mongoimport -u {0} -p {1} --directoryperdb -d {2} -c {3} --file {4}".format(user, password, database, collection, coll_file_json)
+            mongoimport_cmd = "mongoimport --host {0} -u {1} -p {2} --directoryperdb -d {3} -c {4} --file {5}".format(host, user, password, database, collection, coll_file_json)
         else:
-            mongoimport_cmd = "mongoimport --directoryperdb -d {0} -c {1} --file {2}".format(database, collection, coll_file_json)
+            mongoimport_cmd = "mongoimport --host {0} --directoryperdb -d {1} -c {2} --file {3}".format(host, database, collection, coll_file_json)
         logging.info("Importing: "+mongoimport_cmd)
         os.system(mongoimport_cmd)
     else:
@@ -76,9 +76,9 @@ def import_collection(user, password, database, collection, coll_file_json):
 def create_index(user, password, database, index):
     if os.path.exists(index):
         if user != "" and password != "":
-            mongo_index_cmd = "mongo -u {0} -p {1} {2} {3}".format(user, password, database, index)
+            mongo_index_cmd = "mongo --host {0} -u {1} -p {2} {3} {4}".format(host, user, password, database, index)
         else:
-            mongo_index_cmd = "mongo {0} {1}".format(database, index)
+            mongo_index_cmd = "mongo --host {0} {1} {2}".format(host, database, index)
         logging.info("Creating indexes: "+mongo_index_cmd)
         os.system(mongo_index_cmd)
     else:
