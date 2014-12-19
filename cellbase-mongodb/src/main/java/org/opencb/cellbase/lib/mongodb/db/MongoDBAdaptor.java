@@ -267,7 +267,13 @@ public class MongoDBAdaptor extends DBAdaptor {
             // setting queryResult fields
             queryResult.setId(ids.get(i).toString());
             queryResult.setDBTime((dbTimeEnd - dbTimeStart));
-            queryResult.setNumResults(list.size());
+            // Limit is set in queryOptions, count number of total results
+            if(options.getInt("limit", 0) > 0) {
+                queryResult.setNumResults((int) dbCollection.count(query));
+            } else {
+                queryResult.setNumResults(list.size());
+            }
+
             queryResult.setResult(list);
 
             queryResults.add(queryResult);

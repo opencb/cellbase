@@ -63,7 +63,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
         List<DBObject> queries = new ArrayList<>();
         for (Position position : positionList) {
-            String chunkId = position.getChromosome() + "_" + getChunkId(position.getPosition(), CHUNKSIZE);
+            String chunkId = position.getChromosome() + "_" + getChunkId(position.getPosition(), CHUNKSIZE)+"_"+CHUNKSIZE/1000+"k";
             BasicDBList chunksId = new BasicDBList();
             chunksId.add(chunkId);
             QueryBuilder builder = QueryBuilder.start("chunkIds").in(chunksId).and("start").is(position.getPosition());
@@ -111,7 +111,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
             int lastChunkId = getChunkId(region.getEnd(), CHUNKSIZE);
             BasicDBList chunksId = new BasicDBList();
             for (int j = firstChunkId; j <= lastChunkId; j++) {
-                String chunkId = region.getChromosome() + "_" + j;
+                String chunkId = region.getChromosome() + "_" + j+"_"+CHUNKSIZE/1000+"k";
                 chunksId.add(chunkId);
             }
 
@@ -147,7 +147,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         String featureClass = options.getString("featureClass", null);
 
         BasicDBList chunksId = new BasicDBList();
-        String chunkId = chromosome + "_" + getChunkId(position, CHUNKSIZE);
+        String chunkId = chromosome + "_" + getChunkId(position, CHUNKSIZE)+"_"+CHUNKSIZE/1000+"k";
         chunksId.add(chunkId);
 
         // TODO: Add query to find next item considering next chunk
