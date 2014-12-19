@@ -16,6 +16,10 @@ import java.util.*;
 
 public class VariationParser extends CellBaseParser {
 
+    public static final String VARIATION_FILENAME = "variation.txt.gz";
+    public static final String VARIATION_FEATURE_FILENAME = "variation_feature.txt";
+    public static final String TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.txt";
+    public static final String VARIATION_SYNONYM_FILENAME = "variation_synonym.txt";
     private RandomAccessFile rafVariationFeature, rafTranscriptVariation, rafVariationSynonym;
     private Connection sqlConn = null;
     private PreparedStatement prepStmVariationFeature, prepStmTranscriptVariation, prepStmVariationSynonym;
@@ -40,11 +44,11 @@ public class VariationParser extends CellBaseParser {
         Variation variation;
 
         // Open variation file, this file never gets uncompressed. It's read from gzip file
-        BufferedReader bufferedReaderVariation = FileUtils.newBufferedReader(variationDirectoryPath.resolve("variation.txt.gz"));
+        BufferedReader bufferedReaderVariation = FileUtils.newBufferedReader(variationDirectoryPath.resolve(VARIATION_FILENAME));
 
         // To speed up calculation a SQLite database is created with the IDs and file offsets,
         // file must be uncompressed for doing this.
-        gunzipFiles(variationDirectoryPath);
+        gunzipVariationInputFiles(variationDirectoryPath);
 
         // Prepares connections to database to resolve queries by ID.
         // This version combines a SQLite database with the file offsets
@@ -96,7 +100,7 @@ public class VariationParser extends CellBaseParser {
             }
         }
 
-        gzipFiles(variationDirectoryPath);
+        gzipVariationFiles(variationDirectoryPath);
 
         try {
             bufferedReaderVariation.close();
@@ -219,17 +223,17 @@ public class VariationParser extends CellBaseParser {
         sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationDirectoryPath.toAbsolutePath().toString() + "/variation_tables.db");
         if (!Files.exists(variationDirectoryPath.resolve("variation_tables.db")) || Files.size(variationDirectoryPath.resolve("variation_tables.db")) == 0) {
             sqlConn.setAutoCommit(false);
-            createTable(5, variationDirectoryPath.resolve("variation_feature.txt"), "variation_feature");
-            createTable(1, variationDirectoryPath.resolve("transcript_variation.txt"), "transcript_variation");
-            createTable(1, variationDirectoryPath.resolve("variation_synonym.txt"), "variation_synonym");
+            createTable(5, variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME), "variation_feature");
+            createTable(1, variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME), "transcript_variation");
+            createTable(1, variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME), "variation_synonym");
             sqlConn.setAutoCommit(true);
         }
     }
 
     private void prepareRandomAccessFiles(Path variationDirectoryPath) throws FileNotFoundException {
-        rafVariationFeature = new RandomAccessFile(variationDirectoryPath.resolve("variation_feature.txt").toFile(), "r");
-        rafTranscriptVariation = new RandomAccessFile(variationDirectoryPath.resolve("transcript_variation.txt").toFile(), "r");
-        rafVariationSynonym = new RandomAccessFile(variationDirectoryPath.resolve("variation_synonym.txt").toFile(), "r");
+        rafVariationFeature = new RandomAccessFile(variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME).toFile(), "r");
+        rafTranscriptVariation = new RandomAccessFile(variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME).toFile(), "r");
+        rafVariationSynonym = new RandomAccessFile(variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME).toFile(), "r");
     }
 
     private void prepareSelectStatements() throws SQLException {
@@ -356,116 +360,49 @@ public class VariationParser extends CellBaseParser {
         sqlConn.commit();
     }
 
-    private void gunzipFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
-        if (Files.exists(variationDirectoryPath.resolve("variation_feature.txt.gz"))) {
-            Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("variation_feature.txt.gz").toAbsolutePath());
+    private void gunzipVariationInputFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
+        logger.info("Unzipping variation files ...");
+        gunzipFile(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
+        gunzipFile(variationDirectoryPath, TRANSCRIPT_VARIATION_FILENAME);
+        gunzipFile(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
+        logger.info("Done");
+
+    }
+
+    private void gunzipFile(Path directory, String fileName) throws IOException, InterruptedException {
+        Path zippedFile = directory.resolve(fileName + ".gz");
+        logger.info("Unzipping " + zippedFile + "...");
+        if (Files.exists(zippedFile)) {
+            Process process = Runtime.getRuntime().exec("gunzip " + zippedFile.toAbsolutePath());
+            process.waitFor();
+        } else {
+            logger.error("File " + zippedFile + " doesn't exist");
+        }
+    }
+
+
+    private void gzipVariationFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
+        gzipFile(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
+
+        if (Files.exists(variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME))) {
+            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME).toAbsolutePath());
             process.waitFor();
         }
 
-        if (Files.exists(variationDirectoryPath.resolve("transcript_variation.txt.gz"))) {
-            Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("transcript_variation.txt.gz").toAbsolutePath());
-            process.waitFor();
-        }
-
-        if (Files.exists(variationDirectoryPath.resolve("variation_synonym.txt.gz"))) {
-            Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("variation_synonym.txt.gz").toAbsolutePath());
+        if (Files.exists(variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME))) {
+            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME).toAbsolutePath());
             process.waitFor();
         }
     }
 
-    private void gzipFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
-        if (Files.exists(variationDirectoryPath.resolve("variation_feature.txt"))) {
-            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("variation_feature.txt").toAbsolutePath());
+    private void gzipFile(Path directory, String fileName) throws IOException, InterruptedException {
+        Path unzippedFile = directory.resolve(fileName);
+        if (Files.exists(unzippedFile)) {
+            Process process = Runtime.getRuntime().exec("gzip " + unzippedFile.toAbsolutePath());
             process.waitFor();
+        } else {
+            logger.error("File " + unzippedFile + " doesn't exist");
         }
-
-        if (Files.exists(variationDirectoryPath.resolve("transcript_variation.txt"))) {
-            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("transcript_variation.txt").toAbsolutePath());
-            process.waitFor();
-        }
-
-        if (Files.exists(variationDirectoryPath.resolve("variation_synonym.txt"))) {
-            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("variation_synonym.txt").toAbsolutePath());
-            process.waitFor();
-        }
-    }
-
-    @Deprecated
-    public void createVariationDatabase(Path variationDirectoryPath) {
-        try {
-//            Class.forName("org.sqlite.JDBC");
-//            sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-//			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
-            if (!Files.exists(variationDirectoryPath.resolve("variation_tables.db"))) {
-
-                sqlConn.setAutoCommit(false);
-                createTable(5, variationDirectoryPath.resolve("variation_feature.txt"), "variation_feature");
-                createTable(1, variationDirectoryPath.resolve("transcript_variation.txt"), "transcript_variation");
-                createTable(1, variationDirectoryPath.resolve("variation_synonym.txt"), "variation_synonym");
-                sqlConn.setAutoCommit(true);
-//                prepStmVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
-//                prepStmTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
-//                prepStmVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Deprecated
-    public Map<String, List<String>> queryAllByVariationId(int variationId, Path variationFilePath) throws IOException, SQLException {
-
-        List<String> tables = Arrays.asList("variation_feature", "transcript_variation", "variation_synonym");
-        Map<String, List<String>> resultMap = new HashMap<>();
-        List<Long> offsets;
-        for (String table : tables) {
-
-            // First query SQLite to get offset position
-            offsets = new ArrayList<Long>();
-            //		PreparedStatement pst = sqlConn.statement(sql)
-            //		ResultSet rs = pst.executeQuery("select offset from "+tableName+" where variation_id = " + variationId + "");
-            ResultSet rs = null;
-            switch (table) {
-                case "variation_feature":
-                    prepStmVariationFeature.setInt(1, variationId);
-                    rs = prepStmVariationFeature.executeQuery();
-                    break;
-                case "transcript_variation":
-                    prepStmTranscriptVariation.setInt(1, variationId);
-                    rs = prepStmTranscriptVariation.executeQuery();
-                    break;
-                case "variation_synonym":
-                    prepStmVariationSynonym.setInt(1, variationId);
-                    rs = prepStmVariationSynonym.executeQuery();
-                    break;
-            }
-
-            while (rs.next()) {
-                offsets.add(rs.getLong(1));
-            }
-
-            // Second go to file
-            String line = null;
-            List<String> results = new ArrayList<>();
-            if (offsets.size() > 0) {
-                RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve(table + ".txt.gz").toFile(), "r");
-                for (Long offset : offsets) {
-                    if (offset >= 0) {
-                        raf.seek(offset);
-                        line = raf.readLine();
-                        if (line != null) {
-                            results.add(line);
-                        }
-                    }
-                }
-                raf.close();
-            }
-            resultMap.put(table, results);
-        }
-        return resultMap;
     }
 
 }
