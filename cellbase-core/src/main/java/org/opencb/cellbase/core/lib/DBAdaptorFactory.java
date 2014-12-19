@@ -175,6 +175,11 @@ public abstract class DBAdaptorFactory {
     public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly);
 
 
+	public abstract ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species);
+
+	public abstract ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species, String assembly);
+
+
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);
 	
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species, String assembly);

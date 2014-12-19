@@ -2,8 +2,8 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.*;
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.core.Gene;
-import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.variation.GenomicVariantEffect;
 import org.opencb.cellbase.core.common.variation.GenomicVariantEffectPredictor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;

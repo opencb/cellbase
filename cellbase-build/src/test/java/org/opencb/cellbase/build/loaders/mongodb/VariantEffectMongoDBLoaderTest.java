@@ -5,15 +5,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.opencb.biodata.models.variant.annotation.*;
-import org.opencb.biodata.models.variation.ConsequenceType;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.annotation.VariantEffect;
 
 import java.net.UnknownHostException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *

@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.lib.api;
 
-
-import org.opencb.cellbase.core.common.variation.GenomicVariant;
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Region;
 
 import java.util.List;
