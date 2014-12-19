@@ -50,10 +50,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         String line = null;
 
-        String INPUTFILE = "/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
+        String INPUTFILE = "/home/fjlopez/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
 
         QueryResult queryResult = null;
-        BufferedWriter bw = Files.newBufferedWriter(Paths.get("/tmp/22.uva.vcf"), Charset.defaultCharset());
+        BufferedWriter bw = Files.newBufferedWriter(Paths.get("/home/fjlopez/tmp/22.uva.vcf"), Charset.defaultCharset());
 
         // Use ebi cellbase to test these
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("14", 19108198, "-", "GGTCTAGCATG"), new QueryOptions());

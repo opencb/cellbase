@@ -23,8 +23,10 @@ import java.util.*;
  */
 public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
 
+
 //    private DBCollection mongoVariationPhenotypeDBCollection;
     private int coreChunkSize = 5000;
+    private int regulatoryChunkSize = 2000;  //TODO: load this value from properties
     private static Map<String, Map<String,Boolean>> isSynonymousCodon = new HashMap<>();
     private static Map<String, List<String>> aToCodon = new HashMap<>(20);
     private static Map<String, String> codonToA = new HashMap<>();
@@ -576,10 +578,15 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         // Get all genes surrounding the variant +-5kb
         builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
                 .greaterThanEquals(variant.getPosition()-5000).and("start").lessThanEquals(variantEnd+5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
-                                                                                                             // variantEnd equals variant.getPosition() for non-deletion variants
-        // Get all genes surrounding the variant +-5kb
-        builderRegulatory = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
-                .greaterThanEquals(variant.getPosition()).and("start").lessThanEquals(variantEnd); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
+
+        // Get all regulatory regions surrounding the variant
+        String chunkId = getChunkPrefix(variant.getChromosome(), variant.getPosition(), regulatoryChunkSize);
+        BasicDBList chunksId = new BasicDBList();
+        chunksId.add(chunkId);
+        builderRegulatory = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(variantEnd).and("end")
+                .greaterThanEquals(variant.getPosition()); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
+//        builderRegulatory = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
+//                .greaterThanEquals(variant.getPosition()).and("start").lessThanEquals(variantEnd); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
 
         // Execute query and calculate time
         mongoDBCollection = db.getCollection("gene");
@@ -794,6 +801,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(TFBSFound) {
                 consequenceTypeList.add(new ConsequenceType("TF_binding_site_variant"));
             }
+        } else {
+            int b;
+            b = 1;
         }
 
         if(consequenceTypeList.size()==0) {

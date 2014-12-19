@@ -291,7 +291,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesAssemblyPrefix, db);
         }
         return (VariantAnnotationDBAdaptor) new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
-                speciesId, assembly);
+                speciesId, assembly, config.getCoreChunkSize());
     }
 
 
