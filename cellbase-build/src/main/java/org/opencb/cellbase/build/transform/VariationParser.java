@@ -16,7 +16,7 @@ import java.util.*;
 
 public class VariationParser extends CellBaseParser {
 
-    private RandomAccessFile raf, rafVariationFeature, rafTranscriptVariation, rafVariationSynonym;
+    private RandomAccessFile rafVariationFeature, rafTranscriptVariation, rafVariationSynonym;
     private Connection sqlConn = null;
     private PreparedStatement prepStmVariationFeature, prepStmTranscriptVariation, prepStmVariationSynonym;
 
@@ -58,16 +58,14 @@ public class VariationParser extends CellBaseParser {
         String line;
         while ((line = bufferedReaderVariation.readLine()) != null) {
             String[] variationFields = line.split("\t");
-            int variationId = Integer.parseInt(variationFields[0]);
 
+            int variationId = Integer.parseInt(variationFields[0]);
             List<String> resultVariationFeature = queryByVariationId(variationId, "variation_feature");
 
             if (resultVariationFeature != null && resultVariationFeature.size() > 0) {
-
                 String[] variationFeatureFields = resultVariationFeature.get(0).split("\t", -1);
 
                 List<TranscriptVariation> transcriptVariation = getTranscriptVariations(variationFeatureFields[0]);
-
                 List<Xref> xrefs = getXrefs(sourceMap, variationId);
 
                 try {
@@ -271,45 +269,51 @@ public class VariationParser extends CellBaseParser {
     }
 
     public List<String> queryByVariationId(int variationId, String tableName) throws IOException, SQLException {
-        // First query SQLite to get offset position
-        List<Long> offsets = new ArrayList<>();
-        ResultSet rs = null;
+        List<Long> offsets;
+        List<String> variations = null;
         switch (tableName) {
             case "variation_feature":
-                prepStmVariationFeature.setInt(1, variationId);
-                rs = prepStmVariationFeature.executeQuery();
-                raf = rafVariationFeature;
+                offsets = getOffsetForVariationRandomAccessFile(prepStmVariationFeature, variationId);
+                variations = getVariationsFromRandomAccesssFile(offsets, rafVariationFeature);
                 break;
             case "transcript_variation":
-                prepStmTranscriptVariation.setInt(1, variationId);
-                rs = prepStmTranscriptVariation.executeQuery();
-                raf = rafTranscriptVariation;
+                offsets = getOffsetForVariationRandomAccessFile(prepStmTranscriptVariation, variationId);
+                variations = getVariationsFromRandomAccesssFile(offsets, rafTranscriptVariation);
                 break;
             case "variation_synonym":
-                prepStmVariationSynonym.setInt(1, variationId);
-                rs = prepStmVariationSynonym.executeQuery();
-                raf = rafVariationSynonym;
+                offsets = getOffsetForVariationRandomAccessFile(prepStmVariationSynonym, variationId);
+                variations = getVariationsFromRandomAccesssFile(offsets, rafVariationSynonym);
                 break;
         }
+        return variations;
+    }
 
+    private List<Long> getOffsetForVariationRandomAccessFile(PreparedStatement statement, int variationId) throws SQLException {
+        statement.setInt(1, variationId);
+        ResultSet rs = statement.executeQuery();
+
+        List<Long> offsets = new ArrayList<>();
         while (rs.next()) {
             offsets.add(rs.getLong(1));
         }
         Collections.sort(offsets);
-        // Second go to file
-        String line = null;
+
+        return offsets;
+    }
+
+    private List<String> getVariationsFromRandomAccesssFile(List<Long> offsets, RandomAccessFile raf) throws IOException {
         List<String> results = new ArrayList<>();
-        if (offsets.size() > 0) {
-            for (Long offset : offsets) {
-                if (offset >= 0) {
-                    raf.seek(offset);
-                    line = raf.readLine();
-                    if (line != null) {
-                        results.add(line);
-                    }
+
+        for (Long offset : offsets) {
+            if (offset >= 0) {
+                raf.seek(offset);
+                String line = raf.readLine();
+                if (line != null) {
+                    results.add(line);
                 }
             }
         }
+
         return results;
     }
 
