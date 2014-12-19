@@ -585,8 +585,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         chunksId.add(chunkId);
         builderRegulatory = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(variantEnd).and("end")
                 .greaterThanEquals(variant.getPosition()); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
-//        builderRegulatory = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
-//                .greaterThanEquals(variant.getPosition()).and("start").lessThanEquals(variantEnd); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
 
         // Execute query and calculate time
         mongoDBCollection = db.getCollection("gene");
