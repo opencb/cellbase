@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.*;
 //import java.util.logging.Logger;
 
@@ -142,6 +143,21 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         biotypes.put("unitary_pseudogene",35);
         biotypes.put("translated_processed_pseudogene",36);
         biotypes.put("transcribed_processed_pseudogene",37);
+        biotypes.put("tRNA_pseudogene",38);
+        biotypes.put("snoRNA_pseudogene",39);
+        biotypes.put("snRNA_pseudogene",40);
+        biotypes.put("scRNA_pseudogene",41);
+        biotypes.put("rRNA_pseudogene",42);
+        biotypes.put("misc_RNA_pseudogene",43);
+        biotypes.put("miRNA_pseudogene",44);
+        biotypes.put("non_coding",45);
+        biotypes.put("ambiguous_orf",46);
+        biotypes.put("known_ncrna",47);
+        biotypes.put("retrotransposed",48);
+        biotypes.put("transcribed_unitary_pseudogene",49);
+        biotypes.put("translated_unprocessed_pseudogene",50);
+        biotypes.put("LRG_gene",51);
+
 
         complementaryNt.put('A','T');
         complementaryNt.put('C','G');
@@ -614,7 +630,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 transcriptStart = (Integer) transcriptInfo.get("start");
                 transcriptEnd = (Integer) transcriptInfo.get("end");
                 transcriptStrand = (String) transcriptInfo.get("strand");
-                transcriptBiotype = biotypes.get((String) transcriptInfo.get("biotype"));
+                try {
+                    transcriptBiotype = biotypes.get((String) transcriptInfo.get("biotype"));
+                } catch (NullPointerException e) {
+                    logger.info("WARNING: biotype not found within the list of hardcoded biotypes - "+transcriptInfo.get("biotype"));
+                    logger.info("WARNING: transcript: "+ensemblTranscriptId);
+                    logger.info("WARNING: setting transcript biotype to non_coding ");
+                    transcriptBiotype = 45;
+                }
                 SoNames.clear();
                 consequenceTypeTemplate.setEnsemblTranscriptId(ensemblTranscriptId);
                 consequenceTypeTemplate.setcDnaPosition(null);
@@ -646,6 +669,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 24:
                             case 35:
                             case 36:
+                            case 51:    // LRG_gene
                                 solveCodingPositiveTranscript(variant, SoNames, transcriptInfo, transcriptStart,
                                         transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 for(String SoName : SoNames) {
@@ -678,6 +702,19 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 37:  // transcribed_processed_pseudogene
                             case 33:
                             case 34:
+                            case 38:
+                            case 39:
+                            case 40:
+                            case 41:
+                            case 42:
+                            case 43:
+                            case 44:
+                            case 45:
+                            case 46:
+                            case 47:
+                            case 48:
+                            case 49:
+                            case 50:
                                 SoNames.add("non_coding_transcript_variant");
                                 exonVariant = solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
@@ -724,6 +761,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 24:
                             case 35:
                             case 36:
+                            case 51:    // LRG_gene
                                 solveCodingNegativeTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 for(String SoName : SoNames) {
@@ -756,6 +794,19 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 37:  // transcribed_processed_pseudogene
                             case 33:
                             case 34:
+                            case 38:
+                            case 39:
+                            case 40:
+                            case 41:
+                            case 42:
+                            case 43:
+                            case 44:
+                            case 45:
+                            case 46:
+                            case 47:
+                            case 48:
+                            case 49:
+                            case 50:
                                 SoNames.add("non_coding_transcript_variant");
                                 exonVariant = solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
