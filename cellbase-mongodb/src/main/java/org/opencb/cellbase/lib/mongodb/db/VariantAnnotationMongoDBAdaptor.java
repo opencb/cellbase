@@ -863,7 +863,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         // setting queryResult fields
         queryResult.setId(variant.toString());
         queryResult.setDBTime((dbTimeEnd - dbTimeStart));
-        queryResult.setNumResults(SoNames.size());
+        queryResult.setNumResults(consequenceTypeList.size());
         queryResult.setResult(consequenceTypeList);
 
         return queryResult;
