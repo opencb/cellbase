@@ -373,8 +373,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(cdnaVariantEnd != null && cdnaVariantEnd>(cdnaCodingEnd-3)) {
             if(cdnaVariantStart==cdnaVariantEnd) {
                 int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+                System.out.println(transcriptSequence);
                 String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length()-modifiedCodonStart-2,
-                        transcriptSequence.length()-modifiedCodonStart)+1).reverse().toString();  // Rigth limit of the substring sums +1 because substring does not include that position
+                        transcriptSequence.length()-modifiedCodonStart+1)).reverse().toString();  // Rigth limit of the substring sums +1 because substring does not include that position
                 char[] referenceCodon = reverseCodon.toCharArray();
                 referenceCodon[0] = complementaryNt.get(referenceCodon[0]);
                 referenceCodon[1] = complementaryNt.get(referenceCodon[1]);
