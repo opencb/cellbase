@@ -62,7 +62,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
         BufferedWriter bw = Files.newBufferedWriter(Paths.get("/home/fjlopez/tmp/22.uva.vcf"), Charset.defaultCharset());
 
         // Use ebi cellbase to test these
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("9", 214512, "C", "A"), new QueryOptions());
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTACCAGCTACTTGGAAGGCTGAGGCAGGAGACTCTCTTGAACCTGGGAAGCCGAGGTTGCAGTGAGCTGGGCGACAGAGGGAGACTCCGTAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAAAGAAAACAGGAAGGAAAGAAGAAAGAGAAACTAGAAATAATACATGTAAAGTGGCTGATTCTATTATCCTTGTTATTCCTTCTCCATGGGGCTGTTGTCAGGATTAAGTGAGATAGAGCACAGGAAAGGGCTCTGGAAACGCCTGTAGGCTCTAACCCTGAGGCATGGGCCTGTGGCCAGGAGCTCTCCCATTGACCACCTCCGCTGCCTCTGCTCGCATCCCGCAGGCTCACCTGTTTCTCCGGCGTGGAAGAAGTAAGGCAGCTTAACGCCATCCTTGGCGGGGATCATCAGAGCTTCCTTGTAGTCATGCAAGGAGTGGCCAGTGTCCTCATGCCCCACCTGCAGGACAGAGAGGGACAGGGAGGTGTCTGCAGGGCGCATGCCTCACTTGCTGATGGCGCGCCCTGGAGCCTGTGCACACCCTTCCTTGTACCCTGCCACCACTGCCGGGACCTTTGTCACACAGCCTTTTAAGAATGACCAGGAGCAGGCCAGGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGGGAGGCCGAGGCAGGCAGATCACGAAGTCAGGAGATCGAGACCATCCTGGCTAACACAGTGAAACCCCA", "-"), new QueryOptions());
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17668818, "C", "A"), new QueryOptions());
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("8", 408515, "GAA", ""), new QueryOptions());
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("3", 367747, "C", "T"), new QueryOptions());
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("9", 214512, "C", "A"), new QueryOptions());
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("14", 19108198, "-", "GGTCTAGCATG"), new QueryOptions());
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("3L", 22024723, "G", "T"), new QueryOptions());
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2L", 37541199, "G", "A"), new QueryOptions());
@@ -95,11 +100,24 @@ public class VariantAnnotationMongoDBAdaptorTest {
             List<VcfRecord> vcfRecordList= vcfReader.read(1000);
             int nLines = countLines(INPUTFILE);
             int lineCounter = 0;
+            String ref;
+            String alt;
             System.out.println("Processing vcf lines...");
             while(vcfRecordList.size()>0) {
                 for(VcfRecord vcfRecord : vcfRecordList) {
+                    if(vcfRecord.getReference().length()>1) {
+                        ref = vcfRecord.getReference().substring(1);
+                        alt = "-";
+                    } else if(vcfRecord.getAlternate().length()>1) {
+                        ref = "-";
+                        alt = vcfRecord.getAlternate().substring(1);
+                    } else {
+                        ref = vcfRecord.getReference();
+                        alt = vcfRecord.getAlternate();
+                    }
+//                    System.out.println("new GenomicVariant = " + new GenomicVariant(vcfRecord.getChromosome(), vcfRecord.getPosition(),ref, alt));
                     queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), vcfRecord.getPosition(),
-                            vcfRecord.getReference(), vcfRecord.getAlternate()), new QueryOptions());
+                            ref, alt), new QueryOptions());
 
                     for(ConsequenceType consequenceType : (List<ConsequenceType>) queryResult.getResult()) {
                         String pos;
@@ -190,8 +208,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 }
                 vcfRecordList = vcfReader.read(1000);
                 lineCounter += 1000;
-                System.out.print(lineCounter+"/"+nLines);
-
+                System.out.print(lineCounter+"/"+nLines+"\r");
             }
         }
     }
