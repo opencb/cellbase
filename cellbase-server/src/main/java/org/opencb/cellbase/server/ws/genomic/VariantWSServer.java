@@ -276,7 +276,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 variantAnnotation.setId(id);
                 variantAnnotation.setClinicalData(phenotype);
                 variantAnnotation.setConsequenceTypes(consequenceTypeList);
-                clinicalQueryResult.setResult(variantAnnotation);
+                clinicalQueryResult.setResult(Arrays.asList(variantAnnotation));
 
             }
 
