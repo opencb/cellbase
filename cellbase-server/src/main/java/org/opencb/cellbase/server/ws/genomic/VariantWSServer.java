@@ -270,14 +270,15 @@ public class VariantWSServer extends GenericRestWSServer {
                     id = variationQueryResultList.get(i).getResult().toString();
                 }
 
+                // TODO: start & end are both being set to variantList.get(i).getPosition(), modify this for indels
                 variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(),
                         variantList.get(i).getPosition(),variantList.get(i).getPosition(),variantList.get(i).getReference(),variantList.get(i).getAlternative());
 
                 variantAnnotation.setId(id);
                 variantAnnotation.setClinicalData(phenotype);
                 variantAnnotation.setConsequenceTypes(consequenceTypeList);
-                clinicalQueryResult.setResult(variantAnnotation);
-
+                clinicalQueryResult.setResult(Collections.singletonList(variantAnnotation));
+                i++;
             }
 
             return createOkResponse(clinicalQueryResultList);
