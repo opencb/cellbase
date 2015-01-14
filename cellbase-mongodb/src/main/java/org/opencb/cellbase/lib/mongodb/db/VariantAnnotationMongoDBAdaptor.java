@@ -555,7 +555,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     SoNames.add("stop_lost");
                 }
             } else {
-                if(transcriptStart>genomicCodingStart) {// Check transcript has 3 UTR)
+                if(transcriptStart<genomicCodingStart) {// Check transcript has 3 UTR)
                     SoNames.add("3_prime_UTR_variant");
                 }
             }
@@ -564,34 +564,35 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
     private void solveJunction(Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, HashSet<String> SoNames,
                                                 String leftSpliceSiteTag, String rightSpliceSiteTag, Boolean[] junctionSolution) {
-//        Boolean splicing = false;
-//        Boolean intron = false;
-//        Boolean notdonor = true;
-//        Boolean notacceptor = true;
 
         junctionSolution[0] = false;
         junctionSolution[1] = false;
-        if(regionsOverlap(spliceSite1,spliceSite2,variantStart,variantEnd)) {
-            SoNames.add("intron_variant");
-//            intron = true;
+        Boolean isDonorAcceptor = false;
+
+        if(regionsOverlap(spliceSite1-3,spliceSite2+3,variantStart,variantEnd)) {
+            if (regionsOverlap(spliceSite1 - 3, spliceSite1 + 7, variantStart, variantEnd)) {
+                junctionSolution[0] = true;
+                if (regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {
+                    SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
+                    isDonorAcceptor = true;
+                } else {
+                    SoNames.add("splice_region_variant");
+                }
+            }
+            if (regionsOverlap(spliceSite2 - 7, spliceSite2 + 3, variantStart, variantEnd)) {
+                junctionSolution[0] = true;
+                if (regionsOverlap(spliceSite2 - 1, spliceSite2, variantStart, variantEnd)) {
+                    SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
+                    isDonorAcceptor = true;
+                } else {
+                    SoNames.add("splice_region_variant");
+                }
+            }
             if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
-                junctionSolution[1] = true;
+                junctionSolution[1] = true;  // variant start & end fall within the intron
             }
-        }
-        if(regionsOverlap(spliceSite1-3,spliceSite1+7,variantStart,variantEnd)) {
-            SoNames.add("splice_region_variant");
-            junctionSolution[0] = true;
-            if(regionsOverlap(spliceSite1,spliceSite1+1,variantStart,variantEnd)) {
-                SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-//                notdonor = false;
-            }
-        }
-        if(regionsOverlap(spliceSite2-7,spliceSite2+3,variantStart,variantEnd)) {
-            SoNames.add("splice_region_variant");
-            junctionSolution[0] = true;
-            if(regionsOverlap(spliceSite2-1,spliceSite2,variantStart,variantEnd)) {
-                SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
-//                notacceptor = false;
+            if(!isDonorAcceptor && regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
+                SoNames.add("intron_variant");
             }
         }
     }
@@ -606,7 +607,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         QueryResult queryResult = new QueryResult();
         QueryBuilder builderGene = null;
         QueryBuilder builderRegulatory = null;
-        BasicDBList transcriptInfoList, exonInfoList;
+        BasicDBList transcriptInfoList = null;
+        BasicDBList exonInfoList;
         BasicDBObject transcriptInfo, exonInfo;
         BasicDBObject geneInfo;
         BasicDBObject regulatoryInfo;
@@ -696,6 +698,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             SoNames.add("feature_elongation");
                         }
                         switch (transcriptBiotype) {
+                            /**
+                             * Coding biotypes
+                             */
                             case 1:
                             case 2:
                             case 3:
@@ -708,6 +713,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 24:
                             case 35:
                             case 36:
+                            case 50:    // translated_unprocessed_pseudogene
                             case 51:    // LRG_gene
                                 solveCodingPositiveTranscript(variant, SoNames, transcriptInfo, transcriptStart,
                                         transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
@@ -724,38 +730,54 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getCodon(), SoName));
                                 }
                                 break;
+                            /**
+                             * NMD, pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
+                             */
                             case 30:
                                 SoNames.add("NMD_transcript_variant");
-                            case 0:
-                            case 16:    // antisense
-                            case 17:
-                            case 18:
-                            case 19:
+                            case 16:  // antisense
                             case 21:  // processed_pseudogene
                             case 22:  // processed_transcript
-                            case 25:
-                            case 26:
-                            case 27:
-                            case 28:
-                            case 29:
                             case 31:  // unprocessed_pseudogene
                             case 32:  // transcribed_unprocessed_pseudogene
                             case 37:  // transcribed_processed_pseudogene
-                            case 33:
-                            case 34:
-                            case 38:
                             case 39:
                             case 40:
                             case 41:
                             case 42:
                             case 43:
                             case 44:
+                            case 49:
+                                solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
+                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                for(String SoName : SoNames) {
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(), SoName));
+                                }
+                                break;
+                            /**
+                             * Non-coding biotypes
+                             */
+                            case 0:
+                            case 17:
+                            case 18:
+                            case 19:
+                            case 25:
+                            case 26:
+                            case 27:
+                            case 28:
+                            case 29:
+                            case 33:
+                            case 34:
+                            case 38:
                             case 45:
                             case 46:
                             case 47:
                             case 48:
-                            case 49:
-                            case 50:
                                 exonVariant = solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 if(exonVariant) {
@@ -798,6 +820,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             SoNames.add("feature_elongation");
                         }
                         switch (transcriptBiotype) {
+                            /**
+                             * Coding biotypes
+                             */
                             case 1:
                             case 2:
                             case 3:
@@ -810,6 +835,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 24:
                             case 35:
                             case 36:
+                            case 50:    // translated_unprocessed_pseudogene
                             case 51:    // LRG_gene
                                 solveCodingNegativeTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
@@ -826,38 +852,54 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getCodon(), SoName));
                                 }
                                 break;
+                            /**
+                             * NMD, pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
+                             */
                             case 30:
                                 SoNames.add("NMD_transcript_variant");
-                            case 0:
                             case 16:  // antisense
-                            case 17:
-                            case 18:
-                            case 19:
                             case 21:  // processed_pseudogene
                             case 22:  // processed_transcript
-                            case 25:
-                            case 26:
-                            case 27:
-                            case 28:
-                            case 29:
                             case 31:  // unprocessed_pseudogene
                             case 32:  // transcribed_unprocessed_pseudogene
                             case 37:  // transcribed_processed_pseudogene
-                            case 33:
-                            case 34:
-                            case 38:
                             case 39:
                             case 40:
                             case 41:
                             case 42:
                             case 43:
                             case 44:
+                            case 49:
+                                solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
+                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                for(String SoName : SoNames) {
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(), SoName));
+                                }
+                                break;
+                            /**
+                             * Non-coding biotypes
+                             */
+                            case 0:
+                            case 17:
+                            case 18:
+                            case 19:
+                            case 25:
+                            case 26:
+                            case 27:
+                            case 28:
+                            case 29:
+                            case 33:
+                            case 34:
+                            case 38:
                             case 45:
                             case 46:
                             case 47:
                             case 48:
-                            case 49:
-                            case 50:
                                 exonVariant = solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 if(exonVariant) {
@@ -911,7 +953,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             b = 1;
         }
 
-        if(consequenceTypeList.size()==0) {
+        if(transcriptInfoList == null) {
             consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
         }
 
