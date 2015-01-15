@@ -1,6 +1,8 @@
 package org.opencb.cellbase.core.client;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.glassfish.jersey.client.ClientConfig;
@@ -9,7 +11,8 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.opencb.biodata.formats.protein.uniprot.v140jaxb.Protein;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureTraitType;
 import org.opencb.biodata.models.feature.Region;
-import org.opencb.biodata.models.variant.effect.VariantAnnotation;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.core.*;
 import org.opencb.cellbase.core.common.core.Xref;
@@ -21,6 +24,8 @@ import org.opencb.datastore.core.ObjectMap;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -46,12 +51,15 @@ public class CellBaseClient {
     private final Client client;
     private Map<String, ObjectReader> readers = new HashMap<>();
     private ObjectMapper mapper;
+    private URI lastQuery = null;
 
-    enum Category {
+    protected static Logger logger = LoggerFactory.getLogger(CellBaseClient.class);
+
+    public enum Category {
         genomic, feature, regulatory, network
     }
 
-    enum SubCategory {
+    public enum SubCategory {
         //genomic
         region, variant, position, chromosome,
         //feature
@@ -62,14 +70,14 @@ public class CellBaseClient {
         pathway
     }
 
-    enum Resource {
+    public enum Resource {
         all, list, info, help,
 
         //genomic/region
             gene, transcript, exon, snp, mutation, structuralVariation, sequence, tfbs, mimaTarget, cpgIsland,
             conserved_region, regulatory, reverse,
         //genomic/variant
-            effect, consequenceType, phenotype, snp_phenotype, mutation_phenotype, annotation,
+            effect, consequenceType, phenotype, snp_phenotype, mutation_phenotype, fullAnnotation, annotation,
         //genomic/position
             //gene, snp, transcript, consequence_type, functional
         //genomic/chromosome
@@ -115,6 +123,7 @@ public class CellBaseClient {
         resourceStringMap.put(Resource.cpgIsland, "cpg_island");
         resourceStringMap.put(Resource.mimaTarget, "mima_target");
         resourceStringMap.put(Resource.consequenceType, "consequence_type");
+        resourceStringMap.put(Resource.fullAnnotation, "full_annotation");
 
 
         subCategoryBeanMap = new HashMap<>();
@@ -148,6 +157,7 @@ public class CellBaseClient {
         resourceBeanMap.put(Resource.snp_phenotype, String.class);  //TODO
         resourceBeanMap.put(Resource.mutation_phenotype, Mutation.class);
         resourceBeanMap.put(Resource.annotation, VariantAnnotation.class);  //TODO
+        resourceBeanMap.put(Resource.fullAnnotation, VariantAnnotation.class);  //TODO
         //genomic/chromosome
         resourceBeanMap.put(Resource.size, Chromosome.class);
         resourceBeanMap.put(Resource.cytoband, Cytoband.class);
@@ -194,6 +204,7 @@ public class CellBaseClient {
 
         JsonFactory jsonFactory = new JsonFactory();
         mapper = new ObjectMapper(jsonFactory);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     /////////////////////////
@@ -239,7 +250,13 @@ public class CellBaseClient {
     public QueryResponse<QueryResult<ObjectMap>> nativeGet(
             String category, String subCategory, String ids, String resource, QueryOptions queryOptions)
             throws IOException {
-        return restGetter(category, subCategory, ids, resource, queryOptions, getJsonReader(ObjectMap.class));
+        return nativeGet(category, subCategory, ids, resource, queryOptions, ObjectMap.class);
+    }
+
+    public <T> QueryResponse<QueryResult<T>> nativeGet(
+            String category, String subCategory, String ids, String resource, QueryOptions queryOptions, Class<T> c)
+            throws IOException {
+        return restGetter(category, subCategory, ids, resource, queryOptions, getJsonReader(c));
     }
 
     /////////////////////////
@@ -332,8 +349,13 @@ public class CellBaseClient {
     }
 
     public QueryResponse<QueryResult<ConsequenceType>> getConsequenceType(Category category, SubCategory subCategory, List<GenomicVariant> ids,
-                                                              QueryOptions queryOptions) throws IOException {
+                                                                          QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.consequenceType, queryOptions, (ConsequenceType.class));
+    }
+
+    public QueryResponse<QueryResult<VariantAnnotation>> getFullAnnotation(Category category, SubCategory subCategory, List<GenomicVariant> ids,
+                                                                          QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, ids, Resource.fullAnnotation, queryOptions, (VariantAnnotation.class));
     }
 
     public QueryResponse<QueryResult<Phenotype>> getPhenotype(Category category, SubCategory subCategory, String phenotype,
@@ -409,12 +431,18 @@ public class CellBaseClient {
             clone.queryParam(entry.getKey(), entry.getValue());
         }
 
-        System.out.println(clone.toString());
+        lastQuery = clone.build();
+//        System.out.println(clone.build().toString());
         Invocation.Builder request = client.target(clone).request();
         Response response = request.get();
         String responseStr = response.readEntity(String.class);
 
-        return responseReader.readValue(responseStr);
+        try {
+            return responseReader.readValue(responseStr);
+        } catch (JsonProcessingException e) {
+            logger.error("Error parsing response to : {}", lastQuery);
+            throw e;
+        }
     }
 
     private ObjectReader getJsonReader(Class<?> c) {
@@ -427,4 +455,10 @@ public class CellBaseClient {
         }
         return readers.get(c.getName());
     }
+
+    public URI getLastQuery() {
+        return lastQuery;
+    }
+
+
 }
