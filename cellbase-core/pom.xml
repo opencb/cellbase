@@ -19,6 +19,11 @@
             <artifactId>biodata-formats</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.opencb.datastore</groupId>
+            <artifactId>datastore-core</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -37,10 +42,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-	</dependency>
+	    </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
     </dependencies>
+
+
+
 </project>
