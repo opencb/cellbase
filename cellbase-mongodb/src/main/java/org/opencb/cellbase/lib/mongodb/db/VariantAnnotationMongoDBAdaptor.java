@@ -340,10 +340,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         codingAnnotationAdded = true;
                     }
                     int finalNtPhase = (transcriptSequence.length()-cdnaCodingStart) % 3;
-                    if (cdnaCodingEnd == 0 && (cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
+                    if (cdnaCodingEnd == 0 && (cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaCodingEnd to 0
                         SoNames.add("incomplete_terminal_codon_variant");                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
                         codingAnnotationAdded = true;
                     } else if (!splicing) {
+//                    } else {
                         Integer variantPhaseShift = (cdnaVariantStart-cdnaCodingStart) % 3;
                         int modifiedCodonStart = cdnaVariantStart-variantPhaseShift;
                         String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
@@ -351,9 +352,13 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
                         codingAnnotationAdded = true;
                         if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-                            SoNames.add((cdnaVariantEnd < (cdnaCodingEnd - 2)) ? "synonymous_variant" : "stop_retained_variant");
+                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {
+                                SoNames.add("synonymous_variant");
+                            } else {
+                                SoNames.add("stop_retained_variant");
+                            }
                         } else {
-                            if(cdnaVariantEnd < (cdnaCodingEnd - 2)) {
+                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {  // cdnaCodingEnd may be 0 therefore we know variant is located before the potentially truncated stop codon (see the  if where "incomplete-terminal_codon_variant" is annotated)
                                 SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
                             } else {
                                 SoNames.add("stop_lost");
@@ -445,10 +450,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         codingAnnotationAdded = true;
                     }
                     int finalNtPhase = (transcriptSequence.length()-cdnaCodingStart) % 3;
-                    if (cdnaCodingEnd == 0 && (cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
+                    if (cdnaCodingEnd == 0 && (cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaCodingEnd to 0
                         SoNames.add("incomplete_terminal_codon_variant");                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
                         codingAnnotationAdded = true;
                     } else if (!splicing) {
+//                    } else {
                         Integer variantPhaseShift = (cdnaVariantStart-cdnaCodingStart) % 3;
                         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
                         String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
@@ -461,9 +467,13 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         modifiedCodonArray[variantPhaseShift] = complementaryNt.get(variantAlt.toCharArray()[0]);
                         codingAnnotationAdded = true;
                         if (isSynonymousCodon.get(String.valueOf(referenceCodon)).get(String.valueOf(modifiedCodonArray))) {
-                            SoNames.add("synonymous_variant");
+                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {
+                                SoNames.add("synonymous_variant");
+                            } else {
+                                SoNames.add("stop_retained_variant");
+                            }
                         } else {
-                            if(cdnaVariantEnd < (cdnaCodingEnd - 2)) {
+                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {  // cdnaCodingEnd may be 0 therefore we know variant is located before the potentially truncated stop codon (see the  if where "incomplete-terminal_codon_variant" is annotated)
                                 SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray))?"stop_gained":"missense_variant");
                             } else {
                                 SoNames.add("stop_lost");
@@ -701,13 +711,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             /**
                              * Coding biotypes
                              */
+                            case 30:
+                                SoNames.add("NMD_transcript_variant");
                             case 1:
                             case 2:
                             case 3:
                             case 4:
                             case 5:
                             case 6:
-                            case 7:
                             case 20:
                             case 23:
                             case 24:
@@ -731,10 +742,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 }
                                 break;
                             /**
-                             * NMD, pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
+                             * pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
                              */
-                            case 30:
-                                SoNames.add("NMD_transcript_variant");
+                            case 7:   // IG_V_pseudogene
                             case 16:  // antisense
                             case 21:  // processed_pseudogene
                             case 22:  // processed_transcript
@@ -823,13 +833,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             /**
                              * Coding biotypes
                              */
+                            case 30:
+                                SoNames.add("NMD_transcript_variant");
                             case 1:
                             case 2:
                             case 3:
                             case 4:
                             case 5:
                             case 6:
-                            case 7:
                             case 20:
                             case 23:
                             case 24:
@@ -853,10 +864,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 }
                                 break;
                             /**
-                             * NMD, pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
+                             * pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
                              */
-                            case 30:
-                                SoNames.add("NMD_transcript_variant");
+                            case 7:   // IG_V_pseudogene
                             case 16:  // antisense
                             case 21:  // processed_pseudogene
                             case 22:  // processed_transcript
