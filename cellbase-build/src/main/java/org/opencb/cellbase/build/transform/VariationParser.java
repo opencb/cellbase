@@ -1,5 +1,6 @@
 package org.opencb.cellbase.build.transform;
 
+import com.google.common.base.Stopwatch;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.Xref;
@@ -7,27 +8,43 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.*;
 
 public class VariationParser extends CellBaseParser {
 
-    private RandomAccessFile raf, rafVariationFeature, rafTranscriptVariation, rafVariationSynonym;
+    private static final String VARIATION_FILENAME = "variation.txt.gz";
+    private static final String VARIATION_FEATURE_FILENAME = "variation_feature.txt";
+    private static final String TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.txt";
+    private static final String VARIATION_SYNONYM_FILENAME = "variation_synonym.txt";
+    private static final String PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.includingVariationId.txt";
+    private RandomAccessFile rafVariationFeature, rafTranscriptVariation, rafVariationSynonym;
     private Connection sqlConn = null;
     private PreparedStatement prepStmVariationFeature, prepStmTranscriptVariation, prepStmVariationSynonym;
-
-    private static final int DEFAULT_CHUNK_SIZE = 1000;
 
     private int LIMITROWS = 100000;
     private Path variationDirectoryPath;
 
+    private int noFeatureVariations = 0;
+    private int noSynonimVariations = 0;
+    private int noTranscriptVariations = 0;
+
+    private int lastSynonymId = -1;
+    private int lastTranscriptId = -1;
+    private int lastFeatureId = -1;
+    private BufferedReader variationSynonymsFileReader;
+    private BufferedReader variationTranscriptsFileReader;
+    private BufferedReader variationFeaturesFileReader;
+    private String lastTranscriptLine;
+    private String lastFeatureLine;
+    private String lasSynonymLine;
+
+    private static final int VARIATION_ID_COLUMN_INDEX = 23;
 
     public VariationParser(Path variationDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
@@ -42,141 +59,60 @@ public class VariationParser extends CellBaseParser {
             throw new IOException("Variation directory whether does not exist, is not a directory or cannot be read");
         }
 
-        BufferedWriter bwLog = Files.newBufferedWriter(variationDirectoryPath.resolve("variation.log"), Charset.defaultCharset());
-        Map<String, List<String>> queryMap = null;
-        String[] variationFields = null;
-        String[] variationFeatureFields = null;
-        String[] transcriptVariationFields = null;
-        String[] variationSynonymFields = null;
-        String chromosome;
+        Variation variation;
 
-        Variation variation = null;
-//        VariationMongoDB variation = null;
-        String[] allelesArray = null;
-        String displayConsequenceType = null;
-        List<String> consequenceTypes = null;
-        List<TranscriptVariation> transcriptVariation = null;
-        List<Xref> xrefs = null;
-
-        // Open variation file, this file never gets uncompressed.
-        // It's read from gzip file
-        BufferedReader bufferedReaderVariation = FileUtils.newBufferedReader(variationDirectoryPath.resolve("variation.txt.gz"));
+        // Open variation file, this file never gets uncompressed. It's read from gzip file
+        BufferedReader bufferedReaderVariation = FileUtils.newBufferedReader(variationDirectoryPath.resolve(VARIATION_FILENAME));
 
         // To speed up calculation a SQLite database is created with the IDs and file offsets,
         // file must be uncompressed for doing this.
-        gunzipFiles(variationDirectoryPath);
+        gunzipVariationInputFiles();
 
+        // add idVariation to transcript_variation file
+        preprocessTranscriptVariationFile();
+
+        // TODO: remove this line and method connect
         // Prepares connections to database to resolve queries by ID.
-        // This version combines a SQLite database with the file offsets
-        // with a RandomAccessFile to access data using offsets.
-        connect(variationDirectoryPath);
-//        createVariationDatabase(variationDirectoryPath);
+        // This version combines a SQLite database with the file offsets with a RandomAccessFile to access data using offsets.
+        //connect(variationDirectoryPath);
+        createVariationFilesBufferedReaders(variationDirectoryPath);
 
         Map<String, String> seqRegionMap = VariationUtils.parseSeqRegionToMap(variationDirectoryPath);
         Map<String, String> sourceMap = VariationUtils.parseSourceToMap(variationDirectoryPath);
 
-        String chunkIdSuffix = DEFAULT_CHUNK_SIZE / 1000 + "k";
-        int countprocess = 0;
-        int variationId = 0;
-        String line = null;
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.info("Parsing variation file " + variationDirectoryPath.resolve(VARIATION_FILENAME) + " ...");
+        long countprocess = 0;
+        String line;
         while ((line = bufferedReaderVariation.readLine()) != null) {
-            variationFields = line.split("\t");
-            variationId = Integer.parseInt(variationFields[0]);
+            String[] variationFields = line.split("\t");
 
-            List<String> resultVariationFeature = queryByVariationId(variationId, "variation_feature", variationDirectoryPath);
+            int variationId = Integer.parseInt(variationFields[0]);
+            // TODO: testing, remove the unused line and methods
+            //List<String> resultVariationFeature = queryByVariationId(variationId, "variation_feature");
+            List<String> resultVariationFeature = getVariationFeatures(variationId);
 
             if (resultVariationFeature != null && resultVariationFeature.size() > 0) {
-                transcriptVariation = new ArrayList<>();
-                variationFeatureFields = resultVariationFeature.get(0).split("\t", -1);
+                String[] variationFeatureFields = resultVariationFeature.get(0).split("\t", -1);
 
-                // Note the ID used, TranscriptVariation references to VariationFeature no Variation !!!
-                List<String> resultTranscriptVariations = queryByVariationId(Integer.parseInt(variationFeatureFields[0]), "transcript_variation", variationDirectoryPath);
-                if (resultTranscriptVariations != null && resultTranscriptVariations.size() > 0) {
-                    for (String rtv : resultTranscriptVariations) {
-                        transcriptVariationFields = rtv.split("\t");
-
-                        TranscriptVariation tv = new TranscriptVariation((transcriptVariationFields[2] != null && !transcriptVariationFields[2].equals("\\N")) ? transcriptVariationFields[2] : ""
-                                , (transcriptVariationFields[3] != null && !transcriptVariationFields[3].equals("\\N")) ? transcriptVariationFields[3] : ""
-                                , (transcriptVariationFields[4] != null && !transcriptVariationFields[4].equals("\\N")) ? transcriptVariationFields[4] : ""
-                                , Arrays.asList(transcriptVariationFields[5].split(","))
-                                , (transcriptVariationFields[6] != null && !transcriptVariationFields[6].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[6]) : 0
-                                , (transcriptVariationFields[7] != null && !transcriptVariationFields[7].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[7]) : 0
-                                , (transcriptVariationFields[8] != null && !transcriptVariationFields[8].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[8]) : 0
-                                , (transcriptVariationFields[9] != null && !transcriptVariationFields[9].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[9]) : 0
-                                , (transcriptVariationFields[10] != null && !transcriptVariationFields[10].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[10]) : 0
-                                , (transcriptVariationFields[11] != null && !transcriptVariationFields[11].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[11]) : 0
-                                , (transcriptVariationFields[12] != null && !transcriptVariationFields[12].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[12]) : 0
-                                , (transcriptVariationFields[13] != null && !transcriptVariationFields[13].equals("\\N")) ? transcriptVariationFields[13] : ""
-                                , (transcriptVariationFields[14] != null && !transcriptVariationFields[14].equals("\\N")) ? transcriptVariationFields[14] : ""
-                                , (transcriptVariationFields[15] != null && !transcriptVariationFields[15].equals("\\N")) ? transcriptVariationFields[15] : ""
-                                , (transcriptVariationFields[16] != null && !transcriptVariationFields[16].equals("\\N")) ? transcriptVariationFields[16] : ""
-                                , (transcriptVariationFields[17] != null && !transcriptVariationFields[17].equals("\\N")) ? transcriptVariationFields[17] : ""
-                                , (transcriptVariationFields[18] != null && !transcriptVariationFields[18].equals("\\N")) ? transcriptVariationFields[18] : ""
-                                , (transcriptVariationFields[19] != null && !transcriptVariationFields[19].equals("\\N")) ? Float.parseFloat(transcriptVariationFields[19]) : 0f
-                                , (transcriptVariationFields[20] != null && !transcriptVariationFields[20].equals("\\N")) ? transcriptVariationFields[20] : ""
-                                , (transcriptVariationFields[21] != null && !transcriptVariationFields[21].equals("\\N")) ? Float.parseFloat(transcriptVariationFields[21]) : 0f);
-                        transcriptVariation.add(tv);
-                    }
-                }
-
-                // Reading XRefs
-                List<String> resultVariationSynonym = queryByVariationId(variationId, "variation_synonym", variationDirectoryPath);
-                xrefs = new ArrayList<>();
-                if (resultVariationSynonym != null && resultVariationSynonym.size() > 0) {
-                    String arr[];
-                    for (String rxref : resultVariationSynonym) {
-                        variationSynonymFields = rxref.split("\t");
-                        if (sourceMap.get(variationSynonymFields[3]) != null) {
-                            arr = sourceMap.get(variationSynonymFields[3]).split(",");
-                            xrefs.add(new Xref(variationSynonymFields[4], arr[0], arr[1]));
-                        }
-                    }
-                }
+                // TODO: testing, remove the unused line and methods
+                //List<TranscriptVariation> transcriptVariation = getTranscriptVariationsFromSqlLite(variationFeatureFields[0]);
+                List<TranscriptVariation> transcriptVariation = getTranscriptVariations(variationId, variationFeatureFields[0]);
+                List<Xref> xrefs = getXrefs(sourceMap, variationId);
 
                 try {
                     // Preparing the variation alleles
-                    if (variationFeatureFields != null && variationFeatureFields[6] != null) {
-                        allelesArray = variationFeatureFields[6].split("/");
-                        if (allelesArray.length == 1) {    // In some cases no '/' exists, ie. in 'HGMD_MUTATION'
-                            allelesArray = new String[]{"", ""};
-                        }
-                    } else {
-                        allelesArray = new String[]{"", ""};
-                    }
+                    String[] allelesArray = getAllelesArray(variationFeatureFields);
+
+                    // TODO: check that variationFeatureFields is always different to null and intergenic-variant is never used
+                    //List<String> consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")) : Arrays.asList("intergenic_variant");
+                    List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));
+                    String displayConsequenceType = getDisplayConsequenceType(consequenceTypes);
 
                     // For code sanity save chromosome in a variable
-                    chromosome = seqRegionMap.get(variationFeatureFields[1]);
-
-                    // Preparing displayConsequenceType and consequenceTypes attributes
-                    consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")) : Arrays.asList("intergenic_variant");
-                    if (consequenceTypes.size() == 0) {
-                        displayConsequenceType = consequenceTypes.get(0);
-                    } else {
-                        for (String cons : consequenceTypes) {
-                            if (!cons.equals("intergenic_variant")) {
-                                displayConsequenceType = cons;
-                                break;
-                            }
-                        }
-                    }
-
+                    String chromosome = seqRegionMap.get(variationFeatureFields[1]);
                     // we have all the necessary to construct the 'variation' object
-                    variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "",
-                            chromosome, "SNV",
-                            (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0,
-                            (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0,
-                            variationFeatureFields[4], // strand
-                            (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "",
-                            (allelesArray[1] != null && !allelesArray[1].equals("\\N")) ? allelesArray[1] : "",
-                            variationFeatureFields[6],
-                            (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "",
-                            displayConsequenceType,
-//							species, assembly, source, version,
-                            consequenceTypes, transcriptVariation, null, null, null, xrefs, /*"featureId",*/
-                            (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "",
-                            (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "",
-                            (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "",
-                            (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
+                    variation = buildVariation(variationFields, variationFeatureFields, chromosome, transcriptVariation, xrefs, allelesArray, consequenceTypes, displayConsequenceType);
 
                     if (++countprocess % 10000 == 0 && countprocess != 0) {
                         logger.debug("Processed variations: " + countprocess);
@@ -185,44 +121,368 @@ public class VariationParser extends CellBaseParser {
                     serializer.serialize(variation);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    bwLog.write(line + "\n");
+                    logger.error("Error parsing variation: " + e.getMessage());
+                    logger.error("Last line processed: " + line);
                 }
             }
+            // TODO: just for testing, remove
+//            if (countprocess % 100000 == 0) {
+//                break;
+//            }
         }
 
-        // ONLY COMMENTED FOR SPEED UP DEVELOPMENT AS NO NEED TO COMPRESS EVERY RUN!!!
-        gzipFiles(variationDirectoryPath);
+        logger.info("Variation parsing finished");
+        logger.debug("Elapsed time parsing: " + stopwatch);
+        logger.debug("Variation transcript with no variation:\t" + noTranscriptVariations);
+        logger.debug("Variation features with no variation:\t" + noFeatureVariations);
+        logger.debug("Variation Synonims with no variation:\t" + noSynonimVariations);
+
+        gzipVariationFiles(variationDirectoryPath);
 
         try {
-            bwLog.close();
             bufferedReaderVariation.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void connect(Path variationDirectoryPath) throws SQLException, ClassNotFoundException, IOException {
-        Class.forName("org.sqlite.JDBC");
-        sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationDirectoryPath.toAbsolutePath().toString() + "/variation_tables.db");
-        if (!Files.exists(variationDirectoryPath.resolve("variation_tables.db")) || Files.size(variationDirectoryPath.resolve("variation_tables.db")) == 0) {
-            sqlConn.setAutoCommit(false);
-            createTable(5, variationDirectoryPath.resolve("variation_feature.txt"), "variation_feature");
-            createTable(1, variationDirectoryPath.resolve("transcript_variation.txt"), "transcript_variation");
-            createTable(1, variationDirectoryPath.resolve("variation_synonym.txt"), "variation_synonym");
-            sqlConn.setAutoCommit(true);
+    private void preprocessTranscriptVariationFile() throws IOException, InterruptedException {
+        Path preprocessedTranscriptVariationFile = variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
+        if (!preprocessedTranscriptVariationFile.toFile().exists()) {
+            this.logger.info("Preprocessing " + TRANSCRIPT_VARIATION_FILENAME + " file ...");
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            Map<Integer, Integer> variationFeatureToVariationId = createVariationFeatureIdToVariationIdMap();
+            Path transcriptVariationTempFile = addVariationIdToTranscriptVariationFile(variationFeatureToVariationId);
+            sortTranscriptVariationFile(transcriptVariationTempFile, preprocessedTranscriptVariationFile);
+            this.logger.info("Removing temp file " + transcriptVariationTempFile);
+            transcriptVariationTempFile.toFile().delete();
+            this.logger.info("Removed");
+            this.logger.info(TRANSCRIPT_VARIATION_FILENAME + " preprocessed. New file " +
+                    PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + " including (and sorted by) variation Id has been created");
+            this.logger.debug("Elapsed time preprocessing transcript variation file: " + stopwatch);
+        }
+    }
+
+    private Path addVariationIdToTranscriptVariationFile(Map<Integer, Integer> variationFeatureToVariationId) throws IOException {
+        Path transcriptVariationTempFile = variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME + ".tmp");
+        this.logger.info("Adding variation Id to transcript variations and saving them into " + transcriptVariationTempFile + " ...");
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
+        Path unpreprocessedTranscriptVariationFile = variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME);
+        BufferedReader br = FileUtils.newBufferedReader(unpreprocessedTranscriptVariationFile);
+        BufferedWriter bw = Files.newBufferedWriter(transcriptVariationTempFile, Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+        String line;
+        while ((line = br.readLine()) != null) {
+            // TODO: add limit parameter would do that run faster?
+            // TODO: use a precompiled pattern would improve efficiency
+            String variationFeatureId = line.split("\t")[1];
+            Integer variationId = variationFeatureToVariationId.get(variationFeatureId);
+            bw.write(line + "\t" + variationId + "\n");
         }
 
+        br.close();
+        bw.close();
+
+        this.logger.info("Added");
+        this.logger.debug("Elapsed time adding variation Id to transcript variation file: " + stopwatch);
+
+        return transcriptVariationTempFile;
+    }
+
+    private void sortTranscriptVariationFile(Path transcriptVariationTempFile, Path preprocessedTranscriptVariationFile) throws InterruptedException, IOException {
+        this.logger.info("Sorting temp file " + transcriptVariationTempFile + " into " + preprocessedTranscriptVariationFile + " ...");
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        String sortCommand = "sort -k " + VARIATION_ID_COLUMN_INDEX + " -n " + transcriptVariationTempFile.toAbsolutePath() +  " -o " + preprocessedTranscriptVariationFile.toAbsolutePath();
+        this.logger.debug("Executing " + sortCommand);
+        Process process = Runtime.getRuntime().exec(sortCommand);
+        process.waitFor();
+        this.logger.info("Sorted");
+        this.logger.debug("Elapsed time sorting file: " + stopwatch);
+    }
+
+    private Map<Integer, Integer> createVariationFeatureIdToVariationIdMap() throws IOException {
+        this.logger.info("Creating variationFeatureId to variationId map ...");
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        Map<Integer, Integer> variationFeatureToVariationId = new HashMap<>();
+
+        BufferedReader variationFeatFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME), Charset.defaultCharset());
+
+        String line;
+        while ((line = variationFeatFileReader.readLine()) != null) {
+            // TODO: add limit parameter would do that run faster?
+            // TODO: use a precompiled pattern would improve efficiency
+            String[] fields = line.split("\t");
+            Integer variationFeatureId = Integer.valueOf(fields[0]);
+            Integer variationId = Integer.valueOf(fields[5]);
+            variationFeatureToVariationId.put(variationFeatureId, variationId);
+        }
+
+        variationFeatFileReader.close();
+
+        this.logger.info("Done");
+        this.logger.debug("Elapsed time creating variationFeatureId to variationId map: " + stopwatch);
+
+        return variationFeatureToVariationId;
+    }
+
+    private void createVariationFilesBufferedReaders(Path variationDirectoryPath) throws IOException {
+        variationFeaturesFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME), Charset.defaultCharset());
+        variationSynonymsFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME), Charset.defaultCharset());
+        //variationTranscriptsFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME), Charset.defaultCharset());
+        variationTranscriptsFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME), Charset.defaultCharset());
+    }
+
+    private List<String> getVariationFeatures(int variationId) throws IOException {
+        List<String> variationFeatures;
+        while (lastFeatureId == -1 || lastFeatureId < variationId) {
+            lastFeatureLine = variationFeaturesFileReader.readLine();
+            lastFeatureId = getVariationIdFromFeatureLine(lastFeatureLine);
+        }
+        if (lastFeatureId > variationId) {
+            variationFeatures = Collections.EMPTY_LIST;
+            noFeatureVariations++;
+        } else {
+            variationFeatures = new ArrayList<>();
+            while (lastFeatureId == variationId) {
+                variationFeatures.add(lastFeatureLine);
+                lastFeatureLine = variationFeaturesFileReader.readLine();
+                lastFeatureId = getVariationIdFromFeatureLine(lastFeatureLine);
+            }
+        }
+        // TODO: en lugar de devolver una lista de lineas completas, aprovechando que ya hacemos el split, devolver solo
+        //       los campos que nos interesen
+        return variationFeatures;
+    }
+
+    private int getVariationIdFromFeatureLine(String featureLine) {
+        int variationId = Integer.parseInt(featureLine.split("\t")[5]);
+        return variationId;
+    }
+
+    private Variation buildVariation(String[] variationFields, String[] variationFeatureFields, String chromosome, List<TranscriptVariation> transcriptVariation, List<Xref> xrefs, String[] allelesArray, List<String> consequenceTypes, String displayConsequenceType) {
+        Variation variation;
+        variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "",
+                chromosome, "SNV",
+                (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0,
+                (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0,
+                variationFeatureFields[4], // strand
+                (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "",
+                (allelesArray[1] != null && !allelesArray[1].equals("\\N")) ? allelesArray[1] : "",
+                variationFeatureFields[6],
+                (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "",
+                displayConsequenceType,
+//							species, assembly, source, version,
+                consequenceTypes, transcriptVariation, null, null, null, xrefs, /*"featureId",*/
+                (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "",
+                (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "",
+                (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "",
+                (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
+        return variation;
+    }
+
+    private String getDisplayConsequenceType(List<String> consequenceTypes) {
+        String displayConsequenceType = null;
+        if (consequenceTypes.size() == 0) {
+            displayConsequenceType = consequenceTypes.get(0);
+        } else {
+            for (String cons : consequenceTypes) {
+                if (!cons.equals("intergenic_variant")) {
+                    displayConsequenceType = cons;
+                    break;
+                }
+            }
+        }
+        return displayConsequenceType;
+    }
+
+    private String[] getAllelesArray(String[] variationFeatureFields) {
+        String[] allelesArray;
+        if (variationFeatureFields != null && variationFeatureFields[6] != null) {
+            allelesArray = variationFeatureFields[6].split("/");
+            if (allelesArray.length == 1) {    // In some cases no '/' exists, ie. in 'HGMD_MUTATION'
+                allelesArray = new String[]{"", ""};
+            }
+        } else {
+            allelesArray = new String[]{"", ""};
+        }
+        return allelesArray;
+    }
+
+    private List<Xref> getXrefs(Map<String, String> sourceMap, int variationId) throws IOException, SQLException {
+        // TODO: testing, remove the unused line and methods
+        //List<String> resultVariationSynonym = queryByVariationId(variationId, "variation_synonym");
+        List<String> resultVariationSynonym = getVariationSynonyms(variationId);
+                List<Xref> xrefs = new ArrayList<>();
+        if (resultVariationSynonym != null && resultVariationSynonym.size() > 0) {
+            String arr[];
+            for (String rxref : resultVariationSynonym) {
+                String[] variationSynonymFields = rxref.split("\t");
+                if (sourceMap.get(variationSynonymFields[3]) != null) {
+                    arr = sourceMap.get(variationSynonymFields[3]).split(",");
+                    xrefs.add(new Xref(variationSynonymFields[4], arr[0], arr[1]));
+                }
+            }
+        }
+        return xrefs;
+    }
+
+    private List<String> getVariationSynonyms(int variationId) throws IOException {
+        List<String> variationSynonyms;
+
+        while (lastSynonymId == -1 || lastSynonymId < variationId) {
+            lasSynonymLine = variationSynonymsFileReader.readLine();
+            lastSynonymId = getVariationIdFromSynonymLine(lasSynonymLine);
+        }
+        if (lastSynonymId > variationId) {
+            variationSynonyms = Collections.EMPTY_LIST;
+            noSynonimVariations++;
+        } else {
+            variationSynonyms = new ArrayList<>();
+            while (lastSynonymId == variationId) {
+                variationSynonyms.add(lasSynonymLine);
+                lasSynonymLine = variationSynonymsFileReader.readLine();
+                lastSynonymId = getVariationIdFromSynonymLine(lasSynonymLine);
+            }
+        }
+        // TODO: en lugar de devolver una lista de lineas completas, aprovechando que ya hacemos el split, devolver solo
+        //       los campos que nos interesen
+        return variationSynonyms;
+    }
+
+    private int getVariationIdFromSynonymLine(String synonymLine) {
+        int variationId = Integer.parseInt(synonymLine.split("\t")[1]);
+        return variationId;
+    }
+
+    private List<TranscriptVariation> getTranscriptVariationsFromSqlLite(String variationFeatureField) throws IOException, SQLException {
+        // Note the ID used, TranscriptVariation references to VariationFeature no Variation !!!
+        List<TranscriptVariation> transcriptVariation = new ArrayList<>();
+        List<String> resultTranscriptVariations = queryByVariationId(Integer.parseInt(variationFeatureField), "transcript_variation");
+        if (resultTranscriptVariations != null && resultTranscriptVariations.size() > 0) {
+            for (String rtv : resultTranscriptVariations) {
+                TranscriptVariation tv = buildTranscriptVariation(rtv);
+                transcriptVariation.add(tv);
+            }
+        }
+        return transcriptVariation;
+    }
+
+    private List<TranscriptVariation> getTranscriptVariations(int variationId, String variationFeatureId) throws IOException, SQLException {
+        // Note the ID used, TranscriptVariation references to VariationFeature no Variation !!!
+        List<TranscriptVariation> transcriptVariation = new ArrayList<>();
+        List<String> resultTranscriptVariations = getVariationTranscripts(variationId, Integer.parseInt(variationFeatureId));
+        if (resultTranscriptVariations != null && resultTranscriptVariations.size() > 0) {
+            for (String rtv : resultTranscriptVariations) {
+                TranscriptVariation tv = buildTranscriptVariation(rtv);
+                transcriptVariation.add(tv);
+            }
+        }
+        return transcriptVariation;
+    }
+
+    private List<String> getVariationTranscripts(int variationId, int variationFeatureId) throws IOException {
+        List<String> variationTranscripts;
+
+        while (lastTranscriptId == -1 || lastTranscriptId < variationId) {
+            lastTranscriptLine = variationTranscriptsFileReader.readLine();
+            lastTranscriptId = getVariationIdFromTranscriptLine(lastTranscriptLine);
+        }
+        if (lastTranscriptId > variationId) {
+            variationTranscripts = Collections.EMPTY_LIST;
+            noTranscriptVariations++;
+        } else {
+            variationTranscripts = new ArrayList<>();
+            while (lastTranscriptId == variationId) {
+                // TODO: aqui tiene que comprobar que el variation Feature es el que queremos
+                variationTranscripts.add(lastTranscriptLine);
+                lastTranscriptLine = variationTranscriptsFileReader.readLine();
+                lastTranscriptId = getVariationIdFromTranscriptLine(lastTranscriptLine);
+            }
+        }
+        // TODO: en lugar de devolver una lista de lineas completas, aprovechando que ya hacemos el split, devolver solo
+        //       los campos que nos interesen
+        return variationTranscripts;
+    }
+
+    private int getVariationIdFromTranscriptLine(String transcriptLine) {
+        int variationId = Integer.parseInt(transcriptLine.split("\t")[VARIATION_ID_COLUMN_INDEX]);
+        return variationId;
+    }
+
+    private TranscriptVariation buildTranscriptVariation(String rtv) {
+        String[] transcriptVariationFields = rtv.split("\t");
+
+        return new TranscriptVariation((transcriptVariationFields[2] != null && !transcriptVariationFields[2].equals("\\N")) ? transcriptVariationFields[2] : ""
+                , (transcriptVariationFields[3] != null && !transcriptVariationFields[3].equals("\\N")) ? transcriptVariationFields[3] : ""
+                , (transcriptVariationFields[4] != null && !transcriptVariationFields[4].equals("\\N")) ? transcriptVariationFields[4] : ""
+                , Arrays.asList(transcriptVariationFields[5].split(","))
+                , (transcriptVariationFields[6] != null && !transcriptVariationFields[6].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[6]) : 0
+                , (transcriptVariationFields[7] != null && !transcriptVariationFields[7].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[7]) : 0
+                , (transcriptVariationFields[8] != null && !transcriptVariationFields[8].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[8]) : 0
+                , (transcriptVariationFields[9] != null && !transcriptVariationFields[9].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[9]) : 0
+                , (transcriptVariationFields[10] != null && !transcriptVariationFields[10].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[10]) : 0
+                , (transcriptVariationFields[11] != null && !transcriptVariationFields[11].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[11]) : 0
+                , (transcriptVariationFields[12] != null && !transcriptVariationFields[12].equals("\\N")) ? Integer.parseInt(transcriptVariationFields[12]) : 0
+                , (transcriptVariationFields[13] != null && !transcriptVariationFields[13].equals("\\N")) ? transcriptVariationFields[13] : ""
+                , (transcriptVariationFields[14] != null && !transcriptVariationFields[14].equals("\\N")) ? transcriptVariationFields[14] : ""
+                , (transcriptVariationFields[15] != null && !transcriptVariationFields[15].equals("\\N")) ? transcriptVariationFields[15] : ""
+                , (transcriptVariationFields[16] != null && !transcriptVariationFields[16].equals("\\N")) ? transcriptVariationFields[16] : ""
+                , (transcriptVariationFields[17] != null && !transcriptVariationFields[17].equals("\\N")) ? transcriptVariationFields[17] : ""
+                , (transcriptVariationFields[18] != null && !transcriptVariationFields[18].equals("\\N")) ? transcriptVariationFields[18] : ""
+                , (transcriptVariationFields[19] != null && !transcriptVariationFields[19].equals("\\N")) ? Float.parseFloat(transcriptVariationFields[19]) : 0f
+                , (transcriptVariationFields[20] != null && !transcriptVariationFields[20].equals("\\N")) ? transcriptVariationFields[20] : ""
+                , (transcriptVariationFields[21] != null && !transcriptVariationFields[21].equals("\\N")) ? Float.parseFloat(transcriptVariationFields[21]) : 0f);
+    }
+
+    public void connect(Path variationDirectoryPath) throws SQLException, ClassNotFoundException, IOException {
+        createSqlLiteConnection(variationDirectoryPath);
+        createTables(variationDirectoryPath);
+        prepareSelectStatements();
+        prepareRandomAccessFiles(variationDirectoryPath);
+    }
+
+    private void createSqlLiteConnection(Path variationDirectoryPath) throws ClassNotFoundException, SQLException, IOException {
+        logger.info("Creating SQLITE connection ...");
+        Class.forName("org.sqlite.JDBC");
+        sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationDirectoryPath.toAbsolutePath().toString() + "/variation_tables.db");
+        logger.info("Done");
+    }
+
+    private void createTables(Path variationDirectoryPath) throws IOException, SQLException {
+        if (!Files.exists(variationDirectoryPath.resolve("variation_tables.db")) || Files.size(variationDirectoryPath.resolve("variation_tables.db")) == 0) {
+            logger.info("Creating tables ...");
+            sqlConn.setAutoCommit(false);
+            createTable(5, variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME), "variation_feature");
+            createTable(1, variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME), "transcript_variation");
+            createTable(1, variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME), "variation_synonym");
+            sqlConn.setAutoCommit(true);
+            logger.info("Done");
+        }
+    }
+
+    private void prepareSelectStatements() throws SQLException {
         prepStmVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
         prepStmTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
         prepStmVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
-
-        rafVariationFeature = new RandomAccessFile(variationDirectoryPath.resolve("variation_feature.txt").toFile(), "r");
-        rafTranscriptVariation = new RandomAccessFile(variationDirectoryPath.resolve("transcript_variation.txt").toFile(), "r");
-        rafVariationSynonym = new RandomAccessFile(variationDirectoryPath.resolve("variation_synonym.txt").toFile(), "r");
     }
 
-    public void disconnect() {
-        super.disconnect();
+    private void prepareRandomAccessFiles(Path variationDirectoryPath) throws FileNotFoundException {
+        rafVariationFeature = new RandomAccessFile(variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME).toFile(), "r");
+        rafTranscriptVariation = new RandomAccessFile(variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME).toFile(), "r");
+        rafVariationSynonym = new RandomAccessFile(variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME).toFile(), "r");
+    }
+
+    // TODO: remove if sqllite version is discarded
+//    public void disconnect() {
+//        super.disconnect();
+//        closeSqlLiteObjects();
+//        closeRandomAccessFile(rafVariationFeature);
+//        closeRandomAccessFile(rafTranscriptVariation);
+//        closeRandomAccessFile(rafVariationSynonym);
+//    }
+
+    private void closeSqlLiteObjects() {
         try {
             if (sqlConn != null && !sqlConn.isClosed()) {
                 prepStmVariationFeature.close();
@@ -232,65 +492,86 @@ public class VariationParser extends CellBaseParser {
                 sqlConn.close();
             }
         } catch (SQLException e) {
-            logger.error("Error closing connections: " + e.getMessage());
-        }
-
-        try {
-            rafVariationFeature.close();
-            rafTranscriptVariation.close();
-            rafVariationSynonym.close();
-        } catch (IOException e) {
-            logger.error("Error closing file: " + e.getMessage());
+            logger.error("Error closing prepared statemen: " + e.getMessage());
         }
     }
 
-    public List<String> queryByVariationId(int variationId, String tableName, Path variationFilePath) throws IOException, SQLException {
-        // First query SQLite to get offset position
-        List<Long> offsets = new ArrayList<>();
-        //		PreparedStatement pst = sqlConn.statement(sql)
-        //		ResultSet rs = pst.executeQuery("select offset from "+tableName+" where variation_id = " + variationId + "");
-        ResultSet rs = null;
+    private void closeRandomAccessFile(RandomAccessFile file) {
+        try {
+            file.close();
+        } catch (IOException e) {
+            logger.error("Error closing file : " + e.getMessage());
+        }
+    }
+
+    public List<String> queryByVariationId(int variationId, String tableName) throws IOException, SQLException {
+        List<Long> offsets;
+        List<String> variations = null;
         switch (tableName) {
             case "variation_feature":
-                prepStmVariationFeature.setInt(1, variationId);
-                rs = prepStmVariationFeature.executeQuery();
-                raf = rafVariationFeature;
+                offsets = getOffsetForVariationRandomAccessFile(prepStmVariationFeature, variationId);
+                variations = getVariationsFromRandomAccesssFile(offsets, rafVariationFeature);
+                if (variations.isEmpty()) noFeatureVariations++;
                 break;
             case "transcript_variation":
-                prepStmTranscriptVariation.setInt(1, variationId);
-                rs = prepStmTranscriptVariation.executeQuery();
-                raf = rafTranscriptVariation;
+                offsets = getOffsetForVariationRandomAccessFile(prepStmTranscriptVariation, variationId);
+                variations = getVariationsFromRandomAccesssFile(offsets, rafTranscriptVariation);
+                if (variations.isEmpty()) noTranscriptVariations++;
                 break;
             case "variation_synonym":
-                prepStmVariationSynonym.setInt(1, variationId);
-                rs = prepStmVariationSynonym.executeQuery();
-                raf = rafVariationSynonym;
+                offsets = getOffsetForVariationRandomAccessFile(prepStmVariationSynonym, variationId);
+                variations = getVariationsFromRandomAccesssFile(offsets, rafVariationSynonym);
+                if (variations.isEmpty()) noSynonimVariations++;
                 break;
         }
+        return variations;
+    }
+
+    private List<Long> getOffsetForVariationRandomAccessFile(PreparedStatement statement, int variationId) throws SQLException {
+        statement.setInt(1, variationId);
+        ResultSet rs = statement.executeQuery();
+
+        List<Long> offsets = null;
 
         while (rs.next()) {
+            if (offsets == null) {
+                offsets = new ArrayList<>();
+            }
             offsets.add(rs.getLong(1));
         }
-        Collections.sort(offsets);
-        // Second go to file
-        String line = null;
-        List<String> results = new ArrayList<>();
-        if (offsets.size() > 0) {
-//			RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve(tableName+".txt").toFile(), "r");
+        if (offsets != null) {
+            Collections.sort(offsets);
+        } else {
+            offsets = Collections.EMPTY_LIST;
+        }
+
+        return offsets;
+    }
+
+    private List<String> getVariationsFromRandomAccesssFile(List<Long> offsets, RandomAccessFile raf) throws IOException {
+        List<String> results;
+
+        if (!offsets.isEmpty()) {
+            results = new ArrayList<>();
+
             for (Long offset : offsets) {
                 if (offset >= 0) {
                     raf.seek(offset);
-                    line = raf.readLine();
+                    String line = raf.readLine();
                     if (line != null) {
                         results.add(line);
                     }
                 }
             }
+        } else {
+            results = Collections.EMPTY_LIST;
         }
+
         return results;
     }
 
     private void createTable(int columnIndex, Path variationFilePath, String tableName) throws SQLException, IOException {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Statement createTables = sqlConn.createStatement();
 
         // A table containing offset for files
@@ -299,8 +580,8 @@ public class VariationParser extends CellBaseParser {
 
         long offset = 0;
         int count = 0;
-        String[] fields = null;
-        String line = null;
+        String[] fields;
+        String line;
         BufferedReader br = FileUtils.newBufferedReader(variationFilePath, Charset.defaultCharset());
         while ((line = br.readLine()) != null) {
             fields = line.split("\t");
@@ -324,139 +605,77 @@ public class VariationParser extends CellBaseParser {
         ps.executeBatch();
         sqlConn.commit();
 
+        createTableIndex(tableName);
+
+        logger.debug("Elapsed time creating table " + tableName + ": " + stopwatch);
+    }
+
+    private void createTableIndex(String tableName) throws SQLException {
+        logger.info("Creating index for " + tableName);
         Statement stm = sqlConn.createStatement();
         stm.executeUpdate("CREATE INDEX " + tableName + "_idx on " + tableName + "(variation_id)");
         sqlConn.commit();
+        logger.info("Done");
     }
 
-    private void gunzipFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
-        if (Files.exists(variationDirectoryPath.resolve("variation_feature.txt.gz"))) {
-            Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("variation_feature.txt.gz").toAbsolutePath());
-            process.waitFor();
+    private void gunzipVariationInputFiles() throws IOException, InterruptedException {
+        logger.info("Unzipping variation files ...");
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        if (existsPreprocessedTranscriptVariationFile()) {
+            gunzipFile(variationDirectoryPath, PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
+        } else {
+            gunzipFile(variationDirectoryPath, TRANSCRIPT_VARIATION_FILENAME);
         }
-
-        if (Files.exists(variationDirectoryPath.resolve("transcript_variation.txt.gz"))) {
-            Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("transcript_variation.txt.gz").toAbsolutePath());
-            process.waitFor();
-        }
-
-        if (Files.exists(variationDirectoryPath.resolve("variation_synonym.txt.gz"))) {
-            Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("variation_synonym.txt.gz").toAbsolutePath());
-            process.waitFor();
-        }
+        gunzipFile(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
+        gunzipFile(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
+        logger.info("Done");
+        logger.debug("Elapsed time unzipping files: " + stopwatch);
     }
 
-    private void gzipFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
-        if (Files.exists(variationDirectoryPath.resolve("variation_feature.txt"))) {
-            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("variation_feature.txt").toAbsolutePath());
-            process.waitFor();
-        }
-
-        if (Files.exists(variationDirectoryPath.resolve("transcript_variation.txt"))) {
-            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("transcript_variation.txt").toAbsolutePath());
-            process.waitFor();
-        }
-
-        if (Files.exists(variationDirectoryPath.resolve("variation_synonym.txt"))) {
-            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("variation_synonym.txt").toAbsolutePath());
-            process.waitFor();
-        }
+    private boolean existsPreprocessedTranscriptVariationFile() {
+        return Files.exists(variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) ||
+                Files.exists(variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + ".gz"));
     }
 
-//    class VariationMongoDB extends Variation {
-//
-//        private List<String> chunkIds;
-//
-//        public VariationMongoDB(String id, String chromosome, String type, int start, int end, String strand, String reference, String alternate, String alleleString, String ancestralAllele, String displayConsequenceType, List<String> consequencesTypes, List<TranscriptVariation> transcriptVariations, Phenotype phenotype, List<SampleGenotype> samples, List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, /*String featureId,*/ String minorAllele, String minorAlleleFreq, String validationStatus, String evidence) {
-//            super(id, chromosome, type, start, end, strand, reference, alternate, alleleString, ancestralAllele, displayConsequenceType, consequencesTypes, transcriptVariations, phenotype, samples, populationFrequencies, xrefs, /*featureId,*/ minorAllele, minorAlleleFreq, validationStatus, evidence);
-//            this.chunkIds = new ArrayList<>(5);
-//        }
-//
-//        public List<String> getChunkIds() {
-//            return chunkIds;
-//        }
-//
-//        public void setChunkIds(List<String> chunkIds) {
-//            this.chunkIds = chunkIds;
-//        }
-//    }
-
-    @Deprecated
-    public void createVariationDatabase(Path variationDirectoryPath) {
-        try {
-//            Class.forName("org.sqlite.JDBC");
-//            sqlConn = DriverManager.getConnection("jdbc:sqlite::memory:");
-//			sqlConn = DriverManager.getConnection("jdbc:sqlite:"+variationFilePath.toAbsolutePath().toString()+"/variation_tables.db");
-            if (!Files.exists(variationDirectoryPath.resolve("variation_tables.db"))) {
-
-                sqlConn.setAutoCommit(false);
-                createTable(5, variationDirectoryPath.resolve("variation_feature.txt"), "variation_feature");
-                createTable(1, variationDirectoryPath.resolve("transcript_variation.txt"), "transcript_variation");
-                createTable(1, variationDirectoryPath.resolve("variation_synonym.txt"), "variation_synonym");
-                sqlConn.setAutoCommit(true);
-//                prepStmVariationFeature = sqlConn.prepareStatement("select offset from variation_feature where variation_id = ? order by offset ASC ");
-//                prepStmTranscriptVariation = sqlConn.prepareStatement("select offset from transcript_variation where variation_id = ? order by offset ASC ");
-//                prepStmVariationSynonym = sqlConn.prepareStatement("select offset from variation_synonym where variation_id = ? order by offset ASC ");
+    private void gunzipFile(Path directory, String fileName) throws IOException, InterruptedException {
+        Path zippedFile = directory.resolve(fileName + ".gz");
+        if (Files.exists(zippedFile)) {
+            logger.info("Unzipping " + zippedFile + "...");
+            Process process = Runtime.getRuntime().exec("gunzip " + zippedFile.toAbsolutePath());
+            process.waitFor();
+        } else {
+            Path unzippedFile = directory.resolve(fileName);
+            if (Files.exists(unzippedFile)){
+                logger.info("File " + unzippedFile + " was unzipped: skipping 'gunzip' for this file ...");
+            } else {
+                throw new FileNotFoundException("File " + zippedFile + " doesn't exist");
             }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
-    @Deprecated
-    public Map<String, List<String>> queryAllByVariationId(int variationId, Path variationFilePath) throws IOException, SQLException {
 
-        List<String> tables = Arrays.asList("variation_feature", "transcript_variation", "variation_synonym");
-        Map<String, List<String>> resultMap = new HashMap<>();
-        List<Long> offsets;
-        for (String table : tables) {
+    private void gzipVariationFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
+        gzipFile(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
 
-            // First query SQLite to get offset position
-            offsets = new ArrayList<Long>();
-            //		PreparedStatement pst = sqlConn.statement(sql)
-            //		ResultSet rs = pst.executeQuery("select offset from "+tableName+" where variation_id = " + variationId + "");
-            ResultSet rs = null;
-            switch (table) {
-                case "variation_feature":
-                    prepStmVariationFeature.setInt(1, variationId);
-                    rs = prepStmVariationFeature.executeQuery();
-                    break;
-                case "transcript_variation":
-                    prepStmTranscriptVariation.setInt(1, variationId);
-                    rs = prepStmTranscriptVariation.executeQuery();
-                    break;
-                case "variation_synonym":
-                    prepStmVariationSynonym.setInt(1, variationId);
-                    rs = prepStmVariationSynonym.executeQuery();
-                    break;
-            }
-
-            while (rs.next()) {
-                offsets.add(rs.getLong(1));
-            }
-
-            // Second go to file
-            String line = null;
-            List<String> results = new ArrayList<>();
-            if (offsets.size() > 0) {
-                RandomAccessFile raf = new RandomAccessFile(variationFilePath.resolve(table + ".txt.gz").toFile(), "r");
-                for (Long offset : offsets) {
-                    if (offset >= 0) {
-                        raf.seek(offset);
-                        line = raf.readLine();
-                        if (line != null) {
-                            results.add(line);
-                        }
-                    }
-                }
-                raf.close();
-            }
-            resultMap.put(table, results);
+        if (Files.exists(variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME))) {
+            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME).toAbsolutePath());
+            process.waitFor();
         }
-        return resultMap;
+
+        if (Files.exists(variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME))) {
+            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve(VARIATION_SYNONYM_FILENAME).toAbsolutePath());
+            process.waitFor();
+        }
+    }
+
+    private void gzipFile(Path directory, String fileName) throws IOException, InterruptedException {
+        Path unzippedFile = directory.resolve(fileName);
+        if (Files.exists(unzippedFile)) {
+            Process process = Runtime.getRuntime().exec("gzip " + unzippedFile.toAbsolutePath());
+            process.waitFor();
+        } else {
+            logger.error("File " + unzippedFile + " doesn't exist");
+        }
     }
 
 }
