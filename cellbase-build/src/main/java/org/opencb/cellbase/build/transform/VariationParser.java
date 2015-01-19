@@ -48,6 +48,7 @@ public class VariationParser extends CellBaseParser {
     private String[] lastLineTranscriptVariationFields;
     private String lastFeatureLine;
     private String lasSynonymLine;
+    private boolean featureEof = false;
 
     private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE = 1;
     private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE = 5;
@@ -133,7 +134,7 @@ public class VariationParser extends CellBaseParser {
                 }
             }
             // TODO: just for testing, remove
-            if (countprocess % 100000 == 0) {
+            if (countprocess % 10000 == 0) {
                 break;
             }
         }
@@ -280,18 +281,24 @@ public class VariationParser extends CellBaseParser {
     private List<String> getVariationFeatures(int variationId) throws IOException {
         List<String> variationFeatures;
         while (lastFeatureId == -1 || lastFeatureId < variationId) {
-            lastFeatureLine = variationFeaturesFileReader.readLine();
-            lastFeatureId = getVariationIdFromFeatureLine(lastFeatureLine);
+            if ((lastFeatureLine = variationFeaturesFileReader.readLine()) == null) {
+                featureEof = true;
+            } else {
+                lastFeatureId = getVariationIdFromFeatureLine(lastFeatureLine);
+            }
         }
-        if (lastFeatureId > variationId) {
+        if (featureEof || lastFeatureId > variationId) {
             variationFeatures = Collections.EMPTY_LIST;
             noFeatureVariations++;
         } else {
             variationFeatures = new ArrayList<>();
             while (lastFeatureId == variationId) {
                 variationFeatures.add(lastFeatureLine);
-                lastFeatureLine = variationFeaturesFileReader.readLine();
-                lastFeatureId = getVariationIdFromFeatureLine(lastFeatureLine);
+                if ((lastFeatureLine = variationFeaturesFileReader.readLine()) == null) {
+                    featureEof = true;
+                } else {
+                    lastFeatureId = getVariationIdFromFeatureLine(lastFeatureLine);
+                }
             }
         }
         // TODO: en lugar de devolver una lista de lineas completas, aprovechando que ya hacemos el split, devolver solo
