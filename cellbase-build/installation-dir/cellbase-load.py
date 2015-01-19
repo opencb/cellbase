@@ -44,7 +44,8 @@ port = '27017'
 if args.port is not None:
     port = args.port
 
-mongodb_collections = ['genome_info', 'genome_sequence', 'gene', 'variation', 'regulation', 'mutation', 'protein', 'conserved_region']
+mongodb_collections = ['genome_info', 'genome_sequence', 'conserved_region', 'gene', 'regulation', 'variation', 'clinvar',
+                       'protein', 'protein_protein_interaction', 'protein_function_prediction']
 if args.mongodb_collections is not None:
     mongodb_collections = args.mongodb_collections.split(',')
 
