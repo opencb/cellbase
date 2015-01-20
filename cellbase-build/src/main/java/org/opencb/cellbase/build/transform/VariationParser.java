@@ -134,9 +134,9 @@ public class VariationParser extends CellBaseParser {
                 }
             }
             // TODO: just for testing, remove
-            if (countprocess % 10000 == 0) {
-                break;
-            }
+//            if (countprocess % 10000 == 0) {
+//                break;
+//            }
         }
 
         logger.info("Variation parsing finished");
@@ -229,7 +229,7 @@ public class VariationParser extends CellBaseParser {
 
         // increment column index by 1, beacause Java indexes are 0-based and 'sort' command uses 1-based indexes
         columnIndex++;
-        ProcessBuilder pb = new ProcessBuilder("sort", "-t", "\t", "-k", Integer.toString(columnIndex), "-n", inputFile.toAbsolutePath().toString(), "-T", System.getProperty("java.io.tmpdir"), "-o", outputFile.toAbsolutePath().toString());
+        ProcessBuilder pb = new ProcessBuilder("sort", "-t", "\t", "-k", Integer.toString(columnIndex), "-n", "--stable", inputFile.toAbsolutePath().toString(), "-T", System.getProperty("java.io.tmpdir"), "-o", outputFile.toAbsolutePath().toString());
         //String sortCommand = "sort -t\"\t\" -k " + columnIndex + " -n " + inputFile.toAbsolutePath() +  " -T " + System.getProperty("java.io.tmpdir") + " -o " + outputFile.toAbsolutePath();
         this.logger.debug("Executing '" + StringUtils.join(pb.command(), " ") + "' ...");
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -334,7 +334,7 @@ public class VariationParser extends CellBaseParser {
 
     private String getDisplayConsequenceType(List<String> consequenceTypes) {
         String displayConsequenceType = null;
-        if (consequenceTypes.size() == 0) {
+        if (consequenceTypes.size() == 1) {
             displayConsequenceType = consequenceTypes.get(0);
         } else {
             for (String cons : consequenceTypes) {
