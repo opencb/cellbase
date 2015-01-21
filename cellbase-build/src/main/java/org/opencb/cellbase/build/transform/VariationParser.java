@@ -134,16 +134,13 @@ public class VariationParser extends CellBaseParser {
                 }
             }
             // TODO: just for testing, remove
-//            if (countprocess % 10000 == 0) {
+//            if (countprocess % 100000 == 0) {
 //                break;
 //            }
         }
 
         logger.info("Variation parsing finished");
         logger.debug("Elapsed time parsing: " + stopwatch);
-        logger.debug("Variation transcript with no variation:\t" + noTranscriptVariations);
-        logger.debug("Variation features with no variation:\t" + noFeatureVariations);
-        logger.debug("Variation Synonims with no variation:\t" + noSynonimVariations);
 
         gzipVariationFiles(variationDirectoryPath);
 
@@ -746,17 +743,22 @@ public class VariationParser extends CellBaseParser {
 
 
     private void gzipVariationFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
+        this.logger.info("Compressing variation files ...");
+        Stopwatch stopwatch = Stopwatch.createStarted();
         gzipFile(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
         gzipFile(variationDirectoryPath, TRANSCRIPT_VARIATION_FILENAME);
         gzipFile(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
         gzipFile(variationDirectoryPath, PREPROCESSED_VARIATION_FEATURE_FILENAME);
         gzipFile(variationDirectoryPath, PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
         gzipFile(variationDirectoryPath, PREPROCESSED_VARIATION_SYNONYM_FILENAME);
+        this.logger.info("Files compressed");
+        this.logger.debug("Elapsed time compressing files: " + stopwatch);
     }
 
     private void gzipFile(Path directory, String fileName) throws IOException, InterruptedException {
         Path unzippedFile = directory.resolve(fileName);
         if (Files.exists(unzippedFile)) {
+            this.logger.info("Compressing " + unzippedFile.toAbsolutePath());
             Process process = Runtime.getRuntime().exec("gzip " + unzippedFile.toAbsolutePath());
             process.waitFor();
         }
