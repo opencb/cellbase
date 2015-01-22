@@ -100,15 +100,20 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                         .connectTimeout(config.getTimeout(speciesId, assembly))
                         .build();
 
+                logger.info(config.getHost(speciesId, assembly));
+                logger.info(Integer.toString(config.getPort(speciesId, assembly)));
                 mc = new MongoClient(new ServerAddress(config.getHost(speciesId, assembly), config.getPort(speciesId, assembly)), mongoClientOptions);
 //                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
 //                mc.setReadPreference(ReadPreference.primary());
 //                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
 
+                logger.info(config.getDatabase(speciesId, assembly));
                 db = mc.getDB(config.getDatabase(speciesId, assembly));
 //db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
 //db.setReadPreference(ReadPreference.primary());
 //                System.out.println("Debug String: "+mc.debugString());
+                logger.info(config.getUsername(speciesId,assembly));
+                logger.info(config.getPass(speciesId, assembly));
                 if(!config.getUsername(speciesId,assembly).equals("") || !config.getPass(speciesId, assembly).equals("")){
 //                    System.out.println("User: "+config.getUsername(speciesId,assembly)+", Password: "+config.getPass(speciesId, assembly)+"");
                     db.authenticate(config.getUsername(speciesId,assembly), config.getPass(speciesId, assembly).toCharArray());
@@ -291,7 +296,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesAssemblyPrefix, db);
         }
         return (VariantAnnotationDBAdaptor) new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
-                speciesId, assembly);
+                speciesId, assembly, config.getCoreChunkSize());
     }
 
 

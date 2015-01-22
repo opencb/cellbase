@@ -150,7 +150,7 @@ public class GenericRestWSServer implements IWSServer {
                             dbConfigurationId = properties.getProperty(species + ".DB");
                             config.addSpeciesConnection(species,
                                     properties.getProperty(dbConfigurationId + ".HOST"),
-                                    properties.getProperty(species + ".DB"),
+                                    properties.getProperty(species + ".DATABASE"),
                                     Integer.parseInt(properties.getProperty(dbConfigurationId + ".PORT")),
                                     properties.getProperty(dbConfigurationId + ".DRIVER_CLASS"),
                                     properties.getProperty(dbConfigurationId + ".USERNAME"),
