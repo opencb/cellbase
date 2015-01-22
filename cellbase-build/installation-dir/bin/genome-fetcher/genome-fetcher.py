@@ -96,7 +96,8 @@ for sp in species:
         if not os.path.exists(sequence_folder):
             os.makedirs(sequence_folder)
         ## preparing URL for download
-        url_seq = sp_obj['sequence_url']+"{0}/dna/*.dna.toplevel.fa.gz".format(sp_short)
+        #url_seq = sp_obj['sequence_url']+"{0}/dna/*.dna.toplevel.fa.gz".format(sp_short)
+        url_seq = sp_obj['sequence_url']+"{0}/dna/*.dna.primary_assembly.fa.gz".format(sp_short)
         logging.debug(sp_obj['assembly'])
         outfile = sequence_folder+"/"+sp_short.capitalize() + ".{0}".format(sp_obj['assembly'])+".fa.gz"
         logging.debug(outfile)

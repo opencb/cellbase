@@ -173,7 +173,7 @@ public class GeneParser extends CellBaseParser {
              */
             if(!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
                 currentChromosome = gtf.getSequenceName();
-                chromSequence = getSequenceByChromosome(currentChromosome, genomeSequenceFilePath);
+//                chromSequence = getSequenceByChromosome(currentChromosome, genomeSequenceFilePath);
 //                chromSequence = getSequenceByChromosome(currentChromosome, chromSequenceOffsets, genomeSequenceFilePath);
 //				chromSequence = getSequenceByChromosomeName(currentChromosome, genomeSequenceDir);
             }
@@ -216,13 +216,14 @@ public class GeneParser extends CellBaseParser {
                 exonSequence = "";
                 if(currentChromosome.equals(gtf.getSequenceName()) ) { //&& chromSequence.length() > 0
                     // as starts is inclusive and position begins in 1 we must -1, end is OK.
-                    exonSequence = chromSequence.substring(gtf.getStart()-1, gtf.getEnd());
+//                    exonSequence = chromSequence.substring(gtf.getStart()-1, gtf.getEnd());
 //                    System.out.println("exonSequence = " + exonSequence);
-//                    try {
-//                        exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-//                    } catch (SQLException e) {
-//                        e.printStackTrace();
-//                    }
+                    try {
+                        exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+                    } catch (SQLException e) {
+                        System.out.println(gtf.getSequenceName()+", start: "+gtf.getStart()+", end: "+gtf.getEnd());
+                        e.printStackTrace();
+                    }
                 }
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
                         gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
@@ -419,9 +420,9 @@ public class GeneParser extends CellBaseParser {
             Statement createTable = sqlConn.createStatement();
             createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
             sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence) values (?, ?, ?, ?)");
-            sqlQuery = sqlConn.prepareStatement("SELECT sequence from genome_sequence WHERE chunkId = ? "); //AND start <= ? AND end >= ?
             indexReferenceGenomeFasta(genomeSequenceFilePath);
         }
+        sqlQuery = sqlConn.prepareStatement("SELECT sequence from genome_sequence WHERE chunkId = ? "); //AND start <= ? AND end >= ?
     }
 
     private void disconnect() throws SQLException {

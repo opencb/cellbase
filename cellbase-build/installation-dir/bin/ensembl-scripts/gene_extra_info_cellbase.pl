@@ -86,7 +86,7 @@ sub create_orthologous {
 }
 
 sub createCoreTables {
-	my ($gene, $exon, $dblink, $translation, %uniq, $gene_adaptor, $transcript_adaptor, $translation_adaptor, $probefeature_adaptor);
+	my ($gene, $exon, $dblink, $translation, %uniq, $gene_adaptor, $transcript_adaptor, $translation_adaptor, $probefeature_adaptor, $pba);
 	my (@dbentries,@arr_dbnames);
 	my $orth_gene;
 	my %exon_trans = ();
@@ -101,6 +101,8 @@ sub createCoreTables {
 	$translation_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "translation");
 	$probefeature_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "funcgen", "ProbeFeature");
 
+	$pba = Bio::EnsEMBL::Registry->get_adaptor($species, "funcgen", "ProbeSet");
+
     open (GENE_DESC, ">$outdir/gene_description.txt") || die "Cannot open gene_description.txt file";
     open (XREFS, ">$outdir/xrefs.txt") || die "Cannot open xref.txt file";
 	
@@ -114,16 +116,7 @@ sub createCoreTables {
 		##### Gene Info and sequence ######################
         print GENE_DESC $gene->stable_id."\t".$gene->description."\n";
 
-        ##### ORTHOLOGOUS ######################################################
-#        foreach my $arr(@{$gene->get_all_homologous_Genes()}) {
-#        	print $arr->[1]->description."\n";
-#            if ($arr->[1]->description =~ /ortholog_one2one/) {
-#                $orth_gene = $arr->[0]->stable_id;
-#                $north++;
-#                print ORTH "$north\t$ngene\t$orth_gene\t".$arr->[2]."\t".$arr->[1]->description."\n";
-#            }           
-#        }
-       
+
 		########################################################################
 		##### XREF TRANSCRIPTS #################################################
 		########################################################################
@@ -178,9 +171,34 @@ sub createCoreTables {
 					print XREFS $trans->stable_id()."\t".$1."\t".&get_dbname_short($dblink->db_display_name())."\t".$dblink->db_display_name()."\t".$dblink->description()."\n";
 				}
 			}
+
+
+			## MICROARRYAYS
+			my @probesets = @{$pba->fetch_all_by_external_name($trans->stable_id)};
+            foreach my $probeset (@probesets){
+
+#              my $arrays_string = join(', ', (map $_->name, @{$probeset->get_all_Arrays}));
+              my @arrays_string = map $_->name, @{$probeset->get_all_Arrays};
+              my $dbe_info;
+
+              #Now get linkage_annotation
+#              foreach my $dbe(@{$probeset->get_all_Transcript_DBEntries($trans)}){
+            	#This will return all ProbeSet DBEntries for this transcript
+            	#There should really be one max per transcript per probeset/probe
+#            	$dbe_info = $dbe->linkage_annotation;
+#              }
+
+#              print "\t".$probeset->name." on arrays ".$arrays_string." with Probe hits $dbe_info\n";
+              foreach my $array_string(@arrays_string) {
+              	print XREFS $trans->stable_id()."\t".$probeset->name."\t".&get_dbname_short($array_string)."\t".$array_string."\t\n";
+              }
+
+            }
+
+
 		}
 		########################################################################
-		last;
+#		last;
 	}
 	close(GENE_DESC);
 	close(XREFS);
