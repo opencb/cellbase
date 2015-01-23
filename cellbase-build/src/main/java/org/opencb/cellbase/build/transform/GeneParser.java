@@ -69,6 +69,7 @@ public class GeneParser extends CellBaseParser {
         int cds = 1;
         String[] fields;
 
+
 //        Map<String, String> gseq = GenomeSequenceUtils.getGenomeSequence(genomeSequenceDir);
 
         /**
@@ -249,12 +250,14 @@ public class GeneParser extends CellBaseParser {
                         // cDNA coordinates
                         exon.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
                         exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
+                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         // phase calculation
                         if (gtf.getStart() == exon.getStart()) {
@@ -296,6 +299,7 @@ public class GeneParser extends CellBaseParser {
                         if (transcript.getCdnaCodingStart() == 0) {
                             transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
                         }
+
                         // strand -
                     } else {
                         // CDS states the beginning of coding start
@@ -305,12 +309,14 @@ public class GeneParser extends CellBaseParser {
                         // cDNA coordinates
                         exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
                         exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
+                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         // phase calculation
                         if (gtf.getEnd() == exon.getEnd()) {
@@ -363,16 +369,18 @@ public class GeneParser extends CellBaseParser {
                 }
 
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
+//                    setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here, no need to set it at the beginning of next feature
                     if (exon.getStrand().equals("+")) {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingEnd(gtf.getEnd());
-                        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
+                        // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingEnd(gtf.getEnd());
-                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        transcript.setCdsLength(cds);
+                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                        transcript.setCdsLength(cds-1);
                     } else {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingStart(gtf.getStart());
@@ -380,9 +388,10 @@ public class GeneParser extends CellBaseParser {
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
+                        // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingStart(gtf.getStart());
                         transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        transcript.setCdsLength(cds);
+                        transcript.setCdsLength(cds-1);
                     }
                 }
             }
