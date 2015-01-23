@@ -6,8 +6,13 @@ import com.mongodb.DB;
 import com.mongodb.QueryBuilder;
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
+import org.opencb.biodata.models.variant.annotation.Score;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.slf4j.Logger;
@@ -33,6 +38,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private static Map<String, String> codonToA = new HashMap<>();
     private static Map<String, Integer> biotypes = new HashMap<>(30);
     private static Map<Character, Character> complementaryNt = new HashMap<>();
+    private static Map<Integer, String> siftDescriptions = new HashMap<>();
+    private static Map<Integer, String> polyphenDescriptions = new HashMap<>();
+
+    private VariationDBAdaptor variationDBAdaptor;
+    private ClinicalVarDBAdaptor clinicalVarDBAdaptor;
+    private ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor;
 
     static {
 
@@ -164,6 +175,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         complementaryNt.put('G','C');
         complementaryNt.put('T','A');
 
+        polyphenDescriptions.put(0,"probably damaging");
+        polyphenDescriptions.put(1,"possibly damaging");
+        polyphenDescriptions.put(2,"benign");
+        polyphenDescriptions.put(3,"unknown");
+
+        siftDescriptions.put(0,"tolerated");
+        siftDescriptions.put(1,"deleterious");
+
     }
 
     public VariantAnnotationMongoDBAdaptor(DB db, String species, String assembly) {
@@ -173,6 +192,30 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     public VariantAnnotationMongoDBAdaptor(DB db, String species, String assembly, int coreChunkSize) {
         super(db, species, assembly);
         this.coreChunkSize = coreChunkSize;
+    }
+
+    public VariationDBAdaptor getVariationDBAdaptor() {
+        return variationDBAdaptor;
+    }
+
+    public void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor) {
+        this.variationDBAdaptor = variationDBAdaptor;
+    }
+
+    public ClinicalVarDBAdaptor getClinicalVarDBAdaptor() {
+        return clinicalVarDBAdaptor;
+    }
+
+    public void setClinicalVarDBAdaptor(ClinicalVarDBAdaptor clinicalVarDBAdaptor) {
+        this.clinicalVarDBAdaptor = clinicalVarDBAdaptor;
+    }
+
+    public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor() {
+        return proteinFunctionPredictorDBAdaptor;
+    }
+
+    public void setProteinFunctionPredictorDBAdaptor(ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor) {
+        this.proteinFunctionPredictorDBAdaptor = proteinFunctionPredictorDBAdaptor;
     }
 
     private Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
@@ -351,6 +394,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         char[] modifiedCodonArray = referenceCodon.toCharArray();
                         modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
                         codingAnnotationAdded = true;
+                        String referenceA = codonToA.get(referenceCodon);
+                        String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
                         if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
                             if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {
                                 SoNames.add("synonymous_variant");
@@ -363,9 +408,23 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             } else {
                                 SoNames.add("stop_lost");
                             }
+                            QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                    consequenceTypeTemplate.getaPosition(), alternativeA, new QueryOptions());
+                            if(proteinSubstitutionScoresQueryResult.getNumResults()==1) {
+                                BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                if(proteinSubstitutionScores.get("ss")!=null) {
+                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
+                                            "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                                }
+                                if(proteinSubstitutionScores.get("ps")!=null) {
+                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
+                                            "Polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+                                }
+                            }
                         }
                         // Set consequenceTypeTemplate.aChange
-                        consequenceTypeTemplate.setaChange(codonToA.get(referenceCodon) + "/" + codonToA.get(String.valueOf(modifiedCodonArray)));
+                        consequenceTypeTemplate.setaChange(referenceA + "/" + alternativeA);
+
                         // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
                         char[] referenceCodonArray = referenceCodon.toLowerCase().toCharArray();
                         referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
@@ -466,6 +525,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         char[] modifiedCodonArray = referenceCodon.clone();
                         modifiedCodonArray[variantPhaseShift] = complementaryNt.get(variantAlt.toCharArray()[0]);
                         codingAnnotationAdded = true;
+                        String referenceA = codonToA.get(String.valueOf(referenceCodon));
+                        String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
+
                         if (isSynonymousCodon.get(String.valueOf(referenceCodon)).get(String.valueOf(modifiedCodonArray))) {
                             if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {
                                 SoNames.add("synonymous_variant");
@@ -478,9 +540,22 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             } else {
                                 SoNames.add("stop_lost");
                             }
+                            QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                    consequenceTypeTemplate.getaPosition(), alternativeA, new QueryOptions());
+                            if(proteinSubstitutionScoresQueryResult.getNumResults()==1) {
+                                BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                if(proteinSubstitutionScores.get("ss")!=null) {
+                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
+                                            "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                                }
+                                if(proteinSubstitutionScores.get("ps")!=null) {
+                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
+                                            "Polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+                                }
+                            }
                         }
                         // Set consequenceTypeTemplate.aChange
-                        consequenceTypeTemplate.setaChange(codonToA.get(String.valueOf(referenceCodon)) + "/" + codonToA.get(String.valueOf(modifiedCodonArray)));
+                        consequenceTypeTemplate.setaChange(referenceA + "/" + alternativeA);
                         // Fill consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
                         char[] referenceCodonArray = String.valueOf(referenceCodon).toLowerCase().toCharArray();
                         referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
@@ -514,7 +589,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantStart falls in an intron
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
-                    consequenceTypeTemplate.setaPosition((cdsVariantStart - 1) / 3);
+                    consequenceTypeTemplate.setaPosition(((cdsVariantStart - 1)/3)+1);
                 }
 //                SoNames.add("coding_sequence_variant");
                 if(variantEnd <= genomicCodingEnd) {  // Variant end also within coding region
@@ -552,7 +627,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantEnd falls in an intron
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
-                    consequenceTypeTemplate.setaPosition((cdsVariantStart - 1) / 3);
+                    consequenceTypeTemplate.setaPosition(((cdsVariantStart - 1)/3)+1);
                 }
 //                SoNames.add("coding_sequence_variant");
                 if(variantStart >= genomicCodingStart) {  // Variant start also within coding region
@@ -738,7 +813,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getCdsPosition(),
                                             consequenceTypeTemplate.getaPosition(),
                                             consequenceTypeTemplate.getaChange(),
-                                            consequenceTypeTemplate.getCodon(), SoName));
+                                            consequenceTypeTemplate.getCodon(),
+                                            consequenceTypeTemplate.getProteinSubstitutionScores(), SoName));
                                 }
                                 break;
                             /**
@@ -860,7 +936,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getCdsPosition(),
                                             consequenceTypeTemplate.getaPosition(),
                                             consequenceTypeTemplate.getaChange(),
-                                            consequenceTypeTemplate.getCodon(), SoName));
+                                            consequenceTypeTemplate.getCodon(),
+                                            consequenceTypeTemplate.getProteinSubstitutionScores(), SoName));
                                 }
                                 break;
                             /**
@@ -1452,4 +1529,44 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
         return queryResults;
     }
+
+    public List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions) {
+
+
+        List<QueryResult> variationQueryResultList = variationDBAdaptor.getIdByVariantList(variantList, queryOptions);
+        List<QueryResult> clinicalQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+        List<QueryResult> variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
+
+        VariantAnnotation variantAnnotation;
+
+        Integer i=0;
+        for(QueryResult clinicalQueryResult: clinicalQueryResultList){
+            Map<String,Object> phenotype = new HashMap<>();
+            if(clinicalQueryResult.getResult() != null) {
+                phenotype = (Map<String, Object>) clinicalQueryResult.getResult();
+            }
+
+            List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>)variationConsequenceTypeList.get(i).getResult();
+
+            String id = null;
+            if(variationQueryResultList.get(i).getResult() != null) {
+                id = variationQueryResultList.get(i).getResult().toString();
+            }
+
+            // TODO: start & end are both being set to variantList.get(i).getPosition(), modify this for indels
+            variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(),
+                    variantList.get(i).getPosition(),variantList.get(i).getPosition(),variantList.get(i).getReference(),variantList.get(i).getAlternative());
+
+            variantAnnotation.setId(id);
+            variantAnnotation.setClinicalData(phenotype);
+            variantAnnotation.setConsequenceTypes(consequenceTypeList);
+            clinicalQueryResult.setResult(Collections.singletonList(variantAnnotation));
+            i++;
+        }
+
+        return clinicalQueryResultList;
+    }
+
+
+
 }

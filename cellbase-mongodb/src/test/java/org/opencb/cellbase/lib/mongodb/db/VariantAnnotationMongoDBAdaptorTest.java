@@ -297,6 +297,13 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
 
         // Use ebi cellbase to test these
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17280889, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16449075, "G", "A"), new QueryOptions());  // should not raise null exception
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16287784, "C", "T"), new QueryOptions());  // should not raise null exception
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16287365, "C", "T"), new QueryOptions());  // should not raise null exception
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17468875, "C", "A"), new QueryOptions());  // missense_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17451081, "C", "T"), new QueryOptions());  // should not include stop_reained_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17468875, "C", "T"), new QueryOptions());  // synonymous_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17449263, "G", "A"), new QueryOptions());  // should not include stop_reained_variant
@@ -341,8 +348,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
         /**
          * Calculates annotation for vcf file variants
          */
-        String INPUTFILE = "/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.test.vcf";
-//        String INPUTFILE = "/home/fjlopez/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
+//        String INPUTFILE = "/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.test.vcf";
+        String INPUTFILE = "/home/fjlopez/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
         QueryResult queryResult = null;
         Set<AnnotationComparisonObject> uvaAnnotationSet = new HashSet<>();
         VcfRawReader vcfReader = new VcfRawReader(INPUTFILE);
@@ -381,7 +388,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
                         ensemblPos = vcfRecord.getPosition() + 1;
                         // Large deletion
                         if(vcfRecord.getAlternate().equals("<DEL>")) {
-                            int end = Integer.parseInt(vcfRecord.getInfo().split(";")[8].split("=")[1]);
+                            String[] infoFields = vcfRecord.getInfo().split(";");
+                            int i = 0;
+                            while(i<infoFields.length && !infoFields[i].startsWith("END=")) {
+                                i++;
+                            }
+                            int end = Integer.parseInt(infoFields[i].split("=")[1]);
                             pos = (vcfRecord.getPosition()+1) + "-" + end;
                             ref = StringUtils.repeat("N",end-vcfRecord.getPosition());
                             alt = "-";
@@ -422,6 +434,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 System.out.print(lineCounter+"/"+nLines+"\r");
             }
         }
+
+        System.exit(0);
 
         /**
          * Loads VEP annotation from VEP parsed annotations
