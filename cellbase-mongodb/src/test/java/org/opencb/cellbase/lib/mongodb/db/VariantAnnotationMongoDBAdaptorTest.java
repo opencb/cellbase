@@ -297,6 +297,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
 
         // Use ebi cellbase to test these
+        // TODO: check differences against Web VEP
           variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17280889, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
@@ -410,9 +411,13 @@ public class VariantAnnotationMongoDBAdaptorTest {
                         ensemblPos = vcfRecord.getPosition();
                         pos = Integer.toString(ensemblPos);
                     }
-//                    System.out.println("new GenomicVariant = " + new GenomicVariant(vcfRecord.getChromosome(), vcfRecord.getPosition(),ref, alt));
-                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), ensemblPos,
-                            ref, alt), new QueryOptions());
+                    try {
+                        queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), ensemblPos,
+                                ref, alt), new QueryOptions());
+                    } catch (Exception e) {
+                        System.out.println("new GenomicVariant = " + new GenomicVariant(vcfRecord.getChromosome(), vcfRecord.getPosition(),ref, alt));
+                        System.exit(1);
+                    }
 
                     int i;
                     List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();

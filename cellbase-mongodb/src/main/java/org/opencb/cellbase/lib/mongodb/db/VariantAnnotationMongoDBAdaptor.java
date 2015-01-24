@@ -314,7 +314,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private void solvePositiveCodingEffect(Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
+    private void solvePositiveCodingEffect(Boolean splicing, String transcriptSequence, Integer transcriptEnd,
+                                           Integer genomicCodingEnd, Integer cdnaCodingStart, Integer cdnaCodingEnd,
                                            Integer cdnaVariantStart, Integer cdnaVariantEnd, String variantRef, String variantAlt,
                                            HashSet<String> SoNames, ConsequenceType consequenceTypeTemplate) {
         // TODO: lo q hay dentro de esta funcion es copia pega de solveCodingExonEffect. Arreglarlo. Es basicamente igual,
@@ -383,54 +384,63 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         codingAnnotationAdded = true;
                     }
                     int finalNtPhase = (transcriptSequence.length()-cdnaCodingStart) % 3;
-                    if (cdnaCodingEnd == 0 && (cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaCodingEnd to 0
-                        SoNames.add("incomplete_terminal_codon_variant");                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
-                        codingAnnotationAdded = true;
-                    } else if (!splicing) {
-//                    } else {
-                        Integer variantPhaseShift = (cdnaVariantStart-cdnaCodingStart) % 3;
-                        int modifiedCodonStart = cdnaVariantStart-variantPhaseShift;
-                        String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
-                        char[] modifiedCodonArray = referenceCodon.toCharArray();
-                        modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
-                        codingAnnotationAdded = true;
-                        String referenceA = codonToA.get(referenceCodon);
-                        String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
-                        if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {
-                                SoNames.add("synonymous_variant");
-                            } else {
-                                SoNames.add("stop_retained_variant");
-                            }
+                    if (!splicing) {
+                        if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd==genomicCodingEnd) && finalNtPhase!=2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+                            SoNames.add("incomplete_terminal_codon_variant");                                       //  If not, avoid calculating reference/modified codon
+                            codingAnnotationAdded = true;
                         } else {
-                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {  // cdnaCodingEnd may be 0 therefore we know variant is located before the potentially truncated stop codon (see the  if where "incomplete-terminal_codon_variant" is annotated)
-                                SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
+                            Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3;
+                            int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+                            String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
+                            char[] modifiedCodonArray = referenceCodon.toCharArray();
+                            modifiedCodonArray[variantPhaseShift] = variantAlt.toCharArray()[0];
+                            codingAnnotationAdded = true;
+                            String referenceA = codonToA.get(referenceCodon);
+                            String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
+                            if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
+                                if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {
+                                    SoNames.add("synonymous_variant");
+                                } else {
+                                    if(isStopCodon(referenceCodon)) {
+                                        SoNames.add("stop_retained_variant");
+                                    } else {
+                                        SoNames.add("incomplete_terminal_codon_variant");
+                                    }
+                                }
                             } else {
-                                SoNames.add("stop_lost");
-                            }
-                            QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                    consequenceTypeTemplate.getaPosition(), alternativeA, new QueryOptions());
-                            if(proteinSubstitutionScoresQueryResult.getNumResults()==1) {
-                                BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
-                                if(proteinSubstitutionScores.get("ss")!=null) {
-                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-                                            "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                                if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon)
+                                    SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
+                                    QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getaPosition(), alternativeA, new QueryOptions());
+                                    if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
+                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                        if (proteinSubstitutionScores.get("ss") != null) {
+                                            consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
+                                                    "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                                        }
+                                        if (proteinSubstitutionScores.get("ps") != null) {
+                                            consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
+                                                    "Polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+                                        }
+                                    }
+                                } else {
+                                    if(isStopCodon(referenceCodon)) {
+                                        SoNames.add("stop_lost");
+                                    } else {
+                                        SoNames.add("incomplete_terminal_codon_variant");
+                                    }
                                 }
-                                if(proteinSubstitutionScores.get("ps")!=null) {
-                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-                                            "Polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
-                                }
                             }
-                        }
-                        // Set consequenceTypeTemplate.aChange
-                        consequenceTypeTemplate.setaChange(referenceA + "/" + alternativeA);
+                            // Set consequenceTypeTemplate.aChange
+                            consequenceTypeTemplate.setaChange(referenceA + "/" + alternativeA);
 
-                        // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
-                        char[] referenceCodonArray = referenceCodon.toLowerCase().toCharArray();
-                        referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
-                        modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
-                        modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
-                        consequenceTypeTemplate.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
+                            // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
+                            char[] referenceCodonArray = referenceCodon.toLowerCase().toCharArray();
+                            referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
+                            modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
+                            modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
+                            consequenceTypeTemplate.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
+                        }
                     }
                 }
             }
@@ -440,7 +450,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private void solveNegativeCodingEffect(Boolean splicing, String transcriptSequence, Integer cdnaCodingStart, Integer cdnaCodingEnd,
+    private void solveNegativeCodingEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart,
+                                           Integer genomicCodingStart, Integer cdnaCodingStart, Integer cdnaCodingEnd,
                                            Integer cdnaVariantStart, Integer cdnaVariantEnd, String variantRef, String variantAlt,
                                            HashSet<String> SoNames, ConsequenceType consequenceTypeTemplate) {
         // TODO: lo q hay dentro de esta funcion es copia pega de solveCodingExonEffect. Arreglarlo. Es basicamente igual,
@@ -509,59 +520,68 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         codingAnnotationAdded = true;
                     }
                     int finalNtPhase = (transcriptSequence.length()-cdnaCodingStart) % 3;
-                    if (cdnaCodingEnd == 0 && (cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaCodingEnd to 0
-                        SoNames.add("incomplete_terminal_codon_variant");                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
-                        codingAnnotationAdded = true;
-                    } else if (!splicing) {
-//                    } else {
-                        Integer variantPhaseShift = (cdnaVariantStart-cdnaCodingStart) % 3;
-                        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
-                        String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
-                                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
-                        char[] referenceCodon = reverseCodon.toCharArray();
-                        referenceCodon[0] = complementaryNt.get(referenceCodon[0]);
-                        referenceCodon[1] = complementaryNt.get(referenceCodon[1]);
-                        referenceCodon[2] = complementaryNt.get(referenceCodon[2]);
-                        char[] modifiedCodonArray = referenceCodon.clone();
-                        modifiedCodonArray[variantPhaseShift] = complementaryNt.get(variantAlt.toCharArray()[0]);
-                        codingAnnotationAdded = true;
-                        String referenceA = codonToA.get(String.valueOf(referenceCodon));
-                        String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
-
-                        if (isSynonymousCodon.get(String.valueOf(referenceCodon)).get(String.valueOf(modifiedCodonArray))) {
-                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {
-                                SoNames.add("synonymous_variant");
-                            } else {
-                                SoNames.add("stop_retained_variant");
-                            }
+                    if (!splicing) {
+                        if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptStart==genomicCodingStart) && finalNtPhase!=2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+                            SoNames.add("incomplete_terminal_codon_variant");                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
+                            codingAnnotationAdded = true;
                         } else {
-                            if(cdnaCodingEnd==0 || cdnaVariantEnd<(cdnaCodingEnd - 2)) {  // cdnaCodingEnd may be 0 therefore we know variant is located before the potentially truncated stop codon (see the  if where "incomplete-terminal_codon_variant" is annotated)
-                                SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray))?"stop_gained":"missense_variant");
+                            Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3;
+                            int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+                            String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
+                                    transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+                            char[] referenceCodon = reverseCodon.toCharArray();
+                            referenceCodon[0] = complementaryNt.get(referenceCodon[0]);
+                            referenceCodon[1] = complementaryNt.get(referenceCodon[1]);
+                            referenceCodon[2] = complementaryNt.get(referenceCodon[2]);
+                            char[] modifiedCodonArray = referenceCodon.clone();
+                            modifiedCodonArray[variantPhaseShift] = complementaryNt.get(variantAlt.toCharArray()[0]);
+                            codingAnnotationAdded = true;
+                            String referenceA = codonToA.get(String.valueOf(referenceCodon));
+                            String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
+
+                            if (isSynonymousCodon.get(String.valueOf(referenceCodon)).get(String.valueOf(modifiedCodonArray))) {
+                                if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {
+                                    SoNames.add("synonymous_variant");
+                                } else {
+                                    if(isStopCodon(String.valueOf(referenceCodon))) {
+                                        SoNames.add("stop_retained_variant");
+                                    } else {
+                                        SoNames.add("incomplete_terminal_codon_variant");
+                                    }
+                                }
                             } else {
-                                SoNames.add("stop_lost");
-                            }
-                            QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                    consequenceTypeTemplate.getaPosition(), alternativeA, new QueryOptions());
-                            if(proteinSubstitutionScoresQueryResult.getNumResults()==1) {
-                                BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
-                                if(proteinSubstitutionScores.get("ss")!=null) {
-                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-                                            "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                                if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon)
+                                    SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
+                                    QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getaPosition(), alternativeA, new QueryOptions());
+                                    if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
+                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                        if (proteinSubstitutionScores.get("ss") != null) {
+                                            consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
+                                                    "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                                        }
+                                        if (proteinSubstitutionScores.get("ps") != null) {
+                                            consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
+                                                    "Polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+                                        }
+                                    }
+                                } else {
+                                    if(isStopCodon(String.valueOf(referenceCodon))) {
+                                        SoNames.add("stop_lost");
+                                    } else {
+                                        SoNames.add("incomplete_terminal_codon_variant");
+                                    }
                                 }
-                                if(proteinSubstitutionScores.get("ps")!=null) {
-                                    consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-                                            "Polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
-                                }
                             }
+                            // Set consequenceTypeTemplate.aChange
+                            consequenceTypeTemplate.setaChange(referenceA + "/" + alternativeA);
+                            // Fill consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
+                            char[] referenceCodonArray = String.valueOf(referenceCodon).toLowerCase().toCharArray();
+                            referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
+                            modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
+                            modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
+                            consequenceTypeTemplate.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
                         }
-                        // Set consequenceTypeTemplate.aChange
-                        consequenceTypeTemplate.setaChange(referenceA + "/" + alternativeA);
-                        // Fill consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
-                        char[] referenceCodonArray = String.valueOf(referenceCodon).toLowerCase().toCharArray();
-                        referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
-                        modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
-                        modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
-                        consequenceTypeTemplate.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
                     }
                 }
             }
@@ -593,8 +613,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 }
 //                SoNames.add("coding_sequence_variant");
                 if(variantEnd <= genomicCodingEnd) {  // Variant end also within coding region
-                    solvePositiveCodingEffect(splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
-                            cdnaVariantEnd, variantRef, variantAlt, SoNames, consequenceTypeTemplate);
+                    solvePositiveCodingEffect(splicing, transcriptSequence, transcriptEnd, genomicCodingEnd,
+                            cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd, variantRef, variantAlt,
+                            SoNames, consequenceTypeTemplate);
                 } else {
                     if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
                         SoNames.add("3_prime_UTR_variant");
@@ -631,8 +652,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 }
 //                SoNames.add("coding_sequence_variant");
                 if(variantStart >= genomicCodingStart) {  // Variant start also within coding region
-                    solveNegativeCodingEffect(splicing, transcriptSequence, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart,
-                            cdnaVariantEnd, variantRef, variantAlt, SoNames, consequenceTypeTemplate);
+                    solveNegativeCodingEffect(splicing, transcriptSequence, transcriptStart, genomicCodingStart,
+                            cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd, variantRef, variantAlt,
+                            SoNames, consequenceTypeTemplate);
                 } else {
                     if(transcriptStart<genomicCodingStart) {// Check transcript has 3 UTR)
                         SoNames.add("3_prime_UTR_variant");
