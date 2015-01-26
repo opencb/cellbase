@@ -21,13 +21,14 @@ import org.opencb.commons.utils.FileUtils;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -39,7 +40,7 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
 
     // variation and conservation data are too big to be stored in a single file, data is split in different files
     protected Map<String, BufferedWriter> variationWriters;
-    private Map<String, JsonGenerator> conservedRegionJsonWriters;
+    private Map<String, BufferedWriter> conservedRegionJsonWriters;
 
     private ObjectMapper jsonObjectMapper;
     protected ObjectWriter jsonObjectWriter;
@@ -193,14 +194,17 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     public void serialize(ConservedRegionChunk conservedRegionChunk) {
         try {
             if (conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()) == null) {
-                JsonFactory conservedRegionJsonFactory = new JsonFactory();
-                GZIPOutputStream gzOutputStream =
-                        new GZIPOutputStream(new FileOutputStream(outdirPath.resolve("conservation_" + conservedRegionChunk.getChromosome() + ".json.gz").toAbsolutePath().toString()));
-                JsonGenerator generator = conservedRegionJsonFactory.createGenerator(gzOutputStream);
-                conservedRegionJsonWriters.put(conservedRegionChunk.getChromosome(), generator);
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outdirPath.resolve("conservation_" + conservedRegionChunk.getChromosome() + ".json.gz")))));
+
+//                JsonFactory conservedRegionJsonFactory = new JsonFactory();
+//                GZIPOutputStream gzOutputStream =
+//                        new GZIPOutputStream(new FileOutputStream(outdirPath.resolve("conservation_" + conservedRegionChunk.getChromosome() + ".json.gz").toAbsolutePath().toString()));
+//                JsonGenerator generator = conservedRegionJsonFactory.createGenerator(gzOutputStream);
+//                conservedRegionJsonWriters.put(conservedRegionChunk.getChromosome(), generator);
+                conservedRegionJsonWriters.put(conservedRegionChunk.getChromosome(), bw);
             }
-            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).writeObject(conservedRegionChunk);
-            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).writeRaw('\n');
+            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).write(jsonObjectWriter.writeValueAsString(conservedRegionChunk));
+            conservedRegionJsonWriters.get(conservedRegionChunk.getChromosome()).newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -265,14 +269,21 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
 
     private void closeConservationWriters() {
         if (conservedRegionJsonWriters != null) {
-            try {
-                for (JsonGenerator conservationWriter : conservedRegionJsonWriters.values()) {
-                    conservationWriter.flush();
-                    conservationWriter.close();
+            for (BufferedWriter bw : conservedRegionJsonWriters.values()) {
+                try {
+                    bw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+//            try {
+//                for (JsonGenerator conservationWriter : conservedRegionJsonWriters.values()) {
+//                    conservationWriter.flush();
+//                    conservationWriter.close();
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 }

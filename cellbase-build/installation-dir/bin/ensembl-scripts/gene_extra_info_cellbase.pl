@@ -174,26 +174,28 @@ sub createCoreTables {
 
 
 			## MICROARRYAYS
-			my @probesets = @{$pba->fetch_all_by_external_name($trans->stable_id)};
-            foreach my $probeset (@probesets){
+			if(defined $pba) {
+				my @probesets = @{$pba->fetch_all_by_external_name($trans->stable_id)};
+				foreach my $probeset (@probesets){
 
-#              my $arrays_string = join(', ', (map $_->name, @{$probeset->get_all_Arrays}));
-              my @arrays_string = map $_->name, @{$probeset->get_all_Arrays};
-              my $dbe_info;
+	#              my $arrays_string = join(', ', (map $_->name, @{$probeset->get_all_Arrays}));
+				  my @arrays_string = map $_->name, @{$probeset->get_all_Arrays};
+				  my $dbe_info;
 
-              #Now get linkage_annotation
-#              foreach my $dbe(@{$probeset->get_all_Transcript_DBEntries($trans)}){
-            	#This will return all ProbeSet DBEntries for this transcript
-            	#There should really be one max per transcript per probeset/probe
-#            	$dbe_info = $dbe->linkage_annotation;
-#              }
+				  #Now get linkage_annotation
+	#              foreach my $dbe(@{$probeset->get_all_Transcript_DBEntries($trans)}){
+					#This will return all ProbeSet DBEntries for this transcript
+					#There should really be one max per transcript per probeset/probe
+	#            	$dbe_info = $dbe->linkage_annotation;
+	#              }
 
-#              print "\t".$probeset->name." on arrays ".$arrays_string." with Probe hits $dbe_info\n";
-              foreach my $array_string(@arrays_string) {
-              	print XREFS $trans->stable_id()."\t".$probeset->name."\t".&get_dbname_short($array_string)."\t".$array_string."\t\n";
-              }
+	#              print "\t".$probeset->name." on arrays ".$arrays_string." with Probe hits $dbe_info\n";
+				  foreach my $array_string(@arrays_string) {
+					print XREFS $trans->stable_id()."\t".$probeset->name."\t".&get_dbname_short($array_string)."\t".$array_string."\t\n";
+				  }
 
-            }
+				}
+			}
 
 
 		}
