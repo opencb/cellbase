@@ -222,9 +222,9 @@ public class VariationParser extends CellBaseParser {
                 }
             }
             // TODO: just for testing, remove
-            if (countprocess % 100000 == 0) {
-                break;
-            }
+            //if (countprocess % 100000 == 0) {
+            //    break;
+            //}
         }
 
         logger.info("Variation parsing finished");
@@ -234,7 +234,7 @@ public class VariationParser extends CellBaseParser {
         logger.info("Non-diploid genotypes:\t" + nonDiploidGenotypes);
 
         // TODO: commented during development, uncomment
-        //gzipVariationFiles(variationDirectoryPath);
+        gzipVariationFiles(variationDirectoryPath);
 
         try {
             bufferedReaderVariation.close();
