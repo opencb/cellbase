@@ -792,6 +792,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 consequenceTypeTemplate.setCodon(null);
                 consequenceTypeTemplate.setStrand((String) geneInfo.get("strand"));
                 consequenceTypeTemplate.setBiotype((String) transcriptInfo.get("biotype"));
+                consequenceTypeTemplate.setProteinSubstitutionScores(null);
 
                 if(transcriptStrand.equals("+")) {
                     solveTranscriptFlankingRegions(SoNames, transcriptStart, transcriptEnd, variantStart, variantEnd,
