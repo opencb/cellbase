@@ -1,20 +1,41 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
-import com.mongodb.DB;
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.*;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by imedina on 10/12/13.
  */
 public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor implements ProteinFunctionPredictorDBAdaptor {
+
+    private static Map<String,String> aaShortName = new HashMap();
+
+    static {
+        aaShortName.put("ALA","A");
+        aaShortName.put("ARG","R");
+        aaShortName.put("ASN","N");
+        aaShortName.put("ASP","D");
+        aaShortName.put("CYS","C");
+        aaShortName.put("GLN","Q");
+        aaShortName.put("GLU","E");
+        aaShortName.put("GLY","G");
+        aaShortName.put("HIS","H");
+        aaShortName.put("ILE","I");
+        aaShortName.put("LEU","L");
+        aaShortName.put("LYS","K");
+        aaShortName.put("MET","M");
+        aaShortName.put("PHE","F");
+        aaShortName.put("PRO","P");
+        aaShortName.put("SER","S");
+        aaShortName.put("THR","T");
+        aaShortName.put("TRP","W");
+        aaShortName.put("TYR","Y");
+        aaShortName.put("VAL","V");
+    }
 
     public ProteinFunctionPredictorMongoDBAdaptor(DB db) {
         super(db);
@@ -52,4 +73,26 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
 //        options = addExcludeReturnFields("transcripts", options);
         return executeQueryList(transcriptIdList, queries, options);
     }
+
+    public QueryResult getByAaChange(String transcriptId, Integer aaPosition, String newAa, QueryOptions queryOptions) {
+
+        QueryBuilder builder = QueryBuilder.start("transcriptId").is(transcriptId);
+        QueryResult allChangesQueryResult = executeQuery(transcriptId, builder.get(), queryOptions);
+
+        QueryResult proteinSubstitionScoresQueryResult = new QueryResult();
+        proteinSubstitionScoresQueryResult.setDBTime(allChangesQueryResult.getDBTime());
+        proteinSubstitionScoresQueryResult.setId(transcriptId+"-"+aaPosition+"-"+newAa);
+
+        String currentAaShortName;
+        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null) {
+            proteinSubstitionScoresQueryResult.setNumResults(1);
+            proteinSubstitionScoresQueryResult.setResult(((HashMap) ((HashMap) ((BasicDBObject) ((BasicDBList) allChangesQueryResult.getResult()).get(0)).
+                    get("aaPositions")).get(Integer.toString(aaPosition))).get(currentAaShortName));
+        } else {
+            proteinSubstitionScoresQueryResult.setNumResults(0);
+        }
+
+        return proteinSubstitionScoresQueryResult;
+    }
+
 }

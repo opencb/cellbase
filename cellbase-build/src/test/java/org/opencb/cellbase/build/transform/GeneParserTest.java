@@ -1,6 +1,7 @@
 package org.opencb.cellbase.build.transform;
 
 import org.junit.Test;
+
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import java.nio.file.Path;
@@ -23,6 +24,5 @@ public class GeneParserTest {
 //        GeneParser geneParser = new GeneParser(serializer);
 //
 //        geneParser.parse(Paths.get("/tmp/test/"), Paths.get("/tmp/homo_sapiens/gene/homo_sapiens.gtf.gz"));
-
     }
 }

@@ -295,8 +295,16 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             DB db = createCellBaseMongoDB(speciesId, assembly);
             mongoDBFactory.put(speciesAssemblyPrefix, db);
         }
-        return (VariantAnnotationDBAdaptor) new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
+
+
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
                 speciesId, assembly, config.getCoreChunkSize());
+
+        variantAnnotationDBAdaptor.setVariationDBAdaptor(getVariationDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setClinicalVarDBAdaptor(getClinicalVarDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setProteinFunctionPredictorDBAdaptor(getProteinFunctionPredictorDBAdaptor(species, assembly));
+
+        return variantAnnotationDBAdaptor;
     }
 
 

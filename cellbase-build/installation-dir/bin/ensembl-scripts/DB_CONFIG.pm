@@ -56,6 +56,7 @@ BEGIN {
 			$FELIS_CATUS_CORE
 			$DANIO_RERIO_CORE
 			$DANIO_RERIO_VARIATION
+			$DANIO_RERIO_FUNCTIONAL
 			$CIONA_INTESTINALIS_CORE
 			$OVIS_ARIES_CORE
 			$ORYZIAS_LATIPES_CORE
@@ -116,7 +117,7 @@ BEGIN {
 our $HOME = "/mnt/mysql/infrared_dbs";
 
 my $user_home = $ENV{'HOME'};
-our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_78";
+our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_75";
 our $ENSEMBL_REGISTRY = "$user_home/appl/cellbase/cellbase-build/installation-dir/bin/ensembl-scripts/registry.conf";
 
 our $BIOMART_LIB = "/mnt/mysql/ensembl_apis/biomart-perl";
@@ -176,8 +177,9 @@ our $ORYCTOLAGUS_CUNICULUS_CORE = "oryctolagus_cuniculus_core_78_3";
 our $GALLUS_GALLUS_CORE = "gallus_gallus_core_78_4";
 our $BOS_TAURUS_CORE = "bos_taurus_core_78_31";
 our $FELIS_CATUS_CORE = "felis_catus_core_78_62";
-our $DANIO_RERIO_CORE = "danio_rerio_core_78_9";
-our $DANIO_RERIO_VARIATION = "danio_rerio_variation_78_9";
+our $DANIO_RERIO_CORE = "danio_rerio_core_75_9";
+our $DANIO_RERIO_VARIATION = "danio_rerio_variation_75_9";
+our $DANIO_RERIO_FUNCTIONAL = "danio_rerio_funcgen_75_9";
 our $CIONA_INTESTINALIS_CORE = "ciona_intestinalis_core_78_3";
 our $OVIS_ARIES_CORE = "ovis_aries_core_78_31";
 our $ORYZIAS_LATIPES_CORE = "oryzias_latipes_core_78_1";
