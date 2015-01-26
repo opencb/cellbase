@@ -378,14 +378,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     }
                 }
             } else {  // SNV
-                if(cdnaVariantStart != null) {
+                if(cdnaVariantStart != null ) {
                     if (cdnaVariantStart < (cdnaCodingStart + 3)) {  // cdnaVariantStart=null if variant start is intronic
                         SoNames.add("initiator_codon_variant");
                         codingAnnotationAdded = true;
                     }
                     int finalNtPhase = (transcriptSequence.length()-cdnaCodingStart) % 3;
                     if (!splicing) {
-                        if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd==genomicCodingEnd) && finalNtPhase!=2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+                        if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd.equals(genomicCodingEnd)) && finalNtPhase!=2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                             SoNames.add("incomplete_terminal_codon_variant");                                       //  If not, avoid calculating reference/modified codon
                             codingAnnotationAdded = true;
                         } else {
@@ -521,7 +521,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     }
                     int finalNtPhase = (transcriptSequence.length()-cdnaCodingStart) % 3;
                     if (!splicing) {
-                        if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptStart==genomicCodingStart) && finalNtPhase!=2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+                        if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptStart.equals(genomicCodingStart)) && finalNtPhase!=2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                             SoNames.add("incomplete_terminal_codon_variant");                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
                             codingAnnotationAdded = true;
                         } else {
