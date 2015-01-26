@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.utils.FileUtils;
 import org.opencb.cellbase.build.transform.utils.VariationUtils;
 
+import javax.ws.rs.HEAD;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -148,8 +149,8 @@ public class VariationParser extends CellBaseParser {
                     chromosome = seqRegionMap.get(variationFeatureFields[1]);
 
                     // Preparing displayConsequenceType and consequenceTypes attributes
-                    consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")) : Arrays.asList("intergenic_variant");
-                    if (consequenceTypes.size() == 0) {
+                    consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")): Arrays.asList("intergenic_variant");
+                    if(consequenceTypes.size() == 1) {
                         displayConsequenceType = consequenceTypes.get(0);
                     } else {
                         for (String cons : consequenceTypes) {

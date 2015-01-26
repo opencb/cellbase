@@ -3,17 +3,14 @@
 import os
 import argparse
 import logging
-import re
 
-parser = argparse.ArgumentParser(prog="cellbase-load.py")
-parser.add_argument("-i", "--indir", help="A species path to a cellbase-build data folder", required=True)
+parser = argparse.ArgumentParser(prog="cellbase-stats.py")
 parser.add_argument("--host", help="Database to install [localhost]")
 parser.add_argument("--port", help="Database to install [27017]")
 parser.add_argument("-d", "--database", help="Database to install", required=True)
 parser.add_argument("-u", "--user", help="Database to install")
 parser.add_argument("-p", "--password", help="Database to install")
 parser.add_argument("-c", "--mongodb-collections", help="CellBase MongoDB collections to be installed, files are validated to exist. ['info_stats', 'genome_sequence', 'core', 'regulation', 'variation', 'protein', 'conserved_region']")
-parser.add_argument("--mongodb-indexes-dir", help="Ensembl version number, i.e. '3'. [3]")
 args = parser.parse_args()
 
 
@@ -24,7 +21,6 @@ logging.basicConfig(level=logging.DEBUG)
 ## Validating and saving arguments
 ###########################################################
 ## Required arguments do not need any check
-indir = args.indir
 database = args.database
 
 ## Setting other optional arguments
@@ -44,14 +40,9 @@ port = '27017'
 if args.port is not None:
     port = args.port
 
-mongodb_collections = ['genome_info', 'genome_sequence', 'conserved_region', 'gene', 'regulation', 'variation', 'clinvar',
-                       'protein', 'protein_protein_interaction', 'protein_function_prediction']
+mongodb_collections = ['genome_info', 'genome_sequence', 'gene', 'variation', 'regulation', 'mutation', 'protein', 'conserved_region']
 if args.mongodb_collections is not None:
     mongodb_collections = args.mongodb_collections.split(',')
-
-mongodb_indexes_dir = ''
-if args.mongodb_indexes_dir is not None:
-    mongodb_indexes_dir = args.mongodb_indexes_dir
 
 
 def import_collection(user, password, database, collection, coll_file_json):
@@ -125,5 +116,4 @@ for collection in mongodb_collections:
             create_index(user, password, database, coll_file_index)
         else:
             break
-
 
