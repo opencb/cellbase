@@ -172,6 +172,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         BufferedWriter bw = Files.newBufferedWriter(Paths.get("/home/fjlopez/tmp/22.uva.vcf"), Charset.defaultCharset());
 
         // Use ebi cellbase to test these
+//        variantAnnotationDBAdaptor.getAllCzonsequenceTypesByVariant(new GenomicVariant("22", 16101010, "TTA", "-"), new QueryOptions());
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16101010, "TTA", "-"), new QueryOptions());
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16062270, "G", "T"), new QueryOptions());
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());
@@ -298,7 +299,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17280889, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16449075, "G", "A"), new QueryOptions());  // should not raise null exception
