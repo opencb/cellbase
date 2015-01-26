@@ -15,4 +15,6 @@ public interface ProteinFunctionPredictorDBAdaptor {
 
     public List<QueryResult> getAllByEnsemblTranscriptIdList(List<String> transcriptIdList, QueryOptions options);
 
+    public QueryResult getByAaChange(String transcriptId, Integer aaPosition, String newAa, QueryOptions options);
+
 }
