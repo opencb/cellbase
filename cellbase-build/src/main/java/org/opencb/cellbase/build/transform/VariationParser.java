@@ -619,11 +619,6 @@ public class VariationParser extends CellBaseParser {
         return endOfFileOfVariationRelatedFiles[fileId];
     }
 
-    private int getVariationIdFromSynonymLine(String synonymLine) {
-        int variationId = Integer.parseInt(synonymLine.split("\t")[VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE]);
-        return variationId;
-    }
-
     private int getVariationIdFromAlleleLine(String alleleLine) {
         int variationId = Integer.parseInt(alleleLine.split("\t")[VARIATION_ID_COLUMN_INDEX_IN_ALLELE_FILE]);
         return variationId;
@@ -635,12 +630,12 @@ public class VariationParser extends CellBaseParser {
     }
 
     private List<PopulationFrequency> getPopulationFrequencies(int variationId, String[] allelesArray) throws IOException {
-        Map<Integer, PopulationFrequency> populationFrequencies = new HashMap<>();
-        getAlleleFrequencies(variationId, allelesArray, populationFrequencies);
-        getGenotypeFrequencies(variationId, allelesArray, populationFrequencies);
+//        Map<Integer, PopulationFrequency> populationFrequencies = new HashMap<>();
+//        getAlleleFrequencies(variationId, allelesArray, populationFrequencies);
+//       getGenotypeFrequencies(variationId, allelesArray, populationFrequencies);
         // TODO: uncomment next lines and remove lines before this
-//        Map<Integer, PopulationFrequency> populationFrequencies = getAlleleFrequenciesAlt(variationId, allelesArray);
-//        populationFrequencies = getGenotypeFrequenciesAlt(variationId, allelesArray, populationFrequencies);
+        Map<Integer, PopulationFrequency> populationFrequencies = getAlleleFrequenciesAlt(variationId, allelesArray);
+        populationFrequencies = getGenotypeFrequenciesAlt(variationId, allelesArray, populationFrequencies);
 
         return new ArrayList<>(populationFrequencies.values());
     }
@@ -949,16 +944,16 @@ public class VariationParser extends CellBaseParser {
         } else {
             gunzipFileIfNeeded(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
         }
-//        if (existsZippedOrUnzippedFile(PREPROCESSED_ALLELE_FILENAME)) {
-//            gunzipFileIfNeeded(variationDirectoryPath, PREPROCESSED_ALLELE_FILENAME);
-//        } else {
-//            gunzipFileIfNeeded(variationDirectoryPath, ALLELE_FILENAME);
-//        }
-//        if (existsZippedOrUnzippedFile(PREPROCESSED_POPULATION_GENOTYPE_FILENAME)) {
-//            gunzipFileIfNeeded(variationDirectoryPath, POPULATION_GENOTYPE_FILENAME);
-//        } else {
-//            gunzipFileIfNeeded(variationDirectoryPath, POPULATION_GENOTYPE_FILENAME);
-//        }
+        if (existsZippedOrUnzippedFile(PREPROCESSED_ALLELE_FILENAME)) {
+            gunzipFileIfNeeded(variationDirectoryPath, PREPROCESSED_ALLELE_FILENAME);
+        } else {
+            gunzipFileIfNeeded(variationDirectoryPath, ALLELE_FILENAME);
+        }
+        if (existsZippedOrUnzippedFile(PREPROCESSED_POPULATION_GENOTYPE_FILENAME)) {
+            gunzipFileIfNeeded(variationDirectoryPath, POPULATION_GENOTYPE_FILENAME);
+        } else {
+            gunzipFileIfNeeded(variationDirectoryPath, POPULATION_GENOTYPE_FILENAME);
+        }
 
         logger.info("Done");
         logger.debug("Elapsed time unzipping files: " + stopwatch);
