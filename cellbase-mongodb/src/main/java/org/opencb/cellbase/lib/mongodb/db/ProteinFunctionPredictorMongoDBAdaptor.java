@@ -84,10 +84,11 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
         proteinSubstitionScoresQueryResult.setId(transcriptId+"-"+aaPosition+"-"+newAa);
 
         String currentAaShortName;
-        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null) {
+        Map aaPositions;
+        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
+                (aaPositions = ((HashMap) ((BasicDBObject) ((BasicDBList) allChangesQueryResult.getResult()).get(0)).get("aaPositions")))!=null) {
             proteinSubstitionScoresQueryResult.setNumResults(1);
-            proteinSubstitionScoresQueryResult.setResult(((HashMap) ((HashMap) ((BasicDBObject) ((BasicDBList) allChangesQueryResult.getResult()).get(0)).
-                    get("aaPositions")).get(Integer.toString(aaPosition))).get(currentAaShortName));
+            proteinSubstitionScoresQueryResult.setResult(((HashMap) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName));
         } else {
             proteinSubstitionScoresQueryResult.setNumResults(0);
         }
