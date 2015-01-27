@@ -727,7 +727,7 @@ public class VariationParser extends CellBaseParser {
         if (isBiallelic(allelesArray, alleleCode)) {
             biallelic++;
         } else {
-            double alleleFrequency = Double.valueOf(alleleFields[5]);
+            float alleleFrequency = Float.valueOf(alleleFields[5]);
             PopulationFrequency populationFrequency = populationFrequencies.get(populationCode);
             if (populationFrequency == null) {  // Check if a PopulationFrequency object is already present for this population
                 populationFrequency = new PopulationFrequency(requiredPopulations.get(populationCode),
@@ -735,9 +735,9 @@ public class VariationParser extends CellBaseParser {
                 populationFrequencies.put(populationCode, populationFrequency);
             }
             if (isReferenceAllele(allelesArray, alleleCode)) {
-                populationFrequency.setRefAllFreq(alleleFrequency);
+                populationFrequency.setRefAlleleFreq(alleleFrequency);
             } else {
-                populationFrequency.setAltAllFreq(alleleFrequency);
+                populationFrequency.setAltAlleleFreq(alleleFrequency);
             }
         }
     }
@@ -752,8 +752,8 @@ public class VariationParser extends CellBaseParser {
 
     private void getAlleleFrequencies(Integer variationId, String[] allelesArray, Map<Integer,PopulationFrequency> populationFrequencies) throws IOException {
 
-        double refAlleleFreq = 0;
-        double altAlleleFreq = 0;
+        float refAlleleFreq = 0;
+        float altAlleleFreq = 0;
         PopulationFrequency populationFrequency;
 
         while (!alleleEof && (lastAlleleVariationId == -1 || lastAlleleVariationId < variationId)) {
@@ -773,21 +773,21 @@ public class VariationParser extends CellBaseParser {
                     if(requiredPopulations.containsKey(populationCode)) {  // Population in this record is within the list of required populations
                         Integer alleleCode = Integer.valueOf(fields[3]);
                         if (alleleCodeToAllele.get(alleleCode).equals(allelesArray[0])) {  // This is reference allele
-                            refAlleleFreq = Double.valueOf(fields[5]);
+                            refAlleleFreq = Float.valueOf(fields[5]);
                             if ((populationFrequency = populationFrequencies.get(populationCode)) == null) {  // Check if a PopulationFrequency object is already present for this population
                                 populationFrequency = new PopulationFrequency(requiredPopulations.get(populationCode),
                                         SUPER_POPULATION.get(requiredPopulations.get(populationCode)), allelesArray[0], allelesArray[1]);
                                 populationFrequencies.put(populationCode, populationFrequency);
                             }
-                            populationFrequency.setRefAllFreq(refAlleleFreq);
+                            populationFrequency.setRefAlleleFreq(refAlleleFreq);
                         } else if (alleleCodeToAllele.get(alleleCode).equals(allelesArray[1])) {  // This is the alternative allele
-                            altAlleleFreq = Double.valueOf(fields[5]);
+                            altAlleleFreq = Float.valueOf(fields[5]);
                             if ((populationFrequency = populationFrequencies.get(populationCode)) == null) {  // Check if a PopulationFrequency object is already present for this population
                                 populationFrequency = new PopulationFrequency(requiredPopulations.get(populationCode),
                                         SUPER_POPULATION.get(requiredPopulations.get(populationCode)), allelesArray[0], allelesArray[1]);
                                 populationFrequencies.put(populationCode, populationFrequency);
                             }
-                            populationFrequency.setAltAllFreq(altAlleleFreq);
+                            populationFrequency.setAltAlleleFreq(altAlleleFreq);
                         } else {
 //                            this.logger.info("WARNING: allele found which is neither the reference nor the alternative");
 //                            this.logger.info(" Ref: " + allelesArray[0] + ", Alt: " + allelesArray[1] + ", allele code: " + alleleCode +
@@ -828,14 +828,14 @@ public class VariationParser extends CellBaseParser {
             for (Integer alleleCode : genotypeCodes) {
                 genotypeAlleles.add(alleleCodeToAllele.get(alleleCode));
             }
-            double genotypeFrequency = Double.valueOf(genotypeFields[4]);
+            float genotypeFrequency = Float.valueOf(genotypeFields[4]);
             PopulationFrequency populationFrequency = getPopulationFrequency(genotypeFields, allelesArray, populationCode, populationFrequencies);
             if (heterozygousGenotype(genotypeAlleles, allelesArray)) {
                 populationFrequency.setHetGenotypeFreq(genotypeFrequency);
             } else if (homozygousForReferenceGenotype(genotypeAlleles, allelesArray)) {
-                populationFrequency.setHomRefGenotypeFreq(genotypeFrequency);
+                populationFrequency.setRefHomGenotypeFreq(genotypeFrequency);
             } else if (homozygousForAlternativeGenotype(genotypeAlleles, allelesArray)) {
-                populationFrequency.setHomAltGenotypeFreq(genotypeFrequency);
+                populationFrequency.setAltHomGenotypeFreq(genotypeFrequency);
             }
         } else {
             nonDiploidGenotypes++;
@@ -866,9 +866,9 @@ public class VariationParser extends CellBaseParser {
 
     private void getGenotypeFrequencies(Integer variationId, String[] allelesArray, Map<Integer,PopulationFrequency> populationFrequencies) throws IOException {
 
-        double hetGenotypeFreq = 0;
-        double homRefGenotypeFreq = 0;
-        double homAltGenotypeFreq = 0;
+        float hetGenotypeFreq = 0;
+        float homRefGenotypeFreq = 0;
+        float homAltGenotypeFreq = 0;
         PopulationFrequency populationFrequency;
 
         if(variationId==6455874) {
@@ -899,7 +899,7 @@ public class VariationParser extends CellBaseParser {
                                 genotypeAlleles.add(alleleCodeToAllele.get(alleleCode));
                             }
                             if (genotypeAlleles.contains(allelesArray[0]) && genotypeAlleles.contains(allelesArray[1])) {  // Heterozygous genotype
-                                hetGenotypeFreq = Double.valueOf(fields[4]);
+                                hetGenotypeFreq = Float.valueOf(fields[4]);
                                 if ((populationFrequency = populationFrequencies.get(populationCode)) == null) {  // Check if a PopulationFrequency object is already present for this population
                                     populationFrequency = new PopulationFrequency(requiredPopulations.get(populationCode),
                                             SUPER_POPULATION.get(requiredPopulations.get(populationCode)), allelesArray[0], allelesArray[1]);
@@ -907,21 +907,21 @@ public class VariationParser extends CellBaseParser {
                                 }
                                 populationFrequency.setHetGenotypeFreq(hetGenotypeFreq);
                             } else if (genotypeAlleles.get(0).equals(genotypeAlleles.get(1)) && (genotypeAlleles.get(0).equals(allelesArray[0]))) {  // Homozygous for the reference
-                                homRefGenotypeFreq = Double.valueOf(fields[4]);
+                                homRefGenotypeFreq = Float.valueOf(fields[4]);
                                 if ((populationFrequency = populationFrequencies.get(populationCode)) == null) {  // Check if a PopulationFrequency object is already present for this population
                                     populationFrequency = new PopulationFrequency(requiredPopulations.get(populationCode),
                                             SUPER_POPULATION.get(requiredPopulations.get(populationCode)), allelesArray[0], allelesArray[1]);
                                     populationFrequencies.put(populationCode, populationFrequency);
                                 }
-                                populationFrequency.setHomRefGenotypeFreq(homRefGenotypeFreq);
+                                populationFrequency.setRefHomGenotypeFreq(homRefGenotypeFreq);
                             } else if (genotypeAlleles.get(0).equals(genotypeAlleles.get(1)) && (genotypeAlleles.get(0).equals(allelesArray[1]))) {  // Homozygous for the alternative
-                                homAltGenotypeFreq = Double.valueOf(fields[4]);
+                                homAltGenotypeFreq = Float.valueOf(fields[4]);
                                 if ((populationFrequency = populationFrequencies.get(populationCode)) == null) {  // Check if a PopulationFrequency object is already present for this population
                                     populationFrequency = new PopulationFrequency(requiredPopulations.get(populationCode),
                                             SUPER_POPULATION.get(requiredPopulations.get(populationCode)), allelesArray[0], allelesArray[1]);
                                     populationFrequencies.put(populationCode, populationFrequency);
                                 }
-                                populationFrequency.setHomAltGenotypeFreq(homAltGenotypeFreq);
+                                populationFrequency.setAltHomGenotypeFreq(homAltGenotypeFreq);
                             }
 //                            } else {
 //                                this.logger.info("WARNING: genotype found with alleles that do not match neither the reference nor the alternative");
