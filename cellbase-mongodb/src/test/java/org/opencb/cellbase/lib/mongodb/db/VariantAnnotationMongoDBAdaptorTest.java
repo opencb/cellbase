@@ -299,7 +299,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17280889, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
@@ -351,8 +353,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
         /**
          * Calculates annotation for vcf file variants
          */
-//        String INPUTFILE = "/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.test.vcf";
-        String INPUTFILE = "/home/fjlopez/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
+        String INPUTFILE = "/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.test.vcf";
+//        String INPUTFILE = "/home/fjlopez/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
         QueryResult queryResult = null;
         Set<AnnotationComparisonObject> uvaAnnotationSet = new HashSet<>();
         VcfRawReader vcfReader = new VcfRawReader(INPUTFILE);
@@ -362,7 +364,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         String SoNameToTest;
 
         if(vcfReader.open()) {
-
+            vcfReader.pre();
             List<VcfRecord> vcfRecordList= vcfReader.read(1000);
             int nLines = countLines(INPUTFILE);
             int lineCounter = 0;
@@ -442,13 +444,14 @@ public class VariantAnnotationMongoDBAdaptorTest {
             }
         }
 
-        System.exit(0);
+        vcfReader.post();
+        vcfReader.close();
 
         /**
          * Loads VEP annotation from VEP parsed annotations
          */
-        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/22.vep.output.parsed.test.txt"), Charset.defaultCharset());
-//        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
+//        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/22.vep.output.parsed.test.txt"), Charset.defaultCharset());
+        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
         Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
         String newLine;
         br.readLine();
