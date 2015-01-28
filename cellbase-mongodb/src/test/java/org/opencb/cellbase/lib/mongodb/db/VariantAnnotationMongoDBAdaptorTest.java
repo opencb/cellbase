@@ -24,6 +24,25 @@ import java.util.zip.GZIPInputStream;
 public class VariantAnnotationMongoDBAdaptorTest {
 
 
+    @Test
+    public void testGetAnnotationByVariantList() throws Exception {
+
+        CellbaseConfiguration config = new CellbaseConfiguration();
+
+        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
+                "B10p@ss", 10, 10);
+
+        config.addSpeciesAlias("hsapiens", "hsapiens");
+
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
+
+        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16123409, "-", "A"))
+                , new QueryOptions());
+
+    }
+
     private int countLines(String fileName) throws IOException {
         System.out.println("Counting lines...");
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -299,8 +318,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16123409, "-", "A"), new QueryOptions());  // should include
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 51234118, "C", "G"), new QueryOptions());  // should include upstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
@@ -447,11 +468,13 @@ public class VariantAnnotationMongoDBAdaptorTest {
         vcfReader.post();
         vcfReader.close();
 
+//        System.exit(0);
+
         /**
          * Loads VEP annotation from VEP parsed annotations
          */
-//        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/22.vep.output.parsed.test.txt"), Charset.defaultCharset());
-        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
+        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/22.vep.output.parsed.test.txt"), Charset.defaultCharset());
+//        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
         Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
         String newLine;
         br.readLine();

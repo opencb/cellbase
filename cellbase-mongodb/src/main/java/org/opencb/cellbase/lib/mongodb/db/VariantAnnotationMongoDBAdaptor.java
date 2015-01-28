@@ -9,6 +9,8 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.cellbase.core.common.Region;
+import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
@@ -44,6 +46,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private VariationDBAdaptor variationDBAdaptor;
     private ClinicalVarDBAdaptor clinicalVarDBAdaptor;
     private ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor;
+    private ConservedRegionDBAdaptor conservedRegionDBAdaptor;
 
     static {
 
@@ -216,6 +219,15 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
     public void setProteinFunctionPredictorDBAdaptor(ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor) {
         this.proteinFunctionPredictorDBAdaptor = proteinFunctionPredictorDBAdaptor;
+    }
+
+    public ConservedRegionDBAdaptor getConservedRegionDBAdaptor() {
+        return conservedRegionDBAdaptor;
+    }
+
+    @Override
+    public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor) {
+        this.conservedRegionDBAdaptor = conservedRegionDBAdaptor;
     }
 
     private Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
@@ -841,15 +853,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 }
                                 break;
                             /**
-                             * pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
+                             * pseudogenes, antisense should not be annotated as non-coding genes
                              */
                             case 7:   // IG_V_pseudogene
-                            case 16:  // antisense
-                            case 21:  // processed_pseudogene
-                            case 22:  // processed_transcript
-                            case 31:  // unprocessed_pseudogene
                             case 32:  // transcribed_unprocessed_pseudogene
-                            case 37:  // transcribed_processed_pseudogene
                             case 39:
                             case 40:
                             case 41:
@@ -872,16 +879,21 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                              * Non-coding biotypes
                              */
                             case 0:
+                            case 16:  // antisense
                             case 17:
                             case 18:
                             case 19:
+                            case 21:  // processed_pseudogene
+                            case 22:  // processed_transcript
                             case 25:
                             case 26:
                             case 27:
                             case 28:
                             case 29:
+                            case 31:  // unprocessed_pseudogene
                             case 33:
                             case 34:
+                            case 37:  // transcribed_processed_pseudogene
                             case 38:
                             case 45:
                             case 46:
@@ -964,15 +976,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 }
                                 break;
                             /**
-                             * pseudogenes, antisense, processed_transcripts should not be annotated as non-coding genes
+                             * pseudogenes, antisense should not be annotated as non-coding genes
                              */
                             case 7:   // IG_V_pseudogene
-                            case 16:  // antisense
-                            case 21:  // processed_pseudogene
-                            case 22:  // processed_transcript
-                            case 31:  // unprocessed_pseudogene
                             case 32:  // transcribed_unprocessed_pseudogene
-                            case 37:  // transcribed_processed_pseudogene
                             case 39:
                             case 40:
                             case 41:
@@ -996,15 +1003,20 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                              */
                             case 0:
                             case 17:
+                            case 16:  // antisense
                             case 18:
                             case 19:
+                            case 21:  // processed_pseudogene
+                            case 22:  // processed_transcript
                             case 25:
                             case 26:
                             case 27:
                             case 28:
                             case 29:
+                            case 31:  // unprocessed_pseudogene
                             case 33:
                             case 34:
+                            case 37:  // transcribed_processed_pseudogene
                             case 38:
                             case 45:
                             case 46:
@@ -1559,6 +1571,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         List<QueryResult> variationQueryResultList = variationDBAdaptor.getIdByVariantList(variantList, queryOptions);
         List<QueryResult> clinicalQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
         List<QueryResult> variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
+        List<QueryResult> conservedRegionQueryResultList = conservedRegionDBAdaptor.getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
 
         VariantAnnotation variantAnnotation;
 
@@ -1583,6 +1596,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             variantAnnotation.setId(id);
             variantAnnotation.setClinicalData(phenotype);
             variantAnnotation.setConsequenceTypes(consequenceTypeList);
+            variantAnnotation.setConservedRegionScores((List<Score>) conservedRegionQueryResultList.get(i).getResult());
             clinicalQueryResult.setResult(Collections.singletonList(variantAnnotation));
             i++;
         }
@@ -1590,6 +1604,16 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         return clinicalQueryResultList;
     }
 
+    private List<Region> variantListToRegionList(List<GenomicVariant> variantList) {
+
+        List<Region> regionList = new ArrayList<>(variantList.size());
+
+        for(GenomicVariant variant : variantList) {
+            regionList.add(new Region(variant.getChromosome(), variant.getPosition(), variant.getPosition()));
+        }
+
+        return regionList;
+    }
 
 
 }
