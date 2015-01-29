@@ -2,6 +2,7 @@ package org.opencb.cellbase.build.transform;
 
 import com.google.common.base.Stopwatch;
 import org.apache.commons.io.IOUtils;
+import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variation.TranscriptVariation;
@@ -18,6 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VariationParser extends CellBaseParser {
 
@@ -80,6 +83,7 @@ public class VariationParser extends CellBaseParser {
     private static final String GENOTYPE_CODE_FILENAME = "genotype_code.txt.gz";
     private static final String POPULATION_GENOTYPE_FILENAME = "population_genotype.txt";
     private static final String POPULATION_FILENAME = "population.txt.gz";
+    private static final String VARIATION_FREQUENCIES_FILENAME = "population_frequencies.txt.gz";
     private static final String PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.includingVariationId.txt";
     private static final String PREPROCESSED_VARIATION_FEATURE_FILENAME = "variation_feature.sorted.txt";
     private static final String PREPROCESSED_VARIATION_SYNONYM_FILENAME = "variation_synonym.sorted.txt";
@@ -121,9 +125,15 @@ public class VariationParser extends CellBaseParser {
     private int[] variationIdColumnIndexInVariationRelatedFile;
     private BufferedReader[] variationRelatedFileReader;
 
+    private Pattern populationFrequnciesPattern;
+    private static final String POPULATION_ID_GROUP = "popId";
+    private static final String REFERENCE_FREQUENCY_GROUP = "ref";
+    private static final String ALTERNATE_FREQUENCY_GROUP = "alt";
+
     public VariationParser(Path variationDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
         this.variationDirectoryPath = variationDirectoryPath;
+        populationFrequnciesPattern = Pattern.compile("(?<" + POPULATION_ID_GROUP + ">\\w+):(?<" + REFERENCE_FREQUENCY_GROUP + ">\\d+.\\d+),(?<" + ALTERNATE_FREQUENCY_GROUP + ">\\d+.\\d+)");
     }
 
     @Override
@@ -143,10 +153,10 @@ public class VariationParser extends CellBaseParser {
         preprocessInputFiles();
 
         // Open variation file, this file never gets uncompressed. It's read from gzip file
-        BufferedReader bufferedReaderVariation = getVariationFileBufferedReader();
+        BufferedReader bufferedReaderVariation = getBufferedReader(PREPROCESSED_VARIATION_FILENAME);
 
         // create buffered readers for all other input files
-        createVariationFilesBufferedReaders(variationDirectoryPath);
+        createVariationFilesBufferedReaders();
 
         Map<String, String> seqRegionMap = VariationUtils.parseSeqRegionToMap(variationDirectoryPath);
         Map<String, String> sourceMap = VariationUtils.parseSourceToMap(variationDirectoryPath);
@@ -172,18 +182,26 @@ public class VariationParser extends CellBaseParser {
                     // Preparing the variation alleles
                     String[] allelesArray = getAllelesArray(variationFeatureFields);
 
+                    // For code sanity save chromosome, start, end and id
+                    String chromosome = seqRegionMap.get(variationFeatureFields[1]);
+                    int start = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[2]) : 0;
+                    int end = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[3]) : 0;
+                    String id = (variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "";
+                    String reference = (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "";
+                    String alternate = (allelesArray[1] != null && !allelesArray[1].equals("\\N")) ? allelesArray[1] : "";
+
                     // Preparing frequencies
-                    List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(variationId, allelesArray);
+                    //List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(variationId, allelesArray);
+                    List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(chromosome, start, end, id, reference, alternate);
 
                     // TODO: check that variationFeatureFields is always different to null and intergenic-variant is never used
                     //List<String> consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")) : Arrays.asList("intergenic_variant");
                     List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));
                     String displayConsequenceType = getDisplayConsequenceType(consequenceTypes);
 
-                    // For code sanity save chromosome in a variable
-                    String chromosome = seqRegionMap.get(variationFeatureFields[1]);
+
                     // we have all the necessary to construct the 'variation' object
-                    variation = buildVariation(variationFields, variationFeatureFields, chromosome, transcriptVariation, xrefs, populationFrequencies, allelesArray, consequenceTypes, displayConsequenceType);
+                    variation = buildVariation(variationFields, variationFeatureFields, chromosome, start, end, id, reference, alternate, transcriptVariation, xrefs, populationFrequencies, allelesArray, consequenceTypes, displayConsequenceType);
 
                     if (++countprocess % 100000 == 0 && countprocess != 0) {
                         logger.info("Processed variations: " + countprocess);
@@ -209,8 +227,7 @@ public class VariationParser extends CellBaseParser {
         logger.info("Biallelic variations:\t" + biallelic);
         logger.info("Non-diploid genotypes:\t" + nonDiploidGenotypes);
 
-        // TODO: commented during development, uncomment
-        //gzipVariationFiles(variationDirectoryPath);
+        gzipVariationFiles(variationDirectoryPath);
 
         try {
             bufferedReaderVariation.close();
@@ -219,26 +236,17 @@ public class VariationParser extends CellBaseParser {
         }
     }
 
-    private BufferedReader getVariationFileBufferedReader() throws IOException {
-        Path inputFile;
-        if (Files.exists(variationDirectoryPath.resolve(PREPROCESSED_VARIATION_FILENAME))) {
-            inputFile = variationDirectoryPath.resolve(PREPROCESSED_VARIATION_FILENAME);
-        } else {
-            inputFile = variationDirectoryPath.resolve(PREPROCESSED_VARIATION_FILENAME + ".gz");
-        }
-        return FileUtils.newBufferedReader(inputFile);
-    }
 
     private void preprocessInputFiles() throws IOException, InterruptedException {
         preprocessVariationFile();
         sortInputFile(VARIATION_FEATURE_FILENAME, PREPROCESSED_VARIATION_FEATURE_FILENAME, VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE);
         sortInputFile(VARIATION_SYNONYM_FILENAME, PREPROCESSED_VARIATION_SYNONYM_FILENAME, VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE);
         preprocessTranscriptVariationFile();
-        preprocessAlleleCodeFile();
-        preprocessGenotypeCodeFile();
-        preprocessPopulationFile();
-        sortInputFile(ALLELE_FILENAME, PREPROCESSED_ALLELE_FILENAME, VARIATION_ID_COLUMN_INDEX_IN_ALLELE_FILE);
-        sortInputFile(POPULATION_GENOTYPE_FILENAME, PREPROCESSED_POPULATION_GENOTYPE_FILENAME, VARIATION_ID_COLUMN_INDEX_IN_POPULATION_GENOTYPE_FILE);
+//        preprocessAlleleCodeFile();
+//        preprocessGenotypeCodeFile();
+//        preprocessPopulationFile();
+//        sortInputFile(ALLELE_FILENAME, PREPROCESSED_ALLELE_FILENAME, VARIATION_ID_COLUMN_INDEX_IN_ALLELE_FILE);
+//        sortInputFile(POPULATION_GENOTYPE_FILENAME, PREPROCESSED_POPULATION_GENOTYPE_FILENAME, VARIATION_ID_COLUMN_INDEX_IN_POPULATION_GENOTYPE_FILE);
     }
 
     private void preprocessVariationFile() throws IOException, InterruptedException {
@@ -248,8 +256,8 @@ public class VariationParser extends CellBaseParser {
     }
 
     private void sortInputFile(String unsortedFileName, String sortedFileName, int columnToSortByIndex) throws IOException, InterruptedException {
-        Path sortedFile = variationDirectoryPath.resolve(sortedFileName);
-        if (!Files.exists(sortedFile)) {
+        if (!existsZippedOrUnzippedFile(sortedFileName)) {
+            Path sortedFile = variationDirectoryPath.resolve(sortedFileName);
             Path unsortedFile = variationDirectoryPath.resolve(unsortedFileName);
             sortFileByNumericColumn(unsortedFile, sortedFile, columnToSortByIndex);
         }
@@ -278,13 +286,13 @@ public class VariationParser extends CellBaseParser {
     }
 
     private void preprocessTranscriptVariationFile() throws IOException, InterruptedException {
-        Path preprocessedTranscriptVariationFile = variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
-        if (!Files.exists(preprocessedTranscriptVariationFile)) {
+        if (!existsZippedOrUnzippedFile(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
             this.logger.info("Preprocessing " + TRANSCRIPT_VARIATION_FILENAME + " file ...");
             Stopwatch stopwatch = Stopwatch.createStarted();
 
             // add variationId to transcript_variation file
             Map<Integer, Integer> variationFeatureToVariationId = createVariationFeatureIdToVariationIdMap();
+            Path preprocessedTranscriptVariationFile = variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
             Path transcriptVariationTempFile = addVariationIdToTranscriptVariationFile(variationFeatureToVariationId);
             sortFileByNumericColumn(transcriptVariationTempFile, preprocessedTranscriptVariationFile, VARIATION_ID_COLUMN_INDEX_IN_TRANSCRIPT_VARIATION_FILE);
 
@@ -447,27 +455,23 @@ public class VariationParser extends CellBaseParser {
         return populationMap;
     }
 
-    private void createVariationFilesBufferedReaders(Path variationDirectoryPath) throws IOException {
-        variationFeaturesFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(PREPROCESSED_VARIATION_FEATURE_FILENAME), Charset.defaultCharset());
-        variationSynonymsFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(PREPROCESSED_VARIATION_SYNONYM_FILENAME), Charset.defaultCharset());
-        variationTranscriptsFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME), Charset.defaultCharset());
-        alleleFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(PREPROCESSED_ALLELE_FILENAME), Charset.defaultCharset());
-        genotypeFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(PREPROCESSED_POPULATION_GENOTYPE_FILENAME), Charset.defaultCharset());
+    private void createVariationFilesBufferedReaders() throws IOException {
+        variationFeaturesFileReader = getBufferedReader(PREPROCESSED_VARIATION_FEATURE_FILENAME);
+        variationSynonymsFileReader = getBufferedReader(PREPROCESSED_VARIATION_SYNONYM_FILENAME);
+        variationTranscriptsFileReader = getBufferedReader(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
+//        alleleFileReader = getBufferedReader(PREPROCESSED_ALLELE_FILENAME);
+//        genotypeFileReader = getBufferedReader(PREPROCESSED_POPULATION_GENOTYPE_FILENAME);
     }
 
     private Variation buildVariation(String[] variationFields, String[] variationFeatureFields, String chromosome,
+                                     int start, int end, String id, String reference, String alternate,
                                      List<TranscriptVariation> transcriptVariation, List<Xref> xrefs,
                                      List<PopulationFrequency> populationFrequencies, String[] allelesArray,
-                                     List<String> consequenceTypes, String displayConsequenceType) {
+                                     List<String> consequenceTypes, String displayConsequenceType)
+    {
         Variation variation;
-        variation = new Variation((variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "",
-                chromosome, "SNV",
-                (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[2]) : 0,
-                (variationFeatureFields != null) ? Integer.parseInt(variationFeatureFields[3]) : 0,
-                variationFeatureFields[4], // strand
-                (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "",
-                (allelesArray[1] != null && !allelesArray[1].equals("\\N")) ? allelesArray[1] : "",
-                variationFeatureFields[6],
+        variation = new Variation(id, chromosome, "SNV", start, end, variationFeatureFields[4],
+                reference, alternate, variationFeatureFields[6],
                 (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "",
                 displayConsequenceType,
 //							species, assembly, source, version,
@@ -598,12 +602,87 @@ public class VariationParser extends CellBaseParser {
         return endOfFileOfVariationRelatedFiles[fileId];
     }
 
+    private List<PopulationFrequency> getPopulationFrequencies(String chromosome, int start, int end, String id, String referenceAllele, String alternativeAllele) throws IOException {
+        List<PopulationFrequency> populationFrequencies;
+        String variationFrequenciesString = getVariationFrequenciesString(chromosome, start, end, id);
+        if (variationFrequenciesString != null) {
+            populationFrequencies = parseVariationFrequenciesString(variationFrequenciesString, referenceAllele, alternativeAllele);
+        } else{
+            populationFrequencies = Collections.EMPTY_LIST;
+        }
+        return populationFrequencies;
+    }
+
+    private String getVariationFrequenciesString(String chromosome, int start, int end, String id) throws IOException {
+        TabixReader frequenciesTabixReader = new TabixReader(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME).toString());
+        TabixReader.Iterator frequenciesFileIterator = frequenciesTabixReader.query(chromosome + ":" + start + "-" + end);
+        String variationFrequenciesLine = frequenciesFileIterator.next();
+        while (variationFrequenciesLine != null ) {
+            String[] variationFrequenciesFields = variationFrequenciesLine.split("\t");
+            if (variationFrequenciesFields[3].equals(id)) {
+                return variationFrequenciesFields[4];
+            }
+        }
+        return null;
+    }
+
+    private List<PopulationFrequency> parseVariationFrequenciesString(String variationFrequenciesString, String referenceAllele, String alternativeAllele) {
+        List<PopulationFrequency> frequencies = new ArrayList<>();
+        for (String populationFrequency : variationFrequenciesString.split(";")) {
+            frequencies.add(parsePopulationFrequency(populationFrequency, referenceAllele, alternativeAllele));
+        }
+        return frequencies;
+    }
+
+    private PopulationFrequency parsePopulationFrequency(String frequencyString, String referenceAllele, String alternativeAllele) {
+        PopulationFrequency populationFrequency = null;
+        Matcher m = populationFrequnciesPattern.matcher(frequencyString);
+
+        if (m.matches()) {
+            String populationName;
+            String population = m.group(POPULATION_ID_GROUP);
+            switch (population) {
+                case "1000G_AF":
+                    populationName = "1000GENOMES:phase_1_ALL";
+                    break;
+                case "1000G_AMR_AF":
+                    populationName = "1000GENOMES:phase_1_AMR";
+                    break;
+                case "1000G_ASN_AF":
+                    populationName = "1000GENOMES:phase_1_ASN";
+                    break;
+                case "1000G_AFR_AF":
+                    populationName = "1000GENOMES:phase_1_AFR";
+                    break;
+                case "1000G_EUR_AF":
+                    populationName = "1000GENOMES:phase_1_EUR";
+                    break;
+                case "ESP_EA_AF":
+                    populationName = "ESP6500:African_American";
+                    break;
+                case "ESP_AA_AF":
+                    populationName = "ESP6500:European_American";
+                    break;
+                default:
+                    populationName = population;
+            }
+            Float referenceFrequency = Float.parseFloat(m.group(REFERENCE_FREQUENCY_GROUP));
+            Float alternativeFrequency = Float.parseFloat(m.group(ALTERNATE_FREQUENCY_GROUP));
+
+            populationFrequency = new PopulationFrequency(populationName, referenceAllele, alternativeAllele, referenceFrequency, alternativeFrequency);
+        }
+
+        return populationFrequency;
+    }
+
+    @Deprecated
     private List<PopulationFrequency> getPopulationFrequencies(int variationId, String[] allelesArray) throws IOException {
        Map<Integer, PopulationFrequency> populationFrequencies = getAlleleFrequencies(variationId, allelesArray);
        populationFrequencies = getGenotypeFrequencies(variationId, allelesArray, populationFrequencies);
         return new ArrayList<>(populationFrequencies.values());
     }
 
+    @Deprecated
     private Map<Integer, PopulationFrequency> getAlleleFrequencies(int variationId, String[] allelesArray) throws IOException {
         Map<Integer, PopulationFrequency> populationFrequencies = new HashMap<>();
 
@@ -619,6 +698,7 @@ public class VariationParser extends CellBaseParser {
         return populationFrequencies;
     }
 
+    @Deprecated
     private void addAllelePopulationFrequency(String[] allelesArray, Map<Integer, PopulationFrequency> populationFrequencies, String[] alleleFields, Integer populationCode) {
         Integer alleleCode = Integer.valueOf(alleleFields[3]);
 
@@ -640,14 +720,17 @@ public class VariationParser extends CellBaseParser {
         }
     }
 
+    @Deprecated
     private boolean isReferenceAllele(String[] allelesArray, Integer alleleCode) {
         return alleleCodeToAllele.get(alleleCode).equals(allelesArray[0]);
     }
 
+    @Deprecated
     private boolean isBiallelic(String[] allelesArray, Integer alleleCode) {
         return !alleleCodeToAllele.get(alleleCode).equals(allelesArray[0]) && !alleleCodeToAllele.get(alleleCode).equals(allelesArray[1]);
     }
 
+    @Deprecated
     private Map<Integer, PopulationFrequency> getGenotypeFrequencies(Integer variationId, String[] allelesArray, Map<Integer, PopulationFrequency> populationFrequencies) throws IOException {
         List<String[]> genotypeLines = getVariationRelatedFields(POPULATION_GENOTYPE_FILE_ID, variationId);
         List<String> genotypeAlleles = new ArrayList<>(2);
@@ -663,6 +746,7 @@ public class VariationParser extends CellBaseParser {
         return populationFrequencies;
     }
 
+    @Deprecated
     private void addGenotypePopulationFrequency(String[] allelesArray, Map<Integer, PopulationFrequency> populationFrequencies, List<String> genotypeAlleles, String[] genotypeFields, Integer populationCode) {
         Integer genotypeCode = Integer.valueOf(genotypeFields[3]);
         List<Integer> genotypeCodes = genotypeCodeToAlleleCode.get(genotypeCode);
@@ -698,14 +782,17 @@ public class VariationParser extends CellBaseParser {
         }
     }
 
+    @Deprecated
     private boolean heterozygousGenotype(List<String> genotypeAlleles, String[] allelesArray) {
         return genotypeAlleles.contains(allelesArray[0]) && genotypeAlleles.contains(allelesArray[1]);
     }
 
+    @Deprecated
     private boolean homozygousForReferenceGenotype(List<String> genotypeAlleles, String[] allelesArray) {
         return genotypeAlleles.get(0).equals(genotypeAlleles.get(1)) && (genotypeAlleles.get(0).equals(allelesArray[0]));
     }
 
+    @Deprecated
     private boolean homozygousForAlternativeGenotype(List<String> genotypeAlleles, String[] allelesArray) {
         return genotypeAlleles.get(0).equals(genotypeAlleles.get(1)) && (genotypeAlleles.get(0).equals(allelesArray[1]));
     }
@@ -756,31 +843,21 @@ public class VariationParser extends CellBaseParser {
             // unzip variation file name for preprocess it later
             gunzipFileIfNeeded(variationDirectoryPath, VARIATION_FILENAME);
         }
-        if (existsZippedOrUnzippedFile(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
-            gunzipFileIfNeeded(variationDirectoryPath, PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
-        } else {
+        if (!existsZippedOrUnzippedFile(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
             gunzipFileIfNeeded(variationDirectoryPath, TRANSCRIPT_VARIATION_FILENAME);
         }
-        if (existsZippedOrUnzippedFile(PREPROCESSED_VARIATION_FEATURE_FILENAME)) {
-            gunzipFileIfNeeded(variationDirectoryPath, PREPROCESSED_VARIATION_FEATURE_FILENAME);
-        } else {
+        if (!existsZippedOrUnzippedFile(PREPROCESSED_VARIATION_FEATURE_FILENAME)) {
             gunzipFileIfNeeded(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
         }
-        if (existsZippedOrUnzippedFile(PREPROCESSED_VARIATION_SYNONYM_FILENAME)) {
-            gunzipFileIfNeeded(variationDirectoryPath, PREPROCESSED_VARIATION_SYNONYM_FILENAME);
-        } else {
+        if (!existsZippedOrUnzippedFile(PREPROCESSED_VARIATION_SYNONYM_FILENAME)) {
             gunzipFileIfNeeded(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
         }
-        if (existsZippedOrUnzippedFile(PREPROCESSED_ALLELE_FILENAME)) {
-            gunzipFileIfNeeded(variationDirectoryPath, PREPROCESSED_ALLELE_FILENAME);
-        } else {
-            gunzipFileIfNeeded(variationDirectoryPath, ALLELE_FILENAME);
-        }
-        if (existsZippedOrUnzippedFile(PREPROCESSED_POPULATION_GENOTYPE_FILENAME)) {
-            gunzipFileIfNeeded(variationDirectoryPath, POPULATION_GENOTYPE_FILENAME);
-        } else {
-            gunzipFileIfNeeded(variationDirectoryPath, POPULATION_GENOTYPE_FILENAME);
-        }
+//        if (!existsZippedOrUnzippedFile(PREPROCESSED_ALLELE_FILENAME)) {
+//            gunzipFileIfNeeded(variationDirectoryPath, ALLELE_FILENAME);
+//        }
+//        if (!existsZippedOrUnzippedFile(PREPROCESSED_POPULATION_GENOTYPE_FILENAME)) {
+//            gunzipFileIfNeeded(variationDirectoryPath, POPULATION_GENOTYPE_FILENAME);
+//        }
 
         logger.info("Done");
         logger.debug("Elapsed time unzipping files: " + stopwatch);
@@ -829,6 +906,16 @@ public class VariationParser extends CellBaseParser {
             Process process = Runtime.getRuntime().exec("gzip " + unzippedFile.toAbsolutePath());
             process.waitFor();
         }
+    }
+
+    private BufferedReader getBufferedReader(String fileName) throws IOException {
+        Path inputFile;
+        if (Files.exists(variationDirectoryPath.resolve(fileName))) {
+            inputFile = variationDirectoryPath.resolve(fileName);
+        } else {
+            inputFile = variationDirectoryPath.resolve(fileName + ".gz");
+        }
+        return FileUtils.newBufferedReader(inputFile);
     }
 
 }
