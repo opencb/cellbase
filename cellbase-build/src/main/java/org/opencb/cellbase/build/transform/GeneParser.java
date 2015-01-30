@@ -13,6 +13,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.*;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
@@ -23,6 +24,11 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Exon> exonDict;
 //    private RandomAccessFile rafChromosomeSequenceFile;
 
+    private Connection sqlConn;
+    private PreparedStatement sqlInsert, sqlQuery;
+
+    private int CHUNK_SIZE = 2000;
+    private String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
 
     public GeneParser(CellBaseSerializer serializer) {
         super(serializer);
@@ -63,10 +69,11 @@ public class GeneParser extends CellBaseParser {
         int cds = 1;
         String[] fields;
 
+
 //        Map<String, String> gseq = GenomeSequenceUtils.getGenomeSequence(genomeSequenceDir);
 
         /**
-            Loading Gene Description data
+         Loading Gene Description data
          */
         Map<String, String> geneDescriptionMap = new HashMap<>();
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
@@ -78,7 +85,7 @@ public class GeneParser extends CellBaseParser {
         }
 
         /**
-            Loading Gene Xref data
+         Loading Gene Xref data
          */
         Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
         if (xrefsFile != null && Files.exists(xrefsFile)) {
@@ -95,7 +102,7 @@ public class GeneParser extends CellBaseParser {
         }
 
         /**
-            Loading Protein mapping into Xref data
+         Loading Protein mapping into Xref data
          */
         if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile)) {
             BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
@@ -138,7 +145,13 @@ public class GeneParser extends CellBaseParser {
         // File must be ungunzipped and offsets stored
         // Commented because it takes too much time to gzip/gunzip
 //        Map<String, Long> chromSequenceOffsets = prepareChromosomeSequenceFile(genomeSequenceFilePath);
-
+        try {
+            connect(genomeSequenceFilePath);
+//            indexReferenceGenomeFasta(genomeSequenceFilePath);
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+            return;
+        }
 
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
@@ -156,12 +169,12 @@ public class GeneParser extends CellBaseParser {
             transcriptId = gtf.getAttributes().get("transcript_id");
 
             /**
-			 * If chromosome is changed (or it's the first chromosome)
-			 * we load the new chromosome sequence.
-			 */
+             * If chromosome is changed (or it's the first chromosome)
+             * we load the new chromosome sequence.
+             */
             if(!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
                 currentChromosome = gtf.getSequenceName();
-                chromSequence = getSequenceByChromosome(currentChromosome, genomeSequenceFilePath);
+//                chromSequence = getSequenceByChromosome(currentChromosome, genomeSequenceFilePath);
 //                chromSequence = getSequenceByChromosome(currentChromosome, chromSequenceOffsets, genomeSequenceFilePath);
 //				chromSequence = getSequenceByChromosomeName(currentChromosome, genomeSequenceDir);
             }
@@ -202,9 +215,16 @@ public class GeneParser extends CellBaseParser {
             if (gtf.getFeature().equalsIgnoreCase("exon")) {
                 // Obtaining the exon sequence
                 exonSequence = "";
-                if(currentChromosome.equals(gtf.getSequenceName()) && chromSequence.length() > 0) {
+                if(currentChromosome.equals(gtf.getSequenceName()) ) { //&& chromSequence.length() > 0
                     // as starts is inclusive and position begins in 1 we must -1, end is OK.
-                    exonSequence = chromSequence.substring(gtf.getStart()-1, gtf.getEnd());
+//                    exonSequence = chromSequence.substring(gtf.getStart()-1, gtf.getEnd());
+//                    System.out.println("exonSequence = " + exonSequence);
+                    try {
+                        exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+                    } catch (SQLException e) {
+                        System.out.println(gtf.getSequenceName()+", start: "+gtf.getStart()+", end: "+gtf.getEnd());
+                        e.printStackTrace();
+                    }
                 }
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
                         gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
@@ -230,12 +250,14 @@ public class GeneParser extends CellBaseParser {
                         // cDNA coordinates
                         exon.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
                         exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
+                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         // phase calculation
                         if (gtf.getStart() == exon.getStart()) {
@@ -277,6 +299,7 @@ public class GeneParser extends CellBaseParser {
                         if (transcript.getCdnaCodingStart() == 0) {
                             transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
                         }
+
                         // strand -
                     } else {
                         // CDS states the beginning of coding start
@@ -284,14 +307,16 @@ public class GeneParser extends CellBaseParser {
                         exon.setGenomicCodingEnd(gtf.getEnd());
 
                         // cDNA coordinates
-                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
+                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
+                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         // phase calculation
                         if (gtf.getEnd() == exon.getEnd()) {
@@ -331,7 +356,7 @@ public class GeneParser extends CellBaseParser {
                         }
                         // only first time
                         if (transcript.getCdnaCodingStart() == 0) {
-                            transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
+                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
                         }
                     }
 
@@ -344,6 +369,7 @@ public class GeneParser extends CellBaseParser {
                 }
 
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
+//                    setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here, no need to set it at the beginning of next feature
                     if (exon.getStrand().equals("+")) {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingEnd(gtf.getEnd());
@@ -351,19 +377,21 @@ public class GeneParser extends CellBaseParser {
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
+                        // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingEnd(gtf.getEnd());
                         transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-                        transcript.setCdsLength(cds);
+                        transcript.setCdsLength(cds-1);
                     } else {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingStart(gtf.getStart());
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
+                        // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingStart(gtf.getStart());
-                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-                        transcript.setCdsLength(cds);
+                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        transcript.setCdsLength(cds-1);
                     }
                 }
             }
@@ -375,6 +403,12 @@ public class GeneParser extends CellBaseParser {
         // cleaning
         gtfReader.close();
         serializer.close();
+
+        try {
+            disconnect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         // compress fasta file
         // commented becasue it takes too much time to gzip/gunzip the fasta file
 //        Path gunzipedSeqFile = Paths.get(genomeSequenceFilePath.toString().replace(".gz", ""));
@@ -382,6 +416,184 @@ public class GeneParser extends CellBaseParser {
 //            Process process = Runtime.getRuntime().exec("gzip " + gunzipedSeqFile.toAbsolutePath());
 //            process.waitFor();
 //        }
+    }
+
+    private void connect(Path genomeSequenceFilePath) throws ClassNotFoundException, SQLException, IOException {
+        /**
+         * Preparation of the SQLite database
+         */
+        Class.forName("org.sqlite.JDBC");
+        sqlConn = DriverManager.getConnection("jdbc:sqlite:" + genomeSequenceFilePath.getParent().toString() + "/reference_genome.db");
+        if(!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db")) ||
+                Files.size(genomeSequenceFilePath.getParent().resolve("reference_genome.db")) == 0) {
+            Statement createTable = sqlConn.createStatement();
+            createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
+            sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence) values (?, ?, ?, ?)");
+            indexReferenceGenomeFasta(genomeSequenceFilePath);
+        }
+        sqlQuery = sqlConn.prepareStatement("SELECT sequence from genome_sequence WHERE chunkId = ? "); //AND start <= ? AND end >= ?
+    }
+
+    private void disconnect() throws SQLException {
+        sqlConn.close();
+    }
+
+    private void indexReferenceGenomeFasta(Path genomeSequenceFilePath) throws IOException, ClassNotFoundException, SQLException {
+
+//        if(!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db"))) {
+        BufferedReader bufferedReader = FileUtils.newBufferedReader(genomeSequenceFilePath);
+
+//            Statement createTable = sqlConn.createStatement();
+//            createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
+
+        // Some parameters initialization
+        String sequenceName = "";
+//            String sequenceAssembly = "";
+        boolean haplotypeSequenceType = true;
+        int chunk = 0;
+        int start = 1;
+        int end = CHUNK_SIZE - 1;
+        String sequence;
+        String chunkSequence;
+
+        StringBuilder sequenceStringBuilder = new StringBuilder();
+        String line = "";
+        while ((line = bufferedReader.readLine()) != null) {
+            /**
+             * We accumulate the complete sequence in a StringBuilder
+             */
+            if (!line.startsWith(">")) {
+                sequenceStringBuilder.append(line);
+            } else {
+                /**
+                 * New sequence has been found and we must insert it into SQLite.
+                 * Note that the first time there is no sequence. Only not HAP sequences are stored.
+                 */
+                chunk = 0;
+                start = 1;
+                end = CHUNK_SIZE - 1;
+                if (sequenceStringBuilder.length() > 0) {
+                    // if the sequence read is not HAP then we stored in sqlite
+                    if(!haplotypeSequenceType && !sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+                        System.out.println(sequenceName);
+
+                        //chromosome sequence length could shorter than CHUNK_SIZE
+                        if (sequenceStringBuilder.length() < CHUNK_SIZE) {
+//                                chunkSequence = sequenceStringBuilder.toString();
+//                                genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+0+"_"+chunkIdSuffix, start, sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
+                            sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                            sqlInsert.setInt(2, start);
+                            sqlInsert.setInt(3, sequenceStringBuilder.length() - 1);
+                            sqlInsert.setString(4, sequenceStringBuilder.toString());
+
+                            start += CHUNK_SIZE - 1;
+                            // Sequence to store is larger than CHUNK_SIZE
+                        } else {
+                            int sequenceLength = sequenceStringBuilder.length();
+
+                            sqlConn.setAutoCommit(false);
+                            while (start < sequenceLength) {
+                                if (chunk % 10000 == 0 && chunk != 0) {
+                                    System.out.println("Sequence: " + sequenceName + ", chunkId:" + chunk);
+                                    sqlInsert.executeBatch();
+                                    sqlConn.commit();
+                                }
+
+                                // chunkId is common for all the options
+                                sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                                if (start == 1) {   // First chunk of the chromosome
+                                    // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
+//                                        chunkSequence = sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1);
+//                                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+                                    sqlInsert.setInt(2, start);
+                                    sqlInsert.setInt(3, end);
+                                    sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1));
+
+                                    start += CHUNK_SIZE - 1;
+                                } else {    // Regular chunk
+                                    if ((start + CHUNK_SIZE) < sequenceLength) {
+//                                            chunkSequence = sequenceStringBuilder.substring(start - 1, start + CHUNK_SIZE - 1);
+//                                            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+                                        sqlInsert.setInt(2, start);
+                                        sqlInsert.setInt(3, end);
+                                        sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, start + CHUNK_SIZE - 1));
+                                        start += CHUNK_SIZE;
+                                    } else {    // Last chunk of the chromosome
+//                                            chunkSequence = sequenceStringBuilder.substring(start - 1, sequenceLength);
+//                                            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, sequence.length(), sequenceType, sequenceAssembly, chunkSequence);
+                                        sqlInsert.setInt(2, start);
+                                        sqlInsert.setInt(3, sequenceLength);
+                                        sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, sequenceLength));
+                                        start = sequenceLength;
+                                    }
+                                }
+                                // we add the inserts in a batch
+                                sqlInsert.addBatch();
+
+                                end = start + CHUNK_SIZE - 1;
+                                chunk++;
+                            }
+
+                            sqlInsert.executeBatch();
+                            sqlConn.commit();
+
+                            sqlConn.setAutoCommit(true);
+                        }
+                    }
+                }
+
+                // initialize data structures
+                sequenceName = line.replace(">", "").split(" ")[0];
+                haplotypeSequenceType = line.endsWith("HAP");
+//                    sequenceAssembly = line.replace(">", "").split(" ")[2].split(":")[1];
+                sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
+            }
+        }
+
+        bufferedReader.close();
+
+        Statement stm = sqlConn.createStatement();
+        stm.executeUpdate("CREATE INDEX chunkkId_idx on genome_sequence(chunkId)");
+//            sqlConn.commit();
+
+//        }else {
+//            System.out.println("File found: " + Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db"));
+//        }
+
+    }
+
+    private String getExonSequence(String sequenceName, int start, int end) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        ResultSet rs;
+        int regionChunkStart = getChunk(start);
+        int regionChunkEnd = getChunk(end);
+        for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
+            sqlQuery.setString(1, sequenceName + "_" + chunkId + "_" + chunkIdSuffix);
+            rs = sqlQuery.executeQuery();
+            stringBuilder.append(rs.getString(1));
+        }
+
+        int startStr = getOffset(start);
+        int endStr = getOffset(start) + (end - start) + 1;
+        String subStr = "";
+        if (getChunk(start) > 0) {
+            if (stringBuilder.toString().length() > 0 && stringBuilder.toString().length() >= endStr) {
+                subStr = stringBuilder.toString().substring(startStr, endStr);
+            }
+        } else {
+            if (stringBuilder.toString().length() > 0 && stringBuilder.toString().length() + 1 >= endStr) {
+                subStr = stringBuilder.toString().substring(startStr - 1, endStr - 1);
+            }
+        }
+        return subStr;
+    }
+
+    private int getChunk(int position) {
+        return (position / CHUNK_SIZE);
+    }
+
+    private int getOffset(int position) {
+        return (position % CHUNK_SIZE);
     }
 
     private Map<String, Long> prepareChromosomeSequenceFile(Path genomeSequenceFilePath) throws IOException, InterruptedException {

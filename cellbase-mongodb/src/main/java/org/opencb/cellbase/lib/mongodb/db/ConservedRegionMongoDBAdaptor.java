@@ -14,7 +14,7 @@ import java.util.*;
 public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
 
 
-    int CHUNKSIZE;
+    int chunkSize;
 
     public ConservedRegionMongoDBAdaptor(DB db) {
         super(db);
@@ -22,26 +22,30 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
 
     public ConservedRegionMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        CHUNKSIZE = Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase() + ".CONSERVED_REGION.CHUNK_SIZE", "2000"));
+        this.chunkSize = 2000;
+        mongoDBCollection = db.getCollection("conserved_region");
+    }
+
+    public ConservedRegionMongoDBAdaptor(DB db, String species, String version, int chunkSize) {
+        super(db, species, version);
+        this.chunkSize = chunkSize;
         mongoDBCollection = db.getCollection("conserved_region");
     }
 
     private int getChunk(int position) {
-        return (position / Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
-                + ".CONSERVED_REGION.CHUNK_SIZE", "2000")));
+        return (position / this.chunkSize);
     }
 
     private int getChunkStart(int id) {
-        return (id == 0) ? 1 : id * CHUNKSIZE;
+        return (id == 0) ? 1 : id * chunkSize;
     }
 
     private int getChunkEnd(int id) {
-        return (id * CHUNKSIZE) + CHUNKSIZE - 1;
+        return (id * chunkSize) + chunkSize - 1;
     }
 
     private int getOffset(int position) {
-        return ((position) % Integer.parseInt(applicationProperties.getProperty("CELLBASE." + version.toUpperCase()
-                + ".CONSERVED_REGION.CHUNK_SIZE", "2000")));
+        return ((position) % chunkSize);
     }
 
     @Override

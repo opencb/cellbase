@@ -14,7 +14,7 @@ import java.util.*;
 public class MongoDBAdaptor extends DBAdaptor {
 
     protected String species;
-    protected String version;
+    protected String assembly;
 
     //	private MongoOptions mongoOptions;
     //	protected MongoClient mongoClient;
@@ -60,21 +60,32 @@ public class MongoDBAdaptor extends DBAdaptor {
         this.db = db;
     }
 
-    public MongoDBAdaptor(DB db, String species, String version) {
+    public MongoDBAdaptor(DB db, String species, String assembly) {
         this.db = db;
         this.species = species;
-        this.version = version;
+        this.assembly = assembly;
         //		logger.warn(applicationProperties.toString());
-        initSpeciesVersion(species, version);
+        initSpeciesAssembly(species, assembly);
 
         jsonObjectMapper = new ObjectMapper();
     }
 
+    @Deprecated
     private void initSpeciesVersion(String species, String version) {
         if (species != null && !species.equals("")) {
             // if 'version' parameter has not been provided the default version is selected
-            if (this.version == null || this.version.trim().equals("")) {
-                this.version = applicationProperties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
+//            if (this.version == null || this.version.trim().equals("")) {
+//                this.version = applicationProperties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
+//                //				logger.debug("HibernateDBAdaptorFactory in createSessionFactory(): 'version' parameter is null or empty, it's been set to: '"+version+"'");
+//            }
+        }
+    }
+
+    private void initSpeciesAssembly(String species, String assembly) {
+        if (species != null && !species.equals("")) {
+            // if 'version' parameter has not been provided the default version is selected
+            if (this.assembly == null || this.assembly.trim().equals("")) {
+                this.assembly = "default";
                 //				logger.debug("HibernateDBAdaptorFactory in createSessionFactory(): 'version' parameter is null or empty, it's been set to: '"+version+"'");
             }
         }
@@ -256,7 +267,13 @@ public class MongoDBAdaptor extends DBAdaptor {
             // setting queryResult fields
             queryResult.setId(ids.get(i).toString());
             queryResult.setDBTime((dbTimeEnd - dbTimeStart));
-            queryResult.setNumResults(list.size());
+            // Limit is set in queryOptions, count number of total results
+            if(options.getInt("limit", 0) > 0) {
+                queryResult.setNumResults((int) dbCollection.count(query));
+            } else {
+                queryResult.setNumResults(list.size());
+            }
+
             queryResult.setResult(list);
 
             queryResults.add(queryResult);
@@ -690,18 +707,24 @@ public class MongoDBAdaptor extends DBAdaptor {
         this.species = species;
     }
 
-    /**
-     * @return the version
-     */
-    public String getVersion() {
-        return version;
-    }
+//    /**
+//     * @return the version
+//     */
+//    @Deprecated
+//    public String getVersion() {
+//        return version;
+//    }
 
-    /**
-     * @param version the version to set
-     */
-    public void setVersion(String version) {
-        this.version = version;
-    }
+//    /**
+//     * @param version the version to set
+//     */
+//    @Deprecated
+//    public void setVersion(String version) {
+//        this.version = version;
+//    }
+
+    public String getAssembly() { return this.assembly; }
+
+    public void setAssembly(String assembly) { this.assembly = assembly; }
 
 }

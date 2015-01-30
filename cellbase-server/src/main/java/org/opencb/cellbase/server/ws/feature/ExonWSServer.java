@@ -32,12 +32,12 @@ public class ExonWSServer extends GenericRestWSServer {
 	@Path("/{exonId}/info")
 	public Response getByEnsemblId(@PathParam("exonId") String query) {
 		try {
-			checkVersionAndSpecies();
-			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
+			checkParams();
+			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 			return  generateResponse(query,exonDBAdaptor.getAllByEnsemblIdList(Splitter.on(",").splitToList(query)));
 		} catch (Exception e) {
 			e.printStackTrace();
-			return createErrorResponse("getByEnsemblId", e.toString());
+			return createErrorResponse("getAllByAccessions", e.toString());
 		}
 	}
 	
@@ -45,8 +45,8 @@ public class ExonWSServer extends GenericRestWSServer {
 	@Path("/{snpId}/bysnp")
 	public Response getAllBySnpIdList(@PathParam("snpId") String query) {
 		try {
-			checkVersionAndSpecies();
-			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
+			checkParams();
+			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllBySnpIdList(Splitter.on(",").splitToList(query))));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -58,8 +58,8 @@ public class ExonWSServer extends GenericRestWSServer {
 	@Path("/{exonId}/aminos")
 	public Response getAminoByExon(@PathParam("exonId") String query) {
 		try{
-			checkVersionAndSpecies();
-			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
+			checkParams();
+			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 			List<Exon> exons = exonDBAdaptor.getAllByEnsemblIdList(Splitter.on(",").splitToList(query));
 			List<String> sequenceList = null;
 			if(exons != null) {
@@ -100,8 +100,8 @@ public class ExonWSServer extends GenericRestWSServer {
 	@Path("/{exonId}/sequence")
 	public Response getSequencesByIdList(@PathParam("exonId") String query) {
 		try {
-			checkVersionAndSpecies();
-			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
+			checkParams();
+			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query))));
             return Response.ok().build();
 		} catch (Exception e) {
@@ -115,8 +115,8 @@ public class ExonWSServer extends GenericRestWSServer {
 	@Path("/{exonId}/region")
 	public Response getRegionsByIdList(@PathParam("exonId") String query) {
 		try {
-			checkVersionAndSpecies();
-			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.version);
+			checkParams();
+			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query))));
             return Response.ok().build();
 		} catch (Exception e) {
@@ -129,8 +129,8 @@ public class ExonWSServer extends GenericRestWSServer {
 	@Path("/{exonId}/transcript")
 	public Response getTranscriptsByEnsemblId(@PathParam("exonId") String query) {
 		try {
-			checkVersionAndSpecies();
-			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.version);
+			checkParams();
+			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
 			return createOkResponse(transcriptDBAdaptor.getAllByEnsemblExonIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();

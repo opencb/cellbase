@@ -58,7 +58,7 @@ use Bio::EnsEMBL::Variation::Utils::Constants qw(%OVERLAP_CONSEQUENCES);
 ## loading the registry with the adaptors 
 #Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
 Bio::EnsEMBL::Registry->load_registry_from_db(
-    -host => 'mysql.ebi.ac.uk',
+    -host => 'mysql-eg-publicsql.ebi.ac.uk',
     -port => 4157,
     -user => 'anonymous'
 );
@@ -84,9 +84,9 @@ $info_stats{'species'} = $species;
 my @all_chroms = @{$slice_adaptor->fetch_all('chromosome')};
 #my @chrom_ids = ();
 foreach my $chrom(@all_chroms) {
-	
+
 	my %chromosome = ();
-	$chromosome{'name'} = $chrom->seq_region_name();  
+	$chromosome{'name'} = $chrom->seq_region_name();
 	$chromosome{'start'} = int($chrom->start());
 	$chromosome{'end'} = int($chrom->end());
 	$chromosome{'size'} = int($chrom->seq_region_length());

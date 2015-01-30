@@ -29,8 +29,8 @@ public class KaryotypeWSServer extends GenericRestWSServer {
 	@Path("/{chromosomeName}/cytoband")
 	public Response getByChromosomeName(@PathParam("chromosomeName") String chromosome) {
 		try {
-			checkVersionAndSpecies();
-			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.version);
+			checkParams();
+			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
 			return generateResponse(chromosome, dbAdaptor.getAllByChromosomeList(Splitter.on(",").splitToList(chromosome)));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -42,8 +42,8 @@ public class KaryotypeWSServer extends GenericRestWSServer {
 	@Path("/chromosome")
 	public Response getChromosomes() {
 		try {
-			checkVersionAndSpecies();
-			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.version);
+			checkParams();
+			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
 			return generateResponse("", dbAdaptor.getAllChromosomeNames());
 		} catch (Exception e) {
 			e.printStackTrace();

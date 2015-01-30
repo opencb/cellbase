@@ -68,6 +68,9 @@ public class CellBaseMain {
         // Drug options
         options.addOption(OptionFactory.createOption("drug-file", "Output directory to save the JSON result", false));
 
+        // ClinVar
+        options.addOption(OptionFactory.createOption("clinvar-file", "Output directory to save the JSON result", false));
+
         // Protein options
         options.addOption(OptionFactory.createOption("species", "s", "Species", false, true));
         options.addOption(OptionFactory.createOption("psimi-tab-file", "Input PsiMi tab file", false));
@@ -96,7 +99,9 @@ public class CellBaseMain {
             // Help option is checked manually, otherwise the parser will complain about obligatory options
             if(args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
                 HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("cellbase-build.jar", "Some options are mandatory for all possible 'builds', while others are only mandatory for some specific 'builds':", options, "\nFor more information or reporting bugs contact me: imedina@cipf.es", true);
+                formatter.printHelp("cellbase-build.jar", "Some options are mandatory for all possible 'builds', " +
+                        "while others are only mandatory for some specific 'builds':", options,
+                        "\nFor more information or reporting bugs contact me: imedina@cipf.es", true);
                 return;
             }
 
@@ -242,6 +247,14 @@ public class CellBaseMain {
                     if(drugFile != null) {
                         DrugParser drugParser = new DrugParser(serializer);
                         drugParser.parse(Paths.get(drugFile));
+                    }
+                    break;
+                case "clinvar":
+                    logger.info("Processing ClinVar...");
+                    String clinvarFile = commandLine.getOptionValue("clinvar-file");
+                    if(clinvarFile != null) {
+                        ClinVarParser clinVarParser = new ClinVarParser(serializer);
+                        clinVarParser.parse(Paths.get(clinvarFile));
                     }
                     break;
                 case "all":

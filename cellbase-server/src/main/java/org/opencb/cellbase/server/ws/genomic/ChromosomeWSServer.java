@@ -1,8 +1,11 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
+import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -17,20 +20,25 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 
+/**
+ * @author imedina
+ */
 @Path("/{version}/{species}/genomic/chromosome")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces("application/json")
+@Api(value = "Genome Sequence", description = "Genome Sequence RESTful Web Services API")
 public class ChromosomeWSServer extends GenericRestWSServer {
 
-
-	public ChromosomeWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+	public ChromosomeWSServer(@PathParam("version") String version, @PathParam("species") String species,
+                              @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
 		super(version, species, uriInfo, hsr);
 	}
 	@GET
 	@Path("/all")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = QueryResponse.class)
 	public Response getChromosomesAll() {
 		try {
-			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			checkParams();
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			return createOkResponse(dbAdaptor.getAll(queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -40,10 +48,11 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
 	@GET
 	@Path("/list")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = QueryResponse.class)
 	public Response getChromosomes() {
 		try {
-			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			checkParams();
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			QueryOptions options = new QueryOptions();
 			options.put("include", "chromosomes.name");
 			return createOkResponse(dbAdaptor.getAll(options));
@@ -57,8 +66,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	@Path("/{chromosomeName}/info")
 	public Response getChromosomes(@PathParam("chromosomeName") String query) {
 		try {
-			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			checkParams();
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			return createOkResponse(dbAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -70,8 +79,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	@Path("/{chromosomeName}/size")
 	public Response getChromosomeSize(@PathParam("chromosomeName") String query) {
 		try {
-			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			checkParams();
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			QueryOptions options = new QueryOptions();
 			options.put("include", "size");
 			return createOkResponse(dbAdaptor.getById(query, options));
@@ -85,8 +94,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	@Path("/{chromosomeName}/cytoband")
 	public Response getByChromosomeName(@PathParam("chromosomeName") String query) {
 		try {
-			checkVersionAndSpecies();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.version);
+			checkParams();
+			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
 			return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -3,7 +3,6 @@ package org.opencb.cellbase.server.ws.genomic;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.common.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.variation.MutationPhenotypeAnnotation;
 import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
@@ -36,7 +35,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getEffectByPositionByGet(@PathParam("variants") String variants,
                                                       @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
         try {
-            VariantEffectDBAdaptor variationMongoDBAdaptor = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(this.species, this.version);
+            VariantEffectDBAdaptor variationMongoDBAdaptor = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(this.species, this.assembly);
             System.out.println("variants = [" + variants + "], excludeSOTerms = [" + excludeSOTerms + "]");
             return createOkResponse(variationMongoDBAdaptor.getAllEffectsByVariantList(GenomicVariant.parseVariants(variants), queryOptions));
 //            return getConsequenceTypeByPosition(variants, excludeSOTerms);
@@ -53,7 +52,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getEffectByPositionByPost(@FormParam("variants") String variants,
                                                     @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
         try {
-            VariantEffectDBAdaptor variationMongoDBAdaptor = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(this.species, this.version);
+            VariantEffectDBAdaptor variationMongoDBAdaptor = dbAdaptorFactory.getGenomicVariantEffectDBAdaptor(this.species, this.assembly);
             System.out.println("variants = [" + variants+ "], excludeSOTerms = [" + excludeSOTerms + "]");
             return createOkResponse(variationMongoDBAdaptor.getAllEffectsByVariantList(GenomicVariant.parseVariants(variants), queryOptions));
 //            return getConsequenceTypeByPosition(variants, excludeSOTerms);
@@ -97,7 +96,7 @@ public class VariantWSServer extends GenericRestWSServer {
         List<QueryResult> genomicVariantConsequenceTypes = null;
         VariantEffectDBAdaptor gv = null;
         try {
-            checkVersionAndSpecies();
+            checkParams();
 //			System.out.println("PAKO: "+ variants);
             genomicVariantList = GenomicVariant.parseVariants(variants);
             if (genomicVariantList != null && excludes != null) {
@@ -141,8 +140,8 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{phenotype}/phenotype")
     public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
         try {
-            checkVersionAndSpecies();
-            VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.version);
+            checkParams();
+            VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.assembly);
             return createOkResponse(va.getAllByPhenotype(phenotype,queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
@@ -165,8 +164,8 @@ public class VariantWSServer extends GenericRestWSServer {
 
     public Response getSnpPhenotypesByPosition(String variants, String outputFormat) {
         try {
-            checkVersionAndSpecies();
-            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.version);
+            checkParams();
+            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.assembly);
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             List<Position> positionList = new ArrayList<Position>(variantList.size());
             for (GenomicVariant gv : variantList) {
@@ -197,8 +196,8 @@ public class VariantWSServer extends GenericRestWSServer {
 
     public Response getMutationPhenotypesByPosition(String variants, String outputFormat) {
         try {
-            checkVersionAndSpecies();
-            MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.version);
+            checkParams();
+            MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             List<Position> positionList = new ArrayList<Position>(variantList.size());
             for (GenomicVariant gv : variantList) {
