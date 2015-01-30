@@ -14,5 +14,7 @@ public interface ConservedRegionDBAdaptor {
 
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
+    public List<QueryResult> getAllScoresByRegionList(List<Region> regions, QueryOptions options);
+
 
 }

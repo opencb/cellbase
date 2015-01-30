@@ -388,6 +388,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getFeatureMap(@PathParam("chrRegionId") String chregionId,
                                   @DefaultValue("") @QueryParam("type") String featureType,
                                   @DefaultValue("") @QueryParam("class") String featureClass) {
+        logger.info("Inside getFeatureMap");
         try {
             checkParams();
             List<Region> regions = Region.parseRegions(chregionId);
@@ -395,6 +396,8 @@ public class RegionWSServer extends GenericRestWSServer {
             queryOptions.put("featureType", (!featureType.equals("")) ? Splitter.on(",").splitToList(featureType) : null);
             queryOptions.put("featureClass",(!featureClass.equals("")) ? Splitter.on(",").splitToList(featureClass) : null);
             RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.assembly);
+
+            logger.info(regions.get(0).toString());
 
             return createOkResponse(regulatoryRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {

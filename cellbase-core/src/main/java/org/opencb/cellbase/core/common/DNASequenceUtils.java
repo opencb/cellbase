@@ -75,7 +75,7 @@ public class DNASequenceUtils {
 		return aaSequence.toString();
 	}
 	
-	public String reverseComplement(String dnaSequence) {
+	public static String reverseComplement(String dnaSequence) {
 		StringBuilder revComplSequence = new StringBuilder(dnaSequence.length());
 		for(int i=dnaSequence.length()-1; i>=0; i--) {
 			revComplSequence.append(complement.get(dnaSequence.charAt(i)));

@@ -4,10 +4,11 @@ import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceChunk;
 import org.opencb.biodata.models.protein.Interaction;
-import org.opencb.biodata.models.variant.effect.VariantAnnotation;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Mutation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
 
 import java.nio.file.Path;
@@ -19,14 +20,23 @@ import java.nio.file.Path;
  * Time: 5:37 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class CellBaseSerializer {
+public abstract class CellBaseSerializer implements AutoCloseable {
 
     protected Path outdirPath;
+    protected Path outputFileName;
+    protected boolean serializeEmptyValues;
+
+    public CellBaseSerializer() {
+
+    }
 
     public CellBaseSerializer(Path outdirPath) {
         this.outdirPath = outdirPath;
     }
 
+    public void setOutputFileName(Path outputFileName) {
+        this.outputFileName = outputFileName;
+    }
 
     public abstract void serialize(Gene gene);
 
@@ -46,6 +56,13 @@ public abstract class CellBaseSerializer {
 
     public abstract void serialize(Interaction interaction);
 
+    public abstract void serialize(ConservedRegionChunk conservedRegionChunk);
+
+    public abstract void serialize(Object object);
+
     public abstract void close();
 
+    public void setSerializeEmptyValues(boolean serializeEmptyValues) {
+        this.serializeEmptyValues = serializeEmptyValues;
+    }
 }

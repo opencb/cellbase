@@ -1,9 +1,11 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
+import com.google.common.base.Joiner;
 import com.mongodb.*;
+import com.mongodb.util.StringBuilderPool;
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -245,5 +247,38 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     @Override
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         return super.getAllIntervalFrequencies(regions, queryOptions);
+    }
+
+    @Override
+    public List<QueryResult> getIdByVariantList(List<GenomicVariant> variations, QueryOptions options){
+        List<DBObject> queries = new ArrayList<>(variations.size());
+        List<QueryResult> results;
+
+        for (GenomicVariant variation : variations) {
+            String chunkId = getChunkPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
+            QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+            if(variation.getReference() != null){
+                builder = builder.and("reference").is(variation.getReference());
+            }
+
+            queries.add(builder.get());
+        }
+
+        results = executeQueryList(variations, queries, options, mongoDBCollection);
+
+
+        for (QueryResult result: results){
+            List<String> idList = new LinkedList();
+
+            BasicDBList idListObject = (BasicDBList) result.getResult();
+            for (Object idObject : idListObject) {
+                DBObject variantObject = (DBObject) idObject;
+                idList.add(variantObject.get("id").toString());
+            }
+
+            result.setResult(Joiner.on(",").skipNulls().join(idList));
+        }
+
+        return results;
     }
 }

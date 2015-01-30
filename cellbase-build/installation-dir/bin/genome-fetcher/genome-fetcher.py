@@ -148,7 +148,12 @@ for sp in species:
     if args.variation is not None and args.variation == '1':
         if not os.path.exists(variation_folder):
             os.makedirs(variation_folder)
-        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz', 'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz', 'attrib.txt.gz', 'attrib_type.txt.gz', 'seq_region.txt.gz', 'structural_variation_feature.txt.gz', 'study.txt.gz', 'phenotype.txt.gz', 'phenotype_feature.txt.gz', 'phenotype_feature_attrib.txt.gz', 'motif_feature_variation.txt.gz']
+        variation_files =  ['variation.txt.gz', 'variation_feature.txt.gz', 'transcript_variation.txt.gz',
+                            'variation_synonym.txt.gz', 'seq_region.txt.gz', 'source.txt.gz', 'attrib.txt.gz',
+                            'attrib_type.txt.gz', 'seq_region.txt.gz', 'structural_variation_feature.txt.gz',
+                            'study.txt.gz', 'phenotype.txt.gz', 'phenotype_feature.txt.gz',
+                            'phenotype_feature_attrib.txt.gz', 'motif_feature_variation.txt.gz', 'genotype_code.txt.gz',
+                            'allele_code.txt.gz', 'population_genotype.txt.gz', 'population.txt.gz', 'allele.txt.gz']
         ## preparing URL for download
         if 'variation_url' in sp_obj and sp_obj['variation_url'] != '':
             variation_url = sp_obj['variation_url']

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -79,6 +79,16 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

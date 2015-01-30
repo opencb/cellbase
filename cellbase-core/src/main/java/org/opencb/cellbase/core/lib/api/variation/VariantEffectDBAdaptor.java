@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
-import org.opencb.cellbase.core.common.variation.GenomicVariant;
+
+import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 

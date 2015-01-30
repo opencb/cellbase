@@ -1,6 +1,8 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
@@ -11,15 +13,29 @@ import java.util.List;
  */
 public interface VariantAnnotationDBAdaptor {
 
-    @Deprecated
     public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options);
 
-    @Deprecated
     public List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options);
 
 
     public QueryResult getAllEffectsByVariant(GenomicVariant variant, QueryOptions options);
 
     public  List<QueryResult> getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options);
+
+    public List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions);
+
+    public VariationDBAdaptor getVariationDBAdaptor();
+
+    public void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor);
+
+    public ClinicalVarDBAdaptor getClinicalVarDBAdaptor();
+
+    public void setClinicalVarDBAdaptor(ClinicalVarDBAdaptor clinicalVarDBAdaptor);
+
+    public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor();
+
+    public void setProteinFunctionPredictorDBAdaptor(ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor);
+
+    public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor);
 
 }

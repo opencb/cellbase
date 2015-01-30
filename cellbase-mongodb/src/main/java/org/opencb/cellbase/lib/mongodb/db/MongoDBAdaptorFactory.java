@@ -100,17 +100,22 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                         .connectTimeout(config.getTimeout(speciesId, assembly))
                         .build();
 
+                logger.info(config.getHost(speciesId, assembly));
+                logger.info(Integer.toString(config.getPort(speciesId, assembly)));
                 mc = new MongoClient(new ServerAddress(config.getHost(speciesId, assembly), config.getPort(speciesId, assembly)), mongoClientOptions);
 //                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
 //                mc.setReadPreference(ReadPreference.primary());
 //                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
 
+                logger.info(config.getDatabase(speciesId, assembly));
                 db = mc.getDB(config.getDatabase(speciesId, assembly));
 //db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
 //db.setReadPreference(ReadPreference.primary());
-                System.out.println("Debug String: "+mc.debugString());
+//                System.out.println("Debug String: "+mc.debugString());
+                logger.info(config.getUsername(speciesId,assembly));
+                logger.info(config.getPass(speciesId, assembly));
                 if(!config.getUsername(speciesId,assembly).equals("") || !config.getPass(speciesId, assembly).equals("")){
-                    System.out.println("User: "+config.getUsername(speciesId,assembly)+", Password: "+config.getPass(speciesId, assembly)+"");
+//                    System.out.println("User: "+config.getUsername(speciesId,assembly)+", Password: "+config.getPass(speciesId, assembly)+"");
                     db.authenticate(config.getUsername(speciesId,assembly), config.getPass(speciesId, assembly).toCharArray());
                 }
             } catch (UnknownHostException e) {
@@ -290,8 +295,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             DB db = createCellBaseMongoDB(speciesId, assembly);
             mongoDBFactory.put(speciesAssemblyPrefix, db);
         }
-        return (VariantAnnotationDBAdaptor) new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
-                speciesId, assembly);
+
+
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = new VariantAnnotationMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
+                speciesId, assembly, config.getCoreChunkSize());
+
+        variantAnnotationDBAdaptor.setVariationDBAdaptor(getVariationDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setClinicalVarDBAdaptor(getClinicalVarDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setProteinFunctionPredictorDBAdaptor(getProteinFunctionPredictorDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setConservedRegionDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
+
+        return variantAnnotationDBAdaptor;
     }
 
 
@@ -430,6 +444,23 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDBFactory.put(speciesAssemblyPrefix, db);
         }
         return (ClinVarDBAdaptor) new ClinVarMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
+                speciesId, assembly);
+    }
+
+    @Override
+    public ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species) {
+        return getClinicalVarDBAdaptor(species, null);
+    }
+
+    @Override
+    public ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species, String assembly) {
+        String speciesAssemblyPrefix = getSpeciesAssemblyPrefix(species, assembly);
+        String speciesId = config.getAlias(species);
+        if (!mongoDBFactory.containsKey(speciesAssemblyPrefix)) {
+            DB db = createCellBaseMongoDB(speciesId, assembly);
+            mongoDBFactory.put(speciesAssemblyPrefix, db);
+        }
+        return (ClinicalVarDBAdaptor) new ClinicalVarMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
                 speciesId, assembly);
     }
 

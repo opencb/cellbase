@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -18,6 +18,11 @@
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-formats</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.opencb.datastore</groupId>
+            <artifactId>datastore-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -37,10 +42,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-	</dependency>
+	    </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
     </dependencies>
+
+
+
 </project>

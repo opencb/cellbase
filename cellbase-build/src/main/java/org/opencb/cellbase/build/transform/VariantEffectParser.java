@@ -1,10 +1,10 @@
 package org.opencb.cellbase.build.transform;
 
 import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.models.variant.effect.ConsequenceTypeMappings;
-import org.opencb.biodata.models.variant.effect.ProteinSubstitutionScores;
-import org.opencb.biodata.models.variant.effect.VariantAnnotation;
-import org.opencb.biodata.models.variant.effect.VariantEffect;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
+import org.opencb.biodata.models.variant.annotation.ProteinSubstitutionScores;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.annotation.VariantEffect;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
@@ -26,16 +26,14 @@ import java.nio.file.Path;
  * @author Ignacio Medina <imedina@ebi.ac.uk>
  */
 @Deprecated
-public class VariantEffectParser {
-
-    //    private DataWriter serializer;
-    private CellBaseSerializer serializer;
+public class VariantEffectParser extends CellBaseParser {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Path inputFile;
 
-
-    public VariantEffectParser(CellBaseSerializer serializer) {
-        this.serializer = serializer;
+    public VariantEffectParser(Path file, CellBaseSerializer serializer) {
+        super(serializer);
+        this.inputFile = file;
     }
 
 //    public VariantEffectParser(DataWriter serializer) {
@@ -44,8 +42,8 @@ public class VariantEffectParser {
 
 //    718787
 
-    public int parse(Path file) throws IOException {
-        BufferedReader reader = FileUtils.newBufferedReader(file);
+    public void parse() throws IOException {
+        BufferedReader reader = FileUtils.newBufferedReader(inputFile);
 
         VariantAnnotation currentAnnotation = null;
         String currentAlternativeAllele = null;
@@ -78,7 +76,7 @@ public class VariantEffectParser {
 
                 if (isNewVariant(variantChromosome, variantStart, variantEnd, variantIdFields[2], variantIdFields[3], currentAnnotation, currentAlternativeAllele)) {
                     // We have to ignore the first "NewVariant" as is the first line of the file
-                    if (currentAnnotation != null && serializer != null) {
+                    if (currentAnnotation != null) {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
@@ -97,7 +95,7 @@ public class VariantEffectParser {
         }
 
         // Don't forget to serialize the last effect read!
-        if (currentAnnotation != null && serializer != null) {
+        if (currentAnnotation != null) {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
@@ -106,7 +104,6 @@ public class VariantEffectParser {
         }
 
         reader.close();
-        return numEffectsWritten;
     }
 
     private boolean isNewVariant(String chromosome, int start, int end, String referenceAllele, String alternateAllele,
