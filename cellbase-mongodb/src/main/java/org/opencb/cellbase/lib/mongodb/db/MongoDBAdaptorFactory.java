@@ -303,6 +303,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         variantAnnotationDBAdaptor.setVariationDBAdaptor(getVariationDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setClinicalVarDBAdaptor(getClinicalVarDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setProteinFunctionPredictorDBAdaptor(getProteinFunctionPredictorDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setConservedRegionDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
 
         return variantAnnotationDBAdaptor;
     }

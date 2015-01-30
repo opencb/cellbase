@@ -24,6 +24,25 @@ import java.util.zip.GZIPInputStream;
 public class VariantAnnotationMongoDBAdaptorTest {
 
 
+    @Test
+    public void testGetAnnotationByVariantList() throws Exception {
+
+        CellbaseConfiguration config = new CellbaseConfiguration();
+
+        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
+                "B10p@ss", 10, 10);
+
+        config.addSpeciesAlias("hsapiens", "hsapiens");
+
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
+
+        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16123409, "-", "A"))
+                , new QueryOptions());
+
+    }
+
     private int countLines(String fileName) throws IOException {
         System.out.println("Counting lines...");
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -144,136 +163,6 @@ public class VariantAnnotationMongoDBAdaptorTest {
     }
 
     @Test
-    public void testGetAllConsequenceTypesByVariant1() throws IOException {
-
-        CellbaseConfiguration config = new CellbaseConfiguration();
-
-        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
-                "B10p@ss", 10, 10);
-
-//        config.addSpeciesConnection("agambiae", "GRCh37", "mongodb-hxvm-var-001", "cellbase_agambiae_agamp4_v3", 27017, "mongo", "biouser",
-//                "B10p@ss", 10, 10);
-
-//        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "test", 27017, "mongo", "", "", 10, 10);
-
-//        config.addSpeciesAlias("agambiae", "agambiae");
-        config.addSpeciesAlias("hsapiens", "hsapiens");
-
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
-
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
-//        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("agambiae", "GRCh37");
-
-        String line = null;
-
-        String INPUTFILE = "/home/fjlopez/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
-
-        QueryResult queryResult = null;
-        BufferedWriter bw = Files.newBufferedWriter(Paths.get("/home/fjlopez/tmp/22.uva.vcf"), Charset.defaultCharset());
-
-        // Use ebi cellbase to test these
-//        variantAnnotationDBAdaptor.getAllCzonsequenceTypesByVariant(new GenomicVariant("22", 16101010, "TTA", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16101010, "TTA", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16062270, "G", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTACCAGCTACTTGGAAGGCTGAGGCAGGAGACTCTCTTGAACCTGGGAAGCCGAGGTTGCAGTGAGCTGGGCGACAGAGGGAGACTCCGTAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAAAGAAAACAGGAAGGAAAGAAGAAAGAGAAACTAGAAATAATACATGTAAAGTGGCTGATTCTATTATCCTTGTTATTCCTTCTCCATGGGGCTGTTGTCAGGATTAAGTGAGATAGAGCACAGGAAAGGGCTCTGGAAACGCCTGTAGGCTCTAACCCTGAGGCATGGGCCTGTGGCCAGGAGCTCTCCCATTGACCACCTCCGCTGCCTCTGCTCGCATCCCGCAGGCTCACCTGTTTCTCCGGCGTGGAAGAAGTAAGGCAGCTTAACGCCATCCTTGGCGGGGATCATCAGAGCTTCCTTGTAGTCATGCAAGGAGTGGCCAGTGTCCTCATGCCCCACCTGCAGGACAGAGAGGGACAGGGAGGTGTCTGCAGGGCGCATGCCTCACTTGCTGATGGCGCGCCCTGGAGCCTGTGCACACCCTTCCTTGTACCCTGCCACCACTGCCGGGACCTTTGTCACACAGCCTTTTAAGAATGACCAGGAGCAGGCCAGGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGGGAGGCCGAGGCAGGCAGATCACGAAGTCAGGAGATCGAGACCATCCTGGCTAACACAGTGAAACCCCA", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17668818, "C", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("8", 408515, "GAA", ""), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("3", 367747, "C", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("9", 214512, "C", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("14", 19108198, "-", "GGTCTAGCATG"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("3L", 22024723, "G", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2L", 37541199, "G", "A"), new QueryOptions());
-//
-//        // Use local gene collection to test these
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 5, "GGTCTAGCATG", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 1, "G", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 5, "GGTCTAGCATGTTACATGAAG", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 15, "GTTACATGAAG", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 21, "T", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 34, "-", "AAAT"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 42, "G", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 75, "T", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 75, "TCTAAGGCCTC", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 25, "GATAGTTCCTA", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 45, "GATAGGGTAC", "-"), new QueryOptions());
-
-
-//        try {
-//            br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get("/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf"))));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-        bw.write("#CHR\tPOS\tALT\tENSG\tFEA_TYPE\tBIOTYPE\tSTRAND\tCT\tCDNA\tCDS\tA_POS\tA_CHANGE\tCODON\n");
-
-        VcfRawReader vcfReader = new VcfRawReader(INPUTFILE);
-        if(vcfReader.open()) {
-
-            List<VcfRecord> vcfRecordList= vcfReader.read(1000);
-            int nLines = countLines(INPUTFILE);
-            int lineCounter = 0;
-            int TESTSIZE = 1000;
-            int ensemblPos;
-            String pos;
-            String ref;
-            String alt;
-            System.out.println("Processing vcf lines...");
-            while(vcfRecordList.size()>0 && lineCounter<TESTSIZE) {
-                for(VcfRecord vcfRecord : vcfRecordList) {
-                    if(vcfRecord.getPosition()==16118637){
-                        int a;
-                        a=1;
-                    }
-                    if(vcfRecord.getReference().length()>1) {
-                        ref = vcfRecord.getReference().substring(1);
-                        alt = "-";
-                        ensemblPos = vcfRecord.getPosition()+1;
-                        if(ref.length()>1) {
-                            pos = (vcfRecord.getPosition() + 1) + "-" + (vcfRecord.getPosition() + ref.length());
-                        } else {
-                            pos = Integer.toString(vcfRecord.getPosition() + 1);
-                        }
-                    } else if(vcfRecord.getAlternate().length()>1) {
-                        ref = "-";
-                        alt = vcfRecord.getAlternate().substring(1);
-                        ensemblPos = vcfRecord.getPosition()+1;
-                        pos = vcfRecord.getPosition()+"-"+(vcfRecord.getPosition()+alt.length());
-                    } else {
-                        ref = vcfRecord.getReference();
-                        alt = vcfRecord.getAlternate();
-                        ensemblPos = vcfRecord.getPosition();
-                        pos = Integer.toString(ensemblPos);
-                    }
-//                    System.out.println("new GenomicVariant = " + new GenomicVariant(vcfRecord.getChromosome(), vcfRecord.getPosition(),ref, alt));
-                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), ensemblPos,
-                            ref, alt), new QueryOptions());
-
-                    List<String> SOnames = new ArrayList<String>();
-                    int i;
-                    List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
-                    Collections.sort(consequenceTypeList,new ConsequenceTypeComparator());
-                    String transcriptId = consequenceTypeList.get(0).getEnsemblTranscriptId()==null?"":consequenceTypeList.get(0).getEnsemblTranscriptId();
-                    for(i=0; i < consequenceTypeList.size(); i++) {
-                        if(!(consequenceTypeList.get(i).getEnsemblTranscriptId()==null?"":consequenceTypeList.get(i).getEnsemblTranscriptId()).equals(transcriptId)) {
-                            Collections.sort(SOnames);
-                            writeLine(bw, pos, alt, vcfRecord, consequenceTypeList.get(i-1), StringUtils.join(SOnames, ","));
-                            transcriptId = consequenceTypeList.get(i).getEnsemblTranscriptId()==null?"":consequenceTypeList.get(i).getEnsemblTranscriptId();
-                            SOnames.clear();
-                        }
-                        SOnames.add(consequenceTypeList.get(i).getSOName());
-                    }
-                    writeLine(bw, pos, alt, vcfRecord, consequenceTypeList.get(i-1), StringUtils.join(SOnames,","));
-                }
-                vcfRecordList = vcfReader.read(1000);
-                lineCounter += 1000;
-                System.out.print(lineCounter+"/"+nLines+"\r");
-            }
-        }
-        bw.close();
-    }
-
-    @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
@@ -299,8 +188,11 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179633644, "G", "C"), new QueryOptions());  // should include
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16123409, "-", "A"), new QueryOptions());  // should include
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 51234118, "C", "G"), new QueryOptions());  // should include upstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
@@ -374,10 +266,6 @@ public class VariantAnnotationMongoDBAdaptorTest {
             while(vcfRecordList.size()>0) {
 //            while(vcfRecordList.size()>0 && lineCounter<TESTSIZE) {
                 for(VcfRecord vcfRecord : vcfRecordList) {
-                    if(vcfRecord.getPosition()==17039749){
-                        int a;
-                        a=1;
-                    }
                     // Short deletion
                     if(vcfRecord.getReference().length()>1) {
                         ref = vcfRecord.getReference().substring(1);
@@ -425,18 +313,20 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
                     int i;
                     List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
-                    for(i=0; i < consequenceTypeList.size(); i++) {
-                        if(consequenceTypeList.get(i).getSOName().equals("2KB_upstream_gene_variant")) {
-                            SoNameToTest = "upstream_gene_variant";
-                        } else if (consequenceTypeList.get(i).getSOName().equals("2KB_downstream_gene_variant")) {
-                            SoNameToTest = "downstream_gene_variant";
-                        } else {
-                            SoNameToTest = consequenceTypeList.get(i).getSOName();
-                        }
-                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
-                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
-                                SoNameToTest));
-                    }
+//                    for(i=0; i < consequenceTypeList.size(); i++) {
+//                        for(String soName : consequenceTypeList.get(i).getSoNames()) {
+//                            if (soName.equals("2KB_upstream_gene_variant")) {
+//                                SoNameToTest = "upstream_gene_variant";
+//                            } else if (soName.equals("2KB_downstream_gene_variant")) {
+//                                SoNameToTest = "downstream_gene_variant";
+//                            } else {
+//                                SoNameToTest = consequenceTypeList.get(i).getSoName();
+//                            }
+//                        }
+//                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
+//                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
+//                                SoNameToTest));
+//                    }
                 }
                 vcfRecordList = vcfReader.read(1000);
                 lineCounter += 1000;
@@ -447,11 +337,13 @@ public class VariantAnnotationMongoDBAdaptorTest {
         vcfReader.post();
         vcfReader.close();
 
+//        System.exit(0);
+
         /**
          * Loads VEP annotation from VEP parsed annotations
          */
-//        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/22.vep.output.parsed.test.txt"), Charset.defaultCharset());
-        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
+        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/22.vep.output.parsed.test.txt"), Charset.defaultCharset());
+//        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
         Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
         String newLine;
         br.readLine();
@@ -503,79 +395,79 @@ public class VariantAnnotationMongoDBAdaptorTest {
         bw.close();
     }
 
-    private void writeLine(BufferedWriter bw, String pos, String alt, VcfRecord vcfRecord, ConsequenceType consequenceType, String SOnames) throws IOException {
-        String feaType;
-        String strand;
-        String cDnaPosition;
-        String cdsPosition;
-        String aPosition;
-        String aChange;
-        String codon;
-        switch (consequenceType.getSOName()) {
-            case "TF_binding_site_variant":
-                feaType = "MotifFeature";
-                strand = "-";
-                cDnaPosition = "-";
-                cdsPosition = "-";
-                aPosition = "-";
-                aChange = "-";
-                codon = "-";
-                break;
-            case "regulatory_region_variant":
-                feaType = "RegulatoryFeature";
-                strand = "-";
-                cDnaPosition = "-";
-                cdsPosition = "-";
-                aPosition = "-";
-                aChange = "-";
-                codon = "-";
-                break;
-            case "intergenic_variant":
-                feaType = "-";
-                strand = "-";
-                cDnaPosition = "-";
-                cdsPosition = "-";
-                aPosition = "-";
-                aChange = "-";
-                codon = "-";
-                break;
-            default:
-                feaType = "Transcript";
-                if(consequenceType.getStrand().equals("+")) {
-                    strand = "1";
-                } else {
-                    strand = "-1";
-                }
-                if(consequenceType.getcDnaPosition() == null) {
-                    cDnaPosition = "-";
-                } else {
-                    cDnaPosition = Integer.toString(consequenceType.getcDnaPosition());
-                }
-                if(consequenceType.getCdsPosition() == null) {
-                    cdsPosition = "-";
-                } else {
-                    cdsPosition = Integer.toString(consequenceType.getCdsPosition());
-                }
-                if(consequenceType.getaPosition() == null) {
-                    aPosition = "-";
-                } else {
-                    aPosition = Integer.toString(consequenceType.getaPosition());
-                }
-                if(consequenceType.getaChange() == null) {
-                    aChange = "-";
-                } else {
-                    aChange = consequenceType.getaChange();
-                }
-                if(consequenceType.getCodon() == null) {
-                    codon = "-";
-                } else {
-                    codon = consequenceType.getCodon();
-                }
-
-        }
-        bw.write(vcfRecord.getChromosome()+"\t"+pos+"\t"+alt+"\t"+
-                consequenceType.getEnsemblGeneId("-")+"\t"+feaType+"\t"+consequenceType.getBiotype("-")+"\t"+
-                strand+"\t"+SOnames+"\t"+cDnaPosition+"\t"+
-                cdsPosition+"\t"+aPosition+"\t"+aChange+"\t"+codon+"\n");
-    }
+//    private void writeLine(BufferedWriter bw, String pos, String alt, VcfRecord vcfRecord, ConsequenceType consequenceType, String SOnames) throws IOException {
+//        String feaType;
+//        String strand;
+//        String cDnaPosition;
+//        String cdsPosition;
+//        String aPosition;
+//        String aChange;
+//        String codon;
+//        switch (consequenceType.getSoName()) {
+//            case "TF_binding_site_variant":
+//                feaType = "MotifFeature";
+//                strand = "-";
+//                cDnaPosition = "-";
+//                cdsPosition = "-";
+//                aPosition = "-";
+//                aChange = "-";
+//                codon = "-";
+//                break;
+//            case "regulatory_region_variant":
+//                feaType = "RegulatoryFeature";
+//                strand = "-";
+//                cDnaPosition = "-";
+//                cdsPosition = "-";
+//                aPosition = "-";
+//                aChange = "-";
+//                codon = "-";
+//                break;
+//            case "intergenic_variant":
+//                feaType = "-";
+//                strand = "-";
+//                cDnaPosition = "-";
+//                cdsPosition = "-";
+//                aPosition = "-";
+//                aChange = "-";
+//                codon = "-";
+//                break;
+//            default:
+//                feaType = "Transcript";
+//                if(consequenceType.getStrand().equals("+")) {
+//                    strand = "1";
+//                } else {
+//                    strand = "-1";
+//                }
+//                if(consequenceType.getcDnaPosition() == null) {
+//                    cDnaPosition = "-";
+//                } else {
+//                    cDnaPosition = Integer.toString(consequenceType.getcDnaPosition());
+//                }
+//                if(consequenceType.getCdsPosition() == null) {
+//                    cdsPosition = "-";
+//                } else {
+//                    cdsPosition = Integer.toString(consequenceType.getCdsPosition());
+//                }
+//                if(consequenceType.getAaPosition() == null) {
+//                    aPosition = "-";
+//                } else {
+//                    aPosition = Integer.toString(consequenceType.getAaPosition());
+//                }
+//                if(consequenceType.getAaChange() == null) {
+//                    aChange = "-";
+//                } else {
+//                    aChange = consequenceType.getAaChange();
+//                }
+//                if(consequenceType.getCodon() == null) {
+//                    codon = "-";
+//                } else {
+//                    codon = consequenceType.getCodon();
+//                }
+//
+//        }
+//        bw.write(vcfRecord.getChromosome()+"\t"+pos+"\t"+alt+"\t"+
+//                consequenceType.getEnsemblGeneId("-")+"\t"+feaType+"\t"+consequenceType.getBiotype("-")+"\t"+
+//                strand+"\t"+SOnames+"\t"+cDnaPosition+"\t"+
+//                cdsPosition+"\t"+aPosition+"\t"+aChange+"\t"+codon+"\n");
+//    }
 }

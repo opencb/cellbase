@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -34,5 +35,7 @@ public interface VariantAnnotationDBAdaptor {
     public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor();
 
     public void setProteinFunctionPredictorDBAdaptor(ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor);
+
+    public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor);
 
 }
