@@ -225,8 +225,8 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
 
             BasicDBList resultList = new BasicDBList();
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                for(float value : elem.getValue()) {
-                    resultList.add(new Score(new Double(value), elem.getKey()));
+                for(Float value : elem.getValue()) {
+                    resultList.add(value!=null?(new Score(new Double(value), elem.getKey())):null);
                 }
             }
             queryResult.setResult(resultList);

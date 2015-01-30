@@ -38,8 +38,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
-        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16123409, "-", "A"))
+        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 22022872, "T", "C"))  // Should not raise java.lang.NullPointerException
                 , new QueryOptions());
+//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16123409, "-", "A"))
+//                , new QueryOptions());
 
     }
 
@@ -188,7 +190,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179633644, "G", "C"), new QueryOptions());  // should include
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16676212, "C", "T"), new QueryOptions());  // should include downstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 22022872, "T", "C"), new QueryOptions());  // should not raise an error
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179633644, "G", "C"), new QueryOptions());  // should include
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16123409, "-", "A"), new QueryOptions());  // should include
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 51234118, "C", "G"), new QueryOptions());  // should include upstream_gene_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
@@ -313,20 +317,24 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
                     int i;
                     List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
-//                    for(i=0; i < consequenceTypeList.size(); i++) {
-//                        for(String soName : consequenceTypeList.get(i).getSoNames()) {
-//                            if (soName.equals("2KB_upstream_gene_variant")) {
-//                                SoNameToTest = "upstream_gene_variant";
-//                            } else if (soName.equals("2KB_downstream_gene_variant")) {
-//                                SoNameToTest = "downstream_gene_variant";
-//                            } else {
-//                                SoNameToTest = consequenceTypeList.get(i).getSoName();
-//                            }
-//                        }
-//                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
-//                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
-//                                SoNameToTest));
-//                    }
+                    for(i=0; i < consequenceTypeList.size(); i++) {
+                        if(consequenceTypeList.get(i).getEnsemblGeneId()==null?false:consequenceTypeList.get(i).getEnsemblGeneId().equals("ENSG00000236235")) {
+                            int a;
+                            a=1;
+                        }
+                        for(ConsequenceType.ConsequenceTypeEntry soTerm : consequenceTypeList.get(i).getSoTerms()) {
+                            if (soTerm.getSoName().equals("2KB_upstream_gene_variant")) {
+                                SoNameToTest = "upstream_gene_variant";
+                            } else if (soTerm.getSoName().equals("2KB_downstream_gene_variant")) {
+                                SoNameToTest = "downstream_gene_variant";
+                            } else {
+                                SoNameToTest = soTerm.getSoName();
+                            }
+                            uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
+                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
+                                SoNameToTest));
+                        }
+                    }
                 }
                 vcfRecordList = vcfReader.read(1000);
                 lineCounter += 1000;
@@ -350,10 +358,6 @@ public class VariantAnnotationMongoDBAdaptorTest {
         while((newLine=br.readLine())!=null) {
             String[] lineFields = newLine.split("\t");
             for(String SOname : lineFields[7].split(",")) {
-                if(lineFields[1].equals("16159060")) {
-                    int a;
-                    a=1;
-                }
                 if(SOname.equals("nc_transcript_variant")) {
                     SOname = "non_coding_transcript_variant";
                 }

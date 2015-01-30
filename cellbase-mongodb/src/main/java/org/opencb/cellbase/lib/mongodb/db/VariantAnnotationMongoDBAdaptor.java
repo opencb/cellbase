@@ -769,7 +769,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                              * pseudogenes, antisense should not be annotated as non-coding genes
                              */
                             case 7:   // IG_V_pseudogene
-                            case 32:  // transcribed_unprocessed_pseudogene
                             case 39:
                             case 40:
                             case 41:
@@ -802,6 +801,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 28:
                             case 29:
                             case 31:  // unprocessed_pseudogene
+                            case 32:  // transcribed_unprocessed_pseudogene
                             case 33:
                             case 34:
                             case 37:  // transcribed_processed_pseudogene
@@ -884,7 +884,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                              * pseudogenes, antisense should not be annotated as non-coding genes
                              */
                             case 7:   // IG_V_pseudogene
-                            case 32:  // transcribed_unprocessed_pseudogene
                             case 39:
                             case 40:
                             case 41:
@@ -917,6 +916,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 28:
                             case 29:
                             case 31:  // unprocessed_pseudogene
+                            case 32:  // transcribed_unprocessed_pseudogene
                             case 33:
                             case 34:
                             case 37:  // transcribed_processed_pseudogene
