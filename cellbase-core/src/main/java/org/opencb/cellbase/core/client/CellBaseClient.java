@@ -207,6 +207,10 @@ public class CellBaseClient {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    public ObjectMapper getObjectMapper() {
+        return mapper;
+    }
+
     /////////////////////////
     // Common getters:
     //          all, list, info, help
