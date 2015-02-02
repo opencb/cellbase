@@ -1414,7 +1414,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     public List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions) {
 
 
-        List<QueryResult> variationQueryResultList = variationDBAdaptor.getIdByVariantList(variantList, queryOptions);
+        List<QueryResult> variationQueryResultList = variationDBAdaptor.getAllByVariantList(variantList, queryOptions);
         List<QueryResult> clinicalQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
         List<QueryResult> variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
         List<QueryResult> conservedRegionQueryResultList = conservedRegionDBAdaptor.getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
