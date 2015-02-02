@@ -14,7 +14,7 @@
     <url>http://www.opencb.org/subprojects/cellbase</url>
 
     <modules>
-        <module>cellbase-build</module>
+        <module>cellbase-app</module>
         <module>cellbase-core</module>
         <module>cellbase-mongodb</module>
         <module>cellbase-server</module>
