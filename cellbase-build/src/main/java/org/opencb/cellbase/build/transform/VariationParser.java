@@ -38,6 +38,16 @@ public class VariationParser extends CellBaseParser {
     private static final int TRANSCRIPT_VARIATION_FILE_ID = 1;
     private static final int VARIATION_SYNONYM_FILE_ID = 2;
 
+    private static final String THOUSAND_GENOMES_STUDY = "1000GENOMES";
+    private static final String ESP_6500_STUDY = "ESP_6500";
+    private static final String THOUSAND_GENOMES_ALL_POPULATION = "phase_1_ALL";
+    private static final String THOUSAND_GENOMES_AMERICAN_POPULATION = "phase_1_AMR";
+    private static final String THOUSAND_GENOMES_ASIAN_POPULATION = "phase_1_ASN";
+    private static final String THOUSAND_GENOMES_AFRICAN_POPULATION = "phase_1_AFR";
+    private static final String THOUSAND_GENOMES_EUROPEAN_POPULATION = "phase_1_EUR";
+    private static final String ESP_EUROPEAN_AMERICAN_POPULATION = "European_American";
+    private static final String ESP_AFRICAN_AMERICAN_POPULATION = "African_American";
+
     private Path variationDirectoryPath;
 
     private BufferedReader variationSynonymsFileReader;
@@ -61,11 +71,13 @@ public class VariationParser extends CellBaseParser {
     private static final String REFERENCE_FREQUENCY_GROUP = "ref";
     private static final String ALTERNATE_FREQUENCY_GROUP = "alt";
     private TabixReader frequenciesTabixReader;
+    private final Set<String> thousandGenomesMissedPopulations;
 
     public VariationParser(Path variationDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
         this.variationDirectoryPath = variationDirectoryPath;
         populationFrequnciesPattern = Pattern.compile("(?<" + POPULATION_ID_GROUP + ">\\w+):(?<" + REFERENCE_FREQUENCY_GROUP + ">\\d+.\\d+),(?<" + ALTERNATE_FREQUENCY_GROUP + ">\\d+.\\d+)");
+        thousandGenomesMissedPopulations = new HashSet<>();
     }
 
     @Override
@@ -463,6 +475,7 @@ public class VariationParser extends CellBaseParser {
         for (String populationFrequency : variationFrequenciesString.split(";")) {
             frequencies.add(parsePopulationFrequency(populationFrequency, referenceAllele, alternativeAllele));
         }
+        frequencies = add1000GenomesMissedPopulations(frequencies);
         return frequencies;
     }
 
@@ -472,28 +485,36 @@ public class VariationParser extends CellBaseParser {
 
         if (m.matches()) {
             String populationName;
+            String study = "";
             String population = m.group(POPULATION_ID_GROUP);
             switch (population) {
                 case "1000G_AF":
-                    populationName = "1000GENOMES:phase_1_ALL";
+                    study = THOUSAND_GENOMES_STUDY;
+                    populationName = THOUSAND_GENOMES_ALL_POPULATION;
                     break;
                 case "1000G_AMR_AF":
-                    populationName = "1000GENOMES:phase_1_AMR";
+                    study = THOUSAND_GENOMES_STUDY;
+                    populationName = THOUSAND_GENOMES_AMERICAN_POPULATION;
                     break;
                 case "1000G_ASN_AF":
-                    populationName = "1000GENOMES:phase_1_ASN";
+                    study = THOUSAND_GENOMES_STUDY;
+                    populationName = THOUSAND_GENOMES_ASIAN_POPULATION;
                     break;
                 case "1000G_AFR_AF":
-                    populationName = "1000GENOMES:phase_1_AFR";
+                    study = THOUSAND_GENOMES_STUDY;
+                    populationName = THOUSAND_GENOMES_AFRICAN_POPULATION;
                     break;
                 case "1000G_EUR_AF":
-                    populationName = "1000GENOMES:phase_1_EUR";
+                    study = THOUSAND_GENOMES_STUDY;
+                    populationName = THOUSAND_GENOMES_EUROPEAN_POPULATION;
                     break;
                 case "ESP_EA_AF":
-                    populationName = "ESP6500:European_American";
+                    study = ESP_6500_STUDY;
+                    populationName = ESP_EUROPEAN_AMERICAN_POPULATION;
                     break;
                 case "ESP_AA_AF":
-                    populationName = "ESP6500:African_American";
+                    study = ESP_6500_STUDY;
+                    populationName = ESP_AFRICAN_AMERICAN_POPULATION;
                     break;
                 default:
                     populationName = population;
@@ -501,10 +522,39 @@ public class VariationParser extends CellBaseParser {
             Float referenceFrequency = Float.parseFloat(m.group(REFERENCE_FREQUENCY_GROUP));
             Float alternativeFrequency = Float.parseFloat(m.group(ALTERNATE_FREQUENCY_GROUP));
 
-            populationFrequency = new PopulationFrequency(populationName, referenceAllele, alternativeAllele, referenceFrequency, alternativeFrequency);
+            populationFrequency = new PopulationFrequency(study, populationName, populationName, referenceAllele, alternativeAllele, referenceFrequency, alternativeFrequency);
         }
 
         return populationFrequency;
+    }
+
+    private List<PopulationFrequency> add1000GenomesMissedPopulations(List<PopulationFrequency> frequencies) {
+        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_AFRICAN_POPULATION);
+        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_AMERICAN_POPULATION);
+        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_EUROPEAN_POPULATION);
+        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_ASIAN_POPULATION);
+        int thousandGenomesPopulationsNumber = thousandGenomesMissedPopulations.size();
+
+        String refAllele = null;
+        String altAllele = null;
+        for (PopulationFrequency frequency : frequencies) {
+            if (frequency.getStudy()!= null && frequency.getStudy().equals(THOUSAND_GENOMES_STUDY)) {
+                if (frequency.getPop().equals(THOUSAND_GENOMES_ALL_POPULATION)) {
+                    refAllele = frequency.getRefAllele();
+                    altAllele = frequency.getAltAllele();
+                }
+                thousandGenomesMissedPopulations.remove(frequency.getPop());
+            }
+        }
+
+        // if the variation has some 1000 genomes superpopulation frequency, but not all, add the missed superpopulations with 1 as ref allele proportion
+        if (!thousandGenomesMissedPopulations.isEmpty() && thousandGenomesMissedPopulations.size() != thousandGenomesPopulationsNumber) {
+            for (String population : thousandGenomesMissedPopulations) {
+                frequencies.add(new PopulationFrequency(THOUSAND_GENOMES_STUDY, population, population, refAllele, altAllele, 1, 0));
+            }
+        }
+
+        return frequencies;
     }
 
     private List<TranscriptVariation> getTranscriptVariations(int variationId, String variationFeatureId) throws IOException, SQLException {
