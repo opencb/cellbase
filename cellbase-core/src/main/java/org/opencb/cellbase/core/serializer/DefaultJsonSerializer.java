@@ -115,7 +115,8 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     public void serialize(Variation variation) {
         try {
             if(variationWriters.get(variation.getChromosome()) == null) {
-                variationWriters.put(variation.getChromosome(), new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json.gz").toFile())))));
+                Path outputFilePath = outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json.gz");
+                variationWriters.put(variation.getChromosome(), new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outputFilePath.toFile())))));
             }
             variationWriters.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
             variationWriters.get(variation.getChromosome()).newLine();
