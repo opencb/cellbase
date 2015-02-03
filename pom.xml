@@ -14,7 +14,7 @@
     <url>http://www.opencb.org/subprojects/cellbase</url>
 
     <modules>
-        <module>cellbase-build</module>
+        <module>cellbase-app</module>
         <module>cellbase-core</module>
         <module>cellbase-mongodb</module>
         <module>cellbase-server</module>
@@ -293,14 +293,14 @@
     </build>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
     </distributionManagement>
 
 </project>

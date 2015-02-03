@@ -10,7 +10,7 @@
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>cellbase-build</artifactId>
+    <artifactId>cellbase-app</artifactId>
     <version>${cellbase.version}</version>
 
     <properties>
