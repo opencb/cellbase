@@ -168,6 +168,7 @@ public class CellBaseMain {
     }
 
     private static void createCellBaseSerializer(Path outPath) throws IOException  {
+        // TODO: command line help says that "Mongo" option is the default value, but next line takes "json" as default
         String serializerClass = commandLine.getOptionValue("serializer", "json");
         if (serializerClass != null) {
             // A default implementation for JSON is provided
