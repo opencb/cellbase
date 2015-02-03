@@ -290,7 +290,11 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
         for (GenomicVariant variation : variations) {
             String chunkId = getChunkPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
-            QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+
+            // TODO: chunkIds query field removed for debugging since it is not yet included in the MongoDB, replace after debugging
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+//            QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+
             if(variation.getReference() != null){
                 builder = builder.and("reference").is(variation.getReference());
             }
@@ -299,19 +303,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         }
 
         results = executeQueryList(variations, queries, options, mongoDBCollection);
-
-
-        for (QueryResult result: results){
-            List<Variation> idList = new LinkedList();
-
-            BasicDBList idListObject = (BasicDBList) result.getResult();
-            for (Object idObject : idListObject) {
-                DBObject variantObject = (DBObject) idObject;
-                idList.add((Variation) variantObject);
-            }
-
-            result.setResult(idList);
-        }
 
         return results;
     }

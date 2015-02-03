@@ -38,8 +38,16 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
-        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 22022872, "T", "C"))  // Should not raise java.lang.NullPointerException
-                , new QueryOptions());
+//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941,"T","C"))  // Should return any result
+//                , new QueryOptions());
+//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "T"))  // Should return any result
+//                , new QueryOptions());
+//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "G"))  // Should return any result
+//                , new QueryOptions());
+//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("10", 78444456, "G", "T"))  // Should include population frequencies
+//                , new QueryOptions());
+//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 22022872, "T", "C"))  // Should not raise java.lang.NullPointerException
+//                , new QueryOptions());
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16123409, "-", "A"))
 //                , new QueryOptions());
 
@@ -190,6 +198,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17449263, "G", "A"), new QueryOptions());  // should return
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 21982892, "C", "T"), new QueryOptions());  // should return a result
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16676212, "C", "T"), new QueryOptions());  // should include downstream_gene_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 22022872, "T", "C"), new QueryOptions());  // should not raise an error
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 179633644, "G", "C"), new QueryOptions());  // should include

@@ -9,12 +9,14 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.lib.dbquery.DBObjectMap;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.slf4j.Logger;
@@ -599,27 +601,33 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private void solveJunction(Integer spliceSite1, Integer spliceSite2, Integer variantStart, Integer variantEnd, HashSet<String> SoNames,
                                                 String leftSpliceSiteTag, String rightSpliceSiteTag, Boolean[] junctionSolution) {
 
-        junctionSolution[0] = false;
-        junctionSolution[1] = false;
+        junctionSolution[0] = false;  // Is splicing variant in non-coding region
+        junctionSolution[1] = false;  // Variant is intronic and both ends fall within the intron
         Boolean isDonorAcceptor = false;
 
-        if(regionsOverlap(spliceSite1-3,spliceSite2+3,variantStart,variantEnd)) {
-            if (regionsOverlap(spliceSite1 - 3, spliceSite1 + 7, variantStart, variantEnd)) {
-                junctionSolution[0] = true;
+        if(regionsOverlap(spliceSite1-3,spliceSite2+3,variantStart,variantEnd)) {  // Variant is intronic and/or splicing
+            if (regionsOverlap(spliceSite1 - 3, spliceSite1 + 7, variantStart, variantEnd)) {  // Variant within left splicing region
                 if (regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {
                     SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
                     isDonorAcceptor = true;
+                    junctionSolution[0] = true;
                 } else {
                     SoNames.add("splice_region_variant");
+                    if(variantEnd>=spliceSite1) {  // At least one portion of the variant affects the non-coding region
+                        junctionSolution[0] = true;
+                    }
                 }
             }
-            if (regionsOverlap(spliceSite2 - 7, spliceSite2 + 3, variantStart, variantEnd)) {
-                junctionSolution[0] = true;
+            if (regionsOverlap(spliceSite2 - 7, spliceSite2 + 3, variantStart, variantEnd)) {  // Variant within right splicing region
                 if (regionsOverlap(spliceSite2 - 1, spliceSite2, variantStart, variantEnd)) {
                     SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
                     isDonorAcceptor = true;
+                    junctionSolution[0] = true;
                 } else {
                     SoNames.add("splice_region_variant");
+                    if(variantStart<=spliceSite2) {  // At least one portion of the variant affects the non-coding region
+                        junctionSolution[0] = true;
+                    }
                 }
             }
             if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
@@ -768,7 +776,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             /**
                              * pseudogenes, antisense should not be annotated as non-coding genes
                              */
-                            case 7:   // IG_V_pseudogene
                             case 39:
                             case 40:
                             case 41:
@@ -789,6 +796,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                              * Non-coding biotypes
                              */
                             case 0:
+                            case 7:   // IG_V_pseudogene
                             case 16:  // antisense
                             case 17:
                             case 18:
@@ -813,11 +821,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 exonVariant = solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 if(exonVariant) {
-                                    if (transcriptBiotype == 18) {
-                                        SoNames.add("mature_miRNA_variant");
-                                    } else {
+//                                    if (transcriptBiotype == 18) {
+//                                        SoNames.add("mature_miRNA_variant");  // TODO: Gary to explain how to annotate mature_miRNA_variant
+//                                    } else {
                                         SoNames.add("non_coding_transcript_exon_variant");
-                                    }
+//                                    }
                                 } else {
                                     SoNames.add("non_coding_transcript_variant");
                                 }
@@ -883,7 +891,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             /**
                              * pseudogenes, antisense should not be annotated as non-coding genes
                              */
-                            case 7:   // IG_V_pseudogene
                             case 39:
                             case 40:
                             case 41:
@@ -904,6 +911,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                              * Non-coding biotypes
                              */
                             case 0:
+                            case 7:   // IG_V_pseudogene
                             case 17:
                             case 16:  // antisense
                             case 18:
@@ -928,11 +936,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 exonVariant = solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
                                         transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
                                 if(exonVariant) {
-                                    if (transcriptBiotype == 18) {
-                                        SoNames.add("mature_miRNA_variant");
-                                    } else {
+//                                    if (transcriptBiotype == 18) {
+//                                        SoNames.add("mature_miRNA_variant");  // TODO: Gary to explain how to annotate mature_miRNA_variant
+//                                    } else {
                                         SoNames.add("non_coding_transcript_exon_variant");
-                                    }
+//                                    }
                                 } else {
                                     SoNames.add("non_coding_transcript_variant");
                                 }
@@ -1100,6 +1108,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             }
             exonCounter++;
         }
+        // Is not intron variant (both ends fall within the same intron)
         if(!junctionSolution[1]) {
             solveCodingPositiveTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
@@ -1197,6 +1206,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             }
             exonCounter++;
         }
+        // Is not intron variant (both ends fall within the same intron)
         if(!junctionSolution[1]) {
             solveCodingNegativeTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
@@ -1430,19 +1440,33 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
             List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>)variationConsequenceTypeList.get(i).getResult();
 
-            String id = null;
-            if(variationQueryResultList.get(i).getResult() != null) {
-                id = variationQueryResultList.get(i).getResult().toString();
-            }
 
             // TODO: start & end are both being set to variantList.get(i).getPosition(), modify this for indels
             variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(),
                     variantList.get(i).getPosition(),variantList.get(i).getPosition(),variantList.get(i).getReference(),variantList.get(i).getAlternative());
 
-            variantAnnotation.setId(id);
             variantAnnotation.setClinicalData(phenotype);
             variantAnnotation.setConsequenceTypes(consequenceTypeList);
             variantAnnotation.setConservedRegionScores((List<Score>) conservedRegionQueryResultList.get(i).getResult());
+
+            BasicDBList variationDBList = (BasicDBList) variationQueryResultList.get(i).getResult();
+            if(variationDBList!=null && variationDBList.size()>0) {
+                String id = null;
+                id = ((BasicDBObject) variationDBList.get(0)).get("id").toString();
+                variantAnnotation.setId(id);
+
+                BasicDBList freqsDBList = null;
+                freqsDBList = (BasicDBList) ((BasicDBObject) variationDBList.get(0)).get("populationFrequencies");
+                BasicDBObject freqDBObject;
+                for(int j=0; j<freqsDBList.size(); j++) {
+                    freqDBObject = ((BasicDBObject) freqsDBList.get(j));
+                    variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("pop").toString(),
+                            freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                            Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                            Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                }
+            }
+
             clinicalQueryResult.setResult(Collections.singletonList(variantAnnotation));
             i++;
         }

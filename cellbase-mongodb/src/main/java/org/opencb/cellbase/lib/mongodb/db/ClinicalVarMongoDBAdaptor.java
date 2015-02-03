@@ -135,7 +135,6 @@ public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements Clinica
                 }else {
                     clinicalData.put("Cosmic",null);
                 }
-
                 if (gwasObjList != null) {
                     for (BasicDBObject gwasObj : gwasObjList) {
                         String snpIdCurrent = (String) gwasObj.get("snpIdCurrent");
