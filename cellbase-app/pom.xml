@@ -6,11 +6,11 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>3.1.0</version>
+        <version>3.1-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>cellbase-build</artifactId>
+    <artifactId>cellbase-app</artifactId>
     <version>${cellbase.version}</version>
 
     <properties>
