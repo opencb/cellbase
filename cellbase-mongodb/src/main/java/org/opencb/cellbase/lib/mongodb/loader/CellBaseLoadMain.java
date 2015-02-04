@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 /**
  * Created by parce on 11/3/14.
  */
+@Deprecated
 public class CellBaseLoadMain {
 
     private static final String CLINICAL_DIR = "clinicalDir";

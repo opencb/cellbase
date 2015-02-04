@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 /**
  * Created by parce on 26/11/14.
  */
+@Deprecated
 public class CellBaseParserFactory {
 
     private static CommandLine commandLine;

@@ -21,6 +21,7 @@ import org.opencb.commons.io.DataWriter;
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  * @param <T> Type of data to read
  */
+@Deprecated
 public class JsonReader<T> implements DataReader<T> {
 
     private static final int BATCH_SIZE = 2000;

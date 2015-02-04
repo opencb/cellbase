@@ -116,14 +116,11 @@ public class CliOptionsParser {
         @Parameter(names = {"-b", "--build"}, description = "", required = true, variableArity = true)
         public List<String> build;
 
-        @Parameter(names = {"-i", "--input-file"}, description = "", required = false, arity = 1)
-        public String inputFile;
+        @Parameter(names = {"-i", "--input"}, description = "", required = true, arity = 1)
+        public String input;
 
-        @Parameter(names = {"--input-dir"}, description = "", required = false, arity = 1)
-        public String inputDir;
-
-        @Parameter(names = {"-o", "--output-dir"}, description = "", required = false, arity = 1)
-        public String outputDir = "/tmp";
+        @Parameter(names = {"-o", "--output"}, description = "", required = false, arity = 1)
+        public String output = "/tmp";
 
         @Parameter(names = {"--reference-genome-file"}, description = "", required = false)
         public String referenceGenomeFile;
