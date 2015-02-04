@@ -16,7 +16,7 @@ public class LoadCommandParser extends CommandParser {
 
 
     /**
-     * Parse specific 'download' command options
+     * Parse specific 'load' command options
      */
     public void parse() {
 
