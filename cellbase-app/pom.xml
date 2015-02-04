@@ -14,7 +14,7 @@
     <version>${cellbase.version}</version>
 
     <properties>
-        <installation.dir>installation-dir</installation.dir>
+        <build.dir>build</build.dir>
         <dest.installation.dir>/opt/cellbase</dest.installation.dir>
     </properties>
 
@@ -43,6 +43,11 @@
             <groupId>psidev.psi.mi</groupId>
             <artifactId>psimitab</artifactId>
             <version>1.8.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.30</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -126,29 +131,37 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.opencb.cellbase.build.CellBaseMain</mainClass>
+                            <mainClass>org.opencb.cellbase.app.CellBaseMain</mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
-                    <outputDirectory>${installation.dir}/libs</outputDirectory>
+                    <outputDirectory>${build.dir}/libs</outputDirectory>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.8</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.9</version>
                 <executions>
                     <execution>
-                        <id>copy-dependencies</id>
                         <phase>install</phase>
                         <goals>
-                            <goal>copy-dependencies</goal>
+                            <goal>assemble</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>${installation.dir}/libs</outputDirectory>
-                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <assembleDirectory>${build.dir}</assembleDirectory>
+                    <repositoryName>libs</repositoryName>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <useWildcardClassPath>true</useWildcardClassPath>
+                    <programs>
+                        <program>
+                            <mainClass>org.opencb.cellbase.app.CellBaseMain</mainClass>
+                            <name>cellbase.sh</name>
+                        </program>
+                    </programs>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -158,16 +171,15 @@
                         <phase>install</phase>
                         <configuration>
                             <target>
-                                <echo>Copying to ${dest.installation.dir}</echo><!-- <copy todir="${installation.dir}">
+                                <echo>Copying to ${dest.installation.dir}</echo><!-- <copy todir="${build.dir}">
 									<fileset dir="installation" includes="**" /> </copy> -->
                                 <exec executable="cp">
                                     <arg value="-r" />
-                                    <arg value="${installation.dir}/example" />
-                                    <arg value="${installation.dir}/libs" />
-                                    <arg value="${installation.dir}/bin" />
-                                    <arg value="${installation.dir}/mongodb-scripts" />
-                                    <arg value="${installation.dir}/cellbase-build.sh" />
-                                    <arg value="${installation.dir}/cellbase-installer.py" />
+                                    <arg value="${build.dir}/bin" />
+                                    <arg value="${build.dir}/libs" />
+                                    <arg value="${build.dir}/example" />
+                                    <arg value="${build.dir}/mongodb-scripts" />
+                                    <arg value="${build.dir}/cellbase-installer.py" />
                                     <arg value="${dest.installation.dir}" />
                                 </exec>
                             </target>
@@ -178,30 +190,26 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>appassembler-maven-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>assemble</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <repositoryName>libs</repositoryName>
-                    <repositoryLayout>flat</repositoryLayout>
-                    <useWildcardClassPath>true</useWildcardClassPath>
-                    <programs>
-                        <program>
-                            <mainClass>org.opencb.cellbase.build.CellBaseMain</mainClass>
-                            <name>cellbase-build.sh</name>
-                        </program>
-                    </programs>
-                </configuration>
-            </plugin>
+            <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-dependency-plugin</artifactId>-->
+            <!--<version>2.10</version>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<id>copy-dependencies</id>-->
+            <!--<phase>install</phase>-->
+            <!--<goals>-->
+            <!--<goal>copy-dependencies</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+            <!--<outputDirectory>${build.dir}/libs2</outputDirectory>-->
+            <!--<overWriteReleases>true</overWriteReleases>-->
+            <!--<overWriteSnapshots>true</overWriteSnapshots>-->
+            <!--<includeScope>runtime</includeScope>-->
+            <!--</configuration>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 
