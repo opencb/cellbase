@@ -291,9 +291,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         for (GenomicVariant variation : variations) {
             String chunkId = getChunkPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
 
-            // TODO: chunkIds query field removed for debugging since it is not yet included in the MongoDB, replace after debugging
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
-//            QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+            QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
 
             if(variation.getReference() != null){
                 builder = builder.and("reference").is(variation.getReference());

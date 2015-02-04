@@ -38,6 +38,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
+        //        2:130498751:A:G
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941,"T","C"))  // Should return any result
 //                , new QueryOptions());
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "T"))  // Should return any result
@@ -82,13 +83,22 @@ public class VariantAnnotationMongoDBAdaptorTest {
         String pos;
         String alt;
         String ensemblGeneId;
+        String ensemblTranscriptId;
+        String biotype;
         String SOname;
 
         public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId, String SOname) {
+            this(chr, pos, alt, ensemblGeneId, "-", "-", SOname);
+        }
+
+        public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId,
+                                          String ensemblTranscriptId, String biotype, String SOname) {
             this.chr = chr;
             this.pos = pos;
             this.alt = alt;
             this.ensemblGeneId = ensemblGeneId;
+            this.ensemblTranscriptId = ensemblTranscriptId;
+            this.biotype = biotype;
             this.SOname = SOname;
         }
 
@@ -110,6 +120,22 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         public String getSOname() {
             return SOname;
+        }
+
+        public String getEnsemblTranscriptId() {
+            return ensemblTranscriptId;
+        }
+
+        public void setEnsemblTranscriptId(String ensemblTranscriptId) {
+            this.ensemblTranscriptId = ensemblTranscriptId;
+        }
+
+        public String getBiotype() {
+            return biotype;
+        }
+
+        public void setBiotype(String biotype) {
+            this.biotype = biotype;
         }
 
         @Override
@@ -155,7 +181,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         @Override
         public String toString() {
-            return chr+"\t"+pos+"\t"+alt+"\t"+ensemblGeneId+"\t"+SOname+"\n";
+            return chr+"\t"+pos+"\t"+alt+"\t"+ensemblGeneId+"\t"+ensemblTranscriptId+"\t"+biotype+"\t"+SOname+"\n";
         }
     }
 
@@ -198,7 +224,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17449263, "G", "A"), new QueryOptions());  // should return
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17449263, "G", "A"), new QueryOptions());  // should return
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 21982892, "C", "T"), new QueryOptions());  // should return a result
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16676212, "C", "T"), new QueryOptions());  // should include downstream_gene_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 22022872, "T", "C"), new QueryOptions());  // should not raise an error
@@ -341,8 +367,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
                                 SoNameToTest = soTerm.getSoName();
                             }
                             uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
-                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
-                                SoNameToTest));
+                                    consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
+                                    consequenceTypeList.get(i).getEnsemblTranscriptId() == null ? "-" : consequenceTypeList.get(i).getEnsemblTranscriptId(),
+                                    consequenceTypeList.get(i).getBiotype() == null ? "-" : consequenceTypeList.get(i).getBiotype(),
+                                    SoNameToTest));
                         }
                     }
                 }
@@ -384,7 +412,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
          * Compare both annotation sets and get UVA specific annotations
          */
         BufferedWriter bw = Files.newBufferedWriter(Paths.get("/home/fjlopez/tmp/22.uva.specific.txt"), Charset.defaultCharset());
-        bw.write("#CHR\tPOS\tALT\tENSG\tCT\n");
+        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
         Set<AnnotationComparisonObject> uvaSpecificAnnotationSet = new HashSet<>(uvaAnnotationSet);
         uvaSpecificAnnotationSet.removeAll(vepAnnotationSet);
         List<AnnotationComparisonObject> uvaSpecificAnnotationList = new ArrayList(uvaSpecificAnnotationSet);
@@ -398,7 +426,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
          * Compare both annotation sets and get VEP specific annotations
          */
         bw = Files.newBufferedWriter(Paths.get("/home/fjlopez/tmp/22.vep.specific.txt"), Charset.defaultCharset());
-        bw.write("#CHR\tPOS\tALT\tENSG\tCT\n");
+        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
         Set<AnnotationComparisonObject> vepSpecificAnnotationSet = new HashSet<>(vepAnnotationSet);
         vepSpecificAnnotationSet.removeAll(uvaAnnotationSet);
         List<AnnotationComparisonObject> vepSpecificAnnotationList = new ArrayList<>(vepSpecificAnnotationSet);

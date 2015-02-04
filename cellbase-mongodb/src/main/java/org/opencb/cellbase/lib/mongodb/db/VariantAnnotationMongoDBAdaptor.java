@@ -754,7 +754,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 6:
                             case 20:
                             case 23:
-                            case 24:
                             case 35:
                             case 36:
                             case 50:    // translated_unprocessed_pseudogene
@@ -803,6 +802,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 19:
                             case 21:  // processed_pseudogene
                             case 22:  // processed_transcript
+                            case 24:    // pseudogene
                             case 25:
                             case 26:
                             case 27:
@@ -869,7 +869,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 6:
                             case 20:
                             case 23:
-                            case 24:
                             case 35:
                             case 36:
                             case 50:    // translated_unprocessed_pseudogene
@@ -918,6 +917,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 19:
                             case 21:  // processed_pseudogene
                             case 22:  // processed_transcript
+                            case 24:  // pseudogene
                             case 25:
                             case 26:
                             case 27:
