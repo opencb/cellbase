@@ -43,59 +43,75 @@ public class BuildCommandParser extends CommandParser {
      * Parse specific 'build' command options
      */
     public void parse() {
-        createSerializer();
+        try {
+            createSerializer();
+            if (buildCommandOptions.build != null && serializer != null) {
+                CellBaseParser parser = null;
 
-        if(buildCommandOptions.build != null && serializer != null) {
-            CellBaseParser parser = null;
-            try {
                 switch (buildCommandOptions.build) {
                     case "genome-sequence":
-                        buildGenomeSequence();
+                        parser = buildGenomeSequence();
+                        break;
                     case "gene":
-                        buildGene();
+                        parser = buildGene();
+                        break;
                     case "regulation":
-                        buildRegulation();
+                        parser = buildRegulation();
+                        break;
                     case "variation":
-                        buildVariation();
+                        parser = buildVariation();
+                        break;
                     case "variation-phen-annot":
-                        buildVariationPhenotypeAnnotation();
+                        parser = buildVariationPhenotypeAnnotation();
+                        break;
                     case "vep":
-                        buildVep();
+                        parser = buildVep();
+                        break;
                     case "protein":
-                        buildProtein();
+                        parser = buildProtein();
+                        break;
                     case "conservation":
-                        buildConservation();
+                        parser = buildConservation();
+                        break;
                     case "ppi":
                         parser = getInteractionParser();
+                        break;
                     case "drug":
-                        buildDrugParser();
+                        parser = buildDrugParser();
+                        break;
                     case "clinvar":
-                        buildClinvar();
+                        parser = buildClinvar();
+                        break;
                     case "cosmic":
-                        buildCosmic();
+                        parser = buildCosmic();
+                        break;
                     case "gwas":
-                        buildGwas();
+                        parser = buildGwas();
+                        break;
                     default:
                         logger.error("Build option '" + buildCommandOptions.build + "' is not valid");
                 }
-            } catch (ParseException e) {
-                logger.error("Error executing build command: " + e.getMessage());
-            }
-            if (parser != null) {
-                try {
-                    parser.parse();
-                } catch (Exception e) {
-                    logger.error("Error executing 'build' command " + buildCommandOptions.build + ": " + e.getMessage());
-                }
-                parser.disconnect();
-            }
-        }
 
+                if (parser != null) {
+                    try {
+                        parser.parse();
+                    } catch (Exception e) {
+                        logger.error("Error executing 'build' command " + buildCommandOptions.build + ": " + e.getMessage(), e);
+                    }
+                    parser.disconnect();
+                }
+            }
+        } catch (ParseException e) {
+            logger.error("Error parsing build command line parameters: " + e.getMessage(), e);
+       }
     }
 
-    private void createSerializer() {
+    private void createSerializer() throws ParseException {
         // check output parameter
         try {
+            if (!new File(output).exists()) {
+                throw new ParseException("Output directory " + output + " doesn't exist");
+            }
             serializer = new DefaultJsonSerializer(Paths.get(output));
         } catch (IOException e) {
             logger.error("Error creating output serializer: " + e.getMessage());
@@ -105,7 +121,7 @@ public class BuildCommandParser extends CommandParser {
     private CellBaseParser getInteractionParser() throws ParseException {
         Path psimiTabFile = getInputFileFromCommandLine();
         String species = buildCommandOptions.species;
-        checkMandatoryOption(species);
+        checkMandatoryOption("species", species);
         return new InteractionParser(psimiTabFile, species, serializer);
     }
 
@@ -120,7 +136,7 @@ public class BuildCommandParser extends CommandParser {
     private CellBaseParser buildProtein() throws  ParseException {
         Path uniprotSplitFilesDir = getInputDirFromCommandLine();
         String species = buildCommandOptions.species;
-        checkMandatoryOption(species);
+        checkMandatoryOption("species", species);
         return new ProteinParser(uniprotSplitFilesDir, species, serializer);
 
     }
@@ -151,7 +167,7 @@ public class BuildCommandParser extends CommandParser {
         Path inputDir = getInputDirFromCommandLine();
 
         String genomeFastaFile = buildCommandOptions.referenceGenomeFile;
-        checkMandatoryOption(genomeFastaFile);
+        checkMandatoryOption("referenceGenomeFile", genomeFastaFile);
         GeneParser geneParser = new GeneParser(inputDir, Paths.get(genomeFastaFile), serializer);
 
         // TODO: gtf-file?
@@ -206,7 +222,7 @@ public class BuildCommandParser extends CommandParser {
 
         // assembly
         String assembly = buildCommandOptions.assembly;
-        checkMandatoryOption(assembly);
+        checkMandatoryOption("assembly", assembly);
         if (!assembly.equals(ClinVarParser.GRCH37_ASSEMBLY) && !assembly.equals(ClinVarParser.GRCH38_ASSEMBLY)) {
             throw new ParseException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY);
         }
@@ -240,8 +256,8 @@ public class BuildCommandParser extends CommandParser {
         }
     }
 
-    private void checkMandatoryOption(String option) throws ParseException {
-        if (option == null) {
+    private void checkMandatoryOption(String option, String value) throws ParseException {
+        if (value == null) {
             throw new ParseException("'" + option + "' option is mandatory for '" + buildCommandOptions.build + "' builder");
         }
     }
