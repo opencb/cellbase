@@ -64,7 +64,7 @@ public class CliOptionsParser {
         public boolean help;
 
         @Parameter(names = {"-L", "--log-level"}, description = "This parameter set the level of the logging", required = false, arity = 1)
-        public String logLevel;
+        public String logLevel = "warning";
 
         @Parameter(names = {"-v", "--verbose"}, description = "This parameter set the level of the logging", required = false, arity = 1)
         public boolean verbose;
