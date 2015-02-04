@@ -2,8 +2,6 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
 
-import java.util.List;
-
 /**
  * Created by imedina on 03/02/15.
  */
@@ -113,8 +111,8 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-b", "--build"}, description = "", required = true, variableArity = true)
-        public List<String> build;
+        @Parameter(names = {"-b", "--build"}, description = "", required = true, arity = 1)
+        public String build;
 
         @Parameter(names = {"-i", "--input"}, description = "", required = true, arity = 1)
         public String input;
@@ -124,6 +122,12 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--reference-genome-file"}, description = "", required = false)
         public String referenceGenomeFile;
+
+        @Parameter(names = {"--species"}, description = "", required = false)
+        public String species;
+
+        @Parameter(names = {"--assembly"}, description = "", required = false)
+        public String assembly;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Description")
