@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -116,7 +115,9 @@ public class DefaultJsonSerializer extends CellBaseSerializer {
     public void serialize(Variation variation) {
         try {
             if(variationWriters.get(variation.getChromosome()) == null) {
-                variationWriters.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
+                Path outputFilePath = outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json.gz");
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outputFilePath))));
+                variationWriters.put(variation.getChromosome(), bw);
             }
             variationWriters.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(variation));
             variationWriters.get(variation.getChromosome()).newLine();

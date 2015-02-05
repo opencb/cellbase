@@ -11,10 +11,14 @@ import org.opencb.cellbase.lib.mongodb.serializer.converters.GeneConverter;
 import org.opencb.cellbase.lib.mongodb.serializer.converters.VariantEffectConverter;
 import org.opencb.cellbase.lib.mongodb.serializer.converters.VariationConverter;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.GZIPOutputStream;
 
 
 /**
@@ -61,7 +65,8 @@ public class MongoDBSerializer extends DefaultJsonSerializer {
     public void serialize(Variation variation) {
         try {
             if(variationWriters.get(variation.getChromosome()) == null) {
-                variationWriters.put(variation.getChromosome(), Files.newBufferedWriter(outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json"), Charset.defaultCharset()));
+                Path outputFilePath = outdirPath.resolve("variation_chr" + variation.getChromosome() + ".json.gz");
+                variationWriters.put(variation.getChromosome(), new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outputFilePath.toFile())))));
             }
             DBObject mongoDbDchema = variationConverter.convertToStorageSchema(variation);
             variationWriters.get(variation.getChromosome()).write(jsonObjectWriter.writeValueAsString(mongoDbDchema));
