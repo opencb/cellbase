@@ -2,6 +2,9 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by imedina on 03/02/15.
  */
@@ -80,8 +83,8 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-s", "--species"}, description = "", required = true, arity = 1)
-        public String species;
+        @Parameter(names = {"-s", "--species"}, description = "", required = true, variableArity = true)
+        public List<String> species = Arrays.asList("Homo Sapiens");
 
         @Parameter(names = {"-a", "--assembly"}, description = "", required = true, arity = 1)
         public String assembly;
