@@ -1,6 +1,10 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -32,9 +36,9 @@ public class DownloadCommandParser extends CommandParser {
         try {
             Set<String> species = getSpecies();
             String host = getHost();
-            String outputDir = downloadCommandOptions.outputDir;
+            Path outputDir = Paths.get(downloadCommandOptions.outputDir);
             for (String sp : species) {
-                processSpecies(sp);
+                processSpecies(sp, outputDir);
             }
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
@@ -42,19 +46,58 @@ public class DownloadCommandParser extends CommandParser {
 
     }
 
-    private void processSpecies(String sp) {
+    private void processSpecies(String sp, Path outputDir) {
         logger.info("Processing species " + sp);
+
+
+        // output folder
+        // TODO: replace('.','') is not necessary because species cannot contain '.' -> CHECK
+        //       replace(' ', '') is not necessary because species cannot contain ' ' -> CHECK
+        String spShortName = sp.toLowerCase().replaceAll("\\)", "").replaceAll("[-(/]", " ").replaceAll("\\s+", "_");
+        Path spFolder = outputDir.resolve(spShortName);
+        makeDir(spFolder);
+
+        // download sequence, gene, variation and regulation
+        if (downloadCommandOptions.sequence) {
+            downloadSequence(spFolder);
+        }
+        if (downloadCommandOptions.gene) {
+            downloadGene(sp, spFolder);
+        }
+        if (downloadCommandOptions.variation) {
+            downloadVariation(spFolder);
+        }
+        if (downloadCommandOptions.regulation) {
+            downloadRegulation(spFolder);
+        }
+    }
+
+    private void downloadSequence(Path spFolder) {
+        Path sequenceFolder = spFolder.resolve("sequence");
+    }
+
+    private void downloadGene(String sp, Path spFolder) {
+        Path geneFolder = spFolder.resolve("gene");
         String phylo = getPhyloOfSpecie(sp);
         String databaseHost = properties.getProperty(phylo + "." + DATABASE_HOST);
         Integer databasePort = Integer.parseInt(properties.getProperty(phylo + "." + DATABASE_HOST));
-//        ## preparing some variables
-//                sp_short = sp.lower().replace('.', '').replace('=', '').replace(')', '').replace('-', ' ').replace('(', ' ').replace('/', ' ').replace('  ', ' ').replace(' ', '_')
-//        logging.debug(sp_short)
-//        sp_folder = outdir+"/{0}".format(sp_short)
-//        sequence_folder = outdir+"/{0}/sequence".format(sp_short)
-//        gene_folder = outdir+"/{0}/gene".format(sp_short)
-//        variation_folder = outdir+"/{0}/variation".format(sp_short)
-//        regulation_folder = outdir+"/{0}/regulation".format(sp_short)
+    }
+
+    private void downloadVariation(Path spFolder) {
+        Path variationFolder = spFolder.resolve("variation");
+    }
+
+    private void downloadRegulation(Path spFolder) {
+        Path regulationFolder = spFolder.resolve("regulation");
+    }
+
+    private void makeDir(Path folderPath) {
+        File folder = folderPath.toFile();
+        if (!folder.exists()) {
+            folder.mkdir();
+        } else if (!folder.isDirectory()) {
+            throw new ParameterException(folderPath.getFileName() + " exists and it is a file");
+        }
     }
 
     private String getPhyloOfSpecie(String sp) {
@@ -123,7 +166,7 @@ public class DownloadCommandParser extends CommandParser {
     }
 
     public String getHost() {
-        // TODO: in genomeFetcher.py there is an host option, add it to CliOptionsParser?
+        // TODO: in genomeFetcher.py there is an host input parameter, add it to CliOptionsParser?
         return ENSEMBL_HOST;
     }
 
