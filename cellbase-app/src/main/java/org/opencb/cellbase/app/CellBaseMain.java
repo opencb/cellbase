@@ -6,7 +6,7 @@ import org.opencb.cellbase.app.cli.*;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
-import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
+//import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -224,7 +224,7 @@ public class CellBaseMain {
                 serializer = new DefaultJsonSerializer(outPath);
             } else {
                 logger.debug("MongoDB serializer chosen");
-                serializer = new MongoDBSerializer(outPath);
+//                serializer = new MongoDBSerializer(outPath);
             }
         }
     }
