@@ -8,8 +8,10 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
 //import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -35,6 +37,14 @@ public class CellBaseMain {
     private static CellBaseSerializer serializer;
 
     private static Logger logger;
+
+    public void CellBaseMain() {
+        // This small hack allow to configure the appropriate Logger level from the command line, this is done
+        // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY,
+                commandLine.getOptionValue("log-level", "info"));
+        logger = LoggerFactory.getLogger(this.getClass().toString());
+    }
 
     private static void initOptions() {
         options = new Options();
