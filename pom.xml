@@ -23,6 +23,7 @@
     <properties>
         <cellbase.version>3.1-SNAPSHOT</cellbase.version>
         <biodata.version>0.3.0-beta</biodata.version>
+        <datastore.version>0.3-SNAPSHOT</datastore.version>
         <compileSource>1.7</compileSource>
     </properties>
 
@@ -96,12 +97,12 @@
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-core</artifactId>
-                <version>0.3.0</version>
+                <version>${datastore.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-mongodb</artifactId>
-                <version>0.3.0</version>
+                <version>${datastore.version}</version>
             </dependency>
 
             <!-- General dependencies -->
@@ -130,16 +131,15 @@
                 <artifactId>sqlite-jdbc</artifactId>
                 <version>3.8.7</version>
             </dependency>
-            <!--<dependency>-->
-                <!--<groupId>org.mongodb</groupId>-->
-                <!--<artifactId>mongo-java-driver</artifactId>-->
-                <!--<version>2.12.4</version>-->
-            <!--</dependency>-->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet</artifactId>
+                <version>2.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>2.12</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
@@ -160,14 +160,10 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jersey.containers</groupId>
-                <artifactId>jersey-container-servlet</artifactId>
-                <version>2.12</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-client</artifactId>
-                <version>2.12</version>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -180,7 +176,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.2</version>
                 <configuration>
                     <source>${compileSource}</source>
                     <target>${compileSource}</target>
@@ -192,7 +188,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
+                <version>2.7</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -200,7 +196,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -213,7 +209,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>2.10.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -226,6 +222,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
