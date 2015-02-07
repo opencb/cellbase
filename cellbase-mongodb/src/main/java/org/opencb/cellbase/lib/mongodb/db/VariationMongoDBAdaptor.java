@@ -2,7 +2,6 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import com.google.common.base.Joiner;
 import com.mongodb.*;
-import com.mongodb.util.StringBuilderPool;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
@@ -113,7 +112,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             if(region != null && !region.equals("")) {
                 // If regions is 1 position then query can be optimize using chunks
                 if (region.getStart() == region.getEnd()) {
-                    String chunkId = getChunkPrefix(region.getChromosome(), region.getStart(), variationChunkSize);
+                    String chunkId = getChunkIdPrefix(region.getChromosome(), region.getStart(), variationChunkSize);
                     System.out.println(chunkId);
                     builder = QueryBuilder.start("chunkIds").is(chunkId).and("end")
                             .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
@@ -255,7 +254,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         List<QueryResult> results;
 
         for (GenomicVariant variation : variations) {
-            String chunkId = getChunkPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
+            String chunkId = getChunkIdPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
             QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
             if(variation.getReference() != null){
                 builder = builder.and("reference").is(variation.getReference());

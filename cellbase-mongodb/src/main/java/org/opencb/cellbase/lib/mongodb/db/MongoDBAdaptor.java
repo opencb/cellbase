@@ -7,26 +7,33 @@ import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.DBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.datastore.mongodb.MongoDataStoreManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.*;
 
-public class MongoDBAdaptor extends DBAdaptor {
+public class MongoDBAdaptor {
 
+    protected MongoDataStore mongoDataStore;
     protected String species;
     protected String assembly;
 
-    //	private MongoOptions mongoOptions;
-    //	protected MongoClient mongoClient;
+    //	Old classes
+    @Deprecated
     protected DB db;
+    @Deprecated
     protected DBCollection mongoDBCollection;
-    protected static Map<String, Number> cachedQuerySizes = new HashMap<String, Number>();
 
-    protected ObjectMapper jsonObjectMapper;
+    protected static Map<String, Number> cachedQuerySizes = new HashMap<String, Number>();
 
     protected static ResourceBundle resourceBundle;
     protected static Properties applicationProperties;
 
+    protected ObjectMapper jsonObjectMapper;
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     static {
         // reading application.properties file
@@ -44,28 +51,34 @@ public class MongoDBAdaptor extends DBAdaptor {
         }
     }
 
-    //	public MongoDBAdaptor(String species, String version) {
-    //		logger.info("Species: "+species+" Version: "+version);
-    //		this.mongoOptions = new MongoOptions();
-    //		this.mongoOptions.setAutoConnectRetry(true);
-    //		this.mongoOptions.setConnectionsPerHost(40);
-    //		try {
-    //			this.mongoClient = new MongoClient("mem15", mongoOptions);
-    //		} catch (UnknownHostException e) {
-    //			e.printStackTrace();
-    //		}
-    //	}
-
+    @Deprecated
     public MongoDBAdaptor(DB db) {
         this.db = db;
     }
 
+    @Deprecated
     public MongoDBAdaptor(DB db, String species, String assembly) {
         this.db = db;
         this.species = species;
         this.assembly = assembly;
         //		logger.warn(applicationProperties.toString());
         initSpeciesAssembly(species, assembly);
+
+        jsonObjectMapper = new ObjectMapper();
+    }
+
+    public MongoDBAdaptor(MongoDataStore mongoDataStore) {
+        this(mongoDataStore, "", "");
+    }
+
+    public MongoDBAdaptor(MongoDataStore mongoDataStore, String species, String assembly) {
+        this.species = species;
+        this.assembly = assembly;
+        logger = LoggerFactory.getLogger(this.getClass().toString());
+
+        initSpeciesAssembly(species, assembly);
+
+        this.mongoDataStore = mongoDataStore;
 
         jsonObjectMapper = new ObjectMapper();
     }
@@ -107,11 +120,11 @@ public class MongoDBAdaptor extends DBAdaptor {
     //		return session;
     //	}
 
-    protected String getChunkPrefix(String chromosome, int position, int chunkSize) {
+    protected String getChunkIdPrefix(String chromosome, int position, int chunkSize) {
         return chromosome + "_" +  position/chunkSize + "_" + chunkSize/1000 + "k";
     }
 
-
+    @Deprecated
     protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {
         if (options != null ) { //&& !options.getBoolean(returnField, true)
             if (options.getList("include") != null) {
@@ -126,6 +139,7 @@ public class MongoDBAdaptor extends DBAdaptor {
         return options;
     }
 
+    @Deprecated
     protected QueryOptions addExcludeReturnFields(String returnField, QueryOptions options) {
         if (options != null ) { //&& !options.getBoolean(returnField, true)) {
             if (options.getList("exclude") != null) {
@@ -174,10 +188,12 @@ public class MongoDBAdaptor extends DBAdaptor {
         return returnFields;
     }
 
+    @Deprecated
     protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options) {
         return executeFind(query, returnFields, options, mongoDBCollection);
     }
 
+    @Deprecated
     protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options, DBCollection dbCollection) {
         BasicDBList list = new BasicDBList();
 
@@ -215,10 +231,12 @@ public class MongoDBAdaptor extends DBAdaptor {
         return list;
     }
 
+    @Deprecated
     protected QueryResult executeDistinct(Object id, String key) {
         return executeDistinct(id, key, mongoDBCollection);
     }
 
+    @Deprecated
     protected QueryResult executeDistinct(Object id, String key, DBCollection dbCollection) {
         QueryResult queryResult = new QueryResult();
         long dbTimeStart = System.currentTimeMillis();
@@ -236,12 +254,12 @@ public class MongoDBAdaptor extends DBAdaptor {
         return executeQuery(id, query, options, mongoDBCollection);
     }
 
-    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
-        return executeQueryList(ids, queries, options, mongoDBCollection);
-    }
-
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, DBCollection dbCollection) {
         return executeQueryList(Arrays.asList(id), Arrays.asList(query), options, dbCollection).get(0);
+    }
+
+    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
+        return executeQueryList(ids, queries, options, mongoDBCollection);
     }
 
     protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options, DBCollection dbCollection) {
@@ -308,14 +326,14 @@ public class MongoDBAdaptor extends DBAdaptor {
         return executeAggregation(id, operations, options, mongoDBCollection);
     }
 
-    protected List<QueryResult> executeAggregationList(List<? extends Object> ids, List<DBObject[]> operationsList, QueryOptions options) {
-        return executeAggregationList(ids, operationsList, options, mongoDBCollection);
-    }
-
     protected QueryResult executeAggregation(Object id, DBObject[] operations, QueryOptions options, DBCollection dbCollection) {
         List<DBObject[]> operationsList = new ArrayList<>();
         operationsList.add(operations);
         return executeAggregationList(Arrays.asList(id), operationsList, options, dbCollection).get(0);
+    }
+
+    protected List<QueryResult> executeAggregationList(List<? extends Object> ids, List<DBObject[]> operationsList, QueryOptions options) {
+        return executeAggregationList(ids, operationsList, options, mongoDBCollection);
     }
 
     protected List<QueryResult> executeAggregationList(List<? extends Object> ids, List<DBObject[]> operationsList, QueryOptions options, DBCollection dbCollection) {
@@ -548,35 +566,6 @@ public class MongoDBAdaptor extends DBAdaptor {
     }
 
 
-    //	protected List<?> execute(Criteria criteria){
-    //		List<?> result = criteria.list();
-    //		return result;
-    //	}
-    //
-    //	protected List<?> executeAndClose(Criteria criteria){
-    //		List<?> result = criteria.list();
-    //		//		closeSession();
-    //		return result;
-    //	}
-    //
-    //
-    //	protected List<?> execute(Query query){
-    //		List<?> result = query.list();
-    //		return result;
-    //	}
-    //
-    //	protected List<?> executeAndClose(Query query){
-    //		List<?> result = query.list();
-    //		//		closeSession();
-    //		return result;
-    //	}
-
-    //	protected void closeSession() {
-    //		if(session != null && session.isOpen()) {
-    //			session.close();
-    //		}
-    //	}
-    //
     //	@SuppressWarnings("unchecked")
     //	protected String getDatabaseQueryCache(String key) {
     //		Criteria criteria = this.openSession().createCriteria(Metainfo.class)
@@ -679,19 +668,6 @@ public class MongoDBAdaptor extends DBAdaptor {
         return intervalFeatureFrequenciesList;
     }
 
-    //	/**
-    //	 * @return the sessionFactory
-    //	 */
-    //	public SessionFactory getSessionFactory() {
-    //		return sessionFactory;
-    //	}
-    //
-    //	/**
-    //	 * @param sessionFactory the sessionFactory to set
-    //	 */
-    //	public void setSessionFactory(SessionFactory sessionFactory) {
-    //		this.sessionFactory = sessionFactory;
-    //	}
 
     /**
      * @return the species
@@ -707,24 +683,17 @@ public class MongoDBAdaptor extends DBAdaptor {
         this.species = species;
     }
 
-//    /**
-//     * @return the version
-//     */
-//    @Deprecated
-//    public String getVersion() {
-//        return version;
-//    }
 
-//    /**
-//     * @param version the version to set
-//     */
-//    @Deprecated
-//    public void setVersion(String version) {
-//        this.version = version;
-//    }
-
+    /**
+     *
+     * @return the assembly
+     */
     public String getAssembly() { return this.assembly; }
 
+    /**
+     *
+     * @param assembly param to set
+     */
     public void setAssembly(String assembly) { this.assembly = assembly; }
 
 }

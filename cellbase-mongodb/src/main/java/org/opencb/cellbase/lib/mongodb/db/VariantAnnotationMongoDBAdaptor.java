@@ -668,7 +668,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 .greaterThanEquals(variant.getPosition()-5000).and("start").lessThanEquals(variantEnd+5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
 
         // Get all regulatory regions surrounding the variant
-        String chunkId = getChunkPrefix(variant.getChromosome(), variant.getPosition(), regulatoryChunkSize);
+        String chunkId = getChunkIdPrefix(variant.getChromosome(), variant.getPosition(), regulatoryChunkSize);
         BasicDBList chunksId = new BasicDBList();
         chunksId.add(chunkId);
         builderRegulatory = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(variantEnd).and("end")

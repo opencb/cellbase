@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.lib;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public abstract class DBAdaptor {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());

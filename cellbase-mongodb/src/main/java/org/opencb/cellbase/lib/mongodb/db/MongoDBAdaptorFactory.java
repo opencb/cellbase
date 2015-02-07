@@ -16,6 +16,7 @@ import org.opencb.cellbase.lib.mongodb.db.network.PathwayMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.network.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.regulatory.RegulatoryRegionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.regulatory.TfbsMongoDBAdaptor;
+import org.opencb.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,11 @@ import java.util.*;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
+    @Deprecated
     private static Map<String, DB> mongoDBFactory;
+    private static Map<String, MongoDataStore> mongoDatastoreFactory;
+
+
     // private static Config applicationProperties;
     private static ResourceBundle resourceBundle;
     protected static Properties applicationProperties;
@@ -38,6 +43,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         // mongoDBFactory = new HashMap<String, HibernateDBAdaptor>(20);
         speciesAlias = new HashMap<>();
         mongoDBFactory = new HashMap<>(10);
+
+        mongoDatastoreFactory = new HashMap<>(10);
 
         // reading application.properties file
         resourceBundle = ResourceBundle.getBundle("mongodb");
