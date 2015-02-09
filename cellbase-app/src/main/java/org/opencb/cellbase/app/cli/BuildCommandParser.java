@@ -5,8 +5,10 @@ import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
 import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.cellbase.app.serializers.json.JsonParser;
 import org.opencb.cellbase.app.transform.*;
+import org.opencb.cellbase.app.transform.utils.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -16,7 +18,7 @@ import java.nio.file.Paths;
 public class BuildCommandParser extends CommandParser {
 
     // TODO: these two constants should be defined in the 'download' module
-    public static final String GWAS_INPUT_FILE_NAME = "gwasCatalog.txt";
+    public static final String GWAS_INPUT_FILE_NAME = "gwascatalog.txt";
     public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
     private String input = null;
@@ -102,7 +104,9 @@ public class BuildCommandParser extends CommandParser {
             }
         } catch (ParameterException e) {
             logger.error("Error parsing build command line parameters: " + e.getMessage(), e);
-       }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
     }
 
     private void checkOutputDir(){
@@ -200,10 +204,12 @@ public class BuildCommandParser extends CommandParser {
     }
 
 
-    private CellBaseParser buildGwas() {
+    private CellBaseParser buildGwas() throws IOException {
         Path inputDir = getInputDirFromCommandLine();
         Path gwasFile = inputDir.resolve(GWAS_INPUT_FILE_NAME);
+        FileUtils.checkPath(gwasFile);
         Path dbsnpFile = inputDir.resolve(DBSNP_INPUT_FILE_NAME);
+        FileUtils.checkPath(dbsnpFile);
         CellBaseSerializer serializer = new JsonParser(output, "gwas");
         return new GwasParser(gwasFile, dbsnpFile, serializer);
     }
