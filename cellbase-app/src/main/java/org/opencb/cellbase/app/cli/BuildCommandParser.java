@@ -1,12 +1,12 @@
 package org.opencb.cellbase.app.cli;
 
-import org.apache.commons.cli.ParseException;
+import com.beust.jcommander.ParameterException;
+import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.json.JsonParser;
 import org.opencb.cellbase.app.transform.*;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -20,8 +20,7 @@ public class BuildCommandParser extends CommandParser {
     public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
     private String input = null;
-    private String output = null;
-    private CellBaseSerializer serializer;
+    private Path output = null;
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
 
@@ -34,7 +33,7 @@ public class BuildCommandParser extends CommandParser {
             input = buildCommandOptions.input;
         }
         if(buildCommandOptions.output != null) {
-            output = buildCommandOptions.output;
+            output = Paths.get(buildCommandOptions.output);
         }
     }
 
@@ -44,8 +43,8 @@ public class BuildCommandParser extends CommandParser {
      */
     public void parse() {
         try {
-            createSerializer();
-            if (buildCommandOptions.build != null && serializer != null) {
+            checkOutputDir();
+            if (buildCommandOptions.build != null) {
                 CellBaseParser parser = null;
 
                 switch (buildCommandOptions.build) {
@@ -101,73 +100,75 @@ public class BuildCommandParser extends CommandParser {
                     parser.disconnect();
                 }
             }
-        } catch (ParseException e) {
+        } catch (ParameterException e) {
             logger.error("Error parsing build command line parameters: " + e.getMessage(), e);
        }
     }
 
-    private void createSerializer() throws ParseException {
-        // check output parameter
-        try {
-            if (!new File(output).exists()) {
-                throw new ParseException("Output directory " + output + " doesn't exist");
-            }
-            serializer = new DefaultJsonSerializer(Paths.get(output));
-        } catch (IOException e) {
-            logger.error("Error creating output serializer: " + e.getMessage());
+    private void checkOutputDir(){
+        if (output.toFile().exists()) {
+            throw new ParameterException("Output directory " + output + " doesn't exist");
         }
     }
 
-    private CellBaseParser getInteractionParser() throws ParseException {
+    private CellBaseParser getInteractionParser()  {
         Path psimiTabFile = getInputFileFromCommandLine();
         String species = buildCommandOptions.species;
         checkMandatoryOption("species", species);
+        CellBaseSerializer serializer = new JsonParser(output, "protein_protein_interaction");
         return new InteractionParser(psimiTabFile, species, serializer);
     }
 
-    private CellBaseParser buildConservation() throws ParseException {
+    private CellBaseParser buildConservation() {
         Path conservationFilesDir = getInputDirFromCommandLine();
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         //int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue(CellBaseMain.CHUNK_SIZE_OPTION, "0"));
         int conservationChunkSize = 0;
+        CellBaseFileSerializer serializer = new JsonParser(output);
         return new ConservedRegionParser(conservationFilesDir, conservationChunkSize, serializer);
     }
 
-    private CellBaseParser buildProtein() throws  ParseException {
+    private CellBaseParser buildProtein() {
         Path uniprotSplitFilesDir = getInputDirFromCommandLine();
         String species = buildCommandOptions.species;
         checkMandatoryOption("species", species);
+        CellBaseSerializer serializer = new JsonParser(output, "protein");
         return new ProteinParser(uniprotSplitFilesDir, species, serializer);
 
     }
 
-    private CellBaseParser buildVep() throws ParseException {
+    private CellBaseParser buildVep() {
         Path vepFile = getInputFileFromCommandLine();
+        CellBaseFileSerializer serializer = new JsonParser(output);
         return new VariantEffectParser(vepFile, serializer);
     }
 
-    private CellBaseParser buildVariationPhenotypeAnnotation() throws ParseException {
+    private CellBaseParser buildVariationPhenotypeAnnotation() {
         Path variationFilesDir = getInputDirFromCommandLine();
+        CellBaseSerializer serializer = new JsonParser(output, "variation_phenotype_annotation");
         return new VariationPhenotypeAnnotationParser(variationFilesDir, serializer);
     }
 
-    private CellBaseParser buildVariation() throws ParseException {
+    private CellBaseParser buildVariation() {
         Path variationFilesDir = getInputDirFromCommandLine();
+        CellBaseFileSerializer serializer = new JsonParser(output);
         return new VariationParser(variationFilesDir, serializer);
 
     }
 
-    private CellBaseParser buildRegulation() throws ParseException {
+    private CellBaseParser buildRegulation() {
         Path regulatoryRegionFilesDir = getInputDirFromCommandLine();
+        CellBaseSerializer serializer = new JsonParser(output, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
 
     }
 
-    private CellBaseParser buildGene() throws ParseException {
+    private CellBaseParser buildGene() {
         Path inputDir = getInputDirFromCommandLine();
 
         String genomeFastaFile = buildCommandOptions.referenceGenomeFile;
         checkMandatoryOption("referenceGenomeFile", genomeFastaFile);
+        CellBaseSerializer serializer = new JsonParser(output, "gene");
         GeneParser geneParser = new GeneParser(inputDir, Paths.get(genomeFastaFile), serializer);
 
         // TODO: gtf-file?
@@ -182,83 +183,79 @@ public class BuildCommandParser extends CommandParser {
         return geneParser;
     }
 
-    private CellBaseParser buildGenomeSequence() throws ParseException {
+    private CellBaseParser buildGenomeSequence() {
         Path fastaFile = getInputFileFromCommandLine();
+        CellBaseSerializer serializer = new JsonParser(output, "genome_sequence");
         return new GenomeSequenceFastaParser(fastaFile, serializer);
 
     }
 
-    private CellBaseParser buildDrugParser() throws ParseException {
-        Path drugFile = getInputFileFromCommandLine();
-        return new DrugParser(drugFile, serializer);
+    private CellBaseParser buildDrugParser() {
+        throw new ParameterException("'drug' builder is not implemented yet");
+//        Path drugFile = getInputFileFromCommandLine();
+//        CellBaseSerializer serializer = new JsonParser(output, "drug");
+//        return new DrugParser(drugFile, serializer);
     }
 
 
-    private CellBaseParser buildGwas() throws ParseException {
+    private CellBaseParser buildGwas() {
         Path inputDir = getInputDirFromCommandLine();
         Path gwasFile = inputDir.resolve(GWAS_INPUT_FILE_NAME);
         Path dbsnpFile = inputDir.resolve(DBSNP_INPUT_FILE_NAME);
-        // TODO: serializer will only receive a directory and not a file
-        serializer.setOutputFileName(Paths.get("gwas.json"));
-        serializer.setSerializeEmptyValues(false);
+        CellBaseSerializer serializer = new JsonParser(output, "gwas");
         return new GwasParser(gwasFile, dbsnpFile, serializer);
     }
 
-    private CellBaseParser buildCosmic() throws ParseException {
+    private CellBaseParser buildCosmic()  {
         Path cosmicFilePath = getInputFileFromCommandLine();
-        // TODO: serializer will only receive a directory and not a file
-        serializer.setOutputFileName(Paths.get("cosmic.json"));
-        serializer.setSerializeEmptyValues(false);
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
+        CellBaseSerializer serializer = new JsonParser(output, "cosmic");
         return new CosmicParser(cosmicFilePath, serializer);
     }
 
-    private CellBaseParser buildClinvar() throws ParseException {
+    private CellBaseParser buildClinvar() {
         Path clinvarFile = getInputFileFromCommandLine();
-        // TODO: serializer will only receive a directory and not a file
-        serializer.setOutputFileName(Paths.get("clinvar.json"));
-        serializer.setSerializeEmptyValues(false);
 
-        // assembly
         String assembly = buildCommandOptions.assembly;
         checkMandatoryOption("assembly", assembly);
         if (!assembly.equals(ClinVarParser.GRCH37_ASSEMBLY) && !assembly.equals(ClinVarParser.GRCH38_ASSEMBLY)) {
-            throw new ParseException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY);
+            throw new ParameterException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY);
         }
 
+        CellBaseSerializer serializer = new JsonParser(output, "clinvar");
         return new ClinVarParser(clinvarFile, assembly, serializer);
     }
 
-    private Path getInputFileFromCommandLine() throws ParseException {
+    private Path getInputFileFromCommandLine() {
         File inputFile = new File(input);
         if (inputFile.exists()) {
             if (inputFile.isDirectory()) {
-                throw new ParseException(input + " is a directory: it must be a file for " + buildCommandOptions.build + " builder");
+                throw new ParameterException(input + " is a directory: it must be a file for " + buildCommandOptions.build + " builder");
             } else {
                 return Paths.get(input);
             }
         } else {
-            throw new ParseException("File '" + input + "' doesn't exist");
+            throw new ParameterException("File '" + input + "' doesn't exist");
         }
     }
 
-    private Path getInputDirFromCommandLine() throws ParseException {
+    private Path getInputDirFromCommandLine(){
         File inputDirectory = new File(input);
         if (inputDirectory.exists()) {
             if (inputDirectory.isDirectory()) {
                 return Paths.get(input);
             } else {
-                throw new ParseException("'" + input + "' is not a directory");
+                throw new ParameterException("'" + input + "' is not a directory");
             }
         } else {
-            throw new ParseException("Folder '" + input + "' doesn't exist");
+            throw new ParameterException("Folder '" + input + "' doesn't exist");
         }
     }
 
-    private void checkMandatoryOption(String option, String value) throws ParseException {
+    private void checkMandatoryOption(String option, String value){
         if (value == null) {
-            throw new ParseException("'" + option + "' option is mandatory for '" + buildCommandOptions.build + "' builder");
+            throw new ParameterException("'" + option + "' option is mandatory for '" + buildCommandOptions.build + "' builder");
         }
     }
 

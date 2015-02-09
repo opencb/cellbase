@@ -1,6 +1,6 @@
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.cellbase.core.common.clinical.Cosmic;
 
 import java.io.BufferedReader;

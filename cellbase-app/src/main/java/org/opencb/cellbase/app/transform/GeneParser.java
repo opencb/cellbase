@@ -4,7 +4,7 @@ import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.*;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
