@@ -1,7 +1,7 @@
 package org.opencb.cellbase.app.transform;
 
+import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,15 +20,19 @@ public class ConservedRegionParser extends CellBaseParser {
     private Path conservedRegionPath;
     private int chunksize;
 
+    private CellBaseFileSerializer fileSerializer;
+    private Map<String, String> outputFileNames;
     // Download data:
     // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
-    public ConservedRegionParser(Path conservedRegionPath, int chunksize, CellBaseSerializer serializer) {
+    public ConservedRegionParser(Path conservedRegionPath, int chunksize, CellBaseFileSerializer serializer) {
         super(serializer);
+        fileSerializer = serializer;
         this.conservedRegionPath = conservedRegionPath;
         this.chunksize = chunksize;
         logger = LoggerFactory.getLogger(ConservedRegionParser.class);
+        outputFileNames = new HashMap<>();
     }
 
     @Override
@@ -87,7 +91,7 @@ public class ConservedRegionParser extends CellBaseParser {
                 if(conservedRegion != null){
                     conservedRegion.setEnd(end);
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
-                    serializer.serialize(conservedRegion);
+                    fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
                 }
 
 //                offset = 0;
@@ -112,7 +116,7 @@ public class ConservedRegionParser extends CellBaseParser {
 
                 if(startChunk != endChunk) {
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end-1, conservedType, startChunk, values);
-                    serializer.serialize(conservedRegion);
+                    fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
                     values.clear();
                     start = end;
                 }
@@ -123,7 +127,16 @@ public class ConservedRegionParser extends CellBaseParser {
         }
         //write last
         conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
-        serializer.serialize(conservedRegion);
+        fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
         br.close();
+    }
+
+    private String getOutputFileName(String chromosome) {
+        String outputFileName = outputFileNames.get(chromosome);
+        if (outputFileName == null) {
+            outputFileName = "conservation_" + chromosome;
+            outputFileNames.put(chromosome, outputFileName);
+        }
+        return outputFileName;
     }
 }
