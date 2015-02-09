@@ -56,7 +56,7 @@ public class JsonParser implements CellBaseFileSerializer {
     private void init() {
          ObjectMapper jsonObjectMapper = new ObjectMapper();
         if (!serializeEmptyValues) {
-            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         }
         jsonObjectWriter = jsonObjectMapper.writer();
     }
