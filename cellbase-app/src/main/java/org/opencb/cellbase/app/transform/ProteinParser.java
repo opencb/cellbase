@@ -4,7 +4,7 @@ import org.opencb.biodata.formats.protein.uniprot.UniprotParser;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.OrganismNameType;
 import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Uniprot;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

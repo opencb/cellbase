@@ -3,8 +3,8 @@ package org.opencb.cellbase.app.transform;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
+import org.opencb.cellbase.app.serializers.json.JsonParser;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -20,14 +20,14 @@ public class VariantEffectParserTest {
     
     private static Path file;
 //    private static JsonSerializer<VariantEffect> serializer;
-    private static CellBaseSerializer serializer;
+    private static CellBaseFileSerializer serializer;
 
     @BeforeClass
     public static void setUpClass() throws URISyntaxException, IOException {
         URL resource = VariantEffectParserTest.class.getResource("/vep-example-output.txt");
         file = Paths.get(resource.toURI());
 
-        serializer = new MongoDBSerializer(Paths.get("/tmp/"));
+        serializer = new JsonParser(Paths.get("/tmp"));
 //        serializer = new JsonSerializer<>(Paths.get("/tmp/vep-example-output"));
 //        serializer.open();
 //        serializer.pre();
@@ -36,7 +36,11 @@ public class VariantEffectParserTest {
     @AfterClass
     public static void tearDownClass() {
 //        serializer.post();
-        serializer.close();
+        try {
+            serializer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

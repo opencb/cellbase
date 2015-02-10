@@ -7,7 +7,7 @@ import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureSetType;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.ReleaseType;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.SequenceLocationType;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
