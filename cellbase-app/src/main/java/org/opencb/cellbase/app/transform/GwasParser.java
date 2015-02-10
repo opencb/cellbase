@@ -6,7 +6,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasStudy;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasTest;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasTrait;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.cellbase.core.common.clinical.gwas.Gwas;
 
 import java.io.BufferedReader;

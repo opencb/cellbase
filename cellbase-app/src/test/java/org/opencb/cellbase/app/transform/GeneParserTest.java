@@ -1,8 +1,11 @@
 package org.opencb.cellbase.app.transform;
 
 import org.junit.Test;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.json.JsonParser;
 
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class GeneParserTest {
 
@@ -13,11 +16,12 @@ public class GeneParserTest {
     public void testParse() throws Exception {
 
         String serializerClass = "json";
-//        Path outputPath = Paths.get("/tmp/");
-//        serializer = (CellBaseSerializer) Class.forName(JSON_SERIALIZER).getConstructor(Path.class).newInstance(outputPath);
-//
-//        GeneParser geneParser = new GeneParser(serializer);
-//
-//        geneParser.parse(Paths.get("/tmp/test/"), Paths.get("/tmp/homo_sapiens/gene/homo_sapiens.gtf.gz"));
+        Path outputPath = Paths.get("/tmp/");
+        CellBaseSerializer serializer = new JsonParser(outputPath, "gene");
+
+        GeneParser geneParser = new GeneParser(Paths.get("/tmp/test/"), Paths.get("/tmp/homo_sapiens/sequence/Homo_sapiens.GRCh37.p13.fa.gz"), serializer);
+
+        geneParser.parse();
     }
+
 }

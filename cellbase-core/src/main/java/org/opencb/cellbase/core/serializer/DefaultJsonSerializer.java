@@ -33,6 +33,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * Created by imedina on 17/06/14.
  */
+@Deprecated
 public class DefaultJsonSerializer extends CellBaseSerializer {
 
     protected Map<String, BufferedWriter> writers;

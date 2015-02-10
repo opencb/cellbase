@@ -3,7 +3,8 @@ package org.opencb.cellbase.app.transform;
 import org.opencb.biodata.models.variant.annotation.ProteinSubstitutionScores;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variant.annotation.VariantEffect;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -28,10 +31,14 @@ public class VariantEffectParser extends CellBaseParser {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Path inputFile;
+    private CellBaseFileSerializer fileSerializer;
+    private Map<String, String> outputFileNames;
 
-    public VariantEffectParser(Path file, CellBaseSerializer serializer) {
+    public VariantEffectParser(Path file, CellBaseFileSerializer serializer) {
         super(serializer);
+        fileSerializer = serializer;
         this.inputFile = file;
+        outputFileNames = new HashMap<>();
     }
 
 //    public VariantEffectParser(DataWriter serializer) {
@@ -78,7 +85,7 @@ public class VariantEffectParser extends CellBaseParser {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
-                        serializer.serialize(currentAnnotation);
+                        fileSerializer.serialize(currentAnnotation, getOutputFileName(currentAnnotation));
                         numEffectsWritten++;
                     }
 
@@ -97,11 +104,20 @@ public class VariantEffectParser extends CellBaseParser {
 //                        if (serializer.write(currentEffect)) {
 //                            numEffectsWritten++;
 //                        }
-            serializer.serialize(currentAnnotation);
+            fileSerializer.serialize(currentAnnotation, getOutputFileName(currentAnnotation));
             numEffectsWritten++;
         }
 
         reader.close();
+    }
+
+    private String getOutputFileName(VariantAnnotation annotation) {
+        String outputFileName = outputFileNames.get(annotation.getChromosome());
+        if (outputFileName == null) {
+            outputFileName = "variant_effect_chr" + annotation.getChromosome();
+            outputFileNames.put(annotation.getChromosome(), outputFileName);
+        }
+        return outputFileName;
     }
 
     private boolean isNewVariant(String chromosome, int start, int end, String referenceAllele, String alternateAllele,
