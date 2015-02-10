@@ -9,134 +9,233 @@
          },
          "species":[
             {
-               "assembly":"GRCh37.p13",
-               "name":"Homo sapiens",
-               "database":"homo_sapiens_core_75_37"
+               "assembly":[
+                  {
+                     "name":"GRCh37.p13",
+                     "database":"homo_sapiens_core_75_37"
+                  },
+                  {
+                     "name":"GRCh38",
+                     "database":"homo_sapiens_core_78_38"
+                  }
+               ],
+               "name":"Homo sapiens"
             },
             {
-               "assembly":"GRCh38",
-               "name":"Homo sapiens GRCh38",
-               "database":"homo_sapiens_core_78_38"
+               "assembly":[
+                  {
+                     "name":"GRCm38.p3",
+                     "database":"mus_musculus_core_78_38"
+                  }
+               ],
+               "name":"Mus musculus"
             },
             {
-               "assembly":"GRCm38.p3",
-               "name":"Mus musculus",
-               "database":"mus_musculus_core_78_38"
+               "assembly":[
+                  {
+                     "name":"Zv9",
+                     "database":"danio_rerio_core_78_9"
+                  }
+               ],
+               "name":"Danio rerio"
             },
             {
-               "assembly":"Zv9",
-               "name":"Danio rerio",
-               "database":"danio_rerio_core_78_9"
+               "assembly":[
+                  {
+                     "name":"Rnor_5.0",
+                     "database":"rattus_norvegicus_core_78_5"
+                  }
+               ],
+               "name":"Rattus norvegicus"
             },
             {
-               "assembly":"Rnor_5.0",
-               "name":"Rattus norvegicus",
-               "database":"rattus_norvegicus_core_78_5"
+               "assembly":[
+                  {
+                     "name":"CHIMP2.1.4",
+                     "database":"pan_troglodytes_core_78_214"
+                  }
+               ],
+               "name":"Pan troglodytes"
             },
             {
-               "assembly":"CHIMP2.1.4",
-               "name":"Pan troglodytes",
-               "database":"pan_troglodytes_core_78_214"
+               "assembly":[
+                  {
+                     "name":"gorGor3.1",
+                     "database":"gorilla_gorilla_core_78_31"
+                  }
+               ],
+               "name":"Gorilla gorilla"
             },
             {
-               "assembly":"gorGor3.1",
-               "name":"Gorilla gorilla",
-               "database":"gorilla_gorilla_core_78_31"
+               "assembly":[
+                  {
+                     "name":"PPYG2",
+                     "database":"pongo_abelii_core_78_1"
+                  }
+               ],
+               "name":"Pongo abelii"
             },
             {
-               "assembly":"PPYG2",
-               "name":"Pongo abelii",
-               "database":"pongo_abelii_core_78_1"
+               "assembly":[
+                  {
+                     "name":"MMUL_1.0",
+                     "database":"macaca_mulatta_core_78_10"
+                  }
+               ],
+               "name":"Macaca mulatta"
             },
             {
-               "assembly":"MMUL_1.0",
-               "name":"Macaca mulatta",
-               "database":"macaca_mulatta_core_78_10"
+               "assembly":[
+                  {
+                     "name":"ChlSab1.1",
+                     "database":"chlorocebus_sabaeus_core_78_1"
+                  }
+               ],
+               "name":"Chlorocebus sabaeus"
             },
             {
-               "assembly":"ChlSab1.1",
-               "name":"Chlorocebus sabaeus",
-               "database":"chlorocebus_sabaeus_core_78_1"
+               "assembly":[
+                  {
+                     "name":"Sscrofa10.2",
+                     "database":"sus_scrofa_core_78_102"
+                  }
+               ],
+               "name":"Sus scrofa"
             },
             {
-               "assembly":"Sscrofa10.2",
-               "name":"Sus scrofa",
-               "database":"sus_scrofa_core_78_102"
+               "assembly":[
+                  {
+                     "name":"CanFam3.1",
+                     "database":"canis_familiaris_core_78_31"
+                  }
+               ],
+               "name":"Canis familiaris"
             },
             {
-               "assembly":"CanFam3.1",
-               "name":"Canis familiaris",
-               "database":"canis_familiaris_core_78_31"
+               "assembly":[
+                  {
+                     "name":"EquCab2",
+                     "database":"equus_caballus_core_78_2"
+                  }
+               ],
+               "name":"Equus caballus"
             },
             {
-               "assembly":"EquCab2",
-               "name":"Equus caballus",
-               "database":"equus_caballus_core_78_2"
+               "assembly":[
+                  {
+                     "name":"oryCun2.0",
+                     "database":"oryctolagus_cuniculus_core_78_2"
+                  }
+               ],
+               "name":"Oryctolagus cuniculus"
             },
             {
-               "assembly":"oryCun2.0",
-               "name":"Oryctolagus cuniculus",
-               "database":"oryctolagus_cuniculus_core_78_2"
+               "assembly":[
+                  {
+                     "name":"Galgal4",
+                     "database":"gallus_gallus_core_78_4"
+                  }
+               ],
+               "name":"Gallus gallus"
             },
             {
-               "assembly":"Galgal4",
-               "name":"Gallus gallus",
-               "database":"gallus_gallus_core_78_4"
+               "assembly":[
+                  {
+                     "name":"UMD3.1",
+                     "database":"bos_taurus_core_78_31"
+                  }
+               ],
+               "name":"Bos taurus"
             },
             {
-               "assembly":"UMD3.1",
-               "name":"Bos taurus",
-               "database":"bos_taurus_core_78_31"
+               "assembly":[
+                  {
+                     "name":"Felis_catus_6.2",
+                     "database":"felis_catus_core_78_62"
+                  }
+               ],
+               "name":"Felis catus"
             },
             {
-               "assembly":"Felis_catus_6.2",
-               "name":"Felis catus",
-               "database":"felis_catus_core_78_62"
+               "assembly":[
+                  {
+                     "name":"KH",
+                     "database":"ciona_intestinalis_core_78_3"
+                  }
+               ],
+               "name":"Ciona intestinalis"
             },
             {
-               "assembly":"KH",
-               "name":"Ciona intestinalis",
-               "database":"ciona_intestinalis_core_78_3"
+               "assembly":[
+                  {
+                     "name":"Oar_v3.1",
+                     "database":"ovis_aries_core_78_31"
+                  }
+               ],
+               "name":"Ovis aries"
             },
             {
-               "assembly":"Oar_v3.1",
-               "name":"Ovis aries",
-               "database":"ovis_aries_core_78_31"
+               "assembly":[
+                  {
+                     "name":"HdrR",
+                     "database":"oryzias_latipes_core_78_1"
+                  }
+               ],
+               "name":"Oryzias latipes"
             },
             {
-               "assembly":"HdrR",
-               "name":"Oryzias latipes",
-               "database":"oryzias_latipes_core_78_1"
+               "assembly":[
+                  {
+                     "name":"turTru1",
+                     "database":"tursiops_truncatus_core_78_1"
+                  }
+               ],
+               "name":"Tursiops truncatus"
             },
             {
-               "assembly":"turTru1",
-               "name":"Tursiops truncatus",
-               "database":"tursiops_truncatus_core_78_1"
+               "assembly":[
+                  {
+                     "name":"Loxafr3.0",
+                     "database":"loxodonta_africana_core_78_3"
+                  }
+               ],
+               "name":"Loxodonta africana"
             },
             {
-               "assembly":"Loxafr3.0",
-               "name":"Loxodonta africana",
-               "database":"loxodonta_africana_core_78_3"
+               "assembly":[
+                  {
+                     "name":"C_jacchus3.2.1",
+                     "database":"callithrix_jacchus_core_78_321"
+                  }
+               ],
+               "name":"Callithrix jacchus"
             },
             {
-               "assembly":"C_jacchus3.2.1",
-               "name":"Callithrix jacchus",
-               "database":"callithrix_jacchus_core_78_321"
+               "assembly":[
+                  {
+                     "name":"Nleu1.0",
+                     "database":"nomascus_leucogenys_core_78_1"
+                  }
+               ],
+               "name":"Nomascus leucogenys"
             },
             {
-               "assembly":"Nleu1.0",
-               "name":"Nomascus leucogenys",
-               "database":"nomascus_leucogenys_core_78_1"
+               "assembly":[
+                  {
+                     "name":"BGI_duck_1.0",
+                     "database":"anas_platyrhynchos_core_78_1"
+                  }
+               ],
+               "name":"Anas platyrhynchos"
             },
             {
-               "assembly":"BGI_duck_1.0",
-               "name":"Anas platyrhynchos",
-               "database":"anas_platyrhynchos_core_78_1"
-            },
-            {
-               "assembly":"FicAlb_1.4",
-               "name":"Ficedula albicollis",
-               "database":"ficedula_albicollis_core_78_1"
+               "assembly":[
+                  {
+                     "name":"FicAlb_1.4",
+                     "database":"ficedula_albicollis_core_78_1"
+                  }
+               ],
+               "name":"Ficedula albicollis"
             }
          ]
       },
@@ -149,59 +248,103 @@
          },
          "species":[
             {
-               "assembly":"WBcel240",
-               "name":"Caenorhabditis elegans",
-               "database":"caenorhabditis_elegans_core_24_77_240"
+               "assembly":[
+                  {
+                     "name":"WBcel240",
+                     "database":"caenorhabditis_elegans_core_24_77_240"
+                  }
+               ],
+               "name":"Caenorhabditis elegans"
             },
             {
-               "assembly":"BDGP5",
-               "name":"Drosophila melanogaster",
-               "database":"drosophila_melanogaster_core_24_77_546"
+               "assembly":[
+                  {
+                     "name":"BDGP5",
+                     "database":"drosophila_melanogaster_core_24_77_546"
+                  }
+               ],
+               "name":"Drosophila melanogaster"
             },
             {
-               "assembly":"WUGSC1",
-               "name":"Drosophila simulans",
-               "database":"drosophila_simulans_core_24_77_14"
+               "assembly":[
+                  {
+                     "name":"WUGSC1",
+                     "database":"drosophila_simulans_core_24_77_14"
+                  }
+               ],
+               "name":"Drosophila simulans"
             },
             {
-               "assembly":"dyak_r1.3",
-               "name":"Drosophila yakuba",
-               "database":"drosophila_yakuba_core_24_77_13"
+               "assembly":[
+                  {
+                     "name":"dyak_r1.3",
+                     "database":"drosophila_yakuba_core_24_77_13"
+                  }
+               ],
+               "name":"Drosophila yakuba"
             },
             {
-               "assembly":"AgamP4",
-               "name":"Anopheles gambiae",
-               "database":"anopheles_gambiae_core_24_77_4"
+               "assembly":[
+                  {
+                     "name":"AgamP4",
+                     "database":"anopheles_gambiae_core_24_77_4"
+                  }
+               ],
+               "name":"Anopheles gambiae"
             },
             {
-               "assembly":"AdarC1",
-               "name":"Anopheles darlingi",
-               "database":"anopheles_darlingi_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"AdarC1",
+                     "database":"anopheles_darlingi_core_24_77_1"
+                  }
+               ],
+               "name":"Anopheles darlingi"
             },
             {
-               "assembly":"ASM20922v1",
-               "name":"Nematostella vectensis",
-               "database":"nematostella_vectensis_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"ASM20922v1",
+                     "database":"nematostella_vectensis_core_24_77_1"
+                  }
+               ],
+               "name":"Nematostella vectensis"
             },
             {
-               "assembly":"GCA_000002235.2",
-               "name":"Strongylocentrotus purpuratus",
-               "database":"strongylocentrotus_purpuratus_core_24_77_3"
+               "assembly":[
+                  {
+                     "name":"GCA_000002235.2",
+                     "database":"strongylocentrotus_purpuratus_core_24_77_3"
+                  }
+               ],
+               "name":"Strongylocentrotus purpuratus"
             },
             {
-               "assembly":"Bmor1",
-               "name":"Bombyx mori",
-               "database":"bombyx_mori_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"Bmor1",
+                     "database":"bombyx_mori_core_24_77_1"
+                  }
+               ],
+               "name":"Bombyx mori"
             },
             {
-               "assembly":"AaegL3",
-               "name":"Aedes aegypti",
-               "database":"aedes_aegypti_core_24_77_3"
+               "assembly":[
+                  {
+                     "name":"AaegL3",
+                     "database":"aedes_aegypti_core_24_77_3"
+                  }
+               ],
+               "name":"Aedes aegypti"
             },
             {
-               "assembly":"GCA_000142985.2",
-               "name":"Acyrthosiphon pisum",
-               "database":"acyrthosiphon_pisum_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"GCA_000142985.2",
+                     "database":"acyrthosiphon_pisum_core_24_77_2"
+                  }
+               ],
+               "name":"Acyrthosiphon pisum"
             }
          ]
       },
@@ -214,74 +357,130 @@
          },
          "species":[
             {
-               "assembly":"R64-1-1",
-               "name":"Saccharomyces cerevisiae",
-               "database":""
+               "assembly":[
+                  {
+                     "name":"R64-1-1",
+                     "database":""
+                  }
+               ],
+               "name":"Saccharomyces cerevisiae"
             },
             {
-               "assembly":"ASM294v2",
-               "name":"Schizosaccharomyces pombe",
-               "database":"schizosaccharomyces_pombe_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"ASM294v2",
+                     "database":"schizosaccharomyces_pombe_core_24_77_2"
+                  }
+               ],
+               "name":"Schizosaccharomyces pombe"
             },
             {
-               "assembly":"CADRE",
-               "name":"Aspergillus fumigatus",
-               "database":"aspergillus_fumigatus_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"CADRE",
+                     "database":"aspergillus_fumigatus_core_24_77_2"
+                  }
+               ],
+               "name":"Aspergillus fumigatus"
             },
             {
-               "assembly":"CADRE",
-               "name":"Aspergillus niger",
-               "database":"aspergillus_niger_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"CADRE",
+                     "database":"aspergillus_niger_core_24_77_1"
+                  }
+               ],
+               "name":"Aspergillus niger"
             },
             {
-               "assembly":"ASM1142v1",
-               "name":"Aspergillus nidulans",
-               "database":"aspergillus_nidulans_core_24_77_6"
+               "assembly":[
+                  {
+                     "name":"ASM1142v1",
+                     "database":"aspergillus_nidulans_core_24_77_6"
+                  }
+               ],
+               "name":"Aspergillus nidulans"
             },
             {
-               "assembly":"CADRE2",
-               "name":"Aspergillus oryzae",
-               "database":"aspergillus_oryzae_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"CADRE2",
+                     "database":"aspergillus_oryzae_core_24_77_2"
+                  }
+               ],
+               "name":"Aspergillus oryzae"
             },
             {
-               "assembly":"FO2",
-               "name":"Fusarium oxysporum",
-               "database":"fusarium_oxysporum_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"FO2",
+                     "database":"fusarium_oxysporum_core_24_77_2"
+                  }
+               ],
+               "name":"Fusarium oxysporum"
             },
             {
-               "assembly":"ASM14992v1",
-               "name":"Puccinia graminis",
-               "database":"puccinia_graminis_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"ASM14992v1",
+                     "database":"puccinia_graminis_core_24_77_1"
+                  }
+               ],
+               "name":"Puccinia graminis"
             },
             {
-               "assembly":"ASM15152v1",
-               "name":"Puccinia triticina",
-               "database":"puccinia_triticina_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"ASM15152v1",
+                     "database":"puccinia_triticina_core_24_77_1"
+                  }
+               ],
+               "name":"Puccinia triticina"
             },
             {
-               "assembly":"MG8",
-               "name":"Magnaporthe oryzae",
-               "database":"magnaporthe_oryzae_core_24_77_8"
+               "assembly":[
+                  {
+                     "name":"MG8",
+                     "database":"magnaporthe_oryzae_core_24_77_8"
+                  }
+               ],
+               "name":"Magnaporthe oryzae"
             },
             {
-               "assembly":"UM1",
-               "name":"Ustilago maydis",
-               "database":"ustilago_maydis_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"UM1",
+                     "database":"ustilago_maydis_core_24_77_1"
+                  }
+               ],
+               "name":"Ustilago maydis"
             },
             {
-               "assembly":"ASM14694v1",
-               "name":"Sclerotinia sclerotiorum",
-               "database":"sclerotinia_sclerotiorum_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"ASM14694v1",
+                     "database":"sclerotinia_sclerotiorum_core_24_77_1"
+                  }
+               ],
+               "name":"Sclerotinia sclerotiorum"
             },
             {
-               "assembly":"GCA_000091045.1",
-               "name":"Cryptococcus neoformans",
-               "database":"cryptococcus_neoformans_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"GCA_000091045.1",
+                     "database":"cryptococcus_neoformans_core_24_77_1"
+                  }
+               ],
+               "name":"Cryptococcus neoformans"
             },
             {
-               "assembly":"MG2",
-               "name":"Zymoseptoria tritici",
-               "database":"zymoseptoria_tritici_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"MG2",
+                     "database":"zymoseptoria_tritici_core_24_77_2"
+                  }
+               ],
+               "name":"Zymoseptoria tritici"
             }
          ]
       },
@@ -294,39 +493,67 @@
          },
          "species":[
             {
-               "assembly":"ASM276v1",
-               "name":"Plasmodium falciparum",
-               "database":"plasmodium_falciparum_core_24_77_3"
+               "assembly":[
+                  {
+                     "name":"ASM276v1",
+                     "database":"plasmodium_falciparum_core_24_77_3"
+                  }
+               ],
+               "name":"Plasmodium falciparum"
             },
             {
-               "assembly":"ASM272v2",
-               "name":"Leishmania major",
-               "database":"leishmania_major_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"ASM272v2",
+                     "database":"leishmania_major_core_24_77_2"
+                  }
+               ],
+               "name":"Leishmania major"
             },
             {
-               "assembly":"dictybase.01",
-               "name":"Dictyostelium discoideum",
-               "database":"dictyostelium_discoideum_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"dictybase.01",
+                     "database":"dictyostelium_discoideum_core_24_77_1"
+                  }
+               ],
+               "name":"Dictyostelium discoideum"
             },
             {
-               "assembly":"ASM14294v1",
-               "name":"Phytophthora infestans",
-               "database":"phytophthora_infestans_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"ASM14294v1",
+                     "database":"phytophthora_infestans_core_24_77_1"
+                  }
+               ],
+               "name":"Phytophthora infestans"
             },
             {
-               "assembly":"GCA_000002435.1",
-               "name":"Giardia lamblia",
-               "database":"giardia_lamblia_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"GCA_000002435.1",
+                     "database":"giardia_lamblia_core_24_77_1"
+                  }
+               ],
+               "name":"Giardia lamblia"
             },
             {
-               "assembly":"pug",
-               "name":"Pythium ultimum",
-               "database":"pythium_ultimum_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"pug",
+                     "database":"pythium_ultimum_core_24_77_1"
+                  }
+               ],
+               "name":"Pythium ultimum"
             },
             {
-               "assembly":"ENA1",
-               "name":"Albugo laibachii",
-               "database":"albugo_laibachii_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"ENA1",
+                     "database":"albugo_laibachii_core_24_77_1"
+                  }
+               ],
+               "name":"Albugo laibachii"
             }
          ]
       },
@@ -339,99 +566,175 @@
          },
          "species":[
             {
-               "assembly":"TAIR10",
-               "name":"Arabidopsis thaliana",
-               "database":"arabidopsis_thaliana_core_24_77_10"
+               "assembly":[
+                  {
+                     "name":"TAIR10",
+                     "database":"arabidopsis_thaliana_core_24_77_10"
+                  }
+               ],
+               "name":"Arabidopsis thaliana"
             },
             {
-               "assembly":"v.1.0",
-               "name":"Arabidopsis lyrata",
-               "database":"arabidopsis_lyrata_core_24_77_10"
+               "assembly":[
+                  {
+                     "name":"v.1.0",
+                     "database":"arabidopsis_lyrata_core_24_77_10"
+                  }
+               ],
+               "name":"Arabidopsis lyrata"
             },
             {
-               "assembly":"v1.0",
-               "name":"Brachypodium distachyon",
-               "database":"brachypodium_distachyon_core_24_77_12"
+               "assembly":[
+                  {
+                     "name":"v1.0",
+                     "database":"brachypodium_distachyon_core_24_77_12"
+                  }
+               ],
+               "name":"Brachypodium distachyon"
             },
             {
-               "assembly":"IRGSP-1.0",
-               "name":"Oryza sativa",
-               "database":"oryza_sativa_core_24_77_7"
+               "assembly":[
+                  {
+                     "name":"IRGSP-1.0",
+                     "database":"oryza_sativa_core_24_77_7"
+                  }
+               ],
+               "name":"Oryza sativa"
             },
             {
-               "assembly":"V1.0",
-               "name":"Glycine max",
-               "database":"glycine_max_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"V1.0",
+                     "database":"glycine_max_core_24_77_1"
+                  }
+               ],
+               "name":"Glycine max"
             },
             {
-               "assembly":"IGGP_12x",
-               "name":"Vitis vinifera",
-               "database":"vitis_vinifera_core_24_77_3"
+               "assembly":[
+                  {
+                     "name":"IGGP_12x",
+                     "database":"vitis_vinifera_core_24_77_3"
+                  }
+               ],
+               "name":"Vitis vinifera"
             },
             {
-               "assembly":"AGPv3",
-               "name":"Zea mays",
-               "database":"zea_mays_core_24_77_6"
+               "assembly":[
+                  {
+                     "name":"AGPv3",
+                     "database":"zea_mays_core_24_77_6"
+                  }
+               ],
+               "name":"Zea mays"
             },
             {
-               "assembly":"030312v2",
-               "name":"Hordeum vulgare",
-               "database":"hordeum_vulgare_core_24_77_2"
+               "assembly":[
+                  {
+                     "name":"030312v2",
+                     "database":"hordeum_vulgare_core_24_77_2"
+                  }
+               ],
+               "name":"Hordeum vulgare"
             },
             {
-               "assembly":"MA1",
-               "name":"Musa acuminata",
-               "database":"musa_acuminata_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"MA1",
+                     "database":"musa_acuminata_core_24_77_1"
+                  }
+               ],
+               "name":"Musa acuminata"
             },
             {
-               "assembly":"Sorbi1",
-               "name":"Sorghum bicolor",
-               "database":"sorghum_bicolor_core_24_77_14"
+               "assembly":[
+                  {
+                     "name":"Sorbi1",
+                     "database":"sorghum_bicolor_core_24_77_14"
+                  }
+               ],
+               "name":"Sorghum bicolor"
             },
             {
-               "assembly":"JGIv2.0",
-               "name":"Setaria italica",
-               "database":"setaria_italica_core_24_77_21"
+               "assembly":[
+                  {
+                     "name":"JGIv2.0",
+                     "database":"setaria_italica_core_24_77_21"
+                  }
+               ],
+               "name":"Setaria italica"
             },
             {
-               "assembly":"IWGSP1",
-               "name":"Triticum aestivum",
-               "database":"triticum_aestivum_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"IWGSP1",
+                     "database":"triticum_aestivum_core_24_77_1"
+                  }
+               ],
+               "name":"Triticum aestivum"
             },
             {
-               "assembly":"IVFCAASv1",
-               "name":"Brassica rapa",
-               "database":"brassica_rapa_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"IVFCAASv1",
+                     "database":"brassica_rapa_core_24_77_1"
+                  }
+               ],
+               "name":"Brassica rapa"
             },
             {
-               "assembly":"JGI2.0",
-               "name":"Populus trichocarpa",
-               "database":"populus_trichocarpa_core_24_77_20"
+               "assembly":[
+                  {
+                     "name":"JGI2.0",
+                     "database":"populus_trichocarpa_core_24_77_20"
+                  }
+               ],
+               "name":"Populus trichocarpa"
             },
             {
-               "assembly":"SL2.40",
-               "name":"Solanum lycopersicum",
-               "database":"solanum_lycopersicum_core_24_77_240"
+               "assembly":[
+                  {
+                     "name":"SL2.40",
+                     "database":"solanum_lycopersicum_core_24_77_240"
+                  }
+               ],
+               "name":"Solanum lycopersicum"
             },
             {
-               "assembly":"3.0",
-               "name":"Solanum tuberosum",
-               "database":"solanum_tuberosum_core_24_77_4"
+               "assembly":[
+                  {
+                     "name":"3.0",
+                     "database":"solanum_tuberosum_core_24_77_4"
+                  }
+               ],
+               "name":"Solanum tuberosum"
             },
             {
-               "assembly":"v1.0",
-               "name":"Selaginella moellendorffii",
-               "database":"selaginella_moellendorffii_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"v1.0",
+                     "database":"selaginella_moellendorffii_core_24_77_1"
+                  }
+               ],
+               "name":"Selaginella moellendorffii"
             },
             {
-               "assembly":"v3.0",
-               "name":"Chlamydomonas reinhardtii",
-               "database":"chlamydomonas_reinhardtii_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"v3.0",
+                     "database":"chlamydomonas_reinhardtii_core_24_77_1"
+                  }
+               ],
+               "name":"Chlamydomonas reinhardtii"
             },
             {
-               "assembly":"ASM9120v1",
-               "name":"Cyanidioschyzon merolae",
-               "database":"cyanidioschyzon_merolae_core_24_77_1"
+               "assembly":[
+                  {
+                     "name":"ASM9120v1",
+                     "database":"cyanidioschyzon_merolae_core_24_77_1"
+                  }
+               ],
+               "name":"Cyanidioschyzon merolae"
             }
          ]
       }
