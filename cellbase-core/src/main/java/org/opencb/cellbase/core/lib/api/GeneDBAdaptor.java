@@ -29,9 +29,9 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 //
 //	public List<Gene> getAllByEnsemblIdList(List<String> ensemblIdList);
 	
-	public QueryResult getAllById(String id, QueryOptions options);
+	public org.opencb.datastore.core.QueryResult getAllById(String id, QueryOptions options);
 
-	public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+	public List<org.opencb.datastore.core.QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 	public QueryResult getAllBiotypes(QueryOptions options);
 

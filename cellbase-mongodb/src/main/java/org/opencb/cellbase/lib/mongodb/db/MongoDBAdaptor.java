@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.DBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDataStore;
 import org.opencb.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import java.util.*;
 public class MongoDBAdaptor {
 
     protected MongoDataStore mongoDataStore;
+    protected MongoDBCollection mongoDBCollection2;
     protected String species;
     protected String assembly;
 
@@ -103,22 +105,54 @@ public class MongoDBAdaptor {
             }
         }
     }
+//    @Deprecated
+//    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options, DBCollection dbCollection) {
+//        List<QueryResult> queryResults = new ArrayList<>(ids.size());
+//
+//        // Select which fields are excluded and included in MongoDB query
+//        BasicDBObject returnFields = getReturnFields(options);
+//        long dbTimeStart, dbTimeEnd;
+//
+//        for (int i = 0; i < queries.size(); i++) {
+//            DBObject query = queries.get(i);
+//            QueryResult queryResult = new QueryResult();
+//
+//            // Execute query and calculate time
+//            dbTimeStart = System.currentTimeMillis();
+//            BasicDBList list = executeFind(query, returnFields, options, dbCollection);
+//            dbTimeEnd = System.currentTimeMillis();
+//
+//            // setting queryResult fields
+//            queryResult.setId(ids.get(i).toString());
+//            queryResult.setDBTime((dbTimeEnd - dbTimeStart));
+//            // Limit is set in queryOptions, count number of total results
+//            if(options.getInt("limit", 0) > 0) {
+//                queryResult.setNumResults((int) dbCollection.count(query));
+//            } else {
+//                queryResult.setNumResults(list.size());
+//            }
+//            queryResult.setResult(list);
+//            queryResults.add(queryResult);
+//
+//        return queryResults;
+//    }
 
-    //	protected Session openSession() {
-    //		if(session == null) {
-    //			logger.debug("HibernateDBAdaptor: Session is null");
-    //			session = sessionFactory.openSession();
-    //		}else {
-    //			if(!session.isOpen()) {
-    //				logger.debug("HibernateDBAdaptor: Session is closed");
-    //				session = sessionFactory.openSession();
-    //			}else {
-    //				logger.debug("HibernateDBAdaptor: Session is already open");
-    //			}
-    //		}
-    //
-    //		return session;
-    //	}
+    protected List<org.opencb.datastore.core.QueryResult> executeQueryList2(List<? extends Object> ids,
+                                                                            List<DBObject> queries,
+                                                                            org.opencb.datastore.core.QueryOptions options) {
+//        BasicDBObject returnFields = getReturnFields(options);
+        logger.info("executeQueryList2");
+//        List<org.opencb.datastore.core.QueryResult> queryResultList = mongoDBCollection2.find(queries, options, null);
+        List queryResultList = mongoDBCollection2.find(queries, options, null);
+
+        
+//        for (int i = 0; i < queryResultList.size(); i++) {
+//            org.opencb.datastore.core.QueryResult queryResult = queryResultList.get(i);
+//            queryResult.setId(ids.get(i).toString());
+//
+//        }
+        return queryResultList;
+    }
 
     protected String getChunkIdPrefix(String chromosome, int position, int chunkSize) {
         return chromosome + "_" +  position/chunkSize + "_" + chunkSize/1000 + "k";
@@ -250,18 +284,22 @@ public class MongoDBAdaptor {
         return queryResult;
     }
 
+    @Deprecated
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
         return executeQuery(id, query, options, mongoDBCollection);
     }
 
+    @Deprecated
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, DBCollection dbCollection) {
         return executeQueryList(Arrays.asList(id), Arrays.asList(query), options, dbCollection).get(0);
     }
 
+    @Deprecated
     protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
         return executeQueryList(ids, queries, options, mongoDBCollection);
     }
 
+    @Deprecated
     protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options, DBCollection dbCollection) {
 //		QueryResponse queryResponse = new QueryResponse();
         List<QueryResult> queryResults = new ArrayList<>(ids.size());

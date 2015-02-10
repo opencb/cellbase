@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
@@ -25,9 +26,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
-    public GeneMongoDBAdaptor(DB db, String species, String assembly, int coreChunkSize) {
-        super(db, species, assembly);
-        mongoDBCollection = db.getCollection("gene");
+    public GeneMongoDBAdaptor(MongoDataStore mongoDataStore, String species, String assembly, int coreChunkSize) {
+//        super(db, species, assembly);
+//        mongoDBCollection = db.getCollection("gene");
+        super(mongoDataStore, species, assembly);
+        mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
         this.coreChunkSize = coreChunkSize;
@@ -86,12 +89,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     // next(chromosome, position) method has been moved to MongoDBAdaptor class
 
     @Override
-    public QueryResult getAllById(String id, QueryOptions options) {
+    public org.opencb.datastore.core.QueryResult getAllById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
     @Override
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
+    public List<org.opencb.datastore.core.QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         //		QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").in(idList);
 
         List<DBObject> queries = new ArrayList<>(idList.size());
@@ -101,7 +104,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         }
 
 //        options = addExcludeReturnFields("transcripts", options);
-        return executeQueryList(idList, queries, options);
+//        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, null);
     }
 
     @Override

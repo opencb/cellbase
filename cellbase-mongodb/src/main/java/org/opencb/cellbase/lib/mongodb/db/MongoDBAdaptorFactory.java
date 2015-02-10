@@ -16,7 +16,9 @@ import org.opencb.cellbase.lib.mongodb.db.network.PathwayMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.network.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.regulatory.RegulatoryRegionMongoDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.regulatory.TfbsMongoDBAdaptor;
+import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,17 +88,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         this.config = config;
     }
 
+    private MongoDataStore createCellBaseMongoDatastore(String species, String assembly) {
+        String speciesId = config.getAlias(species);
+        MongoDataStoreManager mongoDataStoreManager = new MongoDataStoreManager(config.getHost(speciesId, assembly),
+                config.getPort(speciesId, assembly));
+
+        MongoDBConfiguration mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+        return mongoDataStoreManager.get(config.getDatabase(speciesId, assembly), mongoDBConfiguration);
+    }
+
+    @Deprecated
     private DB createCellBaseMongoDB(String species, String assembly) {
-        // logger.debug("HibernateDBAdaptorFactory in getGeneDBAdaptor(): creating Hibernate SessionFactory object for SPECIES.VERSION: '"+speciesVersionPrefix+"' ...");
-        // long t1 = System.currentTimeMillis();
-//        System.out.println(speciesVersionPrefix + "=>"
-//                + applicationProperties.getProperty(speciesVersionPrefix + ".DATABASE"));
-        // initial load and setup from hibernate.cfg.xml
-        // Configuration cfg = new
-        // Configuration().configure("cellbase-hibernate.cfg.xml");
-
         Logger logger = LoggerFactory.getLogger(this.getClass());
-
         MongoClient mc = null;
         DB db = null;
         if (species != null && !species.trim().equals("")) {
@@ -110,19 +113,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 logger.info(config.getHost(speciesId, assembly));
                 logger.info(Integer.toString(config.getPort(speciesId, assembly)));
                 mc = new MongoClient(new ServerAddress(config.getHost(speciesId, assembly), config.getPort(speciesId, assembly)), mongoClientOptions);
-//                mc.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
-//                mc.setReadPreference(ReadPreference.primary());
-//                System.out.println("Replica Status: "+mc.getReplicaSetStatus());
 
                 logger.info(config.getDatabase(speciesId, assembly));
                 db = mc.getDB(config.getDatabase(speciesId, assembly));
-//db.setReadPreference(ReadPreference.secondary(new BasicDBObject("dc", "PG")));
-//db.setReadPreference(ReadPreference.primary());
-//                System.out.println("Debug String: "+mc.debugString());
+
                 logger.info(config.getUsername(speciesId,assembly));
                 logger.info(config.getPass(speciesId, assembly));
                 if(!config.getUsername(speciesId,assembly).equals("") || !config.getPass(speciesId, assembly).equals("")){
-//                    System.out.println("User: "+config.getUsername(speciesId,assembly)+", Password: "+config.getPass(speciesId, assembly)+"");
                     db.authenticate(config.getUsername(speciesId,assembly), config.getPass(speciesId, assembly).toCharArray());
                 }
             } catch (UnknownHostException e) {
@@ -131,7 +128,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         } else {
             logger.debug("MongoDBAdaptorFactory in createCellBaseMongoDB(): 'species' parameter is null or empty");
         }
-
         return db;
     }
 
@@ -212,12 +208,19 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     public GeneDBAdaptor getGeneDBAdaptor(String species, String assembly) {
         String speciesAssemblyPrefix = getSpeciesAssemblyPrefix(species, assembly);
         String speciesId = config.getAlias(species);
-        if (!mongoDBFactory.containsKey(speciesAssemblyPrefix)) {
-            DB db = createCellBaseMongoDB(speciesId, assembly);
-            mongoDBFactory.put(speciesAssemblyPrefix, db);
+        if(!mongoDatastoreFactory.containsKey(speciesAssemblyPrefix)) {
+            MongoDataStore mongoDataStore = createCellBaseMongoDatastore(speciesId, assembly);
+            mongoDatastoreFactory.put(speciesAssemblyPrefix, mongoDataStore);
         }
-        return (GeneDBAdaptor) new GeneMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
+        return new GeneMongoDBAdaptor(mongoDatastoreFactory.get(speciesAssemblyPrefix),
                 speciesId, assembly, config.getCoreChunkSize());
+
+//        if (!mongoDBFactory.containsKey(speciesAssemblyPrefix)) {
+//            DB db = createCellBaseMongoDB(speciesId, assembly);
+//            mongoDBFactory.put(speciesAssemblyPrefix, db);
+//        }
+//        return (GeneDBAdaptor) new GeneMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
+//                speciesId, assembly, config.getCoreChunkSize());
     }
 
     @Override
