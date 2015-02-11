@@ -49,7 +49,6 @@ public class DownloadCommandParser extends CommandParser {
     private void processSpecies(String sp, Path outputDir) {
         logger.info("Processing species " + sp);
 
-
         // output folder
         // TODO: replace('.','') is not necessary because species cannot contain '.' -> CHECK
         //       replace(' ', '') is not necessary because species cannot contain ' ' -> CHECK
@@ -58,37 +57,47 @@ public class DownloadCommandParser extends CommandParser {
         makeDir(spFolder);
 
         // download sequence, gene, variation and regulation
-        if (downloadCommandOptions.sequence) {
-            downloadSequence(spFolder);
+        if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "sequence")) {
+            downloadSequence(sp, spFolder);
         }
-        if (downloadCommandOptions.gene) {
+        if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
             downloadGene(sp, spFolder);
         }
-        if (downloadCommandOptions.variation) {
+        if (downloadCommandOptions.variation && specieHasInfoToDownload(sp, "variation")) {
             downloadVariation(spFolder);
         }
-        if (downloadCommandOptions.regulation) {
+        if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
             downloadRegulation(spFolder);
         }
     }
 
-    private void downloadSequence(Path spFolder) {
-        Path sequenceFolder = spFolder.resolve("sequence");
+    private boolean specieHasInfoToDownload(String specie, String info) {
+        // TODO: implement (read from application properties json)
+        logger.warn("Specie " + specie + " has no " + info + " information available to download");
+        return false;
     }
 
-    private void downloadGene(String sp, Path spFolder) {
+    private void downloadSequence(String specie, Path spFolder) {
+        Path sequenceFolder = spFolder.resolve("sequence");
+        makeDir(sequenceFolder);
+        S
+    }
+
+
+    private void downloadGene(String specie, Path spFolder) {
         Path geneFolder = spFolder.resolve("gene");
-        String phylo = getPhyloOfSpecie(sp);
-        String databaseHost = properties.getProperty(phylo + "." + DATABASE_HOST);
-        Integer databasePort = Integer.parseInt(properties.getProperty(phylo + "." + DATABASE_HOST));
+        makeDir(geneFolder);
+        String phylo = getPhyloOfSpecie(specie);
     }
 
     private void downloadVariation(Path spFolder) {
         Path variationFolder = spFolder.resolve("variation");
+        makeDir(variationFolder);
     }
 
     private void downloadRegulation(Path spFolder) {
         Path regulationFolder = spFolder.resolve("regulation");
+        makeDir(regulationFolder);
     }
 
     private void makeDir(Path folderPath) {
@@ -138,21 +147,28 @@ public class DownloadCommandParser extends CommandParser {
 
     private Set<String> getSpecies() {
         Set<String> species = new HashSet<>(downloadCommandOptions.species);
-        Set<String> allSpecies = getAllSpeciesInPropertiesFile();
+        Set<String> allSpecies = getAllSpeciesFromJsonPropertiesFile();
+
+        // check if all species exist in properties file
+        for (String specie : species) {
+            if (!allSpecies.contains(specie)) {
+                throw new ParameterException("Specie " + specie + " not found in cellbase properties");
+            }
+        }
 
         if (species.contains("all")) {
             species = allSpecies;
-        } else {
-            // check if all species exist in properties file
-            for (String specie : species) {
-                if (!allSpecies.contains(specie)) {
-                    throw new ParameterException("Specie " + specie + " doesn't exist in properties file");
-                }
-            }
         }
+
         return species;
     }
 
+    private Set<String> getAllSpeciesFromJsonPropertiesFile() {
+        // TODO: implement
+        return null;
+    }
+
+    @Deprecated
     private Set<String> getAllSpeciesInPropertiesFile() {
         Set<String> species = new HashSet<>();
         for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
