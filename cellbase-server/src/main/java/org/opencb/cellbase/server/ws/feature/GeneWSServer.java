@@ -5,6 +5,8 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.MirnaDBAdaptor;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
@@ -43,7 +45,8 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects", response = QueryResponse.class)
-    public Response getAll(@DefaultValue("") @QueryParam("biotype") List<String> biotypes) {
+    public Response getAll(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
+                               @DefaultValue("") @QueryParam("biotype") List<String> biotypes) {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
@@ -61,7 +64,8 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/list")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs", response = QueryResponse.class)
-    public Response getAllIDs(@DefaultValue("") @QueryParam("biotype") String biotypes) {
+    public Response getAllIDs(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
+                                  @DefaultValue("") @QueryParam("biotype") String biotypes) {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
