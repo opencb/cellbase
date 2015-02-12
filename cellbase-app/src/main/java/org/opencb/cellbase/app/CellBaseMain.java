@@ -4,6 +4,8 @@ import org.apache.commons.cli.*;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.app.cli.*;
 import org.opencb.cellbase.app.transform.*;
+import org.opencb.cellbase.core.properties.CellBaseProperties;
+import org.opencb.cellbase.core.properties.PropertiesReader;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
 import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
@@ -85,52 +87,60 @@ public class CellBaseMain {
 //        options.addOption(OptionFactory.createOption("config", "Path to serializer configuration file (if applies)", false));
 //    }
 
+    private static CellBaseProperties applicationProperties;
+
     public static void main(String[] args) {
 
         CliOptionsParser cliOptionsParser = new CliOptionsParser();
         cliOptionsParser.parse(args);
 
-        String parsedCommand = cliOptionsParser.getCommand();
-        if(parsedCommand == null || parsedCommand.isEmpty()) {
-            if(cliOptionsParser.getGeneralOptions().help) {
-                cliOptionsParser.printUsage();
-            }
-            if(cliOptionsParser.getGeneralOptions().version) {
-                System.out.println("version = 3.1.0");
-            }
-        }else {
-            CommandParser commandParser = null;
-            switch (parsedCommand) {
-                case "download":
-                    if(cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    }else {
-                        commandParser = new DownloadCommandParser(cliOptionsParser.getDownloadCommandOptions());
-                    }
-                    break;
-                case "build":
-                    if(cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    }else {
-                        commandParser = new BuildCommandParser(cliOptionsParser.getBuildCommandOptions());
-                    }
-                    break;
-                case "load":
-                    if(cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    }else {
-                        commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
-                    }
-                    break;
-                case "query":
-                    break;
-                default:
-                    break;
-            }
+        try {
+            readProperties();
 
-            if(commandParser != null) {
-                commandParser.parse();
+            String parsedCommand = cliOptionsParser.getCommand();
+            if(parsedCommand == null || parsedCommand.isEmpty()) {
+                if(cliOptionsParser.getGeneralOptions().help) {
+                    cliOptionsParser.printUsage();
+                }
+                if(cliOptionsParser.getGeneralOptions().version) {
+                    System.out.println("version = 3.1.0");
+                }
+            }else {
+                CommandParser commandParser = null;
+                switch (parsedCommand) {
+                    case "download":
+                        if (cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
+                            cliOptionsParser.printUsage();
+                        } else {
+                            commandParser = new DownloadCommandParser(cliOptionsParser.getDownloadCommandOptions());
+                        }
+                        break;
+                    case "build":
+                        if (cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
+                            cliOptionsParser.printUsage();
+                        } else {
+                            commandParser = new BuildCommandParser(cliOptionsParser.getBuildCommandOptions());
+                        }
+                        break;
+                    case "load":
+                        if (cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
+                            cliOptionsParser.printUsage();
+                        } else {
+                            commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
+                        }
+                        break;
+                    case "query":
+                        break;
+                    default:
+                        break;
+                }
+
+                if (commandParser != null) {
+                    commandParser.parse();
+                }
             }
+        } catch (IOException e) {
+            
         }
 
 
@@ -170,6 +180,10 @@ public class CellBaseMain {
 //            e.printStackTrace();
 //        }
 
+    }
+
+    private static void readProperties() throws IOException {
+        applicationProperties = PropertiesReader.readCellBaseProperties();
     }
 
 //    private static void buildAll() throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
