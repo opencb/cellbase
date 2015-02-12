@@ -1,136 +1,137 @@
 package org.opencb.cellbase.app;
 
-import org.apache.commons.cli.*;
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.app.cli.*;
-import org.opencb.cellbase.app.transform.*;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
-import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
-import org.slf4j.Logger;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 
 public class CellBaseMain {
 
-    public static final String SPECIES_OPTION = "species";
-    public static final String INDIR_OPTION = "indir";
-    public static final String CLINVAR_FILE_OPTION = "clinvar-file";
-    public static final String COSMIC_FILE_OPTION = "cosmic-file";
-    public static final String GWAS_FILE_OPTION = "gwas-file";
-    public static final String FASTA_FILE_OPTION = "fasta-file";
-    public static final String VEP_FILE_OPTION = "vep-file";
-    public static final String PSIMI_TAB_FILE = "psimi-tab-file";
-    public static final String DBSNP_FILE_OPTION = "dbsnp-file";
-    public static final String CHUNK_SIZE_OPTION = "chunksize";
-    public static final String DRUG_FILE_OPTION = "drug-file";
-    public static final String ASSEMBLY_OPTION = "assembly";
+//    public static final String SPECIES_OPTION = "species";
+//    public static final String INDIR_OPTION = "indir";
+//    public static final String CLINVAR_FILE_OPTION = "clinvar-file";
+//    public static final String COSMIC_FILE_OPTION = "cosmic-file";
+//    public static final String GWAS_FILE_OPTION = "gwas-file";
+//    public static final String FASTA_FILE_OPTION = "fasta-file";
+//    public static final String VEP_FILE_OPTION = "vep-file";
+//    public static final String PSIMI_TAB_FILE = "psimi-tab-file";
+//    public static final String DBSNP_FILE_OPTION = "dbsnp-file";
+//    public static final String CHUNK_SIZE_OPTION = "chunksize";
+//    public static final String DRUG_FILE_OPTION = "drug-file";
+//    public static final String ASSEMBLY_OPTION = "assembly";
+//
+//    private static Options options;
+//    private static CommandLine commandLine;
+//
+//    private static CellBaseSerializer serializer;
+//
+//    private static Logger logger;
+//
+//    private static void initOptions() {
+//        options = new Options();
+//
+//        // Mandatory options
+//        options.addOption(OptionFactory.createOption("build", "Build values: core, genome_sequence, variation, protein"));
+//        options.addOption(OptionFactory.createOption("output", "o", "Output file or directory (depending on the 'build') to save the result to"));
+//
+//        // Optional parameter for some builds that accept a folder and not only one or few files
+//        options.addOption(OptionFactory.createOption(INDIR_OPTION, "i", "Input directory with data files", false));
+//
+//        // Sequence and gene options
+//        options.addOption(OptionFactory.createOption(FASTA_FILE_OPTION, "Input FASTA file", false));
+//
+//        // Gene options
+//        options.addOption(OptionFactory.createOption("gtf-file", "Input GTF file", false));
+//        options.addOption(OptionFactory.createOption("xref-file", "Input xrefs file", false));
+//        options.addOption(OptionFactory.createOption("description-file", "Input gene description file", false));
+//        options.addOption(OptionFactory.createOption("tfbs-file", "Input TFBS file", false));
+//        options.addOption(OptionFactory.createOption("mirna-file", "Input miRNA file", false));
+//
+//        // Mutation options
+//        options.addOption(OptionFactory.createOption(COSMIC_FILE_OPTION, "Input COSMIC file", false));
+//
+//        // Drug options
+//        options.addOption(OptionFactory.createOption(DRUG_FILE_OPTION, "Output directory to save the JSON result", false));
+//
+//        // ClinVar
+//        options.addOption(OptionFactory.createOption(CLINVAR_FILE_OPTION, "Input Clinvar XML file", false));
+//        options.addOption(OptionFactory.createOption(ASSEMBLY_OPTION, "Human Genome Assembly. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY, false));
+//
+//        // gwas
+//        options.addOption(OptionFactory.createOption(GWAS_FILE_OPTION, "Input gwas file", false));
+//        options.addOption(OptionFactory.createOption(DBSNP_FILE_OPTION, "Input .gz dbsnp file, used in gwas parsing", false));
+//
+//        // Protein options
+//        options.addOption(OptionFactory.createOption(SPECIES_OPTION, "s", "Species", false, true));
+//        options.addOption(OptionFactory.createOption(PSIMI_TAB_FILE, "Input PsiMi tab file", false));
+//
+//        // Variant effect options
+//        options.addOption(OptionFactory.createOption(VEP_FILE_OPTION, "Input variant effect file", false));
+//
+////        options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
+////        options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
+//        options.addOption(OptionFactory.createOption("serializer", "Serializer that will write the transformed input: "
+//                + "Mongo (default) or JSON (only for variant effect)", false));
+//        options.addOption(OptionFactory.createOption("log-level", "DEBUG -1, INFO -2, WARNING - 3, ERROR - 4, FATAL - 5", false));
+//        options.addOption(OptionFactory.createOption("config", "Path to serializer configuration file (if applies)", false));
+//    }
 
-    private static Options options;
-    private static CommandLine commandLine;
-
-    private static CellBaseSerializer serializer;
-
-    private static Logger logger;
-
-    private static void initOptions() {
-        options = new Options();
-
-        // Mandatory options
-        options.addOption(OptionFactory.createOption("build", "Build values: core, genome_sequence, variation, protein"));
-        options.addOption(OptionFactory.createOption("output", "o", "Output file or directory (depending on the 'build') to save the result to"));
-
-        // Optional parameter for some builds that accept a folder and not only one or few files
-        options.addOption(OptionFactory.createOption(INDIR_OPTION, "i", "Input directory with data files", false));
-
-        // Sequence and gene options
-        options.addOption(OptionFactory.createOption(FASTA_FILE_OPTION, "Input FASTA file", false));
-
-        // Gene options
-        options.addOption(OptionFactory.createOption("gtf-file", "Input GTF file", false));
-        options.addOption(OptionFactory.createOption("xref-file", "Input xrefs file", false));
-        options.addOption(OptionFactory.createOption("description-file", "Input gene description file", false));
-        options.addOption(OptionFactory.createOption("tfbs-file", "Input TFBS file", false));
-        options.addOption(OptionFactory.createOption("mirna-file", "Input miRNA file", false));
-
-        // Mutation options
-        options.addOption(OptionFactory.createOption(COSMIC_FILE_OPTION, "Input COSMIC file", false));
-
-        // Drug options
-        options.addOption(OptionFactory.createOption(DRUG_FILE_OPTION, "Output directory to save the JSON result", false));
-
-        // ClinVar
-        options.addOption(OptionFactory.createOption(CLINVAR_FILE_OPTION, "Input Clinvar XML file", false));
-        options.addOption(OptionFactory.createOption(ASSEMBLY_OPTION, "Human Genome Assembly. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY, false));
-
-        // gwas
-        options.addOption(OptionFactory.createOption(GWAS_FILE_OPTION, "Input gwas file", false));
-        options.addOption(OptionFactory.createOption(DBSNP_FILE_OPTION, "Input .gz dbsnp file, used in gwas parsing", false));
-
-        // Protein options
-        options.addOption(OptionFactory.createOption(SPECIES_OPTION, "s", "Species", false, true));
-        options.addOption(OptionFactory.createOption(PSIMI_TAB_FILE, "Input PsiMi tab file", false));
-
-        // Variant effect options
-        options.addOption(OptionFactory.createOption(VEP_FILE_OPTION, "Input variant effect file", false));
-
-//        options.addOption(OptionFactory.createOption("genome-sequence-dir", "Output directory to save the JSON result", false));
-//        options.addOption(OptionFactory.createOption("chunksize", "Output directory to save the JSON result", false));
-        options.addOption(OptionFactory.createOption("serializer", "Serializer that will write the transformed input: "
-                + "Mongo (default) or JSON (only for variant effect)", false));
-        options.addOption(OptionFactory.createOption("log-level", "DEBUG -1, INFO -2, WARNING - 3, ERROR - 4, FATAL - 5", false));
-        options.addOption(OptionFactory.createOption("config", "Path to serializer configuration file (if applies)", false));
-    }
+    private static CellBaseConfiguration configuration;
 
     public static void main(String[] args) {
 
         CliOptionsParser cliOptionsParser = new CliOptionsParser();
         cliOptionsParser.parse(args);
 
-        String parsedCommand = cliOptionsParser.getCommand();
-        if(parsedCommand == null || parsedCommand.isEmpty()) {
-            if(cliOptionsParser.getGeneralOptions().help) {
-                cliOptionsParser.printUsage();
-            }
-            if(cliOptionsParser.getGeneralOptions().version) {
-                System.out.println("version = 3.1.0");
-            }
-        }else {
-            CommandParser commandParser = null;
-            switch (parsedCommand) {
-                case "download":
-                    if(cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    }else {
-                        commandParser = new DownloadCommandParser(cliOptionsParser.getDownloadCommandOptions());
-                    }
-                    break;
-                case "build":
-                    if(cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    }else {
-                        commandParser = new BuildCommandParser(cliOptionsParser.getBuildCommandOptions());
-                    }
-                    break;
-                case "load":
-                    if(cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    }else {
-                        commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
-                    }
-                    break;
-                case "query":
-                    break;
-                default:
-                    break;
-            }
+        try {
+            readConfiguration();
 
-            if(commandParser != null) {
-                commandParser.parse();
+            String parsedCommand = cliOptionsParser.getCommand();
+            if(parsedCommand == null || parsedCommand.isEmpty()) {
+                if(cliOptionsParser.getGeneralOptions().help) {
+                    cliOptionsParser.printUsage();
+                }
+                if(cliOptionsParser.getGeneralOptions().version) {
+                    System.out.println("version = 3.1.0");
+                }
+            }else {
+                CommandParser commandParser = null;
+                switch (parsedCommand) {
+                    case "download":
+                        if (cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
+                            cliOptionsParser.printUsage();
+                        } else {
+                            commandParser = new DownloadCommandParser(cliOptionsParser.getDownloadCommandOptions());
+                        }
+                        break;
+                    case "build":
+                        if (cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
+                            cliOptionsParser.printUsage();
+                        } else {
+                            commandParser = new BuildCommandParser(cliOptionsParser.getBuildCommandOptions());
+                        }
+                        break;
+                    case "load":
+                        if (cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
+                            cliOptionsParser.printUsage();
+                        } else {
+                            commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
+                        }
+                        break;
+                    case "query":
+                        break;
+                    default:
+                        break;
+                }
+
+                if (commandParser != null) {
+                    commandParser.parse();
+                }
             }
+        } catch (IOException e) {
+
         }
 
 
@@ -172,60 +173,68 @@ public class CellBaseMain {
 
     }
 
-    private static void buildAll() throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
-        logger.info("Processing all...");
-        Path speciesInDir = Paths.get(commandLine.getOptionValue(INDIR_OPTION));
-        Path genomeFastaPath = getGenomeFastaPath(speciesInDir);
-
-        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(genomeFastaPath, null);
-        genomeSequenceFastaParser.parse();
-        genomeSequenceFastaParser.disconnect();
-
-        GeneParser geneParser = new GeneParser(speciesInDir.resolve("gene"), genomeFastaPath, serializer);
-        geneParser.parse();
-        geneParser.disconnect();
-
-        Path variationPath = speciesInDir.resolve("variation");
-        if (variationPath.toFile().list().length > 2) {
-            VariationParser vp = new VariationParser(variationPath, null);
-            vp.parse();
-            vp.disconnect();
-        }
-
-        Path regulationPath = speciesInDir.resolve("regulation");
-        if (variationPath.toFile().list().length > 2) {
-            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(regulationPath, null);
-            regulatoryParser.parse();
+    private static void readConfiguration() throws IOException {
+        try {
+            configuration = CellBaseConfiguration.load(Paths.get(CellBaseMain.class.getResource("cellBaseConfiguration.json").toURI()));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
         }
     }
 
-    private static Path getGenomeFastaPath(Path speciesInDir) {
-        Path genomeFastaPath = null;
-        for (String fileName : speciesInDir.resolve("sequence").toFile().list()) {
-            if (fileName.endsWith(".fa") || fileName.endsWith(".fa.gz")) {
-                genomeFastaPath = speciesInDir.resolve("sequence").resolve(fileName);
-                break;
-            }
-        }
-        return genomeFastaPath;
-    }
-
-    private static void parseCommandLineArgs(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
-        CommandLineParser parser = new PosixParser();
-        commandLine = parser.parse(options, args, stopAtNoOption);
-    }
-
-    private static void createCellBaseSerializer(Path outPath) throws IOException  {
-        String serializerClass = commandLine.getOptionValue("serializer", "json");
-        if (serializerClass != null) {
-            // A default implementation for JSON is provided
-            if (serializerClass.equalsIgnoreCase("json")) {
-                logger.debug("JSON serializer chosen");
-                serializer = new DefaultJsonSerializer(outPath);
-            } else {
-                logger.debug("MongoDB serializer chosen");
-                serializer = new MongoDBSerializer(outPath);
-            }
-        }
-    }
+//    private static void buildAll() throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
+//        logger.info("Processing all...");
+//        Path speciesInDir = Paths.get(commandLine.getOptionValue(INDIR_OPTION));
+//        Path genomeFastaPath = getGenomeFastaPath(speciesInDir);
+//
+//        GenomeSequenceFastaParser genomeSequenceFastaParser = new GenomeSequenceFastaParser(genomeFastaPath, null);
+//        genomeSequenceFastaParser.parse();
+//        genomeSequenceFastaParser.disconnect();
+//
+//        GeneParser geneParser = new GeneParser(speciesInDir.resolve("gene"), genomeFastaPath, serializer);
+//        geneParser.parse();
+//        geneParser.disconnect();
+//
+//        Path variationPath = speciesInDir.resolve("variation");
+//        if (variationPath.toFile().list().length > 2) {
+//            VariationParser vp = new VariationParser(variationPath, null);
+//            vp.parse();
+//            vp.disconnect();
+//        }
+//
+//        Path regulationPath = speciesInDir.resolve("regulation");
+//        if (variationPath.toFile().list().length > 2) {
+//            RegulatoryRegionParser regulatoryParser = new RegulatoryRegionParser(regulationPath, null);
+//            regulatoryParser.parse();
+//        }
+//    }
+//
+//    private static Path getGenomeFastaPath(Path speciesInDir) {
+//        Path genomeFastaPath = null;
+//        for (String fileName : speciesInDir.resolve("sequence").toFile().list()) {
+//            if (fileName.endsWith(".fa") || fileName.endsWith(".fa.gz")) {
+//                genomeFastaPath = speciesInDir.resolve("sequence").resolve(fileName);
+//                break;
+//            }
+//        }
+//        return genomeFastaPath;
+//    }
+//
+//    private static void parseCommandLineArgs(String[] args, boolean stopAtNoOption) throws ParseException, IOException {
+//        CommandLineParser parser = new PosixParser();
+//        commandLine = parser.parse(options, args, stopAtNoOption);
+//    }
+//
+//    private static void createCellBaseSerializer(Path outPath) throws IOException  {
+//        String serializerClass = commandLine.getOptionValue("serializer", "json");
+//        if (serializerClass != null) {
+//            // A default implementation for JSON is provided
+//            if (serializerClass.equalsIgnoreCase("json")) {
+//                logger.debug("JSON serializer chosen");
+//                serializer = new DefaultJsonSerializer(outPath);
+//            } else {
+//                logger.debug("MongoDB serializer chosen");
+//                serializer = new MongoDBSerializer(outPath);
+//            }
+//        }
+//    }
 }

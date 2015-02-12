@@ -4,7 +4,7 @@ import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.*;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
@@ -207,6 +207,10 @@ public class GeneParser extends CellBaseParser {
                 transcript = new Transcript(transcriptId, gtf.getAttributes().get("transcript_name"), gtf.getSource(),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), tfbsMap.get(transcriptId));
+                String tags;
+                if((tags = gtf.getAttributes().get("tag"))!=null) {
+                    transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
+                }
                 gene.getTranscripts().add(transcript);
                 // Do not change order!! size()-1 is the index of the transcript ID
                 transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);

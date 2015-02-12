@@ -2,7 +2,7 @@ package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.models.protein.*;
 import org.opencb.biodata.models.protein.Interactor;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import psidev.psi.mi.tab.PsimiTabReader;
 import psidev.psi.mi.tab.model.*;
 
