@@ -1,9 +1,6 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.QueryBuilder;
+import com.mongodb.*;
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.Score;
@@ -529,7 +526,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private void solveCodingPositiveTranscriptEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
                                                      Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                                      Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
-                                                     Integer cdnaVariantEnd, String variantRef, String variantAlt,
+                                                     Integer cdnaVariantEnd, Integer cdsLength,
+                                                     BasicDBList transcriptFlags, String variantRef, String variantAlt,
                                                      HashSet<String> SoNames, ConsequenceType consequenceTypeTemplate) {
         if(variantStart < genomicCodingStart) {
             if(transcriptStart<genomicCodingStart) { // Check transcript has 5 UTR
@@ -541,6 +539,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         } else {
             if(variantStart <= genomicCodingEnd) {  // Variant start within coding region
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantStart falls in an intron
+                    if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
+                        cdnaCodingStart -= (3-cdsLength%3);
+                    }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
                     consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1)/3)+1);
@@ -566,7 +567,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private void solveCodingNegativeTranscriptEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
                                                      Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                                      Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
-                                                     Integer cdnaVariantEnd, String variantRef, String variantAlt,
+                                                     Integer cdnaVariantEnd,  Integer cdsLength,
+                                                     BasicDBList transcriptFlags, String variantRef, String variantAlt,
                                                      HashSet<String> SoNames, ConsequenceType consequenceTypeTemplate) {
         if(variantEnd > genomicCodingEnd) {
             if(transcriptEnd>genomicCodingEnd) { // Check transcript has 5 UTR
@@ -578,6 +580,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         } else {
             if(variantEnd >= genomicCodingStart) {  // Variant end within coding region
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantEnd falls in an intron
+                    if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
+                        cdnaCodingStart -= (3-cdsLength%3);
+                    }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
                     consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1)/3)+1);
@@ -659,7 +664,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         BasicDBObject regulatoryInfo;
         Integer geneStart, geneEnd, transcriptStart, transcriptEnd, exonStart, exonEnd, genomicCodingStart, genomicCodingEnd;
         Integer cdnaCodingStart, cdnaCodingEnd, cdnaExonStart, cdnaExonEnd, cdnaVariantStart, cdnaVariantEnd, prevSpliceSite;
-        Integer regulatoryStart, regulatoryEnd;
+        Integer regulatoryStart, regulatoryEnd, cdsLength;
         Integer variantStart = variant.getPosition();
         Integer variantEnd = variant.getPosition()+variant.getReference().length()-1;  //TODO: Check deletion input format to ensure that variantEnd is correctly calculated
         String geneStrand, transcriptStrand, exonSequence, transcriptSequence;
@@ -674,9 +679,23 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         int exonCounter,i;
         ConsequenceType consequenceTypeTemplate = new ConsequenceType();
 
-        // Get all genes surrounding the variant +-5kb
-        builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
-                .greaterThanEquals(variant.getPosition()-5000).and("start").lessThanEquals(variantEnd+5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
+        if(variantEnd-variantStart < 51) { // SNV, insertion or short deletion, simplify the queries to improve efficiency
+            // Get all genes surrounding the variant +-5kb
+            builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
+                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
+
+        } else {   // long deletion
+            // Get all genes fully contained within variant coordinates
+            DBObject containedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("start")
+                    .greaterThan(variant.getPosition()).and("end").lessThan(variantEnd).get();
+
+            // Get all genes surrounding the variant +-5kb
+            DBObject partiallyAffectectedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
+                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000).get(); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
+
+            // Get genes fulfilling both conditions above
+            builderGene = QueryBuilder.start().or(containedGenes, partiallyAffectectedGenes);
+        }
 
         // Get all regulatory regions surrounding the variant
         String chunkId = getChunkPrefix(variant.getChromosome(), variant.getPosition(), regulatoryChunkSize);
@@ -713,6 +732,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 transcriptStart = (Integer) transcriptInfo.get("start");
                 transcriptEnd = (Integer) transcriptInfo.get("end");
                 transcriptStrand = (String) transcriptInfo.get("strand");
+                cdsLength = (Integer) transcriptInfo.get("cdsLength");
+                BasicDBList transcriptFlags = (BasicDBList) transcriptInfo.get("annotationFlags");
+
                 try {
                     transcriptBiotype = biotypes.get((String) transcriptInfo.get("biotype"));
                 } catch (NullPointerException e) {
@@ -746,12 +768,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 SoNames.add("NMD_transcript_variant");
                             case 20:
                             case 23:    // protein_coding
-                            case 35:
                             case 36:
                             case 50:    // translated_unprocessed_pseudogene
                             case 51:    // LRG_gene
                                 solveCodingPositiveTranscript(variant, SoNames, transcriptInfo, transcriptStart,
-                                        transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                        transcriptEnd, variantStart, variantEnd, cdsLength, transcriptFlags,
+                                        consequenceTypeTemplate);
                                 consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
                                         consequenceTypeTemplate.getEnsemblGeneId(),
                                         consequenceTypeTemplate.getEnsemblTranscriptId(),
@@ -821,6 +843,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 32:  // transcribed_unprocessed_pseudogene
                             case 33:  // retained_intron
                             case 34:
+                            case 35:  // unitary_pseudogene
                             case 37:  // transcribed_processed_pseudogene
                             case 38:
                             case 45:
@@ -846,12 +869,17 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                         consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
                                 break;
                         }
-                    } else if(SoNames.size()>0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
-                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                consequenceTypeTemplate.getEnsemblGeneId(),
-                                consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                consequenceTypeTemplate.getStrand(),
-                                consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                    } else {
+                        if(variantStart<transcriptStart && variantEnd>transcriptEnd) {  // Deletion that removes the whole transcript
+                            SoNames.add("transcript_ablation");
+                        }
+                        if(SoNames.size()>0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
+                            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                    consequenceTypeTemplate.getEnsemblGeneId(),
+                                    consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                    consequenceTypeTemplate.getStrand(),
+                                    consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                        }
                     }
                 } else {
                     solveTranscriptFlankingRegions(SoNames, transcriptStart, transcriptEnd, variantStart,
@@ -867,12 +895,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 SoNames.add("NMD_transcript_variant");
                             case 20:
                             case 23:
-                            case 35:
                             case 36:
                             case 50:    // translated_unprocessed_pseudogene
                             case 51:    // LRG_gene
-                                solveCodingNegativeTranscript(variant, SoNames, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                solveCodingNegativeTranscript(variant, SoNames, transcriptInfo, transcriptStart,
+                                        transcriptEnd, variantStart, variantEnd, cdsLength, transcriptFlags,
+                                        consequenceTypeTemplate);
                                 consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
                                         consequenceTypeTemplate.getEnsemblGeneId(),
                                         consequenceTypeTemplate.getEnsemblTranscriptId(),
@@ -942,6 +970,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             case 32:  // transcribed_unprocessed_pseudogene
                             case 33:  // retained_intron
                             case 34:
+                            case 35:    // unitary_pseudogene
                             case 37:  // transcribed_processed_pseudogene
                             case 38:
                             case 45:
@@ -967,12 +996,17 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                         consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
                                 break;
                         }
-                    } else if(SoNames.size()>0) { // Variant does not overlap gene region, just has upstream/downstream annotations
-                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                consequenceTypeTemplate.getEnsemblGeneId(),
-                                consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                consequenceTypeTemplate.getStrand(),
-                                consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                    } else {
+                        if(variantStart<transcriptStart && variantEnd>transcriptEnd) {  // Deletion that removes the whole transcript
+                            SoNames.add("transcript_ablation");
+                        }
+                        if(SoNames.size()>0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+                            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                    consequenceTypeTemplate.getEnsemblGeneId(),
+                                    consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                    consequenceTypeTemplate.getStrand(),
+                                    consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                        }
                     }
 
                 }
@@ -1036,6 +1070,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private void solveCodingPositiveTranscript(GenomicVariant variant, HashSet<String> SoNames,
                                                BasicDBObject transcriptInfo, Integer transcriptStart,
                                                Integer transcriptEnd, Integer variantStart, Integer variantEnd,
+                                               Integer cdsLength, BasicDBList transcriptFlags,
                                                ConsequenceType consequenceTypeTemplate) {
         Integer genomicCodingStart;
         Integer genomicCodingEnd;
@@ -1127,13 +1162,15 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(!junctionSolution[1]) {
             solveCodingPositiveTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
-                    variant.getReference(), variant.getAlternative(), SoNames, consequenceTypeTemplate);
+                    cdsLength, transcriptFlags, variant.getReference(), variant.getAlternative(), SoNames,
+                    consequenceTypeTemplate);
         }
     }
 
     private void solveCodingNegativeTranscript(GenomicVariant variant, HashSet<String> SoNames,
                                                BasicDBObject transcriptInfo, Integer transcriptStart,
                                                Integer transcriptEnd, Integer variantStart, Integer variantEnd,
+                                               Integer cdsLength, BasicDBList transcriptFlags,
                                                ConsequenceType consequenceTypeTemplate) {
         Integer genomicCodingStart;
         Integer genomicCodingEnd;
@@ -1225,7 +1262,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(!junctionSolution[1]) {
             solveCodingNegativeTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
-                    variant.getReference(), variant.getAlternative(), SoNames, consequenceTypeTemplate);
+                    cdsLength, transcriptFlags, variant.getReference(), variant.getAlternative(), SoNames,
+                    consequenceTypeTemplate);
         }
     }
 
