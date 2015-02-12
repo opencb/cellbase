@@ -1,20 +1,11 @@
 package org.opencb.cellbase.app;
 
-import org.apache.commons.cli.*;
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.app.cli.*;
-import org.opencb.cellbase.app.transform.*;
-import org.opencb.cellbase.core.properties.CellBaseProperties;
-import org.opencb.cellbase.core.properties.PropertiesReader;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
-import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
-import org.slf4j.Logger;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 
 public class CellBaseMain {
 
@@ -87,7 +78,7 @@ public class CellBaseMain {
 //        options.addOption(OptionFactory.createOption("config", "Path to serializer configuration file (if applies)", false));
 //    }
 
-    private static CellBaseProperties applicationProperties;
+    private static CellBaseConfiguration configuration;
 
     public static void main(String[] args) {
 
@@ -95,7 +86,7 @@ public class CellBaseMain {
         cliOptionsParser.parse(args);
 
         try {
-            readProperties();
+            readConfiguration();
 
             String parsedCommand = cliOptionsParser.getCommand();
             if(parsedCommand == null || parsedCommand.isEmpty()) {
@@ -140,7 +131,7 @@ public class CellBaseMain {
                 }
             }
         } catch (IOException e) {
-            
+
         }
 
 
@@ -182,8 +173,12 @@ public class CellBaseMain {
 
     }
 
-    private static void readProperties() throws IOException {
-        applicationProperties = PropertiesReader.readCellBaseProperties();
+    private static void readConfiguration() throws IOException {
+        try {
+            configuration = CellBaseConfiguration.load(Paths.get(CellBaseMain.class.getResource("cellBaseConfiguration.json").toURI()));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
 //    private static void buildAll() throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {

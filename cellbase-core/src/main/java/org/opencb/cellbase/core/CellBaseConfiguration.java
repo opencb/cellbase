@@ -1,11 +1,15 @@
-package org.opencb.cellbase.core.properties;
+package org.opencb.cellbase.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
  * Created by parce on 12/02/15.
  */
-public class CellBaseProperties {
+public class CellBaseConfiguration {
 
     private String version;
     private String apiVersion;
@@ -14,6 +18,12 @@ public class CellBaseProperties {
     private String defaultOutdir;
     private DownloadProperties download;
     private SpeciesProperties species;
+
+    public static CellBaseConfiguration load(Path cellbaseConfigurationJsonFile) throws IOException {
+        ObjectMapper jsonMapper = new ObjectMapper();
+        CellBaseConfiguration properties = jsonMapper.readValue(cellbaseConfigurationJsonFile.toFile(), CellBaseConfiguration.class);
+        return properties;
+    }
 
     public String getVersion() {
         return version;
@@ -186,53 +196,53 @@ public class CellBaseProperties {
     }
 
     public static class SpeciesProperties {
-        private List<Specie> vertebrates;
-        private List<Specie> metazoa;
-        private List<Specie> fungi;
-        private List<Specie> protist;
-        private List<Specie> plants;
+        private List<Species> vertebrates;
+        private List<Species> metazoa;
+        private List<Species> fungi;
+        private List<Species> protist;
+        private List<Species> plants;
 
-        public List<Specie> getVertebrates() {
+        public List<Species> getVertebrates() {
             return vertebrates;
         }
 
-        public void setVertebrates(List<Specie> vertebrates) {
+        public void setVertebrates(List<Species> vertebrates) {
             this.vertebrates = vertebrates;
         }
 
-        public List<Specie> getMetazoa() {
+        public List<Species> getMetazoa() {
             return metazoa;
         }
 
-        public void setMetazoa(List<Specie> metazoa) {
+        public void setMetazoa(List<Species> metazoa) {
             this.metazoa = metazoa;
         }
 
-        public List<Specie> getFungi() {
+        public List<Species> getFungi() {
             return fungi;
         }
 
-        public void setFungi(List<Specie> fungi) {
+        public void setFungi(List<Species> fungi) {
             this.fungi = fungi;
         }
 
-        public List<Specie> getProtist() {
+        public List<Species> getProtist() {
             return protist;
         }
 
-        public void setProtist(List<Specie> protist) {
+        public void setProtist(List<Species> protist) {
             this.protist = protist;
         }
 
-        public List<Specie> getPlants() {
+        public List<Species> getPlants() {
             return plants;
         }
 
-        public void setPlants(List<Specie> plants) {
+        public void setPlants(List<Species> plants) {
             this.plants = plants;
         }
 
-        public static class Specie {
+        public static class Species {
             private String id;
             private String scientificName;
             private String commonName;
