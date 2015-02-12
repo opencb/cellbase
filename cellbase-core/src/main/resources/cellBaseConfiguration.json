@@ -53,7 +53,8 @@
                         "ensemblVersion":"78_38",
                         "name":"GRCh38"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"mmusculus",
@@ -63,7 +64,8 @@
                         "ensemblVersion":"78_38",
                         "name":"GRCm38.p3"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"drerio",
@@ -73,7 +75,8 @@
                         "ensemblVersion":"78_9",
                         "name":"Zv9"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"rnorvegicus",
@@ -83,7 +86,8 @@
                         "ensemblVersion":"78_5",
                         "name":"Rnor_5.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ptroglodytes",
@@ -93,7 +97,8 @@
                         "ensemblVersion":"78_214",
                         "name":"CHIMP2.1.4"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ggorilla",
@@ -103,7 +108,8 @@
                         "ensemblVersion":"78_31",
                         "name":"gorGor3.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"pabelii",
@@ -113,7 +119,8 @@
                         "ensemblVersion":"78_1",
                         "name":"PPYG2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"mmulatta",
@@ -123,7 +130,8 @@
                         "ensemblVersion":"78_10",
                         "name":"MMUL_1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"csabaeus",
@@ -133,7 +141,8 @@
                         "ensemblVersion":"78_1",
                         "name":"ChlSab1.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"sscrofa",
@@ -143,7 +152,8 @@
                         "ensemblVersion":"78_102",
                         "name":"Sscrofa10.2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"cfamiliaris",
@@ -153,7 +163,8 @@
                         "ensemblVersion":"78_31",
                         "name":"CanFam3.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ecaballus",
@@ -163,7 +174,8 @@
                         "ensemblVersion":"78_2",
                         "name":"EquCab2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ocuniculus",
@@ -173,7 +185,8 @@
                         "ensemblVersion":"78_2",
                         "name":"oryCun2.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ggallus",
@@ -183,7 +196,8 @@
                         "ensemblVersion":"78_4",
                         "name":"Galgal4"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"btaurus",
@@ -193,7 +207,8 @@
                         "ensemblVersion":"78_31",
                         "name":"UMD3.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"fcatus",
@@ -203,7 +218,8 @@
                         "ensemblVersion":"78_62",
                         "name":"Felis_catus_6.2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"cintestinalis",
@@ -213,7 +229,8 @@
                         "ensemblVersion":"78_3",
                         "name":"KH"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"oaries",
@@ -223,7 +240,8 @@
                         "ensemblVersion":"78_31",
                         "name":"Oar_v3.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"olatipes",
@@ -233,7 +251,8 @@
                         "ensemblVersion":"78_1",
                         "name":"HdrR"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ttruncatus",
@@ -243,7 +262,8 @@
                         "ensemblVersion":"78_1",
                         "name":"turTru1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"lafricana",
@@ -253,7 +273,8 @@
                         "ensemblVersion":"78_3",
                         "name":"Loxafr3.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"cjacchus",
@@ -263,7 +284,8 @@
                         "ensemblVersion":"78_321",
                         "name":"C_jacchus3.2.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"nleucogenys",
@@ -273,7 +295,8 @@
                         "ensemblVersion":"78_1",
                         "name":"Nleu1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"aplatyrhynchos",
@@ -283,7 +306,8 @@
                         "ensemblVersion":"78_1",
                         "name":"BGI_duck_1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"falbicollis",
@@ -293,7 +317,8 @@
                         "ensemblVersion":"78_1",
                         "name":"FicAlb_1.4"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             }
         ],
         "metazoa":[
@@ -305,7 +330,8 @@
                         "ensemblVersion":"24_77_240",
                         "name":"WBcel240"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"dmelanogaster",
@@ -315,7 +341,8 @@
                         "ensemblVersion":"24_77_546",
                         "name":"BDGP5"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"dsimulans",
@@ -325,7 +352,8 @@
                         "ensemblVersion":"24_77_14",
                         "name":"WUGSC1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"dyakuba",
@@ -335,7 +363,8 @@
                         "ensemblVersion":"24_77_13",
                         "name":"dyak_r1.3"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"agambiae",
@@ -345,7 +374,8 @@
                         "ensemblVersion":"24_77_4",
                         "name":"AgamP4"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"adarlingi",
@@ -355,7 +385,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"AdarC1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"nvectensis",
@@ -365,7 +396,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"ASM20922v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"spurpuratus",
@@ -375,7 +407,8 @@
                         "ensemblVersion":"24_77_3",
                         "name":"GCA_000002235.2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"bmori",
@@ -385,7 +418,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"Bmor1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"aaegypti",
@@ -395,7 +429,8 @@
                         "ensemblVersion":"24_77_3",
                         "name":"AaegL3"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"apisum",
@@ -405,7 +440,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"GCA_000142985.2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             }
         ],
         "fungi":[
@@ -417,7 +453,8 @@
                         "ensemblVersion":"24_77_4",
                         "name":"R64-1-1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"spombe",
@@ -427,7 +464,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"ASM294v2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"afumigatus",
@@ -437,7 +475,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"CADRE"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"aniger",
@@ -447,7 +486,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"CADRE"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"anidulans",
@@ -457,7 +497,8 @@
                         "ensemblVersion":"24_77_6",
                         "name":"ASM1142v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"aoryzae",
@@ -467,7 +508,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"CADRE2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"foxysporum",
@@ -477,7 +519,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"FO2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"pgraminis",
@@ -487,7 +530,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"ASM14992v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ptriticina",
@@ -497,7 +541,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"ASM15152v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"moryzae",
@@ -507,7 +552,8 @@
                         "ensemblVersion":"24_77_8",
                         "name":"MG8"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"umaydis",
@@ -517,7 +563,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"UM1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ssclerotiorum",
@@ -527,7 +574,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"ASM14694v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"cneoformans",
@@ -537,7 +585,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"GCA_000091045.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ztritici",
@@ -547,7 +596,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"MG2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             }
         ],
         "protist":[
@@ -559,7 +609,8 @@
                         "ensemblVersion":"24_77_3",
                         "name":"ASM276v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"lmajor",
@@ -569,7 +620,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"ASM272v2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ddiscoideum",
@@ -579,7 +631,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"dictybase.01"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"pinfestans",
@@ -589,7 +642,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"ASM14294v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"glamblia",
@@ -599,7 +653,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"GCA_000002435.1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"pultimum",
@@ -609,7 +664,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"pug"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"alaibachii",
@@ -619,7 +675,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"ENA1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             }
         ],
         "plants":[
@@ -631,7 +688,8 @@
                         "ensemblVersion":"24_77_10",
                         "name":"TAIR10"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"alyrata",
@@ -641,7 +699,8 @@
                         "ensemblVersion":"24_77_10",
                         "name":"v.1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"bdistachyon",
@@ -651,7 +710,8 @@
                         "ensemblVersion":"24_77_12",
                         "name":"v1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"osativa",
@@ -661,7 +721,8 @@
                         "ensemblVersion":"24_77_7",
                         "name":"IRGSP-1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"gmax",
@@ -671,7 +732,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"V1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"vvinifera",
@@ -681,7 +743,8 @@
                         "ensemblVersion":"24_77_3",
                         "name":"IGGP_12x"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"zmays",
@@ -691,7 +754,8 @@
                         "ensemblVersion":"24_77_6",
                         "name":"AGPv3"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"hvulgare",
@@ -701,7 +765,8 @@
                         "ensemblVersion":"24_77_2",
                         "name":"030312v2"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"macuminata",
@@ -711,7 +776,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"MA1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"sbicolor",
@@ -721,7 +787,8 @@
                         "ensemblVersion":"24_77_14",
                         "name":"Sorbi1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"sitalica",
@@ -731,7 +798,8 @@
                         "ensemblVersion":"24_77_21",
                         "name":"JGIv2.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"taestivum",
@@ -741,7 +809,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"IWGSP1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"brapa",
@@ -751,7 +820,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"IVFCAASv1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"ptrichocarpa",
@@ -761,7 +831,8 @@
                         "ensemblVersion":"24_77_20",
                         "name":"JGI2.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"slycopersicum",
@@ -771,7 +842,8 @@
                         "ensemblVersion":"24_77_240",
                         "name":"SL2.40"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"stuberosum",
@@ -781,7 +853,8 @@
                         "ensemblVersion":"24_77_4",
                         "name":"3.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"smoellendorffii",
@@ -791,7 +864,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"v1.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"creinhardtii",
@@ -801,7 +875,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"v3.0"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             },
             {
                 "id":"cmerolae",
@@ -811,7 +886,8 @@
                         "ensemblVersion":"24_77_1",
                         "name":"ASM9120v1"
                     }
-                ]
+                ],
+                "data":"[genome_info, genome_sequence, gene, variation, regulation]"
             }
         ]
     }
