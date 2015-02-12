@@ -83,7 +83,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-s", "--species"}, description = "", required = true, variableArity = true)
+        @Parameter(names = {"-s", "--species"}, description = "", required = false, variableArity = true)
         public List<String> species = Arrays.asList("Homo Sapiens");
 
         @Parameter(names = {"-a", "--assembly"}, description = "", required = true, arity = 1)

@@ -3,7 +3,8 @@ package org.opencb.cellbase.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,9 +20,9 @@ public class CellBaseConfiguration {
     private DownloadProperties download;
     private SpeciesProperties species;
 
-    public static CellBaseConfiguration load(Path cellbaseConfigurationJsonFile) throws IOException {
+    public static CellBaseConfiguration load(InputStream cellBaseConfigurationFileStream) throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();
-        CellBaseConfiguration properties = jsonMapper.readValue(cellbaseConfigurationJsonFile.toFile(), CellBaseConfiguration.class);
+        CellBaseConfiguration properties = jsonMapper.readValue(cellBaseConfigurationFileStream, CellBaseConfiguration.class);
         return properties;
     }
 
@@ -79,6 +80,18 @@ public class CellBaseConfiguration {
 
     public void setSpecies(SpeciesProperties species) {
         this.species = species;
+    }
+
+    public List<SpeciesProperties.Species> getAllSpecies() {
+        List<SpeciesProperties.Species> allSpecies = new ArrayList<>();
+
+        allSpecies.addAll(species.getVertebrates());
+        allSpecies.addAll(species.getMetazoa());
+        allSpecies.addAll(species.getFungi());
+        allSpecies.addAll(species.getProtist());
+        allSpecies.addAll(species.getPlants());
+
+        return allSpecies;
     }
 
     public static class DatabaseProperties {

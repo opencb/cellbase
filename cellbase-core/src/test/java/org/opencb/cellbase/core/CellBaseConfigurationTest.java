@@ -1,11 +1,7 @@
-package org.opencb.cellbase.core.properties;
+package org.opencb.cellbase.core;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.opencb.cellbase.core.CellBaseConfiguration;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -15,8 +11,7 @@ public class CellBaseConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        Path cellbasePropertiesJsonFile = Paths.get(CellBaseConfigurationTest.class.getResource("/cellBaseProperties_test.json").toURI());
-        cellBaseConfiguration = CellBaseConfiguration.load(cellbasePropertiesJsonFile);
+        cellBaseConfiguration = CellBaseConfiguration.load(CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"));
     }
 
     @Test

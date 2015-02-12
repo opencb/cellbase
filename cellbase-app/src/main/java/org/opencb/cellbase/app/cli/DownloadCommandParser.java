@@ -1,8 +1,11 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -18,8 +21,6 @@ public class DownloadCommandParser extends CommandParser {
 
     private static final String ENSEMBL_HOST = "ftp://ftp.ensembl.org/pub/";
 
-    private Properties properties;
-
     public DownloadCommandParser(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
                 downloadCommandOptions.commonOptions.conf);
@@ -32,12 +33,11 @@ public class DownloadCommandParser extends CommandParser {
      * Parse specific 'download' command options
      */
     public void parse() {
-        this.loadProperties();
         try {
-            Set<String> species = getSpecies();
+            Set<Species> speciesToDownload = getSpecies();
             String host = getHost();
             Path outputDir = Paths.get(downloadCommandOptions.outputDir);
-            for (String sp : species) {
+            for (Species sp : speciesToDownload) {
                 processSpecies(sp, outputDir);
             }
         } catch (ParameterException e) {
@@ -46,56 +46,147 @@ public class DownloadCommandParser extends CommandParser {
 
     }
 
-    private void processSpecies(String sp, Path outputDir) {
-        logger.info("Processing species " + sp);
+    private Set<Species> getSpecies() {
+        Set<String> speciesToDownloadNames = new HashSet<>(downloadCommandOptions.species);
+        List<Species> allSpecies = configuration.getAllSpecies();
+        Set<Species> speciesToDownload = new HashSet<>();
+
+        if (speciesToDownloadNames.size() == 1 && speciesToDownloadNames.contains("all")) {
+            speciesToDownload.addAll(allSpecies);
+        } else {
+            HashMap<String, Species> nameToSpeciesMap = new HashMap<>();
+            for (Species sp : allSpecies) {
+                nameToSpeciesMap.put(sp.getScientificName().toLowerCase().replaceAll("\\s+", "_"), sp);
+            }
+
+            // add all species to download
+            for (String spName : speciesToDownloadNames) {
+                Species sp = nameToSpeciesMap.get(spName.toLowerCase().replaceAll("\\s+", "_"));
+                if (sp == null) {
+                    throw new ParameterException("Specie " + spName + " not found in cellbase configuration file");
+                } else {
+                    speciesToDownload.add(sp);
+                }
+            }
+        }
+
+        return speciesToDownload;
+    }
+
+
+    public String getHost() {
+        // TODO: in genomeFetcher.py there is an host input parameter, add it to CliOptionsParser?
+        return ENSEMBL_HOST;
+    }
+
+    private void processSpecies(Species sp, Path outputDir) {
+        logger.info("Processing species " + sp.getScientificName());
 
         // output folder
-        // TODO: replace('.','') is not necessary because species cannot contain '.' -> CHECK
-        //       replace(' ', '') is not necessary because species cannot contain ' ' -> CHECK
-        String spShortName = sp.toLowerCase().replaceAll("\\)", "").replaceAll("[-(/]", " ").replaceAll("\\s+", "_");
+        String spShortName = sp.getScientificName().toLowerCase().replaceAll("\\.", "").replaceAll("\\)", "").replaceAll("[-(/]", " ").replaceAll("\\s+", "_");
         Path spFolder = outputDir.resolve(spShortName);
         makeDir(spFolder);
 
         // download sequence, gene, variation and regulation
         if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "sequence")) {
-            downloadSequence(sp, spFolder);
+            downloadSequence(sp, spShortName, spFolder);
         }
         if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
             downloadGene(sp, spFolder);
         }
         if (downloadCommandOptions.variation && specieHasInfoToDownload(sp, "variation")) {
-            downloadVariation(spFolder);
+            downloadVariation(sp, spFolder);
         }
         if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
-            downloadRegulation(spFolder);
+            downloadRegulation(sp, spFolder);
         }
     }
 
-    private boolean specieHasInfoToDownload(String specie, String info) {
-        // TODO: implement (read from application properties json)
-        logger.warn("Specie " + specie + " has no " + info + " information available to download");
-        return false;
+    private boolean specieHasInfoToDownload(Species sp, String info) {
+        boolean hasInfo = true;
+        if (sp.getData() == null || !sp.getData().contains(info)) {
+            logger.warn("Specie " + sp.getScientificName() + " has no " + info + " information available to download");
+            hasInfo = false;
+        }
+        return hasInfo;
     }
 
-    private void downloadSequence(String specie, Path spFolder) {
+    private void downloadSequence(Species sp, String shortName, Path spFolder) {
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
-        S
+        String url = getSequenceUrl(sp, shortName);
+
+    }
+
+    private String getSequenceUrl(Species sp, String shortName) {
+        String seqUrl;
+        String ensemblRelease = "/release-" + getEnsemblVersion(sp, downloadCommandOptions.assembly).split("_")[0];
+        if (configuration.getSpecies().getVertebrates().contains(sp)) {
+            String host = configuration.getDownload().getEnsembl().getUrl().getHost();
+            seqUrl = host + ensemblRelease;
+        } else {
+            String host = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
+            seqUrl = host + ensemblRelease + "/" + getPhylo(sp);
+            // TODO: add Metazoo, Plants, etc
+        }
+
+        seqUrl = seqUrl + "/fasta/" + shortName + "/dna/*dna.primary_assembly.fa.gz";
+
+        // TODO: genome info.pl!!
+
+        return seqUrl;
+    }
+
+    private String getEnsemblVersion(Species sp, String assembly) {
+        if (assembly == null) {
+            if (sp.getAssemblies().size() > 1) {
+                // TODO: enumerate available assemblies in error message
+                throw new ParameterException("Specie " + sp.getScientificName() + " has several assemblies: should choose one using --assembly option");
+                // TODO: should ask the user what assembly use?
+            } else {
+                // TODO: full ensembl version (78_38) or just 78??
+                return sp.getAssemblies().get(0).getEnsemblVersion();
+            }
+        }
+        for (Species.Assembly spAssembly : sp.getAssemblies()) {
+            if (spAssembly.getName().equalsIgnoreCase(assembly)) {
+                // TODO: full ensembl version (78_38) or just 78??
+                return spAssembly.getEnsemblVersion();
+            }
+        }
+        // TODO: enumerate available assemblies in error message??
+        throw new ParameterException("Assembly " + assembly + " not found in species " + sp.getScientificName());
+    }
+
+    private String getPhylo(Species sp) {
+        if (configuration.getSpecies().getVertebrates().contains(sp)) {
+            return "vertebrates";
+        } else if (configuration.getSpecies().getMetazoa().contains(sp)) {
+            return "metazoa";
+        } else if (configuration.getSpecies().getFungi().contains(sp)) {
+            return "fungi";
+        } else if (configuration.getSpecies().getProtist().contains(sp)) {
+            return "protists";
+        } else if (configuration.getSpecies().getPlants().contains(sp)) {
+            return "plants";
+        } else {
+            throw new ParameterException ("Species " + sp.getScientificName() + " not associated to any phylo in cellbase configuration file");
+        }
     }
 
 
-    private void downloadGene(String specie, Path spFolder) {
+    private void downloadGene(Species sp, Path spFolder) {
         Path geneFolder = spFolder.resolve("gene");
         makeDir(geneFolder);
-        String phylo = getPhyloOfSpecie(specie);
+
     }
 
-    private void downloadVariation(Path spFolder) {
+    private void downloadVariation(Species sp, Path spFolder) {
         Path variationFolder = spFolder.resolve("variation");
         makeDir(variationFolder);
     }
 
-    private void downloadRegulation(Path spFolder) {
+    private void downloadRegulation(Species sp, Path spFolder) {
         Path regulationFolder = spFolder.resolve("regulation");
         makeDir(regulationFolder);
     }
@@ -109,82 +200,12 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
-    private String getPhyloOfSpecie(String sp) {
-        String phylo = null;
-        for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
-            String propertyName = (String) e.nextElement();
-            // TODO: regular expression for dot (.) char
-            String[] propertyElements = propertyName.split(".");
-            if (sp.equals(propertyElements[1])) {
-                phylo = propertyElements[0];
-                break;
-            }
-        }
-        if (phylo == null) {
-            throw new ParameterException("Phylo not found for specie " + sp);
-        }
-        return phylo;
+    private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
+        String downloadCommandLine = "wget --tries=10 " + url + " -O " + outputFileName + " -o " + outputFileName + ".log";
+//        Process process = Runtime.getRuntime().exec(downloadCommandLine);
+//        process.waitFor();
+        System.out.println(downloadCommandLine);
+        // TODO: output value? standard output messages?
+
     }
-
-    private Set<String> getAllPhylosInPropertiesFile() {
-        Set<String> phylos = new HashSet<>();
-        for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
-            String propertyName = (String) e.nextElement();
-            phylos.add(propertyName.split(".")[0]);
-        }
-        return phylos;
-    }
-
-    private void loadProperties() {
-        // TODO: create properties file and implement this method
-//        properties = new Properties();
-//        try {
-//            properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-    }
-
-    private Set<String> getSpecies() {
-        Set<String> species = new HashSet<>(downloadCommandOptions.species);
-        Set<String> allSpecies = getAllSpeciesFromJsonPropertiesFile();
-
-        // check if all species exist in properties file
-        for (String specie : species) {
-            if (!allSpecies.contains(specie)) {
-                throw new ParameterException("Specie " + specie + " not found in cellbase properties");
-            }
-        }
-
-        if (species.contains("all")) {
-            species = allSpecies;
-        }
-
-        return species;
-    }
-
-    private Set<String> getAllSpeciesFromJsonPropertiesFile() {
-        // TODO: implement
-        return null;
-    }
-
-    @Deprecated
-    private Set<String> getAllSpeciesInPropertiesFile() {
-        Set<String> species = new HashSet<>();
-        for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
-            String propertyName = (String) e.nextElement();
-            String element = propertyName.split(".")[1];
-            if (!element.equals(DATABASE_HOST) && !element.equals(DATABASE_PORT)) {
-                species.add(element);
-            }
-        }
-        return species;
-    }
-
-    public String getHost() {
-        // TODO: in genomeFetcher.py there is an host input parameter, add it to CliOptionsParser?
-        return ENSEMBL_HOST;
-    }
-
-
 }
