@@ -20,8 +20,6 @@ public class DownloadCommandParser extends CommandParser {
     public static final String DATABASE_PORT = "databasePort";
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
-    private static final String ENSEMBL_HOST = "ftp://ftp.ensembl.org/pub/";
-
     public DownloadCommandParser(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
                 downloadCommandOptions.commonOptions.conf);
@@ -36,7 +34,6 @@ public class DownloadCommandParser extends CommandParser {
     public void parse() {
         try {
             Set<Species> speciesToDownload = getSpecies();
-            String host = getHost();
             Path outputDir = Paths.get(downloadCommandOptions.outputDir);
             for (Species sp : speciesToDownload) {
                 try {
@@ -78,12 +75,6 @@ public class DownloadCommandParser extends CommandParser {
         return speciesToDownload;
     }
 
-
-    public String getHost() {
-        // TODO: in genomeFetcher.py there is an host input parameter, add it to CliOptionsParser?
-        return ENSEMBL_HOST;
-    }
-
     private void processSpecies(Species sp, Path outputDir) throws IOException, InterruptedException {
         logger.info("Processing species " + sp.getScientificName());
 
@@ -92,19 +83,31 @@ public class DownloadCommandParser extends CommandParser {
         Path spFolder = outputDir.resolve(spShortName);
         makeDir(spFolder);
 
+        String host = getHost(sp);
+
         // download sequence, gene, variation and regulation
         if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "genome_sequence")) {
-            downloadSequence(sp, spShortName, spFolder);
+            downloadSequence(sp, spShortName, spFolder, host);
         }
         if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
             downloadGene(sp, spFolder);
         }
         if (downloadCommandOptions.variation && specieHasInfoToDownload(sp, "variation")) {
-            downloadVariation(sp, spFolder);
+            downloadVariation(sp, spShortName, spFolder, host);
         }
         if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
             downloadRegulation(sp, spFolder);
         }
+    }
+
+    private String getHost(Species sp) {
+        String host;
+        if (configuration.getSpecies().getVertebrates().contains(sp)) {
+            host = configuration.getDownload().getEnsembl().getUrl().getHost();
+        } else {
+            host = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
+        }
+        return host;
     }
 
     private boolean specieHasInfoToDownload(Species sp, String info) {
@@ -116,29 +119,27 @@ public class DownloadCommandParser extends CommandParser {
         return hasInfo;
     }
 
-    private void downloadSequence(Species sp, String shortName, Path spFolder) throws IOException, InterruptedException {
+    private void downloadSequence(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
-        String url = getSequenceUrl(sp, shortName);
+        String url = getSequenceUrl(sp, shortName, host);
         String outputFileName = StringUtils.capitalize(shortName) + "." + downloadCommandOptions.assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
+        // TODO: genome info.pl!!
     }
 
-    private String getSequenceUrl(Species sp, String shortName) {
+    private String getSequenceUrl(Species sp, String shortName, String host) {
         String seqUrl;
+
         String ensemblRelease = "/release-" + getEnsemblVersion(sp, downloadCommandOptions.assembly).split("_")[0];
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
-            String host = configuration.getDownload().getEnsembl().getUrl().getHost();
             seqUrl = host + ensemblRelease;
         } else {
-            String host = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
             seqUrl = host + ensemblRelease + "/" + getPhylo(sp);
         }
 
         seqUrl = seqUrl + "/fasta/" + shortName + "/dna/*.dna.primary_assembly.fa.gz";
-
-        // TODO: genome info.pl!!
 
         return seqUrl;
     }
@@ -187,9 +188,35 @@ public class DownloadCommandParser extends CommandParser {
 
     }
 
-    private void downloadVariation(Species sp, Path spFolder) {
+    private void downloadVariation(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
         Path variationFolder = spFolder.resolve("variation");
         makeDir(variationFolder);
+        String variationUrl = this.getVariationUrl(sp, shortName, host);
+        String[] variationFiles = {"variation.txt.gz", "variation_feature.txt.gz", "transcript_variation.txt.gz",
+                "variation_synonym.txt.gz", "seq_region.txt.gz", "source.txt.gz", "attrib.txt.gz",
+                "attrib_type.txt.gz", "seq_region.txt.gz", "structural_variation_feature.txt.gz",
+                "study.txt.gz", "phenotype.txt.gz", "phenotype_feature.txt.gz",
+                "phenotype_feature_attrib.txt.gz", "motif_feature_variation.txt.gz", "genotype_code.txt.gz",
+                "allele_code.txt.gz", "population_genotype.txt.gz", "population.txt.gz", "allele.txt.gz"};
+        for (String variationFile : variationFiles) {
+            Path outputFile = variationFolder.resolve(variationFile);
+            downloadFile(variationUrl + "/" + variationFile, outputFile.toString());
+        }
+    }
+
+    private String getVariationUrl(Species sp, String shortName, String host) {
+        String seqUrl;
+
+        String ensemblVersion = getEnsemblVersion(sp, downloadCommandOptions.assembly);
+        String ensemblRelease = "/release-" + ensemblVersion.split("_")[0];
+        seqUrl = host + ensemblRelease;
+        if (!configuration.getSpecies().getVertebrates().contains(sp)) {
+            seqUrl = host + ensemblRelease + "/" + getPhylo(sp);
+        }
+
+        seqUrl = seqUrl + "/mysql/" + shortName + "_variation_" + ensemblVersion;
+
+        return seqUrl;
     }
 
     private void downloadRegulation(Species sp, Path spFolder) {
