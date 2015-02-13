@@ -1,6 +1,7 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
@@ -38,7 +39,11 @@ public class DownloadCommandParser extends CommandParser {
             String host = getHost();
             Path outputDir = Paths.get(downloadCommandOptions.outputDir);
             for (Species sp : speciesToDownload) {
-                processSpecies(sp, outputDir);
+                try {
+                    processSpecies(sp, outputDir);
+                } catch (IOException | InterruptedException e) {
+                    logger.error("Error downloading '" + sp.getScientificName() + "' files: " + e.getMessage());
+                }
             }
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
@@ -79,7 +84,7 @@ public class DownloadCommandParser extends CommandParser {
         return ENSEMBL_HOST;
     }
 
-    private void processSpecies(Species sp, Path outputDir) {
+    private void processSpecies(Species sp, Path outputDir) throws IOException, InterruptedException {
         logger.info("Processing species " + sp.getScientificName());
 
         // output folder
@@ -88,7 +93,7 @@ public class DownloadCommandParser extends CommandParser {
         makeDir(spFolder);
 
         // download sequence, gene, variation and regulation
-        if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "sequence")) {
+        if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "genome_sequence")) {
             downloadSequence(sp, spShortName, spFolder);
         }
         if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
@@ -111,11 +116,13 @@ public class DownloadCommandParser extends CommandParser {
         return hasInfo;
     }
 
-    private void downloadSequence(Species sp, String shortName, Path spFolder) {
+    private void downloadSequence(Species sp, String shortName, Path spFolder) throws IOException, InterruptedException {
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
         String url = getSequenceUrl(sp, shortName);
-
+        String outputFileName = StringUtils.capitalize(shortName) + "." + downloadCommandOptions.assembly + ".fa.gz";
+        Path outputPath = sequenceFolder.resolve(outputFileName);
+        downloadFile(url, outputPath.toString());
     }
 
     private String getSequenceUrl(Species sp, String shortName) {
@@ -127,10 +134,9 @@ public class DownloadCommandParser extends CommandParser {
         } else {
             String host = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
             seqUrl = host + ensemblRelease + "/" + getPhylo(sp);
-            // TODO: add Metazoo, Plants, etc
         }
 
-        seqUrl = seqUrl + "/fasta/" + shortName + "/dna/*dna.primary_assembly.fa.gz";
+        seqUrl = seqUrl + "/fasta/" + shortName + "/dna/*.dna.primary_assembly.fa.gz";
 
         // TODO: genome info.pl!!
 
@@ -201,7 +207,7 @@ public class DownloadCommandParser extends CommandParser {
     }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
-        String downloadCommandLine = "wget --tries=10 " + url + " -O " + outputFileName + " -o " + outputFileName + ".log";
+        String downloadCommandLine = "wget --tries=10 " + url + " -O '" + outputFileName + "' -o " + outputFileName + ".log";
 //        Process process = Runtime.getRuntime().exec(downloadCommandLine);
 //        process.waitFor();
         System.out.println(downloadCommandLine);
