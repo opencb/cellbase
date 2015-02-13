@@ -104,9 +104,21 @@ public class MongoDBAdaptor {
         }
     }
 
-    protected List<QueryResult> executeQueryList2(List<? extends Object> ids,
-                                                                            List<DBObject> queries,
-                                                                            org.opencb.datastore.core.QueryOptions options) {
+
+    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
+        return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
+    }
+
+    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
+        return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
+    }
+
+    protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
+        return executeQueryList2(ids, queries, options, mongoDBCollection2);
+    }
+
+    protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<DBObject> queries, QueryOptions options,
+                                                  MongoDBCollection mongoDBCollection2) {
         List<QueryResult> queryResults = new ArrayList<>(ids.size());
         logger.info("executeQueryList2");
         System.out.println("executeQueryList2");
@@ -179,6 +191,7 @@ public class MongoDBAdaptor {
         return options;
     }
 
+    @Deprecated
     protected BasicDBObject getReturnFields(QueryOptions options) {
         // Select which fields are excluded and included in MongoDB query
         BasicDBObject returnFields = new BasicDBObject("_id", 0);
@@ -272,10 +285,10 @@ public class MongoDBAdaptor {
         return queryResult;
     }
 
-    @Deprecated
-    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
-        return executeQuery(id, query, options, mongoDBCollection);
-    }
+//    @Deprecated
+//    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
+//        return executeQuery(id, query, options, mongoDBCollection);
+//    }
 
     @Deprecated
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, DBCollection dbCollection) {

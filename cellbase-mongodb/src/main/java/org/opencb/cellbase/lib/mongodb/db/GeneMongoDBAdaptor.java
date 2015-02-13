@@ -1,15 +1,17 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 //import org.bioinfo.infrared.core.cellbase.Gene;
 
@@ -119,7 +121,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         queryResult.setId("result");
         DBObject result = new BasicDBObject("biotypes", biotypes);
         queryResult.setResult(Arrays.asList(result));
-        queryResult.setDBTime(0);
+        queryResult.setDbTime(0);
         return queryResult;
     }
 
@@ -186,84 +188,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         return executeQueryList(ids, queries, options);
     }
 
-
-    @Override
-    public List<Gene> getAllByCytoband(String chromosome, String cytoband) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Gene> getAllBySnpId(String snpId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Gene>> getAllBySnpIdList(List<String> snpIdList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Gene> getAllByTf(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Gene>> getAllByTfList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Gene> getAllByTfName(String tfName) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Gene>> getAllByTfNameList(List<String> tfNameList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Gene> getAllTargetsByTf(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Gene>> getAllTargetsByTfList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Gene> getAllByMiRnaMature(String mirbaseId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Gene>> getAllByMiRnaMatureList(List<String> mirbaseIds) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Gene> getAllTargetsByMiRnaMature(String mirbaseId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Gene>> getAllTargetsByMiRnaMatureList(List<String> mirbaseIds) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public QueryResult getAllIntervalFrequencies(Region region, QueryOptions queryOptions) {
