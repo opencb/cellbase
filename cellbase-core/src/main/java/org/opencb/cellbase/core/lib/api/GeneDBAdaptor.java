@@ -21,7 +21,6 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
     public QueryResult next(String id, QueryOptions options);
 
-
 //	public QueryResult getAllEnsemblIds();
 
 	

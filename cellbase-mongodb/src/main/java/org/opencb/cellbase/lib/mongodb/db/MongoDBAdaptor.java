@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.primitives.Ints;
 import com.mongodb.*;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Region;
@@ -140,18 +141,38 @@ public class MongoDBAdaptor {
     protected List<org.opencb.datastore.core.QueryResult> executeQueryList2(List<? extends Object> ids,
                                                                             List<DBObject> queries,
                                                                             org.opencb.datastore.core.QueryOptions options) {
-//        BasicDBObject returnFields = getReturnFields(options);
+        List<org.opencb.datastore.core.QueryResult> queryResults = new ArrayList<>(ids.size());
         logger.info("executeQueryList2");
-//        List<org.opencb.datastore.core.QueryResult> queryResultList = mongoDBCollection2.find(queries, options, null);
-        List queryResultList = mongoDBCollection2.find(queries, options, null);
+        long dbTimeStart, dbTimeEnd;
 
-        
-//        for (int i = 0; i < queryResultList.size(); i++) {
-//            org.opencb.datastore.core.QueryResult queryResult = queryResultList.get(i);
-//            queryResult.setId(ids.get(i).toString());
-//
-//        }
-        return queryResultList;
+        for (int i = 0; i < queries.size(); i++) {
+            DBObject query = queries.get(i);
+            org.opencb.datastore.core.QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
+
+            // Execute query and calculate time
+            dbTimeStart = System.currentTimeMillis();
+            DBCursor cursor = mongoDBCollection2.nativeQuery().find(query, options);
+            List<DBObject> dbObjectList = new LinkedList<>();
+            while (cursor.hasNext()) {
+                dbObjectList.add(cursor.next());
+            }
+            dbTimeEnd = System.currentTimeMillis();
+            // setting queryResult fields
+            queryResult.setId(ids.get(i).toString());
+            queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+            queryResult.setNumResults(dbObjectList.size());
+            // Limit is set in queryOptions, count number of total results
+            if(options != null && options.getInt("limit", 0) > 0) {
+                queryResult.setNumTotalResults(mongoDBCollection2.count(query).first());
+            } else {
+                queryResult.setNumTotalResults(dbObjectList.size());
+            }
+            queryResult.setResult(dbObjectList);
+
+            queryResults.add(queryResult);
+        }
+
+        return queryResults;
     }
 
     protected String getChunkIdPrefix(String chromosome, int position, int chunkSize) {
