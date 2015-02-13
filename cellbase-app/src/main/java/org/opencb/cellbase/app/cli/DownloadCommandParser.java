@@ -2,7 +2,6 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
-import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
 import java.io.File;
@@ -18,7 +17,17 @@ public class DownloadCommandParser extends CommandParser {
 
     public static final String DATABASE_HOST = "databaseHost";
     public static final String DATABASE_PORT = "databasePort";
+    private static final String ENSEMBL_SCRIPTS_DIR = "ensembl-scripts";
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
+
+    private static final String[] variationFiles = {"variation.txt.gz", "variation_feature.txt.gz",
+            "transcript_variation.txt.gz", "variation_synonym.txt.gz", "seq_region.txt.gz", "source.txt.gz",
+            "attrib.txt.gz", "attrib_type.txt.gz", "seq_region.txt.gz", "structural_variation_feature.txt.gz",
+            "study.txt.gz", "phenotype.txt.gz", "phenotype_feature.txt.gz", "phenotype_feature_attrib.txt.gz",
+            "motif_feature_variation.txt.gz", "genotype_code.txt.gz", "allele_code.txt.gz",
+            "population_genotype.txt.gz", "population.txt.gz", "allele.txt.gz"};
+
+    private static final String[] regulationFiles = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz", "RegulatoryFeatures_MultiCell.gff.gz"};
 
     public DownloadCommandParser(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -33,8 +42,11 @@ public class DownloadCommandParser extends CommandParser {
      */
     public void parse() {
         try {
-            Set<Species> speciesToDownload = getSpecies();
             Path outputDir = Paths.get(downloadCommandOptions.outputDir);
+            makeDir(outputDir);
+
+            Set<Species> speciesToDownload = getSpecies();
+
             for (Species sp : speciesToDownload) {
                 try {
                     processSpecies(sp, outputDir);
@@ -96,7 +108,7 @@ public class DownloadCommandParser extends CommandParser {
             downloadVariation(sp, spShortName, spFolder, host);
         }
         if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
-            downloadRegulation(sp, spFolder);
+            downloadRegulation(sp, spShortName, spFolder, host);
         }
     }
 
@@ -120,13 +132,14 @@ public class DownloadCommandParser extends CommandParser {
     }
 
     private void downloadSequence(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
+        logger.info("Downloading genome-sequence information ...");
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
         String url = getSequenceUrl(sp, shortName, host);
         String outputFileName = StringUtils.capitalize(shortName) + "." + downloadCommandOptions.assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
-        // TODO: genome info.pl!!
+        getGenomeInfo(sp, sequenceFolder);
     }
 
     private String getSequenceUrl(Species sp, String shortName, String host) {
@@ -157,12 +170,19 @@ public class DownloadCommandParser extends CommandParser {
         }
         for (Species.Assembly spAssembly : sp.getAssemblies()) {
             if (spAssembly.getName().equalsIgnoreCase(assembly)) {
-                // TODO: full ensembl version (78_38) or just 78??
                 return spAssembly.getEnsemblVersion();
             }
         }
         // TODO: enumerate available assemblies in error message??
-        throw new ParameterException("Assembly " + assembly + " not found in species " + sp.getScientificName());
+        throw new ParameterException("Assembly " + assembly + " not found in species " + sp.getScientificName() + ". Available assemblies for this specie: " + getAvailableAssemblies(sp));
+    }
+
+    private String getAvailableAssemblies(Species sp) {
+        List<String> assemblies = new ArrayList<>();
+        for (Species.Assembly assembly : sp.getAssemblies()) {
+            assemblies.add(assembly.getName());
+        }
+        return StringUtils.join(assemblies, ", ");
     }
 
     private String getPhylo(Species sp) {
@@ -183,21 +203,38 @@ public class DownloadCommandParser extends CommandParser {
 
 
     private void downloadGene(Species sp, Path spFolder) {
+        logger.info("Downloading gene information ...");
         Path geneFolder = spFolder.resolve("gene");
         makeDir(geneFolder);
+        getGeneExtraInfo(geneFolder);
+        if (sp.getScientificName().equalsIgnoreCase("homo sapiens")) {
+            // TODO: gene or regulation?
+            getProteinFunctionPredictionMatrices(geneFolder);
+        }
+    }
 
+    private void getProteinFunctionPredictionMatrices(Path geneFolder) {
+        // TODO: implement
+    }
+
+    private void getGeneExtraInfo(Path geneFolder) {
+        // TODO: implement
+    }
+
+    private void getGenomeInfo(Species sp, Path genomeSequenceFolder) {
+        String genomeInfoCommand = System.getenv("BASEDIR") + "/" + ENSEMBL_SCRIPTS_DIR + "/genome_info.pl ";
+        genomeInfoCommand += "--species " + sp.getScientificName() + " -o " + genomeSequenceFolder + "/genome_info.json";
+//        Process process = Runtime.getRuntime().exec(genomeInfoCommand);
+//        process.waitFor();
+//        int wgetExitValue = process.exitValue();
     }
 
     private void downloadVariation(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
+        logger.info("Downloading variation information ...");
         Path variationFolder = spFolder.resolve("variation");
         makeDir(variationFolder);
+
         String variationUrl = this.getVariationUrl(sp, shortName, host);
-        String[] variationFiles = {"variation.txt.gz", "variation_feature.txt.gz", "transcript_variation.txt.gz",
-                "variation_synonym.txt.gz", "seq_region.txt.gz", "source.txt.gz", "attrib.txt.gz",
-                "attrib_type.txt.gz", "seq_region.txt.gz", "structural_variation_feature.txt.gz",
-                "study.txt.gz", "phenotype.txt.gz", "phenotype_feature.txt.gz",
-                "phenotype_feature_attrib.txt.gz", "motif_feature_variation.txt.gz", "genotype_code.txt.gz",
-                "allele_code.txt.gz", "population_genotype.txt.gz", "population.txt.gz", "allele.txt.gz"};
         for (String variationFile : variationFiles) {
             Path outputFile = variationFolder.resolve(variationFile);
             downloadFile(variationUrl + "/" + variationFile, outputFile.toString());
@@ -205,23 +242,41 @@ public class DownloadCommandParser extends CommandParser {
     }
 
     private String getVariationUrl(Species sp, String shortName, String host) {
-        String seqUrl;
+        String variationUrl;
 
         String ensemblVersion = getEnsemblVersion(sp, downloadCommandOptions.assembly);
         String ensemblRelease = "/release-" + ensemblVersion.split("_")[0];
-        seqUrl = host + ensemblRelease;
+        variationUrl = host + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
-            seqUrl = host + ensemblRelease + "/" + getPhylo(sp);
+            variationUrl = host + ensemblRelease + "/" + getPhylo(sp);
         }
 
-        seqUrl = seqUrl + "/mysql/" + shortName + "_variation_" + ensemblVersion;
+        variationUrl = variationUrl + "/mysql/" + shortName + "_variation_" + ensemblVersion;
 
-        return seqUrl;
+        return variationUrl;
     }
 
-    private void downloadRegulation(Species sp, Path spFolder) {
+    private void downloadRegulation(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
+        logger.info("Downloading regulation information ...");
         Path regulationFolder = spFolder.resolve("regulation");
         makeDir(regulationFolder);
+
+        String regulationUrl = getRegulationUrl(sp, shortName, host);
+
+        for (String regulationFile : regulationFiles) {
+            Path outputFile = regulationFolder.resolve(regulationFile);
+            downloadFile(regulationUrl + "/" + regulationFile, outputFile.toString());
+        }
+    }
+
+    private String getRegulationUrl(Species sp, String shortName, String host) {
+        String regulationUrl;
+
+        String ensemblVersion = getEnsemblVersion(sp, downloadCommandOptions.assembly);
+        String ensemblRelease = "/release-" + ensemblVersion.split("_")[0];
+        regulationUrl = host + ensemblRelease + "/regulation/" + shortName;
+
+        return regulationUrl;       
     }
 
     private void makeDir(Path folderPath) {
@@ -237,8 +292,13 @@ public class DownloadCommandParser extends CommandParser {
         String downloadCommandLine = "wget --tries=10 " + url + " -O '" + outputFileName + "' -o " + outputFileName + ".log";
 //        Process process = Runtime.getRuntime().exec(downloadCommandLine);
 //        process.waitFor();
+//        int wgetExitValue = process.exitValue();
         System.out.println(downloadCommandLine);
-        // TODO: output value? standard output messages?
-
+        int wgetExitValue = 0;
+        if (wgetExitValue == 0) {
+            logger.info(outputFileName + "  created OK");
+        } else {
+            logger.warn(url + " cannot be downloaded");
+        }
     }
 }
