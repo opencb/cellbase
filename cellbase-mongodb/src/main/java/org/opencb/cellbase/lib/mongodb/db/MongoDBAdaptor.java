@@ -1,16 +1,13 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.primitives.Ints;
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.lib.DBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDataStore;
-import org.opencb.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,48 +103,18 @@ public class MongoDBAdaptor {
             }
         }
     }
-//    @Deprecated
-//    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options, DBCollection dbCollection) {
-//        List<QueryResult> queryResults = new ArrayList<>(ids.size());
-//
-//        // Select which fields are excluded and included in MongoDB query
-//        BasicDBObject returnFields = getReturnFields(options);
-//        long dbTimeStart, dbTimeEnd;
-//
-//        for (int i = 0; i < queries.size(); i++) {
-//            DBObject query = queries.get(i);
-//            QueryResult queryResult = new QueryResult();
-//
-//            // Execute query and calculate time
-//            dbTimeStart = System.currentTimeMillis();
-//            BasicDBList list = executeFind(query, returnFields, options, dbCollection);
-//            dbTimeEnd = System.currentTimeMillis();
-//
-//            // setting queryResult fields
-//            queryResult.setId(ids.get(i).toString());
-//            queryResult.setDBTime((dbTimeEnd - dbTimeStart));
-//            // Limit is set in queryOptions, count number of total results
-//            if(options.getInt("limit", 0) > 0) {
-//                queryResult.setNumResults((int) dbCollection.count(query));
-//            } else {
-//                queryResult.setNumResults(list.size());
-//            }
-//            queryResult.setResult(list);
-//            queryResults.add(queryResult);
-//
-//        return queryResults;
-//    }
 
-    protected List<org.opencb.datastore.core.QueryResult> executeQueryList2(List<? extends Object> ids,
+    protected List<QueryResult> executeQueryList2(List<? extends Object> ids,
                                                                             List<DBObject> queries,
                                                                             org.opencb.datastore.core.QueryOptions options) {
-        List<org.opencb.datastore.core.QueryResult> queryResults = new ArrayList<>(ids.size());
+        List<QueryResult> queryResults = new ArrayList<>(ids.size());
         logger.info("executeQueryList2");
+        System.out.println("executeQueryList2");
         long dbTimeStart, dbTimeEnd;
 
         for (int i = 0; i < queries.size(); i++) {
             DBObject query = queries.get(i);
-            org.opencb.datastore.core.QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
+            QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
 
             // Execute query and calculate time
             dbTimeStart = System.currentTimeMillis();
@@ -298,7 +265,7 @@ public class MongoDBAdaptor {
         List<String> diseases = dbCollection.distinct(key);
         long dbTimeEnd = System.currentTimeMillis();
         queryResult.setId(id.toString());
-        queryResult.setDBTime(dbTimeEnd - dbTimeStart);
+//        queryResult.setDbTime(dbTimeEnd - dbTimeStart);
         queryResult.setResult(diseases);
         queryResult.setNumResults(diseases.size());
 
@@ -343,7 +310,7 @@ public class MongoDBAdaptor {
 
             // setting queryResult fields
             queryResult.setId(ids.get(i).toString());
-            queryResult.setDBTime((dbTimeEnd - dbTimeStart));
+//            queryResult.setDbTime((dbTimeEnd - dbTimeStart));
             // Limit is set in queryOptions, count number of total results
             if(options.getInt("limit", 0) > 0) {
                 queryResult.setNumResults((int) dbCollection.count(query));
@@ -427,7 +394,7 @@ public class MongoDBAdaptor {
 
             }
             queryResult.setId(ids.get(i).toString());
-            queryResult.setDBTime((dbTimeEnd - dbTimeStart));
+//            queryResult.setDbTime((dbTimeEnd - dbTimeStart));
             queryResult.setResult(list);
 
             queryResults.add(queryResult);
