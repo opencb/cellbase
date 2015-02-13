@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;

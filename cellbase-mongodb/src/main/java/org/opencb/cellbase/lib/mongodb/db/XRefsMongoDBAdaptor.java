@@ -1,15 +1,16 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
-import com.google.common.base.Splitter;
 import com.mongodb.*;
+import org.opencb.biodata.models.core.DBName;
+import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.common.XRefs;
-import org.opencb.cellbase.core.common.core.DBName;
-import org.opencb.cellbase.core.common.core.Xref;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdaptor {

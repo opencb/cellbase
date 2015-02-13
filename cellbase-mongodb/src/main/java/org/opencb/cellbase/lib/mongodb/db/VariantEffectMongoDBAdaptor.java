@@ -2,13 +2,13 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.*;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.cellbase.core.common.variation.GenomicVariantEffect;
 import org.opencb.cellbase.core.common.variation.GenomicVariantEffectPredictor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.List;
  * Time: 4:34 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements VariantEffectDBAdaptor {
 
 
@@ -74,7 +75,7 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
             dbTimeEnd = System.currentTimeMillis();
 
             QueryResult queryResult = new QueryResult();
-            queryResult.setDBTime((dbTimeEnd - dbTimeStart));
+            queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
             queryResult.setNumResults(list.size());
             queryResult.setResult(a);
 

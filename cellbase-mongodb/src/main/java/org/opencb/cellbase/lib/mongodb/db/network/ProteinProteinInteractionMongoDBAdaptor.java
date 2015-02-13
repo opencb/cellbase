@@ -2,9 +2,9 @@ package org.opencb.cellbase.lib.mongodb.db.network;
 
 import com.mongodb.*;
 import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptor;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;

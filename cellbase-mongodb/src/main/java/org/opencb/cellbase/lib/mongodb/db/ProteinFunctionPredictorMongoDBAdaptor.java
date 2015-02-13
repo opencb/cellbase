@@ -2,8 +2,8 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.*;
 
@@ -80,18 +80,18 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
         QueryResult allChangesQueryResult = executeQuery(transcriptId, builder.get(), queryOptions);
 
         QueryResult proteinSubstitionScoresQueryResult = new QueryResult();
-        proteinSubstitionScoresQueryResult.setDBTime(allChangesQueryResult.getDBTime());
+        proteinSubstitionScoresQueryResult.setDbTime(allChangesQueryResult.getDbTime());
         proteinSubstitionScoresQueryResult.setId(transcriptId+"-"+aaPosition+"-"+newAa);
 
-        String currentAaShortName;
-        Map aaPositions;
-        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
-                (aaPositions = ((HashMap) ((BasicDBObject) ((BasicDBList) allChangesQueryResult.getResult()).get(0)).get("aaPositions")))!=null) {
-            proteinSubstitionScoresQueryResult.setNumResults(1);
-            proteinSubstitionScoresQueryResult.setResult(((HashMap) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName));
-        } else {
-            proteinSubstitionScoresQueryResult.setNumResults(0);
-        }
+//        String currentAaShortName;
+//        Map aaPositions;
+//        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
+//                (aaPositions = ((HashMap) ((BasicDBObject) ((BasicDBList) allChangesQueryResult.getResult()).get(0)).get("aaPositions")))!=null) {
+//            proteinSubstitionScoresQueryResult.setNumResults(1);
+//            proteinSubstitionScoresQueryResult.setResult(((HashMap) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName));
+//        } else {
+//            proteinSubstitionScoresQueryResult.setNumResults(0);
+//        }
 
         return proteinSubstitionScoresQueryResult;
     }

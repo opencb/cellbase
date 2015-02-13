@@ -1,13 +1,12 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.cellbase.core.common.ConservedRegionFeature;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.*;
 
@@ -95,7 +94,7 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
-            BasicDBList list = (BasicDBList) queryResult.get("result");
+            BasicDBList list = (BasicDBList) queryResult.getResult();
 
             Map<String, List<Float>> typeMap = new HashMap();
 
@@ -188,7 +187,7 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
-            BasicDBList list = (BasicDBList) queryResult.get("result");
+            BasicDBList list = (BasicDBList) queryResult.getResult();
 
             Map<String, List<Float>> typeMap = new HashMap();
 

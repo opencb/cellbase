@@ -1,12 +1,12 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.lib.api.GenomeSequenceDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,7 +106,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
 
-            BasicDBList list = (BasicDBList) queryResult.get("result");
+            BasicDBList list = (BasicDBList) queryResult.getResult();
             System.out.println(list.toString());
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < list.size(); j++) {
@@ -131,7 +131,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
             GenomeSequenceFeature genomeSequenceFeature = new GenomeSequenceFeature(region.getChromosome(), region.getStart(), region.getEnd(), 1, ((BasicDBObject)list.get(0)).getString("sequenceType"), ((BasicDBObject)list.get(0)).getString("assembly"), subStr);
 //            GenomeSequenceChunk genomeSequenceChunk = new GenomeSequenceChunk(region.getSequenceName(), region.getStart(), region.getEnd(), subStr);
 
-            queryResult.setResult(genomeSequenceFeature);
+            queryResult.setResult(Arrays.asList(genomeSequenceFeature));
         }
 
         return queryResults;

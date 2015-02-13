@@ -2,12 +2,12 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import com.google.common.base.Joiner;
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.*;
 
@@ -30,6 +30,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         mongoDBCollection = db.getCollection("variation");
         mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
         this.variationChunkSize = variationChunkSize;
+
+        mongoDBCollection2 = mongoDataStore.getCollection("variation");
     }
 
 
@@ -55,7 +57,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         queryResult.setId("result");
         DBObject result = new BasicDBObject("consequenceTypes", consquenceTypes);
         queryResult.setResult(Arrays.asList(result));
-        queryResult.setDBTime(0);
+        queryResult.setDbTime(0);
         return queryResult;
     }
 
@@ -263,7 +265,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             queries.add(builder.get());
         }
 
-        results = executeQueryList(variations, queries, options, mongoDBCollection);
+        results = executeQueryList2(variations, queries, options, mongoDBCollection2);
 
 
         for (QueryResult result: results){
@@ -275,7 +277,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 idList.add(variantObject.get("id").toString());
             }
 
-            result.setResult(Joiner.on(",").skipNulls().join(idList));
+//            result.setResult(Joiner.on(",").skipNulls().join(idList));
+            result.setResult(idList);
         }
 
         return results;

@@ -5,18 +5,18 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.QueryBuilder;
 import org.broad.tribble.readers.TabixReader;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,6 @@ import java.util.*;
  * Created by imedina on 11/07/14.
  */
 public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
-
 
 //    private DBCollection mongoVariationPhenotypeDBCollection;
     private int coreChunkSize = 5000;
@@ -980,7 +979,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         // setting queryResult fields
         queryResult.setId(variant.toString());
-        queryResult.setDBTime((dbTimeEnd - dbTimeStart));
+        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
         queryResult.setNumResults(consequenceTypeList.size());
         queryResult.setResult(consequenceTypeList);
 
@@ -1398,9 +1397,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 dbTimeEnd = System.currentTimeMillis();
 
                 QueryResult queryResult = new QueryResult();
-                queryResult.setDBTime((dbTimeEnd - dbTimeStart));
+                queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
                 queryResult.setNumResults(1);
-                queryResult.setResult(document);
+//                queryResult.setResult(document);
+                // FIXME Quick fix
+                queryResult.setResult(Arrays.asList(document));
 
                 queryResults.add(queryResult);
             }

@@ -1,16 +1,16 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.Clinvar;
 import org.opencb.biodata.models.variant.annotation.Cosmic;
 import org.opencb.biodata.models.variant.annotation.Gwas;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
 
 import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.*;
 
@@ -95,7 +95,7 @@ public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements Clinica
             ids.add(genomicVariant.toString());
         }
 
-        queryResultList = executeQueryList(ids, queries, options);
+        queryResultList = executeQueryList2(ids, queries, options);
 
 
         for (QueryResult queryResult : queryResultList){
@@ -207,13 +207,15 @@ public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements Clinica
                         clinvarList.add(clinvar);
                     }
 
-                    clinicalData.put("Clinvar",clinvarList);
+                    clinicalData.put("Clinvar", clinvarList);
                 }else {
-                    clinicalData.put("Clinvar",null);
+                    clinicalData.put("Clinvar", null);
                 }
             }
 
-            queryResult.setResult(clinicalData);
+            // FIXME quick solution to compile
+//            queryResult.setResult(clinicalData);
+            queryResult.setResult(Arrays.asList(clinicalData));
         }
 
         return queryResultList;

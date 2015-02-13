@@ -1,14 +1,19 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor {
 
@@ -188,6 +193,26 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         return null;
     }
 
+    @Override
+    public List<Transcript> getAllByProteinName(String proteinName) {
+        return null;
+    }
+
+    @Override
+    public List<List<Transcript>> getAllByProteinNameList(List<String> proteinNameList) {
+        return null;
+    }
+
+    @Override
+    public List<Transcript> getAllByMirnaMature(String mirnaID) {
+        return null;
+    }
+
+    @Override
+    public List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList) {
+        return null;
+    }
+
 //	private List<List<Transcript>> executeQuery(DBObject query) {
 //		List<List<Transcript>> result = null;
 //
@@ -242,32 +267,5 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //		}
 //		return result;
 //	}
-
-
-    @Override
-    public List<Transcript> getAllByProteinName(String proteinName) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Transcript>> getAllByProteinNameList(List<String> proteinNameList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Transcript> getAllByMirnaMature(String mirnaID) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
 
 }

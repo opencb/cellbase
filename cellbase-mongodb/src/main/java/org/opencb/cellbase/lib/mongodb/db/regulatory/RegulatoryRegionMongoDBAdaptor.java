@@ -1,12 +1,12 @@
 package org.opencb.cellbase.lib.mongodb.db.regulatory;
 
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptor;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,11 +1,11 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 import com.mongodb.*;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,7 +108,7 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
 
         // setting listAccessionsToReturn fields
         listAccessionsToReturn.setId(queryResult.getId());
-        listAccessionsToReturn.setDBTime(queryResult.getDBTime());
+        listAccessionsToReturn.setDbTime(queryResult.getDbTime());
         listAccessionsToReturn.setNumResults(queryResult.getNumResults());
         listAccessionsToReturn.setResult(accList);
 
