@@ -52,14 +52,19 @@
             <email>javild@gmail.com</email>
         </developer>
         <developer>
+            <id>pabarcgar</id>
+            <name>Pablo</name>
+            <email>pablo.arce.garcia@gmail.com</email>
+        </developer>
+        <developer>
+            <id>mbleda</id>
+            <name>Marta</name>
+            <email>martableda@gmail.com</email>
+        </developer>
+        <developer>
             <id>frasator</id>
             <name>Francisco</name>
             <email>frasator@gmail.com</email>
-        </developer>
-        <developer>
-            <id>cyenyxe</id>
-            <name>Cristina</name>
-            <email>cristina.yenyxe@gmail.com</email>
         </developer>
     </developers>
 
