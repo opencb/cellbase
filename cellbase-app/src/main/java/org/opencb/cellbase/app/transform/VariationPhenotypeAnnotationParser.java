@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
 

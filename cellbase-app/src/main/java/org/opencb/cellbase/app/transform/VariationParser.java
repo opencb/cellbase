@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.Xref;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
 
@@ -73,11 +73,16 @@ public class VariationParser extends CellBaseParser {
     private TabixReader frequenciesTabixReader;
     private final Set<String> thousandGenomesMissedPopulations;
 
-    public VariationParser(Path variationDirectoryPath, CellBaseSerializer serializer) {
+    private CellBaseFileSerializer fileSerializer;
+    private Map<String, String> outputFileNames;
+
+    public VariationParser(Path variationDirectoryPath, CellBaseFileSerializer serializer) {
         super(serializer);
+        fileSerializer = serializer;
         this.variationDirectoryPath = variationDirectoryPath;
         populationFrequnciesPattern = Pattern.compile("(?<" + POPULATION_ID_GROUP + ">\\w+):(?<" + REFERENCE_FREQUENCY_GROUP + ">\\d+.\\d+),(?<" + ALTERNATE_FREQUENCY_GROUP + ">\\d+.\\d+)");
         thousandGenomesMissedPopulations = new HashSet<>();
+        outputFileNames = new HashMap<>();
     }
 
     @Override
@@ -155,7 +160,7 @@ public class VariationParser extends CellBaseParser {
                         batchWatch.start();
                     }
 
-                    serializer.serialize(variation);
+                    fileSerializer.serialize(variation, getOutputFileName(chromosome));
                 } catch (Exception e) {
                     e.printStackTrace();
                     logger.error("Error parsing variation: " + e.getMessage());
@@ -670,6 +675,15 @@ public class VariationParser extends CellBaseParser {
             inputFile = variationDirectoryPath.resolve(fileName + ".gz");
         }
         return FileUtils.newBufferedReader(inputFile);
+    }
+
+    private String getOutputFileName(String chromosome) {
+        String outputFileName = outputFileNames.get(chromosome);
+        if (outputFileName == null) {
+            outputFileName = "variation_chr" + chromosome;
+            outputFileNames.put(chromosome, outputFileName);
+        }
+        return outputFileName;
     }
 
 }

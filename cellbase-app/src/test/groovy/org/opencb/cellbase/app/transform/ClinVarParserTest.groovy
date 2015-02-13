@@ -1,7 +1,7 @@
 package org.opencb.cellbase.app.transform
 
+import org.opencb.cellbase.app.serializers.CellBaseSerializer
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet
-import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
