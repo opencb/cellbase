@@ -231,7 +231,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
 
 //        return ((region2Start>=region1Start && region2Start<=region1End) || (region2End>=region1Start && region2End<=region1End) || (region1Start>=region2Start && region1End<=region2End));
-        return ((region2Start >= region1Start || region2End >= region1Start) && (region2Start <= region1End || region2End <= region1End));
+//        return ((region2Start >= region1Start || region2End >= region1Start) && (region2Start <= region1End || region2End <= region1End));
+        return (region2Start <= region1End && region2End >= region1Start);
 
     }
 
@@ -640,8 +641,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
                 junctionSolution[1] = true;  // variant start & end fall within the intron
             }
-            if(regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
-//            if(!isDonorAcceptor && regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
+//            if(regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
+            if(!isDonorAcceptor && regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
                 SoNames.add("intron_variant");
             }
         }
@@ -755,260 +756,270 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 consequenceTypeTemplate.setProteinSubstitutionScores(null);
 
                 if(transcriptStrand.equals("+")) {
-                    solveTranscriptFlankingRegions(SoNames, transcriptStart, transcriptEnd, variantStart, variantEnd,
-                            "upstream_gene_variant", "downstream_gene_variant");
+                    if(variantStart<=transcriptStart && variantEnd>=transcriptEnd) {  // Deletion - whole transcript removed
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                consequenceTypeTemplate.getEnsemblGeneId(),
+                                consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                consequenceTypeTemplate.getStrand(),
+                                consequenceTypeTemplate.getBiotype(), Collections.singletonList("transcript_ablation")));
+                    } else {
+                        solveTranscriptFlankingRegions(SoNames, transcriptStart, transcriptEnd, variantStart, variantEnd,
+                                "upstream_gene_variant", "downstream_gene_variant");
 
-                    // Check variant falls within transcript start/end coordinates
-                    if(regionsOverlap(transcriptStart,transcriptEnd,variantStart,variantEnd)) {
-                        switch (transcriptBiotype) {
-                            /**
-                             * Coding biotypes
-                             */
-                            case 30:
-                                SoNames.add("NMD_transcript_variant");
-                            case 20:
-                            case 23:    // protein_coding
-                            case 36:
-                            case 50:    // translated_unprocessed_pseudogene
-                            case 51:    // LRG_gene
-                                solveCodingPositiveTranscript(variant, SoNames, transcriptInfo, transcriptStart,
-                                        transcriptEnd, variantStart, variantEnd, cdsLength, transcriptFlags,
-                                        consequenceTypeTemplate);
-                                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                        consequenceTypeTemplate.getEnsemblGeneId(),
-                                        consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                        consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(),
-                                        consequenceTypeTemplate.getcDnaPosition(),
-                                        consequenceTypeTemplate.getCdsPosition(),
-                                        consequenceTypeTemplate.getAaPosition(),
-                                        consequenceTypeTemplate.getAaChange(),
-                                        consequenceTypeTemplate.getCodon(),
-                                        consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
-                                break;
-                            /**
-                             * pseudogenes, antisense should not be annotated as non-coding genes
-                             */
-                            case 39:
-                            case 40:
-                            case 41:
-                            case 42:
-                            case 43:
-                            case 44:
-                            case 49:
-                                solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
-                                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                        consequenceTypeTemplate.getEnsemblGeneId(),
-                                        consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                        consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(),
-                                        consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
-                                break;
+                        // Check variant overlaps transcript start/end coordinates
+                        if(regionsOverlap(transcriptStart,transcriptEnd,variantStart,variantEnd)) {
+                            switch (transcriptBiotype) {
+                                /**
+                                 * Coding biotypes
+                                 */
+                                case 30:
+                                    SoNames.add("NMD_transcript_variant");
+                                case 20:
+                                case 23:    // protein_coding
+                                case 36:
+                                case 50:    // translated_unprocessed_pseudogene
+                                case 51:    // LRG_gene
+                                    solveCodingPositiveTranscript(variant, SoNames, transcriptInfo, transcriptStart,
+                                            transcriptEnd, variantStart, variantEnd, cdsLength, transcriptFlags,
+                                            consequenceTypeTemplate);
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(),
+                                            consequenceTypeTemplate.getCdsPosition(),
+                                            consequenceTypeTemplate.getAaPosition(),
+                                            consequenceTypeTemplate.getAaChange(),
+                                            consequenceTypeTemplate.getCodon(),
+                                            consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
+                                    break;
+                                /**
+                                 * pseudogenes, antisense should not be annotated as non-coding genes
+                                 */
+                                case 39:
+                                case 40:
+                                case 41:
+                                case 42:
+                                case 43:
+                                case 44:
+                                case 49:
+                                    solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
+                                            transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                    break;
                                 /**
                                  * Non-coding biotypes
                                  */
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:   // IG_V_pseudogene
-                            case 10:
-                            case 11:
-                            case 12:
-                            case 13:
-                            case 14:
-                            case 15:
-                                if(variant.getAlternative().equals("-")){  // Deletion
-                                    SoNames.add("feature_truncation");
-                                } else if (variant.getReference().equals("-")) { // Insertion
-                                    SoNames.add("feature_elongation");
-                                }
-                            case 0:   // 3prime_overlapping_ncrna
-                            case 16:  // antisense
-                            case 17:  // lincRNA
-                            case 18:
-                            case 19:
-                            case 21:  // processed_pseudogene
-                            case 22:  // processed_transcript
-                            case 24:    // pseudogene
-                            case 25:
-                            case 26:  // sense_intronic
-                            case 27:  // sense_overlapping
-                            case 28:
-                            case 29:
-                            case 31:  // unprocessed_pseudogene
-                            case 32:  // transcribed_unprocessed_pseudogene
-                            case 33:  // retained_intron
-                            case 34:
-                            case 35:  // unitary_pseudogene
-                            case 37:  // transcribed_processed_pseudogene
-                            case 38:
-                            case 45:
-                            case 46:
-                            case 47:
-                            case 48:
-                                exonVariant = solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
-                                if(exonVariant) {
-//                                    if (transcriptBiotype == 18) {
-//                                        SoNames.add("mature_miRNA_variant");  // TODO: Gary to explain how to annotate mature_miRNA_variant
-//                                    } else {
-                                        SoNames.add("non_coding_transcript_exon_variant");
-//                                    }
-                                } // else {
-                                SoNames.add("non_coding_transcript_variant");
-//                                }
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:   // IG_V_pseudogene
+                                case 10:
+                                case 11:
+                                case 12:
+                                case 13:
+                                case 14:
+                                case 15:
+                                    if (variant.getAlternative().equals("-")) {  // Deletion
+                                        SoNames.add("feature_truncation");
+                                    } else if (variant.getReference().equals("-")) { // Insertion
+                                        SoNames.add("feature_elongation");
+                                    }
+                                case 0:   // 3prime_overlapping_ncrna
+                                case 16:  // antisense
+                                case 17:  // lincRNA
+                                case 18:
+                                case 19:
+                                case 21:  // processed_pseudogene
+                                case 22:  // processed_transcript
+                                case 24:    // pseudogene
+                                case 25:
+                                case 26:  // sense_intronic
+                                case 27:  // sense_overlapping
+                                case 28:
+                                case 29:
+                                case 31:  // unprocessed_pseudogene
+                                case 32:  // transcribed_unprocessed_pseudogene
+                                case 33:  // retained_intron
+                                case 34:
+                                case 35:  // unitary_pseudogene
+                                case 37:  // transcribed_processed_pseudogene
+                                case 38:
+                                case 45:
+                                case 46:
+                                case 47:
+                                case 48:
+                                    exonVariant = solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
+                                            transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                    if (transcriptBiotype == 18 && ((String) transcriptInfo.get("name")).startsWith("MIR")) {  // Only annotate this way known miRNA == mirBase contained
+                                        SoNames.add("mature_miRNA_variant");
+                                    } else {
+                                        if (exonVariant) {
+                                            SoNames.add("non_coding_transcript_exon_variant");
+                                        }
+                                        SoNames.add("non_coding_transcript_variant");
+                                    }
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                    break;
+                            }
+                        } else {
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
                                 consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
                                         consequenceTypeTemplate.getEnsemblGeneId(),
                                         consequenceTypeTemplate.getEnsemblTranscriptId(),
                                         consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(),
-                                        consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
-                                break;
-                        }
-                    } else {
-                        if(variantStart<transcriptStart && variantEnd>transcriptEnd) {  // Deletion that removes the whole transcript
-                            SoNames.add("transcript_ablation");
-                        }
-                        if(SoNames.size()>0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
-                            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                    consequenceTypeTemplate.getEnsemblGeneId(),
-                                    consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                    consequenceTypeTemplate.getStrand(),
-                                    consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                                        consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                            }
                         }
                     }
                 } else {
-                    solveTranscriptFlankingRegions(SoNames, transcriptStart, transcriptEnd, variantStart,
-                            variantEnd, "downstream_gene_variant",
-                            "upstream_gene_variant");
-                    // Check variant falls within transcript start/end coordinates
-                    if(regionsOverlap(transcriptStart,transcriptEnd,variantStart,variantEnd)) {
-                        switch (transcriptBiotype) {
-                            /**
-                             * Coding biotypes
-                             */
-                            case 30:
-                                SoNames.add("NMD_transcript_variant");
-                            case 20:
-                            case 23:
-                            case 36:
-                            case 50:    // translated_unprocessed_pseudogene
-                            case 51:    // LRG_gene
-                                solveCodingNegativeTranscript(variant, SoNames, transcriptInfo, transcriptStart,
-                                        transcriptEnd, variantStart, variantEnd, cdsLength, transcriptFlags,
-                                        consequenceTypeTemplate);
-                                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                        consequenceTypeTemplate.getEnsemblGeneId(),
-                                        consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                        consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(),
-                                        consequenceTypeTemplate.getcDnaPosition(),
-                                        consequenceTypeTemplate.getCdsPosition(),
-                                        consequenceTypeTemplate.getAaPosition(),
-                                        consequenceTypeTemplate.getAaChange(),
-                                        consequenceTypeTemplate.getCodon(),
-                                        consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
-                                break;
-                            /**
-                             * pseudogenes, antisense should not be annotated as non-coding genes
-                             */
-                            case 39:
-                            case 40:
-                            case 41:
-                            case 42:
-                            case 43:
-                            case 44:
-                            case 49:
-                                solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
-                                consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                        consequenceTypeTemplate.getEnsemblGeneId(),
-                                        consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                        consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(),
-                                        consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
-                                break;
+                    if(variantStart<=transcriptStart && variantEnd>=transcriptEnd) {  // Deletion - whole transcript removed
+                        consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                consequenceTypeTemplate.getEnsemblGeneId(),
+                                consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                consequenceTypeTemplate.getStrand(),
+                                consequenceTypeTemplate.getBiotype(), Collections.singletonList("transcript_ablation")));
+                    } else {
+                        solveTranscriptFlankingRegions(SoNames, transcriptStart, transcriptEnd, variantStart,
+                                variantEnd, "downstream_gene_variant",
+                                "upstream_gene_variant");
+                        // Check overlaps transcript start/end coordinates
+                        if (regionsOverlap(transcriptStart, transcriptEnd, variantStart, variantEnd)) {
+                            switch (transcriptBiotype) {
+                                /**
+                                 * Coding biotypes
+                                 */
+                                case 30:
+                                    SoNames.add("NMD_transcript_variant");
+                                case 20:
+                                case 23:
+                                case 36:
+                                case 50:    // translated_unprocessed_pseudogene
+                                case 51:    // LRG_gene
+                                    solveCodingNegativeTranscript(variant, SoNames, transcriptInfo, transcriptStart,
+                                            transcriptEnd, variantStart, variantEnd, cdsLength, transcriptFlags,
+                                            consequenceTypeTemplate);
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(),
+                                            consequenceTypeTemplate.getCdsPosition(),
+                                            consequenceTypeTemplate.getAaPosition(),
+                                            consequenceTypeTemplate.getAaChange(),
+                                            consequenceTypeTemplate.getCodon(),
+                                            consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
+                                    break;
+                                /**
+                                 * pseudogenes, antisense should not be annotated as non-coding genes
+                                 */
+                                case 39:
+                                case 40:
+                                case 41:
+                                case 42:
+                                case 43:
+                                case 44:
+                                case 49:
+                                    solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
+                                            transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                    break;
                                 /**
                                  * Non-coding biotypes
                                  */
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:   // IG_V_pseudogene
-                            case 10:
-                            case 11:
-                            case 12:
-                            case 13:
-                            case 14:
-                            case 15:
-                                if(variant.getAlternative().equals("-")){  // Deletion
-                                    SoNames.add("feature_truncation");
-                                } else if (variant.getReference().equals("-")) { // Insertion
-                                    SoNames.add("feature_elongation");
-                                }
-                            case 0:   // 3prime_overlapping_ncrna
-                            case 17:  // lincRNA
-                            case 16:  // antisense
-                            case 18:
-                            case 19:
-                            case 21:  // processed_pseudogene
-                            case 22:  // processed_transcript
-                            case 24:  // pseudogene
-                            case 25:
-                            case 26:  // sense_intronic
-                            case 27:  // sense_overlapping
-                            case 28:
-                            case 29:
-                            case 31:  // unprocessed_pseudogene
-                            case 32:  // transcribed_unprocessed_pseudogene
-                            case 33:  // retained_intron
-                            case 34:
-                            case 35:    // unitary_pseudogene
-                            case 37:  // transcribed_processed_pseudogene
-                            case 38:
-                            case 45:
-                            case 46:
-                            case 47:
-                            case 48:
-                                exonVariant = solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
-                                        transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
-                                if(exonVariant) {
-//                                    if (transcriptBiotype == 18) {
-//                                        SoNames.add("mature_miRNA_variant");  // TODO: Gary to explain how to annotate mature_miRNA_variant
-//                                    } else {
-                                        SoNames.add("non_coding_transcript_exon_variant");
-//                                    }
-                                } //else {
-                                SoNames.add("non_coding_transcript_variant");
-//                                }
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                case 6:
+                                case 7:   // IG_V_pseudogene
+                                case 10:
+                                case 11:
+                                case 12:
+                                case 13:
+                                case 14:
+                                case 15:
+                                    if (variant.getAlternative().equals("-")) {  // Deletion
+                                        SoNames.add("feature_truncation");
+                                    } else if (variant.getReference().equals("-")) { // Insertion
+                                        SoNames.add("feature_elongation");
+                                    }
+                                case 0:   // 3prime_overlapping_ncrna
+                                case 17:  // lincRNA
+                                case 16:  // antisense
+                                case 18:
+                                case 19:
+                                case 21:  // processed_pseudogene
+                                case 22:  // processed_transcript
+                                case 24:  // pseudogene
+                                case 25:
+                                case 26:  // sense_intronic
+                                case 27:  // sense_overlapping
+                                case 28:
+                                case 29:
+                                case 31:  // unprocessed_pseudogene
+                                case 32:  // transcribed_unprocessed_pseudogene
+                                case 33:  // retained_intron
+                                case 34:
+                                case 35:    // unitary_pseudogene
+                                case 37:  // transcribed_processed_pseudogene
+                                case 38:
+                                case 45:
+                                case 46:
+                                case 47:
+                                case 48:
+                                    exonVariant = solveNonCodingNegativeTranscript(variant, SoNames, transcriptInfo,
+                                            transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                    if (transcriptBiotype == 18 && ((String) transcriptInfo.get("name")).startsWith("MIR")) {  // Only annotate this way known miRNA == mirBase contained
+                                        SoNames.add("mature_miRNA_variant");
+                                    } else {
+                                        if (exonVariant) {
+                                            SoNames.add("non_coding_transcript_exon_variant");
+                                        }
+                                        SoNames.add("non_coding_transcript_variant");
+                                    }
+                                    consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
+                                            consequenceTypeTemplate.getEnsemblGeneId(),
+                                            consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                            consequenceTypeTemplate.getStrand(),
+                                            consequenceTypeTemplate.getBiotype(),
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                    break;
+                            }
+                        } else {
+                            if (variantStart < transcriptStart && variantEnd > transcriptEnd) {  // Deletion that removes the whole transcript
+                                SoNames.add("transcript_ablation");
+                            }
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
                                 consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
                                         consequenceTypeTemplate.getEnsemblGeneId(),
                                         consequenceTypeTemplate.getEnsemblTranscriptId(),
                                         consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(),
-                                        consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
-                                break;
-                        }
-                    } else {
-                        if(variantStart<transcriptStart && variantEnd>transcriptEnd) {  // Deletion that removes the whole transcript
-                            SoNames.add("transcript_ablation");
-                        }
-                        if(SoNames.size()>0) { // Variant does not overlap gene region, just has upstream/downstream annotations
-                            consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
-                                    consequenceTypeTemplate.getEnsemblGeneId(),
-                                    consequenceTypeTemplate.getEnsemblTranscriptId(),
-                                    consequenceTypeTemplate.getStrand(),
-                                    consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                                        consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                            }
                         }
                     }
-
                 }
             }
         }

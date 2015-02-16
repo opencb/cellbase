@@ -90,8 +90,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
         String biotype;
         String SOname;
 
-        public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId, String SOname) {
-            this(chr, pos, alt, ensemblGeneId, "-", "-", SOname);
+        public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId,
+                                          String ensemblTranscriptId, String SOname) {
+            this(chr, pos, alt, ensemblGeneId, ensemblTranscriptId, "-", SOname);
         }
 
         public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId,
@@ -143,20 +144,6 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         @Override
         public boolean equals(Object o) {
-
-//            if (SOname != null) {
-//                if(!SOname.equals(that.SOname) && !((SOname.equals("2KB_upstream_gene_variant") && that.SOname.equals("upstream_gene_variant")) ||
-//                        (SOname.equals("2KB_downstream_gene_variant") && that.SOname.equals("downstream_gene_variant")) ||
-//                        (SOname.equals("upstream_gene_variant") && that.SOname.equals("2KB_upstream_gene_variant")) ||
-//                        (SOname.equals("downstream_gene_variant") && that.SOname.equals("2KB_downstream_gene_variant")) ||
-//                        (SOname.equals("non_coding_transcript_variant") && that.SOname.equals("nc_transcript_variant")) ||
-//                        (SOname.equals("nc_transcript_variant") && that.SOname.equals("non_coding_transcript_variant")))) {
-//                    return false;
-//                }
-//            } else if (that.SOname != null) {
-//                return false;
-//            }
-
             if (this == o) return true;
             if (!(o instanceof AnnotationComparisonObject)) return false;
 
@@ -166,6 +153,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
             if (alt != null ? !alt.equals(that.alt) : that.alt != null) return false;
             if (chr != null ? !chr.equals(that.chr) : that.chr != null) return false;
             if (ensemblGeneId != null ? !ensemblGeneId.equals(that.ensemblGeneId) : that.ensemblGeneId != null)
+                return false;
+            if (ensemblTranscriptId != null ? !ensemblTranscriptId.equals(that.ensemblTranscriptId) : that.ensemblTranscriptId != null)
                 return false;
             if (pos != null ? !pos.equals(that.pos) : that.pos != null) return false;
 
@@ -178,6 +167,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
             result = 31 * result + (pos != null ? pos.hashCode() : 0);
             result = 31 * result + (alt != null ? alt.hashCode() : 0);
             result = 31 * result + (ensemblGeneId != null ? ensemblGeneId.hashCode() : 0);
+            result = 31 * result + (ensemblTranscriptId != null ? ensemblTranscriptId.hashCode() : 0);
             result = 31 * result + (SOname != null ? SOname.hashCode() : 0);
             return result;
         }
@@ -206,8 +196,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
-                "B10p@ss", 10, 10);
+        config.addSpeciesConnection("hsapiens", "GRCh37", "172.22.70.137", "cellbase_hsapiens_v3_grch37", 27017, "mongo", "",
+                "", 10, 10);
+//        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
+//                "B10p@ss", 10, 10);
 
 //        config.addSpeciesConnection("agambiae", "GRCh37", "mongodb-hxvm-var-001", "cellbase_agambiae_agamp4_v3", 27017, "mongo", "biouser",
 //                "B10p@ss", 10, 10);
@@ -227,7 +219,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18997219, StringUtils.repeat("N",12521), "-"), new QueryOptions());  // should return
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18997219, StringUtils.repeat("N",12521), "-"), new QueryOptions());  // should return transcript_ablation
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17449263, "G", "A"), new QueryOptions());  // should return
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 21982892, "C", "T"), new QueryOptions());  // should return a result
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16676212, "C", "T"), new QueryOptions());  // should include downstream_gene_variant
@@ -396,10 +388,11 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
         Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
         String newLine;
+        int nNonRegulatoryAnnotations = 0;
         br.readLine();
         while((newLine=br.readLine())!=null) {
             String[] lineFields = newLine.split("\t");
-            for(String SOname : lineFields[7].split(",")) {
+            for(String SOname : lineFields[8].split(",")) {
                 if(SOname.equals("nc_transcript_variant")) {
                     SOname = "non_coding_transcript_variant";
                 }
@@ -408,7 +401,11 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 } else {
                     alt = lineFields[2];
                 }
-                vepAnnotationSet.add(new AnnotationComparisonObject(lineFields[0], lineFields[1], alt, lineFields[3], SOname));
+                if(!SOname.equals("regulatory_region_variant")) {
+                    nNonRegulatoryAnnotations++;
+                }
+                vepAnnotationSet.add(new AnnotationComparisonObject(lineFields[0], lineFields[1], alt, lineFields[3],
+                        lineFields[4], SOname));
             }
         }
 
@@ -439,6 +436,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
             bw.write(comparisonObject.toString());
         }
         bw.close();
+
+        System.out.println("nNonRegulatoryAnnotations (VEP loaded)= " + nNonRegulatoryAnnotations);
     }
 
 //    private void writeLine(BufferedWriter bw, String pos, String alt, VcfRecord vcfRecord, ConsequenceType consequenceType, String SOnames) throws IOException {
