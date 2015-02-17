@@ -2,6 +2,7 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
+import org.omg.Dynamic.Parameter;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
 import java.io.BufferedReader;
@@ -44,6 +45,7 @@ public class DownloadCommandParser extends CommandParser {
      */
     public void parse() {
         try {
+            checkParameters();
             Path outputDir = Paths.get(downloadCommandOptions.outputDir);
             makeDir(outputDir);
 
@@ -60,6 +62,12 @@ public class DownloadCommandParser extends CommandParser {
             logger.error("Error in 'download' command line: " + e.getMessage());
         }
 
+    }
+
+    private void checkParameters() {
+        if (!downloadCommandOptions.sequence && !downloadCommandOptions.gene && !downloadCommandOptions.variation && !downloadCommandOptions.regulation) {
+            throw new ParameterException("At least one download parameter must be selected: sequence, gene, variation, regulation, protein");
+        }
     }
 
     private Set<Species> getSpecies() {
