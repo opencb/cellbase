@@ -1,0 +1,132 @@
+{
+    "version":"v3",
+    "apiVersion":"v3.1",
+    "wiki":"https://github.com/opencb/cellbase/wiki",
+    "database":{
+        "host":"${CELLBASE.DB.HOST}",
+        "port":"${CELLBASE.DB.PORT}",
+        "user":"${CELLBASE.DB.USER}",
+        "password":"${CELLBASE.DB.PASSWORD}"
+    },
+    "defaultOutdir":"/tmp",
+    "download":{
+        "ensembl":{
+            "database":{
+                "host":"ensembldb.ensembl.org",
+                "port":3306,
+                "user":"anonymous",
+                "password":""
+            },
+            "url":{
+                "host":"ftp://ftp.ensembl.org/pub"
+            }
+        },
+        "ensemblGenomes":{
+            "database":{
+                "host":"mysql-eg-publicsql.ebi.ac.uk",
+                "port":4157,
+                "user":"anonymous",
+                "password":""
+            },
+            "url":{
+                "host":"ftp://ftp.ensembl.org/pub"
+            }
+        }
+    },
+    "species":{
+        "vertebrates":[
+            {
+                "id":"hsapiens",
+                "scientificName":"Homo  sapiens",
+                "assemblies":[
+                    {
+                        "ensemblVersion":"75_37",
+                        "name":"GRCh37.p13"
+                    },
+                    {
+                        "ensemblVersion":"78_38",
+                        "name":"GRCh38"
+                    }
+                ]
+            },
+            {
+                "id":"mmusculus",
+                "scientificName":"Mus  musculus",
+                "assemblies":[
+                    {
+                        "ensemblVersion":"78_38",
+                        "name":"GRCm38.p3"
+                    }
+                ]
+            },
+            {
+                "id":"cfamiliaris",
+                "scientificName":"Canis  familiaris",
+                "assemblies":[
+                    {
+                        "ensemblVersion":"78_31",
+                        "name":"CanFam3.1"
+                    }
+                ]
+            }
+        ],
+        "metazoa":[
+            {
+                "id":"dmelanogaster",
+                "scientificName":"Drosophila  melanogaster",
+                "assemblies":[
+                    {
+                        "ensemblVersion":"24_77_546",
+                        "name":"BDGP5"
+                    }
+                ]
+            }
+        ],
+        "fungi":[
+            {
+                "id":"scerevisiae",
+                "scientificName":"Saccharomyces  cerevisiae",
+                "assemblies":[
+                    {
+                        "ensemblVersion":"24_77_4",
+                        "name":"R64-1-1"
+                    }
+                ]
+            }
+        ],
+        "protist":[
+            {
+                "id":"pfalciparum",
+                "scientificName":"Plasmodium  falciparum",
+                "assemblies":[
+                    {
+                        "ensemblVersion":"24_77_3",
+                        "name":"ASM276v1"
+                    }
+                ]
+            }
+        ],
+        "plants":[
+            {
+                "id":"athaliana",
+                "scientificName":"Arabidopsis  thaliana",
+                "assemblies":[
+                    {
+                        "ensemblVersion":"24_77_10",
+                        "name":"TAIR10"
+                    }
+                ]
+            },
+            {
+                "id": "alyrata",
+                "scientificName": "Arabidopsis  lyrata",
+                "assemblies": [
+                    {
+                        "ensemblVersion": "24_77_10",
+                        "name": "v.1.0"
+                    }
+                ]
+            }
+        ]
+    }
+}
