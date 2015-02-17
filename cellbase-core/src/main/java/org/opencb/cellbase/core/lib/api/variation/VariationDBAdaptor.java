@@ -8,6 +8,7 @@ import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 
+import javax.management.Query;
 import java.util.List;
 
 public interface VariationDBAdaptor {
@@ -58,5 +59,7 @@ public interface VariationDBAdaptor {
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 
     public List<QueryResult> getIdByVariantList(List<GenomicVariant> variations, QueryOptions options);
+
+    public List<QueryResult> getAllByVariantList(List<GenomicVariant> variations, QueryOptions options);
 
 }

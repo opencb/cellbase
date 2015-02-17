@@ -16,6 +16,7 @@ import java.util.*;
 
 /**
  * Created by antonior on 11/18/14.
+ * @author Javier Lopez fjlopez@ebi.ac.uk
  */
 public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements ClinicalVarDBAdaptor {
 
@@ -135,7 +136,6 @@ public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements Clinica
                 }else {
                     clinicalData.put("Cosmic",null);
                 }
-
                 if (gwasObjList != null) {
                     for (BasicDBObject gwasObj : gwasObjList) {
                         String snpIdCurrent = (String) gwasObj.get("snpIdCurrent");
@@ -183,12 +183,14 @@ public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements Clinica
                         Set <String> geneNameSet = new HashSet<>();
 
                         for (BasicDBObject measure : measures){
-                            List <BasicDBObject> measureRelationships = (List<BasicDBObject>) measure.get("measureRelationship");
-                            for (BasicDBObject measureRelationship: measureRelationships){
-                                List<BasicDBObject> symbols = (List<BasicDBObject>) measureRelationship.get("symbol");
-                                for (BasicDBObject symbol: symbols){
-                                    BasicDBObject elementValue = (BasicDBObject) symbol.get("elementValue");
-                                    geneNameSet.add((String) elementValue.get("value"));
+                            List <BasicDBObject> measureRelationships;
+                            if((measureRelationships = (List<BasicDBObject>) measure.get("measureRelationship"))!=null) {
+                                for (BasicDBObject measureRelationship : measureRelationships) {
+                                    List<BasicDBObject> symbols = (List<BasicDBObject>) measureRelationship.get("symbol");
+                                    for (BasicDBObject symbol : symbols) {
+                                        BasicDBObject elementValue = (BasicDBObject) symbol.get("elementValue");
+                                        geneNameSet.add((String) elementValue.get("value"));
+                                    }
                                 }
                             }
                         }

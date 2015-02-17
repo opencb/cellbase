@@ -6,6 +6,7 @@ import com.mongodb.util.StringBuilderPool;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.common.Region;
+import org.opencb.cellbase.core.common.variation.Variation;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
@@ -278,6 +279,28 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
             result.setResult(Joiner.on(",").skipNulls().join(idList));
         }
+
+        return results;
+    }
+
+    @Override
+    public List<QueryResult> getAllByVariantList(List<GenomicVariant> variations, QueryOptions options){
+        List<DBObject> queries = new ArrayList<>(variations.size());
+        List<QueryResult> results;
+
+        for (GenomicVariant variation : variations) {
+            String chunkId = getChunkPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
+
+            QueryBuilder builder = QueryBuilder.start("chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+
+            if(variation.getReference() != null){
+                builder = builder.and("reference").is(variation.getReference());
+            }
+
+            queries.add(builder.get());
+        }
+
+        results = executeQueryList(variations, queries, options, mongoDBCollection);
 
         return results;
     }
