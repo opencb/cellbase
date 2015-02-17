@@ -265,7 +265,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         Boolean codingAnnotationAdded = false;  // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
 
         if(variantAlt.equals("-")) {  // Deletion
-            if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && !transcriptFlags.contains("cds_start_NF")) {  // cdnaVariantStart=null if variant is intronic
+            if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
+                    !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
                 SoNames.add("initiator_codon_variant");
                 codingAnnotationAdded = true;
             }
@@ -291,7 +292,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             }
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
-                if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && !transcriptFlags.contains("cds_start_NF")) {  // cdnaVariantStart=null if variant is intronic
+                if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
+                        !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
                     SoNames.add("initiator_codon_variant");
                     codingAnnotationAdded = true;
                 }
@@ -318,7 +320,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {  // SNV
                 if(cdnaVariantStart != null ) {
                     if (cdnaVariantStart < (cdnaCodingStart + 3)) {  // cdnaVariantStart=null if variant start is intronic
-                        if(!transcriptFlags.contains("cds_start_NF")) {
+                        if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {
                             SoNames.add("initiator_codon_variant");
                             codingAnnotationAdded = true;
                         }
@@ -400,7 +402,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         Boolean codingAnnotationAdded = false;
 
         if(variantAlt.equals("-")) {  // Deletion
-            if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && !transcriptFlags.contains("cds_start_NF")) {  // cdnaVariantStart=null if variant is intronic
+            if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
+                    !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
                 SoNames.add("initiator_codon_variant");
                 codingAnnotationAdded = true;
             }
@@ -426,7 +429,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             }
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
-                if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && !transcriptFlags.contains("cds_start_NF")) {  // cdnaVariantStart=null if variant is intronic
+                if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
+                        !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
                     SoNames.add("initiator_codon_variant");
                     codingAnnotationAdded = true;
                 }
@@ -453,7 +457,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {  // SNV
                 if(cdnaVariantStart != null) {
                     if (cdnaVariantStart < (cdnaCodingStart + 3)) {  // cdnaVariantStart=null if variant is intronic
-                        if(!transcriptFlags.contains("cds_start_NF")) {
+                        if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {
                             SoNames.add("initiator_codon_variant");
                             codingAnnotationAdded = true;
                         }
@@ -541,8 +545,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(transcriptStart<genomicCodingStart) { // Check transcript has 5 UTR
                 SoNames.add("5_prime_UTR_variant");
             }
-            if((variantEnd >= genomicCodingStart) && !transcriptFlags.contains("cds_start_NF")) {  // Deletion that removes initiator codon
-                SoNames.add("initiator_codon_variant");
+            if(variantEnd >= genomicCodingStart) {
+                SoNames.add("coding_sequence_variant");
+                if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {  // Deletion that removes initiator codon
+                    SoNames.add("initiator_codon_variant");
+                }
             }
         } else {
             if(variantStart <= genomicCodingEnd) {  // Variant start within coding region
@@ -562,6 +569,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
                         SoNames.add("3_prime_UTR_variant");
                     }
+                    SoNames.add("coding_sequence_variant");
                     SoNames.add("stop_lost");
                 }
             } else {
@@ -582,8 +590,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(transcriptEnd>genomicCodingEnd) { // Check transcript has 5 UTR
                 SoNames.add("5_prime_UTR_variant");
             }
-            if((variantStart <= genomicCodingEnd) && !transcriptFlags.contains("cds_start_NF")) {  // Deletion that removes initiator codon
-                SoNames.add("initiator_codon_variant");
+            if(variantStart <= genomicCodingEnd) {
+                SoNames.add("coding_sequence_variant");
+                if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {  // Deletion that removes initiator codon
+                    SoNames.add("initiator_codon_variant");
+                }
             }
         } else {
             if(variantEnd >= genomicCodingStart) {  // Variant end within coding region
@@ -603,6 +614,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     if(transcriptStart<genomicCodingStart) {// Check transcript has 3 UTR)
                         SoNames.add("3_prime_UTR_variant");
                     }
+                    SoNames.add("coding_sequence_variant");
                     SoNames.add("stop_lost");
                 }
             } else {

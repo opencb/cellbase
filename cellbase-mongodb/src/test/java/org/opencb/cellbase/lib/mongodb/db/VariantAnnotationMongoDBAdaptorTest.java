@@ -196,8 +196,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "172.22.70.137", "cellbase_hsapiens_v3_grch37", 27017, "mongo", "",
+        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "",
                 "", 10, 10);
+//        config.addSpeciesConnection("hsapiens", "GRCh37", "172.22.70.137", "cellbase_hsapiens_v3_grch37", 27017, "mongo", "",
+//                "", 10, 10);
 //        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
 //                "B10p@ss", 10, 10);
 
@@ -219,8 +221,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 19258045, StringUtils.repeat("N",27376), "-"), new QueryOptions());  // should return initiator_codon_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18293502, "T", "C"), new QueryOptions());  // should return initiator_codon_variant
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18620375, StringUtils.repeat("N",9436), "-"), new QueryOptions());  // should return transcript_ablation
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18620375, StringUtils.repeat("N",9436), "-"), new QueryOptions());  // should return transcript_ablation
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18997219, StringUtils.repeat("N",12521), "-"), new QueryOptions());  // should return transcript_ablation
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17449263, "G", "A"), new QueryOptions());  // should return
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 21982892, "C", "T"), new QueryOptions());  // should return a result
