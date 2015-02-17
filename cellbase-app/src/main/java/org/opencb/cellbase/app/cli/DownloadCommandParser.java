@@ -2,8 +2,6 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
-import org.omg.Dynamic.Parameter;
-import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
 import java.io.BufferedReader;
@@ -19,7 +17,7 @@ import java.util.*;
  */
 public class DownloadCommandParser extends CommandParser {
 
-    private static final String ENSEMBL_SCRIPTS_DIR = "ensembl-scripts";
+    private String ensemblScriptsFolder;
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
     private static final String[] variationFiles = {"variation.txt.gz", "variation_feature.txt.gz",
@@ -36,6 +34,7 @@ public class DownloadCommandParser extends CommandParser {
                 downloadCommandOptions.commonOptions.conf);
 
         this.downloadCommandOptions = downloadCommandOptions;
+        this.ensemblScriptsFolder = System.getProperty("basedir") + "/bin/ensembl-scripts/";
     }
 
 
@@ -221,7 +220,7 @@ public class DownloadCommandParser extends CommandParser {
 
     private void getGenomeInfo(Species sp, Path genomeSequenceFolder) throws IOException, InterruptedException {
         // run genome_info.pl
-        String genomeInfoCommand = System.getenv("BASEDIR") + "/bin/" + ENSEMBL_SCRIPTS_DIR + "/genome_info.pl";
+        String genomeInfoCommand = ensemblScriptsFolder + "/genome_info.pl";
         String outputFileName = genomeSequenceFolder + "/genome_info.json";
         Process getGenomeInfoProcess = runCommandLineProcess(genomeInfoCommand, "--species", sp.getScientificName(), "-o", outputFileName);
 
@@ -251,7 +250,7 @@ public class DownloadCommandParser extends CommandParser {
     private void getGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
         // run gene_extra_info_cellbase.pl
-        String geneExtraInfoBin = System.getenv("BASEDIR") + "/bin/" + ENSEMBL_SCRIPTS_DIR + "/gene_extra_info_cellbase.pl";
+        String geneExtraInfoBin = ensemblScriptsFolder + "/gene_extra_info_cellbase.pl";
         Process getGeneExtraInfoProcess = runCommandLineProcess(geneExtraInfoBin, "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
 
         // check output
@@ -271,7 +270,7 @@ public class DownloadCommandParser extends CommandParser {
     private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
         // run protein_function_prediction_matrices.pl
-        String proteinFunctionBin = System.getenv("BASEDIR") + "/bin/" + ENSEMBL_SCRIPTS_DIR + "/protein_function_prediction_matrices.pl";
+        String proteinFunctionBin = ensemblScriptsFolder + "/protein_function_prediction_matrices.pl";
         Process proteinFunctionProcess = runCommandLineProcess(proteinFunctionBin, "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
 
         // check output
