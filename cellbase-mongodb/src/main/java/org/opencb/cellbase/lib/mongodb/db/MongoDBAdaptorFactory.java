@@ -249,12 +249,12 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     public ChromosomeDBAdaptor getChromosomeDBAdaptor(String species, String assembly) {
         String speciesAssemblyPrefix = getSpeciesAssemblyPrefix(species, assembly);
         String speciesId = config.getAlias(species);
-        if (!mongoDBFactory.containsKey(speciesAssemblyPrefix)) {
-            DB db = createCellBaseMongoDB(speciesId, assembly);
-            mongoDBFactory.put(speciesAssemblyPrefix, db);
+        if(!mongoDatastoreFactory.containsKey(speciesAssemblyPrefix)) {
+            MongoDataStore mongoDataStore = createCellBaseMongoDatastore(speciesId, assembly);
+            mongoDatastoreFactory.put(speciesAssemblyPrefix, mongoDataStore);
         }
-        return (ChromosomeDBAdaptor) new ChromosomeMongoDBAdaptor(mongoDBFactory.get(speciesAssemblyPrefix),
-                speciesId, assembly);
+        return new ChromosomeMongoDBAdaptor(mongoDatastoreFactory.get(speciesAssemblyPrefix),
+                speciesId, assembly, config.getCoreChunkSize());
     }
 
     @Override
