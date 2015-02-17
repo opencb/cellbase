@@ -3,6 +3,8 @@ package org.opencb.cellbase.app.transform;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.formats.sequence.fasta.Fasta;
+import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -24,6 +26,8 @@ public class GeneParser extends CellBaseParser {
 
 
     private Path gtfFile;
+    private Path proteinFastaFile;
+    private Path cDnaFastaFile ;
     private Path geneDescriptionFile;
     private Path xrefsFile;
     private Path uniprotIdMappingFile;
@@ -40,9 +44,12 @@ public class GeneParser extends CellBaseParser {
 
 
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseSerializer serializer) {
-        this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),  geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"), geneDirectoryPath.resolve("mirna.txt"), genomeSequenceFastaFile, serializer);
+        this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
+                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"),
+                geneDirectoryPath.resolve("mirna.txt"), genomeSequenceFastaFile, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
-
+        getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
+        getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath, CellBaseSerializer serializer) {
@@ -128,6 +135,35 @@ public class GeneParser extends CellBaseParser {
             br.close();
         }
 
+        /**
+         * Load ENSEMBL's protein sequences
+         */
+        Map<String, Fasta> proteinSequencesMap = new HashMap<>();
+        if(proteinFastaFile != null && Files.exists(proteinFastaFile) &&
+                !Files.isDirectory(proteinFastaFile)) {
+            FastaReader fastaReader = new FastaReader(proteinFastaFile);
+            List<Fasta> fastaList = fastaReader.readAll();
+            fastaReader.close();
+            for(Fasta fasta : fastaList) {
+                int a = 1;
+//                proteinSequencesMap.put(SACAR LA ID DE LTRANSCRITO DE LA DESCRIPCION, fasta);
+            }
+        }
+
+        /**
+         * Load ENSEMBL's cDNA sequences
+         */
+        Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
+        if(cDnaFastaFile != null && Files.exists(cDnaFastaFile) &&
+                !Files.isDirectory(cDnaFastaFile)) {
+            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
+            List<Fasta> fastaList = fastaReader.readAll();
+            fastaReader.close();
+            for(Fasta fasta : fastaList) {
+                cDnaSequencesMap.put(fasta.getId(), fasta);
+            }
+        }
+
         /*
             Loading Gene Description data
          */
@@ -211,6 +247,8 @@ public class GeneParser extends CellBaseParser {
                 if((tags = gtf.getAttributes().get("tag"))!=null) {
                     transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
                 }
+                transcript.setProteinSequence(proteinSequencesMap.get(transcriptId).getSeq());
+                transcript.setcDnaSequence(cDnaSequencesMap.get(transcriptId).getSeq());
                 gene.getTranscripts().add(transcript);
                 // Do not change order!! size()-1 is the index of the transcript ID
                 transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);
@@ -1045,6 +1083,24 @@ public class GeneParser extends CellBaseParser {
         for (String fileName : geneDirectoryPath.toFile().list()) {
             if (fileName.endsWith(".gtf") || fileName.endsWith(".gtf.gz")) {
                 gtfFile = geneDirectoryPath.resolve(fileName);
+                break;
+            }
+        }
+    }
+
+    private void getProteinFastaFileFromGeneDirectoryPath(Path geneDirectoryPath) {
+        for (String fileName : geneDirectoryPath.toFile().list()) {
+            if (fileName.endsWith(".pep.all.fa") || fileName.endsWith(".pep.all.fa.gz")) {
+                proteinFastaFile = geneDirectoryPath.resolve(fileName);
+                break;
+            }
+        }
+    }
+
+    private void getCDnaFastaFileFromGeneDirectoryPath(Path geneDirectoryPath) {
+        for (String fileName : geneDirectoryPath.toFile().list()) {
+            if (fileName.endsWith(".cdna.all.fa") || fileName.endsWith(".cdna.all.fa.gz")) {
+                cDnaFastaFile = geneDirectoryPath.resolve(fileName);
                 break;
             }
         }
