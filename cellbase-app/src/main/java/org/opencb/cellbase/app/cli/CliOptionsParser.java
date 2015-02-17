@@ -84,7 +84,7 @@ public class CliOptionsParser {
 
 
         @Parameter(names = {"-s", "--species"}, description = "", required = false, variableArity = true)
-        public List<String> species = Arrays.asList("Homo Sapiens");
+        public List<String> species = Arrays.asList("Homo sapiens");
 
         @Parameter(names = {"-a", "--assembly"}, description = "", required = false, arity = 1)
         public String assembly;

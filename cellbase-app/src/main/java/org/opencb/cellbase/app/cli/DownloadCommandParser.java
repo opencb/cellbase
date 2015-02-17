@@ -18,8 +18,6 @@ import java.util.*;
  */
 public class DownloadCommandParser extends CommandParser {
 
-    public static final String DATABASE_HOST = "databaseHost";
-    public static final String DATABASE_PORT = "databasePort";
     private static final String ENSEMBL_SCRIPTS_DIR = "ensembl-scripts";
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
