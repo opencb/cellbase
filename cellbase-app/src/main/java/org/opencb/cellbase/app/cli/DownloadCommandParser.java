@@ -3,6 +3,7 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.omg.Dynamic.Parameter;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
 import java.io.BufferedReader;
@@ -143,17 +144,37 @@ public class DownloadCommandParser extends CommandParser {
         logger.info("Downloading genome-sequence information ...");
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
-        String url = getSequenceUrl(sp, shortName, host);
-        String outputFileName = StringUtils.capitalize(shortName) + "." + downloadCommandOptions.assembly + ".fa.gz";
+        String assembly = getAssembly(sp, downloadCommandOptions.assembly);
+        String url = getSequenceUrl(sp, shortName, assembly, host);
+        String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
         getGenomeInfo(sp, sequenceFolder);
     }
 
-    private String getSequenceUrl(Species sp, String shortName, String host) {
+    private String getAssembly(Species sp, String assembly) {
+        if (assembly == null) {
+            String defaultAssemblyName = sp.getAssemblies().get(0).getName();
+            this.logger.info("No assembly selected, default assembly will be downloaded: " + defaultAssemblyName);
+            return defaultAssemblyName;
+        } else {
+            for (Species.Assembly spAssembly : sp.getAssemblies()) {
+                String assemblyName = spAssembly.getName();
+                if (assemblyName.equalsIgnoreCase(assembly)) {
+                    return assemblyName;
+                }
+            }
+            // assembly not found
+            String errorMessage = "Assembly " + assembly + " not found in species " + sp.getScientificName();
+            errorMessage +=  "\n\tAvailable assemblies for this specie: " + getAvailableAssemblies(sp);
+            throw new ParameterException(errorMessage);
+        }
+    }
+
+    private String getSequenceUrl(Species sp, String shortName, String assembly, String host) {
         String seqUrl;
 
-        String ensemblRelease = "/release-" + getEnsemblVersion(sp, downloadCommandOptions.assembly).split("_")[0];
+        String ensemblRelease = "/release-" + getEnsemblVersion(sp, assembly).split("_")[0];
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
             seqUrl = host + ensemblRelease;
         } else {
@@ -166,20 +187,12 @@ public class DownloadCommandParser extends CommandParser {
     }
 
     private String getEnsemblVersion(Species sp, String assembly) {
-        if (assembly == null) {
-            Species.Assembly defaultAssembly = sp.getAssemblies().get(0);
-            this.logger.info("No assembly selected, default assembly will be downloaded: " + defaultAssembly.getName());
-            return sp.getAssemblies().get(0).getEnsemblVersion();
-        }
         for (Species.Assembly spAssembly : sp.getAssemblies()) {
             if (spAssembly.getName().equalsIgnoreCase(assembly)) {
                 return spAssembly.getEnsemblVersion();
             }
         }
-
-        String errorMessage = "Assembly " + assembly + " not found in species " + sp.getScientificName();
-        errorMessage +=  "\n\tAvailable assemblies for this specie: " + getAvailableAssemblies(sp);
-        throw new ParameterException(errorMessage);
+        return null;
     }
 
     private String getAvailableAssemblies(Species sp) {
