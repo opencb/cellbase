@@ -163,6 +163,9 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--indexFile"}, description = "", required = false, arity = 1)
         public String indexFile;
+
+        @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
+        public int threads = 2;
     }
 
 

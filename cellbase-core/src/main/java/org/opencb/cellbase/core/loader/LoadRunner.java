@@ -1,12 +1,15 @@
 package org.opencb.cellbase.core.loader;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by parce on 18/02/15.
@@ -60,7 +63,7 @@ public abstract class LoadRunner {
 
         @Override
         public void run() {
-            try (BufferedReader br = new BufferedReader(new FileReader(inputJsonFile.toFile()))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(inputJsonFile.toFile()))))) {
                 String jsonLine;
                 int counter = 0;
                 List<String> batch = new ArrayList<>(BATCH_SIZE);
@@ -80,6 +83,7 @@ public abstract class LoadRunner {
                 }
             } catch (Exception e) {
                 // TODO: logger
+                e.printStackTrace();
             }
         }
     }
