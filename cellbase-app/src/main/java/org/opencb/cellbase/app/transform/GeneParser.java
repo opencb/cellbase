@@ -138,7 +138,7 @@ public class GeneParser extends CellBaseParser {
         /**
          * Load ENSEMBL's protein sequences
          */
-        System.out.println("Loading ENSEMBL's protein sequences...");
+        logger.info("Loading ENSEMBL's protein sequences...");
         Map<String, Fasta> proteinSequencesMap = new HashMap<>();
         if(proteinFastaFile != null && Files.exists(proteinFastaFile) &&
                 !Files.isDirectory(proteinFastaFile)) {
@@ -153,7 +153,7 @@ public class GeneParser extends CellBaseParser {
         /**
          * Load ENSEMBL's cDNA sequences
          */
-        System.out.println("Loading ENSEMBL's cDNA sequences...");
+        logger.info("Loading ENSEMBL's cDNA sequences...");
         Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
         if(cDnaFastaFile != null && Files.exists(cDnaFastaFile) &&
                 !Files.isDirectory(cDnaFastaFile)) {
@@ -164,7 +164,7 @@ public class GeneParser extends CellBaseParser {
                 cDnaSequencesMap.put(fasta.getId(), fasta);
             }
         }
-        System.out.println("Done.");
+        logger.info("Done.");
 
         /*
             Loading Gene Description data
@@ -203,6 +203,7 @@ public class GeneParser extends CellBaseParser {
         transcriptDict.clear();
         exonDict.clear();
 
+        logger.info("Parsing gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
         Gtf gtf;
         while ((gtf = gtfReader.read()) != null) {
@@ -250,11 +251,14 @@ public class GeneParser extends CellBaseParser {
                     transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
                 }
 
-                String proteinSequence;
-                if((proteinSequence=proteinSequencesMap.get(transcriptId).getSeq())!=null) {
-                    transcript.setProteinSequence(proteinSequence);
+                Fasta proteinFasta;
+                if((proteinFasta=proteinSequencesMap.get(transcriptId))!=null) {
+                    transcript.setProteinSequence(proteinFasta.getSeq());
                 }
-                transcript.setcDnaSequence(cDnaSequencesMap.get(transcriptId).getSeq());
+                Fasta cDnaFasta;
+                if((cDnaFasta=cDnaSequencesMap.get(transcriptId))!=null) {
+                    transcript.setcDnaSequence(cDnaFasta.getSeq());
+                }
                 gene.getTranscripts().add(transcript);
                 // Do not change order!! size()-1 is the index of the transcript ID
                 transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);
