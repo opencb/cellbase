@@ -539,8 +539,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                                      Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                                      Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
                                                      Integer cdnaVariantEnd, Integer cdsLength,
-                                                     BasicDBList transcriptFlags, String variantRef, String variantAlt,
-                                                     HashSet<String> SoNames, ConsequenceType consequenceTypeTemplate) {
+                                                     BasicDBList transcriptFlags, int firstCdsPhase, String variantRef,
+                                                     String variantAlt, HashSet<String> SoNames,
+                                                     ConsequenceType consequenceTypeTemplate) {
         if(variantStart < genomicCodingStart) {
             if(transcriptStart<genomicCodingStart) { // Check transcript has 5 UTR
                 SoNames.add("5_prime_UTR_variant");
@@ -555,7 +556,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantStart <= genomicCodingEnd) {  // Variant start within coding region
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantStart falls in an intron
                     if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
-                        cdnaCodingStart -= (3-cdsLength%3);
+//                        cdnaCodingStart -= (3-cdsLength%3);
+                        cdnaCodingStart -= firstCdsPhase;
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
@@ -584,8 +586,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                                      Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                                      Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
                                                      Integer cdnaVariantEnd,  Integer cdsLength,
-                                                     BasicDBList transcriptFlags, String variantRef, String variantAlt,
-                                                     HashSet<String> SoNames, ConsequenceType consequenceTypeTemplate) {
+                                                     BasicDBList transcriptFlags, int firstCdsPhase, String variantRef,
+                                                     String variantAlt, HashSet<String> SoNames,
+                                                     ConsequenceType consequenceTypeTemplate) {
         if(variantEnd > genomicCodingEnd) {
             if(transcriptEnd>genomicCodingEnd) { // Check transcript has 5 UTR
                 SoNames.add("5_prime_UTR_variant");
@@ -600,7 +603,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantEnd >= genomicCodingStart) {  // Variant end within coding region
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantEnd falls in an intron
                     if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
-                        cdnaCodingStart -= (3-cdsLength%3);
+//                        cdnaCodingStart -= (3-cdsLength%3);
+                        cdnaCodingStart -= firstCdsPhase;
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
@@ -1191,7 +1195,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(!junctionSolution[1]) {
             solveCodingPositiveTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
-                    cdsLength, transcriptFlags, variant.getReference(), variant.getAlternative(), SoNames,
+                    cdsLength, transcriptFlags, firstCdsPhase, variant.getReference(), variant.getAlternative(), SoNames,
                     consequenceTypeTemplate);
         }
     }
@@ -1291,7 +1295,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(!junctionSolution[1]) {
             solveCodingNegativeTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
-                    cdsLength, transcriptFlags, variant.getReference(), variant.getAlternative(), SoNames,
+                    cdsLength, transcriptFlags, firstCdsPhase, variant.getReference(), variant.getAlternative(), SoNames,
                     consequenceTypeTemplate);
         }
     }
