@@ -1,5 +1,8 @@
 package org.opencb.cellbase.core.loader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -9,9 +12,11 @@ import java.util.concurrent.BlockingQueue;
 public abstract class CellBaseLoader implements Runnable {
 
     protected final BlockingQueue<List<String>> queue;
+    protected final Logger logger;
 
     public CellBaseLoader (BlockingQueue<List<String>> queue) {
         this.queue = queue;
+        logger = LoggerFactory.getLogger(this.getClass());
     }
 
     public abstract void init();

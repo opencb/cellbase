@@ -16,6 +16,7 @@ public class MongoDBLoadRunnerTest {
     @Before
     public void setUp() throws Exception {
         jsonFile = Paths.get(MongoDBLoadRunnerTest.class.getResource("/cosmic.json.gz").toURI());
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
     }
 
     @After

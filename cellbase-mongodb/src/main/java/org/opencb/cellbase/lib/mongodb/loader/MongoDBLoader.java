@@ -55,9 +55,10 @@ public class MongoDBLoader extends CellBaseLoader {
                     this.load(dbObjectsBatch);
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("Loader thread interrupted: " + e.getMessage());
             }
         }
+        logger.debug("Consumer thread finished. All records serialized");
     }
 
     private DBObject getDbObject(String jsonLine) {

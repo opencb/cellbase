@@ -1,8 +1,10 @@
 package org.opencb.cellbase.core.loader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,10 +23,12 @@ public abstract class LoadRunner {
     private static final int BATCH_SIZE = 1000;
     public static final List<String> POISON_PILL = new ArrayList<>();
     private final int threadsNumber;
+    private final Logger logger;
     protected BlockingQueue<List<String>> queue;
     private int consumersNumber;
 
     public LoadRunner (Path inputJsonFile, int threadsNumber) {
+        logger = LoggerFactory.getLogger(this.getClass());
         this.inputJsonFile = inputJsonFile;
         this.queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
         this.threadsNumber = threadsNumber;
@@ -64,9 +68,9 @@ public abstract class LoadRunner {
         @Override
         public void run() {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(inputJsonFile.toFile()))))) {
-                String jsonLine;
                 int counter = 0;
                 List<String> batch = new ArrayList<>(BATCH_SIZE);
+                String jsonLine;
                 while ((jsonLine = br.readLine()) != null) {
                     batch.add(jsonLine);
                     counter++;
@@ -75,15 +79,19 @@ public abstract class LoadRunner {
                         batch = new ArrayList<>(BATCH_SIZE);
                     }
                 }
-                // TODO: last batch?
-                queue.put(batch);
+                // last batch
+                if (!batch.isEmpty()) {
+                    queue.put(batch);
+                }
+
+                logger.info(counter + " records read from " + inputJsonFile);
+
                 // Poison Pill to consumers so they know that there are no more batchs to consume
                 for (int i=0; i < consumersNumber; i++) {
                     queue.put(POISON_PILL);
                 }
             } catch (Exception e) {
-                // TODO: logger
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
     }
