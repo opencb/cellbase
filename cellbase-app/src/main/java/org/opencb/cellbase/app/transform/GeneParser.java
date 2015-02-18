@@ -138,6 +138,7 @@ public class GeneParser extends CellBaseParser {
         /**
          * Load ENSEMBL's protein sequences
          */
+        System.out.println("Loading ENSEMBL's protein sequences...");
         Map<String, Fasta> proteinSequencesMap = new HashMap<>();
         if(proteinFastaFile != null && Files.exists(proteinFastaFile) &&
                 !Files.isDirectory(proteinFastaFile)) {
@@ -145,14 +146,14 @@ public class GeneParser extends CellBaseParser {
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
             for(Fasta fasta : fastaList) {
-                int a = 1;
-//                proteinSequencesMap.put(SACAR LA ID DE LTRANSCRITO DE LA DESCRIPCION, fasta);
+                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0], fasta);
             }
         }
 
         /**
          * Load ENSEMBL's cDNA sequences
          */
+        System.out.println("Loading ENSEMBL's cDNA sequences...");
         Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
         if(cDnaFastaFile != null && Files.exists(cDnaFastaFile) &&
                 !Files.isDirectory(cDnaFastaFile)) {
@@ -163,6 +164,7 @@ public class GeneParser extends CellBaseParser {
                 cDnaSequencesMap.put(fasta.getId(), fasta);
             }
         }
+        System.out.println("Done.");
 
         /*
             Loading Gene Description data
