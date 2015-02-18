@@ -15,8 +15,8 @@ public abstract class LoadRunner<T> {
 
     private final Path inputJsonFile;
     private final Class<T> typeParameterClass;
-    private static final int QUEUE_CAPACITY = 1000;
-    private static final int BATCH_SIZE = 10;
+    private static final int QUEUE_CAPACITY = 10;
+    private static final int BATCH_SIZE = 1000;
     public static final List<String> POISON_PILL = new ArrayList<>();
     private final int threadsNumber;
     protected BlockingQueue<List<String>> queue;
