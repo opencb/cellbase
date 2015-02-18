@@ -249,7 +249,11 @@ public class GeneParser extends CellBaseParser {
                 if((tags = gtf.getAttributes().get("tag"))!=null) {
                     transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
                 }
-                transcript.setProteinSequence(proteinSequencesMap.get(transcriptId).getSeq());
+
+                String proteinSequence;
+                if((proteinSequence=proteinSequencesMap.get(transcriptId).getSeq())!=null) {
+                    transcript.setProteinSequence(proteinSequence);
+                }
                 transcript.setcDnaSequence(cDnaSequencesMap.get(transcriptId).getSeq());
                 gene.getTranscripts().add(transcript);
                 // Do not change order!! size()-1 is the index of the transcript ID
