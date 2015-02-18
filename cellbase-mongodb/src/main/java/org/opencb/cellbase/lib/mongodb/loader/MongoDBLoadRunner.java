@@ -9,12 +9,12 @@ import java.nio.file.Path;
 /**
  * Created by parce on 18/02/15.
  */
-public class MongoDBLoadRunner<T> extends LoadRunner {
+public class MongoDBLoadRunner extends LoadRunner {
 
     private final String collection;
 
-    public MongoDBLoadRunner(Path inputJsonFile, Class<T> typeParameterClass, String collection, int threadsNumber) {
-        super(inputJsonFile, typeParameterClass, threadsNumber);
+    public MongoDBLoadRunner(Path inputJsonFile, String collection, int threadsNumber) {
+        super(inputJsonFile, threadsNumber);
         this.collection = collection;
     }
 

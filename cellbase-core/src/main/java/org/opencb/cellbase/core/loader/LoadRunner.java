@@ -11,10 +11,9 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by parce on 18/02/15.
  */
-public abstract class LoadRunner<T> {
+public abstract class LoadRunner {
 
     private final Path inputJsonFile;
-    private final Class<T> typeParameterClass;
     private static final int QUEUE_CAPACITY = 10;
     private static final int BATCH_SIZE = 1000;
     public static final List<String> POISON_PILL = new ArrayList<>();
@@ -22,9 +21,8 @@ public abstract class LoadRunner<T> {
     protected BlockingQueue<List<String>> queue;
     private int consumersNumber;
 
-    public LoadRunner (Path inputJsonFile, Class<T> typeParameterClass, int threadsNumber) {
+    public LoadRunner (Path inputJsonFile, int threadsNumber) {
         this.inputJsonFile = inputJsonFile;
-        this.typeParameterClass = typeParameterClass;
         this.queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
         this.threadsNumber = threadsNumber;
     }
