@@ -38,12 +38,12 @@ public class MongoDBLoader extends CellBaseLoader {
     }
 
     @Override
-    public void run() {
+    public Integer call() {
+        Integer loadedObjects = 0;
         boolean finished = false;
         while (!finished) {
             try {
                 List<String> batch = queue.take();
-
                 if (batch == LoadRunner.POISON_PILL) {
                     finished = true;
                 } else {
@@ -51,22 +51,30 @@ public class MongoDBLoader extends CellBaseLoader {
                     for (String jsonLine : batch) {
                         DBObject dbObject = getDbObject(jsonLine);
                         dbObjectsBatch.add(dbObject);
+                        loadedObjects++;
                     }
                     this.load(dbObjectsBatch);
                 }
             } catch (InterruptedException e) {
                 logger.error("Loader thread interrupted: " + e.getMessage());
+            } catch (Exception e) {
+                logger.error("Error Loading batch: " + e.getMessage());
             }
         }
-        logger.debug("Consumer thread finished. All records serialized");
+        logger.debug("'load' finished. " + loadedObjects + " records serialized");
+        return loadedObjects;
     }
 
     private DBObject getDbObject(String jsonLine) {
-        DBObject dbObject = (DBObject) JSON.parse(jsonLine);
-        if (chunkSizes != null && chunkSizes.length > 0) {
-            // TODO: get chunkid
-            // TODO: add chunkid to dbobject
+        try {
+            DBObject dbObject = (DBObject) JSON.parse(jsonLine);
+            if (chunkSizes != null && chunkSizes.length > 0) {
+                // TODO: get chunkid
+                // TODO: add chunkid to dbobject
+            }
+            return dbObject;
+        } catch (Exception e) {
+            throw e;
         }
-        return dbObject;
     }
 }

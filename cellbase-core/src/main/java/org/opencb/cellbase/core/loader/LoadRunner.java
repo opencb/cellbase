@@ -9,8 +9,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.*;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -34,13 +33,15 @@ public abstract class LoadRunner {
         this.threadsNumber = threadsNumber;
     }
 
-    public void run() {
-        InputFileReaderThread producer = new InputFileReaderThread(inputJsonFile, queue);
+    public void run() throws ExecutionException, InterruptedException {
         List<CellBaseLoader> consumers = createConsumers();
-        new Thread(producer).start();
-        for (CellBaseLoader consumer : consumers) {
-            new Thread(consumer).start();
-        }
+        ExecutorService executorService = Executors.newFixedThreadPool(consumersNumber);
+        List<Future<Integer>> futures = startConsumers(executorService, consumers);
+        int inputRecords = readInputJsonFile();
+        int loadedRecords = getLoadedRecords(futures);
+        this.checkLoadedRecords(inputRecords, loadedRecords);
+        executorService.shutdown();
+
     }
 
     protected List<CellBaseLoader> createConsumers() {
@@ -50,50 +51,64 @@ public abstract class LoadRunner {
         for (int i=0; i < consumersNumber; i++) {
             consumers.add(createConsumer());
         }
-
+        logger.debug(consumersNumber + " consumer threads created");
         return consumers;
     }
 
     protected abstract CellBaseLoader createConsumer();
 
-    private class InputFileReaderThread implements Runnable{
-        private final BlockingQueue<List<String>> queue;
-        private Path inputJsonFile;
-
-        public InputFileReaderThread(Path inputJsonFile, BlockingQueue<List<String>> queue) {
-            this.inputJsonFile = inputJsonFile;
-            this.queue = queue;
+    private List<Future<Integer>> startConsumers(ExecutorService executorService, List<CellBaseLoader> consumers) {
+        List<Future<Integer>> futures = new ArrayList<>(consumersNumber);
+        for (CellBaseLoader consumer : consumers) {
+            futures.add(executorService.submit(consumer));
         }
-
-        @Override
-        public void run() {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(inputJsonFile.toFile()))))) {
-                int counter = 0;
-                List<String> batch = new ArrayList<>(BATCH_SIZE);
-                String jsonLine;
-                while ((jsonLine = br.readLine()) != null) {
-                    batch.add(jsonLine);
-                    counter++;
-                    if (counter % BATCH_SIZE == 0) {
-                        queue.put(batch);
-                        batch = new ArrayList<>(BATCH_SIZE);
-                    }
-                }
-                // last batch
-                if (!batch.isEmpty()) {
-                    queue.put(batch);
-                }
-
-                logger.info(counter + " records read from " + inputJsonFile);
-
-                // Poison Pill to consumers so they know that there are no more batchs to consume
-                for (int i=0; i < consumersNumber; i++) {
-                    queue.put(POISON_PILL);
-                }
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-            }
-        }
+        return futures;
     }
 
+    private int readInputJsonFile() {
+        int inputFileRecords = 0;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(inputJsonFile.toFile()))))) {
+
+            List<String> batch = new ArrayList<>(BATCH_SIZE);
+            String jsonLine;
+            while ((jsonLine = br.readLine()) != null) {
+                batch.add(jsonLine);
+                inputFileRecords++;
+                if (inputFileRecords % BATCH_SIZE == 0) {
+                    queue.put(batch);
+                    batch = new ArrayList<>(BATCH_SIZE);
+                }
+            }
+            // last batch
+            if (!batch.isEmpty()) {
+                queue.put(batch);
+            }
+
+            logger.info(inputFileRecords + " records read from " + inputJsonFile);
+
+            // Poison Pill to consumers so they know that there are no more batchs to consume
+            for (int i=0; i < consumersNumber; i++) {
+                queue.put(POISON_PILL);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return inputFileRecords;
+    }
+
+    private int getLoadedRecords(List<Future<Integer>> futures) throws InterruptedException, ExecutionException {
+        int loadedRecords = 0;
+        for (Future<Integer> future : futures) {
+            loadedRecords += future.get();
+        }
+        return loadedRecords;
+    }
+
+    protected void checkLoadedRecords(int inputRecords, int loadedRecords) {
+        if (inputRecords == loadedRecords) {
+            logger.info("All records have been loaded");
+        } else {
+            logger.warn("Just " + loadedRecords + " of " + inputRecords + " have been loaded");
+        }
+    }
 }

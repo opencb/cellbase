@@ -15,8 +15,8 @@ public class MongoDBLoadRunnerTest {
 
     @Before
     public void setUp() throws Exception {
-        jsonFile = Paths.get(MongoDBLoadRunnerTest.class.getResource("/cosmic.json.gz").toURI());
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
+        jsonFile = Paths.get(MongoDBLoadRunnerTest.class.getResource("/cosmic.json.gz").toURI());
     }
 
     @After
@@ -26,7 +26,7 @@ public class MongoDBLoadRunnerTest {
 
     @Test
     public void testRun() throws Exception {
-        MongoDBLoadRunner cosmicLoadRunner = new MongoDBLoadRunner(jsonFile, "cosmic", 2);
+        MongoDBLoadRunner cosmicLoadRunner = new MongoDBLoadRunner(jsonFile, "cosmic", 4);
         cosmicLoadRunner.run();
     }
 }
