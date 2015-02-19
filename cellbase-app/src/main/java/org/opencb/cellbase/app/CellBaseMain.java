@@ -2,7 +2,8 @@ package org.opencb.cellbase.app;
 
 import org.opencb.cellbase.app.cli.*;
 
-//import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 public class CellBaseMain {
 
@@ -92,23 +93,23 @@ public class CellBaseMain {
             CommandParser commandParser = null;
             switch (parsedCommand) {
                 case "download":
-                    if(cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
+                    if (cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
-                    }else {
+                    } else {
                         commandParser = new DownloadCommandParser(cliOptionsParser.getDownloadCommandOptions());
                     }
                     break;
                 case "build":
-                    if(cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
+                    if (cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
-                    }else {
+                    } else {
                         commandParser = new BuildCommandParser(cliOptionsParser.getBuildCommandOptions());
                     }
                     break;
                 case "load":
-                    if(cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
+                    if (cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
-                    }else {
+                    } else {
                         commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
                     }
                     break;
@@ -118,11 +119,15 @@ public class CellBaseMain {
                     break;
             }
 
-            if(commandParser != null) {
-                commandParser.parse();
+            if (commandParser != null) {
+                try {
+                    commandParser.readCellBaseConfiguration();
+                    commandParser.parse();
+                } catch (IOException|URISyntaxException ex) {
+                    commandParser.getLogger().error("Error reading cellbase configuration: " + ex.getMessage());
+                }
             }
         }
-
 
 //        String buildOption;
 //
@@ -161,6 +166,7 @@ public class CellBaseMain {
 //        }
 
     }
+
 
 //    private static void buildAll() throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
 //        logger.info("Processing all...");
