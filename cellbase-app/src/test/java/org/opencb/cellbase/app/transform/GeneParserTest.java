@@ -19,7 +19,8 @@ public class GeneParserTest {
         Path outputPath = Paths.get("/tmp/");
         CellBaseSerializer serializer = new JsonParser(outputPath, "gene");
 
-        GeneParser geneParser = new GeneParser(Paths.get("/tmp/test/"), Paths.get("/tmp/homo_sapiens/sequence/Homo_sapiens.GRCh37.p13.fa.gz"), serializer);
+        GeneParser geneParser = new GeneParser(Paths.get("/tmp/homo_sapiens/gene/"),
+                Paths.get("/tmp/homo_sapiens/sequence/Homo_sapiens.GRCh37.p13.fa.gz"), serializer);
 
         geneParser.parse();
     }
