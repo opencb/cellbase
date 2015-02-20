@@ -1,9 +1,11 @@
 # Overview
-An integrative, scalable and high-performance NoSQL database with a Java RESTful web services API to query the most relevant biological information. Different data sources are integrated and laoded into CellBase such as Ensembl, Uniprot, IntAct, ClinVar among others. Also, a variant annotation tool has been implemented. CellBase has been designed to support different storage engines, currently MongoDB plugin is fully developed which provides an amazing performance and scalability.
+CellBase is a scalable and high-performance NoSQL database that integrates relevant biological information from well-known data sources such as Ensembl, Uniprot, IntAct or ClinVar among others. All this data can be queried through a comprehensive RESTful web services API or using the command line interface. Also, a built-in variant annotator has been developed and can be used to annotate files containing variants in Variant Call Format (VCF) thanks to a tool also provided.
 
-CellBase constitutes the knowledge-base component of [OpenCB](http://www.opencb.org/) initiative, it is used by other OpenCB projects such as [OpenCGA](https://github.com/opencb/opencga) as well as other external applications such as [EBI EVA](www.ebi.ac.uk/eva/) or [Babelomics](http://www.babelomics.org/).
+CellBase not only consumes multiple data sources, but has also been designed to run on different database engines. So far, a MongoDB plugin has been fully developed, providing amazing performance and scalability.
 
-Note: this repository is a major refactoring of: https://github.com/opencb-cloud. All users must update to this one.
+CellBase constitutes the knowledge-base component of [OpenCB](http://www.opencb.org/) initiative. It is used by other OpenCB projects such as [OpenCGA](https://github.com/opencb/opencga) as well as other external applications such as [EBI EVA](www.ebi.ac.uk/eva/) or [Babelomics](http://www.babelomics.org/).
+
+Note: This repository is a major refactoring of https://github.com/opencb-cloud. All users, please update to this one.
 
 ### Documentation
 You can find documentation and tutorials about CellBase at: https://github.com/opencb/cellbase/wiki
