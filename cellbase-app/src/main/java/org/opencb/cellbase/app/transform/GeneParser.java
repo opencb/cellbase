@@ -169,17 +169,7 @@ public class GeneParser extends CellBaseParser {
         /*
             Loading Gene Description data
          */
-        Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
-        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
-            List<String> lines = Files.readAllLines(tfbsFile, Charset.defaultCharset());
-            for (String line : lines) {
-                fields = line.split("\t", -1);
-                if (!tfbsMap.containsKey(fields[0])) {
-                    tfbsMap.put(fields[0], new ArrayList<TranscriptTfbs>());
-                }
-                tfbsMap.get(fields[0]).add(new TranscriptTfbs(fields[1], fields[2], fields[3], Integer.parseInt(fields[4]), Integer.parseInt(fields[5]), fields[6], Integer.parseInt(fields[7]), Integer.parseInt(fields[8]), Float.parseFloat(fields[9])));
-            }
-        }
+        Map<String, ArrayList<TranscriptTfbs>> tfbsMap = getTfbsMap();
 
         // Loading MiRNAGene file
         Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
@@ -477,6 +467,22 @@ public class GeneParser extends CellBaseParser {
 //            Process process = Runtime.getRuntime().exec("gzip " + gunzipedSeqFile.toAbsolutePath());
 //            process.waitFor();
 //        }
+    }
+
+    private Map<String, ArrayList<TranscriptTfbs>> getTfbsMap() throws IOException {
+        String[] fields;
+        Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
+        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
+            List<String> lines = Files.readAllLines(tfbsFile, Charset.defaultCharset());
+            for (String line : lines) {
+                fields = line.split("\t", -1);
+                if (!tfbsMap.containsKey(fields[0])) {
+                    tfbsMap.put(fields[0], new ArrayList<TranscriptTfbs>());
+                }
+                tfbsMap.get(fields[0]).add(new TranscriptTfbs(fields[1], fields[2], fields[3], Integer.parseInt(fields[4]), Integer.parseInt(fields[5]), fields[6], Integer.parseInt(fields[7]), Integer.parseInt(fields[8]), Float.parseFloat(fields[9])));
+            }
+        }
+        return tfbsMap;
     }
 
     private void connect(Path genomeSequenceFilePath) throws ClassNotFoundException, SQLException, IOException {
