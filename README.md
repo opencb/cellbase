@@ -1,5 +1,5 @@
 # Overview
-CellBase is a scalable and high-performance NoSQL database that integrates relevant biological information from well-known data sources such as Ensembl, Uniprot, IntAct or ClinVar among others. All this data can be queried through a comprehensive RESTful web services API or using the command line interface. Also, a built-in variant annotator has been developed and can be used to annotate files containing variants in Variant Call Format (VCF) thanks to a tool also provided.
+CellBase is a scalable and high-performance NoSQL database that integrates relevant biological information from well-known data sources such as Ensembl, Uniprot, IntAct or ClinVar among others. All this data can be queried through a comprehensive RESTful web services API or using the command line interface. Also, a built-in variant annotator has been developed and can be used to annotate files containing variants in Variant Call Format (VCF).
 
 CellBase not only consumes multiple data sources, but has also been designed to run on different database engines. So far, a MongoDB plugin has been fully developed, providing amazing performance and scalability.
 
@@ -22,7 +22,7 @@ Roadmap are available at [GitHub milestones](https://github.com/opencb/cellbase/
 CellBase is versioned following the rules from [Semantic versioning](http://semver.org/).
 
 ### Maintainers
- You can contact any of the following main developers:
+We recommend to contact CellBase developers by writing to OpenCB mailing list opencb@googlegroups.com. The main developers and mainteners are:
   * Ignacio Medina (im411@cam.ac.uk)
   * Javier Lopez (fjlopez@ebi.ac.uk)
   * Pablo Arce (pablo.arce@bioinfomgp.org)
