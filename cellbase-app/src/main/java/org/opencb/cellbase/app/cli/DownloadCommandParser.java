@@ -4,10 +4,8 @@ import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -17,7 +15,7 @@ import java.util.*;
  */
 public class DownloadCommandParser extends CommandParser {
 
-    private String ensemblScriptsFolder;
+    private File ensemblScriptsFolder;
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
     private static final String[] variationFiles = {"variation.txt.gz", "variation_feature.txt.gz",
@@ -34,7 +32,7 @@ public class DownloadCommandParser extends CommandParser {
                 downloadCommandOptions.commonOptions.conf);
 
         this.downloadCommandOptions = downloadCommandOptions;
-        this.ensemblScriptsFolder = System.getProperty("basedir") + "/bin/ensembl-scripts/";
+        this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
     }
 
 
@@ -220,19 +218,17 @@ public class DownloadCommandParser extends CommandParser {
 
     private void getGenomeInfo(Species sp, Path genomeSequenceFolder) throws IOException, InterruptedException {
         // run genome_info.pl
-        String genomeInfoCommand = ensemblScriptsFolder + "/genome_info.pl";
         String outputFileName = genomeSequenceFolder + "/genome_info.json";
-        Process getGenomeInfoProcess = runCommandLineProcess(genomeInfoCommand, "--species", sp.getScientificName(), "-o", outputFileName);
+        List<String> args = Arrays.asList("--species", sp.getScientificName(), "-o", outputFileName);
+        String geneInfoLogFileName = genomeSequenceFolder + "/genome_info.log";
+
+        boolean downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
 
         // check output
-        int genomeInfoExitValue = getGenomeInfoProcess.exitValue();
-        if (genomeInfoExitValue == 0) {
+        if (downloadedGenomeInfo) {
             logger.info(outputFileName + "  created OK");
         } else {
             logger.error("Genome info for " + sp.getScientificName() + " cannot be downloaded");
-            for (String outputLine : getCommandLineProcessOutput(getGenomeInfoProcess)) {
-                logger.error(outputLine);
-            }
         }
     }
 
@@ -249,41 +245,41 @@ public class DownloadCommandParser extends CommandParser {
 
     private void getGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
+
+        String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info_cellbase.log").toString();
+        List<String> args = Arrays.asList( "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
+
         // run gene_extra_info_cellbase.pl
-        String geneExtraInfoBin = ensemblScriptsFolder + "/gene_extra_info_cellbase.pl";
-        Process getGeneExtraInfoProcess = runCommandLineProcess(geneExtraInfoBin, "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
+        boolean geneExtraInfoDownloaded = runCommandLineProcess(ensemblScriptsFolder,
+                "./gene_extra_info_cellbase.pl",
+                args,
+                geneExtraInfoLogFile);
 
         // check output
-        int getGeneExtraInfoReturnValue = getGeneExtraInfoProcess.exitValue();
-        if (getGeneExtraInfoReturnValue == 0) {
-            // TODO: message
+        if (geneExtraInfoDownloaded) {
             logger.info("Gene extra files created OK");
         } else {
-            // TODO: fix error message
             logger.error("Gene extra info for " + sp.getScientificName() + " cannot be downloaded");
-            for (String outputLine : getCommandLineProcessOutput(getGeneExtraInfoProcess)) {
-                logger.error(outputLine);
-            }
         }
     }
 
     private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
+
         // run protein_function_prediction_matrices.pl
-        String proteinFunctionBin = ensemblScriptsFolder + "/protein_function_prediction_matrices.pl";
-        Process proteinFunctionProcess = runCommandLineProcess(proteinFunctionBin, "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
+        String proteinFunctionProcessLogFile = geneFolder.resolve("protein_function_prediction_matrices.log").toString();
+        List<String> args = Arrays.asList( "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
+
+        boolean proteinFunctionPredictionMatricesObtaines = runCommandLineProcess(ensemblScriptsFolder,
+                "./protein_function_prediction_matrices.pl",
+                args,
+                proteinFunctionProcessLogFile);
 
         // check output
-        int proteinFunctionPredictionReturnValue = proteinFunctionProcess.exitValue();
-        if (proteinFunctionPredictionReturnValue == 0) {
-            // TODO: message
+        if (proteinFunctionPredictionMatricesObtaines) {
             logger.info("Protein function prediction matrices created OK");
         } else {
-            // TODO: fix error message
             logger.error("Protein function prediction matrices for " + sp.getScientificName() + " cannot be downloaded");
-            for (String outputLine : getCommandLineProcessOutput(proteinFunctionProcess)) {
-                logger.error(outputLine);
-            }
         }
     }
 
@@ -340,46 +336,63 @@ public class DownloadCommandParser extends CommandParser {
     private void makeDir(Path folderPath) {
         File folder = folderPath.toFile();
         if (!folder.exists()) {
-            folder.mkdir();
+            if (!folder.mkdir()) {
+                throw new ParameterException(folderPath.getFileName() + " cannot be created");
+            }
         } else if (!folder.isDirectory()) {
             throw new ParameterException(folderPath.getFileName() + " exists and it is a file");
         }
     }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
-        Process process = runCommandLineProcess("wget", "--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
-        int wgetExitValue = process.exitValue();
+        List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
+        boolean downloaded = runCommandLineProcess(null, "wget", wgetArgs, null);
 
-        if (wgetExitValue == 0) {
+        if (downloaded) {
             logger.info(outputFileName + "  created OK");
         } else {
             logger.warn(url + " cannot be downloaded");
-            for (String outputLine : getCommandLineProcessOutput(process)) {
-                logger.warn(outputLine);
-            }
         }
     }
 
-    private Process runCommandLineProcess(String... args) throws IOException, InterruptedException {
-        ProcessBuilder builder = new ProcessBuilder(args);
-        builder.redirectErrorStream(true);
+    private boolean runCommandLineProcess(File workingDirectory,  String binPath, List<String> args, String logFilePath) throws IOException, InterruptedException {
+        ProcessBuilder builder = getProcessBuilder(binPath, args, workingDirectory, logFilePath);
+
         logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
         Process process = builder.start();
         process.waitFor();
-        return process;
+
+        return checkProcessOutput(process, binPath, logFilePath);
     }
 
-    private List<String> getCommandLineProcessOutput(Process process) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        List<String> outputLines = new ArrayList<>();
-        String line;
-        try {
-            while ((line = reader.readLine()) != null) {
-                outputLines.add(line);
-            }
-        } catch (IOException e) {
-            logger.warn("Error reading command line process output: " + e.getMessage());
+    private ProcessBuilder getProcessBuilder(String binPath, List<String> args, File workingDirectory, String logFilePath) {
+        List<String> commandArgs = new ArrayList<>();
+        commandArgs.add(binPath);
+        commandArgs.addAll(args);
+        ProcessBuilder builder = new ProcessBuilder(commandArgs);
+
+        // working directoy and error and output log outputs
+        if (workingDirectory != null) {
+            builder.directory(workingDirectory);
         }
-        return outputLines;
+        builder.redirectErrorStream(true);
+        if (logFilePath != null) {
+            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
+        }
+
+        return builder;
+    }
+
+    private boolean checkProcessOutput(Process process, String binPath, String logFileName) {
+        boolean executedWithouErrors;
+        // check output
+        int genomeInfoExitValue = process.exitValue();
+        if (genomeInfoExitValue == 0) {
+            executedWithouErrors = true;
+        } else {
+            logger.warn("Error executing " + binPath + ". For more info read the log file: " + logFileName);
+            executedWithouErrors = false;
+        }
+        return executedWithouErrors;
     }
 }
