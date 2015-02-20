@@ -103,18 +103,21 @@ public class DownloadCommandParser extends CommandParser {
 
         String host = getHost(sp);
 
+        // get assembly
+        String assembly = getAssembly(sp, downloadCommandOptions.assembly);
+
         // download sequence, gene, variation and regulation
         if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "genome_sequence")) {
-            downloadSequence(sp, spShortName, spFolder, host);
+            downloadSequence(sp, spShortName, assembly, spFolder, host);
         }
         if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
             downloadGene(sp, spFolder);
         }
         if (downloadCommandOptions.variation && specieHasInfoToDownload(sp, "variation")) {
-            downloadVariation(sp, spShortName, spFolder, host);
+            downloadVariation(sp, spShortName, assembly, spFolder, host);
         }
         if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
-            downloadRegulation(sp, spShortName, spFolder, host);
+            downloadRegulation(sp, spShortName, assembly, spFolder, host);
         }
     }
 
@@ -137,11 +140,10 @@ public class DownloadCommandParser extends CommandParser {
         return hasInfo;
     }
 
-    private void downloadSequence(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
+    private void downloadSequence(Species sp, String shortName, String assembly, Path spFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading genome-sequence information ...");
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
-        String assembly = getAssembly(sp, downloadCommandOptions.assembly);
         String url = getSequenceUrl(sp, shortName, assembly, host);
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
@@ -283,22 +285,22 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
-    private void downloadVariation(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
+    private void downloadVariation(Species sp, String shortName, String assembly, Path spFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading variation information ...");
         Path variationFolder = spFolder.resolve("variation");
         makeDir(variationFolder);
 
-        String variationUrl = this.getVariationUrl(sp, shortName, host);
+        String variationUrl = this.getVariationUrl(sp, shortName, assembly, host);
         for (String variationFile : variationFiles) {
             Path outputFile = variationFolder.resolve(variationFile);
             downloadFile(variationUrl + "/" + variationFile, outputFile.toString());
         }
     }
 
-    private String getVariationUrl(Species sp, String shortName, String host) {
+    private String getVariationUrl(Species sp, String shortName, String assembly, String host) {
         String variationUrl;
 
-        String ensemblVersion = getEnsemblVersion(sp, downloadCommandOptions.assembly);
+        String ensemblVersion = getEnsemblVersion(sp, assembly);
         String ensemblRelease = "/release-" + ensemblVersion.split("_")[0];
         variationUrl = host + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
@@ -310,12 +312,12 @@ public class DownloadCommandParser extends CommandParser {
         return variationUrl;
     }
 
-    private void downloadRegulation(Species sp, String shortName, Path spFolder, String host) throws IOException, InterruptedException {
+    private void downloadRegulation(Species sp, String shortName, String assembly, Path spFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading regulation information ...");
         Path regulationFolder = spFolder.resolve("regulation");
         makeDir(regulationFolder);
 
-        String regulationUrl = getRegulationUrl(sp, shortName, host);
+        String regulationUrl = getRegulationUrl(sp, shortName, assembly, host);
 
         for (String regulationFile : regulationFiles) {
             Path outputFile = regulationFolder.resolve(regulationFile);
@@ -323,10 +325,10 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
-    private String getRegulationUrl(Species sp, String shortName, String host) {
+    private String getRegulationUrl(Species sp, String shortName, String assembly, String host) {
         String regulationUrl;
 
-        String ensemblVersion = getEnsemblVersion(sp, downloadCommandOptions.assembly);
+        String ensemblVersion = getEnsemblVersion(sp, assembly);
         String ensemblRelease = "/release-" + ensemblVersion.split("_")[0];
         regulationUrl = host + ensemblRelease + "/regulation/" + shortName;
 
