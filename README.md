@@ -30,7 +30,7 @@ CellBase is versioned following the rules from [Semantic versioning](http://semv
   * Antonio Rueda (antonior@bioinfomgp.org)
 
 ##### Contributing
-CellBase is an open-source and collaborative project. We appreciate any help and collaboraton, you can contribute in many different ways such as bug reporting, feature request or developing client tools or even bug fixes or new features dependending on your skills.
+CellBase is an open-source and collaborative project. We appreciate any help and feeback from users, you can contribute in many different ways such as simple bug reporting and feature request. Dependending on your skills you are more than welcome to develop client tools, new features or even fixing bugs.
 
 
 # How to build 
