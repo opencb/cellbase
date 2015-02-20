@@ -37,7 +37,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
 
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155,"T","C"))  // Should return any result
 //                , new QueryOptions());
@@ -220,8 +220,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
 
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
-//        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("agambiae", "GRCh37");
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
+//        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("agambiae", "GRCh37");
 
         String line = null;
 

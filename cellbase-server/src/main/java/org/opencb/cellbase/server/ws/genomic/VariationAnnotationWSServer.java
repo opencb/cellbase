@@ -32,7 +32,7 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
                                              @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
 
         List<GenomicVariant> genomicVariantList = GenomicVariant.parseVariants(variants);
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 
 //        TabixReader currentTabix = null;
 //        String line = "";
@@ -72,7 +72,7 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
                                              @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
 
         List<GenomicVariant> genomicVariantList = GenomicVariant.parseVariants(variants);
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
+        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 
 
         return createOkResponse(variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantList(genomicVariantList, queryOptions));

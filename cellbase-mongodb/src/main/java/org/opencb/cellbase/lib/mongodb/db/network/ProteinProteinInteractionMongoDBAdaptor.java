@@ -5,6 +5,7 @@ import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdapt
 import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,13 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
     public ProteinProteinInteractionMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("protein_protein_interaction");
+
+        logger.info("ProteinProteinInteractionMongoDBAdaptor: in 'constructor'");
+    }
+
+    public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("protein_protein_interaction");
 
         logger.info("ProteinProteinInteractionMongoDBAdaptor: in 'constructor'");
     }

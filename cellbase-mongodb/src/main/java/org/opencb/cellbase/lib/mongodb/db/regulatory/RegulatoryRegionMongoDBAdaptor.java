@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,13 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         mongoDBCollection = db.getCollection("regulatory_region");
     }
 
+    public RegulatoryRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("regulatory_region");
+
+        logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
+    }
+
     @Override
     public QueryResult getAllById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);
@@ -45,8 +53,8 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 //          System.out.println("Query: " + builder.get());
             queries.add(builder.get());
         }
-        options = addExcludeReturnFields("chunkIds", options);
-        return executeQueryList(idList, queries, options);
+//        options = addExcludeReturnFields("chunkIds", options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override
@@ -80,8 +88,8 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
         System.out.println("Query: " + queries);
 
-        options = addExcludeReturnFields("chunkIds", options);
-        return executeQueryList(positionList, queries, options);
+//        options = addExcludeReturnFields("chunkIds", options);
+        return executeQueryList2(positionList, queries, options);
     }
 
 
@@ -103,7 +111,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         List<Object> featureType = options.getList("featureType", null);
         List<Object> featureClass = options.getList("featureClass", null);
 
-        options = addExcludeReturnFields("chunkIds", options);
+//        options = addExcludeReturnFields("chunkIds", options);
 
         List<DBObject> queries = new ArrayList<>();
         for (Region region : regionList) {
@@ -135,9 +143,9 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
             queries.add(builder.get());
         }
-        System.out.println(">>"+regionList);
-        System.out.println(">>"+builder.get().toString());
-        return executeQueryList(regionList, queries, options);
+//        System.out.println(">>"+regionList);
+//        System.out.println(">>"+builder.get().toString());
+        return executeQueryList2(regionList, queries, options);
     }
 
     @Override

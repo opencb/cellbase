@@ -4,6 +4,7 @@ import com.mongodb.*;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
@@ -47,6 +48,14 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
 
         logger.info("ProteinFunctionPredictorMongoDBAdaptor: in 'constructor'");
     }
+
+    public ProteinFunctionPredictorMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("protein_functional_prediction");
+
+        logger.info("ProteinFunctionPredictorMongoDBAdaptor: in 'constructor'");
+    }
+
     @Override
     public QueryResult getAllByEnsemblTranscriptId(String transcriptId, QueryOptions options) {
         return getAllByEnsemblTranscriptIdList(Arrays.asList(transcriptId), options).get(0);

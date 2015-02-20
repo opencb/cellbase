@@ -6,6 +6,7 @@ import com.mongodb.QueryBuilder;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,14 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         super(db, species, version);
         mongoDBCollection = db.getCollection("protein");
     }
+
+    public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("protein");
+
+        logger.info("ProteinMongoDBAdaptor: in 'constructor'");
+    }
+
 
     @Override
     public QueryResult getAll(QueryOptions options) {

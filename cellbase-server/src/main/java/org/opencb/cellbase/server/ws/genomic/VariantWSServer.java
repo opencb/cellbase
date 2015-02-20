@@ -245,7 +245,7 @@ public class VariantWSServer extends GenericRestWSServer {
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
-            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
+            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
             List<QueryResult> clinicalQueryResultList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
             return createOkResponse(clinicalQueryResultList);

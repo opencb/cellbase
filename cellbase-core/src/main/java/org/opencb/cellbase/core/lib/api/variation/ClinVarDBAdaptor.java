@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * Created by imedina on 26/09/14.
  */
+@Deprecated
 public interface ClinVarDBAdaptor {
 
     public QueryResult getById(String id, QueryOptions options);

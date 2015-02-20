@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * Created by imedina on 14/01/14.
  */
+@Deprecated
 public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariationPhenotypeAnnotationDBAdaptor {
 
     public VariationPhenotypeAnnotationMongoDBAdaptor(DB db, String species, String version) {

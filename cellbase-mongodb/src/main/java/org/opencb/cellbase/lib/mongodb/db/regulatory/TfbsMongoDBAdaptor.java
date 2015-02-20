@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +31,13 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     public TfbsMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("regulatory_region");
+    }
+
+    public TfbsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("regulatory_region");
+
+        logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
     }
 
     @Override

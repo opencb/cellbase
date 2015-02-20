@@ -18,6 +18,7 @@ import java.util.List;
  * Time: 14:04
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDBAdaptor {
 
     public MutationMongoDBAdaptor(DB db, String species, String version) {

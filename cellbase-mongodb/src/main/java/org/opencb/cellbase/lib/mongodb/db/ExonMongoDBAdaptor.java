@@ -12,6 +12,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,13 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 		super(db, species, version);
 		mongoDBCollection = db.getCollection("gene");
 	}
+
+    public ExonMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("clinical");
+
+        logger.info("ExonMongoDBAdaptor: in 'constructor'");
+    }
 
     private List<Gene> executeQuery(DBObject query, List<String> excludeFields) {
         List<Gene> result = null;

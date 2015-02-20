@@ -14,6 +14,7 @@ import java.util.List;
 /**
  * Created by imedina on 26/09/14.
  */
+@Deprecated
 public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAdaptor {
 
     public ClinVarMongoDBAdaptor(DB db) {

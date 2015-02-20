@@ -7,10 +7,10 @@ import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
-@Deprecated
 public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
 
 
@@ -30,6 +30,13 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
         super(db, species, version);
         this.chunkSize = chunkSize;
         mongoDBCollection = db.getCollection("conserved_region");
+    }
+
+    public ConservedRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("conserved_region");
+
+        logger.info("ConservedRegionMongoDBAdaptor: in 'constructor'");
     }
 
     private int getChunk(int position) {

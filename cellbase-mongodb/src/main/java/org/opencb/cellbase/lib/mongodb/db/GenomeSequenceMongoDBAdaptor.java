@@ -7,15 +7,15 @@ import org.opencb.cellbase.core.common.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.lib.api.GenomeSequenceDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Deprecated
 public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements GenomeSequenceDBAdaptor {
 
-    private int chunkSize;
+    private int chunkSize = 2000;
 
     public GenomeSequenceMongoDBAdaptor(DB db) {
         super(db);
@@ -30,6 +30,13 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
         super(db, species, version);
         this.chunkSize = chunkSize;
         mongoDBCollection = db.getCollection("genome_sequence");
+    }
+
+    public GenomeSequenceMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("genome_sequence");
+
+        logger.info("GenomeSequenceMongoDBAdaptor: in 'constructor'");
     }
 
     private int getChunk(int position) {
@@ -99,15 +106,14 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
             logger.info(builder.get().toString());
         }
 
-        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
+        List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
 
 
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
 
-            BasicDBList list = (BasicDBList) queryResult.getResult();
-            System.out.println(list.toString());
+            List list = queryResult.getResult();
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < list.size(); j++) {
                 BasicDBObject chunk = (BasicDBObject) list.get(j);
@@ -143,24 +149,24 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
     }
 
 
-    private List<GenomeSequenceChunk> executeQuery(DBObject query) {
-        List<GenomeSequenceChunk> result = null;
-        DBCursor cursor = mongoDBCollection.find(query);
-        try {
-            if (cursor != null) {
-                result = new ArrayList<GenomeSequenceChunk>(cursor.size());
-//				Gson jsonObjectMapper = new Gson();
-                GenomeSequenceChunk chunk = null;
-                while (cursor.hasNext()) {
-//					chunk = (GenomeSequenceChunk) jsonObjectMapper.fromJson(cursor.next().toString(), GenomeSequenceChunk.class);
-                    result.add(chunk);
-                }
-            }
-        } finally {
-            cursor.close();
-        }
-        return result;
-    }
+//    private List<GenomeSequenceChunk> executeQuery(DBObject query) {
+//        List<GenomeSequenceChunk> result = null;
+//        DBCursor cursor = mongoDBCollection.find(query);
+//        try {
+//            if (cursor != null) {
+//                result = new ArrayList<GenomeSequenceChunk>(cursor.size());
+////				Gson jsonObjectMapper = new Gson();
+//                GenomeSequenceChunk chunk = null;
+//                while (cursor.hasNext()) {
+////					chunk = (GenomeSequenceChunk) jsonObjectMapper.fromJson(cursor.next().toString(), GenomeSequenceChunk.class);
+//                    result.add(chunk);
+//                }
+//            }
+//        } finally {
+//            cursor.close();
+//        }
+//        return result;
+//    }
 
 
 //	@Override

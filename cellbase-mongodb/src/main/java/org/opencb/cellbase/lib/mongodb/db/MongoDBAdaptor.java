@@ -68,18 +68,17 @@ public class MongoDBAdaptor {
     }
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
-        this(mongoDataStore, "", "");
+        this("", "", mongoDataStore);
     }
 
-    public MongoDBAdaptor(MongoDataStore mongoDataStore, String species, String assembly) {
+    public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         this.species = species;
         this.assembly = assembly;
+        this.mongoDataStore = mongoDataStore;
+
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
         initSpeciesAssembly(species, assembly);
-
-        this.mongoDataStore = mongoDataStore;
-
         jsonObjectMapper = new ObjectMapper();
     }
 

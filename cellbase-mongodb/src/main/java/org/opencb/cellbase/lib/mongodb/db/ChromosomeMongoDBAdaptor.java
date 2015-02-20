@@ -22,8 +22,8 @@ public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements Chromoso
         mongoDBCollection = db.getCollection("genome_info");
     }
 
-    public ChromosomeMongoDBAdaptor(MongoDataStore mongoDataStore, String species, String assembly, int coreChunkSize) {
-        super(mongoDataStore, species, assembly);
+    public ChromosomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("genome_info");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");

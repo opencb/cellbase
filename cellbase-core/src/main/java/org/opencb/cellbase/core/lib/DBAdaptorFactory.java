@@ -103,9 +103,9 @@ public abstract class DBAdaptorFactory {
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species, String assembly);
 
 
-    public abstract VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species);
+    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
 
-    public abstract VariantAnnotationDBAdaptor getGenomicVariantAnnotationDBAdaptor(String species, String assembly);
+    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
 
 	
 	public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
@@ -158,9 +158,9 @@ public abstract class DBAdaptorFactory {
     public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly);
 
 
-	public abstract ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species);
+	public abstract VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species);
 
-	public abstract ClinicalVarDBAdaptor getClinicalVarDBAdaptor(String species, String assembly);
+	public abstract VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species, String assembly);
 
 
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);

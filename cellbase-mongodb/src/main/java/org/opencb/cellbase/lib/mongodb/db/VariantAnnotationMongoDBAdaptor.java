@@ -10,11 +10,12 @@ import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariantDiseaseAssociationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private static Map<Integer, String> polyphenDescriptions = new HashMap<>();
 
     private VariationDBAdaptor variationDBAdaptor;
-    private ClinicalVarDBAdaptor clinicalVarDBAdaptor;
+    private VariantDiseaseAssociationDBAdaptor variantDiseaseAssociationDBAdaptor;
     private ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor;
     private ConservedRegionDBAdaptor conservedRegionDBAdaptor;
 
@@ -193,6 +194,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         this.coreChunkSize = coreChunkSize;
     }
 
+    public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+
+        logger.info("VariantAnnotationMongoDBAdaptor: in 'constructor'");
+    }
+
     public VariationDBAdaptor getVariationDBAdaptor() {
         return variationDBAdaptor;
     }
@@ -201,12 +208,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         this.variationDBAdaptor = variationDBAdaptor;
     }
 
-    public ClinicalVarDBAdaptor getClinicalVarDBAdaptor() {
-        return clinicalVarDBAdaptor;
+    public VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor() {
+        return variantDiseaseAssociationDBAdaptor;
     }
 
-    public void setClinicalVarDBAdaptor(ClinicalVarDBAdaptor clinicalVarDBAdaptor) {
-        this.clinicalVarDBAdaptor = clinicalVarDBAdaptor;
+    public void setVariantDiseaseAssociationDBAdaptor(VariantDiseaseAssociationDBAdaptor variantDiseaseAssociationDBAdaptor) {
+        this.variantDiseaseAssociationDBAdaptor = variantDiseaseAssociationDBAdaptor;
     }
 
     public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor() {
@@ -1478,7 +1485,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
 
         List<QueryResult> variationQueryResultList = variationDBAdaptor.getAllByVariantList(variantList, queryOptions);
-        List<QueryResult> clinicalQueryResultList = clinicalVarDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+        List<QueryResult> clinicalQueryResultList = variantDiseaseAssociationDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
         List<QueryResult> variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
         List<QueryResult> conservedRegionQueryResultList = conservedRegionDBAdaptor.getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
 

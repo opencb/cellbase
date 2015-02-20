@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.XRefs;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,13 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
     public XRefsMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("gene");
+    }
+
+    public XRefsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("gene");
+
+        logger.info("XrefsMongoDBAdaptor: in 'constructor'");
     }
 
 //	private List<Xref> executeQuery(DBObject query) {

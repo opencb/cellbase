@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,13 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         mongoDBCollection2 = mongoDataStore.getCollection("variation");
     }
 
+    public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("variation");
+        mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
+
+        logger.info("VariationMongoDBAdaptor: in 'constructor'");
+    }
 
     @Override
     public QueryResult getById(String id, QueryOptions options) {

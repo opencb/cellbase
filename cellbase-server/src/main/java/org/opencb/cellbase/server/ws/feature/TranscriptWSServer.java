@@ -242,7 +242,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 
-            return createJsonResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 
 //			return generateResponse(query, "GENE",
 //					geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","), exclude));
@@ -258,8 +258,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-            return generateResponse(query, "EXON",
-                    dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+            return createOkResponse(dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonsByTranscriptId", e.toString());

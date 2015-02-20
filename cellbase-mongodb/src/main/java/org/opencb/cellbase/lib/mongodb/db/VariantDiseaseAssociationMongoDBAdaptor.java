@@ -8,9 +8,10 @@ import org.opencb.biodata.models.variant.annotation.Gwas;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 
-import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariantDiseaseAssociationDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
@@ -18,17 +19,24 @@ import java.util.*;
  * Created by antonior on 11/18/14.
  * @author Javier Lopez fjlopez@ebi.ac.uk
  */
-public class ClinicalVarMongoDBAdaptor extends MongoDBAdaptor implements ClinicalVarDBAdaptor {
+public class VariantDiseaseAssociationMongoDBAdaptor extends MongoDBAdaptor implements VariantDiseaseAssociationDBAdaptor {
 
 
-    public ClinicalVarMongoDBAdaptor(DB db) {
+    public VariantDiseaseAssociationMongoDBAdaptor(DB db) {
         super(db);
     }
 
-    public ClinicalVarMongoDBAdaptor(DB db, String species, String assembly) {
+    public VariantDiseaseAssociationMongoDBAdaptor(DB db, String species, String assembly) {
         super(db, species, assembly);
         mongoDBCollection = db.getCollection("clinical");
         logger.info("ClinicalVarMongoDBAdaptor: in 'constructor'");
+    }
+
+    public VariantDiseaseAssociationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection2 = mongoDataStore.getCollection("clinical");
+
+        logger.info("ClinicalMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
