@@ -245,7 +245,7 @@ our $GO = "ensembl_ontology_78";
 #m2_id=t.id and gp.distance = (select max(gp2.distance) from graph_path gp2 where t.id = gp2.term2_id)";
 #our $GO_GRAPH_PATH_QUERY = "select t1.acc,t2.acc,gp.distance from graph_path gp, term t1, term t2 where gp.term1_id = t1.id and gp.term2_id=t2.id";
 
-our sub file_to_hash {
+sub file_to_hash {
 	my ($filename, $key_index, $value_index) = @_;
 	open(TRANS_FILE, $filename) || die "Error opening $filename \n";
 	my %trans_ids = ();
@@ -259,13 +259,13 @@ our sub file_to_hash {
 	return %trans_ids;
 }
 
-our sub sort {
+sub sort {
 	my $list= shift;
 	my @sorted = sort { $a <=> $b } @$list;
 	return \@sorted;
 }
 
-our sub sort_chromosomes {
+sub sort_chromosomes {
 	my $list= shift;
 #	my %chrom_indexes = {};
 	my @chr_numbers = ();
@@ -295,7 +295,7 @@ our sub sort_chromosomes {
 	return \@sorted_numbers;
 }
 
-our sub get_sorted_chromosomes_indexes {
+sub get_sorted_chromosomes_indexes {
 	my $list= shift;
 	my %chrom_indexes = {};
 	my @chr_numbers = ();
@@ -329,7 +329,7 @@ sub comp_chr {
 	
 }
 
-our sub unique {
+sub unique {
 	my @list = shift(@_);
 	my %seen = ();
 	my @uniqu = grep { ! $seen{$_} ++ } @list;
