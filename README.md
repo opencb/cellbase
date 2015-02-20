@@ -3,27 +3,27 @@ High-Performance scalable NoSQL database and RESTful web services to access to m
 
 Note: this repository comes from a major rewrite and refactoring done from previous versions, old code can still be found at: https://github.com/opencb-cloud. All users must updated to this one.
 
-## Documentation
+### Documentation
 You can find documentation and tutorials about CellBase at: https://github.com/opencb/cellbase/wiki
 
-## Issues Tracking
+### Issues Tracking
 You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues)
 
-## Release Notes and Roadmap
+### Release Notes and Roadmap
 Releases notes are available at [GitHub releases](https://github.com/opencb/cellbase/releases).
 
 Roadmap are available at [GitHub milestones](https://github.com/opencb/cellbase/milestones). You can request features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
 
-## Versioning
+### Versioning
 CellBase is versioned following the rules from [Semantic versioning](http://semver.org/).
 
-## Maintainers
+### Maintainers
  You can contact any of the following main developers:
   * Ignacio Medina (im411@cam.ac.uk)
   * Javier Lopez (fjlopez@ebi.ac.uk)
   * Pablo Arce (pablo.arce@bioinfomgp.org)
 
-### Other Contributors
+#### Other Contributors
   * Marta Bleda (mb2033@cam.ac.uk)
   * Antonio Rueda (antonior@bioinfomgp.org)
 
