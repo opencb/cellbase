@@ -3,10 +3,12 @@ package org.opencb.cellbase.lib.mongodb.db;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
+import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
@@ -38,12 +40,14 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
-//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155,"T","C"))  // Should return any result
-//                , new QueryOptions());
-//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("2", 130498751,"A","G"))  // Should return any result
-//                , new QueryOptions());
-//        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941,"T","C"))  // Should return any result
-//                , new QueryOptions());
+        List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
+
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155, "T", "C"))  // Should return any result
+                , new QueryOptions()).get(0).getResult()).get(0));
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("2", 130498751, "A", "G"))  // Should return any result
+                , new QueryOptions()).get(0).getResult()).get(0));
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
+                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "T"))  // Should return any result
 //                , new QueryOptions());
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "G"))  // Should return any result
@@ -54,6 +58,15 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //                , new QueryOptions());
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16123409, "-", "A"))
 //                , new QueryOptions());
+
+        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
+        vepFormatWriter.open();
+        vepFormatWriter.pre();
+        vepFormatWriter.write(variantAnnotationList);
+        vepFormatWriter.post();
+        vepFormatWriter.close();
+
+
 
     }
 
@@ -196,10 +209,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "",
-                "", 10, 10);
-//        config.addSpeciesConnection("hsapiens", "GRCh37", "172.22.70.137", "cellbase_hsapiens_v3_grch37", 27017, "mongo", "",
+//        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "",
 //                "", 10, 10);
+        config.addSpeciesConnection("hsapiens", "GRCh37", "172.22.70.137", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "",
+                "", 10, 10);
 //        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
 //                "B10p@ss", 10, 10);
 
@@ -221,7 +234,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 19258045, StringUtils.repeat("N",27376), "-"), new QueryOptions());  // should return initiator_codon_variant
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20891502, "-", "CCTC"), new QueryOptions());  // should return splice_region_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18387495, "G", "A"), new QueryOptions());  // should NOT return incomplete_teminator_codon_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 19258045, StringUtils.repeat("N",27376), "-"), new QueryOptions());  // should return initiator_codon_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18293502, "T", "C"), new QueryOptions());  // should return initiator_codon_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18620375, StringUtils.repeat("N",9436), "-"), new QueryOptions());  // should return transcript_ablation
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 18997219, StringUtils.repeat("N",12521), "-"), new QueryOptions());  // should return transcript_ablation
@@ -319,9 +334,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
                         }
                     // Alternate length may be > 1 if it contains <DEL>
                     } else if(vcfRecord.getAlternate().length()>1) {
-                        ensemblPos = vcfRecord.getPosition() + 1;
                         // Large deletion
                         if(vcfRecord.getAlternate().equals("<DEL>")) {
+                            ensemblPos = vcfRecord.getPosition() + 1;
                             String[] infoFields = vcfRecord.getInfo().split(";");
                             int i = 0;
                             while(i<infoFields.length && !infoFields[i].startsWith("END=")) {
@@ -333,6 +348,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                             alt = "-";
                         // Short insertion
                         } else {
+                            ensemblPos = vcfRecord.getPosition();
                             ref = "-";
                             alt = vcfRecord.getAlternate().substring(1);
                             pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + 1);

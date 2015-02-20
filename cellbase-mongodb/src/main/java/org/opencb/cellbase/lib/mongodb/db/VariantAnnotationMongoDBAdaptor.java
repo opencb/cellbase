@@ -278,7 +278,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {
                 if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     SoNames.add("incomplete_terminal_codon_variant");
-                    codingAnnotationAdded = true;
+//                    codingAnnotationAdded = true;
                 }
             }
             if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
@@ -305,7 +305,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 } else {
                     if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                         SoNames.add("incomplete_terminal_codon_variant");
-                        codingAnnotationAdded = true;
+//                        codingAnnotationAdded = true;
                     }
                 }
 //                SoNames.add("feature_elongation");
@@ -329,7 +329,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         if (!splicing) {
                             if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd.equals(genomicCodingEnd)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                                 SoNames.add("incomplete_terminal_codon_variant");                                       //  If not, avoid calculating reference/modified codon
-                                codingAnnotationAdded = true;
+//                                codingAnnotationAdded = true;
                             } else {
                                 Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3;
                                 int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
@@ -340,7 +340,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 String referenceA = codonToA.get(referenceCodon);
                                 String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
                                 if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-                                    if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {
+                                    if (cdnaVariantEnd < (cdnaCodingEnd - finalNtPhase)) {
                                         SoNames.add("synonymous_variant");
                                     } else {
                                         if (isStopCodon(referenceCodon)) {
@@ -415,7 +415,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {
                 if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     SoNames.add("incomplete_terminal_codon_variant");
-                    codingAnnotationAdded = true;
+//                    codingAnnotationAdded = true;
                 }
             }
             if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
@@ -442,7 +442,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 } else {
                     if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                         SoNames.add("incomplete_terminal_codon_variant");
-                        codingAnnotationAdded = true;
+//                        codingAnnotationAdded = true;
                     }
                 }
 //                SoNames.add("feature_elongation");
@@ -466,7 +466,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         if (!splicing) {
                             if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptStart.equals(genomicCodingStart)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                                 SoNames.add("incomplete_terminal_codon_variant");                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
-                                codingAnnotationAdded = true;
+//                                codingAnnotationAdded = true;
                             } else {
                                 Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3;
                                 int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
@@ -483,7 +483,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 String alternativeA = codonToA.get(String.valueOf(modifiedCodonArray));
 
                                 if (isSynonymousCodon.get(String.valueOf(referenceCodon)).get(String.valueOf(modifiedCodonArray))) {
-                                    if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {
+                                    if (cdnaVariantEnd < (cdnaCodingEnd - finalNtPhase)) {
                                         SoNames.add("synonymous_variant");
                                     } else {
                                         if (isStopCodon(String.valueOf(referenceCodon))) {
@@ -556,8 +556,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantStart <= genomicCodingEnd) {  // Variant start within coding region
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantStart falls in an intron
                     if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
-//                        cdnaCodingStart -= (3-cdsLength%3);
-                        cdnaCodingStart -= firstCdsPhase;
+                        cdnaCodingStart -= (3-firstCdsPhase%3);
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
@@ -603,8 +602,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantEnd >= genomicCodingStart) {  // Variant end within coding region
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantEnd falls in an intron
                     if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
-//                        cdnaCodingStart -= (3-cdsLength%3);
-                        cdnaCodingStart -= firstCdsPhase;
+                        cdnaCodingStart -= (3-firstCdsPhase%3);
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
@@ -805,6 +803,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                  */
                                 case 30:
                                     SoNames.add("NMD_transcript_variant");
+                                case 1:
+                                case 3:
+                                case 4:
+                                case 6:
                                 case 20:
                                 case 23:    // protein_coding
                                 case 36:
@@ -825,9 +827,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getCodon(),
                                             consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
                                     break;
-                                /**
-                                 * pseudogenes, antisense should not be annotated as non-coding genes
-                                 */
+                                    /**
+                                     * pseudogenes, antisense should not be annotated as non-coding genes
+                                     */
                                 case 39:
                                 case 40:
                                 case 41:
@@ -844,15 +846,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getBiotype(),
                                             consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
                                     break;
-                                /**
-                                 * Non-coding biotypes
-                                 */
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                case 5:
-                                case 6:
+                                    /**
+                                     * Non-coding biotypes
+                                     */
+                                case 2:   //
+                                case 5:   //
                                 case 7:   // IG_V_pseudogene
                                 case 10:
                                 case 11:
@@ -933,6 +931,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                  */
                                 case 30:
                                     SoNames.add("NMD_transcript_variant");
+                                case 1:
+                                case 3:
+                                case 4:
+                                case 6:
                                 case 20:
                                 case 23:
                                 case 36:
@@ -953,9 +955,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getCodon(),
                                             consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
                                     break;
-                                /**
-                                 * pseudogenes, antisense should not be annotated as non-coding genes
-                                 */
+                                    /**
+                                     * pseudogenes, antisense should not be annotated as non-coding genes
+                                     */
                                 case 39:
                                 case 40:
                                 case 41:
@@ -972,15 +974,11 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                             consequenceTypeTemplate.getBiotype(),
                                             consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
                                     break;
-                                /**
-                                 * Non-coding biotypes
-                                 */
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                case 5:
-                                case 6:
+                                    /**
+                                     * Non-coding biotypes
+                                     */
+                                case 2:   //
+                                case 5:   //
                                 case 7:   // IG_V_pseudogene
                                 case 10:
                                 case 11:
@@ -1120,6 +1118,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         Integer cdnaVariantEnd;
         Boolean splicing;
         int exonCounter;
+        int firstCdsPhase;
         Integer prevSpliceSite;
         Boolean[] junctionSolution = {false, false};
 
@@ -1131,6 +1130,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         exonInfo = (BasicDBObject) exonInfoList.get(0);
         exonStart = (Integer) exonInfo.get("start");
         exonEnd = (Integer) exonInfo.get("end");
+        firstCdsPhase = (int) exonInfo.get("phase");
         transcriptSequence = (String) exonInfo.get("sequence");
         variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         cdnaExonEnd = (exonEnd - exonStart + 1);
@@ -1220,6 +1220,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         Integer cdnaVariantEnd;
         Boolean splicing;
         int exonCounter;
+        int firstCdsPhase;
         Integer prevSpliceSite;
         Boolean[] junctionSolution = {false, false};
 
@@ -1231,6 +1232,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         exonInfo = (BasicDBObject) exonInfoList.get(0);
         exonStart = (Integer) exonInfo.get("start");
         exonEnd = (Integer) exonInfo.get("end");
+        firstCdsPhase = (int) exonInfo.get("phase");
         transcriptSequence = (String) exonInfo.get("sequence");
         variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         cdnaExonEnd = (exonEnd-exonStart+1);  // cdnaExonEnd poinst to the same base than exonStart
@@ -1554,7 +1556,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 }
             }
 
-            clinicalQueryResult.setResult(Collections.singletonList(variantAnnotation));
+            List<VariantAnnotation> value = Collections.singletonList(variantAnnotation);
+            clinicalQueryResult.setResult(value);
             i++;
         }
 
