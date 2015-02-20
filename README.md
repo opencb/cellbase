@@ -1,5 +1,5 @@
 # Overview
-An integrative, scalable and high-performance NoSQL database with a Java RESTful web services API to query to most relevant biological information. Different data sources are integrated and laoded into CellBase such as Ensembl, Uniprot, IntAct, ClinVar among others. Also a variant annotation tool has been implemented. CellBase has been designed to support different storage engines, currently MongoDB plugin is fully developed which provides and amazing performance and scalability.
+An integrative, scalable and high-performance NoSQL database with a Java RESTful web services API to query the most relevant biological information. Different data sources are integrated and laoded into CellBase such as Ensembl, Uniprot, IntAct, ClinVar among others. Also, a variant annotation tool has been implemented. CellBase has been designed to support different storage engines, currently MongoDB plugin is fully developed which provides an amazing performance and scalability.
 
 CellBase constitutes the knowledge-base component of [OpenCB](http://www.opencb.org/) initiative, it is used by other OpenCB projects such as [OpenCGA](https://github.com/opencb/opencga) as well as other external applications such as [EBI EVA](www.ebi.ac.uk/eva/) or [Babelomics](http://www.babelomics.org/).
 
