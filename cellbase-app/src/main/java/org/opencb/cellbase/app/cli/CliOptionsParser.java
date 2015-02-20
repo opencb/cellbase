@@ -18,6 +18,8 @@ public class CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
+    private QueryCommandOptions queryCommandOptions;
+
 
     public CliOptionsParser() {
         generalOptions = new GeneralOptions();
@@ -30,10 +32,12 @@ public class CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
+        queryCommandOptions = new QueryCommandOptions();
 
         jcommander.addCommand("download", downloadCommandOptions);
         jcommander.addCommand("build", buildCommandOptions);
         jcommander.addCommand("load", loadCommandOptions);
+        jcommander.addCommand("query", queryCommandOptions);
 
     }
 
@@ -53,19 +57,20 @@ public class CliOptionsParser {
         }
     }
 
-
     public class GeneralOptions {
+
+
         @Parameter(names = {"-h", "--help"}, help = true)
         public boolean help;
-
         @Parameter(names = {"--version"})
         public boolean version;
+
     }
 
     public class CommonCommandOptions {
+
         @Parameter(names = {"-h", "--help"}, help = true)
         public boolean help;
-
         @Parameter(names = {"-L", "--log-level"}, description = "This parameter set the level of the logging", required = false, arity = 1)
         public String logLevel = "info";
 
@@ -74,17 +79,20 @@ public class CliOptionsParser {
 
         @Parameter(names = {"-C", "--conf"}, description = "This parameter set the level of the logging", required = false, arity = 1)
         public String conf;
+
     }
+
 
     @Parameters(commandNames = {"download"}, commandDescription = "Description")
     public class DownloadCommandOptions {
 
+
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-
         @Parameter(names = {"-s", "--species"}, description = "", required = false, variableArity = true)
         public List<String> species = Arrays.asList("Homo sapiens");
+
 
         @Parameter(names = {"-a", "--assembly"}, description = "", required = false, arity = 1)
         public String assembly;
@@ -106,10 +114,13 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--protein"}, description = "", required = false)
         public boolean protein = false;
+
     }
+
 
     @Parameters(commandNames = {"build"}, commandDescription = "Description")
     public class BuildCommandOptions {
+
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
@@ -131,17 +142,20 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--assembly"}, description = "", required = false)
         public String assembly;
+
     }
+
 
     @Parameters(commandNames = {"load"}, commandDescription = "Description")
     public class LoadCommandOptions {
 
+
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-
         @Parameter(names = {"-l", "--load"}, description = "", required = true, arity = 1)
         public String load;
+
 
         @Parameter(names = {"-i", "--input-file"}, description = "", required = false, arity = 1)
         public String inputFile;
@@ -163,6 +177,42 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--indexFile"}, description = "", required = false, arity = 1)
         public String indexFile;
+
+    }
+
+
+    @Parameters(commandNames = {"query"}, commandDescription = "Description")
+    public class QueryCommandOptions {
+
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+
+        @Parameter(names = {"--species"}, description = "", required = true)
+        public String species;
+
+        @Parameter(names = {"--assembly"}, description = "", required = true)
+        public String assembly;
+
+        @Parameter(names = {"--type"}, description = "", required = true, arity = 1)
+        public String category;
+
+        @Parameter(names = {"--id"}, description = "", required = false, variableArity = true)
+        public List<String> ids;
+
+        @Parameter(names = {"--resource"}, description = "", required = true, arity = 1)
+        public String resource;
+
+        @Parameter(names = {"--variant-annot"}, description = "", required = false, arity = 1)
+        public String inputDir;
+
+        @Parameter(names = {"-i", "--input-file"}, description = "", required = false, arity = 1)
+        public String inputFile;
+
+        @Parameter(names = {"--host-url"}, description = "", required = false, arity = 1)
+        public String url;
+
     }
 
 
@@ -180,6 +230,10 @@ public class CliOptionsParser {
 
     public LoadCommandOptions getLoadCommandOptions() {
         return loadCommandOptions;
+    }
+
+    public QueryCommandOptions getQueryCommandOptions() {
+        return queryCommandOptions;
     }
 
 }
