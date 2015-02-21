@@ -8,7 +8,9 @@ CellBase constitutes the knowledge-base component of [OpenCB](http://www.opencb.
 Note: This repository is a major refactoring of https://github.com/opencb-cloud. All users, please update to this one.
 
 ### Documentation
-You can find documentation and tutorials about CellBase at: https://github.com/opencb/cellbase/wiki
+You can find CellBase documentation and tutorials at: https://github.com/opencb/cellbase/wiki.
+
+For documenting RESTful web services [Swagger](http://swagger.io/) has been set-up and is available at http://wwwdev.ebi.ac.uk/cellbase/webservices/.  
 
 ### Issues Tracking
 You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
@@ -16,14 +18,14 @@ You can report bugs or request new features at [GitHub issue tracking](https://g
 ### Release Notes and Roadmap
 Releases notes are available at [GitHub releases](https://github.com/opencb/cellbase/releases).
 
-Roadmap are available at [GitHub milestones](https://github.com/opencb/cellbase/milestones). You can request features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
+Roadmap is available at [GitHub milestones](https://github.com/opencb/cellbase/milestones). You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
 
 ### Versioning
 CellBase is versioned following the rules from [Semantic versioning](http://semver.org/).
 
 ### Maintainers
 We recommend to contact CellBase developers by writing to OpenCB mailing list opencb@googlegroups.com. The main developers and mainteners are:
-  * Ignacio Medina (im411@cam.ac.uk)
+  * Ignacio Medina (im411@cam.ac.uk) (_Founder and Project Leader_)
   * Javier Lopez (fjlopez@ebi.ac.uk)
   * Pablo Arce (pablo.arce@bioinfomgp.org)
 
@@ -36,24 +38,39 @@ CellBase is an open-source and collaborative project. We appreciate any help and
 
 
 # How to build 
-CellBase is mainly developed in Java and it uses [Apache Maven](http://maven.apache.org/) as build tool. CellBase building requires Java 7+ and a set of other OpenCB Java dependencies that can be found to [Maven Central Repository](http://search.maven.org/).
+CellBase is mainly developed in Java and it uses [Apache Maven](http://maven.apache.org/) as build tool. CellBase requires Java 7+ and a set of other OpenCB Java dependencies that can be found in [Maven Central Repository](http://search.maven.org/).
+
+Stable releases are merged and tagged at **_master_** branch, you are encourage to use latest stable release for production. Current active development is carried out at **_develop_** branch, only compilation is guaranteed and bugs are expected, use this branch for development or for testing new functionalities. Only dependencies of **_master_** branch are ensured to be deployed at [Maven Central Repository](http://search.maven.org/), **_develop_** branch may require users to download other active repositories.
 
 ### Cloning
-CellBase is open to the community and released in GitHub, so you can download by invoking the following commands:
+CellBase is an open-source and free project, you can download **_develop_** branch by executing:
 
-    $ git clone https://github.com/opencb/cellbase.git
+    imedina@ivory:~$ git clone https://github.com/opencb/cellbase.git
     Cloning into 'cellbase'...
-    remote: Counting objects: 6653, done.
-    remote: Total 6653 (delta 0), reused 0 (delta 0)
-    Receiving objects: 100% (6653/6653), 4.80 MiB | 1.20 MiB/s, done.
-    Resolving deltas: 100% (2651/2651), done.
+    remote: Counting objects: 13804, done.
+    remote: Compressing objects: 100% (619/619), done.
+    remote: Total 13804 (delta 324), reused 240 (delta 77)
+    Receiving objects: 100% (13804/13804), 24.32 MiB | 723.00 KiB/s, done.
+    Resolving deltas: 100% (5049/5049), done.
+
+
+Latest stable release at **_master_** branch can be downloaded executing:
+
+    imedina@ivory:~$ git clone -b master https://github.com/opencb/cellbase.git
+    Cloning into 'cellbase'...
+    remote: Counting objects: 13804, done.
+    remote: Compressing objects: 100% (619/619), done.
+    remote: Total 13804 (delta 324), reused 240 (delta 77)
+    Receiving objects: 100% (13804/13804), 24.32 MiB | 939.00 KiB/s, done.
+    Resolving deltas: 100% (5049/5049), done.
+
 
 ### Build
 You can build CellBase by executing the following command from the root of the cloned repository:
   
     $ mvn clean install -DskipTests
 
-After this you should have this file structure in _cellbase-app/build_:
+Notice that **_develop_** branch dependencies are not ensured to be deployed at Maven Central, you may need to clone OpenCB _biodata_ and _datastore_ repositories and install **_develop_** branches. After this you should have this file structure in **_cellbase-app/build_**:
 
     cellbase-app/build/
     ├── bin
@@ -69,17 +86,20 @@ If the build process has gone well you should get an integrated help by executin
     ./bin/cellbase.sh --help
 
 As you can see there are four commands implemented, each of them with different options:
- * _download_: this command downloads the data form different sources such as Ensembl or Uniprot to build CellBase
- * _build_: with this command you can run the pipelines to create the data models to be loaded into the database
- * _load_: this command reads the data models and convert and load them into the database
- * _query_: with this command you can execute queries to CellBase regardless the database used and also you can perform a variant annotation
+ * **_download_**: this command downloads the data form different sources such as Ensembl or Uniprot to build CellBase
+ * **_build_**: with this command you can run the pipelines to create the data models to be loaded into the database
+ * **_load_**: this command reads the data models and convert and load them into the database
+ * **_query_**: with this command you can execute queries to CellBase regardless the database used and also you can perform a variant annotation
 
-We try to improve the user experience by making the installation and building as simple as possible. In order to this we have developed efficient algorithms to generate all data models. Unfortunately, for some specific Ensembl data users still need to install Ensembl Perl API, in general raw data or dumps are downloaded to generate data models instead of using Perl API that is too slow. Other general dependencies of CellBase include MongoDB to load the data.
+You can find more detailed documentation and tutorials at: https://github.com/opencb/cellbase/wiki.
 
-##### Building some Ensembl data
-CellBase also depends on the Ensembl Perl API, which may be installed following this tutorial:
+### Other Dependencies
+We try to improve the user experience by making the installation and build as simple as possible. Unfortunately, for some CellBase commands such as _build_ and _load_ other dependencies are required.
+
+##### Building data
+We have developed fast and efficient algorithms to build almost all data models from Ensembl raw data or dumps. But CellBase still depends on Ensembl Perl API for building some specific data models, this can be installed following this tutorial:
 
     http://www.ensembl.org/info/docs/api/api_installation.html
 
-##### Loading data into MongoDB
-The only fully developed storage engine plugin at this moment is [MongoDB](https://www.mongodb.org/). MongoDB is free and open-source and can be downloaded from [here](https://www.mongodb.org/downloads).
+##### Loading data
+At this moment the only fully developed storage engine plugin is [MongoDB](https://www.mongodb.org/). MongoDB is free and open-source and can be downloaded from [here](https://www.mongodb.org/downloads).
