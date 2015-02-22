@@ -3,7 +3,7 @@ CellBase is a scalable and high-performance NoSQL database that integrates relev
 
 CellBase not only consumes multiple data sources, but has also been designed to run on different database engines. So far, a MongoDB plugin has been fully developed, providing amazing performance and scalability.
 
-CellBase constitutes the knowledge-base component of [OpenCB](http://www.opencb.org/) initiative. It is used by other OpenCB projects such as [OpenCGA](https://github.com/opencb/opencga) as well as other external applications such as [EBI EVA](www.ebi.ac.uk/eva/) or [Babelomics](http://www.babelomics.org/).
+CellBase constitutes the knowledge-base component of [OpenCB](http://www.opencb.org/) initiative. It is used by other OpenCB projects such as [OpenCGA](https://github.com/opencb/opencga) as well as other external applications such as [EMBL-EBI EVA](www.ebi.ac.uk/eva/) or [Babelomics](http://www.babelomics.org/).
 
 Note: This repository is a major refactoring of https://github.com/opencb-cloud. All users, please update to this one.
 
