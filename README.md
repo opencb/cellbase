@@ -24,14 +24,14 @@ Roadmap is available at [GitHub milestones](https://github.com/opencb/cellbase/m
 CellBase is versioned following the rules from [Semantic versioning](http://semver.org/).
 
 ### Maintainers
-We recommend to contact CellBase developers by writing to OpenCB mailing list opencb@googlegroups.com. The main developers and mainteners are:
-  * Ignacio Medina (im411@cam.ac.uk) (_Founder and Project Leader_)
-  * Javier Lopez (fjlopez@ebi.ac.uk)
-  * Pablo Arce (pablo.arce@bioinfomgp.org)
+We recommend to contact CellBase developers by writing to OpenCB mailing list opencb@googlegroups.com. The main developers and maintainers are:
+* Ignacio Medina (im411@cam.ac.uk) (_Founder and Project Leader_)
+* Javier Lopez (fjlopez@ebi.ac.uk)
+* Pablo Arce (pablo.arce@bioinfomgp.org)
 
 ##### Other Contributors
-  * Marta Bleda (mb2033@cam.ac.uk)
-  * Antonio Rueda (antonior@bioinfomgp.org)
+* Marta Bleda (mb2033@cam.ac.uk)
+* Antonio Rueda (antonior@bioinfomgp.org)
 
 ##### Contributing
 CellBase is an open-source and collaborative project. We appreciate any help and feeback from users, you can contribute in many different ways such as simple bug reporting and feature request. Dependending on your skills you are more than welcome to develop client tools, new features or even fixing bugs.
@@ -40,7 +40,9 @@ CellBase is an open-source and collaborative project. We appreciate any help and
 # How to build 
 CellBase is mainly developed in Java and it uses [Apache Maven](http://maven.apache.org/) as build tool. CellBase requires Java 7+ and a set of other OpenCB Java dependencies that can be found in [Maven Central Repository](http://search.maven.org/).
 
-Stable releases are merged and tagged at **_master_** branch, you are encourage to use latest stable release for production. Current active development is carried out at **_develop_** branch, only compilation is guaranteed and bugs are expected, use this branch for development or for testing new functionalities. Only dependencies of **_master_** branch are ensured to be deployed at [Maven Central Repository](http://search.maven.org/), **_develop_** branch may require users to download other active repositories.
+Stable releases are merged and tagged at **_master_** branch, you are encourage to use latest stable release for production. Current active development is carried out at **_develop_** branch, only compilation is guaranteed and bugs are expected, use this branch for development or for testing new functionalities. Only dependencies of **_master_** branch are ensured to be deployed at [Maven Central Repository](http://search.maven.org/), **_develop_** branch may require users to download and install other active OpenCB repositories:
+* _biodata_: https://github.com/opencb/biodata (branch 'develop')
+* _datastore_: https://github.com/opencb/datastore (branch 'develop')
 
 ### Cloning
 CellBase is an open-source and free project, you can download **_develop_** branch by executing:
@@ -70,7 +72,7 @@ You can build CellBase by executing the following command from the root of the c
   
     $ mvn clean install -DskipTests
 
-Notice that **_develop_** branch dependencies are not ensured to be deployed at Maven Central, you may need to clone OpenCB _biodata_ and _datastore_ repositories and install **_develop_** branches. After this you should have this file structure in **_cellbase-app/build_**:
+Remember that **_develop_** branch dependencies are not ensured to be deployed at Maven Central, you may need to clone and install **_develop_** branches from OpenCB _biodata_ and _datastore_ repositories. After this you should have this file structure in **_cellbase-app/build_**:
 
     cellbase-app/build/
     ├── bin
@@ -79,6 +81,9 @@ Notice that **_develop_** branch dependencies are not ensured to be deployed at 
     ├── mongodb-scripts
 
 You can copy the content of the _build_ folder into any directory such as _/opt/cellbase_.
+
+### Testing
+You can run the unit tests using Maven or your favorite IDE. Just notice that some tests may require of certain database back-ends such as MongoDB and may fail if they are not available.
 
 ### Command Line Interface (CLI)
 If the build process has gone well you should get an integrated help by executing:
