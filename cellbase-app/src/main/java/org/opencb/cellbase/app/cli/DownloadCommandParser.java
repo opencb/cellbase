@@ -27,6 +27,9 @@ public class DownloadCommandParser extends CommandParser {
 
     private static final String[] regulationFiles = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz", "RegulatoryFeatures_MultiCell.gff.gz"};
 
+    private String ensemblVersion;
+    private String ensemblRelease;
+
     public DownloadCommandParser(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
                 downloadCommandOptions.commonOptions.conf);
@@ -106,12 +109,15 @@ public class DownloadCommandParser extends CommandParser {
         // get assembly
         String assembly = getAssembly(sp, downloadCommandOptions.assembly);
 
+        ensemblVersion = getEnsemblVersion(sp, assembly);
+        ensemblRelease = "release-" + ensemblVersion.split("_")[0];
+
         // download sequence, gene, variation and regulation
         if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "genome_sequence")) {
             downloadSequence(sp, spShortName, assembly, spFolder, host);
         }
         if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
-            downloadGene(sp, spFolder);
+            downloadGene(sp, spShortName, spFolder, host);
         }
         if (downloadCommandOptions.variation && specieHasInfoToDownload(sp, "variation")) {
             downloadVariation(sp, spShortName, assembly, spFolder, host);
@@ -144,7 +150,7 @@ public class DownloadCommandParser extends CommandParser {
         logger.info("Downloading genome-sequence information ...");
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
-        String url = getSequenceUrl(sp, shortName, assembly, host);
+        String url = getSequenceUrl(sp, shortName, host);
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
@@ -170,14 +176,13 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
-    private String getSequenceUrl(Species sp, String shortName, String assembly, String host) {
+    private String getSequenceUrl(Species sp, String shortName, String host) {
         String seqUrl;
 
-        String ensemblRelease = "/release-" + getEnsemblVersion(sp, assembly).split("_")[0];
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
-            seqUrl = host + ensemblRelease;
+            seqUrl = host + "/" + ensemblRelease;
         } else {
-            seqUrl = host + ensemblRelease + "/" + getPhylo(sp);
+            seqUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
 
         seqUrl = seqUrl + "/fasta/" + shortName + "/dna/*.dna.primary_assembly.fa.gz";
@@ -234,15 +239,36 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
-    private void downloadGene(Species sp, Path spFolder) throws IOException, InterruptedException {
+    private void downloadGene(Species sp, String spShortName, Path spFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = spFolder.resolve("gene");
         makeDir(geneFolder);
+        downloadGeneGtf(sp, spShortName, geneFolder, host);
         getGeneExtraInfo(sp, geneFolder);
         if (sp.getScientificName().equalsIgnoreCase("homo sapiens")) {
             // TODO: output folder is gene or regulation?
             getProteinFunctionPredictionMatrices(sp, geneFolder);
         }
+    }
+
+    private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
+        logger.info("Downloading gene gtf ...");
+        String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
+        downloadFile(getGeneGtfUrl(sp, spShortName, host), geneGtfOutputFileName);
+    }
+
+    private String getGeneGtfUrl(Species sp, String shortName, String host) {
+        String geneGtfUrl;
+
+        if (configuration.getSpecies().getVertebrates().contains(sp)) {
+            geneGtfUrl = host + "/" + ensemblRelease;
+        } else {
+            geneGtfUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
+        }
+
+        geneGtfUrl = geneGtfUrl + "/gtf/" + shortName + "/*.gtf.gz";
+
+        return geneGtfUrl;
     }
 
     private void getGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
@@ -300,11 +326,9 @@ public class DownloadCommandParser extends CommandParser {
     private String getVariationUrl(Species sp, String shortName, String assembly, String host) {
         String variationUrl;
 
-        String ensemblVersion = getEnsemblVersion(sp, assembly);
-        String ensemblRelease = "/release-" + ensemblVersion.split("_")[0];
-        variationUrl = host + ensemblRelease;
+        variationUrl = host + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
-            variationUrl = host + ensemblRelease + "/" + getPhylo(sp);
+            variationUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
 
         variationUrl = variationUrl + "/mysql/" + shortName + "_variation_" + ensemblVersion;
@@ -328,9 +352,7 @@ public class DownloadCommandParser extends CommandParser {
     private String getRegulationUrl(Species sp, String shortName, String assembly, String host) {
         String regulationUrl;
 
-        String ensemblVersion = getEnsemblVersion(sp, assembly);
-        String ensemblRelease = "/release-" + ensemblVersion.split("_")[0];
-        regulationUrl = host + ensemblRelease + "/regulation/" + shortName;
+        regulationUrl = host + "/" + ensemblRelease + "/regulation/" + shortName;
 
         return regulationUrl;       
     }
