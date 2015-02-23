@@ -117,7 +117,7 @@ public class CellBaseMain {
                     if (cliOptionsParser.getQueryCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
                     } else {
-                        commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
+                        commandParser = new QueryCommandParser(cliOptionsParser.getQueryCommandOptions());
                     }
                     break;
                 default:
