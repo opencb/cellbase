@@ -204,8 +204,8 @@ public class CliOptionsParser {
         @Parameter(names = {"--resource"}, description = "", required = true, arity = 1)
         public String resource;
 
-        @Parameter(names = {"--variant-annot"}, description = "", required = false, arity = 1)
-        public String inputDir;
+        @Parameter(names = {"--variant-annot"}, description = "", required = false)
+        public boolean annotate;
 
         @Parameter(names = {"-i", "--input-file"}, description = "", required = false, arity = 1)
         public String inputFile;
