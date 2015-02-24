@@ -275,7 +275,7 @@ public class DownloadCommandParser extends CommandParser {
         logger.info("Downloading gene extra info ...");
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info_cellbase.log").toString();
-        String ensemblRegistryFile = ensemblScriptsFolder + "registry.conf";
+        String ensemblRegistryFile = ensemblScriptsFolder.getAbsolutePath() + "/registry.conf";
         List<String> args = Arrays.asList( "--species", sp.getScientificName(), "--outdir", geneFolder.toString(), "--ensembl-registry", ensemblRegistryFile);
 
         // run gene_extra_info_cellbase.pl
