@@ -689,6 +689,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         QueryBuilder builderRegulatory = null;
         BasicDBList transcriptInfoList = null;
         BasicDBList exonInfoList;
+        BasicDBObject miRnaInfo;
         BasicDBObject transcriptInfo, exonInfo;
         BasicDBObject geneInfo;
         BasicDBObject regulatoryInfo;
@@ -783,6 +784,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 consequenceTypeTemplate.setStrand((String) geneInfo.get("strand"));
                 consequenceTypeTemplate.setBiotype((String) transcriptInfo.get("biotype"));
                 consequenceTypeTemplate.setProteinSubstitutionScores(null);
+                miRnaInfo = null;
 
                 if(transcriptStrand.equals("+")) {
                     if(variantStart<=transcriptStart && variantEnd>=transcriptEnd) {  // Deletion - whole transcript removed
@@ -838,7 +840,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 44:
                                 case 49:
                                     solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
-                                            transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
+                                            transcriptStart, transcriptEnd, null, variantStart, variantEnd,
+                                            consequenceTypeTemplate);
                                     consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
                                             consequenceTypeTemplate.getEnsemblGeneId(),
                                             consequenceTypeTemplate.getEnsemblTranscriptId(),
@@ -849,6 +852,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                     /**
                                      * Non-coding biotypes
                                      */
+                                case 18:  // miRNA
+                                    miRnaInfo = (BasicDBObject) transcriptInfo.get("mirna");
                                 case 2:   //
                                 case 5:   //
                                 case 7:   // IG_V_pseudogene
@@ -861,7 +866,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 0:   // 3prime_overlapping_ncrna
                                 case 16:  // antisense
                                 case 17:  // lincRNA
-                                case 18:
                                 case 19:
                                 case 21:  // processed_pseudogene
                                 case 22:  // processed_transcript
@@ -882,16 +886,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 46:
                                 case 47:
                                 case 48:
-                                    exonVariant = solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
-                                            transcriptStart, transcriptEnd, variantStart, variantEnd, consequenceTypeTemplate);
-                                    if (transcriptBiotype == 18 && ((String) transcriptInfo.get("name")).startsWith("MIR")) {  // Only annotate this way known miRNA == mirBase contained
-                                        SoNames.add("mature_miRNA_variant");
-                                    } else {
-                                        if (exonVariant) {
-                                            SoNames.add("non_coding_transcript_exon_variant");
-                                        }
-                                        SoNames.add("non_coding_transcript_variant");
-                                    }
+                                    solveNonCodingPositiveTranscript(variant, SoNames, transcriptInfo,
+                                            transcriptStart, transcriptEnd, miRnaInfo, variantStart, variantEnd,
+                                            consequenceTypeTemplate);
                                     consequenceTypeList.add(new ConsequenceType(consequenceTypeTemplate.getGeneName(),
                                             consequenceTypeTemplate.getEnsemblGeneId(),
                                             consequenceTypeTemplate.getEnsemblTranscriptId(),
@@ -1302,9 +1299,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private Boolean solveNonCodingPositiveTranscript(GenomicVariant variant, HashSet<String> SoNames,
+    private void solveNonCodingPositiveTranscript(GenomicVariant variant, HashSet<String> SoNames,
                                                      BasicDBObject transcriptInfo, Integer transcriptStart,
-                                                     Integer transcriptEnd, Integer variantStart, Integer variantEnd,
+                                                     Integer transcriptEnd, BasicDBObject miRnaInfo,
+                                                     Integer variantStart, Integer variantEnd,
                                                      ConsequenceType consequenceTypeTemplate) {
         BasicDBList exonInfoList;
         BasicDBObject exonInfo;
@@ -1313,6 +1311,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         String transcriptSequence;
         Boolean variantAhead;
         Integer cdnaExonEnd;
+        Integer cdnaVariantStart;
+        Integer cdnaVariantEnd;
         Boolean splicing;
         int exonCounter;
         Integer prevSpliceSite;
@@ -1325,15 +1325,26 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         transcriptSequence = (String) exonInfo.get("sequence");
         variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         cdnaExonEnd = (exonEnd - exonStart + 1);
+        cdnaVariantStart = null;
+        cdnaVariantEnd = null;
         junctionSolution[0] = false;
         junctionSolution[1] = false;
         splicing = false;
 
         if(variantStart >= exonStart) {
             if(variantStart <= exonEnd) {  // Variant start within the exon. Set cdnaPosition in consequenceTypeTemplate
-                consequenceTypeTemplate.setcDnaPosition(cdnaExonEnd - (exonEnd - variantStart));
+                cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
+                consequenceTypeTemplate.setcDnaPosition(cdnaVariantStart);
             }
+        } else {
+            if(variantEnd <= exonEnd) {
+//                                if(variantEnd >= exonStart) {  // Only variant end within the exon  ----||||||||||E||||----
+                // We do not contemplate that variant end can be located before this exon since this is the first exon
+                cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
+//                                }
+            } // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
         }
+
 
         exonCounter = 1;
         while(exonCounter<exonInfoList.size() && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
@@ -1350,11 +1361,17 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantStart >= exonStart) {
                 cdnaExonEnd += (exonEnd - exonStart + 1);
                 if(variantStart <= exonEnd) {  // Variant start within the exon. Set cdnaPosition in consequenceTypeTemplate
-                    consequenceTypeTemplate.setcDnaPosition(cdnaExonEnd - (exonEnd - variantStart));
+                    cdnaVariantStart = cdnaExonEnd - (exonEnd - variantStart);
+                    consequenceTypeTemplate.setcDnaPosition(cdnaVariantStart);
+                    if(variantEnd <= exonEnd) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
+                        cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
+                    }
                 }
             } else {
                 if(variantEnd <= exonEnd) {
-                    if(variantEnd < exonStart) {  // Variant does not include this exon, variant is located before this exon
+                    if(variantEnd >= exonStart) {  // Only variant end within the exon  ----||||||||||E||||----
+                        cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
+                    } else {  // Variant does not include this exon, variant is located before this exon
                         variantAhead = false;
                     }
                 } else {  // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
@@ -1364,8 +1381,27 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             exonCounter++;
         }
 
-        return !junctionSolution[1];
-
+        if (miRnaInfo != null) {  // miRNA
+            BasicDBList matureMiRnaInfo = (BasicDBList) miRnaInfo.get("matures");
+            int i = 0;
+            while(i<matureMiRnaInfo.size()  && !regionsOverlap((Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaStart"),
+                    (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"), cdnaVariantStart, cdnaVariantEnd)) {
+                i++;
+            }
+            if(i<matureMiRnaInfo.size()) {  // Variant overlap at least one mature miRNA
+                SoNames.add("mature_miRNA_variant");
+            } else {
+                if (!junctionSolution[1]) {  // Exon variant
+                    SoNames.add("non_coding_transcript_exon_variant");
+                }
+                SoNames.add("non_coding_transcript_variant");
+            }
+        } else {
+            if (!junctionSolution[1]) {  // Exon variant
+                SoNames.add("non_coding_transcript_exon_variant");
+            }
+            SoNames.add("non_coding_transcript_variant");
+        }
     }
 
     private Boolean solveNonCodingNegativeTranscript(GenomicVariant variant, HashSet<String> SoNames,
