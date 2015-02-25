@@ -6,6 +6,7 @@ import org.opencb.cellbase.lib.mongodb.loader.MongoDBLoadRunner;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by imedina on 03/02/15.
@@ -32,7 +33,11 @@ public class LoadCommandParser extends CommandParser {
     public void parse() {
         checkParameters();
         LoadRunner loadRunner = new MongoDBLoadRunner(inputFile, collection, loadCommandOptions.threads);
-        loadRunner.run();
+        try {
+            loadRunner.run();
+        } catch (ExecutionException | InterruptedException e) {
+            logger.error("Error executing loader: " + e);
+        }
     }
 
     private void checkParameters() {
