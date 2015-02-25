@@ -245,10 +245,9 @@ public class DownloadCommandParser extends CommandParser {
         makeDir(geneFolder);
         downloadGeneGtf(sp, spShortName, geneFolder, host);
         getGeneExtraInfo(sp, geneFolder);
-        if (sp.getScientificName().equalsIgnoreCase("homo sapiens")) {
-            // TODO: output folder is gene or regulation?
-            getProteinFunctionPredictionMatrices(sp, geneFolder);
-        }
+//        if (sp.getScientificName().equalsIgnoreCase("homo sapiens")) {
+//            getProteinFunctionPredictionMatrices(sp, geneFolder);
+//        }
     }
 
     private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
@@ -292,6 +291,7 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
+    @Deprecated
     private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
 
