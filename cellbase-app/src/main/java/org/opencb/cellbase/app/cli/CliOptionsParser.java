@@ -178,6 +178,8 @@ public class CliOptionsParser {
         @Parameter(names = {"--indexFile"}, description = "", required = false, arity = 1)
         public String indexFile;
 
+        @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
+        public int threads = 2;
     }
 
 
@@ -192,27 +194,29 @@ public class CliOptionsParser {
         @Parameter(names = {"--species"}, description = "", required = true)
         public String species;
 
-        @Parameter(names = {"--assembly"}, description = "", required = true)
+        @Parameter(names = {"--assembly"}, description = "", required = false)
         public String assembly;
 
-        @Parameter(names = {"--type"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"--type"}, description = "", required = false, arity = 1)
         public String category;
 
         @Parameter(names = {"--id"}, description = "", required = false, variableArity = true)
         public List<String> ids;
 
-        @Parameter(names = {"--resource"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"--resource"}, description = "", required = false, arity = 1)
         public String resource;
 
-        @Parameter(names = {"--variant-annot"}, description = "", required = false, arity = 1)
-        public String inputDir;
+        @Parameter(names = {"--variant-annot"}, description = "", required = false)
+        public boolean annotate;
 
         @Parameter(names = {"-i", "--input-file"}, description = "", required = false, arity = 1)
         public String inputFile;
 
+        @Parameter(names = {"-o", "--output-file"}, description = "", required = false, arity = 1)
+        public String outputFile;
+
         @Parameter(names = {"--host-url"}, description = "", required = false, arity = 1)
         public String url;
-
     }
 
 
