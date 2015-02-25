@@ -5,13 +5,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opencb.cellbase.core.loader.LoadRunner;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-
-import static org.junit.Assert.*;
 
 public class MongoDBLoaderTest {
 
