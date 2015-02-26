@@ -56,6 +56,7 @@ public class LoadRunner {
         List<Future<Integer>> futures = startConsumers(executorService, consumers);
         int inputRecords = readInputJsonFile();
         int loadedRecords = getLoadedRecords(futures);
+        disconnectConsumers(consumers);
         this.checkLoadedRecords(inputRecords, loadedRecords);
         executorService.shutdown();
 
@@ -87,6 +88,7 @@ public class LoadRunner {
     private List<Future<Integer>> startConsumers(ExecutorService executorService, List<CellBaseLoader> consumers) {
         List<Future<Integer>> futures = new ArrayList<>(consumersNumber);
         for (CellBaseLoader consumer : consumers) {
+            consumer.init();
             futures.add(executorService.submit(consumer));
         }
         return futures;
@@ -129,6 +131,12 @@ public class LoadRunner {
             loadedRecords += future.get();
         }
         return loadedRecords;
+    }
+
+    private void disconnectConsumers(List<CellBaseLoader> consumers) {
+        for (CellBaseLoader consumer : consumers) {
+            consumer.disconnect();
+        }
     }
 
     protected void checkLoadedRecords(int inputRecords, int loadedRecords) {
