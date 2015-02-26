@@ -15,10 +15,10 @@
     <packaging>war</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-mongodb</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.opencb.cellbase</groupId>-->
+            <!--<artifactId>cellbase-mongodb</artifactId>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -70,5 +70,20 @@
             </resource>
         </resources>
     </build>
+
+    <profiles>
+        <profile>
+            <id>mongodb</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.opencb.cellbase</groupId>
+                    <artifactId>cellbase-mongodb</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>

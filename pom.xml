@@ -14,9 +14,9 @@
     <url>http://www.opencb.org/subprojects/cellbase</url>
 
     <modules>
+        <module>cellbase-mongodb</module>
         <module>cellbase-app</module>
         <module>cellbase-core</module>
-        <module>cellbase-mongodb</module>
         <module>cellbase-server</module>
     </modules>
 
@@ -84,11 +84,11 @@
                 <artifactId>cellbase-core</artifactId>
                 <version>${cellbase.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.opencb.cellbase</groupId>
-                <artifactId>cellbase-mongodb</artifactId>
-                <version>${cellbase.version}</version>
-            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>org.opencb.cellbase</groupId>-->
+                <!--<artifactId>cellbase-mongodb</artifactId>-->
+                <!--<version>${cellbase.version}</version>-->
+            <!--</dependency>-->
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-models</artifactId>
@@ -289,5 +289,23 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>mongodb</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.opencb.cellbase</groupId>
+                        <artifactId>cellbase-mongodb</artifactId>
+                        <version>${cellbase.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+    </profiles>
 
 </project>
