@@ -15,9 +15,13 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
     protected final BlockingQueue<List<String>> queue;
     protected final Logger logger;
+    public String data;
+    private Map<String, String> params;
 
-    public CellBaseLoader (BlockingQueue<List<String>> queue, Map<String, String> params) {
+    public CellBaseLoader (BlockingQueue<List<String>> queue, String data, Map<String, String> params) {
         this.queue = queue;
+        this.data = data;
+        this.params = params;
         logger = LoggerFactory.getLogger(this.getClass());
     }
 

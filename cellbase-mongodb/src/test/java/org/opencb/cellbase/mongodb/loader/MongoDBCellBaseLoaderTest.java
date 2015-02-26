@@ -33,7 +33,7 @@ public class MongoDBCellBaseLoaderTest {
         queue.put(LoadRunner.POISON_PILL);
         // loader
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
-        loader = new MongoDBCellBaseLoader(queue, null, "testCollection");
+        loader = new MongoDBCellBaseLoader(queue, "testCollection", null);
     }
 
     @After
