@@ -68,10 +68,25 @@ Latest stable release at **_master_** branch can be downloaded executing:
 
 
 ### Build
-You can build CellBase by executing the following command from the root of the cloned repository:
+We use maven to inject the properties values, you need to add this maven configuration to the profiles section at your _~.m2/settings.xml_, you may need to change some values:
+
+    <profile>
+     <id>localhost</id>
+     <activation>
+       <activeByDefault>true</activeByDefault>
+     </activation>
+     <properties>
+       <CELLBASE.DB.HOST>localhost</CELLBASE.DB.HOST>
+       <CELLBASE.DB.PORT>27017</CELLBASE.DB.PORT>
+       <CELLBASE.DB.USER></CELLBASE.DB.USER>
+       <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
+     </properties>
+     </profile>
+
+Now you can build CellBase by executing the following command from the root of the cloned repository:
   
     $ mvn clean install -DskipTests
-
+    
 Remember that **_develop_** branch dependencies are not ensured to be deployed at Maven Central, you may need to clone and install **_develop_** branches from OpenCB _biodata_ and _datastore_ repositories. After this you should have this file structure in **_cellbase-app/build_**:
 
     cellbase-app/build/
