@@ -4,6 +4,10 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.mongodb.MongoDBCollection;
+import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,27 +18,31 @@ import java.util.concurrent.BlockingQueue;
  */
 public class MongoDBLoader extends CellBaseLoader {
 
-    private final int[] chunkSizes;
-    private String collection;
+    private int[] chunkSizes;
+    private String collectionName;
+    private MongoDataStore dataStore;
+    private MongoDBCollection collection;
 
-    public MongoDBLoader(BlockingQueue<List<String>> queue, int[] chunkSizes, String collection) {
+    public MongoDBLoader(BlockingQueue<List<String>> queue, String collectionName, MongoDataStore dataStore) {
         super(queue);
-        this.chunkSizes = chunkSizes;
-        this.collection = collection;
+        this.collectionName = collectionName;
+        this.dataStore = dataStore;
+        getChunkSizes();
     }
 
     @Override
     public void init() {
-        // TODO: establish connection using datastore
+        collection = dataStore.getCollection(collectionName);
     }
 
     public void load(List<DBObject> batch) {
-        // TODO: use datastore to load batch into collection 'collection'
+        // TODO: queryOptions?
+        collection.insert(batch, new QueryOptions());
     }
 
     @Override
     public void disconnect() {
-        // TODO: close connection using datastore
+        // TODO: the conection just can be closed in the DataStoreManager
     }
 
     @Override
