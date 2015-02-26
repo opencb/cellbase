@@ -6,16 +6,20 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.zip.GZIPInputStream;
 
 /**
  * Created by parce on 18/02/15.
  */
-public abstract class LoadRunner {
+public class LoadRunner {
 
     private final Path inputJsonFile;
     private static final int QUEUE_CAPACITY = 10;
@@ -26,14 +30,26 @@ public abstract class LoadRunner {
     protected BlockingQueue<List<String>> queue;
     private int consumersNumber;
 
+    private String loader;
+    Map<String, String> loaderParams;
+
     public LoadRunner (Path inputJsonFile, int threadsNumber) {
-        logger = LoggerFactory.getLogger(this.getClass());
+        this(inputJsonFile, threadsNumber, "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader", new HashMap<String, String>());
+    }
+
+    public LoadRunner (Path inputJsonFile, int threadsNumber, String loader, Map<String, String> loaderParams) {
         this.inputJsonFile = inputJsonFile;
         this.queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
         this.threadsNumber = threadsNumber;
+
+        this.loader = loader;
+        this.loaderParams = loaderParams;
+
+        logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    public void run() throws ExecutionException, InterruptedException {
+    public void run() throws ExecutionException, InterruptedException, ClassNotFoundException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException, InvocationTargetException {
         List<CellBaseLoader> consumers = createConsumers();
         ExecutorService executorService = Executors.newFixedThreadPool(consumersNumber);
         List<Future<Integer>> futures = startConsumers(executorService, consumers);
@@ -44,18 +60,32 @@ public abstract class LoadRunner {
 
     }
 
-    protected List<CellBaseLoader> createConsumers() {
+    protected List<CellBaseLoader> createConsumers() throws ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, InstantiationException, IllegalAccessException {
         consumersNumber = threadsNumber > 2 ? threadsNumber - 1 : 1;
 
         List<CellBaseLoader> consumers = new ArrayList<>();
         for (int i=0; i < consumersNumber; i++) {
-            consumers.add(createConsumer());
+//            consumers.add(createConsumer());
+            consumers.add(createCellBaseLoader());
         }
         logger.debug(consumersNumber + " consumer threads created");
         return consumers;
     }
 
-    protected abstract CellBaseLoader createConsumer();
+//    protected abstract CellBaseLoader createConsumer();
+
+    private CellBaseLoader createCellBaseLoader() throws ClassNotFoundException, NoSuchMethodException,
+            IllegalAccessException, InvocationTargetException, InstantiationException {
+        /**
+         * This code use Java reflection to create a data serializer for a specific database engine,
+         * only a default JSON and MongoDB serializers have been implemented so far, this DI pattern
+         * may be applied to get other database outputs.
+         * This is in charge of creating the specific data model for the database backend.
+         */
+//        Path outputPath = Paths.get(loadCommandOptions.loader);
+        return (CellBaseLoader) Class.forName(loader).getConstructor(BlockingQueue.class, Map.class).newInstance(queue, loaderParams);
+    }
 
     private List<Future<Integer>> startConsumers(ExecutorService executorService, List<CellBaseLoader> consumers) {
         List<Future<Integer>> futures = new ArrayList<>(consumersNumber);

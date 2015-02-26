@@ -3,7 +3,9 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 03/02/15.
@@ -153,9 +155,14 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-l", "--load"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "", required = true, arity = 1)
         public String load;
 
+        @Parameter(names = {"-l", "--loader"}, description = "", required = true, arity = 1)
+        public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";
+
+        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        public Map<String, String> loaderParams = new HashMap<>();
 
         @Parameter(names = {"-i", "--input-file"}, description = "", required = false, arity = 1)
         public String inputFile;

@@ -2,8 +2,8 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.core.loader.LoadRunner;
-import org.opencb.cellbase.lib.mongodb.loader.MongoDBLoadRunner;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
@@ -32,11 +32,24 @@ public class LoadCommandParser extends CommandParser {
      */
     public void parse() {
         checkParameters();
-        LoadRunner loadRunner = new MongoDBLoadRunner(inputFile, collection, loadCommandOptions.threads);
+
+//        LoadRunner loadRunner = new LoadRunner(inputFile, collection, loadCommandOptions.threads);
+        LoadRunner loadRunner = new LoadRunner(inputFile, loadCommandOptions.threads, loadCommandOptions.loader, loadCommandOptions.loaderParams);
+
         try {
             loadRunner.run();
         } catch (ExecutionException | InterruptedException e) {
             logger.error("Error executing loader: " + e);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
     }
 
