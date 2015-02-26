@@ -8,7 +8,9 @@ import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDBCollection;
+import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,17 +25,20 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private int[] chunkSizes;
     private MongoDataStore dataStore;
     private MongoDBCollection collection;
-
-//    public MongoDBLoader(BlockingQueue<List<String>> queue, String collectionName, MongoDataStore dataStore) {
-//        super(queue);
-//        this.collectionName = collectionName;
-//        this.dataStore = dataStore;
-//        getChunkSizes();
-//    }
+    private MongoDataStoreManager dataStoreManager;
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Map<String, String> params) {
         super(queue, data, params);
     }
+
+    @Override
+    public void init() {
+        String collectionName = this.getCollectionName(data);
+        createConnection();
+        collection = dataStore.getCollection(collectionName);
+        getChunkSizes(collectionName);
+    }
+
 
     private String getCollectionName(String data) {
         String collectionName = null;
@@ -51,7 +56,15 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
         }
 
+        // TODO: throw a exception if data is not known
+
         return collectionName;
+    }
+
+    private void createConnection() {
+        dataStoreManager = new MongoDataStoreManager(params.get(CellBaseLoader.CELLBASE_HOST), Integer.parseInt(params.get(CELLBASE_PORT)));
+        MongoDBConfiguration credentials = MongoDBConfiguration.builder().add("username", params.get("user")).add("password", params.get("password")).build();
+        dataStore = dataStoreManager.get(CELLBASE_DATABASE_NAME, credentials);
     }
 
     private void getChunkSizes(String collectionName) {
@@ -70,23 +83,17 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-
-    @Override
-    public void init() {
-        String collectionName = this.getCollectionName(data);
-        collection = dataStore.getCollection(collectionName);
-        getChunkSizes(collectionName);
-    }
-
     public int load(List<DBObject> batch) {
         // TODO: queryOptions?
         QueryResult<BulkWriteResult> result = collection.insert(batch, new QueryOptions());
         return result.first().getInsertedCount();
     }
 
+
+
     @Override
     public void disconnect() {
-        // TODO: the conection just can be closed in the DataStoreManager
+        dataStoreManager.close(CELLBASE_DATABASE_NAME);
     }
 
     @Override

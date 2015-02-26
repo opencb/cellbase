@@ -3,10 +3,13 @@ package org.opencb.cellbase.mongodb.loader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -31,9 +34,16 @@ public class MongoDBCellBaseLoaderTest {
         queue.put(firstBatch);
         queue.put(secondBatch);
         queue.put(LoadRunner.POISON_PILL);
+        // connection params
+        Map<String, String> params = new HashMap<>();
+        // TODO: use constants for params?
+        params.put(CellBaseLoader.CELLBASE_HOST, "localhost");
+        params.put(CellBaseLoader.CELLBASE_PORT, "27017");
+        params.put(CellBaseLoader.CELLBASE_DATABASE_NAME, "cellbaseTest");
         // loader
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
-        loader = new MongoDBCellBaseLoader(queue, "testCollection", null);
+        loader = new MongoDBCellBaseLoader(queue, "cosmic", null);
+        loader.init();
     }
 
     @After

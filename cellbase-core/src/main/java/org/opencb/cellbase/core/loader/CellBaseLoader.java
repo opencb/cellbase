@@ -13,10 +13,13 @@ import java.util.concurrent.Callable;
  */
 public abstract class CellBaseLoader implements Callable<Integer> {
 
+    public static final String CELLBASE_HOST = "host";
+    public static final String CELLBASE_PORT = "port";
+    public static final String CELLBASE_DATABASE_NAME = "cellbase";
     protected final BlockingQueue<List<String>> queue;
     protected final Logger logger;
     public String data;
-    private Map<String, String> params;
+    protected Map<String, String> params;
 
     public CellBaseLoader (BlockingQueue<List<String>> queue, String data, Map<String, String> params) {
         this.queue = queue;
