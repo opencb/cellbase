@@ -5,6 +5,10 @@ package org.opencb.cellbase.core.loader;
  */
 public class LoaderException extends Exception {
 
+    public LoaderException(String message) {
+        super(message);
+    }
+
     public LoaderException(Exception e) {
         super(e.getMessage());
     }

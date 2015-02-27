@@ -58,4 +58,6 @@ public class MongoDBCellBaseLoaderTest {
     public void testRun() throws Exception {
         loader.call();
     }
+
+    // TODO: test chunk ids
 }

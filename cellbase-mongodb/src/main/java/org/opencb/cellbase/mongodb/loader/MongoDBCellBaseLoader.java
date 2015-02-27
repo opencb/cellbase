@@ -44,8 +44,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
 
-    private String getCollectionName(String data) {
-        String collectionName = null;
+    private String getCollectionName(String data) throws LoaderException {
+        String collectionName;
         switch (data) {
             case "cosmic":
             case "clinvar":
@@ -58,9 +58,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "variation":
                 collectionName = "variation";
                 break;
+            default:
+                throw new LoaderException("Unknown collection to store " + data);
         }
-
-        // TODO: throw a exception if data is not known
 
         return collectionName;
     }
@@ -109,14 +109,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if (collectionName != null) {
             switch (collectionName) {
                 case "gene":
-                    // TODO: use real chunk sizes here
-                    chunkSizes = new int[]{1000, 10000};
+                    chunkSizes = new int[]{5000};
                     break;
                 case "variation":
-                    // TODO: use real chunk sizes here
-                    chunkSizes = new int[]{1000};
+                    chunkSizes = new int[]{5000};
                     break;
-                // TODO: add all chunk sizes cases
             }
         }
     }
@@ -163,15 +160,23 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     private DBObject getDbObject(String jsonLine) {
-        try {
-            DBObject dbObject = (DBObject) JSON.parse(jsonLine);
-            if (chunkSizes != null && chunkSizes.length > 0) {
-                // TODO: get chunkid
-                // TODO: add chunkid to dbobject
+        DBObject dbObject = (DBObject) JSON.parse(jsonLine);
+        addChunkId(dbObject);
+        return dbObject;
+    }
+
+    private void addChunkId(DBObject dbObject) {
+        if (chunkSizes != null && chunkSizes.length > 0) {
+            List<String> chunkIds = new ArrayList<>();
+            for (int chunkSize : chunkSizes) {
+                int chunkStart = (Integer) dbObject.get("start") / chunkSize;
+                int chunkEnd = (Integer) dbObject.get("end") / chunkSize;
+                String chunkIdSuffix = chunkSize / 1000 + "k";
+                for (int i = chunkStart; i <= chunkEnd; i++) {
+                    chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
+                }
             }
-            return dbObject;
-        } catch (Exception e) {
-            throw e;
+            dbObject.put("chunkIds", chunkIds);
         }
     }
 }
