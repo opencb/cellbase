@@ -18,9 +18,6 @@ You can report bugs or request new features at [GitHub issue tracking](https://g
 
 ### Release Notes and Roadmap
 Releases notes are available at [GitHub releases](https://github.com/opencb/cellbase/releases).
-    * Javier Lopez (fjlopez@ebi.ac.uk)
-    * Ignacio Medina (imedina@ebi.ac.uk)
-
 
 Roadmap is available at [GitHub milestones](https://github.com/opencb/cellbase/milestones). You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
 
