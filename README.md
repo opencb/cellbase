@@ -15,8 +15,12 @@ For documenting RESTful web services [Swagger](http://swagger.io/) has been set-
 ### Issues Tracking
 You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
 
+
 ### Release Notes and Roadmap
 Releases notes are available at [GitHub releases](https://github.com/opencb/cellbase/releases).
+    * Javier Lopez (fjlopez@ebi.ac.uk)
+    * Ignacio Medina (imedina@ebi.ac.uk)
+
 
 Roadmap is available at [GitHub milestones](https://github.com/opencb/cellbase/milestones). You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
 
