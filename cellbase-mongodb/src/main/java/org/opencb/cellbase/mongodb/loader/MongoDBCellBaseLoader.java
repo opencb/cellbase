@@ -3,8 +3,10 @@ package org.opencb.cellbase.mongodb.loader;
 import com.mongodb.BulkWriteResult;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
+import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDBCollection;
@@ -12,6 +14,7 @@ import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
 import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +29,14 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private MongoDataStore dataStore;
     private MongoDBCollection collection;
     private MongoDataStoreManager dataStoreManager;
+    private String databaseName;
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Map<String, String> params) {
         super(queue, data, params);
     }
 
     @Override
-    public void init() {
+    public void init() throws LoaderException {
         String collectionName = this.getCollectionName(data);
         createConnection();
         collection = dataStore.getCollection(collectionName);
@@ -61,10 +65,44 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         return collectionName;
     }
 
-    private void createConnection() {
-        dataStoreManager = new MongoDataStoreManager(params.get(CellBaseLoader.CELLBASE_HOST), Integer.parseInt(params.get(CELLBASE_PORT)));
-        MongoDBConfiguration credentials = MongoDBConfiguration.builder().add("username", params.get("user")).add("password", params.get("password")).build();
-        dataStore = dataStoreManager.get(CELLBASE_DATABASE_NAME, credentials);
+    private void createConnection() throws LoaderException {
+        try {
+            CellBaseConfiguration configuration = CellBaseConfiguration.load();
+            dataStoreManager = new MongoDataStoreManager(getHost(configuration), getPort(configuration));
+            MongoDBConfiguration credentials = MongoDBConfiguration.builder().add("username", getUser(configuration)).add("password", getPassword(configuration)).build();
+            if (params.containsKey(CELLBASE_DATABASE_NAME_PROPERTY)) {
+                databaseName = params.get(CELLBASE_DATABASE_NAME_PROPERTY);
+            } else {
+                databaseName = CELLBASE_DEFAULT_DATABASE_NAME;
+            }
+            dataStore = dataStoreManager.get(databaseName, credentials);
+        } catch (IOException e) {
+            throw new LoaderException(e);
+        }
+    }
+
+    private String getHost(CellBaseConfiguration configuration) {
+        return getParam(CellBaseLoader.CELLBASE_HOST, configuration.getDatabase().getHost());
+    }
+
+    private int getPort(CellBaseConfiguration configuration) {
+        return Integer.parseInt(getParam(CellBaseLoader.CELLBASE_PORT, configuration.getDatabase().getPort()));
+    }
+
+    private String getUser(CellBaseConfiguration configuration) {
+        return getParam(CellBaseLoader.CELLBASE_USER, configuration.getDatabase().getUser());
+    }
+
+    private String getPassword(CellBaseConfiguration configuration) {
+        return getParam(CellBaseLoader.CELLBASE_PASSWORD, configuration.getDatabase().getPassword());
+    }
+
+    private String getParam(String paramName, String defaultValue) {
+        if (params.containsKey(paramName)) {
+            return params.get(paramName);
+        } else {
+            return defaultValue;
+        }
     }
 
     private void getChunkSizes(String collectionName) {
@@ -93,7 +131,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     @Override
     public void disconnect() {
-        dataStoreManager.close(CELLBASE_DATABASE_NAME);
+        dataStoreManager.close(databaseName);
     }
 
     @Override
