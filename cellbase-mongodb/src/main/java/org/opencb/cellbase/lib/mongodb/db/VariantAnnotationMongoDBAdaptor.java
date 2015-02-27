@@ -26,6 +26,7 @@ import java.util.*;
 
 /**
  * Created by imedina on 11/07/14.
+ * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
 public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
 

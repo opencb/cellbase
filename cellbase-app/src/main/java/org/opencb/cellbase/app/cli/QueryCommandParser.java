@@ -8,9 +8,11 @@ import org.opencb.cellbase.core.client.CellBaseClient;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by imedina on 20/02/15.
+ * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
 public class QueryCommandParser extends CommandParser {
 
@@ -29,17 +31,25 @@ public class QueryCommandParser extends CommandParser {
     @Override
     public void parse() {
         checkParameters();
+        VariantAnnotationRunner variantAnnotationRunner = new VariantAnnotationRunner(inputFile, outputFile, loadCommandOptions.threads);
         try {
-            CellBaseClient cellBaseClient = getCellBaseClient();
-            if (queryCommandOptions.annotate && inputFile != null && inputFile.toString().toLowerCase().endsWith(".vcf")) {
-                VcfAnnotator vcfAnnotator= new VcfAnnotator(inputFile, outputFile, cellBaseClient);
-                vcfAnnotator.annotateVcfFile();
-            }
-        } catch (ParameterException e) {
-            logger.error("Error parsing 'query' command line parameters: " + e.getMessage(), e);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
+            variantAnnotationRunner.run();
+        } catch (ExecutionException | InterruptedException e) {
+            logger.error("Error executing annotator: " + e);
         }
+
+//        checkParameters();
+//        try {
+//            CellBaseClient cellBaseClient = getCellBaseClient();
+//            if (queryCommandOptions.annotate && inputFile != null && inputFile.toString().toLowerCase().endsWith(".vcf")) {
+//                VcfAnnotator vcfAnnotator= new VcfAnnotator(inputFile, outputFile, cellBaseClient);
+//                vcfAnnotator.annotateVcfFile();
+//            }
+//        } catch (ParameterException e) {
+//            logger.error("Error parsing 'query' command line parameters: " + e.getMessage(), e);
+//        } catch (Exception e) {
+//            logger.error(e.getMessage());
+//        }
     }
 
     private void checkParameters() {
