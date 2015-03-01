@@ -23,10 +23,6 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-core</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.opencb.cellbase</groupId>-->
-            <!--<artifactId>cellbase-mongodb</artifactId>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-models</artifactId>
