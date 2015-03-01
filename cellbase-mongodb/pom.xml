@@ -19,14 +19,6 @@
             <artifactId>cellbase-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opencb.biodata</groupId>
-            <artifactId>biodata-models</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opencb.biodata</groupId>
-            <artifactId>biodata-formats</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.opencb.datastore</groupId>
             <artifactId>datastore-mongodb</artifactId>
         </dependency>
