@@ -1,6 +1,7 @@
 package org.opencb.cellbase.mongodb.db;
 
 import org.apache.commons.lang.StringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
@@ -24,7 +25,7 @@ import java.util.*;
 
 public class VariantAnnotationMongoDBAdaptorTest {
 
-
+    @Ignore
     @Test
     public void testGetAnnotationByVariantList() throws Exception {
 
@@ -202,6 +203,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
     }
 
+    @Ignore
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException {
 
