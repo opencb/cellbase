@@ -27,7 +27,7 @@ import java.util.*;
 /**
  * Created by imedina on 11/07/14.
  */
-public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
+public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
 
 //    private DBCollection mongoVariationPhenotypeDBCollection;
     private int coreChunkSize = 5000;
