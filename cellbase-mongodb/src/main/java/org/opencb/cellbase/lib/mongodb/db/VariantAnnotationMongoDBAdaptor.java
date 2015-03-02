@@ -266,19 +266,17 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         if(variantAlt.equals("-")) {  // Deletion
             if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
-                    !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
+                    cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add("initiator_codon_variant");
                 codingAnnotationAdded = true;
             }
             if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaCodingEnd to 0
                 if (cdnaVariantEnd != null && cdnaVariantEnd > (cdnaCodingEnd - 3)) {
                     SoNames.add("stop_lost");
-//                    codingAnnotationAdded = true;
                 }
             } else {
                 if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     SoNames.add("incomplete_terminal_codon_variant");
-//                    codingAnnotationAdded = true;
                 }
             }
             if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
@@ -293,22 +291,19 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
                 if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
-                        !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
+                        cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
                     codingAnnotationAdded = true;
                 }
                 if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     if (cdnaVariantEnd != null && cdnaVariantEnd > (cdnaCodingEnd - 3)) {
                         SoNames.add("stop_lost");
-//                        codingAnnotationAdded = true;
                     }
                 } else {
                     if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                         SoNames.add("incomplete_terminal_codon_variant");
-//                        codingAnnotationAdded = true;
                     }
                 }
-//                SoNames.add("feature_elongation");
                 if(!splicing && cdnaVariantStart != null) {
                     codingAnnotationAdded = true;
                     if(variantAlt.length()%3 == 0) {
@@ -320,7 +315,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {  // SNV
                 if(cdnaVariantStart != null ) {
                     if (cdnaVariantStart < (cdnaCodingStart + 3)) {  // cdnaVariantStart=null if variant start is intronic
-                        if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {
+                        if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                             SoNames.add("initiator_codon_variant");
                             codingAnnotationAdded = true;
                         }
@@ -350,7 +345,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                         }
                                     }
                                 } else {
-                                    if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon)
+                                    if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon). If the 3prime end is incompletely annotated and execution reaches this line, finalNtPhase can only be 2
                                         SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
                                         QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                                 consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
@@ -368,8 +363,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                     } else {
                                         if (isStopCodon(referenceCodon)) {
                                             SoNames.add("stop_lost");
-                                        } else {
-                                            SoNames.add("incomplete_terminal_codon_variant");
+                                        } else {    // This can only happen if the 3prime end is incompletely annotated an finalNtPhase=2
+                                            SoNames.add("missense_variant");
                                         }
                                     }
                                 }
@@ -403,7 +398,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         if(variantAlt.equals("-")) {  // Deletion
             if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
-                    !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
+                    cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add("initiator_codon_variant");
                 codingAnnotationAdded = true;
             }
@@ -430,7 +425,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
                 if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+3) && (transcriptFlags==null ||
-                        !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic
+                        cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
                     codingAnnotationAdded = true;
                 }
@@ -457,7 +452,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {  // SNV
                 if(cdnaVariantStart != null) {
                     if (cdnaVariantStart < (cdnaCodingStart + 3)) {  // cdnaVariantStart=null if variant is intronic
-                        if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {
+                        if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                             SoNames.add("initiator_codon_variant");
                             codingAnnotationAdded = true;
                         }
@@ -493,7 +488,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                         }
                                     }
                                 } else {
-                                    if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon)
+                                    if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon). If the 3prime end is incompletely annotated and execution reaches this line, finalNtPhase can only be 2
                                         SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
                                         QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                                 consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
@@ -511,8 +506,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                     } else {
                                         if (isStopCodon(String.valueOf(referenceCodon))) {
                                             SoNames.add("stop_lost");
-                                        } else {
-                                            SoNames.add("incomplete_terminal_codon_variant");
+                                        } else {    // This can only happen if the 3prime end is incompletely annotated an finalNtPhase=2
+                                            SoNames.add("missense_variant");
                                         }
                                     }
                                 }
@@ -543,12 +538,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                                      String variantAlt, HashSet<String> SoNames,
                                                      ConsequenceType consequenceTypeTemplate) {
         if(variantStart < genomicCodingStart) {
-            if(transcriptStart<genomicCodingStart) { // Check transcript has 5 UTR
+            if(transcriptStart<genomicCodingStart || (transcriptFlags!=null && transcriptFlags.contains("cds_start_NF"))) {// Check transcript has 3 UTR
                 SoNames.add("5_prime_UTR_variant");
             }
             if(variantEnd >= genomicCodingStart) {
                 SoNames.add("coding_sequence_variant");
-                if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {  // Deletion that removes initiator codon
+                if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
                 }
             }
@@ -568,14 +563,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd, transcriptFlags,
                             variantRef, variantAlt, SoNames, consequenceTypeTemplate);
                 } else {
-                    if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
+                    if(transcriptEnd>genomicCodingEnd || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
                         SoNames.add("3_prime_UTR_variant");
                     }
                     SoNames.add("coding_sequence_variant");
                     SoNames.add("stop_lost");
                 }
             } else {
-                if(transcriptEnd>genomicCodingEnd) {// Check transcript has 3 UTR)
+                if(transcriptEnd>genomicCodingEnd || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
                     SoNames.add("3_prime_UTR_variant");
                 }
             }
@@ -590,12 +585,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                                      String variantAlt, HashSet<String> SoNames,
                                                      ConsequenceType consequenceTypeTemplate) {
         if(variantEnd > genomicCodingEnd) {
-            if(transcriptEnd>genomicCodingEnd) { // Check transcript has 5 UTR
+            if(transcriptEnd>genomicCodingEnd || (transcriptFlags!=null && transcriptFlags.contains("cds_start_NF"))) {// Check transcript has 3 UTR
                 SoNames.add("5_prime_UTR_variant");
             }
             if(variantStart <= genomicCodingEnd) {
                 SoNames.add("coding_sequence_variant");
-                if(transcriptFlags==null || !transcriptFlags.contains("cds_start_NF")) {  // Deletion that removes initiator codon
+                if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
                 }
             }
@@ -615,14 +610,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd, transcriptFlags,
                             variantRef, variantAlt, SoNames, consequenceTypeTemplate);
                 } else {
-                    if(transcriptStart<genomicCodingStart) {// Check transcript has 3 UTR)
+                    if(transcriptStart<genomicCodingStart || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
                         SoNames.add("3_prime_UTR_variant");
                     }
                     SoNames.add("coding_sequence_variant");
                     SoNames.add("stop_lost");
                 }
             } else {
-                if(transcriptStart<genomicCodingStart) {// Check transcript has 3 UTR)
+                if(transcriptStart<genomicCodingStart || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
                     SoNames.add("3_prime_UTR_variant");
                 }
             }
@@ -699,7 +694,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         Integer cdnaCodingStart, cdnaCodingEnd, cdnaExonStart, cdnaExonEnd, cdnaVariantStart, cdnaVariantEnd, prevSpliceSite;
         Integer regulatoryStart, regulatoryEnd, cdsLength;
         Integer variantStart = variant.getPosition();
-        Integer variantEnd = variant.getPosition()+variant.getReference().length()-1;  //TODO: Check deletion input format to ensure that variantEnd is correctly calculated
+        Integer variantEnd;
         String geneStrand, transcriptStrand, exonSequence, transcriptSequence;
         String regulatoryChromosome, regulatoryType;
         String nextCodonNucleotides = "";
@@ -711,6 +706,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         Boolean splicing, coding, exonsRemain, variantAhead, exonVariant, TFBSFound;
         int exonCounter,i;
         ConsequenceType consequenceTypeTemplate = new ConsequenceType();
+
+//        if(variant.getReference().equals("-")) {
+//            variantEnd = variantStart+1;
+//        } else {
+        variantEnd = variant.getPosition() + variant.getReference().length() - 1;  //TODO: Check deletion input format to ensure that variantEnd is correctly calculated
+//        }
 
         if(variantEnd-variantStart < 51) { // SNV, insertion or short deletion, simplify the queries to improve efficiency
             // Get all genes surrounding the variant +-5kb
@@ -1379,14 +1380,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             exonCounter++;
         }
 
-        if (miRnaInfo != null) {  // miRNA
+        if (miRnaInfo != null) {  // miRNA with miRBase data
             BasicDBList matureMiRnaInfo = (BasicDBList) miRnaInfo.get("matures");
             int i = 0;
             while(i<matureMiRnaInfo.size()  && !regionsOverlap((Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaStart"),
                     (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"), cdnaVariantStart, cdnaVariantEnd)) {
                 i++;
             }
-            if(i<matureMiRnaInfo.size()) {  // Variant overlap at least one mature miRNA
+            if(i<matureMiRnaInfo.size()) {  // Variant overlaps at least one mature miRNA
                 SoNames.add("mature_miRNA_variant");
             } else {
                 if (!junctionSolution[1]) {  // Exon variant
@@ -1487,14 +1488,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             exonCounter++;
         }
 
-        if (miRnaInfo != null) {  // miRNA
+        if (miRnaInfo != null) {  // miRNA with miRBase data
             BasicDBList matureMiRnaInfo = (BasicDBList) miRnaInfo.get("matures");
             int i = 0;
             while(i<matureMiRnaInfo.size()  && !regionsOverlap((Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaStart"),
                     (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"), cdnaVariantStart, cdnaVariantEnd)) {
                 i++;
             }
-            if(i<matureMiRnaInfo.size()) {  // Variant overlap at least one mature miRNA
+            if(i<matureMiRnaInfo.size()) {  // Variant overlaps at least one mature miRNA
                 SoNames.add("mature_miRNA_variant");
             } else {
                 if (!junctionSolution[1]) {  // Exon variant
