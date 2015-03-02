@@ -22,8 +22,8 @@
 
     <properties>
         <cellbase.version>3.1-SNAPSHOT</cellbase.version>
-        <biodata.version>0.3.0</biodata.version>
-        <datastore.version>0.3.0</datastore.version>
+        <biodata.version>0.4-SNAPSHOT</biodata.version>
+        <datastore.version>0.4-SNAPSHOT</datastore.version>
         <compileSource>1.7</compileSource>
     </properties>
 
