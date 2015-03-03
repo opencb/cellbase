@@ -1,9 +1,9 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
-import org.opencb.cellbase.app.query.VcfAnnotator;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.client.CellBaseClient;
+import org.opencb.cellbase.core.query.VariantAnnotatorRunner;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -31,11 +31,19 @@ public class QueryCommandParser extends CommandParser {
     @Override
     public void parse() {
         checkParameters();
-        VariantAnnotationRunner variantAnnotationRunner = new VariantAnnotationRunner(inputFile, outputFile, loadCommandOptions.threads);
-        try {
-            variantAnnotationRunner.run();
-        } catch (ExecutionException | InterruptedException e) {
-            logger.error("Error executing annotator: " + e);
+        if(queryCommandOptions.annotate) {
+            VariantAnnotatorRunner variantAnnotatorRunner = null;
+            try {
+                variantAnnotatorRunner = new VariantAnnotatorRunner(inputFile, outputFile,
+                        getCellBaseClient(), queryCommandOptions.threads);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            try {
+                variantAnnotatorRunner.run();
+            } catch (ExecutionException | InterruptedException e) {
+                logger.error("Error executing annotator: " + e);
+            }
         }
 
 //        checkParameters();
@@ -53,19 +61,29 @@ public class QueryCommandParser extends CommandParser {
     }
 
     private void checkParameters() {
-        // input file
-        if (queryCommandOptions.inputFile != null) {
-            inputFile = Paths.get(queryCommandOptions.inputFile);
-            if (!inputFile.toFile().exists()) {
-                throw new ParameterException("Input file " + inputFile + " doesn't exist");
-            } else if (inputFile.toFile().isDirectory()) {
-                throw new ParameterException("Input file cannot be a directory: " + inputFile);
+        if(queryCommandOptions.annotate) {
+            // input file
+            if (queryCommandOptions.inputFile != null) {
+                inputFile = Paths.get(queryCommandOptions.inputFile);
+                if (!inputFile.toFile().exists()) {
+                    throw new ParameterException("Input file " + inputFile + " doesn't exist");
+                } else if (inputFile.toFile().isDirectory()) {
+                    throw new ParameterException("Input file cannot be a directory: " + inputFile);
+                }
+            } else {
+                throw  new ParameterException("Please check command line sintax. Provide a valid input file name.");
             }
-        }
-
-        if (queryCommandOptions.outputFile != null) {
-            outputFile = Paths.get(queryCommandOptions.outputFile);
-            // TODO: check that output file is not a directory
+            // output file
+            if (queryCommandOptions.outputFile != null) {
+                outputFile = Paths.get(queryCommandOptions.outputFile);
+                if (!outputFile.toFile().exists()) {
+                    throw new ParameterException("Output file " + outputFile + " doesn't exist");
+                } else if (outputFile.toFile().isDirectory()) {
+                    throw new ParameterException("Output file cannot be a directory: " + outputFile);
+                }
+            } else {
+                throw  new ParameterException("Please check command line sintax. Provide a valid output file name.");
+            }
         }
     }
 
