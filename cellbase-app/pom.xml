@@ -111,12 +111,17 @@
             </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <phase>install</phase>
                         <configuration>
                             <target>
+                                <exec executable="cp">
+                                    <arg value="-r" />
+                                    <arg value="../cellbase-server/target/cellbase.war" />
+                                    <arg value="${build.dir}" />
+                                </exec>
                                 <echo>Copying to ${dest.installation.dir}</echo><!-- <copy todir="${build.dir}">
 									<fileset dir="installation" includes="**" /> </copy> -->
                                 <exec executable="cp">
