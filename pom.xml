@@ -14,10 +14,10 @@
     <url>http://www.opencb.org/subprojects/cellbase</url>
 
     <modules>
-        <module>cellbase-app</module>
         <module>cellbase-core</module>
-        <module>cellbase-server</module>
+        <module>cellbase-app</module>
         <module>cellbase-mongodb</module>
+        <module>cellbase-server</module>
     </modules>
 
     <properties>
@@ -25,6 +25,7 @@
         <biodata.version>0.4-SNAPSHOT</biodata.version>
         <datastore.version>0.4-SNAPSHOT</datastore.version>
         <compileSource>1.7</compileSource>
+        <build.dir>build</build.dir>
     </properties>
 
     <scm>
@@ -244,6 +245,46 @@
                         <version>2.0.8</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <inherited>false</inherited>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo>Building...</echo>
+                                <exec executable="rm">
+                                    <arg value="-rf"></arg>
+                                    <arg value="${build.dir}"></arg>
+                                </exec>
+                                <exec executable="mkdir">
+                                    <arg value="${build.dir}"></arg>
+                                </exec>
+                                <exec executable="cp">
+                                    <arg value="-r" />
+                                    <arg value="cellbase-app/app/bin" />
+                                    <arg value="cellbase-app/app/mongodb-scripts" />
+                                    <arg value="cellbase-app/target/appassembler/bin" />
+                                    <arg value="cellbase-app/target/appassembler/libs" />
+                                    <arg value="cellbase-server/target/cellbase.war" />
+                                    <arg value="README.md" />
+                                    <arg value="${build.dir}" />
+                                </exec>
+                                <exec executable="tar">
+                                    <arg value="zcvf"></arg>
+                                    <arg value="${build.dir}/cellbase.tar.gz"></arg>
+                                    <arg value="${build.dir}"></arg>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
