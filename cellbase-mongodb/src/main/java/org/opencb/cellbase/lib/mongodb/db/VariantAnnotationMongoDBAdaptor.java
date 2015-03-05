@@ -297,14 +297,20 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 }
                 if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     if (cdnaVariantEnd != null && cdnaVariantEnd > (cdnaCodingEnd - 3)) {
-                        SoNames.add("stop_lost");
+                        char[] modifiedCodonArray = getModifiedStopCodonPositiveInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart+1, variantAlt);  // Sum 1 to cdnaCoding start because of the peculiarities of insertion coordinates: cdnaCodingStart coincides with vcf position, the actual nt being substituted is the one on the right
+                        if(isStopCodon(String.valueOf(modifiedCodonArray))) {
+                            SoNames.add("stop_retained_variant");
+                        } else {
+                            SoNames.add("stop_lost");
+                        }
                     }
                 } else {
                     if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                         SoNames.add("incomplete_terminal_codon_variant");
                     }
                 }
-                if(!splicing && cdnaVariantStart != null) {
+                if(cdnaVariantStart != null) {
+//                if(!splicing && cdnaVariantStart != null) {
                     codingAnnotationAdded = true;
                     if(variantAlt.length()%3 == 0) {
                         SoNames.add("inframe_insertion");
@@ -340,8 +346,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                     } else {
                                         if (isStopCodon(referenceCodon)) {
                                             SoNames.add("stop_retained_variant");
-                                        } else {
-                                            SoNames.add("incomplete_terminal_codon_variant");
+                                        } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant), but if the length of the cds%3=0, annotation should be synonymous variant
+                                            SoNames.add("synonymous_variant");
                                         }
                                     }
                                 } else {
@@ -388,6 +394,25 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
+    private char[] getModifiedStopCodonPositiveInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart, String variantAlt) {
+        Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
+        int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
+        String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
+        char[] modifiedCodonArray = referenceCodon.toCharArray();
+        char[] referenceCodonArray = referenceCodon.toCharArray();
+        int i=0;
+        int codonPosition;
+        for(codonPosition=variantPhaseShift; (codonPosition<3 && i<variantAlt.length()); codonPosition++) {  // Paste alternative nt in the corresponding codon position
+            modifiedCodonArray[codonPosition] = variantAlt.toCharArray()[i];
+            i++;
+        }
+        for(;codonPosition<3;codonPosition++) {  // Concatenate reference codon nts after alternative nts
+            modifiedCodonArray[codonPosition] = referenceCodonArray[variantPhaseShift];
+            variantPhaseShift++;
+        }
+        return modifiedCodonArray;
+    }
+
     private void solveNegativeCodingEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart,
                                            Integer genomicCodingStart, Integer cdnaCodingStart, Integer cdnaCodingEnd,
                                            Integer cdnaVariantStart, Integer cdnaVariantEnd, BasicDBList transcriptFlags,
@@ -405,12 +430,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                 if (cdnaVariantEnd != null && cdnaVariantEnd > (cdnaCodingEnd - 3)) {
                     SoNames.add("stop_lost");
-//                    codingAnnotationAdded = true;
                 }
             } else {
                 if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     SoNames.add("incomplete_terminal_codon_variant");
-//                    codingAnnotationAdded = true;
                 }
             }
             if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
@@ -431,17 +454,20 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 }
                 if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     if (cdnaVariantEnd != null && cdnaVariantEnd > (cdnaCodingEnd - 3)) {
-                        SoNames.add("stop_lost");
-//                        codingAnnotationAdded = true;
+                        char[] modifiedCodonArray = getModifiedStopCodonNegativeInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, variantAlt); // DO NOT rest 1 to cdnaCoding start: cdnaCodingStart coincides with vcf position, negative strand is read from right to left, the nt that remains in the codon is the one on the right of this position
+                        if(isStopCodon(String.valueOf(modifiedCodonArray))) {
+                            SoNames.add("stop_retained_variant");
+                        } else {
+                            SoNames.add("stop_lost");
+                        }
                     }
                 } else {
                     if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                         SoNames.add("incomplete_terminal_codon_variant");
-//                        codingAnnotationAdded = true;
                     }
                 }
-//                SoNames.add("feature_elongation");
-                if(!splicing && cdnaVariantStart != null) {
+                if(cdnaVariantStart != null) {
+//                if(!splicing && cdnaVariantStart != null) {
                     codingAnnotationAdded = true;
                     if(variantAlt.length()%3 == 0) {
                         SoNames.add("inframe_insertion");
@@ -483,8 +509,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                     } else {
                                         if (isStopCodon(String.valueOf(referenceCodon))) {
                                             SoNames.add("stop_retained_variant");
-                                        } else {
-                                            SoNames.add("incomplete_terminal_codon_variant");
+                                        } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant), but if the length of the cds%3=0, annotation should be synonymous variant
+                                            SoNames.add("synonymous_variant");
                                         }
                                     }
                                 } else {
@@ -530,6 +556,30 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
+    private char[] getModifiedStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart, String variantAlt) {
+        Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3;
+        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+        String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
+                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+        char[] referenceCodonArray = reverseCodon.toCharArray();
+        referenceCodonArray[0] = complementaryNt.get(referenceCodonArray[0]);
+        referenceCodonArray[1] = complementaryNt.get(referenceCodonArray[1]);
+        referenceCodonArray[2] = complementaryNt.get(referenceCodonArray[2]);
+        char[] modifiedCodonArray = referenceCodonArray.clone();
+        char[] altArray = (new StringBuilder(variantAlt).reverse().toString()).toCharArray();
+        int i=0;
+        int codonPosition;
+        for(codonPosition=variantPhaseShift; (codonPosition<3 && i<variantAlt.length()); codonPosition++) {  // Paste alternative nt in the corresponding codon position
+            modifiedCodonArray[codonPosition] = complementaryNt.get(altArray[i]);
+            i++;
+        }
+        for(;codonPosition<3;codonPosition++) {  // Concatenate reference codon nts after alternative nts
+            modifiedCodonArray[codonPosition] = referenceCodonArray[variantPhaseShift];
+            variantPhaseShift++;
+        }
+        return modifiedCodonArray;
+    }
+
     private void solveCodingPositiveTranscriptEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
                                                      Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
                                                      Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
@@ -545,6 +595,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 SoNames.add("coding_sequence_variant");
                 if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
+                }
+                if(variantEnd>genomicCodingEnd) {
+                    if(transcriptEnd>genomicCodingEnd || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
+                        SoNames.add("3_prime_UTR_variant");
+                    }
+                    SoNames.add("stop_lost");
                 }
             }
         } else {
@@ -593,6 +649,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
                 }
+                if(variantStart<genomicCodingStart) {
+                    if(transcriptStart<genomicCodingStart || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
+                        SoNames.add("3_prime_UTR_variant");
+                    }
+                    SoNames.add("stop_lost");
+                }
             }
         } else {
             if(variantEnd >= genomicCodingStart) {  // Variant end within coding region
@@ -631,47 +693,91 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         junctionSolution[1] = false;  // Variant is intronic and both ends fall within the intron
         Boolean isDonorAcceptor = false;
 
-        if(regionsOverlap(spliceSite1-3,spliceSite2+3,variantStart,variantEnd)) {  // Variant is intronic and/or splicing
-            if (regionsOverlap(spliceSite1 - 3, spliceSite1 + 7, variantStart, variantEnd)) {  // Variant within left splicing region
-                if (regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {
-                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-                        SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                        isDonorAcceptor = true;
-                    }
-                    junctionSolution[0] = true;
-                } else {
-                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-                        SoNames.add("splice_region_variant");
-                    }
-                    if(variantEnd>=spliceSite1) {  // At least one portion of the variant affects the non-coding region
-                        junctionSolution[0] = true;
-                    }
+        if(regionsOverlap(spliceSite1+2, spliceSite2-2, variantStart, variantEnd)) {  // Variant overlaps the rest of intronic region (splice region within the intron and/or rest of intron)
+            SoNames.add("intron_variant");
+        }
+        if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
+            junctionSolution[1] = true;  // variant start & end fall within the intron
+        }
+
+        if(regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {  // Variant donor/acceptor
+            if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+                SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
+            }
+            junctionSolution[0] = true;
+        } else {
+            if(regionsOverlap(spliceSite1+2, spliceSite1+7, variantStart, variantEnd)) {
+                if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+                    SoNames.add("splice_region_variant");
                 }
-            }
-            if (regionsOverlap(spliceSite2 - 7, spliceSite2 + 3, variantStart, variantEnd)) {  // Variant within right splicing region
-                if (regionsOverlap(spliceSite2 - 1, spliceSite2, variantStart, variantEnd)) {
-                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-                        SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                        isDonorAcceptor = true;
-                    }
-                    junctionSolution[0] = true;
-                } else {
-                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-                        SoNames.add("splice_region_variant");
-                    }
-                    if(variantStart<=spliceSite2) {  // At least one portion of the variant affects the non-coding region
-                        junctionSolution[0] = true;
-                    }
+                junctionSolution[0] = true;
+            } else {
+                if(regionsOverlap(spliceSite1-3, spliceSite1-1, variantStart, variantEnd) && ((variantEnd-variantStart)<=bigVariantSizeThreshold)) {
+                    SoNames.add("splice_region_variant");
                 }
-            }
-            if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
-                junctionSolution[1] = true;  // variant start & end fall within the intron
-            }
-//            if(regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
-            if(!isDonorAcceptor && regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
-                SoNames.add("intron_variant");
             }
         }
+
+        if(regionsOverlap(spliceSite2-1, spliceSite2, variantStart, variantEnd)) {  // Variant donor/acceptor
+            if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+                SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
+            }
+            junctionSolution[0] = true;
+        } else {
+            if(regionsOverlap(spliceSite2-7, spliceSite2-2, variantStart, variantEnd)) {
+                if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+                    SoNames.add("splice_region_variant");
+                }
+                junctionSolution[0] = true;
+            } else {
+                if(regionsOverlap(spliceSite2+1, spliceSite2+3, variantStart, variantEnd) && ((variantEnd-variantStart)<=bigVariantSizeThreshold)) {
+                    SoNames.add("splice_region_variant");
+                }
+            }
+        }
+
+
+//        if(regionsOverlap(spliceSite1-3,spliceSite2+3,variantStart,variantEnd)) {  // Variant is intronic and/or splicing
+//            if (regionsOverlap(spliceSite1 - 3, spliceSite1 + 7, variantStart, variantEnd)) {  // Variant within left splicing region
+//                if (regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {
+//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+//                        SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
+//                        isDonorAcceptor = true;
+//                    }
+//                    junctionSolution[0] = true;
+//                } else {
+//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+//                        SoNames.add("splice_region_variant");
+//                    }
+//                    if(variantEnd>=spliceSite1) {  // At least one portion of the variant affects the non-coding region
+//                        junctionSolution[0] = true;
+//                    }
+//                }
+//            }
+//            if (regionsOverlap(spliceSite2 - 7, spliceSite2 + 3, variantStart, variantEnd)) {  // Variant within right splicing region
+//                if (regionsOverlap(spliceSite2 - 1, spliceSite2, variantStart, variantEnd)) {
+//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+//                        SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
+//                        isDonorAcceptor = true;
+//                    }
+//                    junctionSolution[0] = true;
+//                } else {
+//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
+//                        SoNames.add("splice_region_variant");
+//                    }
+//                    if(variantStart<=spliceSite2) {  // At least one portion of the variant affects the non-coding region
+//                        junctionSolution[0] = true;
+//                    }
+//                }
+//            }
+//            if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
+//                junctionSolution[1] = true;  // variant start & end fall within the intron
+//            }
+////            if(regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
+//            if(!isDonorAcceptor && regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
+//                SoNames.add("intron_variant");
+//            }
+//        }
     }
 
     @Override
