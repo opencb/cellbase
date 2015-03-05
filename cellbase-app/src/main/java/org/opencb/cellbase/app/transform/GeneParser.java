@@ -11,13 +11,11 @@ import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 public class GeneParser extends CellBaseParser {
 
@@ -190,7 +188,8 @@ public class GeneParser extends CellBaseParser {
                             - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
                 }
             } else {
-                exon = exonDict.get(transcript.getId() + "_" + exon.getExonNumber());
+                int exonNumber = exon.getExonNumber();
+                exon = exonDict.get(transcript.getId() + "_" + exonNumber);
                 if (gtf.getFeature().equalsIgnoreCase("CDS")) {
                     if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
                         // CDS states the beginning of coding start
@@ -494,36 +493,24 @@ public class GeneParser extends CellBaseParser {
     }
 
     private void indexReferenceGenomeFasta(Path genomeSequenceFilePath) throws IOException, ClassNotFoundException, SQLException {
-
-//        if(!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db"))) {
-        BufferedReader bufferedReader = FileUtils.newBufferedReader(genomeSequenceFilePath);
-
-//            Statement createTable = sqlConn.createStatement();
-//            createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
+       BufferedReader bufferedReader = FileUtils.newBufferedReader(genomeSequenceFilePath);
 
         // Some parameters initialization
         String sequenceName = "";
-//            String sequenceAssembly = "";
         boolean haplotypeSequenceType = true;
-        int chunk = 0;
-        int start = 1;
-        int end = CHUNK_SIZE - 1;
-        String sequence;
-        String chunkSequence;
+        int chunk;
+        int start;
+        int end;
 
         StringBuilder sequenceStringBuilder = new StringBuilder();
-        String line = "";
+        String line;
         while ((line = bufferedReader.readLine()) != null) {
-            /**
-             * We accumulate the complete sequence in a StringBuilder
-             */
+            // We accumulate the complete sequence in a StringBuilder
             if (!line.startsWith(">")) {
                 sequenceStringBuilder.append(line);
             } else {
-                /**
-                 * New sequence has been found and we must insert it into SQLite.
-                 * Note that the first time there is no sequence. Only not HAP sequences are stored.
-                 */
+                // New sequence has been found and we must insert it into SQLite.
+                // Note that the first time there is no sequence. Only not HAP sequences are stored.
                 chunk = 0;
                 start = 1;
                 end = CHUNK_SIZE - 1;
@@ -534,14 +521,11 @@ public class GeneParser extends CellBaseParser {
 
                         //chromosome sequence length could shorter than CHUNK_SIZE
                         if (sequenceStringBuilder.length() < CHUNK_SIZE) {
-//                                chunkSequence = sequenceStringBuilder.toString();
-//                                genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+0+"_"+chunkIdSuffix, start, sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
                             sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
                             sqlInsert.setInt(2, start);
                             sqlInsert.setInt(3, sequenceStringBuilder.length() - 1);
                             sqlInsert.setString(4, sequenceStringBuilder.toString());
 
-                            start += CHUNK_SIZE - 1;
                             // Sequence to store is larger than CHUNK_SIZE
                         } else {
                             int sequenceLength = sequenceStringBuilder.length();
@@ -567,15 +551,11 @@ public class GeneParser extends CellBaseParser {
                                     start += CHUNK_SIZE - 1;
                                 } else {    // Regular chunk
                                     if ((start + CHUNK_SIZE) < sequenceLength) {
-//                                            chunkSequence = sequenceStringBuilder.substring(start - 1, start + CHUNK_SIZE - 1);
-//                                            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
                                         sqlInsert.setInt(2, start);
                                         sqlInsert.setInt(3, end);
                                         sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, start + CHUNK_SIZE - 1));
                                         start += CHUNK_SIZE;
                                     } else {    // Last chunk of the chromosome
-//                                            chunkSequence = sequenceStringBuilder.substring(start - 1, sequenceLength);
-//                                            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, sequence.length(), sequenceType, sequenceAssembly, chunkSequence);
                                         sqlInsert.setInt(2, start);
                                         sqlInsert.setInt(3, sequenceLength);
                                         sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, sequenceLength));
@@ -600,7 +580,6 @@ public class GeneParser extends CellBaseParser {
                 // initialize data structures
                 sequenceName = line.replace(">", "").split(" ")[0];
                 haplotypeSequenceType = line.endsWith("HAP");
-//                    sequenceAssembly = line.replace(">", "").split(" ")[2].split(":")[1];
                 sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
             }
         }
@@ -609,12 +588,6 @@ public class GeneParser extends CellBaseParser {
 
         Statement stm = sqlConn.createStatement();
         stm.executeUpdate("CREATE INDEX chunkkId_idx on genome_sequence(chunkId)");
-//            sqlConn.commit();
-
-//        }else {
-//            System.out.println("File found: " + Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db"));
-//        }
-
     }
 
     private String getExonSequence(String sequenceName, int start, int end) throws SQLException {
@@ -651,39 +624,6 @@ public class GeneParser extends CellBaseParser {
         return (position % CHUNK_SIZE);
     }
 
-    private Map<String, Long> prepareChromosomeSequenceFile(Path genomeSequenceFilePath) throws IOException, InterruptedException {
-        if (Files.exists(genomeSequenceFilePath)) {
-            Process process = Runtime.getRuntime().exec("gunzip " + genomeSequenceFilePath.toAbsolutePath());
-            process.waitFor();
-        }
-        Map<String, Long> chromOffsets = new HashMap<>(200);
-        Path gunzipedChromosomeSequenceFile = Paths.get(genomeSequenceFilePath.toString().replace(".gz", ""));
-        if (Files.exists(gunzipedChromosomeSequenceFile)) {
-            long offset = 0;
-            String chrom;
-            String line = null;
-            BufferedReader br = FileUtils.newBufferedReader(gunzipedChromosomeSequenceFile, Charset.defaultCharset());
-            while ((line = br.readLine()) != null) {
-                if (line.startsWith(">")) {
-                    chrom = line.split(" ")[0].replace(">", "");
-                    chromOffsets.put(chrom, offset);
-                }
-                offset += line.length() + 1;
-            }
-            br.close();
-//            rafChromosomeSequenceFile = new RandomAccessFile(new File(genomeSequenceFilePath.toString().replace(".gz", "")), "r");
-//            for(String s: chromOffsets.keySet()) {
-//                System.out.println(chromOffsets.get(s));
-//                Long l = chromOffsets.get(s);
-//                rafChromosomeSequenceFile.seek(l);
-//                String li = rafChromosomeSequenceFile.readLine();
-//                System.out.println(li);
-//            }
-//            rafChromosomeSequenceFile.close();
-        }
-        return chromOffsets;
-    }
-
     private void updateTranscriptAndGeneCoords(Transcript transcript, Gene gene, Gtf gtf) {
         if (transcript.getStart() > gtf.getStart()) {
             transcript.setStart(gtf.getStart());
@@ -699,104 +639,12 @@ public class GeneParser extends CellBaseParser {
         }
     }
 
-    public Map<String, String> readGenomeSequence(File genomeSequence) {
-        Map<String, String> genomeSequenceMap = new HashMap<>();
-
-        return genomeSequenceMap;
-    }
-
-    public String getSequenceByChromosomeName(String chrom, Path genomeSequenceDir) throws IOException {
-//		File[] files = genomeSequenceDir.listFiles();
-        File file = null;
-        DirectoryStream<Path> ds = Files.newDirectoryStream(genomeSequenceDir);
-        for (Path p : ds) {
-            if (p.toFile().getName().endsWith("_" + chrom + ".fa.gz") || p.toFile().getName().endsWith("." + chrom + ".fa.gz")) {
-                System.out.println(p.toAbsolutePath());
-                file = p.toFile();
-                break;
-            }
-        }
-
-//		File file = null;
-//		for(File f: files) {
-//			if(f.getName().endsWith("_"+chrom+".fa.gz") || f.getName().endsWith("."+chrom+".fa.gz")) {
-//				System.out.println(f.getAbsolutePath());
-//				file = f;
-//				break;
-//			}
-//		}
-
-        StringBuilder sb = new StringBuilder(100000);
-        if (file != null) {
-            //		BufferedReader br = Files.newBufferedReader(files[0].toPath(), Charset.defaultCharset());
-            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
-            String line = "";
-            boolean found = false;
-            while ((line = br.readLine()) != null) {
-                if (found) {
-                    if (!line.startsWith(">")) {
-                        sb.append(line);
-                    } else {
-                        break;
-                    }
-                }
-                if (line.startsWith(">")) {
-                    found = true;
-                }
-            }
-            br.close();
-        }
-        return sb.toString();
-    }
-
-    public String getSequenceByChromosome(String chrom, Path genomeSequenceFile) throws IOException {
-        BufferedReader br = FileUtils.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
-        StringBuilder sb = new StringBuilder(100000);
-        String line = "";
-        boolean found = false;
-        while ((line = br.readLine()) != null) {
-            if (found) {
-                if (!line.startsWith(">")) {
-                    sb.append(line);
-                } else {
-                    break;
-                }
-            }
-            if (line.startsWith(">" + chrom + " ")) {
-                found = true;
-            }
-        }
-        br.close();
-        return sb.toString();
-    }
-
-    public String getSequenceByChromosome(String chrom, Map<String, Long> chromOffsets, Path genomeSequenceFile) throws IOException {
-//        BufferedReader br = FileUtils.newBufferedReader(genomeSequenceFile, Charset.defaultCharset());
-        RandomAccessFile rafChromosomeSequenceFile = new RandomAccessFile(new File(genomeSequenceFile.toString().replace(".gz", "")), "r");
-        rafChromosomeSequenceFile.seek(chromOffsets.get(chrom));
-        StringBuilder sb = new StringBuilder(100000);
-        String line = "";
-
-        // first line contains the chromosome info line from fasta file
-        // we must consume it
-        rafChromosomeSequenceFile.readLine();
-        while ((line = rafChromosomeSequenceFile.readLine()) != null) {
-            if (!line.startsWith(">")) {
-                sb.append(line);
-            } else {
-                break;
-            }
-        }
-        rafChromosomeSequenceFile.close();
-        return sb.toString();
-    }
-
     private Map<String, MiRNAGene> getmiRNAGeneMap(Path mirnaGeneFile) throws IOException {
         logger.info("Loading miRNA data ...");
         Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
         if (mirnaFile != null && Files.exists(mirnaFile) && !Files.isDirectory(mirnaFile)) {
             BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
-            String line = "";
+            String line;
             String[] fields, mirnaMatures, mirnaMaturesFields;
             List<String> aliases;
             MiRNAGene miRNAGene;
