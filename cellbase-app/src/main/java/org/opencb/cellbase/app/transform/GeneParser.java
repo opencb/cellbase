@@ -86,96 +86,12 @@ public class GeneParser extends CellBaseParser {
 
 
 //        Map<String, String> gseq = GenomeSequenceUtils.getGenomeSequence(genomeSequenceDir);
-
-        /**
-         Loading Gene Description data
-         */
-        Map<String, String> geneDescriptionMap = new HashMap<>();
-        if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
-            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
-            for (String line : lines) {
-                fields = line.split("\t", -1);
-                geneDescriptionMap.put(fields[0], fields[1]);
-            }
-        }
-
-        /**
-         Loading Gene Xref data
-         */
-        Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
-        if (xrefsFile != null && Files.exists(xrefsFile)) {
-            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
-            for (String line : lines) {
-                fields = line.split("\t", -1);
-                if (fields.length >= 4) {
-                    if (!xrefMap.containsKey(fields[0])) {
-                        xrefMap.put(fields[0], new ArrayList<Xref>());
-                    }
-                    xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3]));
-                }
-            }
-        }
-
-        /**
-         Loading Protein mapping into Xref data
-         */
-        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile)) {
-            BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
-            String line;
-            while ((line = br.readLine()) != null) {
-                fields = line.split("\t", -1);
-                if (fields.length >= 20 && fields[20].startsWith("ENST")) {
-                    if (!xrefMap.containsKey(fields[20])) {
-                        xrefMap.put(fields[20], new ArrayList<Xref>());
-                    }
-                    xrefMap.get(fields[20]).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
-                    xrefMap.get(fields[20]).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
-                }
-            }
-            br.close();
-        }
-
-        /**
-         * Load ENSEMBL's protein sequences
-         */
-        logger.info("Loading ENSEMBL's protein sequences...");
-        Map<String, Fasta> proteinSequencesMap = new HashMap<>();
-        if(proteinFastaFile != null && Files.exists(proteinFastaFile) &&
-                !Files.isDirectory(proteinFastaFile)) {
-            FastaReader fastaReader = new FastaReader(proteinFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for(Fasta fasta : fastaList) {
-                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0], fasta);
-            }
-        }
-
-        /**
-         * Load ENSEMBL's cDNA sequences
-         */
-        logger.info("Loading ENSEMBL's cDNA sequences...");
-        Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
-        if(cDnaFastaFile != null && Files.exists(cDnaFastaFile) &&
-                !Files.isDirectory(cDnaFastaFile)) {
-            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for(Fasta fasta : fastaList) {
-                cDnaSequencesMap.put(fasta.getId(), fasta);
-            }
-        }
-        logger.info("Done.");
-
-        /*
-            Loading Gene Description data
-         */
+        Map<String, String> geneDescriptionMap = getGeneDescriptionMap();
+        Map<String, ArrayList<Xref>> xrefMap = getXrefMap();
+        Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
+        Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
         Map<String, ArrayList<TranscriptTfbs>> tfbsMap = getTfbsMap();
-
-        // Loading MiRNAGene file
-        Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
-        if (mirnaFile != null && Files.exists(mirnaFile) && !Files.isDirectory(mirnaFile)) {
-            mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
-        }
+        Map<String, MiRNAGene> mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
 
         // Preparing the fasta file for fast accessing
         // File must be ungunzipped and offsets stored
@@ -467,6 +383,102 @@ public class GeneParser extends CellBaseParser {
 //            Process process = Runtime.getRuntime().exec("gzip " + gunzipedSeqFile.toAbsolutePath());
 //            process.waitFor();
 //        }
+    }
+
+    private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
+        logger.info("Loading ENSEMBL's cDNA sequences...");
+        Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
+        if(cDnaFastaFile != null && Files.exists(cDnaFastaFile) &&
+                !Files.isDirectory(cDnaFastaFile)) {
+            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
+            List<Fasta> fastaList = fastaReader.readAll();
+            fastaReader.close();
+            for(Fasta fasta : fastaList) {
+                cDnaSequencesMap.put(fasta.getId(), fasta);
+            }
+        } else {
+            logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
+            logger.warn("ENSEMBL's cDNA sequences not loaded");
+        }
+        return cDnaSequencesMap;
+    }
+
+    private Map<String, Fasta> getProteinSequencesMap() throws IOException, FileFormatException {
+        logger.info("Loading ENSEMBL's protein sequences...");
+        Map<String, Fasta> proteinSequencesMap = new HashMap<>();
+        if(proteinFastaFile != null && Files.exists(proteinFastaFile) &&
+                !Files.isDirectory(proteinFastaFile)) {
+            FastaReader fastaReader = new FastaReader(proteinFastaFile);
+            List<Fasta> fastaList = fastaReader.readAll();
+            fastaReader.close();
+            for(Fasta fasta : fastaList) {
+                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0], fasta);
+            }
+        } else {
+            logger.warn("Protein fasta file " + proteinFastaFile + " not found");
+            logger.warn("ENSEMBL's protein sequences not loaded");
+        }
+        return proteinSequencesMap;
+    }
+
+    private Map<String, ArrayList<Xref>> getXrefMap() throws IOException {
+        String[] fields;
+        logger.info("Loading xref data...");
+        Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
+        if (xrefsFile != null && Files.exists(xrefsFile)) {
+            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
+            for (String line : lines) {
+                fields = line.split("\t", -1);
+                if (fields.length >= 4) {
+                    if (!xrefMap.containsKey(fields[0])) {
+                        xrefMap.put(fields[0], new ArrayList<Xref>());
+                    }
+                    xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3]));
+                }
+            }
+        } else {
+            logger.warn("Xrefs file " + xrefsFile + " not found");
+            logger.warn("Xref data not loaded");
+        }
+
+        logger.info("Loading protein mapping into xref data...");
+        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile)) {
+            BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
+            String line;
+            while ((line = br.readLine()) != null) {
+                fields = line.split("\t", -1);
+                if (fields.length >= 20 && fields[20].startsWith("ENST")) {
+                    if (!xrefMap.containsKey(fields[20])) {
+                        xrefMap.put(fields[20], new ArrayList<Xref>());
+                    }
+                    xrefMap.get(fields[20]).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
+                    xrefMap.get(fields[20]).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
+                }
+            }
+            br.close();
+        } else {
+            logger.warn("Uniprot if mapping file " + uniprotIdMappingFile + " not found");
+            logger.warn("Protein mapping into xref data not loaded");
+        }
+
+        return xrefMap;
+    }
+
+    private Map<String, String> getGeneDescriptionMap() throws IOException {
+        String[] fields;
+        logger.info("Loading gene description data...");
+        Map<String, String> geneDescriptionMap = new HashMap<>();
+        if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
+            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
+            for (String line : lines) {
+                fields = line.split("\t", -1);
+                geneDescriptionMap.put(fields[0], fields[1]);
+            }
+        } else {
+            logger.warn("Gene description file " + geneDescriptionFile + " not found");
+            logger.warn("Gene description data not loaded");
+        }
+        return geneDescriptionMap;
     }
 
     private Map<String, ArrayList<TranscriptTfbs>> getTfbsMap() throws IOException {
@@ -804,35 +816,42 @@ public class GeneParser extends CellBaseParser {
     }
 
     private Map<String, MiRNAGene> getmiRNAGeneMap(Path mirnaGeneFile) throws IOException {
-        Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>(3000);
-        BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
-        String line = "";
-        String[] fields, mirnaMatures, mirnaMaturesFields;
-        List<String> aliases;
-        MiRNAGene miRNAGene;
-        while ((line = br.readLine()) != null) {
-            fields = line.split("\t");
+        logger.info("Loading miRNA data ...");
+        Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
+        if (mirnaFile != null && Files.exists(mirnaFile) && !Files.isDirectory(mirnaFile)) {
+            BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
+            String line = "";
+            String[] fields, mirnaMatures, mirnaMaturesFields;
+            List<String> aliases;
+            MiRNAGene miRNAGene;
+            while ((line = br.readLine()) != null) {
+                fields = line.split("\t");
 
-            // First, read aliases of miRNA, field #5
-            aliases = new ArrayList<>();
-            for (String alias : fields[5].split(",")) {
-                aliases.add(alias);
+                // First, read aliases of miRNA, field #5
+                aliases = new ArrayList<>();
+                for (String alias : fields[5].split(",")) {
+                    aliases.add(alias);
+                }
+
+                miRNAGene = new MiRNAGene(fields[1], fields[2], fields[3], fields[4], aliases, new ArrayList<MiRNAGene.MiRNAMature>());
+
+                // Second, read the miRNA matures, field #6
+                mirnaMatures = fields[6].split(",");
+                for (String s : mirnaMatures) {
+                    mirnaMaturesFields = s.split("\\|");
+                    // Save directly into MiRNAGene object.
+                    miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2]);
+                }
+
+                // Add object to Map<EnsemblID, MiRNAGene>
+                mirnaGeneMap.put(fields[0], miRNAGene);
             }
-
-            miRNAGene = new MiRNAGene(fields[1], fields[2], fields[3], fields[4], aliases, new ArrayList<MiRNAGene.MiRNAMature>());
-
-            // Second, read the miRNA matures, field #6
-            mirnaMatures = fields[6].split(",");
-            for (String s : mirnaMatures) {
-                mirnaMaturesFields = s.split("\\|");
-                // Save directly into MiRNAGene object.
-                miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2]);
-            }
-
-            // Add object to Map<EnsemblID, MiRNAGene>
-            mirnaGeneMap.put(fields[0], miRNAGene);
+            br.close();
+        } else {
+            logger.warn("Mirna file " + mirnaFile + " not found");
+            logger.warn("Mirna data not loaded");
         }
-        br.close();
+
         return mirnaGeneMap;
     }
 
