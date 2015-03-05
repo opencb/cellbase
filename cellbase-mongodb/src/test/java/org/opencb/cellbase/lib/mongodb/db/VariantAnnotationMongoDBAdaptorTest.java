@@ -234,7 +234,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 40806293, "-", "TGTG"), new QueryOptions());  // should return downstream_gene_variant
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 29684676, "G", "A"), new QueryOptions());  // should return downstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 40806293, "-", "TGTG"), new QueryOptions());  // should return downstream_gene_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 39426437, StringUtils.repeat("N",20092), "-"), new QueryOptions());  // ¿should return 3_prime_UTR_variant? No if ENSEMBLs gtf was used
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 38069602, StringUtils.repeat("N",5799), "-"), new QueryOptions());  // should return 3_prime_UTR_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17054103, "A", "G"), new QueryOptions());  // should NOT return non_coding_transcript_exon_variant
@@ -244,7 +245,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 30824659, "-", "A"), new QueryOptions());  // should return stop_retained_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 26951215, "T", "C"), new QueryOptions());  // should NOT return null pointer exception
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 17602839, "G", "A"), new QueryOptions());  // should NOT return null pointer exception
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20891502, "-", "CCTC"), new QueryOptions());  // should return missense_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 20891503, "-", "CCTC"), new QueryOptions());  // should return missense_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 21991357, "T", "C"), new QueryOptions());  // should return missense_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 24717655, "C", "T"), new QueryOptions());  // should return missense_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 24314402, StringUtils.repeat("N",19399), "-"), new QueryOptions());  // should return 3prime_UTR_variant
@@ -367,7 +368,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                             alt = "-";
                         // Short insertion
                         } else {
-                            ensemblPos = vcfRecord.getPosition();
+                            ensemblPos = vcfRecord.getPosition()+1;
                             ref = "-";
                             alt = vcfRecord.getAlternate().substring(1);
                             pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + 1);
