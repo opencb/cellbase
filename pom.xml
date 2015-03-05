@@ -14,16 +14,18 @@
     <url>http://www.opencb.org/subprojects/cellbase</url>
 
     <modules>
-        <module>cellbase-app</module>
         <module>cellbase-core</module>
+        <module>cellbase-app</module>
         <module>cellbase-mongodb</module>
         <module>cellbase-server</module>
     </modules>
 
     <properties>
         <cellbase.version>3.1-SNAPSHOT</cellbase.version>
-        <biodata.version>0.3-SNAPSHOT</biodata.version>
+        <biodata.version>0.4-SNAPSHOT</biodata.version>
+        <datastore.version>0.4-SNAPSHOT</datastore.version>
         <compileSource>1.7</compileSource>
+        <build.dir>build</build.dir>
     </properties>
 
     <scm>
@@ -51,14 +53,19 @@
             <email>javild@gmail.com</email>
         </developer>
         <developer>
+            <id>pabarcgar</id>
+            <name>Pablo</name>
+            <email>pablo.arce.garcia@gmail.com</email>
+        </developer>
+        <developer>
+            <id>mbleda</id>
+            <name>Marta</name>
+            <email>martableda@gmail.com</email>
+        </developer>
+        <developer>
             <id>frasator</id>
             <name>Francisco</name>
             <email>frasator@gmail.com</email>
-        </developer>
-        <developer>
-            <id>cyenyxe</id>
-            <name>Cristina</name>
-            <email>cristina.yenyxe@gmail.com</email>
         </developer>
     </developers>
 
@@ -79,11 +86,6 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.opencb.cellbase</groupId>
-                <artifactId>cellbase-mongodb</artifactId>
-                <version>${cellbase.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-models</artifactId>
                 <version>${biodata.version}</version>
@@ -96,20 +98,15 @@
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-core</artifactId>
-                <version>0.2.0</version>
+                <version>${datastore.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-mongodb</artifactId>
-                <version>0.2.0</version>
+                <version>${datastore.version}</version>
             </dependency>
 
             <!-- General dependencies -->
-            <dependency>
-                <groupId>commons-cli</groupId>
-                <artifactId>commons-cli</artifactId>
-                <version>1.2</version>
-            </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
@@ -118,17 +115,17 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.7</version>
+                <version>1.7.10</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
-                <version>1.7.7</version>
+                <version>1.7.10</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.3.4</version>
+                <version>2.5.1</version>
             </dependency>
             <dependency>
                 <groupId>org.xerial</groupId>
@@ -136,15 +133,14 @@
                 <version>3.8.7</version>
             </dependency>
             <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongo-java-driver</artifactId>
-                <version>2.11.4</version>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet</artifactId>
+                <version>2.16</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>2.16</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
@@ -165,14 +161,10 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jersey.containers</groupId>
-                <artifactId>jersey-container-servlet</artifactId>
-                <version>2.12</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-client</artifactId>
-                <version>2.12</version>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -185,7 +177,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.2</version>
                 <configuration>
                     <source>${compileSource}</source>
                     <target>${compileSource}</target>
@@ -197,40 +189,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
+                <version>2.7</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -249,7 +216,7 @@
                 <configuration>
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <skipLocalStaging>true</skipLocalStaging>
                 </configuration>
             </plugin>
             <plugin>
@@ -279,6 +246,46 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <inherited>false</inherited>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo>Building...</echo>
+                                <exec executable="rm">
+                                    <arg value="-rf"></arg>
+                                    <arg value="${build.dir}"></arg>
+                                </exec>
+                                <exec executable="mkdir">
+                                    <arg value="${build.dir}"></arg>
+                                </exec>
+                                <exec executable="cp">
+                                    <arg value="-r" />
+                                    <arg value="cellbase-app/app/bin" />
+                                    <arg value="cellbase-app/app/mongodb-scripts" />
+                                    <arg value="cellbase-app/target/appassembler/bin" />
+                                    <arg value="cellbase-app/target/appassembler/libs" />
+                                    <arg value="cellbase-server/target/cellbase.war" />
+                                    <arg value="README.md" />
+                                    <arg value="${build.dir}" />
+                                </exec>
+                                <exec executable="tar">
+                                    <arg value="zcvf"></arg>
+                                    <arg value="${build.dir}/cellbase.tar.gz"></arg>
+                                    <arg value="${build.dir}"></arg>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -292,5 +299,56 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>mongodb</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.opencb.cellbase</groupId>
+                        <artifactId>cellbase-mongodb</artifactId>
+                        <version>${cellbase.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <id>deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.4</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

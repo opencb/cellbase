@@ -7,10 +7,10 @@ import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -242,7 +242,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 
-            return createJsonResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 
 //			return generateResponse(query, "GENE",
 //					geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","), exclude));
@@ -258,8 +258,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-            return generateResponse(query, "EXON",
-                    dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+            return createOkResponse(dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonsByTranscriptId", e.toString());

@@ -1,7 +1,7 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.common.core.Exon;
+import org.opencb.biodata.models.core.Exon;
 import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;

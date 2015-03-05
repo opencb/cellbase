@@ -1,15 +1,16 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
 /**
  * Created by imedina on 26/09/14.
  */
+@Deprecated
 public interface ClinVarDBAdaptor {
 
     public QueryResult getById(String id, QueryOptions options);

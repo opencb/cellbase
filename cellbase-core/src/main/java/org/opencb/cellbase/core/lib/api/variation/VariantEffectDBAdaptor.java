@@ -1,15 +1,13 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
-
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
 
 public interface VariantEffectDBAdaptor {
-
 
     @Deprecated
 	public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options);
