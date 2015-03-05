@@ -195,20 +195,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <version>1.6.2</version>
@@ -246,46 +232,46 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <inherited>false</inherited>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <echo>Building...</echo>
-                                <exec executable="rm">
-                                    <arg value="-rf"></arg>
-                                    <arg value="${build.dir}"></arg>
-                                </exec>
-                                <exec executable="mkdir">
-                                    <arg value="${build.dir}"></arg>
-                                </exec>
-                                <exec executable="cp">
-                                    <arg value="-r" />
-                                    <arg value="cellbase-app/app/bin" />
-                                    <arg value="cellbase-app/app/mongodb-scripts" />
-                                    <arg value="cellbase-app/target/appassembler/bin" />
-                                    <arg value="cellbase-app/target/appassembler/libs" />
-                                    <arg value="cellbase-server/target/cellbase.war" />
-                                    <arg value="README.md" />
-                                    <arg value="${build.dir}" />
-                                </exec>
-                                <exec executable="tar">
-                                    <arg value="zcvf"></arg>
-                                    <arg value="${build.dir}/cellbase.tar.gz"></arg>
-                                    <arg value="${build.dir}"></arg>
-                                </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<artifactId>maven-antrun-plugin</artifactId>-->
+                <!--<version>1.8</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>install</phase>-->
+                        <!--<inherited>false</inherited>-->
+                        <!--<goals>-->
+                            <!--<goal>run</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<target>-->
+                                <!--<echo>Building...</echo>-->
+                                <!--<exec executable="rm">-->
+                                    <!--<arg value="-rf"></arg>-->
+                                    <!--<arg value="${build.dir}"></arg>-->
+                                <!--</exec>-->
+                                <!--<exec executable="mkdir">-->
+                                    <!--<arg value="${build.dir}"></arg>-->
+                                <!--</exec>-->
+                                <!--<exec executable="cp">-->
+                                    <!--<arg value="-r" />-->
+                                    <!--<arg value="cellbase-app/app/bin" />-->
+                                    <!--<arg value="cellbase-app/app/mongodb-scripts" />-->
+                                    <!--<arg value="cellbase-app/target/appassembler/bin" />-->
+                                    <!--<arg value="cellbase-app/target/appassembler/libs" />-->
+                                    <!--<arg value="cellbase-server/target/cellbase.war" />-->
+                                    <!--<arg value="README.md" />-->
+                                    <!--<arg value="${build.dir}" />-->
+                                <!--</exec>-->
+                                <!--<exec executable="tar">-->
+                                    <!--<arg value="zcvf"></arg>-->
+                                    <!--<arg value="${build.dir}/cellbase.tar.gz"></arg>-->
+                                    <!--<arg value="${build.dir}"></arg>-->
+                                <!--</exec>-->
+                            <!--</target>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
 
@@ -342,6 +328,20 @@
                                 <id>attach-javadocs</id>
                                 <goals>
                                     <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sign</goal>
                                 </goals>
                             </execution>
                         </executions>
