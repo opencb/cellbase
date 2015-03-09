@@ -1,5 +1,7 @@
 package org.opencb.cellbase.app.transform;
 
+import org.opencb.biodata.formats.feature.gff.Gff2;
+import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
@@ -18,8 +20,7 @@ import java.sql.*;
 import java.util.*;
 
 public class GeneParser extends CellBaseParser {
-
-    private static final String TRANSCRIPT_ID_ATTRIBUTE = "transcript_id";
+    
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
 
@@ -44,7 +45,7 @@ public class GeneParser extends CellBaseParser {
 
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
-                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("tfbs.txt"),
+                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
                 geneDirectoryPath.resolve("mirna.txt"), genomeSequenceFastaFile, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -80,7 +81,7 @@ public class GeneParser extends CellBaseParser {
         Map<String, ArrayList<Xref>> xrefMap = getXrefMap();
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
-        Map<String, SortedMap<Integer, List<TranscriptTfbs>>> tfbsMap = getTfbsMap();
+        Map<String, SortedSet<Gff2>> tfbsMap = getTfbsMap();
         Map<String, MiRNAGene> mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
 
 
@@ -130,7 +131,7 @@ public class GeneParser extends CellBaseParser {
             if (!transcriptDict.containsKey(transcriptId)) {
                 // TODO: transcript tfbs should be a list and not an array list
                 String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
-                ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, tfbsMap.get(transcriptChrosome));
+                ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
                 transcript = new Transcript(transcriptId, gtf.getAttributes().get("transcript_name"), gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), transcriptTfbses);
@@ -359,27 +360,88 @@ public class GeneParser extends CellBaseParser {
         }
     }
 
-    private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, SortedMap<Integer, List<TranscriptTfbs>> chromosomeTfbsMap) {
-        for (Integer tfbsStart : chromosomeTfbsMap.keySet()) {
+    private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
+        ArrayList<TranscriptTfbs> transcriptTfbses = null;
+        for (Gff2 tfbs : tfbsMap.get(chromosome)) {
             Integer transcriptStart = getTranscriptStart(transcript);
-            // TODO: complete
-        }
-        return null;
-    }
-
-    private Map<String, SortedMap<Integer, List<TranscriptTfbs>>> getTfbsMap() {
-        // load MotifFeatures content in a Map
-        Map<String, SortedMap<Integer, List<TranscriptTfbs>>> tfbsMap = new HashMap<>();
-        try {
-            if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
-                BufferedReader br = FileUtils.newBufferedReader(tfbsFile);
-                String line;
-                while ((line = br.readLine()) != null) {
-                    TranscriptTfbs tfbs = parseTfbsLine(line);
-                    addTfbsToMap(tfbsMap, tfbs);
+            if (transcript.getStrand().equals("+")) {
+                if (tfbs.getStart() > transcriptStart + 500) {
+                    break;
+                } else if (tfbs.getEnd() > transcriptStart - 2500) {
+                    transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
+                }
+            } else {
+                // transcript in negative strand
+                if (tfbs.getStart() > transcript.getEnd() + 2500) {
+                    break;
+                } else if (tfbs.getStart() > transcript.getEnd() - 500) {
+                    transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
                 }
             }
-        }catch (IOException e) {
+
+        }
+        return transcriptTfbses;
+    }
+
+    private ArrayList<TranscriptTfbs> addTranscriptTfbstoList(Gff2 tfbs, Gtf transcript, String chromosome, ArrayList<TranscriptTfbs> transcriptTfbses) {
+        if (transcriptTfbses == null) {
+            transcriptTfbses = new ArrayList<>();
+        }
+        String[] tfbsNameFields = tfbs.getAttribute().split("=")[1].split(":");
+        transcriptTfbses.add(new TranscriptTfbs(tfbsNameFields[0], tfbsNameFields[1], chromosome, tfbs.getStart(), tfbs.getEnd(), tfbs.getStrand(), getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript), Float.parseFloat(tfbs.getScore())));
+        return transcriptTfbses;
+    }
+
+    private Integer getRelativeTranscriptTfbsStart(Gff2 tfbs, Gtf transcript) {
+        Integer relativeStart;
+        if (transcript.getStrand().equals("+")) {
+            if (tfbs.getStart() < transcript.getStart()) {
+                relativeStart = tfbs.getStart() - transcript.getStart();
+            } else {
+                relativeStart = tfbs.getStart() - transcript.getStart() + 1;
+            }
+        } else {
+            // negative strand transcript
+            if (tfbs.getEnd() > transcript.getEnd()) {
+                relativeStart = transcript.getEnd() - tfbs.getEnd();
+            } else {
+                relativeStart = transcript.getEnd() - tfbs.getEnd() + 1;
+            }
+        }
+        return relativeStart;
+    }
+
+    private Integer getRelativeTranscriptTfbsEnd(Gff2 tfbs, Gtf transcript) {
+        Integer relativeEnd;
+        if (transcript.getStrand().equals("+")) {
+            if (tfbs.getEnd() < transcript.getStart()) {
+                relativeEnd = tfbs.getEnd() - transcript.getStart();
+            } else {
+                relativeEnd = tfbs.getEnd() - transcript.getStart() + 1;
+            }
+        }else {
+            if (tfbs.getStart() > transcript.getEnd()) {
+                relativeEnd = transcript.getEnd() - tfbs.getStart();
+            }else {
+                relativeEnd = transcript.getEnd() - tfbs.getEnd() + 1;
+            }
+        }
+        return relativeEnd;
+    }
+
+    private Map<String, SortedSet<Gff2>> getTfbsMap() {
+        // load MotifFeatures content in a Map
+        Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
+        try {
+            if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
+                Gff2Reader motifsFeatureReader = new Gff2Reader(tfbsFile);
+                Gff2 tfbsMotifFeature;
+                while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
+                    addTfbsMotifToMap(tfbsMap, tfbsMotifFeature);
+                }
+                motifsFeatureReader.close();
+            }
+        }catch (IOException | NoSuchMethodException | FileFormatException e) {
             logger.error("Error loading TFBS file: " + e.getMessage());
             logger.error("transcript TFBS objects will not be serialized");
             tfbsMap.clear();
@@ -387,54 +449,24 @@ public class GeneParser extends CellBaseParser {
         return tfbsMap;
     }
 
-    private void addTfbsToMap(Map<String, SortedMap<Integer, List<TranscriptTfbs>>> tfbsMap, TranscriptTfbs tfbs) {
-        SortedMap<Integer, List<TranscriptTfbs>> chromosomeTfbsMap = tfbsMap.get(tfbs.getChromosome());
-        if (chromosomeTfbsMap == null) {
-            chromosomeTfbsMap = new TreeMap<>();
-            tfbsMap.put(tfbs.getChromosome(), chromosomeTfbsMap);
-        }
-        List<TranscriptTfbs> tfbsObjectsInSamePosition = chromosomeTfbsMap.get(tfbs.getStart());
-        if (tfbsObjectsInSamePosition == null) {
-            tfbsObjectsInSamePosition = new ArrayList<>();
-            chromosomeTfbsMap.put(tfbs.getStart(), tfbsObjectsInSamePosition);
-        }
-        tfbsObjectsInSamePosition.add(tfbs);
-    }
-
-    private TranscriptTfbs parseTfbsLine(String tfbsLine) {
-        String[] fields = tfbsLine.split("\t");
-        String chromosome = fields[0].replaceFirst("chr", "");
-        String[] nameFields = fields[8].split("=")[1].split(":");
-        String name = nameFields[0];
-        String pwm = nameFields[1];
-        Integer start = Integer.parseInt(fields[3]);
-        Integer end = Integer.parseInt(fields[4]);
-        String strand = fields[6];
-        Float score = Float.parseFloat(fields[5]);
-        // TODO: use Tfbs class?
-        return new TranscriptTfbs(name, pwm, chromosome, start, end, strand, null, null, score);
-    }
-
-
-    @Deprecated
-    private void parseTfbs(Map<String, Map<Integer, List<String>>> geneStartsMap) throws IOException {
-        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
-            BufferedReader br = FileUtils.newBufferedReader(tfbsFile);
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] fields = line.split("\t");
-                String chromosome = fields[0].replace("chr", "");
-                Integer tfbsStart = Integer.parseInt(fields[3]);
-                Integer tfbsEnd = Integer.parseInt(fields[4]);
-                Map<Integer, List<String>> startCoordinateToTranscriptMap = geneStartsMap.get(chromosome);
-                for (Integer transcriptStart : startCoordinateToTranscriptMap.keySet()) {
-                    if (((transcriptStart - 2500) <= tfbsEnd) && ((transcriptStart + 2500) >= tfbsStart)) {
-
+    private void addTfbsMotifToMap(Map<String, SortedSet<Gff2>> tfbsMap, Gff2 tfbsMotifFeature) {
+        String chromosome = tfbsMotifFeature.getSequenceName().replaceFirst("chr", "");
+        SortedSet<Gff2> chromosomeTfbsSet = tfbsMap.get(chromosome);
+        if (chromosomeTfbsSet == null) {
+            chromosomeTfbsSet = new TreeSet<Gff2>(new Comparator<Gff2>() {
+                @Override
+                public int compare(Gff2 feature1, Gff2 feature2) {
+                    // TODO: maybe this should be in TranscriptTfbs class, and equals method should be overriden too
+                    if (feature1.getStart() != feature2.getStart()) {
+                        return feature1.getStart() - feature2.getStart();
+                    } else {
+                        return feature1.getAttribute().compareTo(feature2.getAttribute());
                     }
                 }
-            }
-            br.close();
+            });
+            tfbsMap.put(chromosome, chromosomeTfbsSet);
         }
+        chromosomeTfbsSet.add(tfbsMotifFeature);
     }
 
     private Integer getTranscriptStart(Gtf transcript) {
