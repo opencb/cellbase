@@ -20,7 +20,7 @@ import java.sql.*;
 import java.util.*;
 
 public class GeneParser extends CellBaseParser {
-    
+
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
 
@@ -363,11 +363,10 @@ public class GeneParser extends CellBaseParser {
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
         ArrayList<TranscriptTfbs> transcriptTfbses = null;
         for (Gff2 tfbs : tfbsMap.get(chromosome)) {
-            Integer transcriptStart = getTranscriptStart(transcript);
             if (transcript.getStrand().equals("+")) {
-                if (tfbs.getStart() > transcriptStart + 500) {
+                if (tfbs.getStart() > transcript.getStart() + 500) {
                     break;
-                } else if (tfbs.getEnd() > transcriptStart - 2500) {
+                } else if (tfbs.getEnd() > transcript.getStart() - 2500) {
                     transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
                 }
             } else {
@@ -467,16 +466,6 @@ public class GeneParser extends CellBaseParser {
             tfbsMap.put(chromosome, chromosomeTfbsSet);
         }
         chromosomeTfbsSet.add(tfbsMotifFeature);
-    }
-
-    private Integer getTranscriptStart(Gtf transcript) {
-        Integer transcriptStart;
-        if (transcript.getStrand().equals("+")) {
-            transcriptStart = transcript.getStart();
-        } else {
-            transcriptStart = transcript.getEnd();
-        }
-        return transcriptStart;
     }
 
     private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
