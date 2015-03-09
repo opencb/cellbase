@@ -4,12 +4,8 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 
 /**
  * Created by imedina on 03/02/15.
@@ -73,6 +69,6 @@ public abstract class CommandParser {
     }
 
     public void readCellBaseConfiguration() throws URISyntaxException, IOException {
-        this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("cellBaseConfiguration.json"));
+        this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
     }
 }
