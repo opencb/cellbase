@@ -234,7 +234,14 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 29684676, "G", "A"), new QueryOptions());  // should return downstream_gene_variant
+          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 35656173, "C", "A"), new QueryOptions());  // should return synonymous_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 22274249, "-", "AGGAG"), new QueryOptions());  // should return downstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 51042514, "-", "G"), new QueryOptions());  // should return downstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 36587846, "-", "CT"), new QueryOptions());  // should
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 42537628, "T", "C"), new QueryOptions());  // should return downstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 27283340, "-", "C"), new QueryOptions());  // should return splice_region_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 31478142, "-", "G"), new QueryOptions());  // should return downstream_gene_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 29684676, "G", "A"), new QueryOptions());  // should return downstream_gene_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 40806293, "-", "TGTG"), new QueryOptions());  // should return downstream_gene_variant
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 39426437, StringUtils.repeat("N",20092), "-"), new QueryOptions());  // ¿should return 3_prime_UTR_variant? No if ENSEMBLs gtf was used
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 38069602, StringUtils.repeat("N",5799), "-"), new QueryOptions());  // should return 3_prime_UTR_variant
@@ -321,7 +328,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         /**
          * Calculates annotation for vcf file variants
          */
-        String INPUTFILE = "/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.test.vcf";
+        String INPUTFILE = "/tmp/wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.test.vcf";
 //        String INPUTFILE = "/home/fjlopez/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf";
         QueryResult queryResult = null;
         Set<AnnotationComparisonObject> uvaAnnotationSet = new HashSet<>();
@@ -425,7 +432,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         /**
          * Loads VEP annotation from VEP parsed annotations
          */
-        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/22.vep.output.parsed.test.txt"), Charset.defaultCharset());
+        BufferedReader br = Files.newBufferedReader(Paths.get("/tmp/vep.output.parsed.test.txt"), Charset.defaultCharset());
 //        BufferedReader br = Files.newBufferedReader(Paths.get("/home/fjlopez/tmp/22.vep.output.parsed.txt"), Charset.defaultCharset());
         Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
         String newLine;
