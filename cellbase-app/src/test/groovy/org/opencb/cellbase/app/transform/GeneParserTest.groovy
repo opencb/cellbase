@@ -3,6 +3,7 @@ package org.opencb.cellbase.app.transform
 import org.opencb.biodata.models.core.Gene
 import org.opencb.cellbase.app.serializers.CellBaseSerializer
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import java.nio.file.Paths
 
@@ -27,8 +28,12 @@ class GeneParserSpockTest extends Specification {
         geneParser.parse()
     }
 
+    @Unroll
+    def "gene #geneId parsed"() {
+        expect:
+        serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
 
-    def "Parse"() {
-
+        where:
+        geneId = "ENSG00000243485"
     }
 }
