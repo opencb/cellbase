@@ -36,7 +36,7 @@ public class GeneParser extends CellBaseParser {
     private Path genomeSequenceFilePath;
 
     private Connection sqlConn;
-    private PreparedStatement sqlInsert, sqlQuery;
+    private PreparedStatement sqlQuery;
 
     private int CHUNK_SIZE = 2000;
     private String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
@@ -585,19 +585,18 @@ public class GeneParser extends CellBaseParser {
     }
 
     private void connect(Path genomeSequenceFilePath) throws ClassNotFoundException, SQLException, IOException {
-        /**
-         * Preparation of the SQLite database
-         */
+        logger.info("Connecting to reference genome sequence database ...");
         Class.forName("org.sqlite.JDBC");
         sqlConn = DriverManager.getConnection("jdbc:sqlite:" + genomeSequenceFilePath.getParent().toString() + "/reference_genome.db");
         if(!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db")) ||
                 Files.size(genomeSequenceFilePath.getParent().resolve("reference_genome.db")) == 0) {
+            logger.info("Genome sequence database doesn't exists and will be created");
             Statement createTable = sqlConn.createStatement();
             createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
-            sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence) values (?, ?, ?, ?)");
             indexReferenceGenomeFasta(genomeSequenceFilePath);
         }
         sqlQuery = sqlConn.prepareStatement("SELECT sequence from genome_sequence WHERE chunkId = ? "); //AND start <= ? AND end >= ?
+        logger.info("Genome sequence database connected");
     }
 
     private void disconnectSqlite() throws SQLException {
@@ -609,11 +608,9 @@ public class GeneParser extends CellBaseParser {
 
         // Some parameters initialization
         String sequenceName = "";
-        boolean haplotypeSequenceType = true;
-        int chunk;
-        int start;
-        int end;
+        boolean haplotypeSequenceType = false;
 
+        PreparedStatement sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence) values (?, ?, ?, ?)");
         StringBuilder sequenceStringBuilder = new StringBuilder();
         String line;
         while ((line = bufferedReader.readLine()) != null) {
@@ -623,70 +620,8 @@ public class GeneParser extends CellBaseParser {
             } else {
                 // New sequence has been found and we must insert it into SQLite.
                 // Note that the first time there is no sequence. Only not HAP sequences are stored.
-                chunk = 0;
-                start = 1;
-                end = CHUNK_SIZE - 1;
                 if (sequenceStringBuilder.length() > 0) {
-                    // if the sequence read is not HAP then we stored in sqlite
-                    if(!haplotypeSequenceType && !sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
-                        System.out.println(sequenceName);
-
-                        //chromosome sequence length could shorter than CHUNK_SIZE
-                        if (sequenceStringBuilder.length() < CHUNK_SIZE) {
-                            sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
-                            sqlInsert.setInt(2, start);
-                            sqlInsert.setInt(3, sequenceStringBuilder.length() - 1);
-                            sqlInsert.setString(4, sequenceStringBuilder.toString());
-
-                            // Sequence to store is larger than CHUNK_SIZE
-                        } else {
-                            int sequenceLength = sequenceStringBuilder.length();
-
-                            sqlConn.setAutoCommit(false);
-                            while (start < sequenceLength) {
-                                if (chunk % 10000 == 0 && chunk != 0) {
-                                    System.out.println("Sequence: " + sequenceName + ", chunkId:" + chunk);
-                                    sqlInsert.executeBatch();
-                                    sqlConn.commit();
-                                }
-
-                                // chunkId is common for all the options
-                                sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
-                                if (start == 1) {   // First chunk of the chromosome
-                                    // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
-//                                        chunkSequence = sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1);
-//                                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
-                                    sqlInsert.setInt(2, start);
-                                    sqlInsert.setInt(3, end);
-                                    sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1));
-
-                                    start += CHUNK_SIZE - 1;
-                                } else {    // Regular chunk
-                                    if ((start + CHUNK_SIZE) < sequenceLength) {
-                                        sqlInsert.setInt(2, start);
-                                        sqlInsert.setInt(3, end);
-                                        sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, start + CHUNK_SIZE - 1));
-                                        start += CHUNK_SIZE;
-                                    } else {    // Last chunk of the chromosome
-                                        sqlInsert.setInt(2, start);
-                                        sqlInsert.setInt(3, sequenceLength);
-                                        sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, sequenceLength));
-                                        start = sequenceLength;
-                                    }
-                                }
-                                // we add the inserts in a batch
-                                sqlInsert.addBatch();
-
-                                end = start + CHUNK_SIZE - 1;
-                                chunk++;
-                            }
-
-                            sqlInsert.executeBatch();
-                            sqlConn.commit();
-
-                            sqlConn.setAutoCommit(true);
-                        }
-                    }
+                    insertGenomeSequence(sequenceName, haplotypeSequenceType, sqlInsert, sequenceStringBuilder);
                 }
 
                 // initialize data structures
@@ -695,11 +630,75 @@ public class GeneParser extends CellBaseParser {
                 sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
             }
         }
+        insertGenomeSequence(sequenceName, haplotypeSequenceType, sqlInsert, sequenceStringBuilder);
 
         bufferedReader.close();
 
         Statement stm = sqlConn.createStatement();
         stm.executeUpdate("CREATE INDEX chunkkId_idx on genome_sequence(chunkId)");
+    }
+
+    private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert, StringBuilder sequenceStringBuilder) throws SQLException {
+        int chunk = 0;
+        int start = 1;
+        int end = CHUNK_SIZE - 1;
+        // if the sequence read is not HAP then we stored in sqlite
+        if(!haplotypeSequenceType && !sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+
+            //chromosome sequence length could shorter than CHUNK_SIZE
+            if (sequenceStringBuilder.length() < CHUNK_SIZE) {
+                sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                sqlInsert.setInt(2, start);
+                sqlInsert.setInt(3, sequenceStringBuilder.length() - 1);
+                sqlInsert.setString(4, sequenceStringBuilder.toString());
+
+                // Sequence to store is larger than CHUNK_SIZE
+            } else {
+                int sequenceLength = sequenceStringBuilder.length();
+
+                sqlConn.setAutoCommit(false);
+                while (start < sequenceLength) {
+                    if (chunk % 10000 == 0 && chunk != 0) {
+                        System.out.println("Sequence: " + sequenceName + ", chunkId:" + chunk);
+                        sqlInsert.executeBatch();
+                        sqlConn.commit();
+                    }
+
+                    // chunkId is common for all the options
+                    sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                    if (start == 1) {   // First chunk of the chromosome
+                        // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
+//                                        chunkSequence = sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1);
+//                                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+                        sqlInsert.setInt(2, start);
+                        sqlInsert.setInt(3, end);
+                        sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1));
+
+                        start += CHUNK_SIZE - 1;
+                    } else {    // Regular chunk
+                        if ((start + CHUNK_SIZE) < sequenceLength) {
+                            sqlInsert.setInt(2, start);
+                            sqlInsert.setInt(3, end);
+                            sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, start + CHUNK_SIZE - 1));
+                            start += CHUNK_SIZE;
+                        } else {    // Last chunk of the chromosome
+                            sqlInsert.setInt(2, start);
+                            sqlInsert.setInt(3, sequenceLength);
+                            sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, sequenceLength));
+                            start = sequenceLength;
+                        }
+                    }
+                    // we add the inserts in a batch
+                    sqlInsert.addBatch();
+
+                    end = start + CHUNK_SIZE - 1;
+                    chunk++;
+                }
+
+                sqlInsert.executeBatch();
+                sqlConn.commit();
+            }
+        }
     }
 
     private String getExonSequence(String sequenceName, int start, int end) throws SQLException {
@@ -716,7 +715,7 @@ public class GeneParser extends CellBaseParser {
         int startStr = getOffset(start);
         int endStr = getOffset(start) + (end - start) + 1;
         String subStr = "";
-        if (getChunk(start) > 0) {
+        if (regionChunkStart > 0) {
             if (stringBuilder.toString().length() > 0 && stringBuilder.toString().length() >= endStr) {
                 subStr = stringBuilder.toString().substring(startStr, endStr);
             }
