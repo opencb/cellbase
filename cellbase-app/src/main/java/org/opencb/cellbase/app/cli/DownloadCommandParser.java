@@ -219,14 +219,15 @@ public class DownloadCommandParser extends CommandParser {
         } else if (configuration.getSpecies().getPlants().contains(sp)) {
             return "plants";
         } else {
-            throw new ParameterException ("Species " + sp.getScientificName() + " not associated to any phylo in cellbase configuration file");
+            throw new ParameterException ("Species " + sp.getScientificName() + " not associated to any phylo in the configuration file");
         }
     }
 
     private void getGenomeInfo(Species sp, Path genomeSequenceFolder) throws IOException, InterruptedException {
         // run genome_info.pl
         String outputFileName = genomeSequenceFolder + "/genome_info.json";
-        List<String> args = Arrays.asList("--species", sp.getScientificName(), "-o", outputFileName);
+        List<String> args = Arrays.asList("--species", sp.getScientificName(), "-o", outputFileName,
+                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
         String geneInfoLogFileName = genomeSequenceFolder + "/genome_info.log";
 
         boolean downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
@@ -275,7 +276,8 @@ public class DownloadCommandParser extends CommandParser {
         logger.info("Downloading gene extra info ...");
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info_cellbase.log").toString();
-        List<String> args = Arrays.asList( "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
+        List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
 
         // run gene_extra_info_cellbase.pl
         boolean geneExtraInfoDownloaded = runCommandLineProcess(ensemblScriptsFolder,
@@ -296,7 +298,8 @@ public class DownloadCommandParser extends CommandParser {
 
         // run protein_function_prediction_matrices.pl
         String proteinFunctionProcessLogFile = geneFolder.resolve("protein_function_prediction_matrices.log").toString();
-        List<String> args = Arrays.asList( "--species", sp.getScientificName(), "--outdir", geneFolder.toString());
+        List<String> args = Arrays.asList( "--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
 
         boolean proteinFunctionPredictionMatricesObtaines = runCommandLineProcess(ensemblScriptsFolder,
                 "./protein_function_prediction_matrices.pl",
