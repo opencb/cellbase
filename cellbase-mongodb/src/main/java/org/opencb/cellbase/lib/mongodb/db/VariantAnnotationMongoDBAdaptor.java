@@ -282,13 +282,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 }
             }
             if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
+                codingAnnotationAdded = true;
                 if (variantRef.length() % 3 == 0) {
                     SoNames.add("inframe_deletion");
-                    codingAnnotationAdded = true;
                 } else {
                     SoNames.add("frameshift_variant");
-                    codingAnnotationAdded = true;
                 }
+                solveStopCodonPositiveDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart,  cdnaVariantEnd,
+                        SoNames);
             }
         } else {
             if(variantRef.equals("-")) {  // Insertion. Be careful: insertion coordinates are special, alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
@@ -386,6 +387,38 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
+    private void solveStopCodonPositiveDeletion(String transcriptSequence, Integer cdnaCodingStart,
+                                                  Integer cdnaVariantStart, Integer cdnaVariantEnd,
+                                                  Set<String> SoNames) {
+        Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
+        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+        String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
+        char[] modifiedCodonArray = referenceCodon.toCharArray();
+        char[] referenceCodonArray = referenceCodon.toCharArray();
+        int i=cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
+        int codonPosition;
+        for(codonPosition=variantPhaseShift; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
+            modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
+            i++;
+        }
+        decideStopCodonModificationAnnotation(SoNames, referenceCodon, modifiedCodonArray);
+    }
+
+    private void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
+                                                       char[] modifiedCodonArray) {
+        if (isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
+            if (isStopCodon(referenceCodon)) {
+                SoNames.add("stop_retained_variant");
+            }
+        } else {
+            if (isStopCodon(String.valueOf(referenceCodon))) {
+                SoNames.add("stop_lost");
+            } else if (isStopCodon(String.valueOf(modifiedCodonArray))) {
+                SoNames.add("stop_gained");
+            }
+        }
+    }
+
     private char[] getModifiedStopCodonPositiveInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart, String variantAlt) {
         Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
         int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
@@ -429,13 +462,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 }
             }
             if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
+                codingAnnotationAdded = true;
                 if (variantRef.length() % 3 == 0) {
                     SoNames.add("inframe_deletion");
-                    codingAnnotationAdded = true;
                 } else {
                     SoNames.add("frameshift_variant");
-                    codingAnnotationAdded = true;
                 }
+                solveStopCodonNegativeDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd,
+                        SoNames);
             }
         } else {
             if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
@@ -534,6 +568,30 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         if(!codingAnnotationAdded) {
             SoNames.add("coding_sequence_variant");
         }
+    }
+
+    private void solveStopCodonNegativeDeletion(String transcriptSequence, Integer cdnaCodingStart,
+                                                Integer cdnaVariantStart, Integer cdnaVariantEnd,
+                                                Set<String> SoNames) {
+        Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
+        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+        String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
+                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+        String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - cdnaVariantEnd - 3,
+                transcriptSequence.length() - cdnaVariantEnd)).reverse().toString(); // Rigth limit of the substring -2 because substring does not include that position
+        char[] referenceCodonArray = reverseCodon.toCharArray();
+        referenceCodonArray[0] = complementaryNt.get(referenceCodonArray[0]);
+        referenceCodonArray[1] = complementaryNt.get(referenceCodonArray[1]);
+        referenceCodonArray[2] = complementaryNt.get(referenceCodonArray[2]);
+        char[] modifiedCodonArray = referenceCodonArray.clone();
+
+        int i=0;
+        int codonPosition;
+        for(codonPosition=variantPhaseShift; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
+            modifiedCodonArray[codonPosition] = complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
+            i++;
+        }
+        decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray), modifiedCodonArray);
     }
 
     private char[] getModifiedStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart, String variantAlt) {

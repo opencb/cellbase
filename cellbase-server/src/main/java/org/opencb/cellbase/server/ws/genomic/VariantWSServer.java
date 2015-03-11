@@ -241,7 +241,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @GET
     //@Consumes("application/x-www-form-urlencoded")
     @Path("/{variants}/full_annotation")
-    public Response getAnnotationByVariants(@PathParam("variants") String variants) {
+    public Response getAnnotationByVariantsGET(@PathParam("variants") String variants) {
         try {
             checkParams();
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
@@ -256,4 +256,24 @@ public class VariantWSServer extends GenericRestWSServer {
             return createErrorResponse("getAnnotationByVariants", e.toString());
         }
     }
+
+    @POST
+    @Consumes("text/plain")
+    @Path("/full_annotation")
+    public Response getAnnotationByVariantsPOST(String variants) {
+        try {
+            checkParams();
+            List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
+            logger.debug("queryOptions: " + queryOptions);
+
+            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getGenomicVariantAnnotationDBAdaptor(this.species, this.assembly);
+            List<QueryResult> clinicalQueryResultList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+
+            return createOkResponse(clinicalQueryResultList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getAnnotationByVariants", e.toString());
+        }
+    }
+
 }
