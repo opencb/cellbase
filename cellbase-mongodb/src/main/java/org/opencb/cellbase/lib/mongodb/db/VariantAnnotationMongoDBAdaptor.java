@@ -753,6 +753,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
                     junctionSolution[0] = true;
                 }
+            } else {
+                junctionSolution[0] = true;
             }
         } else {
             if(regionsOverlap(spliceSite1+2, spliceSite1+7, variantStart, variantEnd)) {
@@ -778,6 +780,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
                     junctionSolution[0] = true;
                 }
+            } else {
+                junctionSolution[0] = true;
             }
         } else {
             if(regionsOverlap(spliceSite2-7, spliceSite2-2, variantStart, variantEnd)) {

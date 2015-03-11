@@ -1,7 +1,10 @@
 package org.opencb.cellbase.lib.mongodb.db;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.jersey.client.ClientConfig;
 import org.junit.Test;
 import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
@@ -15,8 +18,17 @@ import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryResponse;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -205,7 +217,21 @@ public class VariantAnnotationMongoDBAdaptorTest {
     }
 
     @Test
-    public void testGetAllConsequenceTypesByVariant() throws IOException {
+    public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
+
+//        URI uri = new URI("http", null, "172.22.68.41", 8080, "/cellbase/webservices/rest/", null, null);
+//        UriBuilder uriBuilder = UriBuilder.fromUri(uri).path("v3").path("hsapiens").path("genomic").path("variant").path("full_annotation");
+//        ClientConfig clientConfig = new ClientConfig();
+//        Client client = ClientBuilder.newClient(clientConfig);
+//        Invocation.Builder request = client.target(uriBuilder).request();
+//        Response response = request.post(Entity.entity("19:45411941:T:C", "text/plain"));
+//        String responseStr = response.readEntity(String.class);
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        ObjectReader objectReader = objectMapper.reader(objectMapper.getTypeFactory().constructParametricType(
+//                QueryResponse.class, objectMapper.getTypeFactory().constructParametricType(org.opencb.datastore.core.QueryResult.class, VariantAnnotation.class)));
+//        objectReader.readValue(response);
+//        String result = objectMapper.writeValueAsString(response);
+//        int a = 1;
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
@@ -234,7 +260,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 27436462, StringUtils.repeat("N",2), "-"), new QueryOptions());  // should not return intergenic_variant
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 27793991, StringUtils.repeat("N",1907), "-"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 27436462, StringUtils.repeat("N",2), "-"), new QueryOptions());  // should not return intergenic_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 6638139, "A", "T"), new QueryOptions());  // should not return intergenic_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 3745870, "C", "T"), new QueryOptions());  // should not return null
 //          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 35656173, "C", "A"), new QueryOptions());  // should return initiator_codon_variant
@@ -591,7 +618,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
             bw.write(comparisonObject.toString());
         }
         bw.write("\n\n\n");
-        bw.write(lineCounter+"/"+nLines+ " - non-regulatory annotations: "+nNonRegulatoryAnnotations);
+        bw.write(lineCounter+"/"+nLines+ " - non-regulatory annotations: "+nNonRegulatoryAnnotations+"\n");
 
         bw.close();
     }
