@@ -4,6 +4,8 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -16,8 +18,10 @@ public abstract class CommandParser {
     protected boolean verbose;
     protected String configFile;
 
-    protected Logger logger;
+    protected String appHome;
     protected CellBaseConfiguration configuration;
+
+    protected Logger logger;
 
     public CommandParser() {
 
@@ -27,6 +31,8 @@ public abstract class CommandParser {
         this.logLevel = logLevel;
         this.verbose = verbose;
         this.configFile = configFile;
+
+        this.appHome = System.getProperty("app.home", "/opt/cellbase");
 
         if(logLevel != null && !logLevel.isEmpty()) {
             // We must call to this method
@@ -69,6 +75,11 @@ public abstract class CommandParser {
     }
 
     public void readCellBaseConfiguration() throws URISyntaxException, IOException {
-        this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+//        this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+        if(this.configFile != null) {
+            this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.configFile)));
+        }else {
+            this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome+"/configuration.json")));
+        }
     }
 }

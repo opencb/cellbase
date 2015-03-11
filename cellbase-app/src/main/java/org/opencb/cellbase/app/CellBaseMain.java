@@ -77,7 +77,6 @@ public class CellBaseMain {
 //    }
 
     public static void main(String[] args) {
-
         CliOptionsParser cliOptionsParser = new CliOptionsParser();
         cliOptionsParser.parse(args);
 
