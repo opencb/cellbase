@@ -13,7 +13,6 @@ import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.DBObjectMap;
 import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
 import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.slf4j.Logger;
@@ -292,38 +291,35 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         SoNames);
             }
         } else {
-            if(variantRef.equals("-")) {  // Insertion. Be careful: insertion coordinates are special, alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
-                if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+2) && (transcriptFlags==null ||
+            if(variantRef.equals("-") && (cdnaVariantStart != null)) {  // Insertion. Be careful: insertion coordinates are special, alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
+                codingAnnotationAdded = true;
+                if(cdnaVariantStart<(cdnaCodingStart+2) && (transcriptFlags==null ||
                         cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
-                    codingAnnotationAdded = true;
                 }
-                if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
-                    if (cdnaVariantStart != null && cdnaVariantStart > (cdnaCodingEnd - 3)) { // -3 because alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
-                        char[] modifiedCodonArray = getModifiedStopCodonPositiveInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, variantAlt);
-                        if(isStopCodon(String.valueOf(modifiedCodonArray))) {
-                            SoNames.add("stop_retained_variant");
-                        } else {
-                            SoNames.add("stop_lost");
-                        }
-                    }
+                int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+                if ((cdnaVariantStart > (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd.equals(genomicCodingEnd)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+                    SoNames.add("incomplete_terminal_codon_variant");
+                }
+                if(variantAlt.length()%3 == 0) {
+                    SoNames.add("inframe_insertion");
                 } else {
-//                    if(cdnaVariantStart != null && cdnaVariantStart>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
-                    int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
-                    // Be careful, strict > since this is a insertion, inserted nts are pasted on the left of cdnaVariantStart
-                    if ((cdnaVariantStart > (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd.equals(genomicCodingEnd)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
-                        SoNames.add("incomplete_terminal_codon_variant");
-                    }
+                    SoNames.add("frameshift_variant");
                 }
-                if(cdnaVariantStart != null) {
-//                if(!splicing && cdnaVariantStart != null) {
-                    codingAnnotationAdded = true;
-                    if(variantAlt.length()%3 == 0) {
-                        SoNames.add("inframe_insertion");
-                    } else {
-                        SoNames.add("frameshift_variant");
-                    }
-                }
+                solveStopCodonPositiveInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart,
+                        variantAlt, SoNames);
+//                if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
+//                    if (cdnaVariantStart != null && cdnaVariantStart > (cdnaCodingEnd - 3)) { // -3 because alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
+//                        char[] modifiedCodonArray = solveStopCodonPositiveInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, variantAlt);
+//                        if(isStopCodon(String.valueOf(modifiedCodonArray))) {
+//                            SoNames.add("stop_retained_variant");
+//                        } else {
+//                            SoNames.add("stop_lost");
+//                        }
+//                    }
+//                } else {
+                // Be careful, strict > since this is a insertion, inserted nts are pasted on the left of cdnaVariantStart
+//                }
             } else {  // SNV
                 if(cdnaVariantStart != null ) {
                     int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
@@ -419,7 +415,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    private char[] getModifiedStopCodonPositiveInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart, String variantAlt) {
+    private void solveStopCodonPositiveInsertion(String transcriptSequence, Integer cdnaCodingStart,
+                                            Integer cdnaVariantStart, String variantAlt, Set<String> SoNames) {
         Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
         int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
         String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
@@ -435,7 +432,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             modifiedCodonArray[codonPosition] = referenceCodonArray[variantPhaseShift];
             variantPhaseShift++;
         }
-        return modifiedCodonArray;
+        decideStopCodonModificationAnnotation(SoNames, referenceCodon, modifiedCodonArray);
     }
 
     private void solveNegativeCodingEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart,
@@ -472,35 +469,38 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         SoNames);
             }
         } else {
-            if(variantRef.equals("-")) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
-                if(cdnaVariantStart != null && cdnaVariantStart<(cdnaCodingStart+2) && (transcriptFlags==null ||
-                        cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
+            if(variantRef.equals("-") && (cdnaVariantStart != null)) {  // Insertion  TODO: I've seen insertions within Cellbase-mongo with a ref != -
+                codingAnnotationAdded = true;
+                if(cdnaVariantStart<(cdnaCodingStart+2) && (transcriptFlags==null ||
+                    cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF"))) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
-                    codingAnnotationAdded = true;
                 }
-                if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
-                    if (cdnaVariantEnd != null && cdnaVariantEnd > (cdnaCodingEnd - 3)) {  // -3 because alternative nts are pasted on the left of >>>genomic<<<VariantStart
-                        char[] modifiedCodonArray = getModifiedStopCodonNegativeInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantEnd, variantAlt); // Be careful, cdnaVariantEnd is being used in this case!!!
-                        if(isStopCodon(String.valueOf(modifiedCodonArray))) {
-                            SoNames.add("stop_retained_variant");
-                        } else {
-                            SoNames.add("stop_lost");
-                        }
-                    }
+                int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+                if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptStart.equals(genomicCodingStart)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
+                    SoNames.add("incomplete_terminal_codon_variant");
+                }
+                if(variantAlt.length()%3 == 0) {
+                    SoNames.add("inframe_insertion");
                 } else {
-                    if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
-                        SoNames.add("incomplete_terminal_codon_variant");
-                    }
+                    SoNames.add("frameshift_variant");
                 }
-                if(cdnaVariantStart != null) {
+                solveStopCodonNegativeInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantEnd, variantAlt,
+                        SoNames); // Be careful, cdnaVariantEnd is being used in this case!!!
+
+//                if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
+//                    if (cdnaVariantEnd != null && cdnaVariantEnd > (cdnaCodingEnd - 3)) {  // -3 because alternative nts are pasted on the left of >>>genomic<<<VariantStart
+//                        char[] modifiedCodonArray = solveStopCodonNegativeInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantEnd, variantAlt); // Be careful, cdnaVariantEnd is being used in this case!!!
+//                        if(isStopCodon(String.valueOf(modifiedCodonArray))) {
+//                            SoNames.add("stop_retained_variant");
+//                        } else {
+//                            SoNames.add("stop_lost");
+//                        }
+//                    }
+//                } else {
+//                }
+//                if(cdnaVariantStart != null) {
 //                if(!splicing && cdnaVariantStart != null) {
-                    codingAnnotationAdded = true;
-                    if(variantAlt.length()%3 == 0) {
-                        SoNames.add("inframe_insertion");
-                    } else {
-                        SoNames.add("frameshift_variant");
-                    }
-                }
+//                }
             } else {  // SNV
                 if(cdnaVariantStart != null) {
                     int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
@@ -594,7 +594,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray), modifiedCodonArray);
     }
 
-    private char[] getModifiedStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart, String variantAlt) {
+    private void solveStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart,
+                                                 Integer cdnaVariantStart, String variantAlt, Set<String> SoNames) {
         Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3;
         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
         String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
@@ -615,7 +616,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             modifiedCodonArray[codonPosition] = referenceCodonArray[variantPhaseShift];
             variantPhaseShift++;
         }
-        return modifiedCodonArray;
+        decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray), modifiedCodonArray);
     }
 
     private void solveCodingPositiveTranscriptEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
