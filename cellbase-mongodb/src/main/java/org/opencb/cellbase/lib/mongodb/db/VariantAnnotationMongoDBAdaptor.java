@@ -298,7 +298,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     SoNames.add("initiator_codon_variant");
                 }
                 int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
-                if ((cdnaVariantStart > (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd.equals(genomicCodingEnd)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+                if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) && (transcriptEnd.equals(genomicCodingEnd)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                     SoNames.add("incomplete_terminal_codon_variant");
                 }
                 if(variantAlt.length()%3 == 0) {
@@ -476,7 +476,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     SoNames.add("initiator_codon_variant");
                 }
                 int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
-                if ((cdnaVariantEnd >= (transcriptSequence.length() - finalNtPhase)) && (transcriptStart.equals(genomicCodingStart)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
+                if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) && (transcriptStart.equals(genomicCodingStart)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.if(cdnaVariantEnd != null && cdnaVariantEnd>(transcriptSequence.length()-((transcriptSequence.length()%3)==0?3:(transcriptSequence.length()%3)))) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
                     SoNames.add("incomplete_terminal_codon_variant");
                 }
                 if(variantAlt.length()%3 == 0) {
@@ -748,8 +748,16 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         if(regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {  // Variant donor/acceptor
             if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-                if(isInsertion && (variantEnd.equals(spliceSite1))) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
-                    SoNames.add("splice_region_variant");
+                if(isInsertion) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
+                    if(variantEnd.equals(spliceSite1)) {  // Insertion between last nt of the exon (3' end), first nt of the intron (5' end)
+                        SoNames.add("splice_region_variant");  // Inserted nts considered part of the coding sequence
+                    } else if(variantEnd.equals(spliceSite1+2)) {
+                        SoNames.add("splice_region_variant");  // Inserted nts considered out of the donor/acceptor region
+                        junctionSolution[0] = true;
+                    } else {
+                        SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
+                        junctionSolution[0] = true;
+                    }
                 } else {
                     SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
                     junctionSolution[0] = true;
@@ -775,8 +783,16 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         if(regionsOverlap(spliceSite2-1, spliceSite2, variantStart, variantEnd)) {  // Variant donor/acceptor
             if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-                if(isInsertion && (variantEnd == (spliceSite2-1))) {  // Insertions are peculiar in VEP annotation (draw it to understand)
-                    SoNames.add("splice_region_variant");
+                if(isInsertion) {  // Insertions are peculiar in VEP annotation (draw it to understand)
+                    if(variantStart.equals(spliceSite2)) {  // Insertion between last nt of the intron (3' end), first nt of the exon (5' end)
+                        SoNames.add("splice_region_variant");  // Inserted nts considered part of the coding sequence
+                    } else if(variantStart == (spliceSite2-2)) {
+                        SoNames.add("splice_region_variant");  // Inserted nts considered out of the donor/acceptor region
+                        junctionSolution[0] = true;
+                    } else {
+                        SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
+                        junctionSolution[0] = true;
+                    }
                 } else {
                     SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
                     junctionSolution[0] = true;
@@ -1350,6 +1366,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {
                 if(variantEnd <= exonEnd) {
                     if(variantEnd >= exonStart) {  // Only variant end within the exon  ----||||||||||E||||----
+                        cdnaExonEnd += (exonEnd - exonStart + 1);
                         cdnaVariantEnd = cdnaExonEnd - (exonEnd - variantEnd);
                     } else {  // Variant does not include this exon, variant is located before this exon
                         variantAhead = false;
@@ -1362,8 +1379,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
         // Is not intron variant (both ends fall within the same intron)
         if(!junctionSolution[1]) {
-            if(isInsertion && cdnaVariantStart==null) {  // To account for those insertions in the first 5' end of an intron
-                cdnaVariantStart = cdnaVariantEnd-1;
+            if(isInsertion) {
+                if(cdnaVariantStart==null && cdnaVariantEnd!=null) {  // To account for those insertions in the 3' end of an intron
+                    cdnaVariantStart = cdnaVariantEnd - 1;
+                } else if(cdnaVariantEnd==null && cdnaVariantStart!=null) {  // To account for those insertions in the 5' end of an intron
+                    cdnaVariantEnd = cdnaVariantStart + 1;
+                }
             }
             solveCodingPositiveTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,  // Be careful, originalVariantStart is used here!
@@ -1455,6 +1476,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             } else {
                 if(variantStart >= exonStart) {
                     if(variantStart <= exonEnd) {  // Only variant start within the exon  ----||||||||||E||||----
+                        cdnaExonEnd += (exonEnd - exonStart + 1);
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exonStart);
                     } else {  // Variant does not include this exon, variant is located before this exon
                         variantAhead = false;
@@ -1467,8 +1489,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
         // Is not intron variant (both ends fall within the same intron)
         if(!junctionSolution[1]) {
-            if(isInsertion && cdnaVariantStart==null) {  // To account for those insertions in the first 5' end of an intron
-                cdnaVariantStart = cdnaVariantEnd-1;
+            if(isInsertion) {
+                if(cdnaVariantStart==null && cdnaVariantEnd!=null) {  // To account for those insertions in the 3' end of an intron
+                    cdnaVariantStart = cdnaVariantEnd - 1;
+                } else if(cdnaVariantEnd==null && cdnaVariantStart!=null) {  // To account for those insertions in the 5' end of an intron
+                    cdnaVariantEnd = cdnaVariantStart + 1;
+                }
             }
             solveCodingNegativeTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
                     variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,
