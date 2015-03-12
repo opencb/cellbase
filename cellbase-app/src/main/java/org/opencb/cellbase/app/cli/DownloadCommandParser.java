@@ -6,6 +6,7 @@ import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -59,17 +60,21 @@ public class DownloadCommandParser extends CommandParser {
             }
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
 
     private void checkParameters() {
-        if (!downloadCommandOptions.sequence && !downloadCommandOptions.gene && !downloadCommandOptions.variation && !downloadCommandOptions.regulation) {
-            throw new ParameterException("At least one download parameter must be selected: sequence, gene, variation, regulation, protein");
+        if (!downloadCommandOptions.sequence && !downloadCommandOptions.gene && !downloadCommandOptions.variation
+                && !downloadCommandOptions.regulation && !downloadCommandOptions.protein) {
+            throw new ParameterException("At least one 'download' option must be selected: sequence, gene, variation, regulation, protein");
         }
     }
 
     private Set<Species> getSpecies() {
+        logger.debug("CLI species {}", Arrays.toString(downloadCommandOptions.species.toArray()));
         Set<String> speciesToDownloadNames = new HashSet<>(downloadCommandOptions.species);
         List<Species> allSpecies = configuration.getAllSpecies();
         Set<Species> speciesToDownload = new HashSet<>();
@@ -124,6 +129,9 @@ public class DownloadCommandParser extends CommandParser {
         }
         if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
             downloadRegulation(sp, spShortName, assembly, spFolder, host);
+        }
+        if (downloadCommandOptions.protein && specieHasInfoToDownload(sp, "protein")) {
+            downloadProtein(sp, spShortName, assembly, spFolder, host);
         }
     }
 
@@ -254,22 +262,17 @@ public class DownloadCommandParser extends CommandParser {
 
     private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading gene gtf ...");
-        String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
-        downloadFile(getGeneGtfUrl(sp, spShortName, host), geneGtfOutputFileName);
-    }
-
-    private String getGeneGtfUrl(Species sp, String shortName, String host) {
         String geneGtfUrl;
-
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
             geneGtfUrl = host + "/" + ensemblRelease;
         } else {
             geneGtfUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
+        geneGtfUrl = geneGtfUrl + "/gtf/" + spShortName + "/*.gtf.gz";
 
-        geneGtfUrl = geneGtfUrl + "/gtf/" + shortName + "/*.gtf.gz";
+        String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
 
-        return geneGtfUrl;
+        downloadFile(geneGtfUrl, geneGtfOutputFileName);
     }
 
     private void getGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
@@ -314,7 +317,8 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
-    private void downloadVariation(Species sp, String shortName, String assembly, Path spFolder, String host) throws IOException, InterruptedException {
+    private void downloadVariation(Species sp, String shortName, String assembly, Path spFolder, String host)
+            throws IOException, InterruptedException {
         logger.info("Downloading variation information ...");
         Path variationFolder = spFolder.resolve("variation");
         makeDir(variationFolder);
@@ -339,12 +343,13 @@ public class DownloadCommandParser extends CommandParser {
         return variationUrl;
     }
 
-    private void downloadRegulation(Species sp, String shortName, String assembly, Path spFolder, String host) throws IOException, InterruptedException {
+    private void downloadRegulation(Species sp, String shortName, String assembly, Path spFolder, String host)
+            throws IOException, InterruptedException {
         logger.info("Downloading regulation information ...");
         Path regulationFolder = spFolder.resolve("regulation");
         makeDir(regulationFolder);
 
-        String regulationUrl = getRegulationUrl(sp, shortName, assembly, host);
+        String regulationUrl = host + "/" + ensemblRelease + "/regulation/" + shortName;
 
         for (String regulationFile : regulationFiles) {
             Path outputFile = regulationFolder.resolve(regulationFile);
@@ -352,23 +357,28 @@ public class DownloadCommandParser extends CommandParser {
         }
     }
 
-    private String getRegulationUrl(Species sp, String shortName, String assembly, String host) {
-        String regulationUrl;
+    private void downloadProtein(Species sp, String shortName, String assembly, Path spFolder, String host)
+            throws IOException, InterruptedException {
+        logger.info("Downloading protein information ...");
+        Path proteinFolder = spFolder.resolve("protein");
+        makeDir(proteinFolder);
 
-        regulationUrl = host + "/" + ensemblRelease + "/regulation/" + shortName;
-
-        return regulationUrl;       
+        String proteinUrl = configuration.getDownload().getUniprot().getHost();
+        downloadFile(proteinUrl, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
     }
 
-    private void makeDir(Path folderPath) {
-        File folder = folderPath.toFile();
-        if (!folder.exists()) {
-            if (!folder.mkdir()) {
-                throw new ParameterException(folderPath.getFileName() + " cannot be created");
-            }
-        } else if (!folder.isDirectory()) {
-            throw new ParameterException(folderPath.getFileName() + " exists and it is a file");
+    private void makeDir(Path folderPath) throws IOException {
+        if(!Files.exists(folderPath)) {
+            Files.createDirectory(folderPath);
         }
+//        File folder = folderPath.toFile();
+//        if (!folder.exists()) {
+//            if (!folder.mkdir()) {
+//                throw new ParameterException(folderPath.getFileName() + " cannot be created");
+//            }
+//        } else if (!folder.isDirectory()) {
+//            throw new ParameterException(folderPath.getFileName() + " exists and it is a file");
+//        }
     }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
@@ -376,13 +386,13 @@ public class DownloadCommandParser extends CommandParser {
         boolean downloaded = runCommandLineProcess(null, "wget", wgetArgs, null);
 
         if (downloaded) {
-            logger.info(outputFileName + "  created OK");
+            logger.info(outputFileName + " created OK");
         } else {
             logger.warn(url + " cannot be downloaded");
         }
     }
 
-    private boolean runCommandLineProcess(File workingDirectory,  String binPath, List<String> args, String logFilePath) throws IOException, InterruptedException {
+    private boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath) throws IOException, InterruptedException {
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
         logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));

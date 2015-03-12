@@ -34,11 +34,11 @@
                 "host":"ftp://ftp.ensemblgenomes.org/pub"
             }
         },
-        "uniprot":{
-            "host":""
+        "uniprot": {
+            "host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz"
         },
-        "clinvar":{
-            "host":""
+        "clinvar": {
+            "host": ""
         }
     },
     "species":{
@@ -61,7 +61,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein"
                 ]
             },
             {
@@ -78,7 +79,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein"
                 ]
             },
             {
@@ -112,7 +114,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                   "protein"
                 ]
             },
             {
@@ -505,7 +508,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein"
                 ]
             },
             {
@@ -677,7 +681,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein"
                 ]
             },
             {
