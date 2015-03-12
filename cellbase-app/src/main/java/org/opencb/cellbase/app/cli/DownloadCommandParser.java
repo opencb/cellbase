@@ -383,7 +383,7 @@ public class DownloadCommandParser extends CommandParser {
     }
 
     private boolean runCommandLineProcess(File workingDirectory,  String binPath, List<String> args, String logFilePath) throws IOException, InterruptedException {
-        ProcessBuilder builder = getProcessBuilder(binPath, args, workingDirectory, logFilePath);
+        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
         logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
         Process process = builder.start();
@@ -392,7 +392,7 @@ public class DownloadCommandParser extends CommandParser {
         return checkProcessOutput(process, binPath, logFilePath);
     }
 
-    private ProcessBuilder getProcessBuilder(String binPath, List<String> args, File workingDirectory, String logFilePath) {
+    private ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
         List<String> commandArgs = new ArrayList<>();
         commandArgs.add(binPath);
         commandArgs.addAll(args);
