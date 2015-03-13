@@ -49,7 +49,7 @@
                 "assemblies":[
                     {
                         "ensemblVersion":"75_37",
-                        "name":"GRCh37.p13"
+                        "name":"GRCh37"
                     },
                     {
                         "ensemblVersion":"78_38",

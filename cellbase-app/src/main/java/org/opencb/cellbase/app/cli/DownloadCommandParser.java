@@ -49,6 +49,8 @@ public class DownloadCommandParser extends CommandParser {
             Path outputDir = Paths.get(downloadCommandOptions.outputDir);
             makeDir(outputDir);
 
+            // We need to get the Species object from the CLI name
+            // This can be the scientific or common name, or the ID
             Species speciesToDownload = null;
             for(Species species: configuration.getAllSpecies()) {
                 if(downloadCommandOptions.species.equalsIgnoreCase(species.getScientificName())
@@ -59,6 +61,7 @@ public class DownloadCommandParser extends CommandParser {
                 }
             }
 
+            // If everything is right we launch the download
             if(speciesToDownload != null) {
                 processSpecies(speciesToDownload, outputDir);
             }else {
@@ -87,41 +90,56 @@ public class DownloadCommandParser extends CommandParser {
         Path spFolder = outputDir.resolve(spShortName);
         makeDir(spFolder);
 
-        String host = getHost(sp);
+        // We need to find which is the Ensembl host URL.
+        // This is different depending on if is a vertebrate species.
+        String ensemblHostUrl;
+        if (configuration.getSpecies().getVertebrates().contains(sp)) {
+            ensemblHostUrl = configuration.getDownload().getEnsembl().getUrl().getHost();
+        } else {
+            ensemblHostUrl = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
+        }
 
-        // get assembly
-        String assembly = getAssembly(sp, downloadCommandOptions.assembly);
+        // Getting the assembly. By default the first assembly in the configuration.json
+        Species.Assembly assembly = null;
+        if(downloadCommandOptions.assembly == null || downloadCommandOptions.assembly.equals("")) {
+            assembly = sp.getAssemblies().get(0);
+        }else {
+            for (Species.Assembly assembly1 : sp.getAssemblies()) {
+                if(downloadCommandOptions.assembly.equalsIgnoreCase(assembly1.getName())) {
+                    assembly = assembly1;
+                    break;
+                }
+            }
+        }
 
-        ensemblVersion = getEnsemblVersion(sp, assembly);
+        // Checking that the species and assembly are correct
+        if(ensemblHostUrl == null || assembly == null) {
+            logger.error("Something is not correct, check the species '{}' or the assembly '{}'",
+                    downloadCommandOptions.species, downloadCommandOptions.assembly);
+            return;
+        }
+
+        ensemblVersion = assembly.getEnsemblVersion();
         ensemblRelease = "release-" + ensemblVersion.split("_")[0];
 
-        // download sequence, gene, variation and regulation
+        // download sequence, gene, variation, regulation and protein
         if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "genome_sequence")) {
-            downloadSequence(sp, spShortName, assembly, spFolder, host);
+            downloadSequence(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
         if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
-            downloadGene(sp, spShortName, spFolder, host);
+            downloadGene(sp, spShortName, spFolder, ensemblHostUrl);
         }
         if (downloadCommandOptions.variation && specieHasInfoToDownload(sp, "variation")) {
-            downloadVariation(sp, spShortName, assembly, spFolder, host);
+            downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
         if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
-            downloadRegulation(sp, spShortName, assembly, spFolder, host);
+            downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
         if (downloadCommandOptions.protein && specieHasInfoToDownload(sp, "protein")) {
-            downloadProtein(sp, spShortName, assembly, spFolder, host);
+            downloadProtein(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
     }
 
-    private String getHost(Species sp) {
-        String host;
-        if (configuration.getSpecies().getVertebrates().contains(sp)) {
-            host = configuration.getDownload().getEnsembl().getUrl().getHost();
-        } else {
-            host = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
-        }
-        return host;
-    }
 
     private boolean specieHasInfoToDownload(Species sp, String info) {
         boolean hasInfo = true;
@@ -143,25 +161,6 @@ public class DownloadCommandParser extends CommandParser {
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
         getGenomeInfo(sp, sequenceFolder);
-    }
-
-    private String getAssembly(Species sp, String assembly) {
-        if (assembly == null) {
-            String defaultAssemblyName = sp.getAssemblies().get(0).getName();
-            this.logger.info("No assembly selected, default assembly will be downloaded: " + defaultAssemblyName);
-            return defaultAssemblyName;
-        } else {
-            for (Species.Assembly spAssembly : sp.getAssemblies()) {
-                String assemblyName = spAssembly.getName();
-                if (assemblyName.equalsIgnoreCase(assembly)) {
-                    return assemblyName;
-                }
-            }
-            // assembly not found
-            String errorMessage = "Assembly " + assembly + " not found in species " + sp.getScientificName();
-            errorMessage +=  "\n\tAvailable assemblies for this specie: " + getAvailableAssemblies(sp);
-            throw new ParameterException(errorMessage);
-        }
     }
 
     private String getSequenceUrl(Species sp, String shortName, String host) {
@@ -193,15 +192,6 @@ public class DownloadCommandParser extends CommandParser {
         } else {
             logger.error("Genome info for " + sp.getScientificName() + " cannot be downloaded");
         }
-    }
-
-    private String getEnsemblVersion(Species sp, String assembly) {
-        for (Species.Assembly spAssembly : sp.getAssemblies()) {
-            if (spAssembly.getName().equalsIgnoreCase(assembly)) {
-                return spAssembly.getEnsemblVersion();
-            }
-        }
-        return null;
     }
 
     private String getAvailableAssemblies(Species sp) {
@@ -394,5 +384,4 @@ public class DownloadCommandParser extends CommandParser {
 
         return builder;
     }
-
 }
