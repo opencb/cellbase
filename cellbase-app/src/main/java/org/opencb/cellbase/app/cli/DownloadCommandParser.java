@@ -123,25 +123,25 @@ public class DownloadCommandParser extends CommandParser {
         ensemblRelease = "release-" + ensemblVersion.split("_")[0];
 
         // download sequence, gene, variation, regulation and protein
-        if (downloadCommandOptions.sequence && specieHasInfoToDownload(sp, "genome_sequence")) {
+        if (downloadCommandOptions.sequence && speciesHasInfoToDownload(sp, "genome_sequence")) {
             downloadSequence(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.gene && specieHasInfoToDownload(sp, "gene")) {
+        if (downloadCommandOptions.gene && speciesHasInfoToDownload(sp, "gene")) {
             downloadGene(sp, spShortName, spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.variation && specieHasInfoToDownload(sp, "variation")) {
+        if (downloadCommandOptions.variation && speciesHasInfoToDownload(sp, "variation")) {
             downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.regulation && specieHasInfoToDownload(sp, "regulation")) {
+        if (downloadCommandOptions.regulation && speciesHasInfoToDownload(sp, "regulation")) {
             downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.protein && specieHasInfoToDownload(sp, "protein")) {
+        if (downloadCommandOptions.protein && speciesHasInfoToDownload(sp, "protein")) {
             downloadProtein(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
     }
 
 
-    private boolean specieHasInfoToDownload(Species sp, String info) {
+    private boolean speciesHasInfoToDownload(Species sp, String info) {
         boolean hasInfo = true;
         if (sp.getData() == null || !sp.getData().contains(info)) {
             logger.warn("Specie " + sp.getScientificName() + " has no " + info + " information available to download");
@@ -155,26 +155,18 @@ public class DownloadCommandParser extends CommandParser {
         Path sequenceFolder = spFolder.resolve("sequence");
         makeDir(sequenceFolder);
 
-        String url = getSequenceUrl(sp, shortName, host);
+        String url;
+        if (configuration.getSpecies().getVertebrates().contains(sp)) {
+            url = host + "/" + ensemblRelease;
+        } else {
+            url = host + "/" + ensemblRelease + "/" + getPhylo(sp);
+        }
+        url = url + "/fasta/" + shortName + "/dna/*.dna.primary_assembly.fa.gz";
 
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
         getGenomeInfo(sp, sequenceFolder);
-    }
-
-    private String getSequenceUrl(Species sp, String shortName, String host) {
-        String seqUrl;
-
-        if (configuration.getSpecies().getVertebrates().contains(sp)) {
-            seqUrl = host + "/" + ensemblRelease;
-        } else {
-            seqUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
-        }
-
-        seqUrl = seqUrl + "/fasta/" + shortName + "/dna/*.dna.primary_assembly.fa.gz";
-
-        return seqUrl;
     }
 
     private void getGenomeInfo(Species sp, Path genomeSequenceFolder) throws IOException, InterruptedException {
@@ -192,14 +184,6 @@ public class DownloadCommandParser extends CommandParser {
         } else {
             logger.error("Genome info for " + sp.getScientificName() + " cannot be downloaded");
         }
-    }
-
-    private String getAvailableAssemblies(Species sp) {
-        List<String> assemblies = new ArrayList<>();
-        for (Species.Assembly assembly : sp.getAssemblies()) {
-            assemblies.add(assembly.getName());
-        }
-        return StringUtils.join(assemblies, ", ");
     }
 
     private String getPhylo(Species sp) {
