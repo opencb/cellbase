@@ -36,14 +36,13 @@ public class GenericRestWSServer implements IWSServer {
     // Common application parameters
     @DefaultValue("")
     @PathParam("version")
-    @ApiParam(name = "version", value = "Excluded fields will not be returned. Comma separated JSON paths must be provided",
-            defaultValue = "v3")
+    @ApiParam(name = "version", value = "CellBase version. Use 'latest' for last version stable.",
+            allowableValues = "v3,latest", defaultValue = "v3")
     protected String version;
 
     @DefaultValue("")
     @PathParam("species")
-    @ApiParam(name = "species", value = "Excluded fields will not be returned. Comma separated JSON paths must be provided",
-            defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus")
+    @ApiParam(name = "species", value = "Available species", defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus")
     protected String species;
 
     protected String assembly = null;
@@ -57,17 +56,17 @@ public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("")
     @QueryParam("exclude")
-    @ApiParam(name = "excluded fields", value = "Excluded fields will not be returned. Comma separated JSON paths must be provided")
+    @ApiParam(name = "excluded fields", value = "Fields excluded in response. Whole JSON path e.g.: transcripts.id")
     protected String exclude;
 
     @DefaultValue("")
     @QueryParam("include")
-    @ApiParam(name = "included fields", value = "Included fields are the only to be returned. Comma separated JSON path must be provided")
+    @ApiParam(name = "included fields", value = "Only fields included in response. Whole JSON path e.g.: transcripts.id")
     protected String include;
 
     @DefaultValue("-1")
     @QueryParam("limit")
-    @ApiParam(name = "limit", value = "Max number of results to be returned. No limit applied when -1 [-1]")
+    @ApiParam(name = "limit", value = "Number of results returned. No limit applied when -1 [-1]")
     protected int limit;
 
     @DefaultValue("-1")
@@ -77,7 +76,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("false")
     @QueryParam("count")
-    @ApiParam(name = "count", value = "The total number of results is returned [false]")
+    @ApiParam(name = "count", value = "Get results count [false]")
     protected String count;
 
     @DefaultValue("json")
@@ -567,7 +566,6 @@ public class GenericRestWSServer implements IWSServer {
         speciesList.add(new Species("ssc", "pig", "Sus scrofa", "Sscrofa10.2"));
         speciesList.add(new Species("aga", "mosquito", "Anopheles gambiae", "AgamP3"));
         speciesList.add(new Species("pfa", "malaria parasite", "Plasmodium falciparum", "3D7"));
-
         speciesList.add(new Species("hsapiens", "", "", ""));
         speciesList.add(new Species("mmusculus", "", "", ""));
         speciesList.add(new Species("rnorvegicus", "", "", ""));
@@ -604,6 +602,45 @@ public class GenericRestWSServer implements IWSServer {
         speciesList.add(new Species("gmax", "", "", ""));
         speciesList.add(new Species("vvinifera", "", "", ""));
         speciesList.add(new Species("zmays", "", "", ""));
+
+
+//        speciesList.add(new Species("hsapiens", "human", "Homo sapiens", "GRCh37.p13");
+//        speciesList.add(new Species("mmusculus", "mouse", "Mus musculus", "GRCm38.p2"));
+//        speciesList.add(new Species("rnorvegicus", "rat", "Rattus norvegicus", "Rnor_5.0"));
+//        speciesList.add(new Species("ptroglodytes", "chimp", "Pan troglodytes", "CHIMP2.1.4"));
+//        speciesList.add(new Species("ggorilla", "gorilla", "Gorilla gorilla", "gorGor3.1"));
+//        speciesList.add(new Species("pabelii", "orangutan", "Pongo abelii", "PPYG2"));
+//        speciesList.add(new Species("mmulatta", "macaque", "Macaca mulatta", "MMUL 1.0"));
+//        speciesList.add(new Species("sscrofa", "pig", "Sus scrofa", "Sscrofa10.2"));
+//        speciesList.add(new Species("cfamiliaris", "dog", "Canis familiaris", "CanFam 3.1"));
+//        speciesList.add(new Species("ecaballus", "horse", "Equus caballus", "Equ Cab 2"));
+//        speciesList.add(new Species("ocuniculus", "rabbit", "Oryctolagus cuniculus", "OryCun2.0"));
+//        speciesList.add(new Species("ggallus", "chicken", "Gallus gallus", "Galgal4"));
+//        speciesList.add(new Species("btaurus", "cow", "Bos taurus", "UMD3.1"));
+//        speciesList.add(new Species("fcatus", "cat", "Felis catus", "Felis_catus_6.2"));
+//        speciesList.add(new Species("drerio", "zebrafish", "Danio rerio", "Zv9"));
+//        speciesList.add(new Species("cintestinalis", "", "Ciona intestinalis", "KH"));
+//        speciesList.add(new Species("dmelanogaster", "fruitfly", "Drosophila melanogaster", "BDGP 5"));
+//        speciesList.add(new Species("dsimulans", "", "Drosophila simulans", "dsim_caf1"));
+//        speciesList.add(new Species("dyakuba", "", "Drosophila yakuba", "dyak_caf1"));
+//        speciesList.add(new Species("agambiae", "mosquito", "Anopheles gambiae", "AgamP4"));
+//        speciesList.add(new Species("celegans", "worm", "Caenorhabditis elegans", "WS235"));
+//        speciesList.add(new Species("scerevisiae", "yeast", "Saccharomyces cerevisiae", "R64-1-1"));
+//        speciesList.add(new Species("spombe", "", "Schizosaccharomyces pombe", "ASM294v2"));
+//        speciesList.add(new Species("afumigatus", "", "Aspergillus fumigatus", "TIGR"));
+//        speciesList.add(new Species("aniger", "", "Aspergillus niger", "DSM"));
+//        speciesList.add(new Species("anidulans", "", "Aspergillus nidulans", "ASM1142v1"));
+//        speciesList.add(new Species("aoryzae", "", "Aspergillus oryzae", "NITE"));
+//        speciesList.add(new Species("pfalciparum", "malaria parasite", "Plasmodium falciparum", "3D7"));
+//        speciesList.add(new Species("lmajor", "", "Plasmodium falciparum", "ASM276v1"));
+//        speciesList.add(new Species("athaliana", "", "Arabidopsis thaliana", "TAIR10"));
+//        speciesList.add(new Species("alyrata", "", "Arabidopsis lyrata", "v.1.0"));
+//        speciesList.add(new Species("bdistachyon", "", "Brachypodium distachyon", "v1.0"));
+//        speciesList.add(new Species("osativa", "", "Oryza sativa Indica", "ASM465v1"));
+//        speciesList.add(new Species("gmax", "", "Glycine max", "V1.0"));
+//        speciesList.add(new Species("vvinifera", "", "Vitis vinifera", "IGGP_12x"));
+//        speciesList.add(new Species("zmays", "", "Zea mays", "AGPv3"));
+
 
         return speciesList;
     }

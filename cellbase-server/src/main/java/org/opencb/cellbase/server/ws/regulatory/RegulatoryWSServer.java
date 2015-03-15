@@ -1,5 +1,6 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
+import com.wordnik.swagger.annotations.Api;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 

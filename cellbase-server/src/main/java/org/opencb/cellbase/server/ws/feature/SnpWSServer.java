@@ -33,7 +33,7 @@ public class SnpWSServer extends GenericRestWSServer {
 
 	@GET
 	@Path("/{snpId}/info")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get the info of a list of SNPs")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) SNPs")
 	public Response getByEnsemblId(@PathParam("snpId") String query) {
 		try {
 			checkParams();
@@ -45,6 +45,7 @@ public class SnpWSServer extends GenericRestWSServer {
 		}
 	}
 
+    @Deprecated
     @GET
     @Path("/consequence_types")
     public Response getAllConsequenceTypes() {
@@ -58,6 +59,7 @@ public class SnpWSServer extends GenericRestWSServer {
         }
     }
 
+    @Deprecated
     @GET
     @Path("/phenotypes")
     public Response getAllPhenotypes(@QueryParam("phenotype") String phenotype) {
@@ -88,6 +90,8 @@ public class SnpWSServer extends GenericRestWSServer {
 	//	private String soConsequenceType;
 	//	private String displayConsequence;
 	//	private String sequence;
+
+
 	@GET
 	@Path("/{snpId}/fullinfo")
 	public Response getFullInfoById(@PathParam("snpId") String query) {
@@ -161,12 +165,14 @@ public class SnpWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{snpId}/consequence_type")
+    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the SNP(s)")
 	public Response getConsequenceTypeByGetMethod(@PathParam("snpId") String snpId) {
 		return getConsequenceType(snpId);
 	}
 	
 	@POST
 	@Path("/consequence_type")
+    @ApiOperation(httpMethod = "POST", value = "Get the biological impact of the SNP(s)")
 	public Response getConsequenceTypeByPostMethod(@QueryParam("id") String snpId) {
 		return getConsequenceType(snpId);
 	}
@@ -187,12 +193,14 @@ public class SnpWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{snpId}/regulatory")
+    @ApiOperation(httpMethod = "GET", value = "Get the regulatory impact of the SNP(s)")
 	public Response getRegulatoryByGetMethod(@PathParam("snpId") String snpId) {
 		return getRegulatoryType(snpId);
 	}
 	
 	@POST
 	@Path("/regulatory")
+    @ApiOperation(httpMethod = "POST", value = "Get the regulatory impact of the SNP(s)")
 	public Response getRegulatoryTypeByPostMethod(@QueryParam("id") String snpId) {
 		return getRegulatoryType(snpId);
 	}
@@ -214,6 +222,7 @@ public class SnpWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{snpId}/phenotype")
+    @ApiOperation(httpMethod = "GET", value = "Retrieve known phenotypes associated with the SNP(s)")
 	public Response getSnpPhenotypesByNameByGet(@PathParam("snpId") String snps) {
 		return getSnpPhenotypesByName(snps, outputFormat);
 	}
@@ -246,6 +255,7 @@ public class SnpWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{snpId}/sequence")
+    @ApiOperation(httpMethod = "GET", value = "Get the adjacent sequence to the SNP(s)")
 	public Response getSequence(@PathParam("snpId") String query) {
 		try {
 			return  null;
@@ -258,6 +268,7 @@ public class SnpWSServer extends GenericRestWSServer {
 
 	@GET
 	@Path("/{snpId}/population_frequency")
+    @ApiOperation(httpMethod = "GET", value = "Get the frequencies in the population for the SNP(s)")
 	public Response getPopulationFrequency(@PathParam("snpId") String snpId) {
 		try {
 			checkParams();
@@ -272,6 +283,7 @@ public class SnpWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{snpId}/xref")
+    @ApiOperation(httpMethod = "GET", value = "Retrieve all external references for the SNP(s)")
 	public Response getXrefs(@PathParam("snpId") String query) {
 		try {
 			checkParams();

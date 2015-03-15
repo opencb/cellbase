@@ -1,6 +1,8 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.opencb.cellbase.core.common.core.Exon;
 import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
@@ -22,6 +24,7 @@ import java.util.List;
 
 @Path("/{version}/{species}/feature/exon")
 @Produces("text/plain")
+@Api(value = "Exon", description = "Exon RESTful Web Services API")
 public class ExonWSServer extends GenericRestWSServer {
 	
 	public ExonWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
@@ -30,6 +33,7 @@ public class ExonWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{exonId}/info")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get exon information from exon ID")
 	public Response getByEnsemblId(@PathParam("exonId") String query) {
 		try {
 			checkParams();
@@ -40,7 +44,8 @@ public class ExonWSServer extends GenericRestWSServer {
 			return createErrorResponse("getAllByAccessions", e.toString());
 		}
 	}
-	
+
+    @Deprecated
 	@GET
 	@Path("/{snpId}/bysnp")
 	public Response getAllBySnpIdList(@PathParam("snpId") String query) {
@@ -56,6 +61,9 @@ public class ExonWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{exonId}/aminos")
+/*
+    @ApiOperation(httpMethod = "GET", value = "Resource to get the aminoacid sequence from an exon ID")
+*/
 	public Response getAminoByExon(@PathParam("exonId") String query) {
 		try{
 			checkParams();
@@ -98,6 +106,7 @@ public class ExonWSServer extends GenericRestWSServer {
 	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/{exonId}/sequence")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get the DNA sequence from an exon ID")
 	public Response getSequencesByIdList(@PathParam("exonId") String query) {
 		try {
 			checkParams();
@@ -113,6 +122,7 @@ public class ExonWSServer extends GenericRestWSServer {
 	@SuppressWarnings("unchecked")
 	@GET
 	@Path("/{exonId}/region")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get the genetic coordinates of an exon ID")
 	public Response getRegionsByIdList(@PathParam("exonId") String query) {
 		try {
 			checkParams();
@@ -127,6 +137,7 @@ public class ExonWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{exonId}/transcript")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get the transcripts that include an exon ID")
 	public Response getTranscriptsByEnsemblId(@PathParam("exonId") String query) {
 		try {
 			checkParams();
