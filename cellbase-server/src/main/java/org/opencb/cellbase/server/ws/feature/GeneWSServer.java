@@ -5,7 +5,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.opencb.biodata.models.core.Gene;
+import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.MirnaDBAdaptor;
 import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
@@ -13,10 +13,10 @@ import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdapt
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -44,7 +44,8 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects", response = QueryResponse.class)
-    public Response getAll(@DefaultValue("") @QueryParam("biotype") List<String> biotypes) {
+    public Response getAll(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
+                               @DefaultValue("") @QueryParam("biotype") List<String> biotypes) {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
@@ -62,7 +63,8 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/list")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs")
-    public Response getAllIDs(@DefaultValue("") @QueryParam("biotype") String biotypes) {
+    public Response getAllIDs(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
+                                  @DefaultValue("") @QueryParam("biotype") String biotypes) {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
@@ -88,8 +90,10 @@ public class GeneWSServer extends GenericRestWSServer {
 
 //			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 //			queryOptions.put("include", include );
-
-            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            List<org.opencb.datastore.core.QueryResult> genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            List genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            System.out.println(genes.get(0).getResult().get(0).getClass().toString());
+            return createOkResponse(genes);
 //			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
             //	return generateResponse(query, Arrays.asList(this.getGeneDBAdaptor().getAllByEnsemblIdList(StringUtils.toList(query, ","))));
         } catch (Exception e) {
@@ -137,9 +141,9 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
-            List<QueryResult> qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+            List<org.opencb.datastore.core.QueryResult> qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
             List<QueryResult> queryResults = new ArrayList<>();
-            for (QueryResult qr : qrList) {
+            for (org.opencb.datastore.core.QueryResult qr : qrList) {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(qr.getId());
 

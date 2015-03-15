@@ -1,27 +1,27 @@
 package org.opencb.cellbase.app.loaders.mongodb;
 
-import com.mongodb.*;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.biodata.models.variant.annotation.VariantEffect;
-
-import java.net.UnknownHostException;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+//import com.mongodb.*;
+//import org.junit.AfterClass;
+//import org.junit.BeforeClass;
+//import org.junit.Ignore;
+//import org.junit.Test;
+//import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+//import org.opencb.biodata.models.variant.annotation.VariantEffect;
+//
+//import java.net.UnknownHostException;
+//import java.util.LinkedList;
+//import java.util.List;
+//
+//import static org.junit.Assert.assertEquals;
+//import static org.junit.Assert.assertTrue;
 
 /**
  *
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
-@Ignore
+//@Ignore
 public class VariantEffectMongoDBLoaderTest {
-    
+    /*
     private static String host = "localhost";
     private static int port = 27017;
     private static String dbName = "VariantEffectMongoDBLoader_test";
@@ -318,5 +318,5 @@ public class VariantEffectMongoDBLoaderTest {
 //        assertFalse((boolean) regulatory2.get("highInfoPos"));
 //        assertEquals("celltype2", regulatory2.get("cellType"));
     }
-    
+    */
 }

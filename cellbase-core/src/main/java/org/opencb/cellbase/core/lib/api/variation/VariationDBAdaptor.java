@@ -1,14 +1,14 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
-
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.common.Region;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-
+import javax.management.Query;
 import java.util.List;
+
 
 public interface VariationDBAdaptor {
 
@@ -58,5 +58,7 @@ public interface VariationDBAdaptor {
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 
     public List<QueryResult> getIdByVariantList(List<GenomicVariant> variations, QueryOptions options);
+
+    public List<QueryResult> getAllByVariantList(List<GenomicVariant> variations, QueryOptions options);
 
 }

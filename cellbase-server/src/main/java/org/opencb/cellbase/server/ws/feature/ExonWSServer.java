@@ -3,11 +3,12 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.common.core.Exon;
+
+import org.opencb.biodata.models.core.Exon;
 import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
 import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
-import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;

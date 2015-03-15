@@ -1,18 +1,9 @@
 package org.opencb.cellbase.app;
 
-import org.apache.commons.cli.*;
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.app.cli.*;
-import org.opencb.cellbase.app.transform.*;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
-import org.opencb.cellbase.lib.mongodb.serializer.MongoDBSerializer;
-import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.SQLException;
+import java.net.URISyntaxException;
 
 public class CellBaseMain {
 
@@ -86,7 +77,6 @@ public class CellBaseMain {
 //    }
 
     public static void main(String[] args) {
-
         CliOptionsParser cliOptionsParser = new CliOptionsParser();
         cliOptionsParser.parse(args);
 
@@ -102,37 +92,46 @@ public class CellBaseMain {
             CommandParser commandParser = null;
             switch (parsedCommand) {
                 case "download":
-                    if(cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
+                    if (cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
-                    }else {
+                    } else {
                         commandParser = new DownloadCommandParser(cliOptionsParser.getDownloadCommandOptions());
                     }
                     break;
                 case "build":
-                    if(cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
+                    if (cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
-                    }else {
+                    } else {
                         commandParser = new BuildCommandParser(cliOptionsParser.getBuildCommandOptions());
                     }
                     break;
                 case "load":
-                    if(cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
+                    if (cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
-                    }else {
+                    } else {
                         commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
                     }
                     break;
                 case "query":
+                    if (cliOptionsParser.getQueryCommandOptions().commonOptions.help) {
+                        cliOptionsParser.printUsage();
+                    } else {
+                        commandParser = new QueryCommandParser(cliOptionsParser.getQueryCommandOptions());
+                    }
                     break;
                 default:
                     break;
             }
 
-            if(commandParser != null) {
-                commandParser.parse();
+            if (commandParser != null) {
+                try {
+                    commandParser.loadCellBaseConfiguration();
+                    commandParser.parse();
+                } catch (IOException|URISyntaxException ex) {
+                    commandParser.getLogger().error("Error reading cellbase configuration: " + ex.getMessage());
+                }
             }
         }
-
 
 //        String buildOption;
 //
@@ -171,6 +170,7 @@ public class CellBaseMain {
 //        }
 
     }
+
 
 //    private static void buildAll() throws NoSuchMethodException, FileFormatException, IOException, InterruptedException, SQLException, ClassNotFoundException {
 //        logger.info("Processing all...");

@@ -9,12 +9,12 @@ import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
+import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,19 @@ public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("")
     @PathParam("species")
-    @ApiParam(name = "species", value = "Available species", defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus")
+    @ApiParam(name = "species", value = "Name of the species to query",
+            defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla,pabelii," +
+            "mmulatta,sscrofa,cfamiliaris,ecaballus,ocuniculus,ggallus,btaurus,fcatus,cintestinalis,ttruncatus,lafricana,cjacchus," +
+            "nleucogenys,aplatyrhynchos,falbicollis,celegans,dmelanogaster,dsimulans,dyakuba,agambiae,adarlingi,nvectensis," +
+            "spurpuratus,bmori,aaegypti,apisum,scerevisiae,spombe,afumigatus,aniger,anidulans,aoryzae,foxysporum,pgraminis," +
+            "ptriticina,moryzae,umaydis,ssclerotiorum,cneoformans,ztritici,pfalciparum,lmajor,ddiscoideum,pinfestans,glamblia," +
+            "pultimum,alaibachii,athaliana,alyrata,bdistachyon,osativa,gmax,vvinifera,zmays,hvulgare,macuminata,sbicolor,sitalica," +
+            "taestivum,brapa,ptrichocarpa,slycopersicum,stuberosum,smoellendorffii,creinhardtii,cmerolae,ecolimg1655,spneumoniae70585," +
+            "sagalactiaenem316,saureusst398,saureusn315,smelilotiak83,sfrediingr234,sentericact18,sentericalt2,pluminescenstto1," +
+            "nmeningitidisz2491,mgenitaliumg37,mtuberculosisasm19595v2,mavium104,lmonocytogenesegde,lplantarumwcfs1,hinfluenzaekw20," +
+            "cglutamicumasm19633v1,cbotulinumhall,ctrachomatisduw3cx,blongumncc2705,bsubtilis168,blicheniformisasm1164v1," +
+            "abaumanniiaye,paeruginosapa7,paeruginosapa14,paeruginosampao1p1,paeruginosampao1p2,cpneumoniaecwl029,pacanthamoebaeuv7," +
+            "wchondrophila861044,cprotochlamydiauwe25,snegevensisz,csabeus,oaries,olatipes")
     protected String species;
 
     protected String assembly = null;
@@ -66,17 +78,18 @@ public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("-1")
     @QueryParam("limit")
-    @ApiParam(name = "limit", value = "Number of results returned. No limit applied when -1 [-1]")
+    @ApiParam(name = "limit", value = "Max number of results to be returned. No limit applied when -1. No limit is set by default.")
     protected int limit;
 
     @DefaultValue("-1")
     @QueryParam("skip")
-    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1 [-1]")
+    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1. No skip by default.")
     protected int skip;
 
     @DefaultValue("false")
     @QueryParam("count")
-    @ApiParam(name = "count", value = "Get results count [false]")
+    @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default.",
+            defaultValue = "false", allowableValues = "false,true")
     protected String count;
 
     @DefaultValue("json")

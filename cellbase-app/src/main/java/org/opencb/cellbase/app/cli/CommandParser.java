@@ -1,7 +1,15 @@
 package org.opencb.cellbase.app.cli;
 
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Created by imedina on 03/02/15.
@@ -11,6 +19,9 @@ public abstract class CommandParser {
     protected String logLevel;
     protected boolean verbose;
     protected String configFile;
+
+    protected String appHome;
+    protected CellBaseConfiguration configuration;
 
     protected Logger logger;
 
@@ -23,11 +34,16 @@ public abstract class CommandParser {
         this.verbose = verbose;
         this.configFile = configFile;
 
+        /**
+         * System property 'app.home' is set up by cellbase.sh. If by any reason this is null
+         * then CELLBASE_HOME environment variable is used instead.
+         */
+        this.appHome = System.getProperty("app.home", System.getenv("CELLBASE_HOME"));
+
         if(logLevel != null && !logLevel.isEmpty()) {
             // We must call to this method
             setLogLevel(logLevel);
         }
-
     }
 
     public abstract void parse();
@@ -58,5 +74,31 @@ public abstract class CommandParser {
 
     public void setConfigFile(String configFile) {
         this.configFile = configFile;
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    /**
+     * This method attempts to first load configuration from CLI parameter, if not present then uses
+     * the configuration from installation directory, if not exists then loads JAR configuration.json
+     * @throws URISyntaxException
+     * @throws IOException
+     */
+    public void loadCellBaseConfiguration() throws URISyntaxException, IOException {
+        if(this.configFile != null) {
+            logger.debug("Loading configuration from '{}'", this.configFile);
+            this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.configFile)));
+        }else {
+            if(Files.exists(Paths.get(this.appHome+"/configuration.json"))) {
+                logger.debug("Loading configuration from '{}'", this.appHome+"/configuration.json");
+                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome+"/configuration.json")));
+            }else {
+                logger.debug("Loading configuration from '{}'",
+                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
+                this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+            }
+        }
     }
 }

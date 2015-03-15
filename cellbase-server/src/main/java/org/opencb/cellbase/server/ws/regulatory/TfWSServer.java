@@ -135,31 +135,31 @@ public class TfWSServer extends RegulatoryWSServer {
 	}
 	
 	
-	@GET
-	@Path("/{tfId}/gene")
-	public Response getEnsemblGenes(@PathParam("tfId") String query) {
-		try {
-			checkParams();
-			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-			return  generateResponse(query, "GENE", geneDBAdaptor.getAllByTfList(Splitter.on(",").splitToList(query)));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getEnsemblGenes", e.toString());
-		}
-	}
-	
-	@GET
-	@Path("/{tfId}/target_gene")
-	public Response getTargetGenes(@PathParam("tfId") String query) {
-		try {
-			checkParams();
-			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-			return  generateResponse(query, "GENE", geneDBAdaptor.getAllTargetsByTfList(Splitter.on(",").splitToList(query)));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getEnsemblGenes", e.toString());
-		}
-	}
+//	@GET
+//	@Path("/{tfId}/gene")
+//	public Response getEnsemblGenes(@PathParam("tfId") String query) {
+//		try {
+//			checkParams();
+//			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+//			return  generateResponse(query, "GENE", geneDBAdaptor.getAllByTfList(Splitter.on(",").splitToList(query)));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return createErrorResponse("getEnsemblGenes", e.toString());
+//		}
+//	}
+//
+//	@GET
+//	@Path("/{tfId}/target_gene")
+//	public Response getTargetGenes(@PathParam("tfId") String query) {
+//		try {
+//			checkParams();
+//			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+//			return  generateResponse(query, "GENE", geneDBAdaptor.getAllTargetsByTfList(Splitter.on(",").splitToList(query)));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return createErrorResponse("getEnsemblGenes", e.toString());
+//		}
+//	}
 	
 //	@GET
 //	@Path("/{tfId}/pwm")
