@@ -255,7 +255,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 36587846, "-", "CT"), new QueryOptions());  // should not return null
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 102269845, "C", "A"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("7", 158384306, "TGTG", "-"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("11", 118898436, "N", "-"), new QueryOptions());  // should return intergenic_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 6638139, "-", "T"), new QueryOptions());  // should return intergenic_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 70612070, StringUtils.repeat("N",11725), "-"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 36587846, "-", "CT"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("13", 52718051, "-", "T"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 115412783, "-", "C"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 27793991, StringUtils.repeat("N",1907), "-"), new QueryOptions());  // should not return null
@@ -418,6 +423,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
         int vepFileIndex = 0;
         int nNonRegulatoryAnnotations = 0;
+        int nVariants = 0;
         for (String vcfFilename : VCFS) {
             System.out.println("Processing "+vcfFilename+" lines...");
             VcfRawReader vcfReader = new VcfRawReader(vcfFilename);
@@ -432,8 +438,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 do {
                     nReadVariants = getVcfAnnotationBatch(vcfReader, variantAnnotationDBAdaptor, uvaAnnotationSet);
                     nNonRegulatoryAnnotations += getVepAnnotationBatch(raf, nReadVariants, vepAnnotationSet);
+                    nVariants += nReadVariants;
                     compareAndWrite(uvaAnnotationSet, vepAnnotationSet, lineCounter, nLines, nNonRegulatoryAnnotations,
-                            DIROUT);
+                            nVariants, DIROUT);
                     lineCounter += nReadVariants;
                     System.out.print(lineCounter+"/"+nLines+" - non-regulatory annotations: "+nNonRegulatoryAnnotations+"\r");
                 } while (nReadVariants > 0);
@@ -472,22 +479,22 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 ref = vcfRecord.getReference().substring(1);
                 alt = "-";
                 ensemblPos = vcfRecord.getPosition() + 1;
-                if (ref.length() > 1) {
-                    pos = (vcfRecord.getPosition() + 1) + "-" + (vcfRecord.getPosition() + ref.length());
+                int end = getEndFromInfoField(vcfRecord);
+                if(end==-1) {
+                    if (ref.length() > 1) {
+                        pos = (vcfRecord.getPosition() + 1) + "-" + (vcfRecord.getPosition() + ref.length());
+                    } else {
+                        pos = Integer.toString(vcfRecord.getPosition() + 1);
+                    }
                 } else {
-                    pos = Integer.toString(vcfRecord.getPosition() + 1);
+                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
                 }
                 // Alternate length may be > 1 if it contains <DEL>
             } else if (vcfRecord.getAlternate().length() > 1) {
                 // Large deletion
                 if (vcfRecord.getAlternate().equals("<DEL>")) {
                     ensemblPos = vcfRecord.getPosition() + 1;
-                    String[] infoFields = vcfRecord.getInfo().split(";");
-                    int i = 0;
-                    while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
-                        i++;
-                    }
-                    int end = Integer.parseInt(infoFields[i].split("=")[1]);
+                    int end = getEndFromInfoField(vcfRecord);
                     pos = (vcfRecord.getPosition() + 1) + "-" + end;
                     ref = StringUtils.repeat("N", end - vcfRecord.getPosition());
                     alt = "-";
@@ -533,6 +540,20 @@ public class VariantAnnotationMongoDBAdaptorTest {
             }
         }
         return vcfRecordList.size();
+    }
+
+    private int getEndFromInfoField(VcfRecord vcfRecord) {
+        String[] infoFields = vcfRecord.getInfo().split(";");
+        int i = 0;
+        while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
+            i++;
+        }
+
+        if(i<infoFields.length) {
+            return Integer.parseInt(infoFields[i].split("=")[1]);
+        } else {
+            return -1;
+        }
     }
 
     private int getVepAnnotationBatch(RandomAccessFile raf, int nVariantsToRead,
@@ -588,7 +609,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
     private void compareAndWrite(Set<AnnotationComparisonObject> uvaAnnotationSet,
                                  Set<AnnotationComparisonObject> vepAnnotationSet, int lineCounter, int nLines,
-                                 int nNonRegulatoryAnnotations, String dirout) throws IOException {
+                                 int nNonRegulatoryAnnotations, int nVariants, String dirout) throws IOException {
 
         /**
          * Compare both annotation sets and get UVA specific annotations
@@ -616,7 +637,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
             bw.write(comparisonObject.toString());
         }
         bw.write("\n\n\n");
-        bw.write(lineCounter+"/"+nLines+ " - non-regulatory annotations: "+nNonRegulatoryAnnotations+"\n");
+        bw.write(lineCounter+"/"+nLines+"\n");
+        bw.write("# processed variants: "+nVariants+"\n");
+        bw.write("# non-regulatory annotations: "+nNonRegulatoryAnnotations+"\n");
 
         bw.close();
     }

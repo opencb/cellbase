@@ -753,17 +753,21 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         SoNames.add("splice_region_variant");  // Inserted nts considered part of the coding sequence
                     } else if(variantEnd.equals(spliceSite1+2)) {
                         SoNames.add("splice_region_variant");  // Inserted nts considered out of the donor/acceptor region
-                        junctionSolution[0] = true;
+                        junctionSolution[0] = (spliceSite2>variantStart);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                        junctionSolution[0] = true;
                     } else {
                         SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                        junctionSolution[0] = true;
+                        junctionSolution[0] = (spliceSite2>variantStart);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                        junctionSolution[0] = true;
                     }
                 } else {
                     SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                    junctionSolution[0] = true;
+                    junctionSolution[0] = (variantStart<=spliceSite2 || variantEnd<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                    junctionSolution[0] = true;
                 }
             } else {
-                junctionSolution[0] = true;
+                junctionSolution[0] = (variantStart<=spliceSite2 || variantEnd<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                junctionSolution[0] = true;
             }
         } else {
             if(regionsOverlap(spliceSite1+2, spliceSite1+7, variantStart, variantEnd)) {
@@ -771,7 +775,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         !(isInsertion && (variantStart==(spliceSite1+7)))) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
                     SoNames.add("splice_region_variant");
                 }
-                junctionSolution[0] = true;
+                junctionSolution[0] = (variantStart<=spliceSite2 || variantEnd<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                junctionSolution[0] = true;
             } else {
                 if(regionsOverlap(spliceSite1-3, spliceSite1-1, variantStart, variantEnd) &&
                         ((variantEnd-variantStart)<=bigVariantSizeThreshold) &&  // Big deletions should not be annotated with such a detail
@@ -788,17 +793,21 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         SoNames.add("splice_region_variant");  // Inserted nts considered part of the coding sequence
                     } else if(variantStart == (spliceSite2-2)) {
                         SoNames.add("splice_region_variant");  // Inserted nts considered out of the donor/acceptor region
-                        junctionSolution[0] = true;
+                        junctionSolution[0] = (spliceSite1<variantEnd);  //  BE CAREFUL: there are introns shorter than 14nts, and even just 1nt long!! (22:36587846)
+//                        junctionSolution[0] = true;
                     } else {
                         SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                        junctionSolution[0] = true;
+                        junctionSolution[0] = (spliceSite1<variantEnd);  //  BE CAREFUL: there are introns shorter than 14nts, and even just 1nt long!! (22:36587846)
+//                        junctionSolution[0] = true;
                     }
                 } else {
                     SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                    junctionSolution[0] = true;
+                    junctionSolution[0] = (spliceSite1<=variantStart || spliceSite1<=variantEnd);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                    junctionSolution[0] = true;
                 }
             } else {
-                junctionSolution[0] = true;
+                junctionSolution[0] = (spliceSite1<=variantStart || spliceSite1<=variantEnd);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                junctionSolution[0] = true;
             }
         } else {
             if(regionsOverlap(spliceSite2-7, spliceSite2-2, variantStart, variantEnd)) {
@@ -806,7 +815,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         !(isInsertion && (variantEnd==(spliceSite2-7)))) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart) {
                     SoNames.add("splice_region_variant");
                 }
-                junctionSolution[0] = true;
+                junctionSolution[0] = (spliceSite1<=variantStart || spliceSite1<=variantEnd);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+//                junctionSolution[0] = true;
             } else {
                 if(regionsOverlap(spliceSite2+1, spliceSite2+3, variantStart, variantEnd) &&
                         ((variantEnd-variantStart)<=bigVariantSizeThreshold) &&  // Big deletions should not be annotated with such a detail
@@ -900,24 +910,24 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         } else {
             variantStart = variant.getPosition();
         }
+//        (region2Start <= region1End && region2End >= region1Start)
 
-        if(variantEnd-variantStart < 51) { // SNV, insertion or short deletion, simplify the queries to improve efficiency
+//        if(variantEnd-variantStart < 51) { // SNV, insertion or short deletion, simplify the queries to improve efficiency
             // Get all genes surrounding the variant +-5kb
             builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
                     .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
-
-        } else {   // long deletion
-            // Get all genes fully contained within variant coordinates
-            DBObject containedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("start")
-                    .greaterThan(variant.getPosition()).and("end").lessThan(variantEnd).get();
-
-            // Get all genes surrounding the variant +-5kb
-            DBObject partiallyAffectectedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
-                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000).get(); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
-
-            // Get genes fulfilling both conditions above
-            builderGene = QueryBuilder.start().or(containedGenes, partiallyAffectectedGenes);
-        }
+//        } else {   // long deletion
+//            // Get all genes fully contained within variant coordinates
+//            DBObject containedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("start")
+//                    .greaterThan(variant.getPosition()).and("end").lessThan(variantEnd).get();
+//
+//            // Get all genes surrounding the variant +-5kb
+//            DBObject partiallyAffectectedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
+//                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000).get(); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
+//
+//            // Get genes fulfilling both conditions above
+//            builderGene = QueryBuilder.start().or(containedGenes, partiallyAffectectedGenes);
+//        }
 
         // Get all regulatory regions surrounding the variant
         String chunkId = getChunkPrefix(variant.getChromosome(), variant.getPosition(), regulatoryChunkSize);
@@ -1002,6 +1012,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 3:
                                 case 4:
                                 case 6:
+                                case 10:  // TR_C_gene
+                                case 11:  // TR_D_gene
+                                case 12:  // TR_J_gene
+                                case 14:  // TR_V_gene
                                 case 20:
                                 case 23:    // protein_coding
                                 case 34:    // non_stop_decay
@@ -1051,11 +1065,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 2:   //
                                 case 5:   //
                                 case 7:   // IG_V_pseudogene
-                                case 10:
-                                case 11:
-                                case 12:
                                 case 13:
-                                case 14:
                                 case 15:
                                 case 0:   // 3prime_overlapping_ncrna
                                 case 16:  // antisense
@@ -1127,6 +1137,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 3:
                                 case 4:
                                 case 6:
+                                case 10:  // TR_C_gene
+                                case 11:  // TR_D_gene
+                                case 12:  // TR_J_gene
+                                case 14:  // TR_V_gene
                                 case 20:
                                 case 23:
                                 case 34:    // non_stop_decay
@@ -1175,11 +1189,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 2:   //
                                 case 5:   //
                                 case 7:   // IG_V_pseudogene
-                                case 10:
-                                case 11:
-                                case 12:
                                 case 13:
-                                case 14:
                                 case 15:
                                 case 0:   // 3prime_overlapping_ncrna
                                 case 17:  // lincRNA
@@ -1229,6 +1239,10 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             }
         }
 
+        if(consequenceTypeList.size() == 0) {
+            consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
+        }
+
         BasicDBList regulatoryInfoList = (BasicDBList) regulatoryQueryResult.getResult();
         if(!regulatoryInfoList.isEmpty()) {
             consequenceTypeList.add(new ConsequenceType("regulatory_region_variant"));
@@ -1247,9 +1261,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             b = 1;
         }
 
-        if(transcriptInfoList == null) {
-            consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
-        }
+//        if(transcriptInfoList == null) {
+//            consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
+//        }
 
         // setting queryResult fields
         queryResult.setId(variant.toString());
@@ -1590,6 +1604,12 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         if (miRnaInfo != null) {  // miRNA with miRBase data
             BasicDBList matureMiRnaInfo = (BasicDBList) miRnaInfo.get("matures");
+            if(cdnaVariantStart==null) {  // Probably deletion starting before the miRNA location
+                cdnaVariantStart=1;       // Truncate to the first transcript position to avoid null exception
+            }
+            if(cdnaVariantEnd==null) {    // Probably deletion ending after the miRNA location
+                cdnaVariantEnd=((String) miRnaInfo.get("sequence")).length();  // Truncate to the last transcript position to avoid null exception
+            }
             int i = 0;
             while(i<matureMiRnaInfo.size()  && !regionsOverlap((Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaStart"),
                     (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"), cdnaVariantStart, cdnaVariantEnd)) {
