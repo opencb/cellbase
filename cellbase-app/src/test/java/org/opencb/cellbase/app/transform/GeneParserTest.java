@@ -1,5 +1,6 @@
 package org.opencb.cellbase.app.transform;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.cellbase.app.serializers.json.JsonParser;
@@ -12,6 +13,7 @@ public class GeneParserTest {
     private static CellBaseSerializer serializer = null;
     private static String JSON_SERIALIZER = "org.opencb.cellbase.core.serializer.DefaultJsonSerializer";
 
+    @Ignore
     @Test
     public void testParse() throws Exception {
 

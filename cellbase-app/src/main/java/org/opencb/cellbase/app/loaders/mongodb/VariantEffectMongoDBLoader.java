@@ -1,28 +1,29 @@
 package org.opencb.cellbase.app.loaders.mongodb;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.*;
-import org.opencb.commons.io.DataWriter;
-import org.opencb.commons.utils.CryptoUtils;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDBCollection;
-import org.opencb.datastore.mongodb.MongoDataStore;
-import org.opencb.datastore.mongodb.MongoDataStoreManager;
-
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+//import com.mongodb.BasicDBList;
+//import com.mongodb.BasicDBObject;
+//import org.apache.commons.lang.StringUtils;
+//import org.opencb.biodata.models.variant.Variant;
+//import org.opencb.biodata.models.variant.annotation.*;
+//import org.opencb.commons.io.DataWriter;
+//import org.opencb.commons.utils.CryptoUtils;
+//import org.opencb.datastore.core.QueryResult;
+//import org.opencb.datastore.mongodb.MongoDBCollection;
+//import org.opencb.datastore.mongodb.MongoDataStore;
+//import org.opencb.datastore.mongodb.MongoDataStoreManager;
+//
+//import java.util.*;
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
 
 /**
  *
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
 @Deprecated
-public class VariantEffectMongoDBLoader implements DataWriter<VariantAnnotation> {
+public class VariantEffectMongoDBLoader {   //implements DataWriter<VariantAnnotation>
 
+    /*
     private String host;
     private int port;
     private String dbName;
@@ -267,5 +268,5 @@ public class VariantEffectMongoDBLoader implements DataWriter<VariantAnnotation>
 
         return builder.toString();
     }
-
+    */
 }

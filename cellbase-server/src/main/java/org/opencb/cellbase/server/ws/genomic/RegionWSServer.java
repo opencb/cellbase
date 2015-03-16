@@ -1,11 +1,11 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
+import org.opencb.biodata.models.core.CpGIsland;
+import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.variation.StructuralVariation;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.core.CpGIsland;
 import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
-import org.opencb.cellbase.core.common.variation.StructuralVariation;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
@@ -13,9 +13,9 @@ import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -23,6 +23,9 @@ import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+//import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
+//import org.opencb.cellbase.core.common.variation.StructuralVariation;
 
 @Path("/{version}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
@@ -442,31 +445,31 @@ public class RegionWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-    @GET
-    @Path("/{chrRegionId}/mirna_target")
-    public Response getMirnaTargetByRegion(@PathParam("chrRegionId") String query,
-                                           @DefaultValue("") @QueryParam("source") String source) {
-        try {
-            checkParams();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-            List<Region> regions = Region.parseRegions(query);
-
-            if (hasHistogramQueryParam()) {
-                System.out.println("PAKO:" + "si");
-                List<IntervalFeatureFrequency> intervalList = mirnaDBAdaptor.getAllMirnaTargetsIntervalFrequencies(
-                        regions.get(0), getHistogramIntervalSize());
-                return generateResponse(query, intervalList);
-            } else {
-                System.out.println("PAKO:" + "NO");
-                List<List<MirnaTarget>> mirnaTargetList = mirnaDBAdaptor.getAllMiRnaTargetsByRegionList(regions);
-                return this.generateResponse(query, "MIRNA_TARGET", mirnaTargetList);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMirnaTargetByRegion", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{chrRegionId}/mirna_target")
+//    public Response getMirnaTargetByRegion(@PathParam("chrRegionId") String query,
+//                                           @DefaultValue("") @QueryParam("source") String source) {
+//        try {
+//            checkParams();
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//            List<Region> regions = Region.parseRegions(query);
+//
+//            if (hasHistogramQueryParam()) {
+//                System.out.println("PAKO:" + "si");
+//                List<IntervalFeatureFrequency> intervalList = mirnaDBAdaptor.getAllMirnaTargetsIntervalFrequencies(
+//                        regions.get(0), getHistogramIntervalSize());
+//                return generateResponse(query, intervalList);
+//            } else {
+//                System.out.println("PAKO:" + "NO");
+//                List<List<MirnaTarget>> mirnaTargetList = mirnaDBAdaptor.getAllMiRnaTargetsByRegionList(regions);
+//                return this.generateResponse(query, "MIRNA_TARGET", mirnaTargetList);
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMirnaTargetByRegion", e.toString());
+//        }
+//    }
 
     @GET
     @Path("/{chrRegionId}/cpg_island")

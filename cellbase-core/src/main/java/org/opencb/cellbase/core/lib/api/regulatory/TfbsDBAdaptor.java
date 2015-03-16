@@ -1,15 +1,13 @@
 package org.opencb.cellbase.core.lib.api.regulatory;
 
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
 public interface TfbsDBAdaptor extends RegulatoryRegionDBAdaptor {
-
-	
 
 
 //	public List<Tfbs> getAllByTfGeneName(String tfGeneName, String celltype, int start, int end);

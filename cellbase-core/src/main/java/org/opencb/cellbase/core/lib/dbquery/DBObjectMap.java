@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public class DBObjectMap extends LinkedHashMap<String, Object> {
 
 	

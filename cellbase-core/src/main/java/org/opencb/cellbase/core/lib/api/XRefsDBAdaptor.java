@@ -1,13 +1,13 @@
 package org.opencb.cellbase.core.lib.api;
 
-
+import org.opencb.biodata.models.core.DBName;
+import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.common.XRefs;
-import org.opencb.cellbase.core.common.core.DBName;
-import org.opencb.cellbase.core.common.core.Xref;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
+
 
 public interface XRefsDBAdaptor {
 

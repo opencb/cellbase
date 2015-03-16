@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.lib.dbquery;
 
 
+@Deprecated
 public class QueryOptions extends DBObjectMap {
 
 

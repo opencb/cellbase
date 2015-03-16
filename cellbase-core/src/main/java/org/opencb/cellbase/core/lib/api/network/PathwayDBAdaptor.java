@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.lib.api.network;
 
 
-
 public interface PathwayDBAdaptor {
 
 	public String getPathways() ;
