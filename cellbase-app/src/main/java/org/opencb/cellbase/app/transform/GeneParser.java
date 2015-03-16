@@ -132,7 +132,8 @@ public class GeneParser extends CellBaseParser {
                 // TODO: transcript tfbs should be a list and not an array list
                 String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
                 ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
-                transcript = new Transcript(transcriptId, gtf.getAttributes().get("transcript_name"), gtf.getSource(),
+                Map<String, String> gtfAttributes = gtf.getAttributes();
+                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"), gtfAttributes.get("transcript_biotype"),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), transcriptTfbses);
                 String tags;
