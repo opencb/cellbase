@@ -362,22 +362,23 @@ public class GeneParser extends CellBaseParser {
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
         ArrayList<TranscriptTfbs> transcriptTfbses = null;
-        for (Gff2 tfbs : tfbsMap.get(chromosome)) {
-            if (transcript.getStrand().equals("+")) {
-                if (tfbs.getStart() > transcript.getStart() + 500) {
-                    break;
-                } else if (tfbs.getEnd() > transcript.getStart() - 2500) {
-                    transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
-                }
-            } else {
-                // transcript in negative strand
-                if (tfbs.getStart() > transcript.getEnd() + 2500) {
-                    break;
-                } else if (tfbs.getStart() > transcript.getEnd() - 500) {
-                    transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
+        if (tfbsMap.containsKey(chromosome)) {
+            for (Gff2 tfbs : tfbsMap.get(chromosome)) {
+                if (transcript.getStrand().equals("+")) {
+                    if (tfbs.getStart() > transcript.getStart() + 500) {
+                        break;
+                    } else if (tfbs.getEnd() > transcript.getStart() - 2500) {
+                        transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
+                    }
+                } else {
+                    // transcript in negative strand
+                    if (tfbs.getStart() > transcript.getEnd() + 2500) {
+                        break;
+                    } else if (tfbs.getStart() > transcript.getEnd() - 500) {
+                        transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
+                    }
                 }
             }
-
         }
         return transcriptTfbses;
     }
