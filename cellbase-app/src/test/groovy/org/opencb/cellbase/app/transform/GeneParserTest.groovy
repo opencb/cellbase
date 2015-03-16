@@ -5,6 +5,7 @@ import org.opencb.cellbase.app.serializers.CellBaseSerializer
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
@@ -29,11 +30,21 @@ class GeneParserSpockTest extends Specification {
     }
 
     @Unroll
-    def "gene #geneId parsed"() {
+    def "gene #geneId parsed has #transcriptsNumber transcripts"() {
         expect:
         serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
+        serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).first().transcripts.size() == transcriptsNumber
 
         where:
-        geneId = "ENSG00000243485"
+        geneId || transcriptsNumber
+        "ENSG00000243485" | 2
+        "ENSG00000218839" | 2
+    }
+
+    def cleanupSpec() {
+        File referenceGenomeSqlLiteFile = Paths.get(GeneParserTest.class.getResource("/geneParser/reference_genome.db").toURI()).toFile()
+        if (referenceGenomeSqlLiteFile.exists()) {
+            referenceGenomeSqlLiteFile.delete()
+        }
     }
 }

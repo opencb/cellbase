@@ -8,3 +8,17 @@ chr1	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	29343	29356	0.959	+	.	Nam
 chr1	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	29388	29401	0.958	+	.	Name=Egr1:MA0162.2
 chr1	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	30796	30810	0.986	+	.	Name=Jund:MA0492.1
 chr1	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	32921	32931	0.986	+	.	Name=USF1:MA0093.2
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	11529	11539	0.982	+	.	Name=Tcf12:MA0521.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	11620	11637	0.909	+	.	Name=Srf:MA0083.2
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	22688	22697	0.995	+	.	Name=Max:MA0058.2
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	32703	32713	0.986	+	.	Name=USF1:MA0093.2
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	32704	32711	0.956	+	.	Name=USF1:MA0281.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	32922	32932	0.971	+	.	Name=USF1:MA0093.2
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	36390	36394	1	+	.	Name=Egr1:MA0366.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	36390	36394	1	+	.	Name=Egr1:MA0341.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	36565	36569	1	+	.	Name=Egr1:MA0341.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	36565	36569	1	+	.	Name=Egr1:MA0366.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	36583	36593	0.993	+	.	Name=Jund:MA0491.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	38489	38499	0.976	+	.	Name=Junb:MA0490.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	38490	38500	0.965	+	.	Name=FOSL1:MA0477.1
+chr9	RegulatoryBuild TFBS Motifs v13.0	TF_binding_site	38490	38500	0.97	+	.	Name=Jund:MA0491.1
