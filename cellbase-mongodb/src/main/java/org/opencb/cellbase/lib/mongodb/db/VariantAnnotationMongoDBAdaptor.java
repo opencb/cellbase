@@ -649,8 +649,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantStart <= genomicCodingEnd) {  // Variant start within coding region
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantStart falls in an intron
                     if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
-//                        cdnaCodingStart -= (3-firstCdsPhase%3);
-                        cdnaCodingStart -= firstCdsPhase;
+                        cdnaCodingStart -= ((3-firstCdsPhase)%3);
+//                        cdnaCodingStart -= firstCdsPhase;
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
@@ -704,8 +704,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if(variantEnd>=genomicCodingStart) {
                 if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantEnd falls in an intron
                     if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
-                        cdnaCodingStart -= firstCdsPhase;
-//                        cdnaCodingStart -= (3-firstCdsPhase%3);
+//                        cdnaCodingStart -= firstCdsPhase;
+                        cdnaCodingStart -= ((3-firstCdsPhase)%3);
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
@@ -796,7 +796,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         junctionSolution[0] = (spliceSite1<variantEnd);  //  BE CAREFUL: there are introns shorter than 14nts, and even just 1nt long!! (22:36587846)
 //                        junctionSolution[0] = true;
                     } else {
-                        SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
+                        SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
                         junctionSolution[0] = (spliceSite1<variantEnd);  //  BE CAREFUL: there are introns shorter than 14nts, and even just 1nt long!! (22:36587846)
 //                        junctionSolution[0] = true;
                     }
@@ -1068,7 +1068,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 13:
                                 case 15:
                                 case 0:   // 3prime_overlapping_ncrna
-                                case 16:  // antisense
+                                case 16:  // antisense  TODO: move to coding?
                                 case 17:  // lincRNA
                                 case 19:
                                 case 21:  // processed_pseudogene
@@ -1193,7 +1193,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                 case 15:
                                 case 0:   // 3prime_overlapping_ncrna
                                 case 17:  // lincRNA
-                                case 16:  // antisense
+                                case 16:  // antisense  TODO: move to coding?
                                 case 19:
                                 case 21:  // processed_pseudogene
                                 case 22:  // processed_transcript
