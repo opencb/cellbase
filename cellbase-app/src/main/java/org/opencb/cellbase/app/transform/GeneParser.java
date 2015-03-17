@@ -319,35 +319,36 @@ public class GeneParser extends CellBaseParser {
                         cds += gtf.getEnd() - gtf.getStart() + 1;
                         transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
-                        // phase calculation
-                        if (gtf.getStart() == exon.getStart()) {
-                            // retrieve previous exon if exists
-                            if (exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)) != null) {
-                                Exon e = exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1));
-                                if (e.getPhase() == -1) {
-                                    exon.setPhase((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3); // (prev-phase+1)%3
-                                } else {
-                                    exon.setPhase(((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3 + e
-                                            .getPhase()) % 3); // (prev-phase+current-phase+1)%3
-                                }
-                            } else {
-                                // if it is the first exon then we just take the
-                                // frame
-                                if (gtf.getFrame().equals("0")) {
-                                    exon.setPhase(Integer.parseInt(gtf.getFrame()));
-                                } else {
-                                    if (gtf.getFrame().equals("1")) {
-                                        exon.setPhase(2);
-                                    } else {
-                                        exon.setPhase(1);
-                                    }
-                                }
-                            }
-                        } else {
-                            // if coding start and genomic start is different
-                            // then there is UTR: -1
-                            exon.setPhase(-1);
-                        }
+                        exon.setPhase(Integer.valueOf(gtf.getFrame()));
+//                        // phase calculation
+//                        if (gtf.getStart() == exon.getStart()) {
+//                            // retrieve previous exon if exists
+//                            if (exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)) != null) {
+//                                Exon e = exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1));
+//                                if (e.getPhase() == -1) {
+//                                    exon.setPhase((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3); // (prev-phase+1)%3
+//                                } else {
+//                                    exon.setPhase(((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3 + e
+//                                            .getPhase()) % 3); // (prev-phase+current-phase+1)%3
+//                                }
+//                            } else {
+//                                // if it is the first exon then we just take the
+//                                // frame
+//                                if (gtf.getFrame().equals("0")) {
+//                                    exon.setPhase(Integer.parseInt(gtf.getFrame()));
+//                                } else {
+//                                    if (gtf.getFrame().equals("1")) {
+//                                        exon.setPhase(2);
+//                                    } else {
+//                                        exon.setPhase(1);
+//                                    }
+//                                }
+//                            }
+//                        } else {
+//                            // if coding start and genomic start is different
+//                            // then there is UTR: -1
+//                            exon.setPhase(-1);
+//                        }
 
                         if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
                             transcript.setGenomicCodingStart(gtf.getStart());
@@ -378,35 +379,36 @@ public class GeneParser extends CellBaseParser {
                         cds += gtf.getEnd() - gtf.getStart() + 1;
                         transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
-                        // phase calculation
-                        if (gtf.getEnd() == exon.getEnd()) {
-                            // retrieve previous exon if exists
-                            if (exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)) != null) {
-                                Exon e = exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1));
-                                if (e.getPhase() == -1) {
-                                    exon.setPhase((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3); // (prev-phase+1)%3
-                                } else {
-                                    exon.setPhase(((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3 + e
-                                            .getPhase()) % 3); // (prev-phase+current-phase+1)%3
-                                }
-                            } else {
-                                // if it is the first exon then we just take the
-                                // frame
-                                if (gtf.getFrame().equals("0")) {
-                                    exon.setPhase(Integer.parseInt(gtf.getFrame()));
-                                } else {
-                                    if (gtf.getFrame().equals("1")) {
-                                        exon.setPhase(2);
-                                    } else {
-                                        exon.setPhase(1);
-                                    }
-                                }
-                            }
-                        } else {
-                            // if coding start and genomic start is different
-                            // then there is UTR: -1
-                            exon.setPhase(-1);
-                        }
+                        exon.setPhase(Integer.valueOf(gtf.getFrame()));
+//                        // phase calculation
+//                        if (gtf.getEnd() == exon.getEnd()) {
+//                            // retrieve previous exon if exists
+//                            if (exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)) != null) {
+//                                Exon e = exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1));
+//                                if (e.getPhase() == -1) {
+//                                    exon.setPhase((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3); // (prev-phase+1)%3
+//                                } else {
+//                                    exon.setPhase(((e.getCdnaCodingEnd() - e.getCdnaCodingStart() + 1) % 3 + e
+//                                            .getPhase()) % 3); // (prev-phase+current-phase+1)%3
+//                                }
+//                            } else {
+//                                // if it is the first exon then we just take the
+//                                // frame
+//                                if (gtf.getFrame().equals("0")) {
+//                                    exon.setPhase(Integer.parseInt(gtf.getFrame()));
+//                                } else {
+//                                    if (gtf.getFrame().equals("1")) {
+//                                        exon.setPhase(2);
+//                                    } else {
+//                                        exon.setPhase(1);
+//                                    }
+//                                }
+//                            }
+//                        } else {
+//                            // if coding start and genomic start is different
+//                            // then there is UTR: -1
+//                            exon.setPhase(-1);
+//                        }
 
                         if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
                             transcript.setGenomicCodingStart(gtf.getStart());

@@ -226,6 +226,9 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--host-url"}, description = "", required = false, arity = 1)
         public String url;
+
+        @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
+        public int threads = 2;
     }
 
 

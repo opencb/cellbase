@@ -1,6 +1,8 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -14,6 +16,7 @@ import java.io.IOException;
 
 @Path("/{version}/{species}/feature/protein")
 @Produces("text/plain")
+@Api(value = "Protein", description = "Protein RESTful Web Services API")
 public class ProteinWSServer extends GenericRestWSServer {
 
 	public ProteinWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
@@ -48,7 +51,10 @@ public class ProteinWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/all")
-	public Response getAll() {
+/*
+    @ApiOperation(httpMethod = "GET", value = "Get all proteins")
+*/
+    public Response getAll() {
 		try {
 			checkParams();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
@@ -61,6 +67,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 		}
 	}
 
+    @Deprecated
     @GET
     @Path("/{proteinId}/name")
     public Response getproteinByName(@PathParam("proteinId") String id) {
@@ -76,13 +83,15 @@ public class ProteinWSServer extends GenericRestWSServer {
 
 	@GET
 	@Path("/{proteinId}/gene")
+    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein")
 	public Response getGene(@PathParam("proteinId") String query) {
 		return null;
 	}
 	
 	@GET
 	@Path("/{proteinId}/transcript")
-	public Response getTranscript(@PathParam("proteinId") String query) {
+    @ApiOperation(httpMethod = "GET", value = "Get the transcript corresponding to the input protein")
+    public Response getTranscript(@PathParam("proteinId") String query) {
 		return null;
 	}
 	
@@ -131,7 +140,8 @@ public class ProteinWSServer extends GenericRestWSServer {
 //			return createErrorResponse("getXrefs", e.toString());
 //		}
 //	}
-	
+
+    @Deprecated
 	@GET
 	@Path("/{proteinId}/reference")
 	public Response getReference(@PathParam("proteinId") String query) {
@@ -157,7 +167,8 @@ public class ProteinWSServer extends GenericRestWSServer {
 	
 	@GET
 	@Path("/{proteinId}/sequence")
-	public Response getSequence(@PathParam("proteinId") String query) {
+    @ApiOperation(httpMethod = "GET", value = "Get the sequence for the given protein")
+    public Response getSequence(@PathParam("proteinId") String query) {
 		return null;
 	}
 	
