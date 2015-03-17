@@ -48,7 +48,9 @@ public class VariantAnnotator implements Callable<Integer> {
                 } else {
                     logger.info("Annotator sends " + batch.size() + " new variants for annotation. Waiting for the result.");
                     QueryResponse<QueryResult<VariantAnnotation>> response =
-                            cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, batch, new QueryOptions());
+                            cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
+//                                    CellBaseClient.SubCategory.variant, batch, new QueryOptions());
+                                    CellBaseClient.SubCategory.variant, batch, new QueryOptions("post",true));
                     List<VariantAnnotation> variantAnnotationList = new ArrayList<>(batch.size());
                     for (QueryResult<VariantAnnotation> queryResult : response.getResponse()) {
                         variantAnnotationList.add(queryResult.getResult().get(0));

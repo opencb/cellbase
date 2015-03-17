@@ -76,8 +76,9 @@ public class QueryCommandParser extends CommandParser {
             // output file
             if (queryCommandOptions.outputFile != null) {
                 outputFile = Paths.get(queryCommandOptions.outputFile);
-                if (!outputFile.toFile().exists()) {
-                    throw new ParameterException("Output file " + outputFile + " doesn't exist");
+                Path outputDir = outputFile.getParent();
+                if (!outputDir.toFile().exists()) {
+                    throw new ParameterException("Output directory " + outputDir + " doesn't exist");
                 } else if (outputFile.toFile().isDirectory()) {
                     throw new ParameterException("Output file cannot be a directory: " + outputFile);
                 }
