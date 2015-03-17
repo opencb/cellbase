@@ -158,7 +158,7 @@ public class CliOptionsParser {
         @Parameter(names = {"-d", "--data"}, description = "", required = true, arity = 1)
         public String load;
 
-        @Parameter(names = {"-l", "--loader"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"-l", "--loader"}, description = "", required = false, arity = 1)
         public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";
 
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)

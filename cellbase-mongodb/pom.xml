@@ -45,7 +45,7 @@
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
             <scope>test</scope>
-        </dependency>
+        </dependency>2
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

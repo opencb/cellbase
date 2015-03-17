@@ -73,6 +73,6 @@ public abstract class CommandParser {
     }
 
     public void readCellBaseConfiguration() throws URISyntaxException, IOException {
-        this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("cellBaseConfiguration.json"));
+        this.configuration = CellBaseConfiguration.load();
     }
 }
