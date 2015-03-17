@@ -16,6 +16,7 @@ fi
 ## Copy all the binaries, dependencies and files
 cp -r cellbase-app/app/* build/
 cp -r cellbase-app/target/appassembler/* build/
+cp  cellbase-core/target/classes/configuration.json build/
 cp cellbase-server/target/cellbase.war build/
 cp README.md build/
 

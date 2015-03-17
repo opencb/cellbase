@@ -186,81 +186,41 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
             <!--<plugin>-->
-                <!--<groupId>org.codehaus.gmaven</groupId>-->
-                <!--<artifactId>gmaven-plugin</artifactId>-->
-                <!--<version>1.5</version>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-resources-plugin</artifactId>-->
+                <!--<version>2.7</version>-->
                 <!--<configuration>-->
-                    <!--<providerSelection>2.0</providerSelection>-->
+                    <!--<encoding>UTF-8</encoding>-->
                 <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<goals>-->
-                            <!--<goal>testCompile</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-                <!--<dependencies>-->
-                    <!--<dependency>-->
-                        <!--<groupId>org.codehaus.gmaven.runtime</groupId>-->
-                        <!--<artifactId>gmaven-runtime-2.0</artifactId>-->
-                        <!--<version>1.5</version>-->
-                    <!--</dependency>-->
-                    <!--<dependency>-->
-                        <!--<groupId>org.codehaus.groovy</groupId>-->
-                        <!--<artifactId>groovy-all</artifactId>-->
-                        <!--<version>2.0.8</version>-->
-                    <!--</dependency>-->
-                <!--</dependencies>-->
             <!--</plugin>-->
-            <!--<plugin>-->
-                <!--<artifactId>maven-antrun-plugin</artifactId>-->
-                <!--<version>1.8</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>install</phase>-->
-                        <!--<inherited>false</inherited>-->
-                        <!--<goals>-->
-                            <!--<goal>run</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<target>-->
-                                <!--<echo>Building...</echo>-->
-                                <!--<exec executable="rm">-->
-                                    <!--<arg value="-rf"></arg>-->
-                                    <!--<arg value="${build.dir}"></arg>-->
-                                <!--</exec>-->
-                                <!--<exec executable="mkdir">-->
-                                    <!--<arg value="${build.dir}"></arg>-->
-                                <!--</exec>-->
-                                <!--<exec executable="cp">-->
-                                    <!--<arg value="-r" />-->
-                                    <!--<arg value="cellbase-app/app/bin" />-->
-                                    <!--<arg value="cellbase-app/app/mongodb-scripts" />-->
-                                    <!--<arg value="cellbase-app/target/appassembler/bin" />-->
-                                    <!--<arg value="cellbase-app/target/appassembler/libs" />-->
-                                    <!--<arg value="cellbase-server/target/cellbase.war" />-->
-                                    <!--<arg value="README.md" />-->
-                                    <!--<arg value="${build.dir}" />-->
-                                <!--</exec>-->
-                                <!--<exec executable="tar">-->
-                                    <!--<arg value="zcvf"></arg>-->
-                                    <!--<arg value="${build.dir}/cellbase.tar.gz"></arg>-->
-                                    <!--<arg value="${build.dir}"></arg>-->
-                                <!--</exec>-->
-                            <!--</target>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+                <version>1.5</version>
+                <configuration>
+                    <providerSelection>2.0</providerSelection>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.gmaven.runtime</groupId>
+                        <artifactId>gmaven-runtime-2.0</artifactId>
+                        <version>1.5</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-all</artifactId>
+                        <version>2.0.8</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 
@@ -320,6 +280,9 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

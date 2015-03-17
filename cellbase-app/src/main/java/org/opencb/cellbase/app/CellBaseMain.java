@@ -77,7 +77,6 @@ public class CellBaseMain {
 //    }
 
     public static void main(String[] args) {
-
         CliOptionsParser cliOptionsParser = new CliOptionsParser();
         cliOptionsParser.parse(args);
 
@@ -126,7 +125,7 @@ public class CellBaseMain {
 
             if (commandParser != null) {
                 try {
-                    commandParser.readCellBaseConfiguration();
+                    commandParser.loadCellBaseConfiguration();
                     commandParser.parse();
                 } catch (IOException|URISyntaxException ex) {
                     commandParser.getLogger().error("Error reading cellbase configuration: " + ex.getMessage());
