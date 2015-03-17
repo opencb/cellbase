@@ -38,7 +38,7 @@
             "host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz"
         },
         "clinvar": {
-            "host": ""
+            "host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-03.xml.gz"
         }
     },
     "species":{
@@ -62,7 +62,8 @@
                     "gene",
                     "variation",
                     "regulation",
-                    "protein"
+                    "protein",
+                    "clinical"
                 ]
             },
             {
