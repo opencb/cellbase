@@ -193,8 +193,7 @@ public class GeneParser extends CellBaseParser {
                             - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
                 }
             } else {
-                int exonNumber = exon.getExonNumber();
-                exon = exonDict.get(transcript.getId() + "_" + exonNumber);
+                exon = exonDict.get(transcript.getId() + "_" + exon.getExonNumber());
                 if (gtf.getFeature().equalsIgnoreCase("CDS")) {
                     if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
                         // CDS states the beginning of coding start
