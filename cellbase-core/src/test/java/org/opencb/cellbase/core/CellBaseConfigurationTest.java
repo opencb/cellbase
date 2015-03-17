@@ -11,7 +11,7 @@ public class CellBaseConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        cellBaseConfiguration = CellBaseConfiguration.load();
+        cellBaseConfiguration = CellBaseConfiguration.load(CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"));
     }
 
     @Test

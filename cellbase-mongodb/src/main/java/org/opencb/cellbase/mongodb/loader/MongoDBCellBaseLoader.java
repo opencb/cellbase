@@ -67,7 +67,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private void createConnection() throws LoaderException {
         try {
-            CellBaseConfiguration configuration = CellBaseConfiguration.load();
+            CellBaseConfiguration configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
             dataStoreManager = new MongoDataStoreManager(getHost(configuration), getPort(configuration));
             MongoDBConfiguration credentials = MongoDBConfiguration.builder().add("username", getUser(configuration)).add("password", getPassword(configuration)).build();
             if (params.containsKey(CELLBASE_DATABASE_NAME_PROPERTY)) {

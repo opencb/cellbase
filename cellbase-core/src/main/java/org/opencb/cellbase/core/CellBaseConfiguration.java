@@ -20,8 +20,7 @@ public class CellBaseConfiguration {
     private DownloadProperties download;
     private SpeciesProperties species;
 
-    public static CellBaseConfiguration load () throws IOException {
-        InputStream cellBaseConfigurationFileStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("cellBaseConfiguration.json");
+    public static CellBaseConfiguration load(InputStream cellBaseConfigurationFileStream) throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();
         CellBaseConfiguration properties = jsonMapper.readValue(cellBaseConfigurationFileStream, CellBaseConfiguration.class);
         return properties;
