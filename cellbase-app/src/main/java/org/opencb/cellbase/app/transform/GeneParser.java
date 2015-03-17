@@ -424,7 +424,7 @@ public class GeneParser extends CellBaseParser {
             if (tfbs.getStart() > transcript.getEnd()) {
                 relativeEnd = transcript.getEnd() - tfbs.getStart();
             }else {
-                relativeEnd = transcript.getEnd() - tfbs.getEnd() + 1;
+                relativeEnd = transcript.getEnd() - tfbs.getStart() + 1;
             }
         }
         return relativeEnd;
