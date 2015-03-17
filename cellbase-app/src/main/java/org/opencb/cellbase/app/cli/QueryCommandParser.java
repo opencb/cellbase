@@ -95,6 +95,6 @@ public class QueryCommandParser extends CommandParser {
         // TODO: read path from configuration file?
         // TODO: hardcoded port???
         String path = "/cellbase/webservices/rest/";
-        return new CellBaseClient(queryCommandOptions.url, 80, path, configuration.getVersion(), queryCommandOptions.species);
+        return new CellBaseClient(queryCommandOptions.url, 8080, path, configuration.getVersion(), queryCommandOptions.species);
     }
 }

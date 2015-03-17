@@ -23,7 +23,7 @@ public class VariantAnnotatorRunner {
     private final Path inputFile;
     private final Path outputFile;
     private static final int QUEUE_CAPACITY = 10;
-    public static final int BATCH_SIZE = 100;
+    public static final int BATCH_SIZE = 1000;
     private final Logger logger;
     protected BlockingQueue<List<GenomicVariant>> variantQueue;
     protected BlockingQueue<List<VariantAnnotation>> variantAnnotationQueue;
