@@ -1,9 +1,9 @@
 package org.opencb.cellbase.core.common.variation;
 
+import org.opencb.biodata.models.core.Exon;
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.core.Exon;
-import org.opencb.cellbase.core.common.core.Gene;
-import org.opencb.cellbase.core.common.core.Transcript;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 
 import java.util.*;

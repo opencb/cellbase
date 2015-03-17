@@ -15,6 +15,7 @@ For documenting RESTful web services [Swagger](http://swagger.io/) has been set-
 ### Issues Tracking
 You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
 
+
 ### Release Notes and Roadmap
 Releases notes are available at [GitHub releases](https://github.com/opencb/cellbase/releases).
 
@@ -38,7 +39,7 @@ CellBase is an open-source and collaborative project. We appreciate any help and
 
 
 # How to build 
-CellBase is mainly developed in Java and it uses [Apache Maven](http://maven.apache.org/) as build tool. CellBase requires Java 7+ and a set of other OpenCB Java dependencies that can be found in [Maven Central Repository](http://search.maven.org/).
+CellBase is mainly developed in Java and it uses [Apache Maven](http://maven.apache.org/) as building tool. CellBase requires Java 7+ and others OpenCB Java dependencies that can be found in [Maven Central Repository](http://search.maven.org/).
 
 Stable releases are merged and tagged at **_master_** branch, you are encourage to use latest stable release for production. Current active development is carried out at **_develop_** branch, only compilation is guaranteed and bugs are expected, use this branch for development or for testing new functionalities. Only dependencies of **_master_** branch are ensured to be deployed at [Maven Central Repository](http://search.maven.org/), **_develop_** branch may require users to download and install other active OpenCB repositories:
 * _biodata_: https://github.com/opencb/biodata (branch 'develop')
@@ -68,10 +69,25 @@ Latest stable release at **_master_** branch can be downloaded executing:
 
 
 ### Build
-You can build CellBase by executing the following command from the root of the cloned repository:
+We use maven to inject the properties values, you need to add this maven configuration to the profiles section at your _~.m2/settings.xml_, you may need to change some values:
+
+    <profile>
+     <id>localhost</id>
+     <activation>
+       <activeByDefault>true</activeByDefault>
+     </activation>
+     <properties>
+       <CELLBASE.DB.HOST>localhost</CELLBASE.DB.HOST>
+       <CELLBASE.DB.PORT>27017</CELLBASE.DB.PORT>
+       <CELLBASE.DB.USER></CELLBASE.DB.USER>
+       <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
+     </properties>
+     </profile>
+
+Now you can build CellBase by executing the following command from the root of the cloned repository:
   
     $ mvn clean install -DskipTests
-
+    
 Remember that **_develop_** branch dependencies are not ensured to be deployed at Maven Central, you may need to clone and install **_develop_** branches from OpenCB _biodata_ and _datastore_ repositories. After this you should have this file structure in **_cellbase-app/build_**:
 
     cellbase-app/build/

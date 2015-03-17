@@ -97,6 +97,8 @@ public class CellBaseConfiguration {
     public static class DatabaseProperties {
         private String host;
         private String port;
+        private String user;
+        private String password;
 
         public String getHost() {
             return host;
@@ -129,9 +131,6 @@ public class CellBaseConfiguration {
         public void setPassword(String password) {
             this.password = password;
         }
-
-        private String user;
-        private String password;
     }
 
     public static class DownloadProperties {
@@ -139,7 +138,6 @@ public class CellBaseConfiguration {
         private EnsemblProperties ensemblGenomes;
 
         private URLProperties uniprot;
-
         private URLProperties clinvar;
 
         public EnsemblProperties getEnsembl() {
@@ -175,12 +173,24 @@ public class CellBaseConfiguration {
         }
 
         public static class EnsemblProperties {
+            private DatabaseProperties database;
+            private String libs;
+            private URLProperties url;
+
             public DatabaseProperties getDatabase() {
                 return database;
             }
 
             public void setDatabase(DatabaseProperties database) {
                 this.database = database;
+            }
+
+            public String getLibs() {
+                return libs;
+            }
+
+            public void setLibs(String libs) {
+                this.libs = libs;
             }
 
             public URLProperties getUrl() {
@@ -190,9 +200,6 @@ public class CellBaseConfiguration {
             public void setUrl(URLProperties url) {
                 this.url = url;
             }
-
-            private DatabaseProperties database;
-            private URLProperties url;
         }
 
         public static class URLProperties {

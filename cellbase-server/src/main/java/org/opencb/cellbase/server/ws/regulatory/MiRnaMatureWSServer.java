@@ -1,8 +1,8 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.common.core.Gene;
-import org.opencb.cellbase.core.common.core.Transcript;
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.common.regulatory.MirnaDisease;
 import org.opencb.cellbase.core.common.regulatory.MirnaGene;
 import org.opencb.cellbase.core.common.regulatory.MirnaMature;
@@ -47,65 +47,65 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 		}
 	}
 		
-	@GET
-	@Path("/{mirnaId}/fullinfo")
-	public Response getMiRnaMatureFullInfo(@PathParam("mirnaId") String query) {
-		try {
-			checkParams();
-			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-			
-			List<List<MirnaMature>> mirnaMature = mirnaDBAdaptor.getAllMiRnaMaturesByNameList(Splitter.on(",").splitToList(query));
-			List<List<MirnaGene>> mirnaGenes = mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(Splitter.on(",").splitToList(query));
-			
-			List<List<Gene>> genes = geneDBAdaptor.getAllByMiRnaMatureList(Splitter.on(",").splitToList(query));
-			List<List<Transcript>> transcripts = transcriptDBAdaptor.getAllByMirnaMatureList(Splitter.on(",").splitToList(query));
-			
-			List<List<Gene>> targetGenes = geneDBAdaptor.getAllTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query));
-			List<List<MirnaDisease>> mirnaDiseases = mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(Splitter.on("").splitToList(query));
-			
-			StringBuilder response = new StringBuilder();
-			response.append("[");
-			for (int i = 0; i < genes.size(); i++) {
-				if(genes.get(i).size() > 0){
-					response.append("{");
-					response.append("\"mirna\":{");
-//					response.append("\"mirnaMature\":"+gson.toJson(mirnaMature.get(i))+",");
-//					response.append("\"mirnaGenes\":"+gson.toJson(mirnaGenes.get(i))+"");
-					response.append("},");
-//					response.append("\"genes\":"+gson.toJson(genes.get(i))+",");
-//					response.append("\"transcripts\":"+gson.toJson(transcripts.get(i))+",");
-//					response.append("\"targetGenes\":"+gson.toJson(targetGenes.get(i))+",");
-//					response.append("\"mirnaDiseases\":"+gson.toJson(mirnaDiseases.get(i))+"");
-					response.append("},");
-				}else{
-					response.append("null,");
-				}
-			}
-			response.replace(response.length()-1, response.length(), "");
-			response.append("]");
-			//Remove the last comma
-			
-			return  generateResponse(query,Arrays.asList(response));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getMiRnaMatureFullInfo", e.toString());
-		}
-	}
+//	@GET
+//	@Path("/{mirnaId}/fullinfo")
+//	public Response getMiRnaMatureFullInfo(@PathParam("mirnaId") String query) {
+//		try {
+//			checkParams();
+//			MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+//			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+//
+//			List<List<MirnaMature>> mirnaMature = mirnaDBAdaptor.getAllMiRnaMaturesByNameList(Splitter.on(",").splitToList(query));
+//			List<List<MirnaGene>> mirnaGenes = mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(Splitter.on(",").splitToList(query));
+//
+//			List<List<Gene>> genes = geneDBAdaptor.getAllByMiRnaMatureList(Splitter.on(",").splitToList(query));
+//			List<List<Transcript>> transcripts = transcriptDBAdaptor.getAllByMirnaMatureList(Splitter.on(",").splitToList(query));
+//
+//			List<List<Gene>> targetGenes = geneDBAdaptor.getAllTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query));
+//			List<List<MirnaDisease>> mirnaDiseases = mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(Splitter.on("").splitToList(query));
+//
+//			StringBuilder response = new StringBuilder();
+//			response.append("[");
+//			for (int i = 0; i < genes.size(); i++) {
+//				if(genes.get(i).size() > 0){
+//					response.append("{");
+//					response.append("\"mirna\":{");
+////					response.append("\"mirnaMature\":"+gson.toJson(mirnaMature.get(i))+",");
+////					response.append("\"mirnaGenes\":"+gson.toJson(mirnaGenes.get(i))+"");
+//					response.append("},");
+////					response.append("\"genes\":"+gson.toJson(genes.get(i))+",");
+////					response.append("\"transcripts\":"+gson.toJson(transcripts.get(i))+",");
+////					response.append("\"targetGenes\":"+gson.toJson(targetGenes.get(i))+",");
+////					response.append("\"mirnaDiseases\":"+gson.toJson(mirnaDiseases.get(i))+"");
+//					response.append("},");
+//				}else{
+//					response.append("null,");
+//				}
+//			}
+//			response.replace(response.length()-1, response.length(), "");
+//			response.append("]");
+//			//Remove the last comma
+//
+//			return  generateResponse(query,Arrays.asList(response));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return createErrorResponse("getMiRnaMatureFullInfo", e.toString());
+//		}
+//	}
 	
-	@GET
-	@Path("/{mirnaId}/gene")
-	public Response getEnsemblGene(@PathParam("mirnaId") String query) {
-		try {
-			checkParams();
-			GeneDBAdaptor adaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-			return  generateResponse(query, adaptor.getAllByMiRnaMatureList(Splitter.on(",").splitToList(query)));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getEnsemblGene", e.toString());
-		}
-	}
+//	@GET
+//	@Path("/{mirnaId}/gene")
+//	public Response getEnsemblGene(@PathParam("mirnaId") String query) {
+//		try {
+//			checkParams();
+//			GeneDBAdaptor adaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+//			return  generateResponse(query, adaptor.getAllByMiRnaMatureList(Splitter.on(",").splitToList(query)));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return createErrorResponse("getEnsemblGene", e.toString());
+//		}
+//	}
 	
 	@GET
 	@Path("/{mirnaId}/mirna_gene")
@@ -121,18 +121,18 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
 		}
 	}
 	
-	@GET
-	@Path("/{mirnaId}/target_gene")
-	public Response getEnsemblTargetGenes(@PathParam("mirnaId") String query) {
-		try {
-			checkParams();
-			GeneDBAdaptor adaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-			return  generateResponse(query, adaptor.getAllTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query))); // Renombrar a getAllTargetGenesByMiRnaList
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getEnsemblTargetGenes", e.toString());
-		}
-	}
+//	@GET
+//	@Path("/{mirnaId}/target_gene")
+//	public Response getEnsemblTargetGenes(@PathParam("mirnaId") String query) {
+//		try {
+//			checkParams();
+//			GeneDBAdaptor adaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+//			return  generateResponse(query, adaptor.getAllTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query))); // Renombrar a getAllTargetGenesByMiRnaList
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return createErrorResponse("getEnsemblTargetGenes", e.toString());
+//		}
+//	}
 
 	@GET
 	@Path("/{mirnaId}/target")

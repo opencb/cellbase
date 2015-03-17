@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -260,7 +261,7 @@ public class CellBaseClient {
     public <T> QueryResponse<QueryResult<T>> nativeGet(
             String category, String subCategory, String ids, String resource, QueryOptions queryOptions, Class<T> c)
             throws IOException {
-        return restGetter(category, subCategory, ids, resource, queryOptions, getJsonReader(c));
+        return restGetter(category, subCategory, ids, resource, false, queryOptions, getJsonReader(c));
     }
 
     /////////////////////////
@@ -410,23 +411,25 @@ public class CellBaseClient {
                 throw new UnsupportedOperationException("Unsupported dataType");
         }
 
+        boolean post = queryOptions.getBoolean("post", false);
+        queryOptions.remove("post");
 
         String categoryStr = categoryStringMap.containsKey(category) ? categoryStringMap.get(category) : category.name();
         String subCategoryStr = subCategoryStringMap.containsKey(subCategory) ? subCategoryStringMap.get(subCategory) : subCategory.name();
         String resourceStr = resourceStringMap.containsKey(resource) ? resourceStringMap.get(resource) : resource.name();
 
-        QueryResponse<QueryResult<T>> qr = restGetter(categoryStr, subCategoryStr, idsCvs, resourceStr, queryOptions, responseReader);
+        QueryResponse<QueryResult<T>> qr = restGetter(categoryStr, subCategoryStr, idsCvs, resourceStr, post, queryOptions, responseReader);
         return qr;
     }
 
     private <T> QueryResponse<QueryResult<T>> restGetter(
-            String categoryStr, String subCategoryStr, String idsCvs, String resourceStr, QueryOptions queryOptions, ObjectReader responseReader)
+            String categoryStr, String subCategoryStr, String idsCvs, String resourceStr, boolean post, QueryOptions queryOptions, ObjectReader responseReader)
             throws IOException {
 
         UriBuilder clone = uriBuilder.clone()
                 .path(categoryStr)
                 .path(subCategoryStr);
-        if(idsCvs != null && !idsCvs.isEmpty()) {
+        if(idsCvs != null && !idsCvs.isEmpty() && !post) {
             clone = clone.path(idsCvs);
         }
 
@@ -438,7 +441,12 @@ public class CellBaseClient {
         lastQuery = clone.build();
 //        System.out.println(clone.build().toString());
         Invocation.Builder request = client.target(clone).request();
-        Response response = request.get();
+        Response response;
+        if (post) {
+            response = request.post(Entity.text(idsCvs));
+        } else {
+            response = request.get();
+        }
         String responseStr = response.readEntity(String.class);
 
         try {

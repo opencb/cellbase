@@ -9,12 +9,12 @@ import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.cellbase.lib.mongodb.db.MongoDBAdaptorFactory;
+import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

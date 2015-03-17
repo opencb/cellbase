@@ -19,12 +19,8 @@
             <artifactId>cellbase-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opencb.biodata</groupId>
-            <artifactId>biodata-models</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opencb.biodata</groupId>
-            <artifactId>biodata-formats</artifactId>
+            <groupId>org.opencb.datastore</groupId>
+            <artifactId>datastore-mongodb</artifactId>
         </dependency>
 
         <dependency>
@@ -34,23 +30,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-        </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.slf4j</groupId>-->
-        <!--<artifactId>slf4j-log4j12</artifactId>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>log4j</groupId>-->
-        <!--<artifactId>log4j</artifactId>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -65,6 +44,11 @@
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -1,8 +1,7 @@
 package org.opencb.cellbase.core.lib.api;
 
-
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.core.Cytoband;
+import org.opencb.biodata.models.core.Cytoband;
+import org.opencb.biodata.models.feature.Region;
 
 import java.util.List;
 
