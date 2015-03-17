@@ -92,8 +92,10 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-s", "--species"}, description = "", required = false, variableArity = true)
-        public List<String> species = Arrays.asList("Homo sapiens");
+//        @Parameter(names = {"-s", "--species"}, description = "", required = false, variableArity = true)
+//        public List<String> species = Arrays.asList("Homo sapiens");
+        @Parameter(names = {"-s", "--species"}, description = "", required = false, arity = 1)
+        public String species = "Homo sapiens";
 
 
         @Parameter(names = {"-a", "--assembly"}, description = "", required = false, arity = 1)

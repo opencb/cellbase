@@ -1,22 +1,23 @@
 {
-    "version":"v3",
-    "apiVersion":"v3.1",
-    "wiki":"https://github.com/opencb/cellbase/wiki",
-    "database":{
-        "host":"${CELLBASE.DB.HOST}",
-        "port":"${CELLBASE.DB.PORT}",
-        "user":"${CELLBASE.DB.USER}",
-        "password":"${CELLBASE.DB.PASSWORD}"
+    "version": "v3",
+    "apiVersion": "v3.1",
+    "wiki": "https://github.com/opencb/cellbase/wiki",
+    "database": {
+        "host": "${CELLBASE.DB.HOST}",
+        "port": "${CELLBASE.DB.PORT}",
+        "user": "${CELLBASE.DB.USER}",
+        "password": "${CELLBASE.DB.PASSWORD}"
     },
-    "defaultOutdir":"/tmp",
-    "download":{
-        "ensembl":{
-            "database":{
-                "host":"ensembldb.ensembl.org",
-                "port":3306,
-                "user":"anonymous",
-                "password":""
+    "defaultOutdir": "/tmp",
+    "download": {
+        "ensembl": {
+            "database": {
+                "host": "ensembldb.ensembl.org",
+                "port": 3306,
+                "user": "anonymous",
+                "password": ""
             },
+            "libs": "${CELLBASE.ENSEMBL.LIBS}",
             "url":{
                 "host":"ftp://ftp.ensembl.org/pub"
             }
@@ -28,15 +29,16 @@
                 "user":"anonymous",
                 "password":""
             },
+            "libs": "${CELLBASE.ENSEMBL.LIBS}",
             "url":{
                 "host":"ftp://ftp.ensemblgenomes.org/pub"
             }
         },
-        "uniprot":{
-            "host":""
+        "uniprot": {
+            "host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz"
         },
-        "clinvar":{
-            "host":""
+        "clinvar": {
+            "host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-03.xml.gz"
         }
     },
     "species":{
@@ -47,7 +49,7 @@
                 "assemblies":[
                     {
                         "ensemblVersion":"75_37",
-                        "name":"GRCh37.p13"
+                        "name":"GRCh37"
                     },
                     {
                         "ensemblVersion":"78_38",
@@ -59,7 +61,9 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein",
+                    "clinical"
                 ]
             },
             {
@@ -76,7 +80,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein"
                 ]
             },
             {
@@ -110,7 +115,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                   "protein"
                 ]
             },
             {
@@ -503,7 +509,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein"
                 ]
             },
             {
@@ -675,7 +682,8 @@
                     "genome_sequence",
                     "gene",
                     "variation",
-                    "regulation"
+                    "regulation",
+                    "protein"
                 ]
             },
             {
