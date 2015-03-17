@@ -345,9 +345,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             } else {
                                 if (cdnaVariantStart<(cdnaCodingStart+3)) {
                                     SoNames.add("initiator_codon_variant");  // Gary - initiator codon SO terms not compatible with the terms below
-//                                    if(isStopCodon(String.valueOf(modifiedCodonArray))) {  TODO: add these lines
-//                                        SoNames.add("stop_gained");  // Gary - initiator codon SO terms not compatible with the terms below
-//                                    }
+                                    if(isStopCodon(String.valueOf(modifiedCodonArray))) {
+                                        SoNames.add("stop_gained");  // Gary - initiator codon SO terms not compatible with the terms below
+                                    }
                                 } else if (isStopCodon(String.valueOf(referenceCodon))) {
                                     SoNames.add("stop_lost");
                                 } else {
@@ -538,9 +538,9 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                             } else {
                                 if (cdnaVariantStart<(cdnaCodingStart+3)) {
                                     SoNames.add("initiator_codon_variant");  // Gary - initiator codon SO terms not compatible with the terms below
-//                                    if(isStopCodon(String.valueOf(modifiedCodonArray))) {  TODO: add these lines
-//                                        SoNames.add("stop_gained");  // Gary - initiator codon SO terms not compatible with the terms below
-//                                    }
+                                    if(isStopCodon(String.valueOf(modifiedCodonArray))) {
+                                        SoNames.add("stop_gained");  // Gary - initiator codon SO terms not compatible with the terms below
+                                    }
                                 } else if (isStopCodon(String.valueOf(referenceCodon))) {
                                     SoNames.add("stop_lost");
                                 } else {
