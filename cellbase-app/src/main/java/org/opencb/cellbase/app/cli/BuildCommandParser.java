@@ -171,21 +171,10 @@ public class BuildCommandParser extends CommandParser {
 
     private CellBaseParser buildGene() {
         Path inputDir = getInputDirFromCommandLine();
-
         String genomeFastaFile = buildCommandOptions.referenceGenomeFile;
-        checkMandatoryOption("referenceGenomeFile", genomeFastaFile);
+        checkMandatoryOption("reference-genome-file", genomeFastaFile);
         CellBaseSerializer serializer = new JsonParser(output, "gene");
         GeneParser geneParser = new GeneParser(inputDir, Paths.get(genomeFastaFile), serializer);
-
-        // TODO: gtf-file?
-//        String gtfFile = commandLine.getOptionValue("gtf-file");
-//        String xrefFile = commandLine.getOptionValue("xref-file", "");
-//        String uniprotIdMapping = commandLine.getOptionValue("uniprot-id-mapping-file", "");
-//        String geneDescriptionFile = commandLine.getOptionValue("description-file", "");
-//        String tfbsFile = commandLine.getOptionValue("tfbs-file", "");
-//        String mirnaFile = commandLine.getOptionValue("mirna-file", "");
-//        geneParser = new GeneParser(Paths.get(gtfFile), Paths.get(geneDescriptionFile), Paths.get(xrefFile), Paths.get(uniprotIdMapping), Paths.get(tfbsFile), Paths.get(mirnaFile), Paths.get(genomeFastaFile), serializer);
-
         return geneParser;
     }
 
