@@ -164,19 +164,13 @@ public class GeneParser extends CellBaseParser {
             updateTranscriptAndGeneCoords(transcript, gene, gtf);
 
             if (gtf.getFeature().equalsIgnoreCase("exon")) {
-                // TODO: sequence should be null or empty string?
                 // Obtaining the exon sequence
                 String exonSequence = "";
-                if(currentChromosome.equals(gtf.getSequenceName()) ) { //&& chromSequence.length() > 0
-                    // as starts is inclusive and position begins in 1 we must -1, end is OK.
-//                    exonSequence = chromSequence.substring(gtf.getStart()-1, gtf.getEnd());
-//                    System.out.println("exonSequence = " + exonSequence);
+                if(currentChromosome.equals(gtf.getSequenceName()) ) {
                     try {
                         exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                     } catch (SQLException e) {
-                        // TODO: remove those debug messages
-                        System.out.println(gtf.getSequenceName()+", start: "+gtf.getStart()+", end: "+gtf.getEnd());
-                        e.printStackTrace();
+                        logger.error("Error obtaining exon sequence ({}:{}-{})", gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                     }
                 }
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
@@ -592,8 +586,8 @@ public class GeneParser extends CellBaseParser {
         int start = 1;
         int end = CHUNK_SIZE - 1;
         // if the sequence read is not HAP then we stored in sqlite
-        if(!haplotypeSequenceType && !sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
-
+        if(!haplotypeSequenceType && !sequenceName.contains("PATCH")) {
+            logger.info("Indexing genome sequence {} ...", sequenceName);
             //chromosome sequence length could shorter than CHUNK_SIZE
             if (sequenceStringBuilder.length() < CHUNK_SIZE) {
                 sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
@@ -608,7 +602,6 @@ public class GeneParser extends CellBaseParser {
                 sqlConn.setAutoCommit(false);
                 while (start < sequenceLength) {
                     if (chunk % 10000 == 0 && chunk != 0) {
-                        System.out.println("Sequence: " + sequenceName + ", chunkId:" + chunk);
                         sqlInsert.executeBatch();
                         sqlConn.commit();
                     }

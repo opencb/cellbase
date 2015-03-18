@@ -10,7 +10,7 @@ import java.nio.file.Paths
 /**
  * Created by parce on 5/03/15.
  */
-class GeneParserSpockTest extends Specification {
+class GeneParserTest extends Specification {
 
 
     static List<Gene> serializedGenes
