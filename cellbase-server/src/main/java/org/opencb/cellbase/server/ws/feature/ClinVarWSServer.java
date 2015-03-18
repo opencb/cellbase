@@ -32,7 +32,7 @@ public class ClinVarWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{clinVarAcc}/info")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get the ClinVar info from a list of accessions")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar info from a list of accession IDs")
     public Response getAllByAccessions(@PathParam("clinVarAcc") String query) {
         try {
             checkParams();
@@ -46,7 +46,7 @@ public class ClinVarWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/listAcc")
-    @ApiOperation(httpMethod = "GET", value = "Resource to list all accessions")
+    @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
     public Response getAllListAccessions() {
         try {
             checkParams();

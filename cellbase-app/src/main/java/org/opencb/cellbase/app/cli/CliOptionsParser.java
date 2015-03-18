@@ -61,7 +61,6 @@ public class CliOptionsParser {
 
     public class GeneralOptions {
 
-
         @Parameter(names = {"-h", "--help"}, help = true)
         public boolean help;
         @Parameter(names = {"--version"})
@@ -92,11 +91,9 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-//        @Parameter(names = {"-s", "--species"}, description = "", required = false, variableArity = true)
-//        public List<String> species = Arrays.asList("Homo sapiens");
+
         @Parameter(names = {"-s", "--species"}, description = "", required = false, arity = 1)
         public String species = "Homo sapiens";
-
 
         @Parameter(names = {"-a", "--assembly"}, description = "", required = false, arity = 1)
         public String assembly;
@@ -160,7 +157,7 @@ public class CliOptionsParser {
         @Parameter(names = {"-d", "--data"}, description = "", required = true, arity = 1)
         public String load;
 
-        @Parameter(names = {"-l", "--loader"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"-l", "--loader"}, description = "", required = false, arity = 1)
         public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";
 
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
@@ -226,6 +223,9 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--host-url"}, description = "", required = false, arity = 1)
         public String url;
+
+        @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
+        public int threads = 2;
     }
 
 

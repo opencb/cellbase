@@ -52,8 +52,8 @@ public class DownloadCommandParser extends CommandParser {
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
             Species speciesToDownload = null;
-            for(Species species: configuration.getAllSpecies()) {
-                if(downloadCommandOptions.species.equalsIgnoreCase(species.getScientificName())
+            for (Species species: configuration.getAllSpecies()) {
+                if (downloadCommandOptions.species.equalsIgnoreCase(species.getScientificName())
                         || downloadCommandOptions.species.equalsIgnoreCase(species.getCommonName())
                         || downloadCommandOptions.species.equalsIgnoreCase(species.getId())) {
                     speciesToDownload = species;
@@ -91,7 +91,7 @@ public class DownloadCommandParser extends CommandParser {
         makeDir(spFolder);
 
         // We need to find which is the Ensembl host URL.
-        // This is different depending on if is a vertebrate species.
+        // This can different depending on if is a vertebrate species.
         String ensemblHostUrl;
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
             ensemblHostUrl = configuration.getDownload().getEnsembl().getUrl().getHost();
@@ -101,7 +101,7 @@ public class DownloadCommandParser extends CommandParser {
 
         // Getting the assembly. By default the first assembly in the configuration.json
         Species.Assembly assembly = null;
-        if(downloadCommandOptions.assembly == null || downloadCommandOptions.assembly.equals("")) {
+        if(downloadCommandOptions.assembly == null || downloadCommandOptions.assembly.isEmpty()) {
             assembly = sp.getAssemblies().get(0);
         }else {
             for (Species.Assembly assembly1 : sp.getAssemblies()) {
@@ -297,11 +297,15 @@ public class DownloadCommandParser extends CommandParser {
     private void downloadProtein(Species sp, String shortName, String assembly, Path spFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading protein information ...");
-        Path proteinFolder = spFolder.resolve("protein");
-        makeDir(proteinFolder);
+        Path proteinFolder = spFolder.resolve("common").resolve("protein");
+        if(!Files.exists(proteinFolder.resolve("uniprot_sprot.xml.gz"))) {
+            makeDir(proteinFolder);
 
-        String proteinUrl = configuration.getDownload().getUniprot().getHost();
-        downloadFile(proteinUrl, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+            String proteinUrl = configuration.getDownload().getUniprot().getHost();
+            downloadFile(proteinUrl, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+        }else {
+            logger.info("File '{}' already exists", proteinFolder.resolve("uniprot_sprot.xml.gz"));
+        }
     }
 
     private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder) throws IOException, InterruptedException {
@@ -327,7 +331,7 @@ public class DownloadCommandParser extends CommandParser {
 
     private void makeDir(Path folderPath) throws IOException {
         if(!Files.exists(folderPath)) {
-            Files.createDirectory(folderPath);
+            Files.createDirectories(folderPath);
         }
     }
 
