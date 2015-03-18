@@ -111,7 +111,7 @@ public class GeneParser extends CellBaseParser {
             String transcriptId = gtf.getAttributes().get("transcript_id");
 
              // if chromosome is changed (or it's the first chromosome) we load the new chromosome sequence.
-            if (!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG")) {
+            if (!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG") && !gtf.getSequenceName().startsWith("CHR_HS")) {
                 currentChromosome = gtf.getSequenceName();
             }
 
