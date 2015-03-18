@@ -139,6 +139,7 @@ public class CellBaseConfiguration {
 
         private URLProperties uniprot;
         private URLProperties clinvar;
+        private URLProperties cosmic;
 
         public EnsemblProperties getEnsembl() {
             return ensembl;

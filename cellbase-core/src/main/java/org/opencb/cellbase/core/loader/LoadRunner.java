@@ -8,9 +8,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -27,21 +25,23 @@ public class LoadRunner {
     public static final List<String> POISON_PILL = new ArrayList<>();
     private final int threadsNumber;
     private final Logger logger;
+    private final String data;
     protected BlockingQueue<List<String>> queue;
     private int consumersNumber;
 
     private String loader;
     Map<String, String> loaderParams;
 
-    public LoadRunner (Path inputJsonFile, int threadsNumber) {
-        this(inputJsonFile, threadsNumber, "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader", new HashMap<String, String>());
+    public LoadRunner (Path inputJsonFile, int threadsNumber, String data, Map<String, String> loaderParams) {
+        this(inputJsonFile, threadsNumber, data, "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader", loaderParams);
     }
 
-    public LoadRunner (Path inputJsonFile, int threadsNumber, String loader, Map<String, String> loaderParams) {
+    public LoadRunner (Path inputJsonFile, int threadsNumber, String data, String loader, Map<String, String> loaderParams) {
         this.inputJsonFile = inputJsonFile;
         this.queue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
         this.threadsNumber = threadsNumber;
 
+        this.data = data;
         this.loader = loader;
         this.loaderParams = loaderParams;
 
@@ -50,13 +50,18 @@ public class LoadRunner {
 
     public void run() throws ExecutionException, InterruptedException, ClassNotFoundException, NoSuchMethodException,
             InstantiationException, IllegalAccessException, InvocationTargetException {
-        List<CellBaseLoader> consumers = createConsumers();
-        ExecutorService executorService = Executors.newFixedThreadPool(consumersNumber);
-        List<Future<Integer>> futures = startConsumers(executorService, consumers);
-        int inputRecords = readInputJsonFile();
-        int loadedRecords = getLoadedRecords(futures);
-        this.checkLoadedRecords(inputRecords, loadedRecords);
-        executorService.shutdown();
+        try {
+            List<CellBaseLoader> consumers = createConsumers();
+            ExecutorService executorService = Executors.newFixedThreadPool(consumersNumber);
+            List<Future<Integer>> futures = startConsumers(executorService, consumers);
+            int inputRecords = readInputJsonFile();
+            int loadedRecords = getLoadedRecords(futures);
+            disconnectConsumers(consumers);
+            this.checkLoadedRecords(inputRecords, loadedRecords);
+            executorService.shutdown();
+        } catch (LoaderException e) {
+            logger.error("Error executing Load: " + e.getMessage());
+        }
 
     }
 
@@ -66,14 +71,11 @@ public class LoadRunner {
 
         List<CellBaseLoader> consumers = new ArrayList<>();
         for (int i=0; i < consumersNumber; i++) {
-//            consumers.add(createConsumer());
             consumers.add(createCellBaseLoader());
         }
         logger.debug(consumersNumber + " consumer threads created");
         return consumers;
     }
-
-//    protected abstract CellBaseLoader createConsumer();
 
     private CellBaseLoader createCellBaseLoader() throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -83,13 +85,13 @@ public class LoadRunner {
          * may be applied to get other database outputs.
          * This is in charge of creating the specific data model for the database backend.
          */
-//        Path outputPath = Paths.get(loadCommandOptions.loader);
-        return (CellBaseLoader) Class.forName(loader).getConstructor(BlockingQueue.class, Map.class).newInstance(queue, loaderParams);
+        return (CellBaseLoader) Class.forName(loader).getConstructor(BlockingQueue.class, data.getClass(), Map.class).newInstance(queue, data, loaderParams);
     }
 
-    private List<Future<Integer>> startConsumers(ExecutorService executorService, List<CellBaseLoader> consumers) {
+    private List<Future<Integer>> startConsumers(ExecutorService executorService, List<CellBaseLoader> consumers) throws LoaderException {
         List<Future<Integer>> futures = new ArrayList<>(consumersNumber);
         for (CellBaseLoader consumer : consumers) {
+            consumer.init();
             futures.add(executorService.submit(consumer));
         }
         return futures;
@@ -132,6 +134,12 @@ public class LoadRunner {
             loadedRecords += future.get();
         }
         return loadedRecords;
+    }
+
+    private void disconnectConsumers(List<CellBaseLoader> consumers) {
+        for (CellBaseLoader consumer : consumers) {
+            consumer.disconnect();
+        }
     }
 
     protected void checkLoadedRecords(int inputRecords, int loadedRecords) {

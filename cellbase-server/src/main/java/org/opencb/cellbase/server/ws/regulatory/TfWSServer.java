@@ -1,8 +1,12 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +21,7 @@ import java.util.List;
 
 @Path("/{version}/{species}/regulatory/tf")
 @Produces("text/plain")
+@Api(value = "TFBS", description = "Gene RESTful Web Services API")
 public class TfWSServer extends RegulatoryWSServer {
 
 	public TfWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
@@ -101,7 +106,8 @@ public class TfWSServer extends RegulatoryWSServer {
 	
 	@GET
 	@Path("/{tfId}/tfbs")
-	public Response getAllByTfbs(@PathParam("tfId") String query, @DefaultValue("")@QueryParam("celltype") String celltype, @DefaultValue("-2500")@QueryParam("start") String start, @DefaultValue("500")@QueryParam("end") String end) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects", response = QueryResponse.class, notes = "This is a note")
+	public Response getAllByTfbs(@ApiParam(name = "pepe", required = true, allowableValues = "a,b,c", value = "aaaaa") @PathParam("tfId") String query, @DefaultValue("")@QueryParam("celltype") String celltype, @DefaultValue("-2500")@QueryParam("start") String start, @DefaultValue("500")@QueryParam("end") String end) {
 		try {
 			checkParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
