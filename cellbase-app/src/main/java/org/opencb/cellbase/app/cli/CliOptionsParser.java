@@ -61,7 +61,6 @@ public class CliOptionsParser {
 
     public class GeneralOptions {
 
-
         @Parameter(names = {"-h", "--help"}, help = true)
         public boolean help;
         @Parameter(names = {"--version"})
@@ -92,11 +91,9 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-//        @Parameter(names = {"-s", "--species"}, description = "", required = false, variableArity = true)
-//        public List<String> species = Arrays.asList("Homo sapiens");
+
         @Parameter(names = {"-s", "--species"}, description = "", required = false, arity = 1)
         public String species = "Homo sapiens";
-
 
         @Parameter(names = {"-a", "--assembly"}, description = "", required = false, arity = 1)
         public String assembly;
