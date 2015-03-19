@@ -41,7 +41,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
 
     /**
-     * Parse specific 'download' command options
+     * Execute specific 'download' command options
      */
     public void execute() {
         try {
