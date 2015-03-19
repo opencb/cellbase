@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.query;
+package org.opencb.cellbase.core.variant_annotation;
 
 import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.formats.annotation.io.VepFormatWriter;

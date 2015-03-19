@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.query;
+package org.opencb.cellbase.core.variant_annotation;
 
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;

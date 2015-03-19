@@ -21,6 +21,7 @@ public class CliOptionsParser {
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private QueryCommandOptions queryCommandOptions;
+    private VariantAnnotationCommandOptions variantAnnotationCommandOptions;
 
 
     public CliOptionsParser() {
@@ -35,11 +36,13 @@ public class CliOptionsParser {
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         queryCommandOptions = new QueryCommandOptions();
+        variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
 
         jcommander.addCommand("download", downloadCommandOptions);
         jcommander.addCommand("build", buildCommandOptions);
         jcommander.addCommand("load", loadCommandOptions);
         jcommander.addCommand("query", queryCommandOptions);
+        jcommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
 
     }
 
@@ -228,6 +231,36 @@ public class CliOptionsParser {
         public int threads = 2;
     }
 
+    @Parameters(commandNames = {"variant-annotation"}, commandDescription = "Description")
+    public class VariantAnnotationCommandOptions {
+
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+
+        @Parameter(names = {"--species"}, description = "", required = true)
+        public String species;
+
+        @Parameter(names = {"--assembly"}, description = "", required = false)
+        public String assembly;
+
+        @Parameter(names = {"-i", "--input-file"}, description = "", required = true, arity = 1)
+        public String inputFile;
+
+        @Parameter(names = {"-o", "--output-file"}, description = "", required = true, arity = 1)
+        public String outputFile;
+
+        @Parameter(names = {"--host-url"}, description = "", required = false, arity = 1)
+        public String url = "wwwdev.ebi.ac.uk";
+
+        @Parameter(names = {"--port"}, description = "", required = false, arity = 1)
+        public int port = 80;
+
+        @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
+        public int threads = 2;
+    }
+
 
     public GeneralOptions getGeneralOptions() {
         return generalOptions;
@@ -245,8 +278,8 @@ public class CliOptionsParser {
         return loadCommandOptions;
     }
 
-    public QueryCommandOptions getQueryCommandOptions() {
-        return queryCommandOptions;
-    }
+    public QueryCommandOptions getQueryCommandOptions() { return queryCommandOptions; }
+
+    public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }
 
 }

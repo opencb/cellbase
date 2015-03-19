@@ -119,6 +119,13 @@ public class CellBaseMain {
                         commandParser = new QueryCommandParser(cliOptionsParser.getQueryCommandOptions());
                     }
                     break;
+                case "variant-annotation":
+                    if (cliOptionsParser.getQueryCommandOptions().commonOptions.help) {
+                        cliOptionsParser.printUsage();
+                    } else {
+                        commandParser = new VariantAnnotationCommandParser(cliOptionsParser.getVariantAnnotationCommandOptions());
+                    }
+                    break;
                 default:
                     break;
             }
