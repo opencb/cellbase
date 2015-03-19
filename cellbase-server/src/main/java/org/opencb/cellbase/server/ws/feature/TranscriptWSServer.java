@@ -258,7 +258,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-            return createOkResponse(dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+//            return createOkResponse(dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+            return createOkResponse("not implemented");
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonsByTranscriptId", e.toString());

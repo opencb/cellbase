@@ -156,7 +156,8 @@ public class RegionWSServer extends GenericRestWSServer {
             checkParams();
             ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
-            return createOkResponse(exonDBAdaptor.getAllByRegionList(regions));
+//            return createOkResponse(exonDBAdaptor.getAllByRegionList(regions));
+            return createOkResponse("not implemented");
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonByRegion", e.toString());
