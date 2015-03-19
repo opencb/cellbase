@@ -5,6 +5,9 @@ import org.opencb.cellbase.app.cli.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+/**
+ * Created by imedina on 03/02/15.
+ */
 public class CellBaseMain {
 
     public static final String VERSION = "3.1.0-RC";
@@ -53,7 +56,7 @@ public class CellBaseMain {
                     }
                     break;
                 case "variant-annotation":
-                    if (cliOptionsParser.getQueryCommandOptions().commonOptions.help) {
+                    if (cliOptionsParser.getVariantAnnotationCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
                     } else {
                         commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
