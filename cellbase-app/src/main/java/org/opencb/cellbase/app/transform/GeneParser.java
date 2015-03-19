@@ -40,7 +40,7 @@ public class GeneParser extends CellBaseParser {
 
     private int CHUNK_SIZE = 2000;
     private String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
-
+    private Set<String> indexedSequences;
 
 
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseSerializer serializer) {
@@ -67,9 +67,6 @@ public class GeneParser extends CellBaseParser {
     }
 
     public void parse() throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
-
-        String currentChromosome = "";
-
         Gene gene = null;
         Transcript transcript;
         Exon exon = null;
@@ -109,11 +106,6 @@ public class GeneParser extends CellBaseParser {
 
             String geneId = gtf.getAttributes().get("gene_id");
             String transcriptId = gtf.getAttributes().get("transcript_id");
-
-             // if chromosome is changed (or it's the first chromosome) we load the new chromosome sequence.
-            if (!currentChromosome.equals(gtf.getSequenceName()) && !gtf.getSequenceName().startsWith("GL") && !gtf.getSequenceName().startsWith("HS") && !gtf.getSequenceName().startsWith("HG") && !gtf.getSequenceName().startsWith("CHR_HS")) {
-                currentChromosome = gtf.getSequenceName();
-            }
 
             if (newGene(gene, geneId)) {
                 // If new geneId is different from the current then we must serialize before load new gene
@@ -165,14 +157,8 @@ public class GeneParser extends CellBaseParser {
 
             if (gtf.getFeature().equalsIgnoreCase("exon")) {
                 // Obtaining the exon sequence
-                String exonSequence = "";
-                if(currentChromosome.equals(gtf.getSequenceName()) ) {
-                    try {
-                        exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-                    } catch (SQLException e) {
-                        logger.error("Error obtaining exon sequence ({}:{}-{})", gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-                    }
-                }
+                String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
                         gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
                         .getAttributes().get("exon_number")), exonSequence);
@@ -538,8 +524,22 @@ public class GeneParser extends CellBaseParser {
             createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
             indexReferenceGenomeFasta(genomeSequenceFilePath);
         }
+        indexedSequences = getIndexedSequences();
         sqlQuery = sqlConn.prepareStatement("SELECT sequence from genome_sequence WHERE chunkId = ? "); //AND start <= ? AND end >= ?
         logger.info("Genome sequence database connected");
+    }
+
+    private Set<String> getIndexedSequences() throws SQLException {
+        Set<String> indexedSeq = new HashSet<>();
+
+        PreparedStatement seqNameQuery = sqlConn.prepareStatement("SELECT DISTINCT sequenceName from genome_sequence");
+        ResultSet rs = seqNameQuery.executeQuery();
+        while (rs.next()) {
+            indexedSeq.add(rs.getString(1));
+        }
+        rs.close();
+
+        return indexedSeq;
     }
 
     private void disconnectSqlite() throws SQLException {
@@ -553,7 +553,7 @@ public class GeneParser extends CellBaseParser {
         String sequenceName = "";
         boolean haplotypeSequenceType = false;
 
-        PreparedStatement sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence) values (?, ?, ?, ?)");
+        PreparedStatement sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence, sequenceName) values (?, ?, ?, ?, ?)");
         StringBuilder sequenceStringBuilder = new StringBuilder();
         String line;
         while ((line = bufferedReader.readLine()) != null) {
@@ -588,6 +588,7 @@ public class GeneParser extends CellBaseParser {
         // if the sequence read is not HAP then we stored in sqlite
         if(!haplotypeSequenceType && !sequenceName.contains("PATCH")) {
             logger.info("Indexing genome sequence {} ...", sequenceName);
+            sqlInsert.setString(5, sequenceName);
             //chromosome sequence length could shorter than CHUNK_SIZE
             if (sequenceStringBuilder.length() < CHUNK_SIZE) {
                 sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
@@ -643,27 +644,33 @@ public class GeneParser extends CellBaseParser {
         }
     }
 
-    private String getExonSequence(String sequenceName, int start, int end) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
-        ResultSet rs;
-        int regionChunkStart = getChunk(start);
-        int regionChunkEnd = getChunk(end);
-        for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
-            sqlQuery.setString(1, sequenceName + "_" + chunkId + "_" + chunkIdSuffix);
-            rs = sqlQuery.executeQuery();
-            stringBuilder.append(rs.getString(1));
-        }
-
-        int startStr = getOffset(start);
-        int endStr = getOffset(start) + (end - start) + 1;
+    private String getExonSequence(String sequenceName, int start, int end){
         String subStr = "";
-        if (regionChunkStart > 0) {
-            if (stringBuilder.toString().length() > 0 && stringBuilder.toString().length() >= endStr) {
-                subStr = stringBuilder.toString().substring(startStr, endStr);
-            }
-        } else {
-            if (stringBuilder.toString().length() > 0 && stringBuilder.toString().length() + 1 >= endStr) {
-                subStr = stringBuilder.toString().substring(startStr - 1, endStr - 1);
+        if (indexedSequences.contains(sequenceName)) {
+            try{
+                StringBuilder stringBuilder = new StringBuilder();
+                ResultSet rs;
+                int regionChunkStart = getChunk(start);
+                int regionChunkEnd = getChunk(end);
+                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
+                    sqlQuery.setString(1, sequenceName + "_" + chunkId + "_" + chunkIdSuffix);
+                    rs = sqlQuery.executeQuery();
+                    stringBuilder.append(rs.getString(1));
+                }
+
+                int startStr = getOffset(start);
+                int endStr = getOffset(start) + (end - start) + 1;
+                if (regionChunkStart > 0) {
+                    if (stringBuilder.toString().length() > 0 && stringBuilder.toString().length() >= endStr) {
+                        subStr = stringBuilder.toString().substring(startStr, endStr);
+                    }
+                } else {
+                    if (stringBuilder.toString().length() > 0 && stringBuilder.toString().length() + 1 >= endStr) {
+                        subStr = stringBuilder.toString().substring(startStr - 1, endStr - 1);
+                    }
+                }
+            } catch (SQLException e) {
+                logger.error("Error obtaining exon sequence ({}:{}-{})", sequenceName, start, end);
             }
         }
         return subStr;
