@@ -2,7 +2,6 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +74,7 @@ public class CliOptionsParser {
 
         @Parameter(names = {"-h", "--help"}, help = true)
         public boolean help;
+
         @Parameter(names = {"-L", "--log-level"}, description = "This parameter set the level of the logging", required = false, arity = 1)
         public String logLevel = "info";
 
@@ -89,7 +89,6 @@ public class CliOptionsParser {
 
     @Parameters(commandNames = {"download"}, commandDescription = "Description")
     public class DownloadCommandOptions {
-
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
@@ -125,9 +124,9 @@ public class CliOptionsParser {
     @Parameters(commandNames = {"build"}, commandDescription = "Description")
     public class BuildCommandOptions {
 
-
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
+
 
         @Parameter(names = {"-b", "--build"}, description = "", required = true, arity = 1)
         public String build;
@@ -153,9 +152,9 @@ public class CliOptionsParser {
     @Parameters(commandNames = {"load"}, commandDescription = "Description")
     public class LoadCommandOptions {
 
-
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
+
 
         @Parameter(names = {"-d", "--data"}, description = "", required = true, arity = 1)
         public String load;
@@ -189,12 +188,12 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
         public int threads = 2;
+
     }
 
 
     @Parameters(commandNames = {"query"}, commandDescription = "Description")
     public class QueryCommandOptions {
-
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
@@ -215,6 +214,7 @@ public class CliOptionsParser {
         @Parameter(names = {"--resource"}, description = "", required = false, arity = 1)
         public String resource;
 
+        @Deprecated
         @Parameter(names = {"--variant-annot"}, description = "", required = false)
         public boolean annotate;
 
@@ -229,11 +229,12 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
         public int threads = 2;
+
     }
+
 
     @Parameters(commandNames = {"variant-annotation"}, commandDescription = "Description")
     public class VariantAnnotationCommandOptions {
-
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
@@ -259,6 +260,7 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
         public int threads = 2;
+
     }
 
 
@@ -278,8 +280,12 @@ public class CliOptionsParser {
         return loadCommandOptions;
     }
 
-    public QueryCommandOptions getQueryCommandOptions() { return queryCommandOptions; }
+    public QueryCommandOptions getQueryCommandOptions() {
+        return queryCommandOptions;
+    }
 
-    public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }
+    public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() {
+        return variantAnnotationCommandOptions;
+    }
 
 }

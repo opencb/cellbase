@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 /**
  * Created by imedina on 03/02/15.
  */
-public abstract class CommandParser {
+public abstract class CommandExecutor {
 
     protected String logLevel;
     protected boolean verbose;
@@ -25,11 +25,11 @@ public abstract class CommandParser {
 
     protected Logger logger;
 
-    public CommandParser() {
+    public CommandExecutor() {
 
     }
 
-    public CommandParser(String logLevel, boolean verbose, String configFile) {
+    public CommandExecutor(String logLevel, boolean verbose, String configFile) {
         this.logLevel = logLevel;
         this.verbose = verbose;
         this.configFile = configFile;
@@ -46,7 +46,7 @@ public abstract class CommandParser {
         }
     }
 
-    public abstract void parse();
+    public abstract void execute();
 
     public String getLogLevel() {
         return logLevel;

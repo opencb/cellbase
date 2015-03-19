@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 /**
  * Created by imedina on 03/02/15.
  */
-public class BuildCommandParser extends CommandParser {
+public class BuildCommandExecutor extends CommandExecutor {
 
     // TODO: these two constants should be defined in the 'download' module
     public static final String GWAS_INPUT_FILE_NAME = "gwascatalog.txt";
@@ -26,7 +26,7 @@ public class BuildCommandParser extends CommandParser {
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
 
-    public BuildCommandParser(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
+    public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
                 buildCommandOptions.commonOptions.conf);
 
@@ -43,7 +43,7 @@ public class BuildCommandParser extends CommandParser {
     /**
      * Parse specific 'build' command options
      */
-    public void parse() {
+    public void execute() {
         try {
             checkOutputDir();
             if (buildCommandOptions.build != null) {

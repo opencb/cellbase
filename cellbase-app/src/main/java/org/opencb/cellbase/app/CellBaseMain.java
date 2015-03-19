@@ -89,53 +89,53 @@ public class CellBaseMain {
                 System.out.println("version = 3.1.0");
             }
         }else {
-            CommandParser commandParser = null;
+            CommandExecutor commandExecutor = null;
             switch (parsedCommand) {
                 case "download":
                     if (cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
                     } else {
-                        commandParser = new DownloadCommandParser(cliOptionsParser.getDownloadCommandOptions());
+                        commandExecutor = new DownloadCommandExecutor(cliOptionsParser.getDownloadCommandOptions());
                     }
                     break;
                 case "build":
                     if (cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
                     } else {
-                        commandParser = new BuildCommandParser(cliOptionsParser.getBuildCommandOptions());
+                        commandExecutor = new BuildCommandExecutor(cliOptionsParser.getBuildCommandOptions());
                     }
                     break;
                 case "load":
                     if (cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
                     } else {
-                        commandParser = new LoadCommandParser(cliOptionsParser.getLoadCommandOptions());
+                        commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                     }
                     break;
                 case "query":
                     if (cliOptionsParser.getQueryCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
                     } else {
-                        commandParser = new QueryCommandParser(cliOptionsParser.getQueryCommandOptions());
+                        commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryCommandOptions());
                     }
                     break;
                 case "variant-annotation":
                     if (cliOptionsParser.getQueryCommandOptions().commonOptions.help) {
                         cliOptionsParser.printUsage();
                     } else {
-                        commandParser = new VariantAnnotationCommandParser(cliOptionsParser.getVariantAnnotationCommandOptions());
+                        commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
                     }
                     break;
                 default:
                     break;
             }
 
-            if (commandParser != null) {
+            if (commandExecutor != null) {
                 try {
-                    commandParser.loadCellBaseConfiguration();
-                    commandParser.parse();
+                    commandExecutor.loadCellBaseConfiguration();
+                    commandExecutor.execute();
                 } catch (IOException|URISyntaxException ex) {
-                    commandParser.getLogger().error("Error reading cellbase configuration: " + ex.getMessage());
+                    commandExecutor.getLogger().error("Error reading cellbase configuration: " + ex.getMessage());
                 }
             }
         }

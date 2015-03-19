@@ -14,14 +14,14 @@ import java.util.concurrent.ExecutionException;
  * Created by imedina on 20/02/15.
  * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
-public class QueryCommandParser extends CommandParser {
+public class QueryCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.QueryCommandOptions queryCommandOptions;
 
     private Path inputFile;
     private Path outputFile;
 
-    public QueryCommandParser(CliOptionsParser.QueryCommandOptions queryCommandOptions) {
+    public QueryCommandExecutor(CliOptionsParser.QueryCommandOptions queryCommandOptions) {
         super(queryCommandOptions.commonOptions.logLevel, queryCommandOptions.commonOptions.verbose,
                 queryCommandOptions.commonOptions.conf);
 
@@ -29,7 +29,7 @@ public class QueryCommandParser extends CommandParser {
     }
 
     @Override
-    public void parse() {
+    public void execute() {
         checkParameters();
         if(queryCommandOptions.annotate) {
             VariantAnnotatorRunner variantAnnotatorRunner = null;

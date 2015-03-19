@@ -14,7 +14,7 @@ import java.util.*;
 /**
  * Created by imedina on 03/02/15.
  */
-public class DownloadCommandParser extends CommandParser {
+public class DownloadCommandExecutor extends CommandExecutor {
 
     private File ensemblScriptsFolder;
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
@@ -31,7 +31,7 @@ public class DownloadCommandParser extends CommandParser {
     private String ensemblVersion;
     private String ensemblRelease;
 
-    public DownloadCommandParser(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
+    public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
                 downloadCommandOptions.commonOptions.conf);
 
@@ -43,7 +43,7 @@ public class DownloadCommandParser extends CommandParser {
     /**
      * Parse specific 'download' command options
      */
-    public void parse() {
+    public void execute() {
         try {
             checkParameters();
             Path outputDir = Paths.get(downloadCommandOptions.outputDir);

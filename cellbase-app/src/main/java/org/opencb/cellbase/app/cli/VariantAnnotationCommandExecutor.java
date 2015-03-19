@@ -13,14 +13,14 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by fjlopez on 18/03/15.
  */
-public class VariantAnnotationCommandParser extends CommandParser {
+public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions;
 
     private Path inputFile;
     private Path outputFile;
 
-    public VariantAnnotationCommandParser(CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions) {
+    public VariantAnnotationCommandExecutor(CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions) {
         super(variantAnnotationCommandOptions.commonOptions.logLevel, variantAnnotationCommandOptions.commonOptions.verbose,
                 variantAnnotationCommandOptions.commonOptions.conf);
 
@@ -28,7 +28,7 @@ public class VariantAnnotationCommandParser extends CommandParser {
     }
 
     @Override
-    public void parse() {
+    public void execute() {
         checkParameters();
         VariantAnnotatorRunner variantAnnotatorRunner = null;
         try {

@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Created by imedina on 03/02/15.
  */
-public class LoadCommandParser extends CommandParser {
+public class LoadCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.LoadCommandOptions loadCommandOptions;
 
@@ -19,7 +19,7 @@ public class LoadCommandParser extends CommandParser {
 
     private String collection;
 
-    public LoadCommandParser(CliOptionsParser.LoadCommandOptions loadCommandOptions) {
+    public LoadCommandExecutor(CliOptionsParser.LoadCommandOptions loadCommandOptions) {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.verbose,
                 loadCommandOptions.commonOptions.conf);
 
@@ -30,7 +30,7 @@ public class LoadCommandParser extends CommandParser {
     /**
      * Parse specific 'load' command options
      */
-    public void parse() {
+    public void execute() {
         checkParameters();
 
 //        LoadRunner loadRunner = new LoadRunner(inputFile, collection, loadCommandOptions.threads);
