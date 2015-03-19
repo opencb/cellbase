@@ -4,6 +4,7 @@ import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.lib.api.GenomeSequenceDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements GenomeSequenceDBAdaptor {
 
-    private int chunkSize = 2000;
+    private int chunkSize = MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
 
     public GenomeSequenceMongoDBAdaptor(DB db) {
         super(db);

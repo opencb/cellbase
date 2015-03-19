@@ -5,6 +5,7 @@ import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -14,7 +15,7 @@ import java.util.*;
 public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
 
 
-    int chunkSize;
+    private int chunkSize = MongoDBCollectionConfiguration.GENE_CHUNK_SIZE;
 
     public ConservedRegionMongoDBAdaptor(DB db) {
         super(db);
@@ -22,7 +23,7 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
 
     public ConservedRegionMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        this.chunkSize = 2000;
+//        this.chunkSize = 2000;
         mongoDBCollection = db.getCollection("conserved_region");
     }
 

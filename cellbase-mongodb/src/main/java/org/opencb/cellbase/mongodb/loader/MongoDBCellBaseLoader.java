@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDBCollection;
@@ -109,10 +110,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if (collectionName != null) {
             switch (collectionName) {
                 case "gene":
-                    chunkSizes = new int[]{5000};
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.GENE_CHUNK_SIZE};
                     break;
                 case "variation":
-                    chunkSizes = new int[]{5000};
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE};
                     break;
             }
         }

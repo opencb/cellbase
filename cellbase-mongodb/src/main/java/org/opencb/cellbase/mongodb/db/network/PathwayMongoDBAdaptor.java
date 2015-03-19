@@ -5,6 +5,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 //		super(species, version);
 //	}
 
-    private int genomeSequenceChunkSize = 2000;
+    private int genomeSequenceChunkSize = MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
 
     public PathwayMongoDBAdaptor(DB db) {
         super(db);

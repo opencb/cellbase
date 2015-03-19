@@ -4,6 +4,7 @@ import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
@@ -22,7 +23,7 @@ import java.util.List;
  */
 public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements RegulatoryRegionDBAdaptor {
 
-    private static int CHUNKSIZE = 2000;
+    private static int regulatoryRegionChunkSize = MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE;
 
     public RegulatoryRegionMongoDBAdaptor(DB db) {
         super(db);
@@ -71,7 +72,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
         List<DBObject> queries = new ArrayList<>();
         for (Position position : positionList) {
-            String chunkId = position.getChromosome() + "_" + getChunkId(position.getPosition(), CHUNKSIZE)+"_"+CHUNKSIZE/1000+"k";
+            String chunkId = position.getChromosome() + "_" + getChunkId(position.getPosition(), regulatoryRegionChunkSize)+"_"+ regulatoryRegionChunkSize /1000+"k";
             BasicDBList chunksId = new BasicDBList();
             chunksId.add(chunkId);
             QueryBuilder builder = QueryBuilder.start("chunkIds").in(chunksId).and("start").is(position.getPosition());
@@ -115,11 +116,11 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
         List<DBObject> queries = new ArrayList<>();
         for (Region region : regionList) {
-            int firstChunkId = getChunkId(region.getStart(), CHUNKSIZE);
-            int lastChunkId = getChunkId(region.getEnd(), CHUNKSIZE);
+            int firstChunkId = getChunkId(region.getStart(), regulatoryRegionChunkSize);
+            int lastChunkId = getChunkId(region.getEnd(), regulatoryRegionChunkSize);
             BasicDBList chunksId = new BasicDBList();
             for (int j = firstChunkId; j <= lastChunkId; j++) {
-                String chunkId = region.getChromosome() + "_" + j+"_"+CHUNKSIZE/1000+"k";
+                String chunkId = region.getChromosome() + "_" + j+"_"+ regulatoryRegionChunkSize /1000+"k";
                 chunksId.add(chunkId);
             }
 
@@ -155,7 +156,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         String featureClass = options.getString("featureClass", null);
 
         BasicDBList chunksId = new BasicDBList();
-        String chunkId = chromosome + "_" + getChunkId(position, CHUNKSIZE)+"_"+CHUNKSIZE/1000+"k";
+        String chunkId = chromosome + "_" + getChunkId(position, regulatoryRegionChunkSize)+"_"+ regulatoryRegionChunkSize /1000+"k";
         chunksId.add(chunkId);
 
         // TODO: Add query to find next item considering next chunk
@@ -192,7 +193,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     private static int getChunkId(int position, int chunksize) {
         if (chunksize <= 0) {
-            return position / CHUNKSIZE;
+            return position / regulatoryRegionChunkSize;
         } else {
             return position / chunksize;
         }
@@ -200,7 +201,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     private static int getChunkStart(int id, int chunksize) {
         if (chunksize <= 0) {
-            return (id == 0) ? 1 : id * CHUNKSIZE;
+            return (id == 0) ? 1 : id * regulatoryRegionChunkSize;
         } else {
             return (id == 0) ? 1 : id * chunksize;
         }
@@ -208,7 +209,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     private static int getChunkEnd(int id, int chunksize) {
         if (chunksize <= 0) {
-            return (id * CHUNKSIZE) + CHUNKSIZE - 1;
+            return (id * regulatoryRegionChunkSize) + regulatoryRegionChunkSize - 1;
         } else {
             return (id * chunksize) + chunksize - 1;
         }

@@ -5,6 +5,7 @@ import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -18,7 +19,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     private DBCollection mongoVariationPhenotypeDBCollection;
 
-    private int variationChunkSize = 1000;
+    private int variationChunkSize = MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE;
 
     public VariationMongoDBAdaptor(DB db) { super(db); }
 

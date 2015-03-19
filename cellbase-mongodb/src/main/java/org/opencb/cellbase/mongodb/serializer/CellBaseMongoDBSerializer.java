@@ -24,7 +24,7 @@ import java.util.Arrays;
 /**
  * Created by parce on 10/31/14.
  */
-public class CellbaseMongoDBSerializer extends CellBaseSerializer {
+public class CellBaseMongoDBSerializer extends CellBaseSerializer {
 
     private final String user;
     private final int port;
@@ -39,7 +39,7 @@ public class CellbaseMongoDBSerializer extends CellBaseSerializer {
     private ObjectMapper jsonObjectMapper;
     private DBCollection clinicalCollection;
 
-    public CellbaseMongoDBSerializer(String host, int port, String database, String user, String password) {
+    public CellBaseMongoDBSerializer(String host, int port, String database, String user, String password) {
         super();
         this.user = user;
         this.port = port;

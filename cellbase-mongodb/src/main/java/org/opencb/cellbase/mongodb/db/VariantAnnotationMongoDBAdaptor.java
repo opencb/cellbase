@@ -13,6 +13,7 @@ import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantDiseaseAssociationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -31,8 +32,8 @@ import java.util.*;
 public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
 
 //    private DBCollection mongoVariationPhenotypeDBCollection;
-    private int coreChunkSize = 5000;
-    private int regulatoryChunkSize = 2000;  //TODO: load this value from properties
+    private int geneChunkSize = MongoDBCollectionConfiguration.GENE_CHUNK_SIZE;
+    private int regulatoryRegionChunkSize = MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE;
     private static Map<String, Map<String,Boolean>> isSynonymousCodon = new HashMap<>();
     private static Map<String, List<String>> aToCodon = new HashMap<>(20);
     private static Map<String, String> codonToA = new HashMap<>();
@@ -190,9 +191,9 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
         super(db, species, assembly);
     }
 
-    public VariantAnnotationMongoDBAdaptor(DB db, String species, String assembly, int coreChunkSize) {
+    public VariantAnnotationMongoDBAdaptor(DB db, String species, String assembly, int geneChunkSize) {
         super(db, species, assembly);
-        this.coreChunkSize = coreChunkSize;
+        this.geneChunkSize = geneChunkSize;
     }
 
     public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
@@ -704,7 +705,7 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
         }
 
         // Get all regulatory regions surrounding the variant
-        String chunkId = getChunkIdPrefix(variant.getChromosome(), variant.getPosition(), regulatoryChunkSize);
+        String chunkId = getChunkIdPrefix(variant.getChromosome(), variant.getPosition(), regulatoryRegionChunkSize);
         BasicDBList chunksId = new BasicDBList();
         chunksId.add(chunkId);
         builderRegulatory = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(variantEnd).and("end")

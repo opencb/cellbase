@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.opencb.biodata.models.variation.Variation;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +14,12 @@ import java.util.List;
  */
 public class VariationConverter extends MongoDBTypeConverter<Variation, DBObject> {
 
-    private String chunkIdSuffix;
     private int chunkSize;
-    private final static int DEFAULT_CHUNK_SIZE = 5000;
+    private String chunkIdSuffix;
+
 
     public VariationConverter() {
-        this(DEFAULT_CHUNK_SIZE);
+        this(MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE);
     }
 
     public VariationConverter(int chunkSize) {
@@ -26,7 +27,7 @@ public class VariationConverter extends MongoDBTypeConverter<Variation, DBObject
         super();
 
         this.chunkSize = chunkSize;
-        this.chunkIdSuffix = this.chunkSize/1000 + "k";
+        this.chunkIdSuffix = this.chunkSize / 1000 + "k";
     }
 
     @Override

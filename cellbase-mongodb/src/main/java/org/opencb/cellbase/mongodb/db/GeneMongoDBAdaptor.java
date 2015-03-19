@@ -4,6 +4,7 @@ import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -17,7 +18,7 @@ import java.util.List;
 
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor {
 
-    private int coreChunkSize = 5000;
+    private int geneChunkSize = MongoDBCollectionConfiguration.GENE_CHUNK_SIZE;
 
     public GeneMongoDBAdaptor(DB db) { super(db); }
 
@@ -28,14 +29,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
-    public GeneMongoDBAdaptor(String species, String assembly, int coreChunkSize, MongoDataStore mongoDataStore) {
+    public GeneMongoDBAdaptor(String species, String assembly, int geneChunkSize, MongoDataStore mongoDataStore) {
 //        super(db, species, assembly);
 //        mongoDBCollection = db.getCollection("gene");
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
-        this.coreChunkSize = coreChunkSize;
+        this.geneChunkSize = geneChunkSize;
     }
 
     @Override
@@ -172,7 +173,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             QueryBuilder builder = null;
             // If regions is 1 position then query can be optimize using chunks
             if (region.getStart() == region.getEnd()) {
-                builder = QueryBuilder.start("chunkIds").is(getChunkIdPrefix(region.getChromosome(), region.getStart(), coreChunkSize)).and("end")
+                builder = QueryBuilder.start("chunkIds").is(getChunkIdPrefix(region.getChromosome(), region.getStart(), geneChunkSize)).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             } else {
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")

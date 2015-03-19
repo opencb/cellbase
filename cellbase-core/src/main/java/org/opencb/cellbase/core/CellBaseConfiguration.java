@@ -20,10 +20,10 @@ public class CellBaseConfiguration {
     private DownloadProperties download;
     private SpeciesProperties species;
 
-    public static CellBaseConfiguration load(InputStream cellBaseConfigurationFileStream) throws IOException {
+
+    public static CellBaseConfiguration load(InputStream configurationInputStream) throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();
-        CellBaseConfiguration properties = jsonMapper.readValue(cellBaseConfigurationFileStream, CellBaseConfiguration.class);
-        return properties;
+        return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
     }
 
     public String getVersion() {
@@ -84,7 +84,6 @@ public class CellBaseConfiguration {
 
     public List<SpeciesProperties.Species> getAllSpecies() {
         List<SpeciesProperties.Species> allSpecies = new ArrayList<>();
-
         allSpecies.addAll(species.getVertebrates());
         allSpecies.addAll(species.getMetazoa());
         allSpecies.addAll(species.getFungi());
