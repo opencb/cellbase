@@ -209,8 +209,8 @@ public class DownloadCommandParser extends CommandParser {
         downloadGeneGtf(sp, spShortName, geneFolder, host);
         getGeneExtraInfo(sp, geneFolder);
         if (sp.getScientificName().equalsIgnoreCase("homo sapiens")) {
-            // TODO: output folder is gene or regulation?
             getProteinFunctionPredictionMatrices(sp, geneFolder);
+            getMotifFeaturesFile(sp, spShortName, geneFolder, host);
         }
     }
 
@@ -248,6 +248,14 @@ public class DownloadCommandParser extends CommandParser {
         } else {
             logger.error("Gene extra info for " + sp.getScientificName() + " cannot be downloaded");
         }
+    }
+
+    private void getMotifFeaturesFile(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
+        logger.info("Downloading motif features file ...");
+        String regulationUrl = host + "/" + ensemblRelease + "/regulation/" + spShortName;
+        String motifFeaturesFile = "MotifFeatures.gff.gz";
+        Path outputFile = geneFolder.resolve(motifFeaturesFile);
+        downloadFile(regulationUrl + "/" + motifFeaturesFile, outputFile.toString());
     }
 
     private void downloadVariation(Species sp, String shortName, String assembly, Path spFolder, String host)
