@@ -34,7 +34,8 @@ public class LoadCommandExecutor extends CommandExecutor {
         checkParameters();
 
 //        LoadRunner loadRunner = new LoadRunner(inputFile, collection, loadCommandOptions.threads);
-        LoadRunner loadRunner = new LoadRunner(inputFile, loadCommandOptions.threads, loadCommandOptions.load, loadCommandOptions.loader, loadCommandOptions.loaderParams);
+        LoadRunner loadRunner = new LoadRunner(inputFile, loadCommandOptions.threads, loadCommandOptions.load,
+                loadCommandOptions.loader, loadCommandOptions.loaderParams);
 
         try {
             loadRunner.run();

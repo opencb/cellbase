@@ -109,11 +109,22 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private void getChunkSizes(String collectionName) {
         if (collectionName != null) {
             switch (collectionName) {
+                case "genome_sequence":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE};
+                    break;
                 case "gene":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENE_CHUNK_SIZE};
                     break;
                 case "variation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE};
+                    break;
+                case "regulation":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
+                    break;
+                case "conservation":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
+                    break;
+                default:
                     break;
             }
         }

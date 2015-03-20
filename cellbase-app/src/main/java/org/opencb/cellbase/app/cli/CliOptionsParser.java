@@ -156,7 +156,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Data file to be loaded into the database, i.e. genome_sequence, gene, ...", required = true, arity = 1)
         public String load;
 
         @Parameter(names = {"-l", "--loader"}, description = "", required = false, arity = 1)

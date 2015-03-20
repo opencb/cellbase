@@ -71,11 +71,11 @@ public class BuildCommandExecutor extends CommandExecutor {
                     case "protein":
                         parser = buildProtein();
                         break;
-                    case "conservation":
-                        parser = buildConservation();
-                        break;
                     case "ppi":
                         parser = getInteractionParser();
+                        break;
+                    case "conservation":
+                        parser = buildConservation();
                         break;
                     case "drug":
                         parser = buildDrugParser();
