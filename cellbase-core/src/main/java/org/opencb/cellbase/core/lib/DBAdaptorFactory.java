@@ -1,8 +1,10 @@
 package org.opencb.cellbase.core.lib;
 
 import org.opencb.cellbase.core.lib.api.*;
-import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
-import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.*;
+import org.opencb.cellbase.core.lib.api.systems.PathwayDBAdaptor;
+import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.*;

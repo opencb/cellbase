@@ -184,6 +184,11 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         return executeQuery("result", builder.get(), options);
     }
 
+    @Override
+    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
+        return null;
+    }
+
 
     @Override
     public QueryResult getAll(QueryOptions options) {

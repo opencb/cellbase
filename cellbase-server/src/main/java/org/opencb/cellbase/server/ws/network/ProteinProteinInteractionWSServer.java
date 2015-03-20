@@ -1,7 +1,7 @@
 package org.opencb.cellbase.server.ws.network;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;

@@ -3,7 +3,7 @@ package org.opencb.cellbase.server.ws.genomic;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.lib.api.SnpDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.SnpDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;

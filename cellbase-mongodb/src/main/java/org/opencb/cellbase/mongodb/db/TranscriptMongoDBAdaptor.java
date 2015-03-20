@@ -7,7 +7,7 @@ import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.TranscriptDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -58,10 +58,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         return executeAggregation("result", commands, options);
     }
 
-    @Override
-    public QueryResult next(String id, QueryOptions options) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
@@ -89,6 +85,16 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
             commandsList.add(commands);
         }
         return executeAggregationList(idList, commandsList, options);
+    }
+
+    @Override
+    public QueryResult getAllByXref(String id, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options) {
+        return null;
     }
 
     @Override
@@ -201,15 +207,15 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         return null;
     }
 
-    @Override
-    public List<Transcript> getAllByProteinName(String proteinName) {
-        return null;
-    }
-
-    @Override
-    public List<List<Transcript>> getAllByProteinNameList(List<String> proteinNameList) {
-        return null;
-    }
+//    @Override
+//    public List<Transcript> getAllByProteinName(String proteinName) {
+//        return null;
+//    }
+//
+//    @Override
+//    public List<List<Transcript>> getAllByProteinNameList(List<String> proteinNameList) {
+//        return null;
+//    }
 
     @Override
     public List<Transcript> getAllByMirnaMature(String mirnaID) {

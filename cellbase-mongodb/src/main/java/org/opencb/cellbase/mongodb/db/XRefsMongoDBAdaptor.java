@@ -4,7 +4,7 @@ import com.mongodb.*;
 import org.opencb.biodata.models.core.DBName;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.common.XRefs;
-import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.XRefsDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;

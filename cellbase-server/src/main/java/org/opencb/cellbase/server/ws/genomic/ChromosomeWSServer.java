@@ -3,7 +3,7 @@ package org.opencb.cellbase.server.ws.genomic;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ChromosomeDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryOptions;

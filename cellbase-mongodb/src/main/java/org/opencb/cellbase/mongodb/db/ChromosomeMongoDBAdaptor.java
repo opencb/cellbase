@@ -1,7 +1,7 @@
 package org.opencb.cellbase.mongodb.db;
 
 import com.mongodb.*;
-import org.opencb.cellbase.core.lib.api.ChromosomeDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ChromosomeDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;

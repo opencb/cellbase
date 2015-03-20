@@ -1,7 +1,7 @@
 package org.opencb.cellbase.mongodb.db;
 
 import com.mongodb.*;
-import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;

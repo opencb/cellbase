@@ -1,12 +1,13 @@
-package org.opencb.cellbase.core.lib.api;
+package org.opencb.cellbase.core.lib.api.core;
 
+import org.opencb.cellbase.core.lib.api.FeatureDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
 
-public interface ProteinDBAdaptor extends FeatureDBAdaptor {
+public interface ProteinDBAdaptor { //extends FeatureDBAdaptor
 
 
     public QueryResult getAll(QueryOptions options);

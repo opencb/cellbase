@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.lib.api.network;
+package org.opencb.cellbase.core.lib.api.systems;
 
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;

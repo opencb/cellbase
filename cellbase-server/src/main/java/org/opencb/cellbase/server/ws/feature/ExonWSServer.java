@@ -5,8 +5,8 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
 import org.opencb.biodata.models.core.Exon;
-import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
-import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ExonDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -46,20 +46,7 @@ public class ExonWSServer extends GenericRestWSServer {
 		}
 	}
 
-    @Deprecated
-	@GET
-	@Path("/{snpId}/bysnp")
-	public Response getAllBySnpIdList(@PathParam("snpId") String query) {
-		try {
-			checkParams();
-			ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllBySnpIdList(Splitter.on(",").splitToList(query))));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getAllBySnpIdList", e.toString());
-		}
-	}
-	
+
 	@GET
 	@Path("/{exonId}/aminos")
 /*
@@ -74,11 +61,11 @@ public class ExonWSServer extends GenericRestWSServer {
 			if(exons != null) {
 				sequenceList = new ArrayList<String>(exons.size());
 				for(Exon exon : exons) {
-					if(exon != null && "-1".equals(exon.getStrand())) {
-						sequenceList = exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query), -1);
-					}else {
-						sequenceList = exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query), 1);
-					}
+//					if(exon != null && "-1".equals(exon.getStrand())) {
+//						sequenceList = exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query), -1);
+//					}else {
+//						sequenceList = exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query), 1);
+//					}
 				}
 			}
 			return generateResponse(query, sequenceList);

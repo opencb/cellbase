@@ -165,9 +165,9 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public QueryResult getAll(QueryOptions options) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+//    @Override
+//    public QueryResult getAll(QueryOptions options) {
+//        return null;  //To change body of implemented methods use File | Settings | File Templates.
+//    }
 
 }

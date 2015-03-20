@@ -15,8 +15,8 @@ public class CellBaseConfiguration {
     private String version;
     private String apiVersion;
     private String wiki;
-    private DatabaseProperties database;
     private String defaultOutdir;
+    private DatabaseProperties database;
     private DownloadProperties download;
     private SpeciesProperties species;
 

@@ -9,7 +9,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ExonDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -68,27 +68,28 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
 
     @Override
-    public List<List<Exon>> getAllByName(String name, List<String> exclude) {
+    public QueryResult getAllByXref(String name, QueryOptions queryOptions) {
         BasicDBObject query = new BasicDBObject("transcripts.xrefs.id", name.toUpperCase());
-        List<List<Exon>> result = new ArrayList<List<Exon>>();
-        List<Gene> genes = executeQuery(query, exclude);
-        for (Gene gene : genes) {
-            List<Exon> exons = new ArrayList<Exon>();
-            for(Transcript transcript : gene.getTranscripts()){
-                exons.addAll(transcript.getExons());
-            }
-            result.add(exons);
+        QueryResult result = new QueryResult();
+        QueryResult genes = executeQuery(name, query, queryOptions);
+        for (Object gene : genes.getResult()) {
+            List<Exon> exons = new ArrayList();
+//            for(Transcript transcript : gene.getTranscripts()){
+//                exons.addAll(transcript.getExons());
+//            }
+//            result.getResult().add(exons);
         }
         return result;
     }
 
     @Override
-    public List<List<List<Exon>>> getAllByNameList(List<String> nameList, List<String> exclude) {
-        List<List<List<Exon>>> exons = new ArrayList<List<List<Exon>>>(nameList.size());
+    public List<QueryResult> getAllByXrefList(List<String> nameList, QueryOptions exclude) {
+        List<QueryResult> queryResultList = new ArrayList<>();
+        List<List<List<Exon>>> exons = new ArrayList<>(nameList.size());
         for (String name : nameList) {
-            exons.add(getAllByName(name, exclude));
+//            exons.add(getAllByName(name, exclude));
         }
-        return exons;
+        return queryResultList;
     }
 
     public QueryResult getAll() {
@@ -100,58 +101,51 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public QueryResult next(String id, QueryOptions options) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<String> getAllIds() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
+        return null;
     }
 
-    public Map<String, Object> getInfo(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public QueryResult getAllByPosition(Position position, QueryOptions options) {
+        return null;
     }
 
-    public List<Map<String, Object>> getInfoByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
+        return null;
     }
 
-    public Map<String, Object> getFullInfo(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
+        return null;
     }
 
-    public List<Map<String, Object>> getFullInfoByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public QueryResult getAllByRegion(Region region, QueryOptions options) {
+        return null;
     }
 
-    public Region getRegionById(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
+        return null;
     }
 
-    public List<Region> getAllRegionsByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+    @Override
+    public QueryResult getAllById(String id, QueryOptions options) {
+        return null;
     }
 
-    public String getSequenceById(String id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<String> getAllSequencesByIdList(List<String> idList) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public List<String> getAllEnsemblIds() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public Exon getByEnsemblId(String ensemblId) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    @Override
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
+        return null;
     }
 
     public List<Exon> getAllByEnsemblIdList(List<String> ensemblIdList) {

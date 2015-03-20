@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.lib.api.network;
+package org.opencb.cellbase.core.lib.api.systems;
 
 
 public interface PathwayDBAdaptor {

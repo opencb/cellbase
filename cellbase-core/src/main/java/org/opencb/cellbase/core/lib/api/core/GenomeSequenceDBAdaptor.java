@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.lib.api;
+package org.opencb.cellbase.core.lib.api.core;
 
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.datastore.core.QueryOptions;

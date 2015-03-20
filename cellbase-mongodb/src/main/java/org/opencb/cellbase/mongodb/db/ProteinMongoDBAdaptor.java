@@ -3,7 +3,7 @@ package org.opencb.cellbase.mongodb.db;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.opencb.cellbase.core.lib.api.ProteinDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ProteinDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -31,11 +31,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public QueryResult getAll(QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult next(String chromosome, int position, QueryOptions options) {
         return null;
     }
 

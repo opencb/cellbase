@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.lib.api;
+package org.opencb.cellbase.core.lib.api.regulatory;
 
 
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;

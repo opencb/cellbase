@@ -1,7 +1,7 @@
 package org.opencb.cellbase.server.ws.network;
 
 import org.opencb.biodata.formats.graph.dot.Dot;
-import org.opencb.cellbase.core.lib.api.network.PathwayDBAdaptor;
+import org.opencb.cellbase.core.lib.api.systems.PathwayDBAdaptor;
 
 import java.util.HashMap;
 import java.util.Map;

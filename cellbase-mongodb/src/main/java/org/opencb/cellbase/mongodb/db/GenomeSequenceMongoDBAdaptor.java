@@ -3,7 +3,7 @@ package org.opencb.cellbase.mongodb.db;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
-import org.opencb.cellbase.core.lib.api.GenomeSequenceDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.GenomeSequenceDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;

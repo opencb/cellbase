@@ -1,8 +1,8 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.lib.api.ConservedRegionDBAdaptor;
-import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ProteinFunctionPredictorDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
