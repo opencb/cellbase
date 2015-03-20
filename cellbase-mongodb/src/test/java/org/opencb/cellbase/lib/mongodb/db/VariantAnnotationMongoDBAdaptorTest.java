@@ -255,7 +255,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 115828861, "C", "G"), new QueryOptions());  // should return stop_lost
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 12837706, "-", "CC"), new QueryOptions());  // should return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("19", 20047783, "-", "AAAAAA"), new QueryOptions());  // should return stop_gained
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 115828861, "C", "G"), new QueryOptions());  // should return stop_lost
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("16", 32859177, "C", "T"), new QueryOptions());  // should return stop_lost
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 13481174, "NN", "-"), new QueryOptions());  // should return stop_lost
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 153600596, "-", "C"), new QueryOptions());  // should
