@@ -1,16 +1,16 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.ExonDBAdaptor;
-import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.ProteinFunctionPredictorDBAdaptor;
-import org.opencb.cellbase.core.lib.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ExonDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -36,18 +36,18 @@ public class TranscriptWSServer extends GenericRestWSServer {
         this.exclude = Arrays.asList(exclude.trim().split(","));
     }
 
-    @GET
-    @Path("/all")
-    public Response getAll() {
-        try {
-            checkParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            return createOkResponse(Arrays.asList(transcriptDBAdaptor.getAll(queryOptions)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAll", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/all")
+//    public Response getAll() {
+//        try {
+//            checkParams();
+//            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+//            return createOkResponse(Arrays.asList(transcriptDBAdaptor.getAll(queryOptions)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getAll", e.toString());
+//        }
+//    }
 
     @GET
     @Path("/{transcriptId}/info")
@@ -242,7 +242,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 
-            return createJsonResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 
 //			return generateResponse(query, "GENE",
 //					geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","), exclude));
@@ -258,8 +258,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-            return generateResponse(query, "EXON",
-                    dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+//            return createOkResponse(dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+            return createOkResponse("not implemented");
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonsByTranscriptId", e.toString());

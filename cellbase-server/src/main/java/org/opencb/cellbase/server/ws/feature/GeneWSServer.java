@@ -6,18 +6,17 @@ import com.mongodb.BasicDBObject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-
-import org.opencb.cellbase.core.lib.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.MirnaDBAdaptor;
-import org.opencb.cellbase.core.lib.api.XRefsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.lib.api.regulatory.MirnaDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.XRefsDBAdaptor;
+import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
-import org.opencb.cellbase.server.QueryResponse;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryResponse;
+import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -63,7 +62,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/list")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs", response = QueryResponse.class)
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs")
     public Response getAllIDs(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
                                   @DefaultValue("") @QueryParam("biotype") String biotypes) {
         try {
@@ -83,7 +82,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/info")
-    @ApiOperation(httpMethod = "GET", value = "Gets the info object of a list of gene IDs")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)")
     public Response getByEnsemblId(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -91,8 +90,10 @@ public class GeneWSServer extends GenericRestWSServer {
 
 //			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 //			queryOptions.put("include", include );
-
-            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            List<org.opencb.datastore.core.QueryResult> genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            List genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            System.out.println(genes.get(0).getResult().get(0).getClass().toString());
+            return createOkResponse(genes);
 //			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
             //	return generateResponse(query, Arrays.asList(this.getGeneDBAdaptor().getAllByEnsemblIdList(StringUtils.toList(query, ","))));
         } catch (Exception e) {
@@ -103,7 +104,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "Gets the transcripts of a list of gene IDs")
+    @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs")
     public Response getTranscriptsByGeneId(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -117,7 +118,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/biotypes")
-    @ApiOperation(httpMethod = "GET", value = "Get all the biotypes")
+    @ApiOperation(httpMethod = "GET", value = "Get the list of existing biotypes")
     public Response getAllBiotypes() {
         try {
             checkParams();
@@ -132,6 +133,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/snp")
+    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified gene(s)")
     public Response getSNPByGeneId(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -139,9 +141,9 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
-            List<QueryResult> qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+            List<org.opencb.datastore.core.QueryResult> qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
             List<QueryResult> queryResults = new ArrayList<>();
-            for (QueryResult qr : qrList) {
+            for (org.opencb.datastore.core.QueryResult qr : qrList) {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(qr.getId());
 
@@ -163,6 +165,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/mutation")
+    @ApiOperation(httpMethod = "GET", value = "Get all variants within the specified gene(s)")
     public Response getMutationByGene(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -180,6 +183,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/tfbs")
+    @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
     public Response getAllTfbs(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -193,6 +197,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/mirna_target")
+    @ApiOperation(httpMethod = "GET", value = "Get all microRNAs binding sites for this gene(s)")
     public Response getAllMirna(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -221,6 +226,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/exon")
+    @ApiOperation(httpMethod = "GET", value = "Get all exons for this gene(s)")
     public Response getExonByGene(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -234,6 +240,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/reactome")
+    @ApiOperation(httpMethod = "GET", value = "Get the Reactome pathways in which this gene is involved")
     public Response getReactomeByEnsemblId(@PathParam("geneId") String query) {
         try {
             checkParams();
@@ -247,6 +254,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/protein")
+    @ApiOperation(httpMethod = "GET", value = "Get the protein-protein interactions in which this gene is involved")
     public Response getPPIByEnsemblId(@PathParam("geneId") String query) {
         try {
             checkParams();

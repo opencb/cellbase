@@ -7,7 +7,7 @@
     <display-name>CellBase Server</display-name>
 
     <servlet>
-        <servlet-name>CellbaseServer</servlet-name>
+        <servlet-name>CellBaseServer</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
@@ -18,12 +18,16 @@
             <!--<param-name>javax.ws.rs.Application</param-name>-->
             <!--<param-value>org.opencb.cellbase.server.CellbaseServer</param-value>-->
         <!--</init-param>-->
+        <init-param>
+            <param-name>CELLBASE_HOME</param-name>
+            <param-value>/opt/cellbase</param-value>
+        </init-param>
 
         <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>CellbaseServer</servlet-name>
+        <servlet-name>CellBaseServer</servlet-name>
         <url-pattern>/webservices/rest/*</url-pattern>
     </servlet-mapping>
 
