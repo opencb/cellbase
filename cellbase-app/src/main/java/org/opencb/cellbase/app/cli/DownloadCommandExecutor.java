@@ -79,7 +79,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void checkParameters() {
         if (!downloadCommandOptions.genome && !downloadCommandOptions.gene && !downloadCommandOptions.variation
                 && !downloadCommandOptions.regulation && !downloadCommandOptions.protein
-                && !downloadCommandOptions.conservation && !downloadCommandOptions.clinical) {
+                && !downloadCommandOptions.conservation && !downloadCommandOptions.clinical
+                && !downloadCommandOptions.all) {
             throw new ParameterException("At least one 'download' option must be selected: sequence, gene, variation, regulation, protein");
         }
     }
@@ -128,25 +129,25 @@ public class DownloadCommandExecutor extends CommandExecutor {
         ensemblRelease = "release-" + ensemblVersion.split("_")[0];
 
         // download sequence, gene, variation, regulation and protein
-        if (downloadCommandOptions.genome && speciesHasInfoToDownload(sp, "genome")) {
+        if ((downloadCommandOptions.genome && speciesHasInfoToDownload(sp, "genome")) || downloadCommandOptions.all) {
             downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.gene && speciesHasInfoToDownload(sp, "gene")) {
+        if ((downloadCommandOptions.gene && speciesHasInfoToDownload(sp, "gene")) || downloadCommandOptions.all) {
             downloadEnsemblGene(sp, spShortName, spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.variation && speciesHasInfoToDownload(sp, "variation")) {
+        if ((downloadCommandOptions.variation && speciesHasInfoToDownload(sp, "variation")) || downloadCommandOptions.all) {
             downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.regulation && speciesHasInfoToDownload(sp, "regulation")) {
+        if ((downloadCommandOptions.regulation && speciesHasInfoToDownload(sp, "regulation")) || downloadCommandOptions.all) {
             downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
-        if (downloadCommandOptions.protein && speciesHasInfoToDownload(sp, "protein")) {
+        if ((downloadCommandOptions.protein && speciesHasInfoToDownload(sp, "protein")) || downloadCommandOptions.all) {
             downloadProtein(sp, spShortName, assembly.getName(), spFolder);
         }
-        if (downloadCommandOptions.conservation && speciesHasInfoToDownload(sp, "conservation")) {
+        if ((downloadCommandOptions.conservation && speciesHasInfoToDownload(sp, "conservation")) || downloadCommandOptions.all) {
             downloadConservation(sp, assembly.getName(), spFolder);
         }
-        if (downloadCommandOptions.clinical && speciesHasInfoToDownload(sp, "clinical")) {
+        if ((downloadCommandOptions.clinical && speciesHasInfoToDownload(sp, "clinical")) || downloadCommandOptions.all) {
             downloadProtein(sp, spShortName, assembly.getName(), spFolder);
         }
     }
