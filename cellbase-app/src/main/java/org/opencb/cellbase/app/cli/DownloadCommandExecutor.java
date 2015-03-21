@@ -29,9 +29,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String[] regulationFiles = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
             "RegulatoryFeatures_MultiCell.gff.gz"};
 
-    private static final String[] proteinFiles = {"uniprot_sprot.xml.gz", "intact.txt",
-            "protein2ipr.dat.gz"};
-
     private String ensemblVersion;
     private String ensemblRelease;
 
@@ -81,7 +78,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private void checkParameters() {
         if (!downloadCommandOptions.genome && !downloadCommandOptions.gene && !downloadCommandOptions.variation
-                && !downloadCommandOptions.regulation && !downloadCommandOptions.protein) {
+                && !downloadCommandOptions.regulation && !downloadCommandOptions.protein
+                && !downloadCommandOptions.conservation && !downloadCommandOptions.clinical) {
             throw new ParameterException("At least one 'download' option must be selected: sequence, gene, variation, regulation, protein");
         }
     }
@@ -145,10 +143,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
         if (downloadCommandOptions.protein && speciesHasInfoToDownload(sp, "protein")) {
             downloadProtein(sp, spShortName, assembly.getName(), spFolder);
         }
-        if (downloadCommandOptions.protein && speciesHasInfoToDownload(sp, "conservation")) {
-            downloadProtein(sp, spShortName, assembly.getName(), spFolder);
+        if (downloadCommandOptions.conservation && speciesHasInfoToDownload(sp, "conservation")) {
+            downloadConservation(sp, assembly.getName(), spFolder);
         }
-        if (downloadCommandOptions.protein && speciesHasInfoToDownload(sp, "clinical")) {
+        if (downloadCommandOptions.clinical && speciesHasInfoToDownload(sp, "clinical")) {
             downloadProtein(sp, spShortName, assembly.getName(), spFolder);
         }
     }
@@ -298,6 +296,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
+
     private void downloadRegulation(Species sp, String shortName, String assembly, Path spFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading regulation information ...");
@@ -316,9 +315,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    /*
-     * PROTEIN METHODS
-     */
 
     /**
      * This method downloads UniProt, IntAct and Interpro data from EMBL-EBI
@@ -344,6 +340,55 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             url = configuration.getDownload().getInterpro().getHost();
             downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
+        }else {
+            logger.info("Protein: skipping this since it is already downloaded. Delete 'protein' folder to force download");
+        }
+    }
+
+    private void downloadConservation(Species sp, String assembly, Path spFolder)
+            throws IOException, InterruptedException {
+        logger.info("Downloading protein information ...");
+        Path conservationFolder = spFolder.resolve("conservation");
+
+        if(sp.getScientificName().equals("Homo sapiens")) {
+            makeDir(conservationFolder);
+            makeDir(conservationFolder.resolve("phastCons"));
+            makeDir(conservationFolder.resolve("phyloP"));
+
+            if(assembly.equalsIgnoreCase("GRCh37")) {
+                String url = configuration.getDownload().getConservation().getHost() + "/hg19";
+
+                String phastConsUrl = url + "/phastCons46way/primates/chr*.phastCons46way.primates.wigFix.gz";
+                downloadFiles(phastConsUrl, conservationFolder.resolve("phastCons").toString());
+
+                String phyloPUrl = url + "/phyloP46way/primates/chr*.phyloP46way.primate.wigFix.gz";
+                downloadFiles(phyloPUrl, conservationFolder.resolve("phyloP").toString());
+            }
+            if(assembly.equalsIgnoreCase("GRCh38")) {
+                String url = configuration.getDownload().getConservation().getHost() + "/hg38";
+
+                String phastConsUrl = url + "/phastCons7way/hg38.phastCons7way.wigFix.gz";
+                Path outFile = conservationFolder.resolve("phastCons").resolve("hg38.phastCons7way.wigFix.gz");
+                downloadFile(phastConsUrl, outFile.toString());
+
+                String phyloPUrl = url + "/phyloP7way/hg38.phyloP7way.wigFix.gz";
+                outFile = conservationFolder.resolve("phyloP").resolve("hg38.phyloP7way.wigFix.gz");
+                downloadFile(phyloPUrl, outFile.toString());
+            }
+        }
+
+        if(sp.getScientificName().equals("Mus musculus")) {
+            makeDir(conservationFolder);
+            makeDir(conservationFolder.resolve("phastCons"));
+            makeDir(conservationFolder.resolve("phyloP"));
+
+            String url = configuration.getDownload().getConservation().getHost() + "/mm10";
+
+            String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr*.phastCons60way.wigFix.gz";
+            downloadFiles(phastConsUrl, conservationFolder.resolve("phastCons").toString());
+
+            String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr*.phyloP60way.wigFix.gz";
+            downloadFiles(phyloPUrl, conservationFolder.resolve("phyloP").toString());
         }
     }
 
@@ -380,6 +425,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         if (downloaded) {
             logger.info(outputFileName + " created OK");
+        } else {
+            logger.warn(url + " cannot be downloaded");
+        }
+    }
+
+    private void downloadFiles(String url, String outputDir) throws IOException, InterruptedException {
+        List<String> wgetArgs = Arrays.asList("--tries=10", url);
+        boolean downloaded = runCommandLineProcess(new File(outputDir), "wget", wgetArgs, null);
+
+        if (downloaded) {
+            logger.info("Files downloaded OK");
         } else {
             logger.warn(url + " cannot be downloaded");
         }
