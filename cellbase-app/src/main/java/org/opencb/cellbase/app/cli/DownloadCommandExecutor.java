@@ -148,7 +148,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadConservation(sp, assembly.getName(), spFolder);
         }
         if ((downloadCommandOptions.clinical && speciesHasInfoToDownload(sp, "clinical")) || downloadCommandOptions.all) {
-            downloadProtein(sp, spShortName, assembly.getName(), spFolder);
+            downloadClinical(sp, spShortName, assembly.getName(), spFolder);
         }
     }
 
@@ -189,6 +189,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
          */
         String url = host + "/" + ensemblRelease;
         if(sp.getScientificName().equals("Homo sapiens")) {
+            // New Homo sapiens assemblies contain too many ALT regions,
+            // so we download 'primary_assembly' file
             url = url + "/fasta/" + shortName + "/dna/*.dna.primary_assembly.fa.gz";
         }else {
             if (!configuration.getSpecies().getVertebrates().contains(sp)) {
@@ -238,9 +240,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             geneGtfUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
         geneGtfUrl = geneGtfUrl + "/gtf/" + spShortName + "/*.gtf.gz";
-
         String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
-
         downloadFile(geneGtfUrl, geneGtfOutputFileName);
     }
 
@@ -251,7 +251,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
             regulationUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
         regulationUrl = regulationUrl + "/regulation/" + spShortName;
-
         String motifFeaturesFile = "MotifFeatures.gff.gz";
         Path outputFile = geneFolder.resolve(motifFeaturesFile);
         downloadFile(regulationUrl + "/" + motifFeaturesFile, outputFile.toString());
@@ -391,6 +390,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr*.phyloP60way.wigFix.gz";
             downloadFiles(phyloPUrl, conservationFolder.resolve("phyloP").toString());
         }
+    }
+
+    private void downloadClinical(Species sp, String shortName, String assembly, Path spFolder)
+            throws IOException, InterruptedException {
+        logger.info("Downloading protein information ...");
+        Path proteinFolder = spFolder.resolve("clinical");
+        makeDir(proteinFolder);
+
+        String url = configuration.getDownload().getClinvar().getHost();
+        downloadFile(url, proteinFolder.resolve("ClinVar.xml.gz").toString());
+
     }
 
     private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder) throws IOException, InterruptedException {
