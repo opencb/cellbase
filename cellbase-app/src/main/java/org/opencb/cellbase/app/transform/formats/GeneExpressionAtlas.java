@@ -9,7 +9,7 @@ public class GeneExpressionAtlas {
 
     private String geneId;
     private String geneName;
-    private List <Tissue> tissues;
+    private List<Tissue> tissues;
 
     public GeneExpressionAtlas(String geneId, String geneName, List<Tissue> tissues) {
         this.geneId = geneId;
@@ -45,7 +45,7 @@ public class GeneExpressionAtlas {
 
         private String tissueName;
         private String experiment;
-        private Float expressionValue;
+        private float expressionValue;
 
         public Tissue(String tissueName, String experiment, Float expressionValue) {
             this.tissueName = tissueName;
@@ -69,11 +69,11 @@ public class GeneExpressionAtlas {
             this.experiment = experiment;
         }
 
-        public Float getExpressionValue() {
+        public float getExpressionValue() {
             return expressionValue;
         }
 
-        public void setExpressionValue(Float expressionValue) {
+        public void setExpressionValue(float expressionValue) {
             this.expressionValue = expressionValue;
         }
     }

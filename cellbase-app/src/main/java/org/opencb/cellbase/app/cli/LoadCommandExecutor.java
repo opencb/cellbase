@@ -55,7 +55,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() {
-        inputFile = Paths.get(loadCommandOptions.inputFile);
+        inputFile = Paths.get(loadCommandOptions.input);
         if (!inputFile.toFile().exists()) {
             throw new ParameterException("Input file " + inputFile + " doesn't exist");
         }

@@ -137,8 +137,10 @@ public class CellBaseConfiguration {
         private EnsemblProperties ensemblGenomes;
 
         private URLProperties uniprot;
+        private URLProperties intact;
+        private URLProperties interpro;
+        private URLProperties conservation;
         private URLProperties clinvar;
-        private URLProperties cosmic;
 
         public EnsemblProperties getEnsembl() {
             return ensembl;
@@ -170,6 +172,30 @@ public class CellBaseConfiguration {
 
         public void setClinvar(URLProperties clinvar) {
             this.clinvar = clinvar;
+        }
+
+        public URLProperties getConservation() {
+            return conservation;
+        }
+
+        public void setConservation(URLProperties conservation) {
+            this.conservation = conservation;
+        }
+
+        public URLProperties getIntact() {
+            return intact;
+        }
+
+        public void setIntact(URLProperties intact) {
+            this.intact = intact;
+        }
+
+        public URLProperties getInterpro() {
+            return interpro;
+        }
+
+        public void setInterpro(URLProperties interpro) {
+            this.interpro = interpro;
         }
 
         public static class EnsemblProperties {
