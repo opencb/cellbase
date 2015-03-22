@@ -192,7 +192,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private void downloadReferenceGenome(Species sp, String shortName, String assembly, Path spFolder, String host)
             throws IOException, InterruptedException {
-        logger.info("Downloading genome-sequence information ...");
+        logger.info("Downloading genome information ...");
         Path sequenceFolder = spFolder.resolve("genome");
         makeDir(sequenceFolder);
 
@@ -245,7 +245,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
-        logger.info("Downloading gene gtf ...");
+        logger.info("Downloading gene GTF ...");
         String geneGtfUrl = host + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
             geneGtfUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
@@ -256,7 +256,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
-        logger.info("Downloading gene expression atlas ...");
+        logger.info("Downloading UniProt ID mapping ...");
 
         if(geneUniprotXrefFiles.containsKey(sp.getScientificName())) {
             String geneGtfUrl = configuration.getDownload().getGeneUniprotXref().getHost() + "/" + geneUniprotXrefFiles.get(sp.getScientificName());
@@ -387,7 +387,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     private void downloadConservation(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        logger.info("Downloading protein information ...");
+        logger.info("Downloading conervation information ...");
         Path conservationFolder = speciesFolder.resolve("conservation");
 
         if(species.getScientificName().equals("Homo sapiens")) {
@@ -438,17 +438,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadClinical(Species sp, String shortName, String assembly, Path spFolder)
+    private void downloadClinical(Species sp, String shortName, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        logger.info("Downloading protein information ...");
-        Path proteinFolder = spFolder.resolve("clinical");
-        makeDir(proteinFolder);
+        logger.info("Downloading clinical information ...");
+        Path clinicalFolder = speciesFolder.resolve("clinical");
+        makeDir(clinicalFolder);
 
         String url = configuration.getDownload().getClinvar().getHost();
-        downloadFile(url, proteinFolder.resolve("ClinVar.xml.gz").toString());
+        downloadFile(url, clinicalFolder.resolve("ClinVar.xml.gz").toString());
 
         url = configuration.getDownload().getGwasCatalog().getHost();
-        downloadFile(url, proteinFolder.resolve("gwas_catalog.tsv").toString());
+        downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
     }
 
 
