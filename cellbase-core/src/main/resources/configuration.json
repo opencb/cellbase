@@ -54,6 +54,9 @@
 	},
 	"clinvar": {
 	  "host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-03.xml.gz"
+	},
+	"gwasCatalog": {
+	  "host": "http://www.ebi.ac.uk/gwas/api/search/downloads/full"
 	}
   },
   "species":{
@@ -226,7 +229,8 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation"
+		  "regulation",
+		  "protein"
 		]
 	  },
 	  {

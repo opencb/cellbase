@@ -143,6 +143,7 @@ public class CellBaseConfiguration {
         private URLProperties interpro;
         private URLProperties conservation;
         private URLProperties clinvar;
+        private URLProperties gwasCatalog;
 
         public EnsemblProperties getEnsembl() {
             return ensembl;
@@ -214,6 +215,14 @@ public class CellBaseConfiguration {
 
         public void setGeneUniprotXref(URLProperties geneUniprotXref) {
             this.geneUniprotXref = geneUniprotXref;
+        }
+
+        public URLProperties getGwasCatalog() {
+            return gwasCatalog;
+        }
+
+        public void setGwasCatalog(URLProperties gwasCatalog) {
+            this.gwasCatalog = gwasCatalog;
         }
 
         public static class EnsemblProperties {

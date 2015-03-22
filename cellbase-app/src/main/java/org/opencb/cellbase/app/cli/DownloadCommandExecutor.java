@@ -40,6 +40,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         put("Mus musculus", "MOUSE_10090_idmapping_selected.tab.gz");
         put("Rattus norvegicus", "RAT_10116_idmapping_selected.tab.gz");
         put("Danio rerio", "DANRE_7955_idmapping_selected.tab.gz");
+        put("Drosophila melanogaster", "DROME_7227_idmapping_selected.tab.gz");
         put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
     }};
 
@@ -167,7 +168,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private boolean speciesHasInfoToDownload(Species sp, String info) {
         boolean hasInfo = true;
         if (sp.getData() == null || !sp.getData().contains(info)) {
-            logger.warn("Specie " + sp.getScientificName() + " has no " + info + " information available to download");
+            logger.warn("Species '{}' has no '{}' information available to download", sp.getScientificName(), info);
             hasInfo = false;
         }
         return hasInfo;
@@ -376,12 +377,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadConservation(Species sp, String assembly, Path spFolder)
+    /**
+     * This method downloads bith PhastCons and PhyloP data from UCSC for Human and Mouse species.
+     * @param species The Species object to download the data
+     * @param assembly The assembly required
+     * @param speciesFolder Output folder to download the data
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private void downloadConservation(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading protein information ...");
-        Path conservationFolder = spFolder.resolve("conservation");
+        Path conservationFolder = speciesFolder.resolve("conservation");
 
-        if(sp.getScientificName().equals("Homo sapiens")) {
+        if(species.getScientificName().equals("Homo sapiens")) {
             makeDir(conservationFolder);
             makeDir(conservationFolder.resolve("phastCons"));
             makeDir(conservationFolder.resolve("phyloP"));
@@ -411,7 +420,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             }
         }
 
-        if(sp.getScientificName().equals("Mus musculus")) {
+        if(species.getScientificName().equals("Mus musculus")) {
             makeDir(conservationFolder);
             makeDir(conservationFolder.resolve("phastCons"));
             makeDir(conservationFolder.resolve("phyloP"));
@@ -437,6 +446,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         String url = configuration.getDownload().getClinvar().getHost();
         downloadFile(url, proteinFolder.resolve("ClinVar.xml.gz").toString());
+
+        url = configuration.getDownload().getGwasCatalog().getHost();
+        downloadFile(url, proteinFolder.resolve("gwas_catalog.tsv").toString());
     }
 
 
