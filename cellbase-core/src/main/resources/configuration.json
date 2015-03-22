@@ -40,6 +40,15 @@
 	"geneExpressionAtlas": {
 	  "host": "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz"
 	},
+	"mirbase": {
+	  "host": "ftp://mirbase.org/pub/mirbase/CURRENT/"
+	},
+	"targetScan": {
+	  "host": "http://hgdownload.cse.ucsc.edu/goldenPath/"
+	},
+	"miRTarBase": {
+	  "host": "http://mirtarbase.mbc.nctu.edu.tw/cache/download/4.5/"
+	},
 	"uniprot": {
 	  "host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz"
 	},

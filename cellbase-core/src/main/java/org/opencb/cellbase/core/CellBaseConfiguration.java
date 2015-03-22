@@ -138,6 +138,9 @@ public class CellBaseConfiguration {
 
         private URLProperties geneUniprotXref;
         private URLProperties geneExpressionAtlas;
+        private URLProperties mirbase;
+        private URLProperties targetScan;
+        private URLProperties miRTarBase;
         private URLProperties uniprot;
         private URLProperties intact;
         private URLProperties interpro;
@@ -223,6 +226,30 @@ public class CellBaseConfiguration {
 
         public void setGwasCatalog(URLProperties gwasCatalog) {
             this.gwasCatalog = gwasCatalog;
+        }
+
+        public URLProperties getMirbase() {
+            return mirbase;
+        }
+
+        public void setMirbase(URLProperties mirbase) {
+            this.mirbase = mirbase;
+        }
+
+        public URLProperties getTargetScan() {
+            return targetScan;
+        }
+
+        public void setTargetScan(URLProperties targetScan) {
+            this.targetScan = targetScan;
+        }
+
+        public URLProperties getMiRTarBase() {
+            return miRTarBase;
+        }
+
+        public void setMiRTarBase(URLProperties miRTarBase) {
+            this.miRTarBase = miRTarBase;
         }
 
         public static class EnsemblProperties {

@@ -329,21 +329,52 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
 
-    private void downloadRegulation(Species sp, String shortName, String assembly, Path spFolder, String host)
+    private void downloadRegulation(Species species, String shortName, String assembly, Path speciesFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading regulation information ...");
-        Path regulationFolder = spFolder.resolve("regulation");
+        Path regulationFolder = speciesFolder.resolve("regulation");
         makeDir(regulationFolder);
 
+        // Downloading Ensembl Regulation
         String regulationUrl = host + "/" + ensemblRelease;
-        if(!configuration.getSpecies().getVertebrates().contains(sp)) {
-            regulationUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
+        if(!configuration.getSpecies().getVertebrates().contains(species)) {
+            regulationUrl = host + "/" + ensemblRelease + "/" + getPhylo(species);
         }
         regulationUrl = regulationUrl + "/regulation/" + shortName;
 
         for (String regulationFile : regulationFiles) {
             Path outputFile = regulationFolder.resolve(regulationFile);
             downloadFile(regulationUrl + "/" + regulationFile, outputFile.toString());
+        }
+
+        // Downloading miRNA info
+        String url;
+        Path mirbaseFolder = speciesFolder.getParent().resolve("common").resolve("mirbase");
+        if(!Files.exists(mirbaseFolder)) {
+            makeDir(mirbaseFolder);
+
+            url = configuration.getDownload().getMirbase().getHost()+"/miRNA.xls.gz";
+            downloadFile(url, mirbaseFolder.resolve("miRNA.xls.gz").toString());
+
+            url = configuration.getDownload().getMirbase().getHost()+"/aliases.txt.gz";
+            downloadFile(url, mirbaseFolder.resolve("aliases.txt.gz").toString());
+        }
+
+        if(species.getScientificName().equals("Homo sapiens")) {
+            if(assembly.equalsIgnoreCase("GRCh37")) {
+                url = configuration.getDownload().getTargetScan().getHost() + "/hg19/database/targetScanS.txt.gz";
+                downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
+
+                url = configuration.getDownload().getMiRTarBase().getHost() + "/hsa_MTI.xls";
+                downloadFile(url, regulationFolder.resolve("hsa_MTI.xls").toString());
+            }
+        }
+        if(species.getScientificName().equals("Mus musculus")) {
+            url = configuration.getDownload().getTargetScan().getHost() + "/mm9/database/targetScanS.txt.gz";
+            downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
+
+            url = configuration.getDownload().getMiRTarBase().getHost() + "/mmu_MTI.xls";
+            downloadFile(url, regulationFolder.resolve("mmu_MTI.xls").toString());
         }
     }
 
