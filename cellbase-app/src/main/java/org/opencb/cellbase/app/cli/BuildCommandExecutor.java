@@ -6,11 +6,14 @@ import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.opencb.cellbase.app.serializers.json.JsonParser;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by imedina on 03/02/15.
@@ -21,16 +24,21 @@ public class BuildCommandExecutor extends CommandExecutor {
     public static final String GWAS_INPUT_FILE_NAME = "gwascatalog.txt";
     public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
+    private CliOptionsParser.BuildCommandOptions buildCommandOptions;
+
+    private File ensemblScriptsFolder;
     private String input = null;
     private Path output = null;
 
-    private CliOptionsParser.BuildCommandOptions buildCommandOptions;
+    private CellBaseConfiguration.SpeciesProperties.Species species;
 
     public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
                 buildCommandOptions.commonOptions.conf);
 
         this.buildCommandOptions = buildCommandOptions;
+        this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
+
         if(buildCommandOptions.input != null) {
             input = buildCommandOptions.input;
         }
@@ -46,6 +54,18 @@ public class BuildCommandExecutor extends CommandExecutor {
     public void execute() {
         try {
             checkOutputDir();
+
+            // We need to get the Species object from the CLI name
+            // This can be the scientific or common name, or the ID
+            for (CellBaseConfiguration.SpeciesProperties.Species sp: configuration.getAllSpecies()) {
+                if (buildCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
+                        || buildCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
+                        || buildCommandOptions.species.equalsIgnoreCase(sp.getId())) {
+                    species = sp;
+                    break;
+                }
+            }
+
             if (buildCommandOptions.build != null) {
                 CellBaseParser parser = null;
 
@@ -117,6 +137,34 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
+    private CellBaseParser buildGenomeSequence() {
+        /**
+         * To get some extra info about the genome such as chromosome length or cytobands
+         * we execute the following script
+         */
+        try {
+            String outputFileName = output + "/genome_info.json";
+            List<String> args = Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+            String geneInfoLogFileName = output + "/genome_info.log";
+
+            boolean downloadedGenomeInfo = false;
+            downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
+
+            if (downloadedGenomeInfo) {
+                logger.info(outputFileName + " created OK");
+            } else {
+                logger.error("Genome info for " + species.getScientificName() + " cannot be downloaded");
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        Path fastaFile = getInputFileFromCommandLine();
+        CellBaseSerializer serializer = new JsonParser(output, "genome_sequence");
+        return new GenomeSequenceFastaParser(fastaFile, serializer);
+    }
+
     private CellBaseParser getInteractionParser()  {
         Path psimiTabFile = getInputFileFromCommandLine();
         String species = buildCommandOptions.species;
@@ -141,6 +189,27 @@ public class BuildCommandExecutor extends CommandExecutor {
         CellBaseSerializer serializer = new JsonParser(output, "protein");
         return new ProteinParser(uniprotSplitFilesDir, species, serializer);
 
+    }
+
+    private void getProteinFunctionPredictionMatrices(CellBaseConfiguration.SpeciesProperties.Species sp, Path geneFolder) throws IOException, InterruptedException {
+        logger.info("Downloading protein function prediction matrices ...");
+
+        // run protein_function_prediction_matrices.pl
+        String proteinFunctionProcessLogFile = geneFolder.resolve("protein_function_prediction_matrices.log").toString();
+        List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+
+        boolean proteinFunctionPredictionMatricesObtaines = runCommandLineProcess(ensemblScriptsFolder,
+                "./protein_function_prediction_matrices.pl",
+                args,
+                proteinFunctionProcessLogFile);
+
+        // check output
+        if (proteinFunctionPredictionMatricesObtaines) {
+            logger.info("Protein function prediction matrices created OK");
+        } else {
+            logger.error("Protein function prediction matrices for " + sp.getScientificName() + " cannot be downloaded");
+        }
     }
 
     private CellBaseParser buildVep() {
@@ -176,13 +245,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         CellBaseSerializer serializer = new JsonParser(output, "gene");
         GeneParser geneParser = new GeneParser(inputDir, Paths.get(genomeFastaFile), serializer);
         return geneParser;
-    }
-
-    private CellBaseParser buildGenomeSequence() {
-        Path fastaFile = getInputFileFromCommandLine();
-        CellBaseSerializer serializer = new JsonParser(output, "genome_sequence");
-        return new GenomeSequenceFastaParser(fastaFile, serializer);
-
     }
 
     private CellBaseParser buildDrugParser() {

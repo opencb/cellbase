@@ -16,8 +16,11 @@ import java.util.*;
  */
 public class DownloadCommandExecutor extends CommandExecutor {
 
-    private File ensemblScriptsFolder;
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
+
+    private File ensemblScriptsFolder;
+    private String ensemblVersion;
+    private String ensemblRelease;
 
     private static final String[] variationFiles = {"variation.txt.gz", "variation_feature.txt.gz",
             "transcript_variation.txt.gz", "variation_synonym.txt.gz", "seq_region.txt.gz", "source.txt.gz",
@@ -29,8 +32,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String[] regulationFiles = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
             "RegulatoryFeatures_MultiCell.gff.gz"};
 
-    private String ensemblVersion;
-    private String ensemblRelease;
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -406,29 +407,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         String url = configuration.getDownload().getClinvar().getHost();
         downloadFile(url, proteinFolder.resolve("ClinVar.xml.gz").toString());
-
     }
 
-    private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder) throws IOException, InterruptedException {
-        logger.info("Downloading protein function prediction matrices ...");
 
-        // run protein_function_prediction_matrices.pl
-        String proteinFunctionProcessLogFile = geneFolder.resolve("protein_function_prediction_matrices.log").toString();
-        List<String> args = Arrays.asList( "--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
-                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
-
-        boolean proteinFunctionPredictionMatricesObtaines = runCommandLineProcess(ensemblScriptsFolder,
-                "./protein_function_prediction_matrices.pl",
-                args,
-                proteinFunctionProcessLogFile);
-
-        // check output
-        if (proteinFunctionPredictionMatricesObtaines) {
-            logger.info("Protein function prediction matrices created OK");
-        } else {
-            logger.error("Protein function prediction matrices for " + sp.getScientificName() + " cannot be downloaded");
-        }
-    }
 
     private void makeDir(Path folderPath) throws IOException {
         if(!Files.exists(folderPath)) {
@@ -458,38 +439,4 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath) throws IOException, InterruptedException {
-        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
-
-        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
-        Process process = builder.start();
-        process.waitFor();
-
-        // Check process output
-        boolean executedWithoutErrors = true;
-        int genomeInfoExitValue = process.exitValue();
-        if (genomeInfoExitValue != 0) {
-            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-            executedWithoutErrors = false;
-        }
-        return executedWithoutErrors;
-    }
-
-    private ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
-        List<String> commandArgs = new ArrayList<>();
-        commandArgs.add(binPath);
-        commandArgs.addAll(args);
-        ProcessBuilder builder = new ProcessBuilder(commandArgs);
-
-        // working directoy and error and output log outputs
-        if (workingDirectory != null) {
-            builder.directory(workingDirectory);
-        }
-        builder.redirectErrorStream(true);
-        if (logFilePath != null) {
-            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
-        }
-
-        return builder;
-    }
 }
