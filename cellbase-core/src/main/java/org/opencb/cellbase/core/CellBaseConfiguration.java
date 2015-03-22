@@ -136,6 +136,7 @@ public class CellBaseConfiguration {
         private EnsemblProperties ensembl;
         private EnsemblProperties ensemblGenomes;
 
+        private URLProperties geneExpressionAtlas;
         private URLProperties uniprot;
         private URLProperties intact;
         private URLProperties interpro;
@@ -196,6 +197,14 @@ public class CellBaseConfiguration {
 
         public void setInterpro(URLProperties interpro) {
             this.interpro = interpro;
+        }
+
+        public URLProperties getGeneExpressionAtlas() {
+            return geneExpressionAtlas;
+        }
+
+        public void setGeneExpressionAtlas(URLProperties geneExpressionAtlas) {
+            this.geneExpressionAtlas = geneExpressionAtlas;
         }
 
         public static class EnsemblProperties {

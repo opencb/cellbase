@@ -208,30 +208,28 @@ public class DownloadCommandExecutor extends CommandExecutor {
          * To get some extra info about the genome such as chromosome length or cytobands
          * we execute the following script
          */
-        outputFileName = sequenceFolder + "/genome_info.json";
-        List<String> args = Arrays.asList("--species", sp.getScientificName(), "-o", outputFileName,
-                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
-        String geneInfoLogFileName = sequenceFolder + "/genome_info.log";
-
-        boolean downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
-        if (downloadedGenomeInfo) {
-            logger.info(outputFileName + " created OK");
-        } else {
-            logger.error("Genome info for " + sp.getScientificName() + " cannot be downloaded");
-        }
+//        outputFileName = sequenceFolder + "/genome_info.json";
+//        List<String> args = Arrays.asList("--species", sp.getScientificName(), "-o", outputFileName,
+//                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+//        String geneInfoLogFileName = sequenceFolder + "/genome_info.log";
+//
+//        boolean downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
+//        if (downloadedGenomeInfo) {
+//            logger.info(outputFileName + " created OK");
+//        } else {
+//            logger.error("Genome info for " + sp.getScientificName() + " cannot be downloaded");
+//        }
     }
 
-    private void downloadEnsemblGene(Species sp, String spShortName, Path spFolder, String host) throws IOException, InterruptedException {
+    private void downloadEnsemblGene(Species sp, String spShortName, Path speciesFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
-        Path geneFolder = spFolder.resolve("gene");
+        Path geneFolder = speciesFolder.resolve("gene");
         makeDir(geneFolder);
+
         downloadGeneGtf(sp, spShortName, geneFolder, host);
+        downloadGeneExpressionAtlas(speciesFolder);
         getMotifFeaturesFile(sp, spShortName, geneFolder, host);
         getGeneExtraInfo(sp, geneFolder);
-//        if (sp.getScientificName().equalsIgnoreCase("homo sapiens")) {
-//            getProteinFunctionPredictionMatrices(sp, geneFolder);
-//            getMotifFeaturesFile(sp, spShortName, geneFolder, host);
-//        }
     }
 
     private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
@@ -243,6 +241,18 @@ public class DownloadCommandExecutor extends CommandExecutor {
         geneGtfUrl = geneGtfUrl + "/gtf/" + spShortName + "/*.gtf.gz";
         String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
         downloadFile(geneGtfUrl, geneGtfOutputFileName);
+    }
+
+    private void downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
+        logger.info("Downloading gene expression atlas ...");
+        Path expression = geneFolder.getParent().resolve("common").resolve("expression");
+
+        if(!Files.exists(expression)) {
+            makeDir(expression);
+
+            String geneGtfUrl = configuration.getDownload().getGeneExpressionAtlas().getHost();
+            downloadFile(geneGtfUrl, expression.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
+        }
     }
 
     private void getMotifFeaturesFile(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
