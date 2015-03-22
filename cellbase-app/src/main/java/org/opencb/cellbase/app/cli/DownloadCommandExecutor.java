@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 03/02/15.
@@ -32,6 +35,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String[] regulationFiles = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
             "RegulatoryFeatures_MultiCell.gff.gz"};
 
+    private static final Map<String, String> geneUniprotXrefFiles = new HashMap(){{
+        put("Homo sapiens", "HUMAN_9606_idmapping_selected.tab.gz");
+        put("Mus musculus", "MOUSE_10090_idmapping_selected.tab.gz");
+        put("Rattus norvegicus", "RAT_10116_idmapping_selected.tab.gz");
+        put("Danio rerio", "DANRE_7955_idmapping_selected.tab.gz");
+        put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
+    }};
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -227,9 +237,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
         makeDir(geneFolder);
 
         downloadGeneGtf(sp, spShortName, geneFolder, host);
+        downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas(speciesFolder);
-        getMotifFeaturesFile(sp, spShortName, geneFolder, host);
-        getGeneExtraInfo(sp, geneFolder);
+        downloadMotifFeaturesFile(sp, spShortName, geneFolder, host);
+        runGeneExtraInfo(sp, geneFolder);
     }
 
     private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
@@ -241,6 +252,15 @@ public class DownloadCommandExecutor extends CommandExecutor {
         geneGtfUrl = geneGtfUrl + "/gtf/" + spShortName + "/*.gtf.gz";
         String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
         downloadFile(geneGtfUrl, geneGtfOutputFileName);
+    }
+
+    private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
+        logger.info("Downloading gene expression atlas ...");
+
+        if(geneUniprotXrefFiles.containsKey(sp.getScientificName())) {
+            String geneGtfUrl = configuration.getDownload().getGeneUniprotXref().getHost() + "/" + geneUniprotXrefFiles.get(sp.getScientificName());
+            downloadFile(geneGtfUrl, geneFolder.resolve("idmapping_selected.tab.gz").toString());
+        }
     }
 
     private void downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
@@ -255,7 +275,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void getMotifFeaturesFile(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
+    private void downloadMotifFeaturesFile(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading motif features file ...");
         String regulationUrl = host + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
@@ -267,16 +287,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadFile(regulationUrl + "/" + motifFeaturesFile, outputFile.toString());
     }
 
-    private void getGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
+    private void runGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
 
-        String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info_cellbase.log").toString();
+        String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
         List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
                 "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
 
-        // run gene_extra_info_cellbase.pl
+        // run gene_extra_info.pl
         boolean geneExtraInfoDownloaded = runCommandLineProcess(ensemblScriptsFolder,
-                "./gene_extra_info_cellbase.pl",
+                "./gene_extra_info.pl",
                 args,
                 geneExtraInfoLogFile);
 

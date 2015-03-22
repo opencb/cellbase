@@ -34,6 +34,9 @@
 		"host":"ftp://ftp.ensemblgenomes.org/pub"
 	  }
 	},
+	"geneUniprotXref": {
+	  "host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/"
+	},
 	"geneExpressionAtlas": {
 	  "host": "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz"
 	},
