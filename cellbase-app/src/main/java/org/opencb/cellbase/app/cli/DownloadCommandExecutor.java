@@ -469,17 +469,19 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadClinical(Species sp, String shortName, String assembly, Path speciesFolder)
+    private void downloadClinical(Species species, String shortName, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading clinical information ...");
         Path clinicalFolder = speciesFolder.resolve("clinical");
         makeDir(clinicalFolder);
 
-        String url = configuration.getDownload().getClinvar().getHost();
-        downloadFile(url, clinicalFolder.resolve("ClinVar.xml.gz").toString());
+        if(species.getScientificName().equals("Homo sapiens")) {
+            String url = configuration.getDownload().getClinvar().getHost();
+            downloadFile(url, clinicalFolder.resolve("ClinVar.xml.gz").toString());
 
-        url = configuration.getDownload().getGwasCatalog().getHost();
-        downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
+            url = configuration.getDownload().getGwasCatalog().getHost();
+            downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
+        }
     }
 
 
