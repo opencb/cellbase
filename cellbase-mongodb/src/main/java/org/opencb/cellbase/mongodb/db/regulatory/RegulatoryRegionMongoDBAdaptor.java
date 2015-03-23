@@ -124,7 +124,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
                 chunksId.add(chunkId);
             }
 
-            logger.info(chunksId.toString());
+//            logger.info(chunksId.toString());
 
             builder = builder.start("chunkIds").in(chunksId)
                              .and("start").lessThanEquals(region.getEnd())

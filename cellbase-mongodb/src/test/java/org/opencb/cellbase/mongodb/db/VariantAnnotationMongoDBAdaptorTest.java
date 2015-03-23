@@ -211,7 +211,6 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
     }
 
-    @Ignore
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
@@ -251,7 +250,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 12837706, "-", "CC"), new QueryOptions());  // should return null
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("9", 107366952, StringUtils.repeat("N",12577), "A"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("7", 23775220, "T", "A"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("5", 150407694, "G", "A"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("5", 150407693, "T", "G"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("4", 48896023, "G", "C"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 12837706, "-", "CC"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("19", 20047783, "-", "AAAAAA"), new QueryOptions());  // should return stop_gained
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 115828861, "C", "G"), new QueryOptions());  // should return stop_lost
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("16", 32859177, "C", "T"), new QueryOptions());  // should return stop_lost

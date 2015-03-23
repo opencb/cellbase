@@ -9,7 +9,9 @@ import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.opencb.cellbase.core.lib.api.core.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.core.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantDiseaseAssociationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
@@ -29,7 +31,7 @@ import java.util.*;
  * Created by imedina on 11/07/14.
  * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
-public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
+public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
 
 //    private DBCollection mongoVariationPhenotypeDBCollection;
     private int bigVariantSizeThreshold = 50;
@@ -43,6 +45,8 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
     private static Map<Integer, String> siftDescriptions = new HashMap<>();
     private static Map<Integer, String> polyphenDescriptions = new HashMap<>();
 
+    private GeneDBAdaptor geneDBAdaptor;
+    private RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor;
     private VariationDBAdaptor variationDBAdaptor;
     private VariantDiseaseAssociationDBAdaptor variantDiseaseAssociationDBAdaptor;
     private ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor;
@@ -234,6 +238,22 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
     @Override
     public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor) {
         this.conservedRegionDBAdaptor = conservedRegionDBAdaptor;
+    }
+
+    public GeneDBAdaptor getGeneDBAdaptor() {
+        return geneDBAdaptor;
+    }
+
+    public void setGeneDBAdaptor(GeneDBAdaptor geneDBAdaptor) {
+        this.geneDBAdaptor = geneDBAdaptor;
+    }
+
+    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor() {
+        return regulatoryRegionDBAdaptor;
+    }
+
+    public void setRegulatoryRegionDBAdaptor(RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor) {
+        this.regulatoryRegionDBAdaptor = regulatoryRegionDBAdaptor;
     }
 
     private Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
@@ -672,11 +692,13 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
                 if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
                 }
-                if(variantEnd>genomicCodingEnd) {
-                    if(transcriptEnd>genomicCodingEnd || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
-                        SoNames.add("3_prime_UTR_variant");
-                    }
+                if(variantEnd>(genomicCodingEnd-3)) {
                     SoNames.add("stop_lost");
+                    if (variantEnd > genomicCodingEnd) {
+                        if (transcriptEnd > genomicCodingEnd || (transcriptFlags != null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
+                            SoNames.add("3_prime_UTR_variant");
+                        }
+                    }
                 }
             }
 //            variantEnd += variantRef.equals("-")?1:0;  // Recover original value of variantEnd for next transcripts
@@ -728,11 +750,13 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
                 if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     SoNames.add("initiator_codon_variant");
                 }
-                if(variantStart<genomicCodingStart) {  // Insertion coordinates are peculiar: the actual inserted nts are assumed to be pasted on the left of variantStart, be careful with left edges
-                    if(transcriptStart<genomicCodingStart || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
-                        SoNames.add("3_prime_UTR_variant");
-                    }
+                if(variantStart<(genomicCodingStart+3)) {
                     SoNames.add("stop_lost");
+                    if (variantStart < genomicCodingStart) {
+                        if (transcriptStart < genomicCodingStart || (transcriptFlags != null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
+                            SoNames.add("3_prime_UTR_variant");
+                        }
+                    }
                 }
             }
         } else {
@@ -945,49 +969,40 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
         } else {
             variantStart = variant.getPosition();
         }
-//        (region2Start <= region1End && region2End >= region1Start)
 
-//        if(variantEnd-variantStart < 51) { // SNV, insertion or short deletion, simplify the queries to improve efficiency
-            // Get all genes surrounding the variant +-5kb
-            builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
-                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
-//        } else {   // long deletion
-//            // Get all genes fully contained within variant coordinates
-//            DBObject containedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("start")
-//                    .greaterThan(variant.getPosition()).and("end").lessThan(variantEnd).get();
-//
-//            // Get all genes surrounding the variant +-5kb
-//            DBObject partiallyAffectectedGenes = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
-//                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000).get(); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
-//
-//            // Get genes fulfilling both conditions above
-//            builderGene = QueryBuilder.start().or(containedGenes, partiallyAffectectedGenes);
-//        }
+
+//        builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
+//                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
 
         // Get all regulatory regions surrounding the variant
-        String chunkId = getChunkIdPrefix(variant.getChromosome(), variant.getPosition(), regulatoryRegionChunkSize);
-        BasicDBList chunksId = new BasicDBList();
-        chunksId.add(chunkId);
-        builderRegulatory = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(variantEnd).and("end")
-                .greaterThanEquals(variant.getPosition()); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
+//        String chunkId = getChunkIdPrefix(variant.getChromosome(), variant.getPosition(), regulatoryRegionChunkSize);
+//        BasicDBList chunksId = new BasicDBList();
+//        chunksId.add(chunkId);
+//        builderRegulatory = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(variantEnd).and("end")
+//                .greaterThanEquals(variant.getPosition()); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
 
         // Execute query and calculate time
-        mongoDBCollection = db.getCollection("gene");
+//        mongoDBCollection = db.getCollection("gene");
         dbTimeStart = System.currentTimeMillis();
-        QueryResult geneQueryResult = executeQuery(variant.toString(), builderGene.get(), options);
-        mongoDBCollection = db.getCollection("regulatory_region");
-        QueryResult regulatoryQueryResult = executeQuery(variant.toString(), builderRegulatory.get(), options);
+//        QueryResult geneQueryResult = executeQuery(variant.toString(), builderGene.get(), options);
+        QueryOptions geneQueryOptions = new QueryOptions();
+        geneQueryOptions.add("include", "name,id,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
+        QueryResult geneQueryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(), variantStart-5000,
+                variantEnd+5000), geneQueryOptions);
+//        mongoDBCollection = db.getCollection("regulatory_region");
+//        QueryResult regulatoryQueryResult = executeQuery(variant.toString(), builderRegulatory.get(), options);
+        QueryResult regulatoryQueryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(), variantStart,
+                variantEnd), options);
+
         dbTimeEnd = System.currentTimeMillis();
-        BasicDBList geneInfoList = (BasicDBList) geneQueryResult.getResult();
+        LinkedList geneInfoList = (LinkedList) geneQueryResult.getResult();
+//        BasicDBList geneInfoList = (BasicDBList) geneQueryResult.getResult();
+
+
 
 
         for(Object geneInfoObject: geneInfoList) {
             geneInfo = (BasicDBObject) geneInfoObject;
-            geneStart = (Integer) geneInfo.get("start");
-            geneEnd = (Integer) geneInfo.get("end");
-            geneStrand = (String) geneInfo.get("strand");
-            geneName = (String) geneInfo.get("name");
-            ensemblGeneId = (String) geneInfo.get("id");
             consequenceTypeTemplate.setGeneName((String) geneInfo.get("name"));
             consequenceTypeTemplate.setEnsemblGeneId((String) geneInfo.get("id"));
 
@@ -1278,7 +1293,8 @@ public class    VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implement
             consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
         }
 
-        BasicDBList regulatoryInfoList = (BasicDBList) regulatoryQueryResult.getResult();
+        LinkedList regulatoryInfoList = (LinkedList) regulatoryQueryResult.getResult();
+//        BasicDBList regulatoryInfoList = (BasicDBList) regulatoryQueryResult.getResult();
         if(!regulatoryInfoList.isEmpty()) {
             consequenceTypeList.add(new ConsequenceType("regulatory_region_variant"));
             i = 0;
