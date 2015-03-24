@@ -471,11 +471,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private void downloadClinical(Species species, String shortName, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        logger.info("Downloading clinical information ...");
-        Path clinicalFolder = speciesFolder.resolve("clinical");
-        makeDir(clinicalFolder);
 
         if(species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading clinical information ...");
+
+            Path clinicalFolder = speciesFolder.resolve("clinical");
+            makeDir(clinicalFolder);
             String url = configuration.getDownload().getClinvar().getHost();
             downloadFile(url, clinicalFolder.resolve("ClinVar.xml.gz").toString());
 
