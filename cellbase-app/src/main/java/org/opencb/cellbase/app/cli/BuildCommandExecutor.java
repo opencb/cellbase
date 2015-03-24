@@ -153,27 +153,25 @@ public class BuildCommandExecutor extends CommandExecutor {
          * To get some extra info about the genome such as chromosome length or cytobands
          * we execute the following script
          */
-//        try {
-//            String outputFileName = output + "/genome_info.json";
-//            List<String> args = Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
-//                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
-//            String geneInfoLogFileName = output + "/genome_info.log";
-//
-//            boolean downloadedGenomeInfo = false;
-//            downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
-//
-//            if (downloadedGenomeInfo) {
-//                logger.info(outputFileName + " created OK");
-//            } else {
-//                logger.error("Genome info for " + species.getScientificName() + " cannot be downloaded");
-//            }
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            String outputFileName = output + "/genome_info.json";
+            List<String> args = Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+            String geneInfoLogFileName = output + "/genome_info.log";
+
+            boolean downloadedGenomeInfo = false;
+            downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
+
+            if (downloadedGenomeInfo) {
+                logger.info(outputFileName + " created OK");
+            } else {
+                logger.error("Genome info for " + species.getScientificName() + " cannot be downloaded");
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
 
-//        Path fastaFile = getInputFileFromCommandLine().resolve("genome");
-//        Path fastaFile = Paths.get(buildCommandOptions.referenceGenomeFile);
         Path fastaFile = getReferenceGenome();
         CellBaseSerializer serializer = new JsonParser(output, "genome_sequence");
         return new GenomeSequenceFastaParser(fastaFile, serializer);
