@@ -38,8 +38,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
-                "B10p@ss", 10, 10);
+
+
 
         config.addSpeciesAlias("hsapiens", "hsapiens");
 
@@ -211,6 +211,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
     }
 
+    @Ignore
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
@@ -230,12 +231,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-//        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "",
-//                "", 10, 10);
-        config.addSpeciesConnection("hsapiens", "GRCh37", "172.22.70.137", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "",
-                "", 10, 10);
 
-//        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "test", 27017, "mongo", "", "", 10, 10);
+
 
 //        config.addSpeciesAlias("agambiae", "agambiae");
         config.addSpeciesAlias("hsapiens", "hsapiens");
