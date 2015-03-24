@@ -69,11 +69,11 @@ public class LoadRunner {
             InvocationTargetException, InstantiationException, IllegalAccessException {
         consumersNumber = threadsNumber > 2 ? threadsNumber - 1 : 1;
 
-        List<CellBaseLoader> consumers = new ArrayList<>();
+        List<CellBaseLoader> consumers = new ArrayList<>(consumersNumber);
         for (int i=0; i < consumersNumber; i++) {
             consumers.add(createCellBaseLoader());
         }
-        logger.debug(consumersNumber + " consumer threads created");
+        logger.debug("Loader: {} consumer threads created", consumersNumber);
         return consumers;
     }
 
@@ -85,7 +85,8 @@ public class LoadRunner {
          * may be applied to get other database outputs.
          * This is in charge of creating the specific data model for the database backend.
          */
-        return (CellBaseLoader) Class.forName(loader).getConstructor(BlockingQueue.class, data.getClass(), Map.class).newInstance(queue, data, loaderParams);
+        return (CellBaseLoader) Class.forName(loader).getConstructor(BlockingQueue.class, data.getClass(), Map.class)
+                .newInstance(queue, data, loaderParams);
     }
 
     private List<Future<Integer>> startConsumers(ExecutorService executorService, List<CellBaseLoader> consumers) throws LoaderException {

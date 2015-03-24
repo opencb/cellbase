@@ -463,6 +463,7 @@ public class GeneParser extends CellBaseParser {
                     if (!xrefMap.containsKey(fields[20])) {
                         xrefMap.put(fields[20], new ArrayList<Xref>());
                     }
+                    System.out.println(fields[20]);
                     xrefMap.get(fields[20]).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
                     xrefMap.get(fields[20]).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
                 }

@@ -136,9 +136,17 @@ public class CellBaseConfiguration {
         private EnsemblProperties ensembl;
         private EnsemblProperties ensemblGenomes;
 
+        private URLProperties geneUniprotXref;
+        private URLProperties geneExpressionAtlas;
+        private URLProperties mirbase;
+        private URLProperties targetScan;
+        private URLProperties miRTarBase;
         private URLProperties uniprot;
+        private URLProperties intact;
+        private URLProperties interpro;
+        private URLProperties conservation;
         private URLProperties clinvar;
-        private URLProperties cosmic;
+        private URLProperties gwasCatalog;
 
         public EnsemblProperties getEnsembl() {
             return ensembl;
@@ -170,6 +178,78 @@ public class CellBaseConfiguration {
 
         public void setClinvar(URLProperties clinvar) {
             this.clinvar = clinvar;
+        }
+
+        public URLProperties getConservation() {
+            return conservation;
+        }
+
+        public void setConservation(URLProperties conservation) {
+            this.conservation = conservation;
+        }
+
+        public URLProperties getIntact() {
+            return intact;
+        }
+
+        public void setIntact(URLProperties intact) {
+            this.intact = intact;
+        }
+
+        public URLProperties getInterpro() {
+            return interpro;
+        }
+
+        public void setInterpro(URLProperties interpro) {
+            this.interpro = interpro;
+        }
+
+        public URLProperties getGeneExpressionAtlas() {
+            return geneExpressionAtlas;
+        }
+
+        public void setGeneExpressionAtlas(URLProperties geneExpressionAtlas) {
+            this.geneExpressionAtlas = geneExpressionAtlas;
+        }
+
+        public URLProperties getGeneUniprotXref() {
+            return geneUniprotXref;
+        }
+
+        public void setGeneUniprotXref(URLProperties geneUniprotXref) {
+            this.geneUniprotXref = geneUniprotXref;
+        }
+
+        public URLProperties getGwasCatalog() {
+            return gwasCatalog;
+        }
+
+        public void setGwasCatalog(URLProperties gwasCatalog) {
+            this.gwasCatalog = gwasCatalog;
+        }
+
+        public URLProperties getMirbase() {
+            return mirbase;
+        }
+
+        public void setMirbase(URLProperties mirbase) {
+            this.mirbase = mirbase;
+        }
+
+        public URLProperties getTargetScan() {
+            return targetScan;
+        }
+
+        public void setTargetScan(URLProperties targetScan) {
+            this.targetScan = targetScan;
+        }
+
+        public URLProperties getMiRTarBase() {
+            return miRTarBase;
+        }
+
+        public void setMiRTarBase(URLProperties miRTarBase) {
+            this.miRTarBase = miRTarBase;
         }
 
         public static class EnsemblProperties {
