@@ -93,7 +93,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 && !downloadCommandOptions.regulation && !downloadCommandOptions.protein
                 && !downloadCommandOptions.conservation && !downloadCommandOptions.clinical
                 && !downloadCommandOptions.all) {
-            throw new ParameterException("At least one 'download' option must be selected: sequence, gene, variation, regulation, protein");
+            throw new ParameterException("At least one 'download' option must be selected: genome, gene, variation, " +
+                    "regulation, protein, conservation or clinical");
         }
     }
 

@@ -140,6 +140,12 @@ public class CliOptionsParser {
         @Parameter(names = {"-b", "--build"}, description = "", required = true, arity = 1)
         public String build;
 
+        @Parameter(names = {"--species"}, description = "", required = false)
+        public String species = "Homo sapiens";
+
+        @Parameter(names = {"--assembly"}, description = "", required = false)
+        public String assembly;
+
         @Parameter(names = {"-i", "--input"}, description = "", required = true, arity = 1)
         public String input;
 
@@ -148,12 +154,6 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--reference-genome-file"}, description = "", required = false)
         public String referenceGenomeFile;
-
-        @Parameter(names = {"--species"}, description = "", required = false)
-        public String species;
-
-        @Parameter(names = {"--assembly"}, description = "", required = false)
-        public String assembly;
 
     }
 
