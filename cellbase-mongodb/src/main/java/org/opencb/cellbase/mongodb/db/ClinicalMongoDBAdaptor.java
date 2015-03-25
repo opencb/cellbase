@@ -108,7 +108,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
 
         for (QueryResult queryResult : queryResultList){
-            BasicDBList clinicalList = (BasicDBList) queryResult.getResult();
+            List<BasicDBObject> clinicalList = (List<BasicDBObject>) queryResult.getResult();
             Cosmic cosmic;
             Gwas gwas;
             Clinvar clinvar;

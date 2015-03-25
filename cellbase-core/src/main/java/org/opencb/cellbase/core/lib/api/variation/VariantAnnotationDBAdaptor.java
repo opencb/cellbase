@@ -30,9 +30,9 @@ public interface VariantAnnotationDBAdaptor {
 
     public void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor);
 
-    public ClinicalDBAdaptor getVariantDiseaseAssociationDBAdaptor();
+    public ClinicalDBAdaptor getVariantClinicalDBAdaptor();
 
-    public void setVariantDiseaseAssociationDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
+    public void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
 
     public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor();
 

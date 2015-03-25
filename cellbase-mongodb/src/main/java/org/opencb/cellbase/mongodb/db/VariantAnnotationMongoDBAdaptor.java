@@ -215,11 +215,11 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         this.variationDBAdaptor = variationDBAdaptor;
     }
 
-    public ClinicalDBAdaptor getVariantDiseaseAssociationDBAdaptor() {
+    public ClinicalDBAdaptor getVariantClinicalDBAdaptor() {
         return clinicalDBAdaptor;
     }
 
-    public void setVariantDiseaseAssociationDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor) {
+    public void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor) {
         this.clinicalDBAdaptor = clinicalDBAdaptor;
     }
 
@@ -1890,8 +1890,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         Integer i=0;
         for(QueryResult clinicalQueryResult: clinicalQueryResultList){
             Map<String,Object> phenotype = new HashMap<>();
-            if(clinicalQueryResult.getResult() != null) {
-                phenotype = (Map<String, Object>) clinicalQueryResult.getResult();
+            if(clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size()>0) {
+                phenotype = (Map<String, Object>) clinicalQueryResult.getResult().get(0);
             }
 
             List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>)variationConsequenceTypeList.get(i).getResult();
@@ -1905,7 +1905,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             variantAnnotation.setConsequenceTypes(consequenceTypeList);
             variantAnnotation.setConservedRegionScores((List<Score>) conservedRegionQueryResultList.get(i).getResult());
 
-            BasicDBList variationDBList = (BasicDBList) variationQueryResultList.get(i).getResult();
+            List<BasicDBObject> variationDBList = (List<BasicDBObject>) variationQueryResultList.get(i).getResult();
             if(variationDBList!=null && variationDBList.size()>0) {
                 String id = null;
                 id = ((BasicDBObject) variationDBList.get(0)).get("id").toString();

@@ -189,13 +189,14 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
             logger.info(builder.get().toString());
 
         }
-        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
+        List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
+//        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
 
 
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
-            BasicDBList list = (BasicDBList) queryResult.getResult();
+            List<BasicDBObject> list = (List<BasicDBObject>) queryResult.getResult();
 
             Map<String, List<Float>> typeMap = new HashMap();
 

@@ -314,7 +314,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             queries.add(builder.get());
         }
 
-        results = executeQueryList(variations, queries, options, mongoDBCollection);
+        results = executeQueryList2(variations, queries, options, mongoDBCollection2);
+//        results = executeQueryList(variations, queries, options, mongoDBCollection);
 
         return results;
     }
