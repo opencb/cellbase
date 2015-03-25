@@ -459,13 +459,16 @@ public class GeneParser extends CellBaseParser {
             String line;
             while ((line = br.readLine()) != null) {
                 fields = line.split("\t", -1);
-                if (fields.length >= 20 && fields[20].startsWith("ENST")) {
-                    if (!xrefMap.containsKey(fields[20])) {
-                        xrefMap.put(fields[20], new ArrayList<Xref>());
+                if (fields.length >= 19 && fields[19].startsWith("ENST")) {
+//                    System.out.println(Arrays.toString(fields[19].split("; ")));
+                    String[] transcripts = fields[19].split("; ");
+                    for(String transcript: transcripts) {
+                        if (!xrefMap.containsKey(transcript)) {
+                            xrefMap.put(transcript, new ArrayList<Xref>());
+                        }
+                        xrefMap.get(transcript).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
+                        xrefMap.get(transcript).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
                     }
-                    System.out.println(fields[20]);
-                    xrefMap.get(fields[20]).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
-                    xrefMap.get(fields[20]).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
                 }
             }
             br.close();
