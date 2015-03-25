@@ -238,22 +238,34 @@ public class DownloadCommandExecutor extends CommandExecutor {
         Path geneFolder = speciesFolder.resolve("gene");
         makeDir(geneFolder);
 
-        downloadGeneGtf(sp, spShortName, geneFolder, host);
+        downloadEnsemblData(sp, spShortName, geneFolder, host);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas(speciesFolder);
-        downloadMotifFeaturesFile(sp, spShortName, geneFolder, host);
         runGeneExtraInfo(sp, geneFolder);
     }
 
-    private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
-        logger.info("Downloading gene GTF ...");
-        String geneGtfUrl = host + "/" + ensemblRelease;
+    private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
+        logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
+        String ensemblHost = host + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
-            geneGtfUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
+            ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
-        geneGtfUrl = geneGtfUrl + "/gtf/" + spShortName + "/*.gtf.gz";
-        String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
-        downloadFile(geneGtfUrl, geneGtfOutputFileName);
+
+        String url = ensemblHost + "/gtf/" + spShortName + "/*.gtf.gz";
+        String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
+        downloadFile(url, fileName);
+
+        url = ensemblHost + "/fasta/" + spShortName + "/pep/*.pep.all.fa.gz";
+        fileName = geneFolder.resolve(spShortName + ".pep.all.fa.gz").toString();
+        downloadFile(url, fileName);
+
+        url = ensemblHost + "/fasta/" + spShortName + "/cdna/*.cdna.all.fa.gz";
+        fileName = geneFolder.resolve(spShortName + ".cdna.all.fa.gz").toString();
+        downloadFile(url, fileName);
+
+        url = ensemblHost + "/regulation/" + spShortName + "/MotifFeatures.gff.gz";
+        Path outputFile = geneFolder.resolve("MotifFeatures.gff.gz");
+        downloadFile(url, outputFile.toString());
     }
 
     private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
@@ -275,18 +287,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String geneGtfUrl = configuration.getDownload().getGeneExpressionAtlas().getHost();
             downloadFile(geneGtfUrl, expression.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
         }
-    }
-
-    private void downloadMotifFeaturesFile(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
-        logger.info("Downloading motif features file ...");
-        String regulationUrl = host + "/" + ensemblRelease;
-        if (!configuration.getSpecies().getVertebrates().contains(sp)) {
-            regulationUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
-        }
-        regulationUrl = regulationUrl + "/regulation/" + spShortName;
-        String motifFeaturesFile = "MotifFeatures.gff.gz";
-        Path outputFile = geneFolder.resolve(motifFeaturesFile);
-        downloadFile(regulationUrl + "/" + motifFeaturesFile, outputFile.toString());
     }
 
     private void runGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {

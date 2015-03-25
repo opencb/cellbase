@@ -172,7 +172,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
 
 
-        Path fastaFile = getReferenceGenome();
+        Path fastaFile = getFastaReferenceGenome();
         CellBaseSerializer serializer = new JsonParser(output, "genome_sequence");
         return new GenomeSequenceFastaParser(fastaFile, serializer);
     }
@@ -181,7 +181,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CellBaseParser buildGene() {
         Path inputDir = getInputDirFromCommandLine().resolve("gene");
 //        String genomeFastaFile = buildCommandOptions.referenceGenomeFile;
-        Path genomeFastaFile = getReferenceGenome();
+        Path genomeFastaFile = getFastaReferenceGenome();
 //        checkMandatoryOption("reference-genome-file", genomeFastaFile);
         CellBaseSerializer serializer = new JsonParser(output, "gene");
         GeneParser geneParser = new GeneParser(inputDir, genomeFastaFile, serializer);
@@ -190,7 +190,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildVariation() {
-        Path variationFilesDir = getInputDirFromCommandLine();
+        Path variationFilesDir = getInputDirFromCommandLine().resolve("variation");
         CellBaseFileSerializer serializer = new JsonParser(output);
         return new VariationParser(variationFilesDir, serializer);
 
@@ -210,7 +210,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildRegulation() {
-        Path regulatoryRegionFilesDir = getInputDirFromCommandLine();
+        Path regulatoryRegionFilesDir = getInputDirFromCommandLine().resolve("regulation");
         CellBaseSerializer serializer = new JsonParser(output, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
 
@@ -218,7 +218,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildProtein() {
-        Path uniprotSplitFilesDir = getInputDirFromCommandLine();
+        Path uniprotSplitFilesDir = getInputDirFromCommandLine().resolve("protein");
         String species = buildCommandOptions.species;
         checkMandatoryOption("species", species);
         CellBaseSerializer serializer = new JsonParser(output, "protein");
@@ -331,7 +331,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private Path getReferenceGenome() {
+    private Path getFastaReferenceGenome() {
         Path fastaFile = null;
         DirectoryStream<Path> stream = null;
         try {
