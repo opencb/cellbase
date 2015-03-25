@@ -38,51 +38,51 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     private static ResourceBundle resourceBundle;
     protected static Properties applicationProperties;
 
-    protected static Map<String, String> speciesAlias;
+//    protected static Map<String, String> speciesAlias;
 
     protected static CellbaseConfiguration config;
 
 
     static {
         // mongoDBFactory = new HashMap<String, HibernateDBAdaptor>(20);
-        speciesAlias = new HashMap<>();
+//        speciesAlias = new HashMap<>();
         mongoDBFactory = new HashMap<>(10);
 
         mongoDatastoreFactory = new HashMap<>(10);
 
         // reading application.properties file
-        resourceBundle = ResourceBundle.getBundle("mongodb");
-//			applicationProperties = new Config(resourceBundle);
-        applicationProperties = new Properties();
-        if (resourceBundle != null) {
-            Set<String> keys = resourceBundle.keySet();
-            Iterator<String> iterator = keys.iterator();
-            String nextKey;
-            while (iterator.hasNext()) {
-                nextKey = iterator.next();
-                applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
-            }
-        }
-
-
-        String[] speciesArray = applicationProperties.getProperty("SPECIES").split(",");
-        String[] alias = null;
-        String version;
-        for (String species : speciesArray) {
-            species = species.toUpperCase();
-            version = applicationProperties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
-            alias = applicationProperties.getProperty(species + "." + version + ".ALIAS").split(",");
-
-//                System.out.println("");
-//                System.out.println(species);
-            for (String al : alias) {
-//                System.out.print(al+' ');
-                speciesAlias.put(al, species);
-            }
-//                System.out.println("");
-            // For to recognize the species code
-            speciesAlias.put(species, species);
-        }
+//        resourceBundle = ResourceBundle.getBundle("mongodb");
+////			applicationProperties = new Config(resourceBundle);
+//        applicationProperties = new Properties();
+//        if (resourceBundle != null) {
+//            Set<String> keys = resourceBundle.keySet();
+//            Iterator<String> iterator = keys.iterator();
+//            String nextKey;
+//            while (iterator.hasNext()) {
+//                nextKey = iterator.next();
+//                applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
+//            }
+//        }
+//
+//
+//        String[] speciesArray = applicationProperties.getProperty("SPECIES").split(",");
+//        String[] alias = null;
+//        String version;
+//        for (String species : speciesArray) {
+//            species = species.toUpperCase();
+//            version = applicationProperties.getProperty(species + ".DEFAULT.VERSION").toUpperCase();
+//            alias = applicationProperties.getProperty(species + "." + version + ".ALIAS").split(",");
+//
+////                System.out.println("");
+////                System.out.println(species);
+//            for (String al : alias) {
+////                System.out.print(al+' ');
+//                speciesAlias.put(al, species);
+//            }
+////                System.out.println("");
+//            // For to recognize the species code
+//            speciesAlias.put(species, species);
+//        }
     }
 
     public MongoDBAdaptorFactory(CellbaseConfiguration config){
@@ -95,7 +95,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStoreManager mongoDataStoreManager = new MongoDataStoreManager(config.getHost(speciesId, assembly),
                 config.getPort(speciesId, assembly));
 
-        MongoDBConfiguration mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+        MongoDBConfiguration mongoDBConfiguration;
+        if(!config.getUsername(speciesId,assembly).equals("") || !config.getPass(speciesId, assembly).equals("")) {
+            mongoDBConfiguration = MongoDBConfiguration.builder().add("username", config.getUsername(speciesId, assembly)).
+                    add("password", config.getPass(speciesId, assembly)).init().build();
+        } else {
+            mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+        }
         return mongoDataStoreManager.get(config.getDatabase(speciesId, assembly), mongoDBConfiguration);
     }
 
@@ -355,8 +361,10 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = new VariantAnnotationMongoDBAdaptor(speciesId, assembly,
                 mongoDatastoreFactory.get(speciesAssemblyPrefix));
+        variantAnnotationDBAdaptor.setGeneDBAdaptor(getGeneDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setRegulatoryRegionDBAdaptor(getRegulatoryRegionDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setVariationDBAdaptor(getVariationDBAdaptor(species, assembly));
-        variantAnnotationDBAdaptor.setVariantDiseaseAssociationDBAdaptor(getVariantDiseaseAssociationDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setProteinFunctionPredictorDBAdaptor(getProteinFunctionPredictorDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setConservedRegionDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
 
@@ -365,19 +373,19 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
-    public VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species) {
-        return getVariantDiseaseAssociationDBAdaptor(species, null);
+    public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
+        return getClinicalDBAdaptor(species, null);
     }
 
     @Override
-    public VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species, String assembly) {
+    public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
         String speciesAssemblyPrefix = getSpeciesAssemblyPrefix(species, assembly);
         String speciesId = config.getAlias(species);
         if(!mongoDatastoreFactory.containsKey(speciesAssemblyPrefix)) {
             MongoDataStore mongoDataStore = createCellBaseMongoDatastore(speciesId, assembly);
             mongoDatastoreFactory.put(speciesAssemblyPrefix, mongoDataStore);
         }
-        return new VariantDiseaseAssociationMongoDBAdaptor(speciesId, assembly,
+        return new ClinicalMongoDBAdaptor(speciesId, assembly,
                 mongoDatastoreFactory.get(speciesAssemblyPrefix));
     }
 

@@ -119,8 +119,8 @@ public class MongoDBAdaptor {
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<DBObject> queries, QueryOptions options,
                                                   MongoDBCollection mongoDBCollection2) {
         List<QueryResult> queryResults = new ArrayList<>(ids.size());
-        logger.info("executeQueryList2");
-        System.out.println("executeQueryList2");
+//        logger.info("executeQueryList2");
+//        System.out.println("executeQueryList2");
         long dbTimeStart, dbTimeEnd;
 
         for (int i = 0; i < queries.size(); i++) {

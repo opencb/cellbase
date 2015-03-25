@@ -8,7 +8,7 @@ import org.opencb.biodata.models.variant.annotation.Gwas;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 
-import org.opencb.cellbase.core.lib.api.variation.VariantDiseaseAssociationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -19,20 +19,20 @@ import java.util.*;
  * Created by antonior on 11/18/14.
  * @author Javier Lopez fjlopez@ebi.ac.uk
  */
-public class VariantDiseaseAssociationMongoDBAdaptor extends MongoDBAdaptor implements VariantDiseaseAssociationDBAdaptor {
+public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor {
 
 
-    public VariantDiseaseAssociationMongoDBAdaptor(DB db) {
+    public ClinicalMongoDBAdaptor(DB db) {
         super(db);
     }
 
-    public VariantDiseaseAssociationMongoDBAdaptor(DB db, String species, String assembly) {
+    public ClinicalMongoDBAdaptor(DB db, String species, String assembly) {
         super(db, species, assembly);
         mongoDBCollection = db.getCollection("clinical");
         logger.info("ClinicalVarMongoDBAdaptor: in 'constructor'");
     }
 
-    public VariantDiseaseAssociationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("clinical");
 
@@ -81,7 +81,7 @@ public class VariantDiseaseAssociationMongoDBAdaptor extends MongoDBAdaptor impl
             queries.add(builder.get());
             ids.add(region.toString());
         }
-        return executeQueryList(ids, queries, options);
+        return executeQueryList2(ids, queries, options);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class VariantDiseaseAssociationMongoDBAdaptor extends MongoDBAdaptor impl
 
 
         for (QueryResult queryResult : queryResultList){
-            BasicDBList clinicalList = (BasicDBList) queryResult.getResult();
+            List<BasicDBObject> clinicalList = (List<BasicDBObject>) queryResult.getResult();
             Cosmic cosmic;
             Gwas gwas;
             Clinvar clinvar;

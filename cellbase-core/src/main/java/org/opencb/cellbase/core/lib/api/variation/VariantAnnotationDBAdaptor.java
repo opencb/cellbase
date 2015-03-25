@@ -2,7 +2,9 @@ package org.opencb.cellbase.core.lib.api.variation;
 
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.lib.api.core.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.core.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
@@ -28,14 +30,18 @@ public interface VariantAnnotationDBAdaptor {
 
     public void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor);
 
-    public VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor();
+    public ClinicalDBAdaptor getVariantClinicalDBAdaptor();
 
-    public void setVariantDiseaseAssociationDBAdaptor(VariantDiseaseAssociationDBAdaptor variantDiseaseAssociationDBAdaptor);
+    public void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
 
     public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor();
 
     public void setProteinFunctionPredictorDBAdaptor(ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor);
 
     public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor);
+
+    public void setGeneDBAdaptor(GeneDBAdaptor geneDBAdaptor);
+
+    public void setRegulatoryRegionDBAdaptor(RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor);
 
 }

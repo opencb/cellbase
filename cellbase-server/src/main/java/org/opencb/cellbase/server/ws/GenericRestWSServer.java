@@ -272,8 +272,8 @@ public class GenericRestWSServer implements IWSServer {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
 
-        queryOptions.put("exclude", (exclude != null && !exclude.equals("")) ? Splitter.on(",").splitToList(exclude) : null);
-        queryOptions.put("include", (include != null && !include.equals("")) ? Splitter.on(",").splitToList(include) : null);
+        queryOptions.put("exclude", (exclude != null && !exclude.equals("")) ? new LinkedList<>(Splitter.on(",").splitToList(exclude)) : null);
+        queryOptions.put("include", (include != null && !include.equals("")) ? new LinkedList<>(Splitter.on(",").splitToList(include)) : null);
         queryOptions.put("limit", (limit > 0) ? limit : -1);
         queryOptions.put("skip", (skip > 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);

@@ -8,6 +8,7 @@ import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 public class VariationMongoDBAdaptor extends MongoDBAdaptor implements VariationDBAdaptor {
 
     private DBCollection mongoVariationPhenotypeDBCollection;
+    private MongoDBCollection mongoVariationPhenotypeDBCollection2;
 
     private int variationChunkSize = MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE;
 
@@ -41,7 +43,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("variation");
-        mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
+        mongoVariationPhenotypeDBCollection2 = mongoDataStore.getCollection("variation_phenotype");
 
         logger.info("VariationMongoDBAdaptor: in 'constructor'");
     }
@@ -312,7 +314,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             queries.add(builder.get());
         }
 
-        results = executeQueryList(variations, queries, options, mongoDBCollection);
+        results = executeQueryList2(variations, queries, options, mongoDBCollection2);
+//        results = executeQueryList(variations, queries, options, mongoDBCollection);
 
         return results;
     }

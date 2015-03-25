@@ -205,7 +205,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             queries.add(builder.get());
             ids.add(region.toString());
         }
-        return executeQueryList(ids, queries, options);
+        return executeQueryList2(ids, queries, options);
+//        return executeQueryList(ids, queries, options);
     }
 
 

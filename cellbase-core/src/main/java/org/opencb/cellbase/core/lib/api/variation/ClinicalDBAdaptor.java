@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by antonior on 11/18/14.
  */
-public interface VariantDiseaseAssociationDBAdaptor {
+public interface ClinicalDBAdaptor {
 
 
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
@@ -29,11 +29,5 @@ public interface VariantDiseaseAssociationDBAdaptor {
     public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options);
 
     public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options);
-
-
-
-
-
-
 
 }
