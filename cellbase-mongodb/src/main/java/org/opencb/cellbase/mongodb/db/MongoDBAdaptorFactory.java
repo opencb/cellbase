@@ -95,7 +95,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStoreManager mongoDataStoreManager = new MongoDataStoreManager(config.getHost(speciesId, assembly),
                 config.getPort(speciesId, assembly));
 
-        MongoDBConfiguration mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+        MongoDBConfiguration mongoDBConfiguration;
+        if(!config.getUsername(speciesId,assembly).equals("") || !config.getPass(speciesId, assembly).equals("")) {
+            mongoDBConfiguration = MongoDBConfiguration.builder().add("username", config.getUsername(speciesId, assembly)).
+                    add("password", config.getPass(speciesId, assembly)).init().build();
+        } else {
+            mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+        }
         return mongoDataStoreManager.get(config.getDatabase(speciesId, assembly), mongoDBConfiguration);
     }
 
@@ -358,7 +364,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         variantAnnotationDBAdaptor.setGeneDBAdaptor(getGeneDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setRegulatoryRegionDBAdaptor(getRegulatoryRegionDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setVariationDBAdaptor(getVariationDBAdaptor(species, assembly));
-        variantAnnotationDBAdaptor.setVariantDiseaseAssociationDBAdaptor(getVariantDiseaseAssociationDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setVariantDiseaseAssociationDBAdaptor(getClinicalDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setProteinFunctionPredictorDBAdaptor(getProteinFunctionPredictorDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setConservedRegionDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
 
@@ -367,19 +373,19 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
-    public VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species) {
-        return getVariantDiseaseAssociationDBAdaptor(species, null);
+    public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
+        return getClinicalDBAdaptor(species, null);
     }
 
     @Override
-    public VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species, String assembly) {
+    public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
         String speciesAssemblyPrefix = getSpeciesAssemblyPrefix(species, assembly);
         String speciesId = config.getAlias(species);
         if(!mongoDatastoreFactory.containsKey(speciesAssemblyPrefix)) {
             MongoDataStore mongoDataStore = createCellBaseMongoDatastore(speciesId, assembly);
             mongoDatastoreFactory.put(speciesAssemblyPrefix, mongoDataStore);
         }
-        return new VariantDiseaseAssociationMongoDBAdaptor(speciesId, assembly,
+        return new ClinicalMongoDBAdaptor(speciesId, assembly,
                 mongoDatastoreFactory.get(speciesAssemblyPrefix));
     }
 

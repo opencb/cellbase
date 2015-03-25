@@ -1,6 +1,9 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import org.opencb.biodata.models.core.CpGIsland;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.StructuralVariation;
@@ -9,12 +12,10 @@ import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.core.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.*;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 //import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
@@ -232,19 +234,32 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getClinvarByRegion(@PathParam("chrRegionId") String query) {
         try {
             checkParams();
-            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
-//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
-//						regions.get(0), getHistogramIntervalSize());
-//                QueryResult queryResult = mutationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
-//				return generateResponse(query, intervalList);
                 return null;
             } else {
-                System.out.println("sdddajljkjkhhk");
-                List<QueryResult> queryResults = clinVarDBAdaptor.getAllByRegionList(regions, queryOptions);
-                return createOkResponse(queryResults);
+
+                QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
+                List<QueryResult> clinvarQueryResultList = clinicalDBAdaptor.getAllByRegionList(regions, queryOptions);
+                List<QueryResult> queryResultList = new ArrayList<>();
+                for(QueryResult clinvarQueryResult: clinvarQueryResultList) {
+                    QueryResult queryResult = new QueryResult();
+                    queryResult.setId(clinvarQueryResult.getId());
+                    queryResult.setDbTime(clinvarQueryResult.getDbTime());
+                    queryResult.setNumResults(clinvarQueryResult.getNumResults());
+                    BasicDBList basicDBList = new BasicDBList();
+
+                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinvarQueryResult.getResult()) {
+                        if (clinicalRecord.size() > 0) {
+                            basicDBList.add(clinicalRecord.get("clinvarList"));
+                        }
+                    }
+                    queryResult.setResult(basicDBList);
+                    queryResultList.add(queryResult);
+                }
+                return createOkResponse(queryResultList);
             }
 
         } catch (Exception e) {

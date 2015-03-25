@@ -160,9 +160,9 @@ public abstract class DBAdaptorFactory {
     public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly);
 
 
-	public abstract VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species);
+	public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
 
-	public abstract VariantDiseaseAssociationDBAdaptor getVariantDiseaseAssociationDBAdaptor(String species, String assembly);
+	public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
 
 
 	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);
