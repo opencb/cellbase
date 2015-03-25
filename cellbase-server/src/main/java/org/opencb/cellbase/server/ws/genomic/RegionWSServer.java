@@ -241,21 +241,34 @@ public class RegionWSServer extends GenericRestWSServer {
                 return null;
             } else {
 
-                QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
+//                QueryOptions queryOptions = new QueryOptions("include", "clinvarList,chromosome,start,end");
+                queryOptions.addToListOption("include", "clinvarList");
+                queryOptions.addToListOption("include","chromosome");
+                queryOptions.addToListOption("include","start");
+                queryOptions.addToListOption("include","end");
+                queryOptions.addToListOption("include","reference");
+                queryOptions.addToListOption("include","alternate");
                 List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByRegionList(regions, queryOptions);
                 List<QueryResult> queryResultList = new ArrayList<>();
-                for(QueryResult clinvarQueryResult: clinicalQueryResultList) {
+                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
                     QueryResult queryResult = new QueryResult();
-                    queryResult.setId(clinvarQueryResult.getId());
-                    queryResult.setDbTime(clinvarQueryResult.getDbTime());
+                    queryResult.setId(clinicalQueryResult.getId());
+                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
                     BasicDBList basicDBList = new BasicDBList();
                     int numResults = 0;
-                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinvarQueryResult.getResult()) {
+                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
                         if(clinicalRecord.containsKey("clinvarList")) {
-                            for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
-                                basicDBList.add(clinvarRecord);
-                                numResults++;
-                            }
+                            basicDBList.add(clinicalRecord);
+                            numResults += 1;
+//                            for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
+//                                clinvarRecord.put("chromosome", clinicalRecord.get("chromosome"));
+//                                clinvarRecord.put("start", clinicalRecord.get("start"));
+//                                clinvarRecord.put("end", clinicalRecord.get("end"));
+//                                clinvarRecord.put("reference", clinicalRecord.get("reference"));
+//                                clinvarRecord.put("alternate", clinicalRecord.get("alternate"));
+//                                basicDBList.add(clinvarRecord);
+//                                numResults++;
+//                            }
                         }
                     }
                     queryResult.setResult(basicDBList);
