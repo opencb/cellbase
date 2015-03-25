@@ -15,7 +15,7 @@ import java.util.*;
 public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
 
 
-    private int chunkSize = MongoDBCollectionConfiguration.GENE_CHUNK_SIZE;
+    private int chunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
 
     public ConservedRegionMongoDBAdaptor(DB db) {
         super(db);
