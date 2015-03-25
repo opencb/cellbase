@@ -36,9 +36,9 @@ public class ClinicalMongoDBAdaptorTest {
 
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
             QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
-            List<QueryResult> clinvarQueryResultList = clinicalDBAdaptor.getAllByRegionList(Arrays.asList(new Region("3", 550000, 1166666)), queryOptions);
+            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByRegionList(Arrays.asList(new Region("3", 550000, 1166666)), queryOptions);
             List<QueryResult> queryResultList = new ArrayList<>();
-            for(QueryResult clinvarQueryResult: clinvarQueryResultList) {
+            for(QueryResult clinvarQueryResult: clinicalQueryResultList) {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(clinvarQueryResult.getId());
                 queryResult.setDbTime(clinvarQueryResult.getDbTime());
@@ -46,8 +46,10 @@ public class ClinicalMongoDBAdaptorTest {
                 BasicDBList basicDBList = new BasicDBList();
 
                 for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinvarQueryResult.getResult()) {
-                    if (clinicalRecord.size() > 0) {
-                        basicDBList.add(clinicalRecord.get("clinvarList"));
+                    if(clinicalRecord.containsKey("clinvarList")) {
+                        for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
+                            basicDBList.add(clinvarRecord);
+                        }
                     }
                 }
                 queryResult.setResult(basicDBList);

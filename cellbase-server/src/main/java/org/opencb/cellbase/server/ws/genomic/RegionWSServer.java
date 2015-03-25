@@ -242,21 +242,24 @@ public class RegionWSServer extends GenericRestWSServer {
             } else {
 
                 QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
-                List<QueryResult> clinvarQueryResultList = clinicalDBAdaptor.getAllByRegionList(regions, queryOptions);
+                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByRegionList(regions, queryOptions);
                 List<QueryResult> queryResultList = new ArrayList<>();
-                for(QueryResult clinvarQueryResult: clinvarQueryResultList) {
+                for(QueryResult clinvarQueryResult: clinicalQueryResultList) {
                     QueryResult queryResult = new QueryResult();
                     queryResult.setId(clinvarQueryResult.getId());
                     queryResult.setDbTime(clinvarQueryResult.getDbTime());
-                    queryResult.setNumResults(clinvarQueryResult.getNumResults());
                     BasicDBList basicDBList = new BasicDBList();
-
+                    int numResults = 0;
                     for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinvarQueryResult.getResult()) {
-                        if (clinicalRecord.size() > 0) {
-                            basicDBList.add(clinicalRecord.get("clinvarList"));
+                        if(clinicalRecord.containsKey("clinvarList")) {
+                            for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
+                                basicDBList.add(clinvarRecord);
+                                numResults++;
+                            }
                         }
                     }
                     queryResult.setResult(basicDBList);
+                    queryResult.setNumResults(numResults);
                     queryResultList.add(queryResult);
                 }
                 return createOkResponse(queryResultList);
