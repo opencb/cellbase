@@ -25,10 +25,6 @@ public class ClinicalMongoDBAdaptorTest {
         try {
             CellbaseConfiguration config = new CellbaseConfiguration();
 
-            config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001.ebi.ac.uk", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
-                    "B10p@ss", 10, 10);
-//            config.addSpeciesConnection("hsapiens", "GRCh37", "172.22.70.137", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "",
-//                    "", 10, 10);
 
             config.addSpeciesAlias("hsapiens", "hsapiens");
 

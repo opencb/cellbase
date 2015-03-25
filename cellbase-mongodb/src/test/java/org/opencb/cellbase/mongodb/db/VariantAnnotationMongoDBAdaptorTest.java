@@ -38,8 +38,6 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
-                "B10p@ss", 10, 10);
 
         config.addSpeciesAlias("hsapiens", "hsapiens");
 
