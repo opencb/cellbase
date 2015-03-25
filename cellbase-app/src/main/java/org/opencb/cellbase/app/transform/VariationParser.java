@@ -308,7 +308,9 @@ public class VariationParser extends CellBaseParser {
         variationFeaturesFileReader = getBufferedReader(PREPROCESSED_VARIATION_FEATURE_FILENAME);
         variationSynonymsFileReader = getBufferedReader(PREPROCESSED_VARIATION_SYNONYM_FILENAME);
         variationTranscriptsFileReader = getBufferedReader(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
-        frequenciesTabixReader = new TabixReader(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME).toString());
+        if(Files.exists(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME))) {
+            frequenciesTabixReader = new TabixReader(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME).toString());
+        }
     }
 
     private Variation buildVariation(String[] variationFields, String[] variationFeatureFields, String chromosome,
@@ -459,15 +461,17 @@ public class VariationParser extends CellBaseParser {
 
     private String getVariationFrequenciesString(String chromosome, int start, int end, String id) throws IOException {
         try {
-            TabixReader.Iterator frequenciesFileIterator = frequenciesTabixReader.query(chromosome + ":" + start + "-" + end);
-            if (frequenciesFileIterator != null) {
-                String variationFrequenciesLine = frequenciesFileIterator.next();
-                while (variationFrequenciesLine != null) {
-                    String[] variationFrequenciesFields = variationFrequenciesLine.split("\t");
-                    if (variationFrequenciesFields[3].equals(id)) {
-                        return variationFrequenciesFields[4];
+            if(frequenciesTabixReader != null) {
+                TabixReader.Iterator frequenciesFileIterator = frequenciesTabixReader.query(chromosome + ":" + start + "-" + end);
+                if (frequenciesFileIterator != null) {
+                    String variationFrequenciesLine = frequenciesFileIterator.next();
+                    while (variationFrequenciesLine != null) {
+                        String[] variationFrequenciesFields = variationFrequenciesLine.split("\t");
+                        if (variationFrequenciesFields[3].equals(id)) {
+                            return variationFrequenciesFields[4];
+                        }
+                        variationFrequenciesLine = frequenciesFileIterator.next();
                     }
-                    variationFrequenciesLine = frequenciesFileIterator.next();
                 }
             }
         } catch (Exception e) {
