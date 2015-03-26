@@ -146,7 +146,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
         if ((downloadCommandOptions.gene && speciesHasInfoToDownload(sp, "gene")) || downloadCommandOptions.all) {
-            downloadEnsemblGene(sp, spShortName, spFolder, ensemblHostUrl);
+            downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
         if ((downloadCommandOptions.variation && speciesHasInfoToDownload(sp, "variation")) || downloadCommandOptions.all) {
             downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
@@ -233,7 +233,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 //        }
     }
 
-    private void downloadEnsemblGene(Species sp, String spShortName, Path speciesFolder, String host) throws IOException, InterruptedException {
+    private void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = speciesFolder.resolve("gene");
         makeDir(geneFolder);
@@ -241,7 +241,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadEnsemblData(sp, spShortName, geneFolder, host);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas(speciesFolder);
-        runGeneExtraInfo(sp, geneFolder);
+        runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
     private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
@@ -289,12 +289,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void runGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
+    private void runGeneExtraInfo(Species sp, String assembly, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
-        List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
-                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+        List<String> args;
+        if(sp.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
+            args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()
+                            .replace("79", "75"));
+        }else {
+            args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+
+        }
 
         // run gene_extra_info.pl
         boolean geneExtraInfoDownloaded = runCommandLineProcess(ensemblScriptsFolder,
