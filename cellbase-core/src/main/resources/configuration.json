@@ -505,10 +505,10 @@
 		"id":"dmelanogaster",
 		"scientificName":"Drosophila melanogaster",
 		"assemblies":[
-		  {
-			"ensemblVersion":"24_77_546",
-			"name":"BDGP5"
-		  },
+//		  {
+//			"ensemblVersion":"24_77_546",
+//			"name":"BDGP5"
+//		  },
 		  {
 			"ensemblVersion":"26_79_6",
 			"name":"BDGP6"
@@ -527,7 +527,7 @@
 		"scientificName":"Drosophila simulans",
 		"assemblies":[
 		  {
-			"ensemblVersion":"26_79_14",
+			"ensemblVersion":"26_79_1",
 			"name":"WUGSC1"
 		  }
 		],
