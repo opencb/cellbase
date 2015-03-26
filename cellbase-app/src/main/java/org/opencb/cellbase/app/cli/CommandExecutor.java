@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +103,13 @@ public abstract class CommandExecutor {
                         CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
                 this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
             }
+        }
+    }
+
+
+    protected void makeDir(Path folderPath) throws IOException {
+        if(!Files.exists(folderPath)) {
+            Files.createDirectories(folderPath);
         }
     }
 

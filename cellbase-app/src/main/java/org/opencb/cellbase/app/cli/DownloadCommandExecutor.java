@@ -487,13 +487,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
 
-
-    private void makeDir(Path folderPath) throws IOException {
-        if(!Files.exists(folderPath)) {
-            Files.createDirectories(folderPath);
-        }
-    }
-
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
         boolean downloaded = runCommandLineProcess(null, "wget", wgetArgs, null);

@@ -29,8 +29,10 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
 
     private File ensemblScriptsFolder;
-    private String input = null;
+    private File proteinScriptsFolder;
+    private Path input = null;
     private Path output = null;
+    private Path common = null;
 
     private CellBaseConfiguration.SpeciesProperties.Species species;
 
@@ -40,12 +42,18 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         this.buildCommandOptions = buildCommandOptions;
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
+        this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
 
         if(buildCommandOptions.input != null) {
-            input = buildCommandOptions.input;
+            input = Paths.get(buildCommandOptions.input);
         }
         if(buildCommandOptions.output != null) {
             output = Paths.get(buildCommandOptions.output);
+        }
+        if(buildCommandOptions.common != null) {
+            common = Paths.get(buildCommandOptions.common);
+        }else {
+            common = output.getParent().getParent().resolve("common");
         }
     }
 
@@ -56,9 +64,9 @@ public class BuildCommandExecutor extends CommandExecutor {
     public void execute() {
         try {
 //            checkOutputDir();
-            Path outputDir = Paths.get(buildCommandOptions.output);
-            if(!Files.exists(outputDir)) {
-                Files.createDirectories(outputDir);
+//            Path outputDir = Paths.get(buildCommandOptions.output);
+            if(!Files.exists(output)) {
+                Files.createDirectories(output);
             }
 
             // We need to get the Species object from the CLI name
@@ -179,28 +187,27 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildGene() {
-        Path inputDir = getInputDirFromCommandLine().resolve("gene");
-//        String genomeFastaFile = buildCommandOptions.referenceGenomeFile;
-        Path genomeFastaFile = getFastaReferenceGenome();
-//        checkMandatoryOption("reference-genome-file", genomeFastaFile);
+        Path geneFolderPath = input.resolve("gene");
+        Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new JsonParser(output, "gene");
-        GeneParser geneParser = new GeneParser(inputDir, genomeFastaFile, serializer);
-        return geneParser;
+
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, serializer);
     }
 
 
     private CellBaseParser buildVariation() {
-        Path variationFilesDir = getInputDirFromCommandLine().resolve("variation");
+        Path variationFolderPath = getInputDirFromCommandLine().resolve("variation");
         CellBaseFileSerializer serializer = new JsonParser(output);
-        return new VariationParser(variationFilesDir, serializer);
+
+        return new VariationParser(variationFolderPath, serializer);
 
     }
 
-    private CellBaseParser buildVep() {
-        Path vepFile = getInputFileFromCommandLine();
-        CellBaseFileSerializer serializer = new JsonParser(output);
-        return new VariantEffectParser(vepFile, serializer);
-    }
+//    private CellBaseParser buildVep() {
+//        Path vepFile = getInputFileFromCommandLine();
+//        CellBaseFileSerializer serializer = new JsonParser(output);
+//        return new VariantEffectParser(vepFile, serializer);
+//    }
 
     private CellBaseParser buildVariationPhenotypeAnnotation() {
         Path variationFilesDir = getInputDirFromCommandLine();
@@ -218,11 +225,30 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildProtein() {
-        Path uniprotSplitFilesDir = getInputDirFromCommandLine().resolve("protein");
-        String species = buildCommandOptions.species;
-        checkMandatoryOption("species", species);
+        Path proteinFolder = common.resolve("protein");
+        if(!Files.exists(proteinFolder.resolve("uniprot_chunks"))) {
+            try {
+                makeDir(proteinFolder.resolve("uniprot_chunks"));
+                if(Files.exists(proteinFolder.resolve("uniprot_sprot.xml.gz"))) {
+                    Runtime.getRuntime().exec("gunzip " + proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+                }
+
+                List<String> args = Arrays.asList(proteinFolder.resolve("uniprot_sprot.xml").toAbsolutePath().toString(),
+                        proteinFolder.resolve("uniprot_chunks").toAbsolutePath().toString());
+                runCommandLineProcess(proteinScriptsFolder,
+                        "./uniprot_spliter.pl",
+                        args,
+                        proteinFolder.resolve("uniprot_chunks").resolve("chunks.log").toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+//        String species = buildCommandOptions.species;
+//        checkMandatoryOption("species", species);
         CellBaseSerializer serializer = new JsonParser(output, "protein");
-        return new ProteinParser(uniprotSplitFilesDir, species, serializer);
+        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), species.getScientificName(), serializer);
 
     }
 
@@ -306,12 +332,12 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private Path getInputFileFromCommandLine() {
-        File inputFile = new File(input);
+        File inputFile = new File(input.toString());
         if (inputFile.exists()) {
             if (inputFile.isDirectory()) {
                 throw new ParameterException(input + " is a directory: it must be a file for " + buildCommandOptions.build + " builder");
             } else {
-                return Paths.get(input);
+                return input;
             }
         } else {
             throw new ParameterException("File '" + input + "' doesn't exist");
@@ -319,10 +345,10 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private Path getInputDirFromCommandLine(){
-        File inputDirectory = new File(input);
+        File inputDirectory = new File(input.toString());
         if (inputDirectory.exists()) {
             if (inputDirectory.isDirectory()) {
-                return Paths.get(input);
+                return input;
             } else {
                 throw new ParameterException("'" + input + "' is not a directory");
             }
@@ -335,7 +361,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path fastaFile = null;
         DirectoryStream<Path> stream = null;
         try {
-            stream = Files.newDirectoryStream(Paths.get(input).resolve("genome"), new DirectoryStream.Filter<Path>() {
+            stream = Files.newDirectoryStream(input.resolve("genome"), new DirectoryStream.Filter<Path>() {
                 @Override
                 public boolean accept(Path entry) throws IOException {
                     return entry.toString().endsWith(".fa.gz");
