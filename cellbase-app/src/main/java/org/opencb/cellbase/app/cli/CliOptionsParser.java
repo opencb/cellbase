@@ -140,10 +140,10 @@ public class CliOptionsParser {
         @Parameter(names = {"-b", "--build"}, description = "", required = true, arity = 1)
         public String build;
 
-        @Parameter(names = {"--species"}, description = "", required = false)
+        @Parameter(names = {"-s", "--species"}, description = "", required = false)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"--assembly"}, description = "", required = false)
+        @Parameter(names = {"-a", "--assembly"}, description = "", required = false)
         public String assembly;
 
         @Parameter(names = {"-i", "--input"}, description = "", required = true, arity = 1)
@@ -152,8 +152,8 @@ public class CliOptionsParser {
         @Parameter(names = {"-o", "--output"}, description = "", required = false, arity = 1)
         public String output = "/tmp";
 
-        @Parameter(names = {"--reference-genome-file"}, description = "", required = false)
-        public String referenceGenomeFile;
+        @Parameter(names = {"--common"}, description = "", required = false, arity = 1)
+        public String common;
 
     }
 
