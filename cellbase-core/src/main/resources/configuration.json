@@ -124,7 +124,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -141,7 +140,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -157,8 +155,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -173,8 +170,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -189,8 +185,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -205,8 +200,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -221,8 +215,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -238,7 +231,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -254,8 +246,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -270,8 +261,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -286,8 +276,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -302,8 +291,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -318,8 +306,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -334,8 +321,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -350,8 +336,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -366,8 +351,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -382,8 +366,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -398,8 +381,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -414,8 +396,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -430,8 +411,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -446,8 +426,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -462,8 +441,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -478,8 +456,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -489,7 +466,7 @@
 		"scientificName":"Caenorhabditis elegans",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_245",
+			"ensemblVersion":"26_79_245",
 			"name":"WBcel235"
 		  }
 		],
@@ -497,7 +474,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -506,11 +482,7 @@
 		"scientificName":"Drosophila melanogaster",
 		"assemblies":[
 		  {
-			"ensemblVersion":"24_77_546",
-			"name":"BDGP5"
-		  },
-		  {
-			"ensemblVersion":"25_78_6",
+			"ensemblVersion":"26_79_6",
 			"name":"BDGP6"
 		  }
 		],
@@ -518,7 +490,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -527,15 +498,14 @@
 		"scientificName":"Drosophila simulans",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_14",
+			"ensemblVersion":"26_79_1",
 			"name":"WUGSC1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -543,15 +513,14 @@
 		"scientificName":"Drosophila yakuba",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"dyak_r1.3"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -559,7 +528,7 @@
 		"scientificName":"Anopheles gambiae",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_4",
+			"ensemblVersion":"26_79_4",
 			"name":"AgamP4"
 		  }
 		],
@@ -567,7 +536,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -576,15 +544,14 @@
 		"scientificName":"Anopheles darlingi",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_3",
+			"ensemblVersion":"26_79_3",
 			"name":"AdarC1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -592,15 +559,14 @@
 		"scientificName":"Nematostella vectensis",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"ASM20922v1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -608,15 +574,14 @@
 		"scientificName":"Strongylocentrotus purpuratus",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_3",
+			"ensemblVersion":"26_79_3",
 			"name":"GCA_000002235.2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -624,15 +589,14 @@
 		"scientificName":"Bombyx mori",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"Bmor1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -640,15 +604,14 @@
 		"scientificName":"Aedes aegypti",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_3",
+			"ensemblVersion":"26_79_3",
 			"name":"AaegL3"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -656,15 +619,14 @@
 		"scientificName":"Acyrthosiphon pisum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"GCA_000142985.2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -674,7 +636,7 @@
 		"scientificName":"Saccharomyces cerevisiae",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_4",
+			"ensemblVersion":"26_79_4",
 			"name":"R64-1-1"
 		  }
 		],
@@ -682,7 +644,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -691,15 +652,14 @@
 		"scientificName":"Schizosaccharomyces pombe",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"ASM294v2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -707,15 +667,14 @@
 		"scientificName":"Aspergillus fumigatus",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"CADRE"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -723,15 +682,14 @@
 		"scientificName":"Aspergillus niger",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"CADRE"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -739,15 +697,14 @@
 		"scientificName":"Aspergillus nidulans",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_6",
+			"ensemblVersion":"26_79_6",
 			"name":"ASM1142v1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -755,15 +712,14 @@
 		"scientificName":"Aspergillus oryzae",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"CADRE2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -771,15 +727,14 @@
 		"scientificName":"Fusarium oxysporum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"FO2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -787,15 +742,14 @@
 		"scientificName":"Puccinia graminis",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"ASM14992v1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -803,15 +757,14 @@
 		"scientificName":"Puccinia triticina",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"ASM15152v1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -819,15 +772,14 @@
 		"scientificName":"Magnaporthe oryzae",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_8",
+			"ensemblVersion":"26_79_8",
 			"name":"MG8"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -835,15 +787,14 @@
 		"scientificName":"Ustilago maydis",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"UM1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -851,15 +802,14 @@
 		"scientificName":"Sclerotinia sclerotiorum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"ASM14694v1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -867,15 +817,14 @@
 		"scientificName":"Cryptococcus neoformans",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"GCA_000091045.1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -883,15 +832,14 @@
 		"scientificName":"Zymoseptoria tritici",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"MG2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -901,7 +849,7 @@
 		"scientificName":"Plasmodium falciparum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_3",
+			"ensemblVersion":"26_79_3",
 			"name":"ASM276v1"
 		  }
 		],
@@ -909,7 +857,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -918,15 +865,14 @@
 		"scientificName":"Leishmania major",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"ASM272v2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -934,15 +880,14 @@
 		"scientificName":"Dictyostelium discoideum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"dictybase.01"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -950,15 +895,14 @@
 		"scientificName":"Giardia lamblia",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"GCA_000002435.1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -966,15 +910,14 @@
 		"scientificName":"Pythium ultimum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"pug"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -982,15 +925,14 @@
 		"scientificName":"Albugo laibachii",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"ENA1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -1000,7 +942,7 @@
 		"scientificName":"Arabidopsis thaliana",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_10",
+			"ensemblVersion":"26_79_10",
 			"name":"TAIR10"
 		  }
 		],
@@ -1008,7 +950,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -1017,15 +958,14 @@
 		"scientificName":"Arabidopsis lyrata",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_10",
+			"ensemblVersion":"26_79_10",
 			"name":"v.1.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1033,15 +973,14 @@
 		"scientificName":"Brachypodium distachyon",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_12",
+			"ensemblVersion":"26_79_12",
 			"name":"v1.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1049,15 +988,14 @@
 		"scientificName":"Oryza sativa",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_7",
+			"ensemblVersion":"26_79_7",
 			"name":"IRGSP-1.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1065,15 +1003,14 @@
 		"scientificName":"Glycine max",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"V1.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1081,15 +1018,14 @@
 		"scientificName":"Vitis vinifera",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_3",
+			"ensemblVersion":"26_79_3",
 			"name":"IGGP_12x"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1097,15 +1033,14 @@
 		"scientificName":"Zea mays",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_6",
+			"ensemblVersion":"26_79_6",
 			"name":"AGPv3"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1113,15 +1048,14 @@
 		"scientificName":"Hordeum vulgare",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"030312v2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1129,15 +1063,14 @@
 		"scientificName":"Musa acuminata",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"MA1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1145,15 +1078,14 @@
 		"scientificName":"Sorghum bicolor",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_14",
+			"ensemblVersion":"26_79_14",
 			"name":"Sorbi1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1161,15 +1093,14 @@
 		"scientificName":"Setaria italica",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_21",
+			"ensemblVersion":"26_79_21",
 			"name":"JGIv2.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1177,15 +1108,14 @@
 		"scientificName":"Triticum aestivum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_2",
+			"ensemblVersion":"26_79_2",
 			"name":"IWGSC2"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1193,15 +1123,14 @@
 		"scientificName":"Brassica rapa",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"IVFCAASv1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1209,15 +1138,14 @@
 		"scientificName":"Populus trichocarpa",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_20",
+			"ensemblVersion":"26_79_20",
 			"name":"JGI2.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1225,15 +1153,14 @@
 		"scientificName":"Solanum lycopersicum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_240",
+			"ensemblVersion":"26_79_240",
 			"name":"SL2.40"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1241,15 +1168,14 @@
 		"scientificName":"Solanum tuberosum",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_4",
+			"ensemblVersion":"26_79_4",
 			"name":"3.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1257,15 +1183,14 @@
 		"scientificName":"Selaginella moellendorffii",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"v1.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1273,15 +1198,14 @@
 		"scientificName":"Chlamydomonas reinhardtii",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"v3.0"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1289,15 +1213,14 @@
 		"scientificName":"Cyanidioschyzon merolae",
 		"assemblies":[
 		  {
-			"ensemblVersion":"25_78_1",
+			"ensemblVersion":"26_79_1",
 			"name":"ASM9120v1"
 		  }
 		],
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	]

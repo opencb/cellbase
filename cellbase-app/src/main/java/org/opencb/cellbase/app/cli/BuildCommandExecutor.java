@@ -30,6 +30,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private File ensemblScriptsFolder;
     private File proteinScriptsFolder;
+
     private Path input = null;
     private Path output = null;
     private Path common = null;
@@ -63,8 +64,6 @@ public class BuildCommandExecutor extends CommandExecutor {
      */
     public void execute() {
         try {
-//            checkOutputDir();
-//            Path outputDir = Paths.get(buildCommandOptions.output);
             if(!Files.exists(output)) {
                 Files.createDirectories(output);
             }
@@ -100,9 +99,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case "variation-phen-annot":
                             parser = buildVariationPhenotypeAnnotation();
                             break;
-                        //                    case "vep":
-                        //                        parser = buildVep();
-                        //                        break;
                         case "regulation":
                             parser = buildRegulation();
                             break;
@@ -148,14 +144,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void checkOutputDir(){
-        if (!output.toFile().exists()) {
-            throw new ParameterException("Output directory " + output + " doesn't exist");
-        } else if (!output.toFile().isDirectory()){
-            throw new ParameterException(output + " is not a directory");
-        }
-    }
-
     private CellBaseParser buildGenomeSequence() {
         /**
          * To get some extra info about the genome such as chromosome length or cytobands
@@ -196,18 +184,13 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildVariation() {
-        Path variationFolderPath = getInputDirFromCommandLine().resolve("variation");
+        Path variationFolderPath = input.resolve("variation");
         CellBaseFileSerializer serializer = new JsonParser(output);
 
         return new VariationParser(variationFolderPath, serializer);
 
     }
 
-//    private CellBaseParser buildVep() {
-//        Path vepFile = getInputFileFromCommandLine();
-//        CellBaseFileSerializer serializer = new JsonParser(output);
-//        return new VariantEffectParser(vepFile, serializer);
-//    }
 
     private CellBaseParser buildVariationPhenotypeAnnotation() {
         Path variationFilesDir = getInputDirFromCommandLine();
