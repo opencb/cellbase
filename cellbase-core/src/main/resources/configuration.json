@@ -124,7 +124,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -141,7 +140,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -157,8 +155,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -173,8 +170,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -189,8 +185,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -205,8 +200,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -221,8 +215,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -238,7 +231,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -254,8 +246,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -270,8 +261,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -286,8 +276,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -302,8 +291,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -318,8 +306,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -334,8 +321,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -350,8 +336,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -366,8 +351,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -382,8 +366,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -398,8 +381,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -414,8 +396,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -430,8 +411,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -446,8 +426,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -462,8 +441,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -478,8 +456,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -497,7 +474,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -514,7 +490,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -530,8 +505,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -546,8 +520,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -563,7 +536,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -579,8 +551,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -595,8 +566,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -611,8 +581,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -627,8 +596,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -643,8 +611,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -659,8 +626,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -678,7 +644,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -694,8 +659,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -710,8 +674,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -726,8 +689,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -742,8 +704,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -758,8 +719,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -774,8 +734,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -790,8 +749,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -806,8 +764,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -822,8 +779,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -838,8 +794,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -854,8 +809,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -870,8 +824,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -886,8 +839,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -905,7 +857,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -921,8 +872,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -937,8 +887,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -953,8 +902,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -969,8 +917,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -985,8 +932,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	],
@@ -1004,7 +950,6 @@
 		  "genome",
 		  "gene",
 		  "variation",
-		  "regulation",
 		  "protein"
 		]
 	  },
@@ -1020,8 +965,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1036,8 +980,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1052,8 +995,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1068,8 +1010,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1084,8 +1025,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1100,8 +1040,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1116,8 +1055,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1132,8 +1070,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1148,8 +1085,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1164,8 +1100,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1180,8 +1115,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1196,8 +1130,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1212,8 +1145,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1228,8 +1160,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1244,8 +1175,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1260,8 +1190,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1276,8 +1205,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  },
 	  {
@@ -1292,8 +1220,7 @@
 		"data":[
 		  "genome",
 		  "gene",
-		  "variation",
-		  "regulation"
+		  "variation"
 		]
 	  }
 	]
