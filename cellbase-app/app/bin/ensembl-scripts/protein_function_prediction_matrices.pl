@@ -45,11 +45,11 @@ if(-d $outdir){
 ## Ensembl APIs ####################################################
 ####################################################################
 ## loading ensembl libraries
-use lib "$ENSEMBL_LIBS/ensembl/modules";
-use lib "$ENSEMBL_LIBS/ensembl-variation/modules";
-use lib "$ENSEMBL_LIBS/ensembl-compara/modules";
-use lib "$ENSEMBL_LIBS/ensembl-funcgen/modules";
-use lib "$ENSEMBL_LIBS/bioperl-live";
+use lib "$ensembl-libs/ensembl/modules";
+use lib "$ensembl-libs/ensembl-variation/modules";
+use lib "$ensembl-libs/ensembl-compara/modules";
+use lib "$ensembl-libs/ensembl-funcgen/modules";
+use lib "$ensembl-libs/bioperl-live";
 
 ## creating ensembl adaptors
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
