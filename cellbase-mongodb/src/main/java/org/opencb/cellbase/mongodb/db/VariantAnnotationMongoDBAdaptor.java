@@ -1316,6 +1316,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //            consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
 //        }
 
+        consequenceTypeList = filterConsequenceTypesBySoTerms(consequenceTypeList, options.getAsStringList("so"));
         // setting queryResult fields
         queryResult.setId(variant.toString());
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
@@ -1323,6 +1324,27 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         queryResult.setResult(consequenceTypeList);
 
         return queryResult;
+    }
+
+    private List<ConsequenceType> filterConsequenceTypesBySoTerms(List<ConsequenceType> consequenceTypeList, List<String> querySoTerms) {
+        for (Iterator<ConsequenceType> iterator = consequenceTypeList.iterator(); iterator.hasNext();  ) {
+            ConsequenceType consequenceType = iterator.next();
+            if (!consequenceTypeContainsSoTerm(consequenceType, querySoTerms)) {
+                iterator.remove();
+            }
+        }
+        return consequenceTypeList;
+    }
+
+    private boolean consequenceTypeContainsSoTerm(ConsequenceType consequenceType, List<String> querySoTerms) {
+        boolean consequenceTypeHasSomeOfQuerySoTerms = false;
+        for (ConsequenceType.ConsequenceTypeEntry consequenceTypeSoTerm : consequenceType.getSoTerms()) {
+            if (querySoTerms.contains(consequenceTypeSoTerm)) {
+                consequenceTypeHasSomeOfQuerySoTerms = true;
+                break;
+            }
+        }
+        return consequenceTypeHasSomeOfQuerySoTerms;
     }
 
     private void solveTranscriptFlankingRegions(HashSet<String> SoNames, Integer transcriptStart,
