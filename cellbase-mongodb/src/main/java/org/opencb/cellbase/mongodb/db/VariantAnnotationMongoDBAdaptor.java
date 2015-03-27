@@ -1327,10 +1327,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     private List<ConsequenceType> filterConsequenceTypesBySoTerms(List<ConsequenceType> consequenceTypeList, List<String> querySoTerms) {
-        for (Iterator<ConsequenceType> iterator = consequenceTypeList.iterator(); iterator.hasNext();  ) {
-            ConsequenceType consequenceType = iterator.next();
-            if (!consequenceTypeContainsSoTerm(consequenceType, querySoTerms)) {
-                iterator.remove();
+        if (querySoTerms.size() > 0) {
+            boolean hasAnyOfQuerySoTerms = false;
+            for (ConsequenceType consequenceType : consequenceTypeList) {
+                if (consequenceTypeContainsSoTerm(consequenceType, querySoTerms)) {
+                    hasAnyOfQuerySoTerms = true;
+                    break;
+                }
+            }
+            if (!hasAnyOfQuerySoTerms) {
+                consequenceTypeList = Collections.EMPTY_LIST;
             }
         }
         return consequenceTypeList;
