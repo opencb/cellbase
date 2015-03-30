@@ -200,7 +200,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildRegulation() {
-        Path regulatoryRegionFilesDir = getInputDirFromCommandLine().resolve("regulation");
+        Path regulatoryRegionFilesDir = input.resolve("regulation");
         CellBaseSerializer serializer = new JsonParser(output, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
 
@@ -257,11 +257,11 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseParser getInteractionParser()  {
-        Path psimiTabFile = getInputFileFromCommandLine();
-        String species = buildCommandOptions.species;
-        checkMandatoryOption("species", species);
+        Path psimiTabFile = common.resolve("protein").resolve("intact.txt");
+//        String species = buildCommandOptions.species;
+//        checkMandatoryOption("species", species);
         CellBaseSerializer serializer = new JsonParser(output, "protein_protein_interaction");
-        return new InteractionParser(psimiTabFile, species, serializer);
+        return new InteractionParser(psimiTabFile, species.getScientificName(), serializer);
     }
 
     private CellBaseParser buildDrugParser() {
