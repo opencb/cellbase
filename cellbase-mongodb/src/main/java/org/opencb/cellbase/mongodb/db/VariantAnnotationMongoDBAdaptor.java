@@ -1334,7 +1334,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //            consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
 //        }
 
-        consequenceTypeList = filterConsequenceTypesBySoTerms(consequenceTypeList, options.getAsStringList("so"));
+//        consequenceTypeList = filterConsequenceTypesBySoTerms(consequenceTypeList, options.getAsStringList("so"));
         // setting queryResult fields
         queryResult.setId(variant.toString());
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
