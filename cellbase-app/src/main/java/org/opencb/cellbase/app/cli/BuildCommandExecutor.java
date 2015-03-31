@@ -182,10 +182,16 @@ public class BuildCommandExecutor extends CommandExecutor {
             List<String> args = new ArrayList<>();
             args.addAll(Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
                     "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
-            if (!configuration.getSpecies().getVertebrates().contains(species)) {
-                args.add("--phylo");
-                args.add("no-vertebrate");
-            }
+//            if(species.getScientificName().equals("Drosophila melanogaster")) {
+//                args.add("--phylo");
+//                args.add("vertebrate");
+//            }else {
+                if (!configuration.getSpecies().getVertebrates().contains(species)
+                        && !species.getScientificName().equals("Drosophila melanogaster")) {
+                    args.add("--phylo");
+                    args.add("no-vertebrate");
+                }
+//            }
 
             String geneInfoLogFileName = output + "/genome_info.log";
 
