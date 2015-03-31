@@ -108,7 +108,7 @@ public class GeneParser extends CellBaseParser {
             String transcriptId = gtf.getAttributes().get("transcript_id");
 
             if (newGene(gene, geneId)) {
-                // If new geneId is different from the current then we must serialize before load new gene
+                // If new geneId is different from the current then we must serialize before data new gene
                 if (gene != null) {
                     serializer.serialize(gene);
                 }
@@ -358,7 +358,7 @@ public class GeneParser extends CellBaseParser {
     }
 
     private Map<String, SortedSet<Gff2>> getTfbsMap() {
-        // load MotifFeatures content in a Map
+        // data MotifFeatures content in a Map
         Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
         try {
             if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {

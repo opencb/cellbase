@@ -14,6 +14,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,12 +29,12 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
 
-    private File ensemblScriptsFolder;
-    private File proteinScriptsFolder;
-
     private Path input = null;
     private Path output = null;
     private Path common = null;
+
+    private File ensemblScriptsFolder;
+    private File proteinScriptsFolder;
 
     private CellBaseConfiguration.SpeciesProperties.Species species;
 
@@ -42,8 +43,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                 buildCommandOptions.commonOptions.conf);
 
         this.buildCommandOptions = buildCommandOptions;
-        this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
-        this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
 
         if(buildCommandOptions.input != null) {
             input = Paths.get(buildCommandOptions.input);
@@ -56,6 +55,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         }else {
             common = output.getParent().getParent().resolve("common");
         }
+
+        this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
+        this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
     }
 
 
@@ -64,6 +66,9 @@ public class BuildCommandExecutor extends CommandExecutor {
      */
     public void execute() {
         try {
+            checkParameters();
+
+            // Output directory need to be created if it not exists
             if(!Files.exists(output)) {
                 Files.createDirectories(output);
             }
@@ -79,14 +84,25 @@ public class BuildCommandExecutor extends CommandExecutor {
                 }
             }
 
-            if (buildCommandOptions.build != null) {
-                String[] buildOptions = buildCommandOptions.build.split(",");
+            if (buildCommandOptions.data != null) {
+
+                String[] buildOptions;
+                if(buildCommandOptions.data.equals("all")) {
+                    buildOptions = new String[]{"genome_info", "genome", "gene", "variation", "regulatory_region",
+                            "protein", "ppi", "conservation", "drug", "clinvar", "cosmic", "gwas"};
+                }else {
+                    buildOptions = buildCommandOptions.data.split(",");
+                }
 
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
 
+                    logger.info("Building '{}' data", buildOption);
                     CellBaseParser parser = null;
                     switch (buildOption) {
+                        case "genome_info":
+                            buildGenomeInfo();
+                            break;
                         case "genome":
                             parser = buildGenomeSequence();
                             break;
@@ -96,11 +112,11 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case "variation":
                             parser = buildVariation();
                             break;
-                        case "variation-phen-annot":
-                            parser = buildVariationPhenotypeAnnotation();
-                            break;
-                        case "regulation":
-                            parser = buildRegulation();
+//                        case "variation-phen-annot":
+//                            parser = buildVariationPhenotypeAnnotation();
+//                            break;
+                        case "regulatory_region":
+                            parser = buildRegulatoryRegion();
                             break;
                         case "protein":
                             parser = buildProtein();
@@ -124,14 +140,14 @@ public class BuildCommandExecutor extends CommandExecutor {
                             parser = buildGwas();
                             break;
                         default:
-                            logger.error("Build option '" + buildCommandOptions.build + "' is not valid");
+                            logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                     }
 
                     if (parser != null) {
                         try {
                             parser.parse();
                         } catch (Exception e) {
-                            logger.error("Error executing 'build' command " + buildCommandOptions.build + ": " + e.getMessage(), e);
+                            logger.error("Error executing 'build' command " + buildCommandOptions.data + ": " + e.getMessage(), e);
                         }
                         parser.disconnect();
                     }
@@ -144,18 +160,36 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private CellBaseParser buildGenomeSequence() {
+    private void checkParameters() throws IOException {
+        if (!Files.exists(input) || !Files.isDirectory(input)) {
+            throw new IOException("Input parameter '" + input.toString() + "' does not exist or is not a directory");
+        }
+
+        if (!Files.exists(common) || !Files.isDirectory(common)) {
+            throw new IOException("Common parameter '" + common.toString() + "' does not exist or is not a directory");
+        }
+
+    }
+
+    private void buildGenomeInfo() {
         /**
          * To get some extra info about the genome such as chromosome length or cytobands
          * we execute the following script
          */
         try {
-            String outputFileName = output + "/genome_info.json";
-            List<String> args = Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
-                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+
+            String outputFileName = output.resolve("genome_info.json").toAbsolutePath().toString();
+            List<String> args = new ArrayList<>();
+            args.addAll(Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
+            if (!configuration.getSpecies().getVertebrates().contains(species)) {
+                args.add("--phylo");
+                args.add("no-vertebrate");
+            }
+
             String geneInfoLogFileName = output + "/genome_info.log";
 
-            boolean downloadedGenomeInfo = false;
+            boolean downloadedGenomeInfo;
             downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
 
             if (downloadedGenomeInfo) {
@@ -166,8 +200,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
 
-
+    private CellBaseParser buildGenomeSequence() {
         Path fastaFile = getFastaReferenceGenome();
         CellBaseSerializer serializer = new JsonParser(output, "genome_sequence");
         return new GenomeSequenceFastaParser(fastaFile, serializer);
@@ -192,14 +227,14 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
 
-    private CellBaseParser buildVariationPhenotypeAnnotation() {
-        Path variationFilesDir = getInputDirFromCommandLine();
-        CellBaseSerializer serializer = new JsonParser(output, "variation_phenotype_annotation");
-        return new VariationPhenotypeAnnotationParser(variationFilesDir, serializer);
-    }
+//    private CellBaseParser buildVariationPhenotypeAnnotation() {
+//        Path variationFilesDir = getInputDirFromCommandLine();
+//        CellBaseSerializer serializer = new JsonParser(output, "variation_phenotype_annotation");
+//        return new VariationPhenotypeAnnotationParser(variationFilesDir, serializer);
+//    }
 
 
-    private CellBaseParser buildRegulation() {
+    private CellBaseParser buildRegulatoryRegion() {
         Path regulatoryRegionFilesDir = input.resolve("regulation");
         CellBaseSerializer serializer = new JsonParser(output, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
@@ -258,8 +293,6 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser getInteractionParser()  {
         Path psimiTabFile = common.resolve("protein").resolve("intact.txt");
-//        String species = buildCommandOptions.species;
-//        checkMandatoryOption("species", species);
         CellBaseSerializer serializer = new JsonParser(output, "protein_protein_interaction");
         return new InteractionParser(psimiTabFile, species.getScientificName(), serializer);
     }
@@ -273,9 +306,8 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildConservation() {
-        Path conservationFilesDir = getInputDirFromCommandLine();
+        Path conservationFilesDir = input.resolve("conservation");
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
-        //int conservationChunkSize = Integer.parseInt(commandLine.getOptionValue(CellBaseMain.CHUNK_SIZE_OPTION, "0"));
         int conservationChunkSize = 0;
         CellBaseFileSerializer serializer = new JsonParser(output);
         return new ConservedRegionParser(conservationFilesDir, conservationChunkSize, serializer);
@@ -283,7 +315,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildClinvar() {
-        Path clinvarFile = getInputFileFromCommandLine();
+        Path clinvarFile = input.resolve("clinical");
 
         String assembly = buildCommandOptions.assembly;
         checkMandatoryOption("assembly", assembly);
@@ -296,7 +328,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseParser buildCosmic()  {
-        Path cosmicFilePath = getInputFileFromCommandLine();
+        Path cosmicFilePath = input.resolve("clinical");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
         CellBaseSerializer serializer = new JsonParser(output, "cosmic");
@@ -314,18 +346,18 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
 
-    private Path getInputFileFromCommandLine() {
-        File inputFile = new File(input.toString());
-        if (inputFile.exists()) {
-            if (inputFile.isDirectory()) {
-                throw new ParameterException(input + " is a directory: it must be a file for " + buildCommandOptions.build + " builder");
-            } else {
-                return input;
-            }
-        } else {
-            throw new ParameterException("File '" + input + "' doesn't exist");
-        }
-    }
+//    private Path getInputFileFromCommandLine() {
+//        File inputFile = new File(input.toString());
+//        if (inputFile.exists()) {
+//            if (inputFile.isDirectory()) {
+//                throw new ParameterException(input + " is a directory: it must be a file for " + buildCommandOptions.data + " builder");
+//            } else {
+//                return input;
+//            }
+//        } else {
+//            throw new ParameterException("File '" + input + "' doesn't exist");
+//        }
+//    }
 
     private Path getInputDirFromCommandLine(){
         File inputDirectory = new File(input.toString());
@@ -360,7 +392,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
     private void checkMandatoryOption(String option, String value){
         if (value == null) {
-            throw new ParameterException("'" + option + "' option is mandatory for '" + buildCommandOptions.build + "' builder");
+            throw new ParameterException("'" + option + "' option is mandatory for '" + buildCommandOptions.data + "' builder");
         }
     }
 

@@ -85,7 +85,7 @@ public abstract class CommandExecutor {
     }
 
     /**
-     * This method attempts to first load configuration from CLI parameter, if not present then uses
+     * This method attempts to first data configuration from CLI parameter, if not present then uses
      * the configuration from installation directory, if not exists then loads JAR configuration.json
      * @throws URISyntaxException
      * @throws IOException
