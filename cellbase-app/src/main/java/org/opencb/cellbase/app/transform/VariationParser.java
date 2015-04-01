@@ -89,7 +89,7 @@ public class VariationParser extends CellBaseParser {
     public void parse() throws IOException, InterruptedException, SQLException, ClassNotFoundException {
 
         if (!Files.exists(variationDirectoryPath) || !Files.isDirectory(variationDirectoryPath)
-                || !Files.isReadable(variationDirectoryPath) || Files.list(variationDirectoryPath).count() == 0) {
+                || !Files.isReadable(variationDirectoryPath)) {
             throw new IOException("Variation directory whether does not exist, is not a directory or cannot be read");
         }
         if(!Files.exists(variationDirectoryPath.resolve(VARIATION_FILENAME+".gz"))
