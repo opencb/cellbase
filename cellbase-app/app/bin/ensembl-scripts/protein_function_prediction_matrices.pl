@@ -6,12 +6,13 @@ use Data::Dumper;
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 use JSON;
 
-use DB_CONFIG;
+#use DB_CONFIG;
 
 
 my $species = 'Homo sapiens';
 my $outdir = "/tmp/$species";
 my $chrom = '22';
+my $ensembl_libs;
 my $verbose = '0';
 my $help = '0';
 
@@ -22,10 +23,13 @@ my $help = '0';
 
 ## Parsing command line
 GetOptions ('species=s' => \$species, 'chrom|chromosome=s' => \$chrom, 'outdir=s' => \$outdir, 
-            'ensembl-libs=s' => \$ENSEMBL_LIBS, 'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
-            'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
-            'ensembl-user=s' => \$ENSEMBL_USER, 'ensembl-pass=s' => \$ENSEMBL_PASS,
-            'verbose' => \$verbose, 'help' => \$help);
+            'ensembl-libs=s' => \$ensembl_libs, 'verbose' => \$verbose, 'help' => \$help);
+#            'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
+#            'ensembl-host=s' => \$ENSEMBL_HOST,
+#            'ensembl-port=s' => \$ENSEMBL_PORT,
+#            'ensembl-user=s' => \$ENSEMBL_USER,
+#            'ensembl-pass=s' => \$ENSEMBL_PASS,
+
 
 ## Checking help parameter
 print_usage() if $help;
@@ -45,11 +49,11 @@ if(-d $outdir){
 ## Ensembl APIs ####################################################
 ####################################################################
 ## loading ensembl libraries
-use lib "$ENSEMBL_LIBS/ensembl/modules";
-use lib "$ENSEMBL_LIBS/ensembl-variation/modules";
-use lib "$ENSEMBL_LIBS/ensembl-compara/modules";
-use lib "$ENSEMBL_LIBS/ensembl-funcgen/modules";
-use lib "$ENSEMBL_LIBS/bioperl-live";
+use lib "$ensembl_libs/ensembl/modules";
+use lib "$ensembl_libs/ensembl-variation/modules";
+use lib "$ensembl_libs/ensembl-compara/modules";
+use lib "$ensembl_libs/ensembl-funcgen/modules";
+use lib "$ensembl_libs/bioperl-live";
 
 ## creating ensembl adaptors
 use Bio::EnsEMBL::DBSQL::DBAdaptor;

@@ -26,7 +26,6 @@ import java.util.Map;
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  * @author Ignacio Medina <imedina@ebi.ac.uk>
  */
-@Deprecated
 public class VariantEffectParser extends CellBaseParser {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());

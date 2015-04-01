@@ -77,6 +77,21 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
             // If regions is 1 position then query can be optimize using chunks
             QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end").greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+
+            List<Object> genes = options.getList("gene", null);
+            BasicDBList geneSymbols = new BasicDBList();
+            if (genes != null && genes.size() > 0) {
+                geneSymbols.addAll(genes);
+                builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value").
+                        in(geneSymbols);
+            }
+            List<Object> rcvs = options.getList("rcv", null);
+            BasicDBList rcvList = new BasicDBList();
+            if (rcvs != null && rcvs.size() > 0) {
+                rcvList.addAll(rcvs);
+                builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").
+                        in(rcvList);
+            }
             System.out.println(builder.get().toString());
             queries.add(builder.get());
             ids.add(region.toString());

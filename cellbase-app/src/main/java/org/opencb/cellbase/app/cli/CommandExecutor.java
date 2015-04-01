@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,7 @@ public abstract class CommandExecutor {
     }
 
     /**
-     * This method attempts to first load configuration from CLI parameter, if not present then uses
+     * This method attempts to first data configuration from CLI parameter, if not present then uses
      * the configuration from installation directory, if not exists then loads JAR configuration.json
      * @throws URISyntaxException
      * @throws IOException
@@ -102,6 +103,13 @@ public abstract class CommandExecutor {
                         CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
                 this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
             }
+        }
+    }
+
+
+    protected void makeDir(Path folderPath) throws IOException {
+        if(!Files.exists(folderPath)) {
+            Files.createDirectories(folderPath);
         }
     }
 

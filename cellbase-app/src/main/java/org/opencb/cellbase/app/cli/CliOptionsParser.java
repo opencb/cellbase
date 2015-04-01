@@ -103,6 +103,9 @@ public class CliOptionsParser {
         @Parameter(names = {"-o", "--output"}, description = "The output directory, species folder will be created [/tmp]", required = false, arity = 1)
         public String output = "/tmp";
 
+        @Parameter(names = {"--common"}, description = "", required = false, arity = 1)
+        public String common;
+
         @Parameter(names = {"--all"}, description = "Downloads all data in configuration.json for the species", required = false)
         public boolean all = false;
 
@@ -137,13 +140,13 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-b", "--build"}, description = "", required = true, arity = 1)
-        public String build;
+        @Parameter(names = {"-d", "--data"}, description = "", required = true, arity = 1)
+        public String data;
 
-        @Parameter(names = {"--species"}, description = "", required = false)
+        @Parameter(names = {"-s", "--species"}, description = "", required = false)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"--assembly"}, description = "", required = false)
+        @Parameter(names = {"-a", "--assembly"}, description = "", required = false)
         public String assembly;
 
         @Parameter(names = {"-i", "--input"}, description = "", required = true, arity = 1)
@@ -152,8 +155,8 @@ public class CliOptionsParser {
         @Parameter(names = {"-o", "--output"}, description = "", required = false, arity = 1)
         public String output = "/tmp";
 
-        @Parameter(names = {"--reference-genome-file"}, description = "", required = false)
-        public String referenceGenomeFile;
+        @Parameter(names = {"--common"}, description = "", required = false, arity = 1)
+        public String common;
 
     }
 
@@ -165,35 +168,23 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
+        @Parameter(names = {"-d", "--data"}, description = "Data type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
+        public String data;
+
         @Parameter(names = {"-i", "--input"}, description = "Input file or directory with the data to be loaded", required = true, arity = 1)
         public String input;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data type to be loaded, i.e. genome_sequence, gene, ...", required = true, arity = 1)
-        public String load;
+        @Parameter(names = {"--database"}, description = "Data type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
+        public String database;
 
         @Parameter(names = {"-l", "--loader"}, description = "", required = false, arity = 1)
         public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";
 
+        @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database [2]", required = false, arity = 1)
+        public int numThreads = 2;
+
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
         public Map<String, String> loaderParams = new HashMap<>();
-
-        @Parameter(names = {"--host"}, description = "Database host name [localhost]", required = false, arity = 1)
-        public String host = "localhost";
-
-        @Parameter(names = {"--port"}, description = "", required = false)
-        public int port;
-
-        @Parameter(names = {"--user"}, description = "Database user with write access []", required = false, arity = 1)
-        public String user = "";
-
-        @Parameter(names = {"--password"}, description = "Database user's password []", required = false, arity = 1)
-        public String password = "";
-
-        @Parameter(names = {"--indexFile"}, description = "", required = false, arity = 1)
-        public String indexFile;
-
-        @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database [2]", required = false, arity = 1)
-        public int threads = 2;
 
     }
 

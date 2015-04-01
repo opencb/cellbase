@@ -21,6 +21,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
+    private Path output = null;
+    private Path common = null;
+
     private File ensemblScriptsFolder;
     private String ensemblVersion;
     private String ensemblRelease;
@@ -49,6 +52,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 downloadCommandOptions.commonOptions.conf);
 
         this.downloadCommandOptions = downloadCommandOptions;
+
+        if(downloadCommandOptions.output != null) {
+            output = Paths.get(downloadCommandOptions.output);
+        }
+        if(downloadCommandOptions.common != null) {
+            common = Paths.get(downloadCommandOptions.common);
+        }else {
+            common = output.resolve("common");
+        }
+
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
     }
 
@@ -59,8 +72,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     public void execute() {
         try {
             checkParameters();
-            Path outputDir = Paths.get(downloadCommandOptions.output);
-            makeDir(outputDir);
+            makeDir(output);
+            makeDir(common);
 
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
@@ -76,7 +89,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             // If everything is right we launch the download
             if(speciesToDownload != null) {
-                processSpecies(speciesToDownload, outputDir);
+                processSpecies(speciesToDownload, output);
             }else {
                 logger.error("Species '{}' not valid", downloadCommandOptions.species);
             }
@@ -146,7 +159,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
         if ((downloadCommandOptions.gene && speciesHasInfoToDownload(sp, "gene")) || downloadCommandOptions.all) {
-            downloadEnsemblGene(sp, spShortName, spFolder, ensemblHostUrl);
+            downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
         }
         if ((downloadCommandOptions.variation && speciesHasInfoToDownload(sp, "variation")) || downloadCommandOptions.all) {
             downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
@@ -233,27 +246,39 @@ public class DownloadCommandExecutor extends CommandExecutor {
 //        }
     }
 
-    private void downloadEnsemblGene(Species sp, String spShortName, Path speciesFolder, String host) throws IOException, InterruptedException {
+    private void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder, String host) throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = speciesFolder.resolve("gene");
         makeDir(geneFolder);
 
-        downloadGeneGtf(sp, spShortName, geneFolder, host);
+        downloadEnsemblData(sp, spShortName, geneFolder, host);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas(speciesFolder);
-        downloadMotifFeaturesFile(sp, spShortName, geneFolder, host);
-        runGeneExtraInfo(sp, geneFolder);
+        runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
-    private void downloadGeneGtf(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
-        logger.info("Downloading gene GTF ...");
-        String geneGtfUrl = host + "/" + ensemblRelease;
+    private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
+        logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
+        String ensemblHost = host + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
-            geneGtfUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
+            ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
-        geneGtfUrl = geneGtfUrl + "/gtf/" + spShortName + "/*.gtf.gz";
-        String geneGtfOutputFileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
-        downloadFile(geneGtfUrl, geneGtfOutputFileName);
+
+        String url = ensemblHost + "/gtf/" + spShortName + "/*.gtf.gz";
+        String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
+        downloadFile(url, fileName);
+
+        url = ensemblHost + "/fasta/" + spShortName + "/pep/*.pep.all.fa.gz";
+        fileName = geneFolder.resolve(spShortName + ".pep.all.fa.gz").toString();
+        downloadFile(url, fileName);
+
+        url = ensemblHost + "/fasta/" + spShortName + "/cdna/*.cdna.all.fa.gz";
+        fileName = geneFolder.resolve(spShortName + ".cdna.all.fa.gz").toString();
+        downloadFile(url, fileName);
+
+        url = ensemblHost + "/regulation/" + spShortName + "/MotifFeatures.gff.gz";
+        Path outputFile = geneFolder.resolve("MotifFeatures.gff.gz");
+        downloadFile(url, outputFile.toString());
     }
 
     private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
@@ -267,7 +292,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private void downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene expression atlas ...");
-        Path expression = geneFolder.getParent().resolve("common").resolve("expression");
+//        Path expression = geneFolder.getParent().resolve("common").resolve("expression");
+        Path expression = common.resolve("expression");
 
         if(!Files.exists(expression)) {
             makeDir(expression);
@@ -277,24 +303,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadMotifFeaturesFile(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
-        logger.info("Downloading motif features file ...");
-        String regulationUrl = host + "/" + ensemblRelease;
-        if (!configuration.getSpecies().getVertebrates().contains(sp)) {
-            regulationUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
-        }
-        regulationUrl = regulationUrl + "/regulation/" + spShortName;
-        String motifFeaturesFile = "MotifFeatures.gff.gz";
-        Path outputFile = geneFolder.resolve(motifFeaturesFile);
-        downloadFile(regulationUrl + "/" + motifFeaturesFile, outputFile.toString());
-    }
-
-    private void runGeneExtraInfo(Species sp, Path geneFolder) throws IOException, InterruptedException {
+    private void runGeneExtraInfo(Species sp, String assembly, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
-        List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
-                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+        List<String> args;
+        if(sp.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
+            args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()
+                            .replace("79", "75"));
+        }else {
+            args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+
+        }
 
         // run gene_extra_info.pl
         boolean geneExtraInfoDownloaded = runCommandLineProcess(ensemblScriptsFolder,
@@ -333,6 +355,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadRegulation(Species species, String shortName, String assembly, Path speciesFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading regulation information ...");
+
+        if(!species.getScientificName().equals("Homo sapiens") || !species.getScientificName().equals("Mus musculus")) {
+            return;
+        }
+
         Path regulationFolder = speciesFolder.resolve("regulation");
         makeDir(regulationFolder);
 
@@ -350,7 +377,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         // Downloading miRNA info
         String url;
-        Path mirbaseFolder = speciesFolder.getParent().resolve("common").resolve("mirbase");
+//        Path mirbaseFolder = speciesFolder.getParent().resolve("common").resolve("mirbase");
+        Path mirbaseFolder = common.resolve("mirbase");
         if(!Files.exists(mirbaseFolder)) {
             makeDir(mirbaseFolder);
 
@@ -392,7 +420,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadProtein(Species sp, String shortName, String assembly, Path spFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading protein information ...");
-        Path proteinFolder = spFolder.getParent().resolve("common").resolve("protein");
+//        Path proteinFolder = spFolder.getParent().resolve("common").resolve("protein");
+        Path proteinFolder = common.resolve("protein");
 
         if(!Files.exists(proteinFolder)) {
             makeDir(proteinFolder);
@@ -486,13 +515,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-
-
-    private void makeDir(Path folderPath) throws IOException {
-        if(!Files.exists(folderPath)) {
-            Files.createDirectories(folderPath);
-        }
-    }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");

@@ -2,7 +2,7 @@
 db.getCollection('gene').ensureIndex({'id': 1})
 db.getCollection('gene').ensureIndex({'name': 1})
 db.getCollection('gene').ensureIndex({'biotype': 1})
-db.getCollection('gene').ensureIndex({'chunkIds': 1})
+db.getCollection('gene').ensureIndex({'_chunkIds': 1})
 db.getCollection('gene').ensureIndex({'chromosome': 1, "start": 1, "end": 1})
 db.getCollection('gene').ensureIndex({'transcripts.id': 1})
 db.getCollection('gene').ensureIndex({'transcripts.name': 1})

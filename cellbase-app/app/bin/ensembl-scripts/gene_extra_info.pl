@@ -103,7 +103,7 @@ sub createCoreTables {
 
 	$pba = Bio::EnsEMBL::Registry->get_adaptor($species, "funcgen", "ProbeSet");
 
-    open (GENE_DESC, ">$outdir/gene_description.txt") || die "Cannot open gene_description.txt file";
+    open (GENE_DESC, ">$outdir/description.txt") || die "Cannot open gene_description.txt file";
     open (XREFS, ">$outdir/xrefs.txt") || die "Cannot open xref.txt file";
 	
 	## for all the genes in the specie
