@@ -30,4 +30,6 @@ public interface ClinicalDBAdaptor {
 
     public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options);
 
+    public QueryResult getListClinvarAccessions(QueryOptions queryOptions);
+
 }

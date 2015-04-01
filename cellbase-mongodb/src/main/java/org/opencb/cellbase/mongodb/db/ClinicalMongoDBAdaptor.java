@@ -245,4 +245,34 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         return queryResultList;
     }
+
+    public QueryResult getListClinvarAccessions(QueryOptions queryOptions) {
+        QueryBuilder builder = QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").exists(true);
+        queryOptions.put("include", Arrays.asList("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc"));
+        QueryResult queryResult = executeQuery("", builder.get(), queryOptions);
+        List accInfoList = (List) queryResult.getResult();
+        List<String> accList = new ArrayList<>(accInfoList.size());
+        BasicDBObject accInfo;
+        QueryResult listAccessionsToReturn = new QueryResult();
+
+        for(Object accInfoObject: accInfoList) {
+            accInfo = (BasicDBObject) accInfoObject;
+            if(accInfo.containsKey("clinvarList")) {
+                accInfo = (BasicDBObject)((BasicDBObject) ((List) accInfo.get("clinvarList"))
+                        .get(0)).get("clinvarSet");
+                accList.add((String) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) accInfo
+                        .get("referenceClinVarAssertion"))).get("clinVarAccession")).get("acc"));
+            }
+        }
+
+        // setting listAccessionsToReturn fields
+        listAccessionsToReturn.setId(queryResult.getId());
+        listAccessionsToReturn.setDbTime(queryResult.getDbTime());
+        listAccessionsToReturn.setNumResults(queryResult.getNumResults());
+        listAccessionsToReturn.setNumTotalResults(queryResult.getNumTotalResults());
+        listAccessionsToReturn.setResult(accList);
+
+        return listAccessionsToReturn;
+    }
+
 }
