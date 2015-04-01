@@ -5,9 +5,7 @@ import org.opencb.cellbase.core.loader.LoaderException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -128,6 +126,17 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                return entry.getFileName().toString().startsWith("variation_chr");
+            }
+        });
+        for (Path entry: stream) {
+            logger.info("Loading file '{}'", entry.toString());
+            loadRunner.load(input.resolve(entry.getFileName()), "variation");
+        }
+        loadRunner.index("variation");
     }
 
 
