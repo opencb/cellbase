@@ -72,6 +72,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.index("regulatory_region");
                             break;
                         case "protein":
+                            loadRunner.load(input.resolve("protein.json.gz"), "protein");
+                            loadRunner.index("protein");
                             break;
                         case "conservation":
                             break;
