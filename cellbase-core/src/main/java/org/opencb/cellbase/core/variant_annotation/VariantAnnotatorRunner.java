@@ -1,12 +1,14 @@
 package org.opencb.cellbase.core.variant_annotation;
 
 import org.apache.commons.lang.StringUtils;
+import org.opencb.biodata.formats.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.client.CellBaseClient;
+import org.opencb.commons.io.DataWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,7 +176,7 @@ public class VariantAnnotatorRunner {
     private class VariantAnnotationWriterThread implements Callable<Integer>{
         private final BlockingQueue<List<VariantAnnotation>> queue;
         private Path outputFile;
-        private VepFormatWriter vepWriter;
+        private DataWriter<VariantAnnotation> writer;
 
         public VariantAnnotationWriterThread(Path outputFile, BlockingQueue<List<VariantAnnotation>> queue) {
             this.outputFile = outputFile;
@@ -182,16 +184,21 @@ public class VariantAnnotatorRunner {
         }
 
         private void pre() {
-            this.vepWriter = new VepFormatWriter(outputFile.toString());
-            if(!this.vepWriter.open()) {
+            logger.info(outputFile.toString());
+            if(outputFile.toString().endsWith(".json")) {
+                this.writer = new JsonAnnotationWriter(outputFile.toString());
+            } else {
+                this.writer = new VepFormatWriter(outputFile.toString());
+            }
+            if(!this.writer.open()) {
                 logger.error("Error opening output file: "+outputFile.toString());
             }
-            this.vepWriter.pre();
+            this.writer.pre();
         }
 
         private  void post() {
-            this.vepWriter.post();
-            this.vepWriter.close();
+            this.writer.post();
+            this.writer.close();
         }
 
         @Override
@@ -212,8 +219,8 @@ public class VariantAnnotatorRunner {
                             finished = true;
                         }
                     } else {
-                        logger.info("Writer calls vepWriter for " + batch.size() + " variants/annotations");
-                        vepWriter.write(batch);
+                        logger.info("Writer calls writer for " + batch.size() + " variants/annotations");
+                        writer.write(batch);
                         writtenObjects += batch.size();
                         logger.info("Annotation written for " + writtenObjects + " variants");
                     }
