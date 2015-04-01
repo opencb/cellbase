@@ -67,6 +67,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.index("gene");
                             break;
                         case "variation":
+                            loadVariationData();
                             break;
                         case "regulatory_region":
                             loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
@@ -123,14 +124,11 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
 
-//    private void loadGenomeData() throws NoSuchMethodException, InterruptedException, ExecutionException,
-//            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-//            IOException, LoaderException {
-//
-//        loadRunner.load(input.resolve("genome_info.json.gz"), "genome_info");
-//        loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
-//        loadRunner.index("genome_sequence");
-//    }
+    private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException, LoaderException {
+
+    }
 
 
 }
