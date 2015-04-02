@@ -3,6 +3,7 @@ package org.opencb.cellbase.mongodb.loader;
 import com.mongodb.BulkWriteResult;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
@@ -15,8 +16,12 @@ import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
 import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -26,32 +31,61 @@ import java.util.concurrent.BlockingQueue;
  */
 public class MongoDBCellBaseLoader extends CellBaseLoader {
 
-    private int[] chunkSizes;
-    private MongoDataStore dataStore;
-    private MongoDBCollection collection;
-    private MongoDataStoreManager dataStoreManager;
-    private String databaseName;
+    private MongoDataStoreManager mongoDataStoreManager;
+    private MongoDataStore mongoDataStore;
+    private MongoDBCollection mongoDBCollection;
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Map<String, String> params) {
-        super(queue, data, params);
+    private Path indexScriptFolder;
+    private int[] chunkSizes;
+
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
+                                 Map<String, String> params) {
+        this(queue, data, database, params, null);
+    }
+
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
+                                 Map<String, String> params, CellBaseConfiguration cellBaseConfiguration) {
+        super(queue, data, database, params, cellBaseConfiguration);
+        if(loaderParams.get("mongodb-index-folder") != null) {
+            indexScriptFolder = Paths.get(loaderParams.get("mongodb-index-folder"));
+        }
     }
 
     @Override
     public void init() throws LoaderException {
-        String collectionName = this.getCollectionName(data);
-        createConnection();
-        collection = dataStore.getCollection(collectionName);
+        /*
+         * OpenCB 'datastore' project is used to load data into MongoDB. The following code:
+         * 1. creates a Manager to connect to a physical server
+         * 2. a 'datastore' object connects to a specific database
+         * 3. finally a connection to the collection is stored in 'mongoDBCollection'
+         */
+        mongoDataStoreManager = new MongoDataStoreManager(cellBaseConfiguration.getDatabase().getHost(),
+                Integer.parseInt(cellBaseConfiguration.getDatabase().getPort()));
+
+        MongoDBConfiguration credentials = MongoDBConfiguration.builder()
+                .add("username", cellBaseConfiguration.getDatabase().getUser())
+                .add("password", cellBaseConfiguration.getDatabase().getPassword()).build();
+        mongoDataStore = mongoDataStoreManager.get(database, credentials);
+
+        String collectionName = getCollectionName(data);
+        mongoDBCollection = mongoDataStore.getCollection(collectionName);
+        logger.debug("Connection to MongoDB datastore '{}' created, collection '{}' is used",
+                mongoDataStore.getDatabaseName(), collectionName);
+
+        // Some collections need to add an extra _chunkIds field to speed up some queries
         getChunkSizes(collectionName);
+        logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
     }
 
 
     private String getCollectionName(String data) throws LoaderException {
         String collectionName;
         switch (data) {
-            case "cosmic":
-            case "clinvar":
-            case "gwas":
-                collectionName = "clinical";
+            case "genome_info":
+                collectionName = "genome_info";
+                break;
+            case "genome_sequence":
+                collectionName = "genome_sequence";
                 break;
             case "gene":
                 collectionName = "gene";
@@ -59,51 +93,26 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "variation":
                 collectionName = "variation";
                 break;
+            case "regulatory_region":
+                collectionName = "regulatory_region";
+                break;
+            case "protein":
+                collectionName = "protein";
+                break;
+            case "conservation":
+                collectionName = "conservation";
+                break;
+            case "cosmic":
+            case "clinvar":
+            case "gwas":
+            case "clinical":
+                collectionName = "clinical";
+                break;
             default:
-                throw new LoaderException("Unknown collection to store " + data);
+                throw new LoaderException("Unknown data to load: '" + data + "'");
         }
 
         return collectionName;
-    }
-
-    private void createConnection() throws LoaderException {
-        try {
-            CellBaseConfiguration configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-            dataStoreManager = new MongoDataStoreManager(getHost(configuration), getPort(configuration));
-            MongoDBConfiguration credentials = MongoDBConfiguration.builder().add("username", getUser(configuration)).add("password", getPassword(configuration)).build();
-            if (params.containsKey(CELLBASE_DATABASE_NAME_PROPERTY)) {
-                databaseName = params.get(CELLBASE_DATABASE_NAME_PROPERTY);
-            } else {
-                databaseName = CELLBASE_DEFAULT_DATABASE_NAME;
-            }
-            dataStore = dataStoreManager.get(databaseName, credentials);
-        } catch (IOException e) {
-            throw new LoaderException(e);
-        }
-    }
-
-    private String getHost(CellBaseConfiguration configuration) {
-        return getParam(CellBaseLoader.CELLBASE_HOST, configuration.getDatabase().getHost());
-    }
-
-    private int getPort(CellBaseConfiguration configuration) {
-        return Integer.parseInt(getParam(CellBaseLoader.CELLBASE_PORT, configuration.getDatabase().getPort()));
-    }
-
-    private String getUser(CellBaseConfiguration configuration) {
-        return getParam(CellBaseLoader.CELLBASE_USER, configuration.getDatabase().getUser());
-    }
-
-    private String getPassword(CellBaseConfiguration configuration) {
-        return getParam(CellBaseLoader.CELLBASE_PASSWORD, configuration.getDatabase().getPassword());
-    }
-
-    private String getParam(String paramName, String defaultValue) {
-        if (params.containsKey(paramName)) {
-            return params.get(paramName);
-        } else {
-            return defaultValue;
-        }
     }
 
     private void getChunkSizes(String collectionName) {
@@ -116,9 +125,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENE_CHUNK_SIZE};
                     break;
                 case "variation":
-                    chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE};
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE,
+                            10 * MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE};
                     break;
-                case "regulation":
+                case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
                     break;
                 case "conservation":
@@ -130,34 +140,21 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-    public int load(List<DBObject> batch) {
-        // TODO: queryOptions?
-        QueryResult<BulkWriteResult> result = collection.insert(batch, new QueryOptions());
-        return result.first().getInsertedCount();
-    }
-
-
-
-    @Override
-    public void disconnect() {
-        dataStoreManager.close(databaseName);
-    }
-
     @Override
     public Integer call() {
         Integer loadedObjects = 0;
         boolean finished = false;
         while (!finished) {
             try {
-                List<String> batch = queue.take();
+                List<String> batch = blockingQueue.take();
                 if (batch == LoadRunner.POISON_PILL) {
                     finished = true;
                 } else {
                     List<DBObject> dbObjectsBatch = new ArrayList<>(batch.size());
                     for (String jsonLine : batch) {
-                        DBObject dbObject = getDbObject(jsonLine);
+                        DBObject dbObject = (DBObject) JSON.parse(jsonLine);
+                        addChunkId(dbObject);
                         dbObjectsBatch.add(dbObject);
-
                     }
                     loadedObjects += load(dbObjectsBatch);
                 }
@@ -167,14 +164,29 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 logger.error("Error Loading batch: " + e.getMessage());
             }
         }
-        logger.debug("'load' finished. " + loadedObjects + " records serialized");
+        logger.debug("'load' finished. " + loadedObjects + " records loaded");
         return loadedObjects;
     }
 
-    private DBObject getDbObject(String jsonLine) {
-        DBObject dbObject = (DBObject) JSON.parse(jsonLine);
-        addChunkId(dbObject);
-        return dbObject;
+    @Override
+    public void createIndex(String data) throws LoaderException {
+        Path indexFilePath = getIndexFilePath(data);
+        if(indexFilePath != null) {
+            try {
+                runCreateIndexProcess(indexFilePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }else {
+            logger.warn("No index found for '{}'", data);        }
+    }
+
+    public int load(List<DBObject> batch) {
+        // TODO: queryOptions?
+        QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
+        return result.first().getInsertedCount();
     }
 
     private void addChunkId(DBObject dbObject) {
@@ -185,10 +197,110 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 int chunkEnd = (Integer) dbObject.get("end") / chunkSize;
                 String chunkIdSuffix = chunkSize / 1000 + "k";
                 for (int i = chunkStart; i <= chunkEnd; i++) {
-                    chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
+                    if(dbObject.containsField("chromosome")) {
+                        chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
+                    }else {
+                        chunkIds.add(dbObject.get("sequenceName") + "_" + i + "_" + chunkIdSuffix);
+                    }
                 }
             }
-            dbObject.put("chunkIds", chunkIds);
+            dbObject.put("_chunkIds", chunkIds);
         }
     }
+
+    @Override
+    public void close() {
+        mongoDataStoreManager.close(database);
+    }
+
+    private Path getIndexFilePath(String data) throws LoaderException {
+        if(indexScriptFolder == null || data == null) {
+            logger.error("No path can be provided for index, check index folder '{}' and data '{}'",
+                    indexScriptFolder, data);
+            return null;
+        }
+
+        String indexFileName = null;
+        switch (data) {
+            case "genome_info":
+                indexFileName = null;
+                break;
+            case "genome_sequence":
+                indexFileName = "genome_sequence-indexes.js";
+                break;
+            case "gene":
+                indexFileName = "gene-indexes.js";
+                break;
+            case "variation":
+                indexFileName = "variation-indexes.js";
+                break;
+            case "regulatory_region":
+                indexFileName = "regulatory_region-indexes.js";
+                break;
+            case "protein":
+                indexFileName = "protein-indexes.js";
+                break;
+            case "conservation":
+                indexFileName = "conserved_region-indexes.js";
+                break;
+            case "cosmic":
+            case "clinvar":
+            case "gwas":
+            case "clinical":
+                indexFileName = "clinical";
+                break;
+            default:
+                break;
+        }
+        if(indexFileName == null) {
+            return null;
+        }
+        return indexScriptFolder.resolve(indexFileName);
+    }
+
+
+    protected boolean runCreateIndexProcess(Path indexFilePath) throws IOException, InterruptedException {
+        List<String> args = new ArrayList<>();
+        args.add("mongo");
+        if(cellBaseConfiguration.getDatabase().getUser() != null && !cellBaseConfiguration.getDatabase().getUser().equals("")) {
+            args.addAll(Arrays.asList(
+                    "-u", cellBaseConfiguration.getDatabase().getUser(),
+                    "-p", cellBaseConfiguration.getDatabase().getPassword()
+            ));
+        }
+        args.add(database);
+        args.add(indexFilePath.toString());
+
+        ProcessBuilder processBuilder = new ProcessBuilder(args);
+        logger.debug("Executing command: '{}'",  StringUtils.join(processBuilder.command(), " "));
+
+//        processBuilder.redirectErrorStream(true);
+//        if (logFilePath != null) {
+//            processBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
+//        }
+
+        Process process = processBuilder.start();
+        process.waitFor();
+
+        // Check process output
+        boolean executedWithoutErrors = true;
+        int genomeInfoExitValue = process.exitValue();
+        if (genomeInfoExitValue != 0) {
+            logger.warn("Error executing {}, error code: {}", indexFilePath, genomeInfoExitValue);
+            executedWithoutErrors = false;
+        }
+        return executedWithoutErrors;
+    }
+
+//    private ProcessBuilder getProcessBuilder(List<String> args, String logFilePath) {
+//        ProcessBuilder builder = new ProcessBuilder(args);
+//
+//        builder.redirectErrorStream(true);
+//        if (logFilePath != null) {
+//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
+//        }
+//
+//        return builder;
+//    }
+
 }

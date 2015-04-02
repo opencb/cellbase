@@ -21,6 +21,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
+    private Path output = null;
+    private Path common = null;
+
     private File ensemblScriptsFolder;
     private String ensemblVersion;
     private String ensemblRelease;
@@ -49,6 +52,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 downloadCommandOptions.commonOptions.conf);
 
         this.downloadCommandOptions = downloadCommandOptions;
+
+        if(downloadCommandOptions.output != null) {
+            output = Paths.get(downloadCommandOptions.output);
+        }
+        if(downloadCommandOptions.common != null) {
+            common = Paths.get(downloadCommandOptions.common);
+        }else {
+            common = output.resolve("common");
+        }
+
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
     }
 
@@ -59,8 +72,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     public void execute() {
         try {
             checkParameters();
-            Path outputDir = Paths.get(downloadCommandOptions.output);
-            makeDir(outputDir);
+            makeDir(output);
+            makeDir(common);
 
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
@@ -76,7 +89,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             // If everything is right we launch the download
             if(speciesToDownload != null) {
-                processSpecies(speciesToDownload, outputDir);
+                processSpecies(speciesToDownload, output);
             }else {
                 logger.error("Species '{}' not valid", downloadCommandOptions.species);
             }
@@ -279,7 +292,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private void downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene expression atlas ...");
-        Path expression = geneFolder.getParent().resolve("common").resolve("expression");
+//        Path expression = geneFolder.getParent().resolve("common").resolve("expression");
+        Path expression = common.resolve("expression");
 
         if(!Files.exists(expression)) {
             makeDir(expression);
@@ -341,6 +355,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadRegulation(Species species, String shortName, String assembly, Path speciesFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading regulation information ...");
+
+        if(!species.getScientificName().equals("Homo sapiens") || !species.getScientificName().equals("Mus musculus")) {
+            return;
+        }
+
         Path regulationFolder = speciesFolder.resolve("regulation");
         makeDir(regulationFolder);
 
@@ -358,7 +377,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         // Downloading miRNA info
         String url;
-        Path mirbaseFolder = speciesFolder.getParent().resolve("common").resolve("mirbase");
+//        Path mirbaseFolder = speciesFolder.getParent().resolve("common").resolve("mirbase");
+        Path mirbaseFolder = common.resolve("mirbase");
         if(!Files.exists(mirbaseFolder)) {
             makeDir(mirbaseFolder);
 
@@ -400,7 +420,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadProtein(Species sp, String shortName, String assembly, Path spFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading protein information ...");
-        Path proteinFolder = spFolder.getParent().resolve("common").resolve("protein");
+//        Path proteinFolder = spFolder.getParent().resolve("common").resolve("protein");
+        Path proteinFolder = common.resolve("protein");
 
         if(!Files.exists(proteinFolder)) {
             makeDir(proteinFolder);

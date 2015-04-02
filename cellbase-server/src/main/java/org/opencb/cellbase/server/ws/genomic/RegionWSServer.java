@@ -231,7 +231,9 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/clinvar")
-    public Response getClinvarByRegion(@PathParam("chrRegionId") String query) {
+    public Response getClinvarByRegion(@PathParam("chrRegionId") String query,
+                                       @DefaultValue("") @QueryParam("gene") String gene,
+                                       @DefaultValue("") @QueryParam("rcv") String rcv) {
         try {
             checkParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
@@ -248,6 +250,12 @@ public class RegionWSServer extends GenericRestWSServer {
                 queryOptions.addToListOption("include","end");
                 queryOptions.addToListOption("include","reference");
                 queryOptions.addToListOption("include","alternate");
+                if(gene != null && !gene.equals("")) {
+                    queryOptions.add("gene", Arrays.asList(gene.split(",")));
+                }
+                if(rcv != null && !rcv.equals("")) {
+                    queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
+                }
                 List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByRegionList(regions, queryOptions);
                 List<QueryResult> queryResultList = new ArrayList<>();
                 for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
@@ -260,15 +268,6 @@ public class RegionWSServer extends GenericRestWSServer {
                         if(clinicalRecord.containsKey("clinvarList")) {
                             basicDBList.add(clinicalRecord);
                             numResults += 1;
-//                            for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
-//                                clinvarRecord.put("chromosome", clinicalRecord.get("chromosome"));
-//                                clinvarRecord.put("start", clinicalRecord.get("start"));
-//                                clinvarRecord.put("end", clinicalRecord.get("end"));
-//                                clinvarRecord.put("reference", clinicalRecord.get("reference"));
-//                                clinvarRecord.put("alternate", clinicalRecord.get("alternate"));
-//                                basicDBList.add(clinvarRecord);
-//                                numResults++;
-//                            }
                         }
                     }
                     queryResult.setResult(basicDBList);
