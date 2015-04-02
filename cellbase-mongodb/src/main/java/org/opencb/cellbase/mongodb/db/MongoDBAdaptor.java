@@ -69,6 +69,7 @@ public class MongoDBAdaptor {
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
         this("", "", mongoDataStore);
+        this.db = mongoDataStore.getDb();
     }
 
     public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
