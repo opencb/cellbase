@@ -76,6 +76,7 @@ public class MongoDBAdaptor {
         this.species = species;
         this.assembly = assembly;
         this.mongoDataStore = mongoDataStore;
+        this.db = mongoDataStore.getDb();
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
