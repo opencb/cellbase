@@ -1,5 +1,6 @@
 package org.opencb.cellbase.mongodb.db;
 
+import com.google.common.base.Splitter;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -32,9 +33,9 @@ public class ClinicalMongoDBAdaptorTest {
 
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
             QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
-            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByRegionList(Arrays.asList(new Region("3", 550000, 1166666)), queryOptions);
+            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(Arrays.asList(new Region("3", 550000, 1166666)), queryOptions);
             List<QueryResult> queryResultList = new ArrayList<>();
-            for(QueryResult clinvarQueryResult: clinicalQueryResultList) {
+            for (QueryResult clinvarQueryResult : clinicalQueryResultList) {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(clinvarQueryResult.getId());
                 queryResult.setDbTime(clinvarQueryResult.getDbTime());
@@ -42,7 +43,7 @@ public class ClinicalMongoDBAdaptorTest {
                 BasicDBList basicDBList = new BasicDBList();
 
                 for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinvarQueryResult.getResult()) {
-                    if(clinicalRecord.containsKey("clinvarList")) {
+                    if (clinicalRecord.containsKey("clinvarList")) {
                         for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
                             basicDBList.add(clinvarRecord);
                         }
@@ -55,5 +56,22 @@ public class ClinicalMongoDBAdaptorTest {
             e.printStackTrace();
         }
 
+    }
+
+    @Test
+    public void testGetClinvarById() throws Exception {
+
+        CellbaseConfiguration config = new CellbaseConfiguration();
+
+        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "cellbase_hsapiens_grch37_v3", 22222,
+                "mongo", "biouser", "B10p@ss", 10, 10);
+
+        config.addSpeciesAlias("hsapiens", "hsapiens");
+
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+
+        clinicalDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList("RCV000091359"), new QueryOptions());
     }
 }

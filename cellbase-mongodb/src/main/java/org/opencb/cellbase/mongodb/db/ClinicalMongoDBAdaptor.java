@@ -13,6 +13,7 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
+import javax.management.Query;
 import java.util.*;
 
 /**
@@ -41,35 +42,100 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
-        return getAllByRegion(new Region(chromosome, position, position), options);
+        //return getAllByRegion(new Region(chromosome, position, position), options);
+        return new QueryResult();
     }
 
     @Override
     public QueryResult getAllByPosition(Position position, QueryOptions options) {
-        return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
+        //return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
+        return new QueryResult();
     }
 
     @Override
     public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
-        List<Region> regions = new ArrayList<>();
-        for (Position position : positionList) {
-            regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
+        //List<Region> regions = new ArrayList<>();
+        //for (Position position : positionList) {
+        //    regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
+        //}
+        //return getAllByRegionList(regions, options);
+        return new ArrayList<>();
+    }
+
+    @Override
+    public QueryResult getClinvarById(String id, QueryOptions options) {
+        return getAllClinvarByIdList(Arrays.asList(id), options).get(0);
+    }
+
+    @Override
+    public List<QueryResult> getAllClinvarByIdList(List<String> idList, QueryOptions options) {
+        List<DBObject> queries = new ArrayList<>(idList.size());
+        options.addToListOption("include", "clinvarList");
+        options.addToListOption("include", "chromosome");
+        options.addToListOption("include", "start");
+        options.addToListOption("include", "end");
+        options.addToListOption("include", "reference");
+        options.addToListOption("include", "alternate");
+        for (String id : idList) {
+            QueryBuilder builder = addClinvarQueryFilters(QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").is(id),
+                    options);
+            queries.add(builder.get());
         }
-        return getAllByRegionList(regions, options);
+
+        return prepareClinvarQueryResultList(executeQueryList2(idList, queries, options));
+    }
+
+    private QueryBuilder addClinvarQueryFilters(QueryBuilder builder, QueryOptions options) {
+        List<Object> genes = options.getList("gene", null);
+        BasicDBList geneSymbols = new BasicDBList();
+        if (genes != null && genes.size() > 0) {
+            geneSymbols.addAll(genes);
+            builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value").
+                    in(geneSymbols);
+        }
+        List<Object> rcvs = options.getList("rcv", null);
+        BasicDBList rcvList = new BasicDBList();
+        if (rcvs != null && rcvs.size() > 0) {
+            rcvList.addAll(rcvs);
+            builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").
+                    in(rcvList);
+        }
+        return builder;
+    }
+
+    private List<QueryResult> prepareClinvarQueryResultList(List<QueryResult> clinicalQueryResultList) {
+        List<QueryResult> queryResultList = new ArrayList<>();
+        for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
+            QueryResult queryResult = new QueryResult();
+            queryResult.setId(clinicalQueryResult.getId());
+            queryResult.setDbTime(clinicalQueryResult.getDbTime());
+            BasicDBList basicDBList = new BasicDBList();
+            int numResults = 0;
+            for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
+                if(clinicalRecord.containsKey("clinvarList")) {
+                    basicDBList.add(clinicalRecord);
+                    numResults += 1;
+                }
+            }
+            queryResult.setResult(basicDBList);
+            queryResult.setNumResults(numResults);
+            queryResultList.add(queryResult);
+        }
+        return queryResultList;
     }
 
     @Override
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
-        return getAllByRegion(new Region(chromosome, start, end), options);
+    public QueryResult getAllClinvarByRegion(String chromosome, int start, int end, QueryOptions options) {
+        return getAllClinvarByRegion(new Region(chromosome, start, end), options);
     }
 
     @Override
-    public QueryResult getAllByRegion(Region region, QueryOptions options) {
-        return getAllByRegionList(Arrays.asList(region), options).get(0);
+    public QueryResult getAllClinvarByRegion(Region region, QueryOptions options) {
+        return getAllClinvarByRegionList(Arrays.asList(region), options).get(0);
     }
 
     @Override
-    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
+    public List<QueryResult> getAllClinvarByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
 
         List<String> ids = new ArrayList<>(regions.size());
@@ -77,21 +143,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
             // If regions is 1 position then query can be optimize using chunks
             QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end").greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
-
-            List<Object> genes = options.getList("gene", null);
-            BasicDBList geneSymbols = new BasicDBList();
-            if (genes != null && genes.size() > 0) {
-                geneSymbols.addAll(genes);
-                builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value").
-                        in(geneSymbols);
-            }
-            List<Object> rcvs = options.getList("rcv", null);
-            BasicDBList rcvList = new BasicDBList();
-            if (rcvs != null && rcvs.size() > 0) {
-                rcvList.addAll(rcvs);
-                builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").
-                        in(rcvList);
-            }
+            builder = addClinvarQueryFilters(builder, options);
             System.out.println(builder.get().toString());
             queries.add(builder.get());
             ids.add(region.toString());

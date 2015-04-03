@@ -37,8 +37,9 @@ public class ClinVarWSServer extends GenericRestWSServer {
     public Response getAllByAccessions(@PathParam("clinVarAcc") String query) {
         try {
             checkParams();
-            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
-            return createOkResponse(clinVarDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            ClinicalDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            //ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinVarDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getAllByAccessions", e.toString());
