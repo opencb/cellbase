@@ -5,9 +5,7 @@ import org.opencb.cellbase.core.loader.LoaderException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -67,12 +65,15 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.index("gene");
                             break;
                         case "variation":
+                            loadVariationData();
                             break;
                         case "regulatory_region":
                             loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
                             loadRunner.index("regulatory_region");
                             break;
                         case "protein":
+                            loadRunner.load(input.resolve("protein.json.gz"), "protein");
+                            loadRunner.index("protein");
                             break;
                         case "conservation":
                             break;
@@ -123,14 +124,22 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
 
-//    private void loadGenomeData() throws NoSuchMethodException, InterruptedException, ExecutionException,
-//            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-//            IOException, LoaderException {
-//
-//        loadRunner.load(input.resolve("genome_info.json.gz"), "genome_info");
-//        loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
-//        loadRunner.index("genome_sequence");
-//    }
+    private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException, LoaderException {
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                return entry.getFileName().toString().startsWith("variation_chr");
+            }
+        });
+        for (Path entry: stream) {
+            logger.info("Loading file '{}'", entry.toString());
+            loadRunner.load(input.resolve(entry.getFileName()), "variation");
+        }
+        loadRunner.index("variation");
+    }
 
 
 }

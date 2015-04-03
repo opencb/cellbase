@@ -1,6 +1,7 @@
 package org.opencb.cellbase.mongodb.db;
 
 import com.mongodb.*;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
@@ -299,15 +300,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
             if(cdnaVariantEnd!=null) {
                 int finalNtPhase = (cdnaCodingEnd - cdnaCodingStart) % 3;
-                if (cdnaVariantEnd >= (cdnaCodingEnd - finalNtPhase)) {
-                    if (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF")) {
-                        if (finalNtPhase != 2) {
-                            SoNames.add("incomplete_terminal_codon_variant");
-                        }
-                    } else {
-                        SoNames.add("stop_lost");
-                    }
-                }
+                Boolean stopToSolve = true;
                 if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
                     codingAnnotationAdded = true;
                     if (variantRef.length() % 3 == 0) {
@@ -315,8 +308,18 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     } else {
                         SoNames.add("frameshift_variant");
                     }
-                    solveStopCodonPositiveDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart,  cdnaVariantEnd,
+                    stopToSolve = false;  // Stop codon annotation will be solved in the line below.
+                    solveStopCodonPositiveDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd,
                             SoNames);
+                }
+                if (cdnaVariantEnd >= (cdnaCodingEnd - finalNtPhase)) {
+                    if (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF")) {
+                        if (finalNtPhase != 2) {
+                            SoNames.add("incomplete_terminal_codon_variant");
+                        }
+                    } else if(stopToSolve) {  // Only if stop codon annotation was not already solved in the if block above
+                        SoNames.add("stop_lost");
+                    }
                 }
             }
         } else {
@@ -418,18 +421,21 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private void solveStopCodonPositiveDeletion(String transcriptSequence, Integer cdnaCodingStart,
                                                   Integer cdnaVariantStart, Integer cdnaVariantEnd,
                                                   Set<String> SoNames) {
-        Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
-        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
-        String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
-        char[] modifiedCodonArray = referenceCodon.toCharArray();
-        char[] referenceCodonArray = referenceCodon.toCharArray();
+        Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
+        Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
+        int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
+        int modifiedCodon2Start = cdnaVariantEnd - variantPhaseShift2;
+        String referenceCodon1 = transcriptSequence.substring(modifiedCodon1Start - 1, modifiedCodon1Start + 2);  // -1 and +2 because of base 0 String indexing
+        String referenceCodon2 = transcriptSequence.substring(modifiedCodon2Start - 1, modifiedCodon2Start + 2);  // -1 and +2 because of base 0 String indexing
+        char[] modifiedCodonArray = referenceCodon1.toCharArray();
         int i=cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
         int codonPosition;
-        for(codonPosition=variantPhaseShift; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
+        for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
             modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
             i++;
         }
-        decideStopCodonModificationAnnotation(SoNames, referenceCodon, modifiedCodonArray);
+
+        decideStopCodonModificationAnnotation(SoNames, isStopCodon(referenceCodon2)?referenceCodon2:referenceCodon1, modifiedCodonArray);
     }
 
     private void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
@@ -490,15 +496,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
             if(cdnaVariantEnd!=null) {
                 int finalNtPhase = (cdnaCodingEnd - cdnaCodingStart) % 3;
-                if (cdnaVariantEnd >= (cdnaCodingEnd - finalNtPhase)) {
-                    if (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF")) {
-                        if (finalNtPhase != 2) {
-                            SoNames.add("incomplete_terminal_codon_variant");
-                        }
-                    } else {
-                        SoNames.add("stop_lost");
-                    }
-                }
+                Boolean stopToSolve = true;
                 if(!splicing && cdnaVariantStart != null) {  // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
                     codingAnnotationAdded = true;
                     if (variantRef.length() % 3 == 0) {
@@ -506,8 +504,18 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     } else {
                         SoNames.add("frameshift_variant");
                     }
+                    stopToSolve = false;  // Stop codon annotation will be solved in the line below.
                     solveStopCodonNegativeDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd,
                             SoNames);
+                }
+                if (cdnaVariantEnd >= (cdnaCodingEnd - finalNtPhase)) {
+                    if (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF")) {
+                        if (finalNtPhase != 2) {
+                            SoNames.add("incomplete_terminal_codon_variant");
+                        }
+                    } else if(stopToSolve) {  // Only if stop codon annotation was not already solved in the if block above
+                        SoNames.add("stop_lost");
+                    }
                 }
             }
         } else {
@@ -618,25 +626,35 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private void solveStopCodonNegativeDeletion(String transcriptSequence, Integer cdnaCodingStart,
                                                 Integer cdnaVariantStart, Integer cdnaVariantEnd,
                                                 Set<String> SoNames) {
-        Integer variantPhaseShift = (cdnaVariantStart - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
-        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
-        String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
-                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+        Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
+        Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
+        int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
+        int modifiedCodon2Start = cdnaVariantEnd - variantPhaseShift2;
+        String reverseCodon1 = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodon1Start - 2,
+                transcriptSequence.length() - modifiedCodon1Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+        String reverseCodon2 = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodon2Start - 2,
+                transcriptSequence.length() - modifiedCodon2Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
         String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - cdnaVariantEnd - 3,
                 transcriptSequence.length() - cdnaVariantEnd)).reverse().toString(); // Rigth limit of the substring -2 because substring does not include that position
-        char[] referenceCodonArray = reverseCodon.toCharArray();
-        referenceCodonArray[0] = complementaryNt.get(referenceCodonArray[0]);
-        referenceCodonArray[1] = complementaryNt.get(referenceCodonArray[1]);
-        referenceCodonArray[2] = complementaryNt.get(referenceCodonArray[2]);
-        char[] modifiedCodonArray = referenceCodonArray.clone();
+        char[] referenceCodon1Array = reverseCodon1.toCharArray();
+        referenceCodon1Array[0] = complementaryNt.get(referenceCodon1Array[0]);
+        referenceCodon1Array[1] = complementaryNt.get(referenceCodon1Array[1]);
+        referenceCodon1Array[2] = complementaryNt.get(referenceCodon1Array[2]);
+        char[] referenceCodon2Array = reverseCodon2.toCharArray();
+        referenceCodon2Array[0] = complementaryNt.get(referenceCodon2Array[0]);
+        referenceCodon2Array[1] = complementaryNt.get(referenceCodon2Array[1]);
+        referenceCodon2Array[2] = complementaryNt.get(referenceCodon2Array[2]);
+        char[] modifiedCodonArray = referenceCodon1Array.clone();
 
         int i=0;
         int codonPosition;
-        for(codonPosition=variantPhaseShift; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
+        for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
             modifiedCodonArray[codonPosition] = complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
             i++;
         }
-        decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray), modifiedCodonArray);
+
+        decideStopCodonModificationAnnotation(SoNames, isStopCodon(String.valueOf(referenceCodon2Array))?String.valueOf(referenceCodon2Array):String.valueOf(referenceCodon1Array),
+                modifiedCodonArray);
     }
 
     private void solveStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart,
@@ -1316,7 +1334,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //            consequenceTypeList.add(new ConsequenceType("intergenic_variant"));
 //        }
 
-        consequenceTypeList = filterConsequenceTypesBySoTerms(consequenceTypeList, options.getAsStringList("so"));
+//        consequenceTypeList = filterConsequenceTypesBySoTerms(consequenceTypeList, options.getAsStringList("so"));
         // setting queryResult fields
         queryResult.setId(variant.toString());
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());

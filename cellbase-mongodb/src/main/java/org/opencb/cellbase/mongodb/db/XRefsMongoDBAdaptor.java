@@ -27,6 +27,7 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 
     public XRefsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("gene");
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("XrefsMongoDBAdaptor: in 'constructor'");

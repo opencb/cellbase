@@ -69,12 +69,14 @@ public class MongoDBAdaptor {
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
         this("", "", mongoDataStore);
+        this.db = mongoDataStore.getDb();
     }
 
     public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         this.species = species;
         this.assembly = assembly;
         this.mongoDataStore = mongoDataStore;
+        this.db = mongoDataStore.getDb();
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
