@@ -256,7 +256,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 if(rcv != null && !rcv.equals("")) {
                     queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
                 }
-                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByRegionList(regions, queryOptions);
+                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
                 List<QueryResult> queryResultList = new ArrayList<>();
                 for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
                     QueryResult queryResult = new QueryResult();
