@@ -94,7 +94,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, variation, regulation, protein, conservation and clinical. 'all' download everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "The name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens' [Homo sapiens]", required = false, arity = 1)
@@ -106,7 +106,7 @@ public class CliOptionsParser {
         @Parameter(names = {"-o", "--output"}, description = "The output directory, species folder will be created [/tmp]", required = false, arity = 1)
         public String output = "/tmp";
 
-        @Parameter(names = {"--common"}, description = "", required = false, arity = 1)
+        @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
         public String common;
 
     }
