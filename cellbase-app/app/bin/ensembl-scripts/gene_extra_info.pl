@@ -8,6 +8,7 @@ use DB_CONFIG;
 
 
 my $species = 'Homo sapiens';
+my $phylo = "";
 my $outdir = "/tmp/$species";
 my $verbose = '0';
 my $help = '0';
@@ -18,7 +19,7 @@ my $help = '0';
 # USAGE: ./core.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
-GetOptions ('species=s' => \$species, 'outdir=s' => \$outdir,
+GetOptions ('species=s' => \$species, 'outdir=s' => \$outdir, 'phylo=s' => \$phylo,
 			'ensembl-libs=s' => \$ENSEMBL_LIBS, 'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
 			'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
 			'ensembl-user=s' => \$ENSEMBL_USER, 'ensembl-pass=s' => \$ENSEMBL_PASS,
@@ -56,16 +57,31 @@ use Bio::EnsEMBL::Funcgen::DBSQL::DBAdaptor;
 
 ## loading the registry with the adaptors 
 #Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
-Bio::EnsEMBL::Registry->load_registry_from_db(
-    -host => 'mysql-eg-publicsql.ebi.ac.uk',
-    -port => 4157,
-    -user => 'anonymous'
-);
-Bio::EnsEMBL::Registry->load_registry_from_db(
-  -host    => 'ensembldb.ensembl.org',
-  -user    => 'anonymous',
-  -verbose => '0'
-);
+#Bio::EnsEMBL::Registry->load_registry_from_db(
+#    -host => 'mysql-eg-publicsql.ebi.ac.uk',
+#    -port => 4157,
+#    -user => 'anonymous'
+#);
+#Bio::EnsEMBL::Registry->load_registry_from_db(
+#  -host    => 'ensembldb.ensembl.org',
+#  -user    => 'anonymous',
+#  -verbose => '0'
+#);
+if($phylo eq "" || $phylo eq "vertebrate") {
+    print ("In vertebrates section");
+    Bio::EnsEMBL::Registry->load_registry_from_db(
+      -host    => 'ensembldb.ensembl.org',
+      -user    => 'anonymous',
+      -verbose => '0'
+    );
+}else {
+    print ("In no-vertebrates section");
+    Bio::EnsEMBL::Registry->load_registry_from_db(
+        -host => 'mysql-eg-publicsql.ebi.ac.uk',
+        -port => 4157,
+        -user => 'anonymous'
+    );
+}
 ####################################################################
 
 ## variables definition

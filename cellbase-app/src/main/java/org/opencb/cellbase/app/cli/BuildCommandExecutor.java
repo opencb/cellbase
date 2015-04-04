@@ -186,14 +186,14 @@ public class BuildCommandExecutor extends CommandExecutor {
 //                args.add("--phylo");
 //                args.add("vertebrate");
 //            }else {
-                if (!configuration.getSpecies().getVertebrates().contains(species)
-                        && !species.getScientificName().equals("Drosophila melanogaster")) {
-                    args.add("--phylo");
-                    args.add("no-vertebrate");
-                }
+            if (!configuration.getSpecies().getVertebrates().contains(species)
+                    && !species.getScientificName().equals("Drosophila melanogaster")) {
+                args.add("--phylo");
+                args.add("no-vertebrate");
+            }
 //            }
 
-            String geneInfoLogFileName = output + "/genome_info.log";
+            String geneInfoLogFileName = output.resolve("genome_info.log").toAbsolutePath().toString();
 
             boolean downloadedGenomeInfo;
             downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
