@@ -3,13 +3,15 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
+import org.sqlite.SQLiteConnection;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by imedina on 03/02/15.
@@ -175,7 +177,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                     case "protein":
                         if(speciesHasInfoToDownload(sp, "protein")) {
-                            downloadProtein(sp, spShortName, assembly.getName(), spFolder);
+                            downloadProtein();
                         }
                         break;
                     case "conservation":
@@ -409,17 +411,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     /**
      * This method downloads UniProt, IntAct and Interpro data from EMBL-EBI
-     * @param sp
-     * @param shortName
-     * @param assembly
-     * @param spFolder
      * @throws IOException
      * @throws InterruptedException
      */
-    private void downloadProtein(Species sp, String shortName, String assembly, Path spFolder)
+    private void downloadProtein()
             throws IOException, InterruptedException {
         logger.info("Downloading protein information ...");
-//        Path proteinFolder = spFolder.getParent().resolve("common").resolve("protein");
         Path proteinFolder = common.resolve("protein");
 
         if(!Files.exists(proteinFolder)) {
@@ -447,7 +444,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     private void downloadConservation(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        logger.info("Downloading conervation information ...");
+        logger.info("Downloading conservation information ...");
         Path conservationFolder = speciesFolder.resolve("conservation");
 
         if(species.getScientificName().equals("Homo sapiens")) {
@@ -525,16 +522,4 @@ public class DownloadCommandExecutor extends CommandExecutor {
             logger.warn(url + " cannot be downloaded");
         }
     }
-
-//    private void downloadFiles(String url, String outputDir) throws IOException, InterruptedException {
-//        List<String> wgetArgs = Arrays.asList("--tries=10", url);
-//        boolean downloaded = runCommandLineProcess(new File(outputDir), "wget", wgetArgs, null);
-//
-//        if (downloaded) {
-//            logger.info("Files downloaded OK");
-//        } else {
-//            logger.warn(url + " cannot be downloaded");
-//        }
-//    }
-
 }

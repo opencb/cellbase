@@ -272,7 +272,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 //        String species = buildCommandOptions.species;
 //        checkMandatoryOption("species", species);
         CellBaseSerializer serializer = new JsonParser(output, "protein");
-        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), species.getScientificName(), serializer);
+        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
 
     }
 

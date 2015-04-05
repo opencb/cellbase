@@ -1,41 +1,50 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.formats.protein.uniprot.UniprotParser;
-import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Entry;
-import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.OrganismNameType;
-import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.Uniprot;
+import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.*;
 import org.opencb.cellbase.app.serializers.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 public class ProteinParser extends CellBaseParser {
 
-    private String species;
     private Path uniprotFilesDir;
+    private Path interproFilePath;
+    private String species;
+
+    private Map<String, Entry> proteinMap;
+
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public ProteinParser(Path uniprotFilesDir, String species, CellBaseSerializer serializer) {
+        this(uniprotFilesDir, null, species, serializer);
+    }
+
+    public ProteinParser(Path uniprotFilesDir, Path interproFilePath, String species, CellBaseSerializer serializer) {
         super(serializer);
 
         this.uniprotFilesDir = uniprotFilesDir;
+        this.interproFilePath = interproFilePath;
         this.species = species;
     }
 
-
     @Override
     public void parse() throws IOException {
-        Files.exists(uniprotFilesDir);
 
+        if(uniprotFilesDir == null || !Files.exists(uniprotFilesDir)) {
+            throw new IOException("File '" + uniprotFilesDir + "' not valid");
+        }
+
+        proteinMap = new HashMap<>(30000);
         UniprotParser up = new UniprotParser();
-//		PrintWriter pw = new PrintWriter(Files.newOutputStream(Paths.get(outputFile.toURI())));
         try {
             File[] files = uniprotFilesDir.toFile().listFiles(new FilenameFilter() {
                 @Override
@@ -48,37 +57,94 @@ public class ProteinParser extends CellBaseParser {
                 Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniprotParser.UNIPROT_CONTEXT_v201311);
 
                 for (Entry entry : uniprot.getEntry()) {
-//                    System.out.println(entry.getOrganism().getName().get(0).getValue());
                     String entryOrganism = null;
                     Iterator<OrganismNameType> iter = entry.getOrganism().getName().iterator();
                     while (iter.hasNext()) {
                         entryOrganism = iter.next().getValue();
-//                        if(entryOrganism.contains(species)) {
                         if (entryOrganism.equals(species)) {
-                            serializer.serialize(entry);
+                            proteinMap.put(entry.getAccession().get(0), entry);
+//                            serializer.serialize(entry);
                         }
                     }
                 }
             }
-//
-// for(Entry entry: uniprot.getEntry()) {
-////				System.out.println(entry.getOrganism().getName().get(0).getValue());
-//				String entryOrganism = null;
-//				Iterator<OrganismNameType> iter = entry.getOrganism().getName().iterator();
-//				while(iter.hasNext()) {
-////					System.out.println(iter.next().getValue());
-//					entryOrganism = iter.next().getValue();
-//					if(entryOrganism.contains(species)) {
-//						pw.println(gson.toJson(entry));
-//					}
-//				}
-//			}
+            logger.debug("Number of proteins stored in map: '{}'", proteinMap.size());
+
+            if(interproFilePath != null && Files.exists(interproFilePath)) {
+                BufferedReader interproBuffereReader;
+                if(interproFilePath.toString().endsWith(".gz")) {
+                    interproBuffereReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(interproFilePath.toFile()))));
+                }else {
+                    interproBuffereReader = new BufferedReader(new InputStreamReader(new FileInputStream(interproFilePath.toFile())));
+                }
+
+                Set<String> hashSet = new HashSet<>(proteinMap.keySet());
+                Set<String> visited = new HashSet<>(30000);
+
+                int numInterProLinesProcessed = 0;
+                int numUniqueProteinsProcessed = 0;
+                String[] fields;
+                String line;
+                boolean iprAdded;
+                while((line = interproBuffereReader.readLine()) != null) {
+                    fields = line.split("\t");
+
+                    if(hashSet.contains(fields[0])) {
+                        iprAdded = false;
+                        BigInteger start = BigInteger.valueOf(Integer.parseInt(fields[4]));
+                        BigInteger end = BigInteger.valueOf(Integer.parseInt(fields[5]));
+                        for(FeatureType featureType: proteinMap.get(fields[0]).getFeature()) {
+                            if(featureType.getLocation() != null && featureType.getLocation().getBegin() != null
+                                    && featureType.getLocation().getBegin().getPosition() != null
+                                    && featureType.getLocation().getEnd().getPosition() != null
+                                    && featureType.getLocation().getBegin().getPosition().equals(start)
+                                    && featureType.getLocation().getEnd().getPosition().equals(end)) {
+                                featureType.setId(fields[1]);
+                                featureType.setRef(fields[3]);
+                                iprAdded = true;
+                                break;
+                            }
+                        }
+
+                        if(!iprAdded) {
+                            FeatureType featureType = new FeatureType();
+                            featureType.setId(fields[1]);
+                            featureType.setDescription(fields[2]);
+                            featureType.setRef(fields[3]);
+
+                            LocationType locationType = new LocationType();
+                            PositionType positionType = new PositionType();
+                            positionType.setPosition(start);
+                            locationType.setBegin(positionType);
+                            PositionType positionType2 = new PositionType();
+                            positionType2.setPosition(end);
+                            locationType.setEnd(positionType2);
+                            featureType.setLocation(locationType);
+
+                            proteinMap.get(fields[0]).getFeature().add(featureType);
+                        }
+
+                        if(!visited.contains(fields[0])) {
+                            visited.add(fields[0]);
+                            numUniqueProteinsProcessed++;
+                        }
+                    }
+
+                    if(++numInterProLinesProcessed % 10000000 == 0) {
+                        logger.debug("{} InterPro lines processed. {} unique proteins processed",
+                                numInterProLinesProcessed, numUniqueProteinsProcessed);
+                    }
+                }
+                interproBuffereReader.close();
+            }
+
+            // Serialize and save results
+            for(Entry entry: proteinMap.values()) {
+                serializer.serialize(entry);
+            }
 
         } catch (JAXBException e) {
             e.printStackTrace();
-        } finally {
-//			pw.close();
         }
-
     }
 }
