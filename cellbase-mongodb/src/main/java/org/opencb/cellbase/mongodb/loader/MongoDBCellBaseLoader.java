@@ -262,6 +262,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     protected boolean runCreateIndexProcess(Path indexFilePath) throws IOException, InterruptedException {
         List<String> args = new ArrayList<>();
         args.add("mongo");
+        args.add("--host");
+        args.add(cellBaseConfiguration.getDatabase().getHost());
         if(cellBaseConfiguration.getDatabase().getUser() != null && !cellBaseConfiguration.getDatabase().getUser().equals("")) {
             args.addAll(Arrays.asList(
                     "-u", cellBaseConfiguration.getDatabase().getUser(),
