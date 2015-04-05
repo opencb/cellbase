@@ -47,6 +47,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16050612, "C", "G"))  // Should return any result
+                , new QueryOptions()).get(0).getResult()).get(0));
+
         variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("13", 45411941, "T", "C"))  // Should return any result
                 , new QueryOptions()).get(0).getResult()).get(0));
         variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155, "T", "C"))  // Should return any result
