@@ -3,20 +3,19 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author imedina
@@ -34,11 +33,23 @@ public class ClinVarWSServer extends GenericRestWSServer {
     @GET
     @Path("/{clinVarAcc}/info")
     @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar info from a list of accession IDs")
-    public Response getAllByAccessions(@PathParam("clinVarAcc") String query) {
+    public Response getAllByAccessions(@PathParam("clinVarAcc") String query,
+                                       @DefaultValue("") @QueryParam("gene") String gene,
+                                       @DefaultValue("") @QueryParam("region") String region,
+                                       @DefaultValue("") @QueryParam("rs") String rs) {
         try {
             checkParams();
             ClinicalDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             //ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            if(gene != null && !gene.equals("")) {
+                queryOptions.add("gene", Arrays.asList(gene.split(",")));
+            }
+            if(region != null && !region.equals("")) {
+                queryOptions.add("region", Region.parseRegions(query));
+            }
+            if(rs != null && !rs.equals("")) {
+                queryOptions.add("rs", Arrays.asList(rs.split(",")));
+            }
             return createOkResponse(clinVarDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();

@@ -100,6 +100,28 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").
                     in(rcvList);
         }
+        List<Object> rs = options.getList("rs", null);
+        BasicDBList rsList = new BasicDBList();
+        if (rs != null && rs.size() > 0) {
+            for(Object rsId : rs) {
+                rsList.add(Integer.valueOf(((String) rsId).substring(2)));  // rs id is an integer in clinvar. Remove the starting "rs"
+            }
+            builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.type").
+                    is("rs").and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.id").in(rsList);
+        }
+        List<Object> regions = options.getList("region", null);
+        BasicDBList regionList = new BasicDBList();
+        if (regions != null) {
+            Region region = (Region) regions.get(0);
+            QueryBuilder regionQueryBuilder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                    .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+            for(int i=1; i<regions.size(); i++) {
+                region = (Region) regions.get(i);
+                regionQueryBuilder = regionQueryBuilder.or(QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd()).get());
+            }
+            builder = builder.and(regionQueryBuilder.get());
+        }
         return builder;
     }
 
@@ -138,6 +160,12 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public List<QueryResult> getAllClinvarByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
 
+        options.addToListOption("include", "clinvarList");
+        options.addToListOption("include", "chromosome");
+        options.addToListOption("include", "start");
+        options.addToListOption("include", "end");
+        options.addToListOption("include", "reference");
+        options.addToListOption("include", "alternate");
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
 
@@ -148,7 +176,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             queries.add(builder.get());
             ids.add(region.toString());
         }
-        return executeQueryList2(ids, queries, options);
+        return prepareClinvarQueryResultList(executeQueryList2(ids, queries, options));
     }
 
     @Override

@@ -233,48 +233,44 @@ public class RegionWSServer extends GenericRestWSServer {
     @Path("/{chrRegionId}/clinvar")
     public Response getClinvarByRegion(@PathParam("chrRegionId") String query,
                                        @DefaultValue("") @QueryParam("gene") String gene,
-                                       @DefaultValue("") @QueryParam("rcv") String rcv) {
+                                       @DefaultValue("") @QueryParam("rcv") String rcv,
+                                       @DefaultValue("") @QueryParam("rs") String rs) {
         try {
             checkParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
-
             if (hasHistogramQueryParam()) {
                 return null;
             } else {
-
-//                QueryOptions queryOptions = new QueryOptions("include", "clinvarList,chromosome,start,end");
-                queryOptions.addToListOption("include", "clinvarList");
-                queryOptions.addToListOption("include","chromosome");
-                queryOptions.addToListOption("include","start");
-                queryOptions.addToListOption("include","end");
-                queryOptions.addToListOption("include","reference");
-                queryOptions.addToListOption("include","alternate");
                 if(gene != null && !gene.equals("")) {
                     queryOptions.add("gene", Arrays.asList(gene.split(",")));
                 }
                 if(rcv != null && !rcv.equals("")) {
                     queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
                 }
-                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
-                List<QueryResult> queryResultList = new ArrayList<>();
-                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
-                    QueryResult queryResult = new QueryResult();
-                    queryResult.setId(clinicalQueryResult.getId());
-                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
-                    BasicDBList basicDBList = new BasicDBList();
-                    int numResults = 0;
-                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
-                        if(clinicalRecord.containsKey("clinvarList")) {
-                            basicDBList.add(clinicalRecord);
-                            numResults += 1;
-                        }
-                    }
-                    queryResult.setResult(basicDBList);
-                    queryResult.setNumResults(numResults);
-                    queryResultList.add(queryResult);
+                if(rs != null && !rs.equals("")) {
+                    queryOptions.add("rs", Arrays.asList(rs.split(",")));
                 }
-                return createOkResponse(queryResultList);
+//                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
+//                List<QueryResult> queryResultList = new ArrayList<>();
+//                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
+//                    QueryResult queryResult = new QueryResult();
+//                    queryResult.setId(clinicalQueryResult.getId());
+//                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
+//                    BasicDBList basicDBList = new BasicDBList();
+//                    int numResults = 0;
+//                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
+//                        if(clinicalRecord.containsKey("clinvarList")) {
+//                            basicDBList.add(clinicalRecord);
+//                            numResults += 1;
+//                        }
+//                    }
+//                    queryResult.setResult(basicDBList);
+//                    queryResult.setNumResults(numResults);
+//                    queryResultList.add(queryResult);
+//                }
+//                return createOkResponse(queryResultList);
+                return createOkResponse(clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions));
             }
 
         } catch (Exception e) {
