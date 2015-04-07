@@ -15,15 +15,15 @@ public class CellBaseConfiguration {
     private String version;
     private String apiVersion;
     private String wiki;
-    private DatabaseProperties database;
     private String defaultOutdir;
+    private DatabaseProperties database;
     private DownloadProperties download;
     private SpeciesProperties species;
 
-    public static CellBaseConfiguration load(InputStream cellBaseConfigurationFileStream) throws IOException {
+
+    public static CellBaseConfiguration load(InputStream configurationInputStream) throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();
-        CellBaseConfiguration properties = jsonMapper.readValue(cellBaseConfigurationFileStream, CellBaseConfiguration.class);
-        return properties;
+        return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
     }
 
     public String getVersion() {
@@ -84,7 +84,6 @@ public class CellBaseConfiguration {
 
     public List<SpeciesProperties.Species> getAllSpecies() {
         List<SpeciesProperties.Species> allSpecies = new ArrayList<>();
-
         allSpecies.addAll(species.getVertebrates());
         allSpecies.addAll(species.getMetazoa());
         allSpecies.addAll(species.getFungi());
@@ -97,6 +96,8 @@ public class CellBaseConfiguration {
     public static class DatabaseProperties {
         private String host;
         private String port;
+        private String user;
+        private String password;
 
         public String getHost() {
             return host;
@@ -129,18 +130,23 @@ public class CellBaseConfiguration {
         public void setPassword(String password) {
             this.password = password;
         }
-
-        private String user;
-        private String password;
     }
 
     public static class DownloadProperties {
         private EnsemblProperties ensembl;
         private EnsemblProperties ensemblGenomes;
 
+        private URLProperties geneUniprotXref;
+        private URLProperties geneExpressionAtlas;
+        private URLProperties mirbase;
+        private URLProperties targetScan;
+        private URLProperties miRTarBase;
         private URLProperties uniprot;
-
+        private URLProperties intact;
+        private URLProperties interpro;
+        private URLProperties conservation;
         private URLProperties clinvar;
+        private URLProperties gwasCatalog;
 
         public EnsemblProperties getEnsembl() {
             return ensembl;
@@ -174,13 +180,97 @@ public class CellBaseConfiguration {
             this.clinvar = clinvar;
         }
 
+        public URLProperties getConservation() {
+            return conservation;
+        }
+
+        public void setConservation(URLProperties conservation) {
+            this.conservation = conservation;
+        }
+
+        public URLProperties getIntact() {
+            return intact;
+        }
+
+        public void setIntact(URLProperties intact) {
+            this.intact = intact;
+        }
+
+        public URLProperties getInterpro() {
+            return interpro;
+        }
+
+        public void setInterpro(URLProperties interpro) {
+            this.interpro = interpro;
+        }
+
+        public URLProperties getGeneExpressionAtlas() {
+            return geneExpressionAtlas;
+        }
+
+        public void setGeneExpressionAtlas(URLProperties geneExpressionAtlas) {
+            this.geneExpressionAtlas = geneExpressionAtlas;
+        }
+
+        public URLProperties getGeneUniprotXref() {
+            return geneUniprotXref;
+        }
+
+        public void setGeneUniprotXref(URLProperties geneUniprotXref) {
+            this.geneUniprotXref = geneUniprotXref;
+        }
+
+        public URLProperties getGwasCatalog() {
+            return gwasCatalog;
+        }
+
+        public void setGwasCatalog(URLProperties gwasCatalog) {
+            this.gwasCatalog = gwasCatalog;
+        }
+
+        public URLProperties getMirbase() {
+            return mirbase;
+        }
+
+        public void setMirbase(URLProperties mirbase) {
+            this.mirbase = mirbase;
+        }
+
+        public URLProperties getTargetScan() {
+            return targetScan;
+        }
+
+        public void setTargetScan(URLProperties targetScan) {
+            this.targetScan = targetScan;
+        }
+
+        public URLProperties getMiRTarBase() {
+            return miRTarBase;
+        }
+
+        public void setMiRTarBase(URLProperties miRTarBase) {
+            this.miRTarBase = miRTarBase;
+        }
+
         public static class EnsemblProperties {
+            private DatabaseProperties database;
+            private String libs;
+            private URLProperties url;
+
             public DatabaseProperties getDatabase() {
                 return database;
             }
 
             public void setDatabase(DatabaseProperties database) {
                 this.database = database;
+            }
+
+            public String getLibs() {
+                return libs;
+            }
+
+            public void setLibs(String libs) {
+                this.libs = libs;
             }
 
             public URLProperties getUrl() {
@@ -190,9 +280,6 @@ public class CellBaseConfiguration {
             public void setUrl(URLProperties url) {
                 this.url = url;
             }
-
-            private DatabaseProperties database;
-            private URLProperties url;
         }
 
         public static class URLProperties {

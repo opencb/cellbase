@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -32,12 +33,13 @@ public class ClinVarWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{clinVarAcc}/info")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get the ClinVar info from a list of accessions")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar info from a list of accession IDs")
     public Response getAllByAccessions(@PathParam("clinVarAcc") String query) {
         try {
             checkParams();
-            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
-            return createOkResponse(clinVarDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            ClinicalDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            //ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinVarDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getAllByAccessions", e.toString());
@@ -46,12 +48,12 @@ public class ClinVarWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/listAcc")
-    @ApiOperation(httpMethod = "GET", value = "Resource to list all accessions")
+    @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
     public Response getAllListAccessions() {
         try {
             checkParams();
-            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
-            return createOkResponse(clinVarDBAdaptor.getListAccessions(queryOptions));
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getAllListAccessions", e.toString());

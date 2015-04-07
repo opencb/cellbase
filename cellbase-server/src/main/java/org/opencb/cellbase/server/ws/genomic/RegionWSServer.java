@@ -1,28 +1,33 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import org.opencb.biodata.models.core.CpGIsland;
+import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.variation.StructuralVariation;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.common.core.CpGIsland;
-import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
-import org.opencb.cellbase.core.common.variation.StructuralVariation;
 import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.lib.api.core.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.cellbase.core.lib.api.variation.*;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+//import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
+//import org.opencb.cellbase.core.common.variation.StructuralVariation;
 
 @Path("/{version}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
@@ -104,7 +109,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
             if (hasHistogramQueryParam()) {
                 queryOptions.put("interval", getHistogramIntervalSize());
-                List<QueryResult> res = geneDBAdaptor.getAllIntervalFrequencies(regions, queryOptions);
+                QueryResult res = geneDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
                 return createOkResponse(res);
             } else {
                 if(biotype != null && !biotype.equals("")) {
@@ -153,7 +158,8 @@ public class RegionWSServer extends GenericRestWSServer {
             checkParams();
             ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
-            return createOkResponse(exonDBAdaptor.getAllByRegionList(regions));
+//            return createOkResponse(exonDBAdaptor.getAllByRegionList(regions));
+            return createOkResponse("not implemented");
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getExonByRegion", e.toString());
@@ -225,22 +231,50 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/clinvar")
-    public Response getClinvarByRegion(@PathParam("chrRegionId") String query) {
+    public Response getClinvarByRegion(@PathParam("chrRegionId") String query,
+                                       @DefaultValue("") @QueryParam("gene") String gene,
+                                       @DefaultValue("") @QueryParam("rcv") String rcv) {
         try {
             checkParams();
-            ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
-//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
-//						regions.get(0), getHistogramIntervalSize());
-//                QueryResult queryResult = mutationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
-//				return generateResponse(query, intervalList);
                 return null;
             } else {
-                System.out.println("sdddajljkjkhhk");
-                List<QueryResult> queryResults = clinVarDBAdaptor.getAllByRegionList(regions, queryOptions);
-                return createOkResponse(queryResults);
+
+//                QueryOptions queryOptions = new QueryOptions("include", "clinvarList,chromosome,start,end");
+                queryOptions.addToListOption("include", "clinvarList");
+                queryOptions.addToListOption("include","chromosome");
+                queryOptions.addToListOption("include","start");
+                queryOptions.addToListOption("include","end");
+                queryOptions.addToListOption("include","reference");
+                queryOptions.addToListOption("include","alternate");
+                if(gene != null && !gene.equals("")) {
+                    queryOptions.add("gene", Arrays.asList(gene.split(",")));
+                }
+                if(rcv != null && !rcv.equals("")) {
+                    queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
+                }
+                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
+                List<QueryResult> queryResultList = new ArrayList<>();
+                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
+                    QueryResult queryResult = new QueryResult();
+                    queryResult.setId(clinicalQueryResult.getId());
+                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
+                    BasicDBList basicDBList = new BasicDBList();
+                    int numResults = 0;
+                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
+                        if(clinicalRecord.containsKey("clinvarList")) {
+                            basicDBList.add(clinicalRecord);
+                            numResults += 1;
+                        }
+                    }
+                    queryResult.setResult(basicDBList);
+                    queryResult.setNumResults(numResults);
+                    queryResultList.add(queryResult);
+                }
+                return createOkResponse(queryResultList);
             }
 
         } catch (Exception e) {
@@ -442,31 +476,31 @@ public class RegionWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-    @GET
-    @Path("/{chrRegionId}/mirna_target")
-    public Response getMirnaTargetByRegion(@PathParam("chrRegionId") String query,
-                                           @DefaultValue("") @QueryParam("source") String source) {
-        try {
-            checkParams();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-            List<Region> regions = Region.parseRegions(query);
-
-            if (hasHistogramQueryParam()) {
-                System.out.println("PAKO:" + "si");
-                List<IntervalFeatureFrequency> intervalList = mirnaDBAdaptor.getAllMirnaTargetsIntervalFrequencies(
-                        regions.get(0), getHistogramIntervalSize());
-                return generateResponse(query, intervalList);
-            } else {
-                System.out.println("PAKO:" + "NO");
-                List<List<MirnaTarget>> mirnaTargetList = mirnaDBAdaptor.getAllMiRnaTargetsByRegionList(regions);
-                return this.generateResponse(query, "MIRNA_TARGET", mirnaTargetList);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMirnaTargetByRegion", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{chrRegionId}/mirna_target")
+//    public Response getMirnaTargetByRegion(@PathParam("chrRegionId") String query,
+//                                           @DefaultValue("") @QueryParam("source") String source) {
+//        try {
+//            checkParams();
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//            List<Region> regions = Region.parseRegions(query);
+//
+//            if (hasHistogramQueryParam()) {
+//                System.out.println("PAKO:" + "si");
+//                List<IntervalFeatureFrequency> intervalList = mirnaDBAdaptor.getAllMirnaTargetsIntervalFrequencies(
+//                        regions.get(0), getHistogramIntervalSize());
+//                return generateResponse(query, intervalList);
+//            } else {
+//                System.out.println("PAKO:" + "NO");
+//                List<List<MirnaTarget>> mirnaTargetList = mirnaDBAdaptor.getAllMiRnaTargetsByRegionList(regions);
+//                return this.generateResponse(query, "MIRNA_TARGET", mirnaTargetList);
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMirnaTargetByRegion", e.toString());
+//        }
+//    }
 
     @GET
     @Path("/{chrRegionId}/cpg_island")
