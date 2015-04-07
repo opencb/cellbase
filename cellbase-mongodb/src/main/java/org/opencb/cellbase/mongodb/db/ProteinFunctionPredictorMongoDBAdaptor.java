@@ -51,6 +51,7 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
 
     public ProteinFunctionPredictorMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("protein_functional_prediction");
         mongoDBCollection2 = mongoDataStore.getCollection("protein_functional_prediction");
 
         logger.info("ProteinFunctionPredictorMongoDBAdaptor: in 'constructor'");
