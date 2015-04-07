@@ -49,7 +49,7 @@ public class ProteinParser extends CellBaseParser {
             File[] files = uniprotFilesDir.toFile().listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.endsWith(".xml");
+                    return name.endsWith(".xml") || name.endsWith(".xml.gz");
                 }
             });
 
