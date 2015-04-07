@@ -46,6 +46,15 @@ public class ClinicalWSServer extends GenericRestWSServer {
             if(queryOptions.get("limit") == null || queryOptions.getInt("limit") > 1000) {
                 queryOptions.put("limit", 1000);
             }
+            if(gene != null && !gene.equals("")) {
+                queryOptions.add("gene", Arrays.asList(gene.split(",")));
+            }
+            if(region != null && !region.equals("")) {
+                queryOptions.add("region", Region.parseRegions(region));
+            }
+            if(phenotype != null && !phenotype.equals("")) {
+                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
+            }
 
             return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
@@ -59,15 +68,19 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar info from a list of accession IDs")
     public Response getAllByAccessions(@PathParam("acc") String query,
                                        @DefaultValue("") @QueryParam("gene") String gene,
-                                       @DefaultValue("") @QueryParam("region") String region) {
+                                       @DefaultValue("") @QueryParam("region") String region,
+                                       @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             checkParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             if(gene != null && !gene.equals("")) {
                 queryOptions.add("gene", Arrays.asList(gene.split(",")));
             }
+            if(phenotype != null && !phenotype.equals("")) {
+                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
+            }
             if(region != null && !region.equals("")) {
-                queryOptions.add("region", Region.parseRegions(query));
+                queryOptions.add("region", Region.parseRegions(region));
             }
             return createOkResponse(clinicalDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {

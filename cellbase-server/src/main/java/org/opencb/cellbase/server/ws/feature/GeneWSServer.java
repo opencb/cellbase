@@ -273,7 +273,8 @@ public class GeneWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
     public Response getAllClinvarByGene(@PathParam("geneId") String query,
                                        @DefaultValue("") @QueryParam("id") String id,
-                                       @DefaultValue("") @QueryParam("region") String region) {
+                                       @DefaultValue("") @QueryParam("region") String region,
+                                       @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             checkParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
@@ -282,6 +283,9 @@ public class GeneWSServer extends GenericRestWSServer {
             }
             if(id != null && !id.equals("")) {
                 queryOptions.add("id", Arrays.asList(id.split(",")));
+            }
+            if(phenotype != null && !phenotype.equals("")) {
+                queryOptions.add("id", Arrays.asList(phenotype.split(",")));
             }
 
             return createOkResponse(clinicalDBAdaptor.getAllClinvarByGeneList(Splitter.on(",").splitToList(query), queryOptions));

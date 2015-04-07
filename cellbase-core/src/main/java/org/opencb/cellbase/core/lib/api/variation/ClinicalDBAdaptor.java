@@ -13,6 +13,7 @@ import java.util.List;
  */
 public interface ClinicalDBAdaptor {
 
+    public QueryResult getAll(QueryOptions options);
 
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
 
@@ -27,6 +28,8 @@ public interface ClinicalDBAdaptor {
     public QueryResult getListClinvarAccessions(QueryOptions queryOptions);
 
     public QueryResult getById(String id, QueryOptions options);
+
+    public QueryResult getAllClinvar(QueryOptions options);
 
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 

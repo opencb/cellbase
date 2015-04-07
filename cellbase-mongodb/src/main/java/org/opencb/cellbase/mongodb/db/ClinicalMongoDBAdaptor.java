@@ -41,6 +41,31 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
+    public QueryResult getAll(QueryOptions options) {
+        if(includeContains((List<String>) options.get("include"), "clinvar")) {
+            return getAllClinvar(options);
+        } else {
+            // TODO implement!
+            return new QueryResult();
+        }
+    }
+
+    @Override
+    public QueryResult getAllClinvar(QueryOptions options) {
+        QueryBuilder builder = new QueryBuilder();
+        options.addToListOption("include", "clinvarList");
+        options.addToListOption("include", "chromosome");
+        options.addToListOption("include", "start");
+        options.addToListOption("include", "end");
+        options.addToListOption("include", "reference");
+        options.addToListOption("include", "alternate");
+        builder = addClinvarQueryFilters(builder, options);
+
+        return prepareClinvarQueryResultList(Collections.singletonList(executeQuery("result", builder.get(), options))).get(0);
+    }
+
+
+    @Override
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
         //return getAllByRegion(new Region(chromosome, position, position), options);
         return new QueryResult();
@@ -151,7 +176,22 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         builder = addClinvarGeneFilter(builder, options);
         builder = addClinvarIdFilter(builder, options);
         builder = addClinvarRegionFilter(builder, options);
+        builder = addClinvarPhenotypeFilter(builder, options);
 
+        return builder;
+    }
+
+    private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, QueryOptions options) {
+        List<Object> phenotypeList = options.getList("phenotype", null);
+        if (phenotypeList != null && phenotypeList.size() > 0) {
+            QueryBuilder phenotypeQueryBuilder = QueryBuilder.start();
+            for(Object phenotype : phenotypeList) {
+                String phenotypeString = (String) phenotype;
+                phenotypeQueryBuilder = phenotypeQueryBuilder.or(QueryBuilder.start("referenceClinVarAssertion.traitSet.trait.name.elementValue.value")
+                        .text(phenotypeString).get());
+            }
+            builder = builder.and(phenotypeQueryBuilder.get());
+        }
         return builder;
     }
 
