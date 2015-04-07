@@ -233,8 +233,7 @@ public class RegionWSServer extends GenericRestWSServer {
     @Path("/{chrRegionId}/clinvar")
     public Response getClinvarByRegion(@PathParam("chrRegionId") String query,
                                        @DefaultValue("") @QueryParam("gene") String gene,
-                                       @DefaultValue("") @QueryParam("rcv") String rcv,
-                                       @DefaultValue("") @QueryParam("rs") String rs) {
+                                       @DefaultValue("") @QueryParam("id") String id) {
         try {
             checkParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
@@ -245,11 +244,8 @@ public class RegionWSServer extends GenericRestWSServer {
                 if(gene != null && !gene.equals("")) {
                     queryOptions.add("gene", Arrays.asList(gene.split(",")));
                 }
-                if(rcv != null && !rcv.equals("")) {
-                    queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
-                }
-                if(rs != null && !rs.equals("")) {
-                    queryOptions.add("rs", Arrays.asList(rs.split(",")));
+                if(id != null && !id.equals("")) {
+                    queryOptions.add("id", Arrays.asList(id.split(",")));
                 }
 //                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
 //                List<QueryResult> queryResultList = new ArrayList<>();

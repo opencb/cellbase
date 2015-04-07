@@ -272,22 +272,19 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/{geneId}/clinvar")
     @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
     public Response getAllClinvarByGene(@PathParam("geneId") String query,
-                                       @DefaultValue("") @QueryParam("rcv") String rcv,
-                                       @DefaultValue("") @QueryParam("region") String region,
-                                       @DefaultValue("") @QueryParam("rs") String rs) {
+                                       @DefaultValue("") @QueryParam("id") String id,
+                                       @DefaultValue("") @QueryParam("region") String region) {
         try {
             checkParams();
-            ClinicalDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            if(rcv != null && !rcv.equals("")) {
-                queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
-            }
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             if(region != null && !region.equals("")) {
                 queryOptions.add("region", Region.parseRegions(query));
             }
-            if(rs != null && !rs.equals("")) {
-                queryOptions.add("rs", Arrays.asList(rs.split(",")));
-            }                                       // TODO: implement getAllClinvarByGene
-            return createOkResponse(clinVarDBAdaptor.getAllClinvarByGene(Splitter.on(",").splitToList(query), queryOptions));
+            if(id != null && !id.equals("")) {
+                queryOptions.add("id", Arrays.asList(id.split(",")));
+            }
+
+            return createOkResponse(clinicalDBAdaptor.getAllClinvarByGeneList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getAllByAccessions", e.toString());

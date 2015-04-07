@@ -1,5 +1,6 @@
 package org.opencb.cellbase.mongodb.db;
 
+import com.google.common.base.Splitter;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.Clinvar;
@@ -13,7 +14,6 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
-import javax.management.Query;
 import java.util.*;
 
 /**
@@ -63,6 +63,38 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
+    public QueryResult getById(String id, QueryOptions options) {
+        return getAllByIdList(Arrays.asList(id), options).get(0);
+    }
+
+    @Override
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
+        if(includeContains((List<String>) options.get("include"), "clinvar")) {
+            return getAllClinvarByIdList(idList, options);
+        } else {
+            // TODO implement!
+            return new ArrayList<>();
+        }
+    }
+
+    private Boolean includeContains(List<String> includeContent, String feature) {
+        if(includeContent!=null) {
+            int i = 0;
+            while (i < includeContent.size() && !includeContent.get(i).equals(feature)) {
+                i++;
+            }
+            if (i == includeContent.size()) {
+                includeContent.remove(i);  // Avoid term "clinvar" (for instance) to be passed to datastore
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public QueryResult getClinvarById(String id, QueryOptions options) {
         return getAllClinvarByIdList(Arrays.asList(id), options).get(0);
     }
@@ -77,38 +109,53 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         options.addToListOption("include", "reference");
         options.addToListOption("include", "alternate");
         for (String id : idList) {
-            QueryBuilder builder = addClinvarQueryFilters(QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").is(id),
-                    options);
-            queries.add(builder.get());
+            if(id.toLowerCase().startsWith("rcv")) {
+                QueryBuilder builder = addClinvarQueryFilters(QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").is(id),
+                        options);
+                queries.add(builder.get());
+            } else if(id.toLowerCase().startsWith("rs")) {
+                QueryBuilder builder = addClinvarQueryFilters(QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.type")
+                        .is("rs").and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.id")
+                                .is(id), options);
+                queries.add(builder.get());
+            }
         }
-
         return prepareClinvarQueryResultList(executeQueryList2(idList, queries, options));
     }
 
+    @Override
+    public QueryResult getClinvarByGene(String gene, QueryOptions options) {
+        return getAllClinvarByGeneList(Arrays.asList(gene), options).get(0);
+    }
+
+    @Override
+    public List<QueryResult> getAllClinvarByGeneList(List<String> geneList, QueryOptions options) {
+        List<DBObject> queries = new ArrayList<>(geneList.size());
+        options.addToListOption("include", "clinvarList");
+        options.addToListOption("include", "chromosome");
+        options.addToListOption("include", "start");
+        options.addToListOption("include", "end");
+        options.addToListOption("include", "reference");
+        options.addToListOption("include", "alternate");
+        for (String gene : geneList) {
+            QueryBuilder builder = addClinvarQueryFilters(QueryBuilder
+                            .start("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value")
+                            .is(gene), options);
+            queries.add(builder.get());
+        }
+
+        return prepareClinvarQueryResultList(executeQueryList2(geneList, queries, options));
+    }
+
     private QueryBuilder addClinvarQueryFilters(QueryBuilder builder, QueryOptions options) {
-        List<Object> genes = options.getList("gene", null);
-        BasicDBList geneSymbols = new BasicDBList();
-        if (genes != null && genes.size() > 0) {
-            geneSymbols.addAll(genes);
-            builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value").
-                    in(geneSymbols);
-        }
-        List<Object> rcvs = options.getList("rcv", null);
-        BasicDBList rcvList = new BasicDBList();
-        if (rcvs != null && rcvs.size() > 0) {
-            rcvList.addAll(rcvs);
-            builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").
-                    in(rcvList);
-        }
-        List<Object> rs = options.getList("rs", null);
-        BasicDBList rsList = new BasicDBList();
-        if (rs != null && rs.size() > 0) {
-            for(Object rsId : rs) {
-                rsList.add(Integer.valueOf(((String) rsId).substring(2)));  // rs id is an integer in clinvar. Remove the starting "rs"
-            }
-            builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.type").
-                    is("rs").and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.id").in(rsList);
-        }
+        builder = addClinvarGeneFilter(builder, options);
+        builder = addClinvarIdFilter(builder, options);
+        builder = addClinvarRegionFilter(builder, options);
+
+        return builder;
+    }
+
+    private QueryBuilder addClinvarRegionFilter(QueryBuilder builder, QueryOptions options) {
         List<Object> regions = options.getList("region", null);
         BasicDBList regionList = new BasicDBList();
         if (regions != null) {
@@ -121,6 +168,37 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd()).get());
             }
             builder = builder.and(regionQueryBuilder.get());
+        }
+        return builder;
+    }
+
+    private QueryBuilder addClinvarIdFilter(QueryBuilder builder, QueryOptions options) {
+        List<Object> idList = options.getList("id", null);
+        if (idList != null && idList.size() > 0) {
+            QueryBuilder idQueryBuilder = QueryBuilder.start();
+            for(Object id : idList) {
+                String idString = (String) id;
+                if(idString.toLowerCase().startsWith("rs")) {
+                    idQueryBuilder = idQueryBuilder.or(QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.type").
+                            is("rs").and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.attributeSet.xref.id")
+                            .is(Integer.valueOf(idString.substring(2))).get());
+                } else if(idString.toLowerCase().startsWith("rcv")) {
+                    idQueryBuilder = idQueryBuilder.or(QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc")
+                            .is(idString).get());
+                }
+            }
+            builder = builder.and(idQueryBuilder.get());
+        }
+        return builder;
+    }
+
+    private QueryBuilder addClinvarGeneFilter(QueryBuilder builder, QueryOptions options) {
+        List<Object> genes = options.getList("gene", null);
+        BasicDBList geneSymbols = new BasicDBList();
+        if (genes != null && genes.size() > 0) {
+            geneSymbols.addAll(genes);
+            builder = builder.and("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value").
+                    in(geneSymbols);
         }
         return builder;
     }

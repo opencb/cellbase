@@ -3,11 +3,14 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.feature.Region;
+import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -16,6 +19,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author imedina
@@ -23,34 +27,49 @@ import java.util.Arrays;
 @Path("/{version}/{species}/feature/clinvar")
 @Produces("application/json")
 @Api(value = "ClinVar", description = "ClinVar RESTful Web Services API")
-public class ClinVarWSServer extends GenericRestWSServer {
+public class ClinicalWSServer extends GenericRestWSServer {
 
-    public ClinVarWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+    public ClinicalWSServer(@PathParam("version") String version, @PathParam("species") String species,
+                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
     @GET
-    @Path("/{clinVarAcc}/info")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar info from a list of accession IDs")
-    public Response getAllByAccessions(@PathParam("clinVarAcc") String query,
-                                       @DefaultValue("") @QueryParam("gene") String gene,
-                                       @DefaultValue("") @QueryParam("region") String region,
-                                       @DefaultValue("") @QueryParam("rs") String rs) {
+    @Path("/all")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
+    public Response getAll(@DefaultValue("") @QueryParam("gene") String gene,
+                           @DefaultValue("") @QueryParam("region") String region,
+                           @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             checkParams();
-            ClinicalDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            //ClinVarDBAdaptor clinVarDBAdaptor = dbAdaptorFactory.getClinVarDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            if(queryOptions.get("limit") == null || queryOptions.getInt("limit") > 1000) {
+                queryOptions.put("limit", 1000);
+            }
+
+            return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getAll", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{acc}/info")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar info from a list of accession IDs")
+    public Response getAllByAccessions(@PathParam("acc") String query,
+                                       @DefaultValue("") @QueryParam("gene") String gene,
+                                       @DefaultValue("") @QueryParam("region") String region) {
+        try {
+            checkParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             if(gene != null && !gene.equals("")) {
                 queryOptions.add("gene", Arrays.asList(gene.split(",")));
             }
             if(region != null && !region.equals("")) {
                 queryOptions.add("region", Region.parseRegions(query));
             }
-            if(rs != null && !rs.equals("")) {
-                queryOptions.add("rs", Arrays.asList(rs.split(",")));
-            }
-            return createOkResponse(clinVarDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            return createOkResponse(clinicalDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getAllByAccessions", e.toString());
