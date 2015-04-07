@@ -582,7 +582,7 @@ public class GeneParser extends CellBaseParser {
         bufferedReader.close();
 
         Statement stm = sqlConn.createStatement();
-        stm.executeUpdate("CREATE INDEX chunkkId_idx on genome_sequence(chunkId)");
+        stm.executeUpdate("CREATE INDEX chunkId_idx on genome_sequence(chunkId)");
     }
 
     private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert, StringBuilder sequenceStringBuilder) throws SQLException {
@@ -644,6 +644,8 @@ public class GeneParser extends CellBaseParser {
 
                 sqlInsert.executeBatch();
                 sqlConn.commit();
+
+                sqlConn.setAutoCommit(true);
             }
         }
     }
