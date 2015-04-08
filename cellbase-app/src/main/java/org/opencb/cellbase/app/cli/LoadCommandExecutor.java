@@ -56,7 +56,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                     switch (buildOption) {
                         case "genome":
-                            loadRunner.load(input.resolve("genome_info.json.gz"), "genome_info");
+                            loadRunner.load(input.resolve("genome_info.json"), "genome_info");
                             loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
                             loadRunner.index("genome_sequence");
                             break;

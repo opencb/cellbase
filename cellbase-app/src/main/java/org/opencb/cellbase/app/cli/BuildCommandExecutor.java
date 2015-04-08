@@ -250,29 +250,29 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildProtein() {
         Path proteinFolder = common.resolve("protein");
-        if(!Files.exists(proteinFolder.resolve("uniprot_chunks"))) {
-            try {
-                makeDir(proteinFolder.resolve("uniprot_chunks"));
-                if(Files.exists(proteinFolder.resolve("uniprot_sprot.xml.gz"))) {
-                    Runtime.getRuntime().exec("gunzip " + proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
-                }
-
-                List<String> args = Arrays.asList(proteinFolder.resolve("uniprot_sprot.xml").toAbsolutePath().toString(),
-                        proteinFolder.resolve("uniprot_chunks").toAbsolutePath().toString());
-                runCommandLineProcess(proteinScriptsFolder,
-                        "./uniprot_spliter.pl",
-                        args,
-                        proteinFolder.resolve("uniprot_chunks").resolve("chunks.log").toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        if(!Files.exists(proteinFolder.resolve("uniprot_chunks"))) {
+//            try {
+//                makeDir(proteinFolder.resolve("uniprot_chunks"));
+//                if(Files.exists(proteinFolder.resolve("uniprot_sprot.xml.gz"))) {
+//                    Runtime.getRuntime().exec("gunzip " + proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+//                }
+//
+//                List<String> args = Arrays.asList(proteinFolder.resolve("uniprot_sprot.xml").toAbsolutePath().toString(),
+//                        proteinFolder.resolve("uniprot_chunks").toAbsolutePath().toString());
+//                runCommandLineProcess(proteinScriptsFolder,
+//                        "./uniprot_spliter.pl",
+//                        args,
+//                        proteinFolder.resolve("uniprot_chunks").resolve("chunks.log").toString());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
 //        String species = buildCommandOptions.species;
 //        checkMandatoryOption("species", species);
         CellBaseSerializer serializer = new JsonParser(output, "protein");
-        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), species.getScientificName(), serializer);
+        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
 
     }
 
