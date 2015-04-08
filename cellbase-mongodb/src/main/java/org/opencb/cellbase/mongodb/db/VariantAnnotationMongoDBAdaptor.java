@@ -388,7 +388,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
                                     if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
-                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
                                         if (proteinSubstitutionScores.get("ss") != null) {
                                             consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
                                                     "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
@@ -593,7 +593,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
                                     if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
-                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
                                         if (proteinSubstitutionScores.get("ss") != null) {
                                             consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
                                                     "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
