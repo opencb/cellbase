@@ -4,7 +4,10 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.formats.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
+import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.client.CellBaseClient;
@@ -80,13 +83,14 @@ public class VariantAnnotatorRunner {
         return futures;
     }
 
-    private int readInputFile() {
+    public int readInputFile() {
+//    private int readInputFile() {
         int inputFileRecords = 0;
-        VcfRawReader vcfReader = new VcfRawReader(inputFile.toString());
-
+        VariantVcfReader vcfReader = new VariantVcfReader(new VariantSource(inputFile.toString(), "", "", ""),
+                inputFile.toString());
         if (vcfReader.open()) {
             vcfReader.pre();
-            List<VcfRecord> vcfBatch = vcfReader.read(BATCH_SIZE);
+            List<Variant> vcfBatch = vcfReader.read(BATCH_SIZE);
             List<GenomicVariant> variantBatch;
             try {
                 while (!vcfBatch.isEmpty()) {
@@ -110,46 +114,33 @@ public class VariantAnnotatorRunner {
         return inputFileRecords;
     }
 
-    private List<GenomicVariant> convertVcfRecordsToGenomicVariants(List<VcfRecord> vcfBatch) {
+    private List<GenomicVariant> convertVcfRecordsToGenomicVariants(List<Variant> vcfBatch) {
         List<GenomicVariant> genomicVariants = new ArrayList<>(vcfBatch.size());
-        for (VcfRecord vcfRecord : vcfBatch) {
-            genomicVariants.add(getGenomicVariant(vcfRecord));
+        for (Variant variant : vcfBatch) {
+            GenomicVariant genomicVariant;
+            if((genomicVariant = getGenomicVariant(variant))!=null) {
+                genomicVariants.add(genomicVariant);
+            }
         }
         return genomicVariants;
     }
 
     // TODO: use a external class for this (this method could be added to GenomicVariant class)
-    private GenomicVariant getGenomicVariant(VcfRecord vcfRecord) {
-        int ensemblPos;
-        String ref, alt;
-        if (vcfRecord.getReference().length() > 1) {
-            ref = vcfRecord.getReference().substring(1);
-            alt = "-";
-            ensemblPos = vcfRecord.getPosition() + 1;
-        } else if (vcfRecord.getAlternate().length() > 1) {
-            ensemblPos = vcfRecord.getPosition() + 1;
-            if (vcfRecord.getAlternate().equals("<DEL>")) {
-                // large deletion
-                String[] infoFields = vcfRecord.getInfo().split(";");
-                int i = 0;
-                while(i<infoFields.length && !infoFields[i].startsWith("END=")) {
-                    i++;
-                }
-                int end = Integer.parseInt(infoFields[i].split("=")[1]);
-                ref = StringUtils.repeat("N", end - vcfRecord.getPosition());
-                alt = "-";
-            } else {
-                // short insertion
-                ref = "-";
-                alt = vcfRecord.getAlternate().substring(1);
-            }
+    private GenomicVariant getGenomicVariant(Variant variant) {
+        if(variant.getAlternate().equals(".")) {  // reference positions are not variants
+            return null;
         } else {
-            // SNV
-            ref = vcfRecord.getReference();
-            alt = vcfRecord.getAlternate();
-            ensemblPos = vcfRecord.getPosition();
+            String ref;
+            if (variant.getAlternate().equals("<DEL>")) {  // large deletion
+                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));  // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
+                ref = StringUtils.repeat("N", end - variant.getStart());
+            } else {
+                ref = variant.getReference().equals("") ? "-" : variant.getReference();
+            }
+            return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+                    ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
+            //        return new GenomicVariant(variant.getChromosome(), ensemblPos, ref, alt);
         }
-        return new GenomicVariant(vcfRecord.getChromosome(), ensemblPos, ref, alt);
     }
 
     private int getAnnotatedRecords(List<Future<Integer>> futures) throws InterruptedException, ExecutionException {
