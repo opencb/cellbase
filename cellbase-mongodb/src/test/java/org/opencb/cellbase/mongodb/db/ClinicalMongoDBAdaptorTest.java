@@ -63,9 +63,6 @@ public class ClinicalMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "cellbase_hsapiens_grch37_v3", 22222,
-                "mongo", "biouser", "B10p@ss", 10, 10);
-
         config.addSpeciesAlias("hsapiens", "hsapiens");
 
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
@@ -73,5 +70,26 @@ public class ClinicalMongoDBAdaptorTest {
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
 
         clinicalDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList("RCV000091359"), new QueryOptions());
+    }
+
+    @Test
+    public void testGetAll() throws  Exception {
+
+        CellbaseConfiguration config = new CellbaseConfiguration();
+
+        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
+                "B10p@ss", 10, 10);
+
+        config.addSpeciesAlias("hsapiens", "hsapiens");
+
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("include", Arrays.asList("clinvar"));
+        queryOptions.add("id", Arrays.asList("RCV000019455"));
+
+        clinicalDBAdaptor.getAll(queryOptions);
+
     }
 }

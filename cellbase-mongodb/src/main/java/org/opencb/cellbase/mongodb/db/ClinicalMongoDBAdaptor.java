@@ -53,7 +53,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult getAllClinvar(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
-        options.addToListOption("include", "clinvarList");
+        options.addToListOption("include", "clinvarList.$");
         options.addToListOption("include", "chromosome");
         options.addToListOption("include", "start");
         options.addToListOption("include", "end");
@@ -108,7 +108,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             while (i < includeContent.size() && !includeContent.get(i).equals(feature)) {
                 i++;
             }
-            if (i == includeContent.size()) {
+            if (i < includeContent.size()) {
                 includeContent.remove(i);  // Avoid term "clinvar" (for instance) to be passed to datastore
                 return true;
             } else {

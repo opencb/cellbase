@@ -285,7 +285,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 queryOptions.add("id", Arrays.asList(id.split(",")));
             }
             if(phenotype != null && !phenotype.equals("")) {
-                queryOptions.add("id", Arrays.asList(phenotype.split(",")));
+                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
             }
 
             return createOkResponse(clinicalDBAdaptor.getAllClinvarByGeneList(Splitter.on(",").splitToList(query), queryOptions));

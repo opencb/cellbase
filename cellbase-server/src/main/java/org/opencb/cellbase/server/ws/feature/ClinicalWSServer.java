@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * @author imedina
  */
-@Path("/{version}/{species}/feature/clinvar")
+@Path("/{version}/{species}/feature/clinical")
 @Produces("application/json")
 @Api(value = "ClinVar", description = "ClinVar RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
@@ -37,23 +37,32 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @GET
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
-    public Response getAll(@DefaultValue("") @QueryParam("gene") String gene,
+    public Response getAll(@DefaultValue("") @QueryParam("id") String id,
+                           @DefaultValue("") @QueryParam("gene") String gene,
                            @DefaultValue("") @QueryParam("region") String region,
                            @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             checkParams();
+            Boolean noFilter = true;
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            if(queryOptions.get("limit") == null || queryOptions.getInt("limit") > 1000) {
-                queryOptions.put("limit", 1000);
+            if(id != null && !id.equals("")) {
+                queryOptions.add("id", Arrays.asList(id.split(",")));
+                noFilter = false;
             }
             if(gene != null && !gene.equals("")) {
                 queryOptions.add("gene", Arrays.asList(gene.split(",")));
+                noFilter = false;
             }
             if(region != null && !region.equals("")) {
                 queryOptions.add("region", Region.parseRegions(region));
+                noFilter = false;
             }
             if(phenotype != null && !phenotype.equals("")) {
                 queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
+                noFilter = false;
+            }
+            if(noFilter && ((queryOptions.get("limit") == null || queryOptions.getInt("limit") > 1000))) {
+                queryOptions.put("limit", 1000);
             }
 
             return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
