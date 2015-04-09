@@ -93,15 +93,15 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
         proteinSubstitionScoresQueryResult.setDbTime(allChangesQueryResult.getDbTime());
         proteinSubstitionScoresQueryResult.setId(transcriptId+"-"+aaPosition+"-"+newAa);
 
-//        String currentAaShortName;
-//        Map aaPositions;
-//        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
-//                (aaPositions = ((HashMap) ((BasicDBObject) ((BasicDBList) allChangesQueryResult.getResult()).get(0)).get("aaPositions")))!=null) {
-//            proteinSubstitionScoresQueryResult.setNumResults(1);
-//            proteinSubstitionScoresQueryResult.setResult(((HashMap) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName));
-//        } else {
-//            proteinSubstitionScoresQueryResult.setNumResults(0);
-//        }
+        String currentAaShortName;
+        Map aaPositions;
+        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
+                (aaPositions = ((HashMap) ((BasicDBObject) allChangesQueryResult.getResult().get(0)).get("aaPositions")))!=null) {
+            proteinSubstitionScoresQueryResult.setNumResults(1);
+            proteinSubstitionScoresQueryResult.setResult(Arrays.asList(((BasicDBObject) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName)));
+        } else {
+            proteinSubstitionScoresQueryResult.setNumResults(0);
+        }
 
         return proteinSubstitionScoresQueryResult;
     }
