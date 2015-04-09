@@ -2,7 +2,7 @@
 
 if [ $# -eq 1 ]; then
     if [ $1 == 'run-maven' ]; then
-        mvn clean install -DskipTests
+        mvn -T 4 clean install -DskipTests
     fi
 fi
 
