@@ -16,6 +16,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.*;
@@ -57,8 +58,8 @@ public class VariationParser extends CellBaseParser {
     private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FILE = 0;
     private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE = 1;
     private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE = 5;
-    private static final int VARIATION_ID_COLUMN_INDEX_IN_TRANSCRIPT_VARIATION_FILE = 22;
     private static final int VARIATION_FEATURE_ID_COLUMN_INDEX_IN_TRANSCRIPT_VARIATION_FILE = 1;
+    private int variationIdColumnIndexInTranscriptVariationFile;
 
     private int[] lastVariationIdInVariationRelatedFiles;
     private boolean[] endOfFileOfVariationRelatedFiles;
@@ -92,9 +93,8 @@ public class VariationParser extends CellBaseParser {
                 || !Files.isReadable(variationDirectoryPath)) {
             throw new IOException("Variation directory whether does not exist, is not a directory or cannot be read");
         }
-        if(!Files.exists(variationDirectoryPath.resolve(VARIATION_FILENAME+".gz"))
-                || Files.size(variationDirectoryPath.resolve(VARIATION_FILENAME+".gz")) == 0) {
-            throw new IOException("variation.txt.gz file whether does not exist or is empty");
+        if(!existsZippedOrUnzippedFile(VARIATION_FILENAME) || isEmpty(variationDirectoryPath.resolve(VARIATION_FILENAME).toString())) {
+            throw new IOException("variation.txt.gz whether does not exist, is not a directory or cannot be read");
         }
 
         Variation variation;
@@ -237,15 +237,17 @@ public class VariationParser extends CellBaseParser {
     }
 
     private void preprocessTranscriptVariationFile() throws IOException, InterruptedException {
+        Path preprocessedTranscriptVariationFile = variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
         if (!existsZippedOrUnzippedFile(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
             this.logger.info("Preprocessing " + TRANSCRIPT_VARIATION_FILENAME + " file ...");
             Stopwatch stopwatch = Stopwatch.createStarted();
 
             // add variationId to transcript_variation file
             Map<Integer, Integer> variationFeatureToVariationId = createVariationFeatureIdToVariationIdMap();
-            Path preprocessedTranscriptVariationFile = variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
             Path transcriptVariationTempFile = addVariationIdToTranscriptVariationFile(variationFeatureToVariationId);
-            sortFileByNumericColumn(transcriptVariationTempFile, preprocessedTranscriptVariationFile, VARIATION_ID_COLUMN_INDEX_IN_TRANSCRIPT_VARIATION_FILE);
+            // transcript_variation file columns number can vary, so we need to save the variationId column index because it is not constant
+            variationIdColumnIndexInTranscriptVariationFile = getVariationIdColumnIndexInTranscriptVariationFile(transcriptVariationTempFile);
+            sortFileByNumericColumn(transcriptVariationTempFile, preprocessedTranscriptVariationFile, variationIdColumnIndexInTranscriptVariationFile);
 
             this.logger.info("Removing temp file " + transcriptVariationTempFile);
             transcriptVariationTempFile.toFile().delete();
@@ -254,7 +256,18 @@ public class VariationParser extends CellBaseParser {
             this.logger.info(TRANSCRIPT_VARIATION_FILENAME + " preprocessed. New file " +
                     PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + " including (and sorted by) variation Id has been created");
             this.logger.debug("Elapsed time preprocessing transcript variation file: " + stopwatch);
+        } else {
+            // transcript_variation file columns number can vary, so we need to save the variationId column index because it is not constant
+            variationIdColumnIndexInTranscriptVariationFile = getVariationIdColumnIndexInTranscriptVariationFile(preprocessedTranscriptVariationFile);
         }
+
+    }
+
+    private int getVariationIdColumnIndexInTranscriptVariationFile(Path preprocessedTranscriptVariationFile) throws IOException {
+        BufferedReader br = getBufferedReader(preprocessedTranscriptVariationFile);
+        int variationIdColumIndex = br.readLine().split("\t").length - 1;
+        br.close();
+        return variationIdColumIndex;
     }
 
     private Path addVariationIdToTranscriptVariationFile(Map<Integer, Integer> variationFeatureToVariationId) throws IOException {
@@ -263,7 +276,7 @@ public class VariationParser extends CellBaseParser {
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         Path unpreprocessedTranscriptVariationFile = variationDirectoryPath.resolve(TRANSCRIPT_VARIATION_FILENAME);
-        BufferedReader br = FileUtils.newBufferedReader(unpreprocessedTranscriptVariationFile);
+        BufferedReader br = getBufferedReader(unpreprocessedTranscriptVariationFile);
         BufferedWriter bw = Files.newBufferedWriter(transcriptVariationTempFile, Charset.defaultCharset(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
         String line;
@@ -274,6 +287,8 @@ public class VariationParser extends CellBaseParser {
             Integer variationId = variationFeatureToVariationId.get(variationFeatureId);
             bw.write(line + "\t" + variationId + "\n");
         }
+
+
 
         br.close();
         bw.close();
@@ -289,7 +304,7 @@ public class VariationParser extends CellBaseParser {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Map<Integer, Integer> variationFeatureToVariationId = new HashMap<>();
 
-        BufferedReader variationFeatFileReader = FileUtils.newBufferedReader(variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME), Charset.defaultCharset());
+        BufferedReader variationFeatFileReader = getBufferedReader(variationDirectoryPath.resolve(VARIATION_FEATURE_FILENAME));
 
         String line;
         while ((line = variationFeatFileReader.readLine()) != null) {
@@ -398,7 +413,7 @@ public class VariationParser extends CellBaseParser {
 
         variationIdColumnIndexInVariationRelatedFile = new int[5];
         variationIdColumnIndexInVariationRelatedFile[VARIATION_FEATURE_FILE_ID] = VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE;
-        variationIdColumnIndexInVariationRelatedFile[TRANSCRIPT_VARIATION_FILE_ID] = VARIATION_ID_COLUMN_INDEX_IN_TRANSCRIPT_VARIATION_FILE;
+        variationIdColumnIndexInVariationRelatedFile[TRANSCRIPT_VARIATION_FILE_ID] = variationIdColumnIndexInTranscriptVariationFile;
         variationIdColumnIndexInVariationRelatedFile[VARIATION_SYNONYM_FILE_ID] = VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE;
 
     }
@@ -636,6 +651,14 @@ public class VariationParser extends CellBaseParser {
                 Files.exists(variationDirectoryPath.resolve(baseFilename + ".gz"));
     }
 
+    private boolean isEmpty(String fileName) throws IOException {
+        if (Files.exists(Paths.get(fileName))) {
+            return Files.size(Paths.get(fileName)) == 0;
+        } else {
+            return Files.size(Paths.get(fileName + ".gz")) == 0;
+        }
+    }
+
     private void gunzipFileIfNeeded(Path directory, String fileName) throws IOException, InterruptedException {
         Path zippedFile = directory.resolve(fileName + ".gz");
         if (Files.exists(zippedFile)) {
@@ -673,6 +696,14 @@ public class VariationParser extends CellBaseParser {
             this.logger.info("Compressing " + unzippedFile.toAbsolutePath());
             Process process = Runtime.getRuntime().exec("gzip " + unzippedFile.toAbsolutePath());
             process.waitFor();
+        }
+    }
+
+    private BufferedReader getBufferedReader(Path file) throws IOException {
+        if (Files.exists(file)) {
+            return FileUtils.newBufferedReader(file);
+        } else {
+            return FileUtils.newBufferedReader(Paths.get(file.toString() + ".gz"));
         }
     }
 
