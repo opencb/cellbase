@@ -83,7 +83,7 @@ public class VariantAnnotatorRunner {
         return futures;
     }
 
-    public int readInputFile() {
+    private int readInputFile() {
 //    private int readInputFile() {
         int inputFileRecords = 0;
         VariantVcfReader vcfReader = new VariantVcfReader(new VariantSource(inputFile.toString(), "", "", ""),
