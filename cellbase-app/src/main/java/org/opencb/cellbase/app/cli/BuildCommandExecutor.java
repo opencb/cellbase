@@ -84,6 +84,10 @@ public class BuildCommandExecutor extends CommandExecutor {
                 }
             }
 
+            if(species == null) {
+                logger.error("Species '{}' not valid", buildCommandOptions.species);
+            }
+
             if (buildCommandOptions.data != null) {
 
                 String[] buildOptions;

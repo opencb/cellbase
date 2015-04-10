@@ -453,15 +453,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
         boolean inEntry = false;
         int count = 0;
         int chunk = 0;
-        String line = "";
+        String line ;
         while((line = br.readLine()) != null) {
-
             if(line.trim().startsWith("<entry ")) {
                 inEntry = true;
                 beforeEntry = false;
                 if(count % 10000 == 0) {
-                    pw = new PrintWriter(new GZIPOutputStream(
-                            new FileOutputStream(splitOutdirPath.resolve("chunk_"+chunk+".xml.gz").toFile())));
+                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_"+chunk+".xml").toFile()));
                     pw.println(header.toString().trim());
                 }
                 count++;
@@ -483,7 +481,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     chunk++;
                 }
             }
-
         }
         pw.print("</uniprot>");
         pw.close();
