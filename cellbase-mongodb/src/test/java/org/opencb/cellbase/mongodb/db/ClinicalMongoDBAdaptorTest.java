@@ -86,8 +86,10 @@ public class ClinicalMongoDBAdaptorTest {
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", Arrays.asList("clinvar"));
-        queryOptions.add("id", Arrays.asList("RCV000019455"));
+        queryOptions.addToListOption("include", "clinvar");
+        queryOptions.addToListOption("id", "RCV000019455");
+
+//        ((List<String>) queryOptions.get("include")).remove(0);
 
         clinicalDBAdaptor.getAll(queryOptions);
 

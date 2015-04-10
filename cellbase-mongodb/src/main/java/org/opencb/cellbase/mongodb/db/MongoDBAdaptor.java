@@ -155,6 +155,52 @@ public class MongoDBAdaptor {
         return queryResults;
     }
 
+    protected QueryResult executeAggregation2(Object id, List<DBObject> pipeline, QueryOptions options) {
+        return executeAggregationist2(Arrays.asList(id), Arrays.asList(pipeline), options, mongoDBCollection2).get(0);
+    }
+
+    protected List<QueryResult> executeAggregationList2(List<? extends Object> ids, List<List<DBObject>> queries,
+                                                        QueryOptions options) {
+        return executeAggregationist2(ids, queries, options, mongoDBCollection2);
+    }
+
+    protected List<QueryResult> executeAggregationist2(List<? extends Object> ids, List<List<DBObject>> pipelines,
+                                                       QueryOptions options, MongoDBCollection mongoDBCollection2) {
+        List<QueryResult> queryResults = new ArrayList<>(ids.size());
+//        logger.info("executeQueryList2");
+//        System.out.println("executeQueryList2");
+        long dbTimeStart, dbTimeEnd;
+
+        for (int i = 0; i < pipelines.size(); i++) {
+            List<DBObject> pipeline = pipelines.get(i);
+//            QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
+
+            // Execute query and calculate time
+            dbTimeStart = System.currentTimeMillis();
+            QueryResult queryResult = mongoDBCollection2.aggregate(pipeline, options);
+//            List<DBObject> dbObjectList = new LinkedList<>();
+//            while (cursor.hasNext()) {
+//                dbObjectList.add(cursor.next());
+//            }
+            dbTimeEnd = System.currentTimeMillis();
+//            // setting queryResult fields
+            queryResult.setId(ids.get(i).toString());
+            queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+            queryResult.setNumResults(queryResult.getResult().size());
+//            // Limit is set in queryOptions, count number of total results
+//            if(options != null && options.getInt("limit", 0) > 0) {
+//                queryResult.setNumTotalResults(mongoDBCollection2.count(pipeline).first());
+//            } else {
+//                queryResult.setNumTotalResults(dbObjectList.size());
+//            }
+//            queryResult.setResult(dbObjectList);
+
+            queryResults.add(queryResult);
+        }
+
+        return queryResults;
+    }
+
     protected String getChunkIdPrefix(String chromosome, int position, int chunkSize) {
         return chromosome + "_" +  position/chunkSize + "_" + chunkSize/1000 + "k";
     }

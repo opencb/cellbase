@@ -42,7 +42,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getAll(QueryOptions options) {
-        if(includeContains((List<String>) options.get("include"), "clinvar")) {
+        List<String> tmp = options.getAsStringList("include");
+        if(includeContains(tmp, "clinvar")) {
             return getAllClinvar(options);
         } else {
             // TODO implement!
@@ -53,15 +54,24 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult getAllClinvar(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
-        options.addToListOption("include", "clinvarList.$");
-        options.addToListOption("include", "chromosome");
-        options.addToListOption("include", "start");
-        options.addToListOption("include", "end");
-        options.addToListOption("include", "reference");
-        options.addToListOption("include", "alternate");
-        builder = addClinvarQueryFilters(builder, options);
+//        options.addToListOption("include", "clinvarList");
+//        options.addToListOption("include", "chromosome");
+//        options.addToListOption("include", "start");
+//        options.addToListOption("include", "end");
+//        options.addToListOption("include", "reference");
+//        options.addToListOption("include", "alternate");
+        List<DBObject> pipeline = new ArrayList<>();
+        pipeline.add(new BasicDBObject("$unwind", "clinvarList"));
 
-        return prepareClinvarQueryResultList(Collections.singletonList(executeQuery("result", builder.get(), options))).get(0);
+        List<Object> idList = options.getList("id", null);
+        String idString = (String) idList.get(0);
+        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc", idString)));
+
+//        addClinvarQueryFilters(builder, options);
+
+
+        return executeAggregation2(idString, pipeline, options);
+//        return prepareClinvarQueryResultList(Collections.singletonList(executeQuery("result", builder.get(), options))).get(0);
     }
 
 
