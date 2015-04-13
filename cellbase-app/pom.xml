@@ -83,7 +83,7 @@
                     <repositoryName>libs</repositoryName>
                     <repositoryLayout>flat</repositoryLayout>
                     <useWildcardClassPath>true</useWildcardClassPath>
-                    <extraJvmArguments>-Xms256m -Xmx12288m</extraJvmArguments>
+                    <extraJvmArguments>-Xms256m -Xmx16384m</extraJvmArguments>
                     <programs>
                         <program>
                             <name>cellbase.sh</name>

@@ -125,7 +125,8 @@ public class GeneParser extends CellBaseParser {
                 String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
                 ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
                 Map<String, String> gtfAttributes = gtf.getAttributes();
-                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"), gtfAttributes.get("transcript_biotype"),
+                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
+                        (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), transcriptTfbses);
                 String tags;
@@ -582,7 +583,7 @@ public class GeneParser extends CellBaseParser {
         bufferedReader.close();
 
         Statement stm = sqlConn.createStatement();
-        stm.executeUpdate("CREATE INDEX chunkkId_idx on genome_sequence(chunkId)");
+        stm.executeUpdate("CREATE INDEX chunkId_idx on genome_sequence(chunkId)");
     }
 
     private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert, StringBuilder sequenceStringBuilder) throws SQLException {
@@ -644,6 +645,8 @@ public class GeneParser extends CellBaseParser {
 
                 sqlInsert.executeBatch();
                 sqlConn.commit();
+
+                sqlConn.setAutoCommit(true);
             }
         }
     }

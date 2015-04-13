@@ -3,16 +3,17 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
+import org.sqlite.SQLiteConnection;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Created by imedina on 03/02/15.
@@ -27,6 +28,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private File ensemblScriptsFolder;
     private String ensemblVersion;
     private String ensemblRelease;
+
+    private Species species;
 
     private static final String[] variationFiles = {"variation.txt.gz", "variation_feature.txt.gz",
             "transcript_variation.txt.gz", "variation_synonym.txt.gz", "seq_region.txt.gz", "source.txt.gz",
@@ -71,27 +74,27 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     public void execute() {
         try {
-            checkParameters();
-            makeDir(output);
-            makeDir(common);
-
-            // We need to get the Species object from the CLI name
-            // This can be the scientific or common name, or the ID
-            Species speciesToDownload = null;
-            for (Species species: configuration.getAllSpecies()) {
-                if (downloadCommandOptions.species.equalsIgnoreCase(species.getScientificName())
-                        || downloadCommandOptions.species.equalsIgnoreCase(species.getCommonName())
-                        || downloadCommandOptions.species.equalsIgnoreCase(species.getId())) {
-                    speciesToDownload = species;
-                    break;
+            if(downloadCommandOptions.species != null && !downloadCommandOptions.species.isEmpty()) {
+                // We need to get the Species object from the CLI name
+                // This can be the scientific or common name, or the ID
+                //            Species speciesToDownload = null;
+                for (Species sp: configuration.getAllSpecies()) {
+                    if (downloadCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
+                            || downloadCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
+                            || downloadCommandOptions.species.equalsIgnoreCase(sp.getId())) {
+                        species = sp;
+                        break;
+                    }
                 }
-            }
 
-            // If everything is right we launch the download
-            if(speciesToDownload != null) {
-                processSpecies(speciesToDownload, output);
+                // If everything is right we launch the download
+                if(species != null) {
+                    processSpecies(species);
+                }else {
+                    logger.error("Species '{}' not valid", downloadCommandOptions.species);
+                }
             }else {
-                logger.error("Species '{}' not valid", downloadCommandOptions.species);
+                logger.error("--species parameter '{}' not valid", downloadCommandOptions.species);
             }
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
@@ -101,17 +104,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     }
 
-    private void checkParameters() {
-        if (!downloadCommandOptions.genome && !downloadCommandOptions.gene && !downloadCommandOptions.variation
-                && !downloadCommandOptions.regulation && !downloadCommandOptions.protein
-                && !downloadCommandOptions.conservation && !downloadCommandOptions.clinical
-                && !downloadCommandOptions.all) {
-            throw new ParameterException("At least one 'download' option must be selected: genome, gene, variation, " +
-                    "regulation, protein, conservation or clinical");
-        }
-    }
-
-    private void processSpecies(Species sp, Path outputDir) throws IOException, InterruptedException {
+    private void processSpecies(Species sp) throws IOException, InterruptedException {
         logger.info("Processing species " + sp.getScientificName());
 
         // We need to find which is the correct Ensembl host URL.
@@ -145,36 +138,62 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
 
         // Output folder creation
-        String spShortName = sp.getScientificName().toLowerCase().replaceAll("\\.", "").replaceAll("\\)", "")
-                .replaceAll("[-(/]", " ").replaceAll("\\s+", "_");
+        String spShortName = sp.getScientificName().toLowerCase()
+                .replaceAll("\\.", "")
+                .replaceAll("\\)", "")
+                .replaceAll("[-(/]", " ")
+                .replaceAll("\\s+", "_");
         String spAssembly = assembly.getName().toLowerCase();
-        Path spFolder = outputDir.resolve(spShortName + "_" + spAssembly);
+        Path spFolder = output.resolve(spShortName + "_" + spAssembly);
         makeDir(spFolder);
+        makeDir(common);
 
         ensemblVersion = assembly.getEnsemblVersion();
         ensemblRelease = "release-" + ensemblVersion.split("_")[0];
 
-        // download sequence, gene, variation, regulation and protein
-        if ((downloadCommandOptions.genome && speciesHasInfoToDownload(sp, "genome")) || downloadCommandOptions.all) {
-            downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
-        }
-        if ((downloadCommandOptions.gene && speciesHasInfoToDownload(sp, "gene")) || downloadCommandOptions.all) {
-            downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
-        }
-        if ((downloadCommandOptions.variation && speciesHasInfoToDownload(sp, "variation")) || downloadCommandOptions.all) {
-            downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
-        }
-        if ((downloadCommandOptions.regulation && speciesHasInfoToDownload(sp, "regulation")) || downloadCommandOptions.all) {
-            downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
-        }
-        if ((downloadCommandOptions.protein && speciesHasInfoToDownload(sp, "protein")) || downloadCommandOptions.all) {
-            downloadProtein(sp, spShortName, assembly.getName(), spFolder);
-        }
-        if ((downloadCommandOptions.conservation && speciesHasInfoToDownload(sp, "conservation")) || downloadCommandOptions.all) {
-            downloadConservation(sp, assembly.getName(), spFolder);
-        }
-        if ((downloadCommandOptions.clinical && speciesHasInfoToDownload(sp, "clinical")) || downloadCommandOptions.all) {
-            downloadClinical(sp, spShortName, assembly.getName(), spFolder);
+        if(downloadCommandOptions.data != null && !downloadCommandOptions.data.isEmpty()) {
+            List<String> dataList;
+            if(downloadCommandOptions.data.equals("all")) {
+                dataList = sp.getData();
+            }else {
+                dataList = Arrays.asList(downloadCommandOptions.data.split(","));
+            }
+
+            for(String data: dataList) {
+                switch(data) {
+                    case "genome":
+                        downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
+                        break;
+                    case "gene":
+                        downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
+                        break;
+                    case "variation":
+                        if(speciesHasInfoToDownload(sp, "variation")) {
+                            downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
+                        }
+                        break;
+                    case "regulation":
+                        if(speciesHasInfoToDownload(sp, "regulation")) {
+                            downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
+                        }
+                        break;
+                    case "protein":
+                        if(speciesHasInfoToDownload(sp, "protein")) {
+                            downloadProtein();
+                        }
+                        break;
+                    case "conservation":
+                        if(speciesHasInfoToDownload(sp, "conservation")) {
+                            downloadConservation(sp, assembly.getName(), spFolder);
+                        }
+                        break;
+                    case "clinical":
+                        if(speciesHasInfoToDownload(sp, "clinical")) {
+                            downloadClinical(sp, spShortName, assembly.getName(), spFolder);
+                        }
+                        break;
+                }
+            }
         }
     }
 
@@ -228,22 +247,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
-
-        /**
-         * To get some extra info about the genome such as chromosome length or cytobands
-         * we execute the following script
-         */
-//        outputFileName = sequenceFolder + "/genome_info.json";
-//        List<String> args = Arrays.asList("--species", sp.getScientificName(), "-o", outputFileName,
-//                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
-//        String geneInfoLogFileName = sequenceFolder + "/genome_info.log";
-//
-//        boolean downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
-//        if (downloadedGenomeInfo) {
-//            logger.info(outputFileName + " created OK");
-//        } else {
-//            logger.error("Genome info for " + sp.getScientificName() + " cannot be downloaded");
-//        }
     }
 
     private void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder, String host) throws IOException, InterruptedException {
@@ -307,15 +310,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
         logger.info("Downloading gene extra info ...");
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
-        List<String> args;
+        List<String> args = new ArrayList<>();
         if(sp.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
-            args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
+            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
                     "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()
-                            .replace("79", "75"));
+                            .replace("79", "75")));
         }else {
-            args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
-                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
+            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
+                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
 
+        }
+        if (!configuration.getSpecies().getVertebrates().contains(species)
+                && !species.getScientificName().equals("Drosophila melanogaster")) {
+            args.add("--phylo");
+            args.add("no-vertebrate");
         }
 
         // run gene_extra_info.pl
@@ -356,10 +364,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
             throws IOException, InterruptedException {
         logger.info("Downloading regulation information ...");
 
-        if(!species.getScientificName().equals("Homo sapiens") || !species.getScientificName().equals("Mus musculus")) {
-            return;
-        }
-
         Path regulationFolder = speciesFolder.resolve("regulation");
         makeDir(regulationFolder);
 
@@ -377,7 +381,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         // Downloading miRNA info
         String url;
-//        Path mirbaseFolder = speciesFolder.getParent().resolve("common").resolve("mirbase");
         Path mirbaseFolder = common.resolve("mirbase");
         if(!Files.exists(mirbaseFolder)) {
             makeDir(mirbaseFolder);
@@ -410,23 +413,21 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     /**
      * This method downloads UniProt, IntAct and Interpro data from EMBL-EBI
-     * @param sp
-     * @param shortName
-     * @param assembly
-     * @param spFolder
      * @throws IOException
      * @throws InterruptedException
      */
-    private void downloadProtein(Species sp, String shortName, String assembly, Path spFolder)
+    private void downloadProtein()
             throws IOException, InterruptedException {
         logger.info("Downloading protein information ...");
-//        Path proteinFolder = spFolder.getParent().resolve("common").resolve("protein");
         Path proteinFolder = common.resolve("protein");
 
         if(!Files.exists(proteinFolder)) {
             makeDir(proteinFolder);
             String url = configuration.getDownload().getUniprot().getHost();
             downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+
+            makeDir(proteinFolder.resolve("uniprot_chunks"));
+            splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
 
             url = configuration.getDownload().getIntact().getHost();
             downloadFile(url, proteinFolder.resolve("intact.txt").toString());
@@ -436,6 +437,55 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }else {
             logger.info("Protein: skipping this since it is already downloaded. Delete 'protein' folder to force download");
         }
+    }
+
+    private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
+        BufferedReader br;
+        if(uniprotFilePath.toString().endsWith(".gz")) {
+            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(uniprotFilePath.toFile()))));
+        }else {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(uniprotFilePath.toFile())));
+        }
+
+        PrintWriter pw = null;
+        StringBuilder header = new StringBuilder();
+        boolean beforeEntry = true;
+        boolean inEntry = false;
+        int count = 0;
+        int chunk = 0;
+        String line ;
+        while((line = br.readLine()) != null) {
+            if(line.trim().startsWith("<entry ")) {
+                inEntry = true;
+                beforeEntry = false;
+                if(count % 10000 == 0) {
+                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_"+chunk+".xml").toFile()));
+                    pw.println(header.toString().trim());
+                }
+                count++;
+            }
+
+            if(beforeEntry) {
+                header.append(line).append("\n");
+            }
+
+            if(inEntry) {
+                pw.println(line);
+            }
+
+            if(line.trim().startsWith("</entry>")) {
+                inEntry = false;
+                if(count % 10000 == 0) {
+                    pw.print("</uniprot>");
+                    pw.close();
+                    chunk++;
+                }
+            }
+        }
+        pw.print("</uniprot>");
+        pw.close();
+
+        br.close();
     }
 
     /**
@@ -448,7 +498,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     private void downloadConservation(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        logger.info("Downloading conervation information ...");
+        logger.info("Downloading conservation information ...");
         Path conservationFolder = speciesFolder.resolve("conservation");
 
         if(species.getScientificName().equals("Homo sapiens")) {
@@ -526,16 +576,4 @@ public class DownloadCommandExecutor extends CommandExecutor {
             logger.warn(url + " cannot be downloaded");
         }
     }
-
-    private void downloadFiles(String url, String outputDir) throws IOException, InterruptedException {
-        List<String> wgetArgs = Arrays.asList("--tries=10", url);
-        boolean downloaded = runCommandLineProcess(new File(outputDir), "wget", wgetArgs, null);
-
-        if (downloaded) {
-            logger.info("Files downloaded OK");
-        } else {
-            logger.warn(url + " cannot be downloaded");
-        }
-    }
-
 }

@@ -192,7 +192,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             QueryBuilder builder = null;
             // If regions is 1 position then query can be optimize using chunks
             if (region.getStart() == region.getEnd()) {
-                builder = QueryBuilder.start("chunkIds").is(getChunkIdPrefix(region.getChromosome(), region.getStart(), geneChunkSize)).and("end")
+                builder = QueryBuilder.start("_chunkIds").is(getChunkIdPrefix(region.getChromosome(), region.getStart(), geneChunkSize)).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             } else {
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")

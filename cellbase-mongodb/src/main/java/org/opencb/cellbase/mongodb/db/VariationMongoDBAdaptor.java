@@ -42,6 +42,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("variation");
         mongoDBCollection2 = mongoDataStore.getCollection("variation");
         mongoVariationPhenotypeDBCollection2 = mongoDataStore.getCollection("variation_phenotype");
 
