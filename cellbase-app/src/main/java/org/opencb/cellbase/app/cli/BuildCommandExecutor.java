@@ -24,7 +24,7 @@ import java.util.List;
 public class BuildCommandExecutor extends CommandExecutor {
 
     // TODO: these two constants should be defined in the 'download' module
-    public static final String GWAS_INPUT_FILE_NAME = "gwascatalog.txt";
+    public static final String GWAS_INPUT_FILE_NAME = "gwas_catalog.tsv";
     public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
@@ -325,7 +325,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildClinvar() {
-        Path clinvarFile = input.resolve("clinical");
+        Path clinvarFile = input.resolve("ClinVar.xml");
 
         String assembly = buildCommandOptions.assembly;
         checkMandatoryOption("assembly", assembly);
@@ -338,7 +338,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseParser buildCosmic()  {
-        Path cosmicFilePath = input.resolve("clinical");
+        Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
         CellBaseSerializer serializer = new JsonParser(output, "cosmic");
