@@ -1,6 +1,5 @@
 package org.opencb.cellbase.mongodb.db;
 
-import com.google.common.base.Splitter;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.Clinvar;
@@ -15,6 +14,7 @@ import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by antonior on 11/18/14.
@@ -42,8 +42,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getAll(QueryOptions options) {
-        List<String> tmp = options.getAsStringList("include");
-        if(includeContains(tmp, "clinvar")) {
+        if(includeContains(options.getAsStringList("include"), "clinvar")) {
             return getAllClinvar(options);
         } else {
             // TODO implement!
@@ -53,25 +52,114 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getAllClinvar(QueryOptions options) {
-        QueryBuilder builder = new QueryBuilder();
-//        options.addToListOption("include", "clinvarList");
+        options.addToListOption("include", "clinvarList");
 //        options.addToListOption("include", "chromosome");
 //        options.addToListOption("include", "start");
 //        options.addToListOption("include", "end");
 //        options.addToListOption("include", "reference");
 //        options.addToListOption("include", "alternate");
-        List<DBObject> pipeline = new ArrayList<>();
-        pipeline.add(new BasicDBObject("$unwind", "clinvarList"));
+        List<DBObject> pipeline = addClinvarAggregationFilters(options);
 
-        List<Object> idList = options.getList("id", null);
-        String idString = (String) idList.get(0);
-        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc", idString)));
+//        List<DBObject> pipeline = new ArrayList<>();
+//        List<Object> idList = options.getList("id", null);
+//        String idString = (String) idList.get(0);
+////        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc", idString)));
+//        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value", "APOE")));
+//        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
+//        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value", "APOE")));
+
+//        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc", idString)));
 
 //        addClinvarQueryFilters(builder, options);
 
 
-        return executeAggregation2(idString, pipeline, options);
+        return executeAggregation2("", pipeline, options);
 //        return prepareClinvarQueryResultList(Collections.singletonList(executeQuery("result", builder.get(), options))).get(0);
+    }
+
+    private List<DBObject> addClinvarAggregationFilters(QueryOptions options) {
+        List<DBObject> filterSteps = new ArrayList<>();
+        List<DBObject> pipeline = new ArrayList<>();
+        filterSteps = addClinvarRcvAggregationFilter(filterSteps, options);
+        filterSteps = addClinvarRsAggregationFilter(filterSteps, options);
+        filterSteps = addClinvarGeneAggregationFilter(filterSteps, options);
+        filterSteps = addClinvarPhenotypeAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarRegionAggregationFilter(filterSteps, options);
+
+        // Filtering steps repeated twice to avoid undwind over all clinical records
+        pipeline.addAll(filterSteps);
+        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
+        pipeline.addAll(filterSteps);
+
+        return pipeline;
+    }
+
+    private List<DBObject> addClinvarRcvAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+        List<String> rcvList = options.getAsStringList("rcv", null);
+        if (rcvList != null && rcvList.size() > 0) {
+            filterSteps.add(new BasicDBObject("$match",
+                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+                            new BasicDBObject("$in", rcvList))));
+        }
+        return filterSteps;
+    }
+
+    private List<DBObject> addClinvarRsAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+        List<String> rsStringList = options.getAsStringList("rs", null);
+        if (rsStringList != null && rsStringList.size() > 0) {
+            List<String> rsList = new ArrayList<>(rsStringList.size());
+            for(String rsString : rsStringList) {
+                rsList.add(rsString.substring(2));
+            }
+            filterSteps.add(new BasicDBObject("$match",
+                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+                            new BasicDBObject("$in", rsList))));
+            filterSteps.add(new BasicDBObject("$match",
+                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
+                            "rs")));
+        }
+        return filterSteps;
+    }
+
+    private List<DBObject> addClinvarGeneAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+        List<String> geneList = options.getAsStringList("gene", null);
+        if (geneList != null && geneList.size() > 0) {
+            filterSteps.add(new BasicDBObject("$match",
+                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
+                            new BasicDBObject("$in", geneList))));
+        }
+        return filterSteps;
+    }
+
+    private List<DBObject> addClinvarPhenotypeAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        String phenotypes = (String) options.get("phenotype");
+//        String phenotypes = ((String) options.get("phenotype", null)).replace(",", " ");
+        List<String> phenotypeList = options.getAsStringList("phenotype", null);
+        if (phenotypeList != null && phenotypeList.size() > 0) {
+//            final DBObject textSearchCommand = new BasicDBObject();
+//            textSearchCommand.put("text", "clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
+//            textSearchCommand.put("search", phenotypes.replace(",", " "));
+
+//            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
+//                    new BasicDBObject("$regex", getRegexString(phenotypes)))));
+
+            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
+                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList)))));
+//            filterSteps.add(new BasicDBObject("$match", textSearchCommand));
+//            filterSteps.add(new BasicDBObject("$match",
+//                    new BasicDBObject("referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
+//                            new BasicDBObject("$text", new BasicDBObject("search", phenotypes.replace(",", " "))))));
+        }
+        return filterSteps;
+    }
+
+    private List<Pattern> getClinvarPhenotypeRegex(List<String> phenotypeList) {
+        List<Pattern> patternList = new ArrayList<>(phenotypeList.size());
+        for(String keyword : phenotypeList) {
+            patternList.add(Pattern.compile(".*" + keyword + ".*"));
+        }
+
+        return patternList;
     }
 
 

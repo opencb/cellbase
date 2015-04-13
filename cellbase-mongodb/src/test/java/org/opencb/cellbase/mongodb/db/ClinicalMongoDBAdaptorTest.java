@@ -77,8 +77,6 @@ public class ClinicalMongoDBAdaptorTest {
 
         CellbaseConfiguration config = new CellbaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
-                "B10p@ss", 10, 10);
 
         config.addSpeciesAlias("hsapiens", "hsapiens");
 
@@ -87,7 +85,12 @@ public class ClinicalMongoDBAdaptorTest {
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.addToListOption("include", "clinvar");
-        queryOptions.addToListOption("id", "RCV000019455");
+//        queryOptions.add("phenotype", "ALZHEIMER DISEASE 2, DUE TO APOE4 ISOFORM");
+        queryOptions.addToListOption("phenotype", "ALZHEIMER");
+        queryOptions.addToListOption("phenotype", "diabetes");
+//        queryOptions.addToListOption("gene", "APOE");
+//        queryOptions.addToListOption("rs", "rs429358");
+//        queryOptions.addToListOption("rcv", "RCV000019455");
 
 //        ((List<String>) queryOptions.get("include")).remove(0);
 
