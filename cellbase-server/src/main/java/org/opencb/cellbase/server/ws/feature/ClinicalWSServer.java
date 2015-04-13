@@ -37,7 +37,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @GET
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
-    public Response getAll(@DefaultValue("") @QueryParam("id") String id,
+    public Response getAll(@DefaultValue("") @QueryParam("rcv") String rcv,
+                           @DefaultValue("") @QueryParam("rs") String rs,
                            @DefaultValue("") @QueryParam("gene") String gene,
                            @DefaultValue("") @QueryParam("region") String region,
                            @DefaultValue("") @QueryParam("phenotype") String phenotype) {
@@ -45,8 +46,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
             checkParams();
             Boolean noFilter = true;
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            if(id != null && !id.equals("")) {
-                queryOptions.add("id", Arrays.asList(id.split(",")));
+            if(rcv != null && !rcv.equals("")) {
+                queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
+                noFilter = false;
+            }
+            if(rs != null && !rs.equals("")) {
+                queryOptions.add("rs", Arrays.asList(rs.split(",")));
                 noFilter = false;
             }
             if(gene != null && !gene.equals("")) {

@@ -82,21 +82,23 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         List<DBObject> pipeline = new ArrayList<>();
         filterSteps = addClinvarRcvAggregationFilter(filterSteps, options);
         filterSteps = addClinvarRsAggregationFilter(filterSteps, options);
+        filterSteps = addClinvarRegionAggregationFilter(filterSteps, options);
         filterSteps = addClinvarGeneAggregationFilter(filterSteps, options);
         filterSteps = addClinvarPhenotypeAggregationFilter(filterSteps, options);
-//        filterSteps = addClinvarRegionAggregationFilter(filterSteps, options);
 
         // Filtering steps repeated twice to avoid undwind over all clinical records
         pipeline.addAll(filterSteps);
         pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
         pipeline.addAll(filterSteps);
+        pipeline.add(new BasicDBObject("$limit", 1000));
 
         return pipeline;
     }
 
     private List<DBObject> addClinvarRcvAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> rcvList = options.getAsStringList("rcv", null);
+        List<String> rcvList = (List<String>) options.get("rcv");
         if (rcvList != null && rcvList.size() > 0) {
+            logger.info("rcv filter activated, rcv list: "+rcvList.toString());
             filterSteps.add(new BasicDBObject("$match",
                     new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
                             new BasicDBObject("$in", rcvList))));
@@ -105,8 +107,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private List<DBObject> addClinvarRsAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> rsStringList = options.getAsStringList("rs", null);
+//        List<String> rsStringList = options.getAsStringList("rs", null);
+        List<String> rsStringList = (List<String>) options.get("rs");
         if (rsStringList != null && rsStringList.size() > 0) {
+            logger.info("rs filter activated, res list: "+rsStringList.toString());
             List<String> rsList = new ArrayList<>(rsStringList.size());
             for(String rsString : rsStringList) {
                 rsList.add(rsString.substring(2));
@@ -122,8 +126,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private List<DBObject> addClinvarGeneAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> geneList = options.getAsStringList("gene", null);
+        List<String> geneList = (List<String>) options.get("gene");
+//        List<String> geneList = options.getAsStringList("gene", null);
         if (geneList != null && geneList.size() > 0) {
+            logger.info("gene filter activated, gene list: " + geneList.toString());
             filterSteps.add(new BasicDBObject("$match",
                     new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
                             new BasicDBObject("$in", geneList))));
@@ -134,8 +140,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private List<DBObject> addClinvarPhenotypeAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
 //        String phenotypes = (String) options.get("phenotype");
 //        String phenotypes = ((String) options.get("phenotype", null)).replace(",", " ");
-        List<String> phenotypeList = options.getAsStringList("phenotype", null);
+        List<String> phenotypeList = (List<String>) options.getAsStringList("phenotype");
+//        List<String> phenotypeList = options.getAsStringList("phenotype", null);
         if (phenotypeList != null && phenotypeList.size() > 0) {
+            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
 //            final DBObject textSearchCommand = new BasicDBObject();
 //            textSearchCommand.put("text", "clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
 //            textSearchCommand.put("search", phenotypes.replace(",", " "));
@@ -156,12 +164,61 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private List<Pattern> getClinvarPhenotypeRegex(List<String> phenotypeList) {
         List<Pattern> patternList = new ArrayList<>(phenotypeList.size());
         for(String keyword : phenotypeList) {
-            patternList.add(Pattern.compile(".*" + keyword + ".*"));
+            patternList.add(Pattern.compile(".*" + keyword + ".*", Pattern.CASE_INSENSITIVE));
         }
 
         return patternList;
     }
 
+    private List<DBObject> addClinvarRegionAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+        List<Region> regionList = (List<Region>) options.get("region");
+//        List<String> geneList = options.getAsStringList("gene", null);
+        if (regionList != null && regionList.size() > 0) {
+            logger.info("region filter activated, region list: " + regionList.toString());
+            filterSteps.add(getClinvarRegionFilterDBObject(regionList));
+
+        }
+        return filterSteps;
+    }
+
+    private DBObject getClinvarRegionFilterDBObject(List<Region> regionList) {
+//        BasicDBList andDBList = new BasicDBList();
+//        andDBList.add(new BasicDBObject("chromosome", regionList.get(0).getChromosome()));
+//        andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", regionList.get(0).getStart())));
+//        andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", regionList.get(0).getEnd())));
+//        DBObject matchDBObject1 = new BasicDBObject("$and", andDBList);
+//
+//        andDBList = new BasicDBList();
+//        andDBList.add(new BasicDBObject("chromosome", regionList.get(1).getChromosome()));
+//        andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", regionList.get(1).getStart())));
+//        andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", regionList.get(1).getEnd())));
+//        DBObject matchDBObject2 = new BasicDBObject("$and", andDBList);
+//
+//        BasicDBList orDBList = new BasicDBList();
+//        orDBList.add(matchDBObject1);
+//        orDBList.add(matchDBObject2);
+//
+//        return new BasicDBObject("$match", new BasicDBObject("$or", orDBList));
+
+//        BasicDBList andDBList = new BasicDBList();
+//        andDBList.add(new BasicDBObject("chromosome", regionList.get(0).getChromosome()));
+//        andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", regionList.get(0).getStart())));
+//        andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", regionList.get(0).getEnd())));
+//        DBObject matchDBObject = new BasicDBObject("$match", new BasicDBObject("$and", andDBList));
+//
+//        return matchDBObject;
+
+        BasicDBList orDBList = new BasicDBList();
+        for(Region region : regionList) {
+            BasicDBList andDBList = new BasicDBList();
+            andDBList.add(new BasicDBObject("chromosome", region.getChromosome()));
+            andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", region.getStart())));
+            andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", region.getEnd())));
+            orDBList.add(new BasicDBObject("$and",andDBList));
+        }
+
+        return new BasicDBObject("$match", new BasicDBObject("$or", orDBList));
+    }
 
     @Override
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
