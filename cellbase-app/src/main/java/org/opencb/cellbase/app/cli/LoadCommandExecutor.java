@@ -78,6 +78,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case "conservation":
                             break;
                         case "clinical":
+                            loadRunner.load(input.resolve("clinvar.json.gz"), "clinical");
+                            loadRunner.load(input.resolve("cosmic.json.gz"), "clinical");
+                            loadRunner.load(input.resolve("gwas.json.gz"), "clinical");
                             break;
                     }
 
