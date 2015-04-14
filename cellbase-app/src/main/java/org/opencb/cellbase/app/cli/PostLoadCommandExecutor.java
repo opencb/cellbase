@@ -30,7 +30,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
     public void execute() {
         checkParameters();
         if(clinicalAnnotationFilename!=null) {
-
+            loadClinicalAnnotation();
         } else {
             throw new ParameterException("Only post-load of clinical annotations is available right now.");
         }
@@ -50,12 +50,9 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         }
     }
 
-    private CellBaseClient getCellBaseClient() throws URISyntaxException {
-        CellBaseConfiguration.DatabaseProperties cellbaseDDBBProperties = configuration.getDatabase();
-        // TODO: read path from configuration file?
-        String path = "/cellbase/webservices/rest/";
-        return new CellBaseClient(variantAnnotationCommandOptions.url, variantAnnotationCommandOptions.port, path,
-                configuration.getVersion(), variantAnnotationCommandOptions.species);
+    private void loadClinicalAnnotation() {
+
+        VepFormatReader vepFormatReader = new Vep
     }
 
 
