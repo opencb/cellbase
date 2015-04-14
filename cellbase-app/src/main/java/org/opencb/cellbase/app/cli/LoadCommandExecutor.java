@@ -75,6 +75,10 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.load(input.resolve("protein.json.gz"), "protein");
                             loadRunner.index("protein");
                             break;
+                        case "ppi":
+                            loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
+                            loadRunner.index("protein_protein_interaction");
+                            break;
                         case "conservation":
                             loadConservation();
                             break;
