@@ -79,6 +79,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
                             loadRunner.index("protein_protein_interaction");
                             break;
+                        case "protein_functional_prediction":
+                            loadProteinFunctionalPrediction();
+                            break;
                         case "conservation":
                             loadConservation();
                             break;
@@ -166,7 +169,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         loadRunner.index("conservation");
     }
 
-    private void loadProtein() throws NoSuchMethodException, InterruptedException, ExecutionException,
+    private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
