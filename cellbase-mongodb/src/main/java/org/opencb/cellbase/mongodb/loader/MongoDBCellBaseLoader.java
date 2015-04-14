@@ -115,6 +115,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "protein_protein_interaction":
                 collectionName = "protein_protein_interaction";
                 break;
+            case "protein_functional_prediction":
+                collectionName = "protein_functional_prediction";
+                break;
             case "conservation":
                 collectionName = "conservation";
                 break;
@@ -259,8 +262,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "protein_protein_interaction":
                 indexFileName = "protein_protein_interaction-indexes.js";
                 break;
+            case "protein_functional_prediction":
+                indexFileName = "protein_functional_prediction-indexes.js";
+                break;
             case "conservation":
-                indexFileName = "conserved-indexes.js";
+                indexFileName = "conservation-indexes.js";
                 break;
             case "cosmic":
             case "clinvar":

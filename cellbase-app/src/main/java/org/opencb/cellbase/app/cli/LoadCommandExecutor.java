@@ -173,14 +173,14 @@ public class LoadCommandExecutor extends CommandExecutor {
         DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
             @Override
             public boolean accept(Path entry) throws IOException {
-                return entry.getFileName().toString().startsWith("conservation_");
+                return entry.getFileName().toString().startsWith("prot_func_pred_");
             }
         });
         for (Path entry: stream) {
             logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(input.resolve(entry.getFileName()), "conservation");
+            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
         }
-        loadRunner.index("conservation");
+        loadRunner.index("protein_functional_prediction");
     }
 
 }
