@@ -68,12 +68,16 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     .add("username", cellBaseConfiguration.getDatabase().getUser())
                     .add("password", cellBaseConfiguration.getDatabase().getPassword())
                     .add("authenticationDatabase", loaderParams.get("authenticationDatabase")).build();
+            logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
+                    loaderParams.get("authenticationDatabase"));
         }else {
             mongoDBConfiguration = MongoDBConfiguration.builder()
                     .add("username", cellBaseConfiguration.getDatabase().getUser())
                     .add("password", cellBaseConfiguration.getDatabase().getPassword()).build();
         }
-        
+        logger.debug("MongoDB credentials are user: '{}', password: '{}'",
+                cellBaseConfiguration.getDatabase().getUser(), cellBaseConfiguration.getDatabase().getPassword());
+
         mongoDataStore = mongoDataStoreManager.get(database, mongoDBConfiguration);
 
         String collectionName = getCollectionName(data);
@@ -282,6 +286,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if(loaderParams != null && loaderParams.get("authenticationDatabase") != null) {
             args.add("--authenticationDatabase");
             args.add(loaderParams.get("authenticationDatabase"));
+            logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
+                    loaderParams.get("authenticationDatabase"));
         }
         args.add(database);
         args.add(indexFilePath.toString());
