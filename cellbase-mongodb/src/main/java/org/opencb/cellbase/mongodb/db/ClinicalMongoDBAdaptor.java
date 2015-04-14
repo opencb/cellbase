@@ -52,13 +52,23 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getAllClinvar(QueryOptions options) {
-        options.addToListOption("include", "clinvarList");
+//        options.addToListOption("include", "clinvarList");
 //        options.addToListOption("include", "chromosome");
 //        options.addToListOption("include", "start");
 //        options.addToListOption("include", "end");
 //        options.addToListOption("include", "reference");
 //        options.addToListOption("include", "alternate");
-        List<DBObject> pipeline = addClinvarAggregationFilters(options);
+        List<DBObject> pipeline = new ArrayList<>();
+        pipeline = addClinvarAggregationFilters(pipeline, options);
+        DBObject fields = new BasicDBObject();
+        fields.put("clinvarSet", 1);
+        fields.put("chromosome", 1);
+        fields.put("start", 1);
+        fields.put("end", 1);
+        fields.put("reference", 1);
+        fields.put("alternate", 1);
+        pipeline.add(new BasicDBObject("$project", fields));
+
 
 //        List<DBObject> pipeline = new ArrayList<>();
 //        List<Object> idList = options.getList("id", null);
@@ -77,9 +87,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        return prepareClinvarQueryResultList(Collections.singletonList(executeQuery("result", builder.get(), options))).get(0);
     }
 
-    private List<DBObject> addClinvarAggregationFilters(QueryOptions options) {
+    private List<DBObject> addClinvarAggregationFilters(List<DBObject> pipeline, QueryOptions options) {
         List<DBObject> filterSteps = new ArrayList<>();
-        List<DBObject> pipeline = new ArrayList<>();
+        filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1))));
         filterSteps = addClinvarRcvAggregationFilter(filterSteps, options);
         filterSteps = addClinvarRsAggregationFilter(filterSteps, options);
         filterSteps = addClinvarRegionAggregationFilter(filterSteps, options);
@@ -90,7 +100,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         pipeline.addAll(filterSteps);
 //        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
 //        pipeline.addAll(filterSteps);
-        pipeline.add(new BasicDBObject("$limit", 1000));
+        pipeline.add(new BasicDBObject("$limit", 100));
 
         return pipeline;
     }
