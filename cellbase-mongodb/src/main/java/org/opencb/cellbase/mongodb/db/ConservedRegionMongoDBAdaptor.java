@@ -24,18 +24,19 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
     public ConservedRegionMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
 //        this.chunkSize = 2000;
-        mongoDBCollection = db.getCollection("conserved_region");
+        mongoDBCollection = db.getCollection("conservation");
     }
 
     public ConservedRegionMongoDBAdaptor(DB db, String species, String version, int chunkSize) {
         super(db, species, version);
         this.chunkSize = chunkSize;
-        mongoDBCollection = db.getCollection("conserved_region");
+        mongoDBCollection = db.getCollection("conservation");
     }
 
     public ConservedRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("conserved_region");
+        mongoDBCollection = db.getCollection("conservation");
+        mongoDBCollection2 = mongoDataStore.getCollection("conservation");
 
         logger.info("ConservedRegionMongoDBAdaptor: in 'constructor'");
     }

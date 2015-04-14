@@ -76,6 +76,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.index("protein");
                             break;
                         case "conservation":
+                            loadConservation();
                             break;
                         case "clinical":
                             loadRunner.load(input.resolve("clinvar.json.gz"), "clinvar");
@@ -144,5 +145,21 @@ public class LoadCommandExecutor extends CommandExecutor {
         loadRunner.index("variation");
     }
 
+    private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException, LoaderException {
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                return entry.getFileName().toString().startsWith("conservation_");
+            }
+        });
+        for (Path entry: stream) {
+            logger.info("Loading file '{}'", entry.toString());
+            loadRunner.load(input.resolve(entry.getFileName()), "conservation");
+        }
+        loadRunner.index("conservation");
+    }
 
 }
