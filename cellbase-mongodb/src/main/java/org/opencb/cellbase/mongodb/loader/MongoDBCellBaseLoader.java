@@ -256,8 +256,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "protein":
                 indexFileName = "protein-indexes.js";
                 break;
+            case "protein_protein_interaction":
+                indexFileName = "protein_protein_interaction-indexes.js";
+                break;
             case "conservation":
-                indexFileName = "conserved_region-indexes.js";
+                indexFileName = "conserved-indexes.js";
                 break;
             case "cosmic":
             case "clinvar":
