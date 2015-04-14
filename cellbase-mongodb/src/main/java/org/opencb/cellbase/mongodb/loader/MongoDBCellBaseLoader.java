@@ -62,10 +62,23 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         mongoDataStoreManager = new MongoDataStoreManager(cellBaseConfiguration.getDatabase().getHost(),
                 Integer.parseInt(cellBaseConfiguration.getDatabase().getPort()));
 
-        MongoDBConfiguration credentials = MongoDBConfiguration.builder()
-                .add("username", cellBaseConfiguration.getDatabase().getUser())
-                .add("password", cellBaseConfiguration.getDatabase().getPassword()).build();
-        mongoDataStore = mongoDataStoreManager.get(database, credentials);
+        MongoDBConfiguration mongoDBConfiguration;
+        if(loaderParams != null && loaderParams.get("authenticationDatabase") != null) {
+            mongoDBConfiguration = MongoDBConfiguration.builder()
+                    .add("username", cellBaseConfiguration.getDatabase().getUser())
+                    .add("password", cellBaseConfiguration.getDatabase().getPassword())
+                    .add("authenticationDatabase", loaderParams.get("authenticationDatabase")).build();
+            logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
+                    loaderParams.get("authenticationDatabase"));
+        }else {
+            mongoDBConfiguration = MongoDBConfiguration.builder()
+                    .add("username", cellBaseConfiguration.getDatabase().getUser())
+                    .add("password", cellBaseConfiguration.getDatabase().getPassword()).build();
+        }
+        logger.debug("MongoDB credentials are user: '{}', password: '{}'",
+                cellBaseConfiguration.getDatabase().getUser(), cellBaseConfiguration.getDatabase().getPassword());
+
+        mongoDataStore = mongoDataStoreManager.get(database, mongoDBConfiguration);
 
         String collectionName = getCollectionName(data);
         mongoDBCollection = mongoDataStore.getCollection(collectionName);
@@ -269,6 +282,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     "-u", cellBaseConfiguration.getDatabase().getUser(),
                     "-p", cellBaseConfiguration.getDatabase().getPassword()
             ));
+        }
+        if(loaderParams != null && loaderParams.get("authenticationDatabase") != null) {
+            args.add("--authenticationDatabase");
+            args.add(loaderParams.get("authenticationDatabase"));
+            logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
+                    loaderParams.get("authenticationDatabase"));
         }
         args.add(database);
         args.add(indexFilePath.toString());
