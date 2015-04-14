@@ -62,6 +62,13 @@ public class CellBaseMain {
                         commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
                     }
                     break;
+                case "post-load":
+                    if (cliOptionsParser.getVariantAnnotationCommandOptions().commonOptions.help) {
+                        cliOptionsParser.printUsage();
+                    } else {
+                        commandExecutor = new PostLoadCommandExecutor(cliOptionsParser.getPostLoadCommandOptions());
+                    }
+                    break;
                 default:
                     break;
             }

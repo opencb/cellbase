@@ -21,6 +21,7 @@ public class CliOptionsParser {
     private LoadCommandOptions loadCommandOptions;
     private QueryCommandOptions queryCommandOptions;
     private VariantAnnotationCommandOptions variantAnnotationCommandOptions;
+    private PostLoadCommandOptions postLoadCommandOptions;
 
 
     public CliOptionsParser() {
@@ -36,12 +37,14 @@ public class CliOptionsParser {
         loadCommandOptions = new LoadCommandOptions();
         queryCommandOptions = new QueryCommandOptions();
         variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
+        postLoadCommandOptions = new PostLoadCommandOptions();
 
         jcommander.addCommand("download", downloadCommandOptions);
         jcommander.addCommand("build", buildCommandOptions);
         jcommander.addCommand("load", loadCommandOptions);
         jcommander.addCommand("query", queryCommandOptions);
         jcommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
+        jcommander.addCommand("post-load", postLoadCommandOptions);
 
     }
 
@@ -239,6 +242,17 @@ public class CliOptionsParser {
 
     }
 
+    @Parameters(commandNames = {"post-load"}, commandDescription = "Description: complements data already loaded in CellBase")
+    public class PostLoadCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"--clinical-annotation-file"}, description = "Specify a file containing variant annotations for CellBase clinical data. Accepted file formats: VEP's file format", required = false)
+        public String clinicalAnnotationFilename = null;
+
+    }
+
 
     public GeneralOptions getGeneralOptions() {
         return generalOptions;
@@ -260,8 +274,8 @@ public class CliOptionsParser {
         return queryCommandOptions;
     }
 
-    public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() {
-        return variantAnnotationCommandOptions;
-    }
+    public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }
+
+    public PostLoadCommandOptions getPostLoadCommandOptions() { return postLoadCommandOptions; }
 
 }
