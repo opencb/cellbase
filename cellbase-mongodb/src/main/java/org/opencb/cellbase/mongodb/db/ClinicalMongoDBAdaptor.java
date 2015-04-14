@@ -88,8 +88,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         // Filtering steps repeated twice to avoid undwind over all clinical records
         pipeline.addAll(filterSteps);
-        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
-        pipeline.addAll(filterSteps);
+//        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
+//        pipeline.addAll(filterSteps);
         pipeline.add(new BasicDBObject("$limit", 1000));
 
         return pipeline;
@@ -100,7 +100,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (rcvList != null && rcvList.size() > 0) {
             logger.info("rcv filter activated, rcv list: "+rcvList.toString());
             filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
                             new BasicDBObject("$in", rcvList))));
         }
         return filterSteps;
@@ -116,10 +117,12 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 rsList.add(rsString.substring(2));
             }
             filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
                             new BasicDBObject("$in", rsList))));
             filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
+//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
+                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
                             "rs")));
         }
         return filterSteps;
@@ -131,32 +134,22 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (geneList != null && geneList.size() > 0) {
             logger.info("gene filter activated, gene list: " + geneList.toString());
             filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
+//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
+                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
                             new BasicDBObject("$in", geneList))));
         }
         return filterSteps;
     }
 
     private List<DBObject> addClinvarPhenotypeAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-//        String phenotypes = (String) options.get("phenotype");
-//        String phenotypes = ((String) options.get("phenotype", null)).replace(",", " ");
         List<String> phenotypeList = (List<String>) options.getAsStringList("phenotype");
-//        List<String> phenotypeList = options.getAsStringList("phenotype", null);
         if (phenotypeList != null && phenotypeList.size() > 0) {
             logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
-//            final DBObject textSearchCommand = new BasicDBObject();
-//            textSearchCommand.put("text", "clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
-//            textSearchCommand.put("search", phenotypes.replace(",", " "));
 
 //            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
-//                    new BasicDBObject("$regex", getRegexString(phenotypes)))));
-
-            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
+            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
                     new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList)))));
-//            filterSteps.add(new BasicDBObject("$match", textSearchCommand));
-//            filterSteps.add(new BasicDBObject("$match",
-//                    new BasicDBObject("referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
-//                            new BasicDBObject("$text", new BasicDBObject("search", phenotypes.replace(",", " "))))));
+
         }
         return filterSteps;
     }
@@ -172,7 +165,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private List<DBObject> addClinvarRegionAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
         List<Region> regionList = (List<Region>) options.get("region");
-//        List<String> geneList = options.getAsStringList("gene", null);
         if (regionList != null && regionList.size() > 0) {
             logger.info("region filter activated, region list: " + regionList.toString());
             filterSteps.add(getClinvarRegionFilterDBObject(regionList));
@@ -182,32 +174,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private DBObject getClinvarRegionFilterDBObject(List<Region> regionList) {
-//        BasicDBList andDBList = new BasicDBList();
-//        andDBList.add(new BasicDBObject("chromosome", regionList.get(0).getChromosome()));
-//        andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", regionList.get(0).getStart())));
-//        andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", regionList.get(0).getEnd())));
-//        DBObject matchDBObject1 = new BasicDBObject("$and", andDBList);
-//
-//        andDBList = new BasicDBList();
-//        andDBList.add(new BasicDBObject("chromosome", regionList.get(1).getChromosome()));
-//        andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", regionList.get(1).getStart())));
-//        andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", regionList.get(1).getEnd())));
-//        DBObject matchDBObject2 = new BasicDBObject("$and", andDBList);
-//
-//        BasicDBList orDBList = new BasicDBList();
-//        orDBList.add(matchDBObject1);
-//        orDBList.add(matchDBObject2);
-//
-//        return new BasicDBObject("$match", new BasicDBObject("$or", orDBList));
-
-//        BasicDBList andDBList = new BasicDBList();
-//        andDBList.add(new BasicDBObject("chromosome", regionList.get(0).getChromosome()));
-//        andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", regionList.get(0).getStart())));
-//        andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", regionList.get(0).getEnd())));
-//        DBObject matchDBObject = new BasicDBObject("$match", new BasicDBObject("$and", andDBList));
-//
-//        return matchDBObject;
-
         BasicDBList orDBList = new BasicDBList();
         for(Region region : regionList) {
             BasicDBList andDBList = new BasicDBList();
@@ -600,8 +566,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     public QueryResult getListClinvarAccessions(QueryOptions queryOptions) {
-        QueryBuilder builder = QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").exists(true);
-        queryOptions.put("include", Arrays.asList("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc"));
+//        QueryBuilder builder = QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").exists(true);
+        QueryBuilder builder = QueryBuilder.start("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").exists(true);
+//        queryOptions.put("include", Arrays.asList("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc"));
+        queryOptions.put("include", Arrays.asList("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc"));
         QueryResult queryResult = executeQuery("", builder.get(), queryOptions);
         List accInfoList = (List) queryResult.getResult();
         List<String> accList = new ArrayList<>(accInfoList.size());
@@ -610,12 +578,11 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         for(Object accInfoObject: accInfoList) {
             accInfo = (BasicDBObject) accInfoObject;
-            if(accInfo.containsKey("clinvarList")) {
-                accInfo = (BasicDBObject)((BasicDBObject) ((List) accInfo.get("clinvarList"))
-                        .get(0)).get("clinvarSet");
+//            if(accInfo.containsKey("clinvarList")) {
+                accInfo = (BasicDBObject) accInfo.get("clinvarSet");
                 accList.add((String) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) accInfo
                         .get("referenceClinVarAssertion"))).get("clinVarAccession")).get("acc"));
-            }
+//            }
         }
 
         // setting listAccessionsToReturn fields
