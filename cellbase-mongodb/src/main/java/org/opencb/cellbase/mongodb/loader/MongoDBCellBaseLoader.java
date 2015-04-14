@@ -112,6 +112,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "protein":
                 collectionName = "protein";
                 break;
+            case "protein_protein_interaction":
+                collectionName = "protein_protein_interaction";
+                break;
             case "conservation":
                 collectionName = "conservation";
                 break;
