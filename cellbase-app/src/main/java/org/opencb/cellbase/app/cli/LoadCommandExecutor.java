@@ -50,7 +50,14 @@ public class LoadCommandExecutor extends CommandExecutor {
             if (loadCommandOptions.data != null) {
                 loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
 
-                String[] buildOptions = loadCommandOptions.data.split(",");
+                String[] buildOptions;
+                if(loadCommandOptions.data.equals("all")) {
+                    buildOptions = new String[]{"genome", "gene", "variation", "regulatory_region", "protein", "ppi",
+                            "protein_functional_prediction", "conservation", "clinical"};
+                }else {
+                    buildOptions = loadCommandOptions.data.split(",");
+                }
+
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
 
