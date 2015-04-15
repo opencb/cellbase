@@ -28,7 +28,8 @@ public class PostLoadCommandExecutor extends CommandExecutor{
 
     private Path clinicalAnnotationFilename = null;
     private String assembly = null;
-    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
+//    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
+    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=3;
 
     // TODO: remove constructor, just for debugging purposes
     public PostLoadCommandExecutor() {}
@@ -74,12 +75,16 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         }
     }
 
-    private void loadClinicalAnnotation() {
+    // TODO: change to private - just for debugging purposes
+    public void loadClinicalAnnotation() {
 
         /**
          * Initialize VEP reader
           */
-        VepFormatReader vepFormatReader = new VepFormatReader(clinicalAnnotationFilename.toString());
+//        VepFormatReader vepFormatReader = new VepFormatReader(clinicalAnnotationFilename.toString());
+        VepFormatReader vepFormatReader = new VepFormatReader("/tmp/clinvar.vep");
+        vepFormatReader.open();
+        vepFormatReader.pre();
 
         /**
          * Prepare clinical adaptor
@@ -87,12 +92,15 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         org.opencb.cellbase.core.common.core.CellbaseConfiguration adaptorCellbaseConfiguration =
                 new org.opencb.cellbase.core.common.core.CellbaseConfiguration();
         adaptorCellbaseConfiguration.addSpeciesAlias("hsapiens", "hsapiens");
-        adaptorCellbaseConfiguration.addSpeciesConnection("hsapiens", assembly,
-                configuration.getDatabase().getHost(), "cellbase_hsapiens_"+assembly.toLowerCase()+
-                        configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
-                configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
+//        adaptorCellbaseConfiguration.addSpeciesConnection("hsapiens", assembly,
+//                configuration.getDatabase().getHost(), "cellbase_hsapiens_"+assembly.toLowerCase()+"_"+
+//                        configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
+//                configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
+
+
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(adaptorCellbaseConfiguration);
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", assembly);
+
 
         /**
          * Load annotations
@@ -106,6 +114,8 @@ public class PostLoadCommandExecutor extends CommandExecutor{
 //            logger.info(Integer.valueOf(nLoadedVariantAnnotations)+" mongo loaded VariantAnnotaions");
         }
 
+        vepFormatReader.post();
+        vepFormatReader.close();
         logger.info(nVepAnnotatedVariants+" VEP annotated variants were read from "+clinicalAnnotationFilename.toString());
 //        logger.info(nLoadedVariantAnnotations+" VariantAnnotation objects were actually loaded into the DB");
         logger.info("Finished");

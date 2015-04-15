@@ -625,13 +625,14 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         long start = System.nanoTime();
         for (VariantAnnotation variantAnnotation : variantAnnotations) {
-            QueryBuilder builder = QueryBuilder.start("chrosomome").is(variantAnnotation.getChromosome())
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(variantAnnotation.getChromosome())
                     .and("start").is(variantAnnotation.getStart()).and("reference")
                     .is(variantAnnotation.getReferenceAllele())
                     .and("alternate").is(variantAnnotation.getAlternativeAllele());
             DBObject update = null;
             try {
-                update = new BasicDBObject("$set", JSON.parse(writer.writeValueAsString(variantAnnotation)));
+                update = new BasicDBObject("$set", new BasicDBObject("annot",
+                        JSON.parse(writer.writeValueAsString(variantAnnotation))));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }

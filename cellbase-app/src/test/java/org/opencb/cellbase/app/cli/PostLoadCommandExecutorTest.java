@@ -10,7 +10,7 @@ public class PostLoadCommandExecutorTest {
     public void testLoadClinicalAnnotation() {
         PostLoadCommandExecutor postLoadCommandExecutor = new PostLoadCommandExecutor();
 
-        postLoadCommandExecutor.
+        postLoadCommandExecutor.loadClinicalAnnotation();
     }
 
 }
