@@ -1,13 +1,19 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import org.opencb.biodata.formats.annotation.io.VepFormatReader;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.client.CellBaseClient;
+import org.opencb.cellbase.core.lib.DBAdaptorFactory;
+import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.variant_annotation.VariantAnnotatorRunner;
+import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -52,7 +58,23 @@ public class PostLoadCommandExecutor extends CommandExecutor{
 
     private void loadClinicalAnnotation() {
 
-        VepFormatReader vepFormatReader = new Vep
+        VepFormatReader vepFormatReader = new VepFormatReader(clinicalAnnotationFilename.toString());
+
+
+        org.opencb.cellbase.core.common.core.CellbaseConfiguration adaptorCellbaseConfiguration =
+                new org.opencb.cellbase.core.common.core.CellbaseConfiguration();
+        adaptorCellbaseConfiguration.addSpeciesAlias("hsapiens", "hsapiens");
+//        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017,
+//                "mongo", "biouser", "B10p@ss", 10, 10);
+
+        configuration.getSpecies()
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory();
+        ClinicalDBAdaptor clinicalDBAdaptor =
+        List<VariantAnnotation> variantAnnotationList;
+
+        while((variantAnnotationList=vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE))!=null) {
+
+        }
     }
 
 

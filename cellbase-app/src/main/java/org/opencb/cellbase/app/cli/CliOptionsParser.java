@@ -84,7 +84,7 @@ public class CliOptionsParser {
         @Parameter(names = {"-v", "--verbose"}, description = "This parameter set the level of the logging", required = false, arity = 1)
         public boolean verbose;
 
-        @Parameter(names = {"-C", "--conf"}, description = "This parameter set the level of the logging", required = false, arity = 1)
+        @Parameter(names = {"-C", "--conf"}, description = "CellBase configuration json file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.json for an example", required = false, arity = 1)
         public String conf;
 
     }
@@ -247,6 +247,9 @@ public class CliOptionsParser {
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-a", "--assembly"}, description = "The name of the assembly", required = false, arity = 1)
+        public String assembly = null;
 
         @Parameter(names = {"--clinical-annotation-file"}, description = "Specify a file containing variant annotations for CellBase clinical data. Accepted file formats: VEP's file format", required = false)
         public String clinicalAnnotationFilename = null;
