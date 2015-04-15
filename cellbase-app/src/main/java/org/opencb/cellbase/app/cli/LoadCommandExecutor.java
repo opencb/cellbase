@@ -50,7 +50,14 @@ public class LoadCommandExecutor extends CommandExecutor {
             if (loadCommandOptions.data != null) {
                 loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
 
-                String[] buildOptions = loadCommandOptions.data.split(",");
+                String[] buildOptions;
+                if(loadCommandOptions.data.equals("all")) {
+                    buildOptions = new String[]{"genome", "gene", "variation", "regulatory_region", "protein", "ppi",
+                            "protein_functional_prediction", "conservation", "clinical"};
+                }else {
+                    buildOptions = loadCommandOptions.data.split(",");
+                }
+
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
 
@@ -75,7 +82,15 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.load(input.resolve("protein.json.gz"), "protein");
                             loadRunner.index("protein");
                             break;
+                        case "ppi":
+                            loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
+                            loadRunner.index("protein_protein_interaction");
+                            break;
+                        case "protein_functional_prediction":
+                            loadProteinFunctionalPrediction();
+                            break;
                         case "conservation":
+                            loadConservation();
                             break;
                         case "clinical":
                             loadRunner.load(input.resolve("clinvar.json.gz"), "clinvar");
@@ -144,5 +159,38 @@ public class LoadCommandExecutor extends CommandExecutor {
         loadRunner.index("variation");
     }
 
+    private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException, LoaderException {
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                return entry.getFileName().toString().startsWith("conservation_");
+            }
+        });
+        for (Path entry: stream) {
+            logger.info("Loading file '{}'", entry.toString());
+            loadRunner.load(input.resolve(entry.getFileName()), "conservation");
+        }
+        loadRunner.index("conservation");
+    }
+
+    private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException, LoaderException {
+
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                return entry.getFileName().toString().startsWith("prot_func_pred_");
+            }
+        });
+        for (Path entry: stream) {
+            logger.info("Loading file '{}'", entry.toString());
+            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
+        }
+        loadRunner.index("protein_functional_prediction");
+    }
 
 }
