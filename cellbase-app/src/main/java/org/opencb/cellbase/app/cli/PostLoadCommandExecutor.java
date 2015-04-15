@@ -28,8 +28,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
 
     private Path clinicalAnnotationFilename = null;
     private String assembly = null;
-//    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
-    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=3;
+    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
 
     // TODO: remove constructor, just for debugging purposes
     public PostLoadCommandExecutor() {}
@@ -62,10 +61,10 @@ public class PostLoadCommandExecutor extends CommandExecutor{
             }
 
             if(postLoadCommandOptions.assembly != null) {
+                assembly = postLoadCommandOptions.assembly;
                 if(!assembly.equals("GRCh37") && !assembly.equals("GRCh38")) {
                     throw  new ParameterException("Please, provide a valid human assembly. Available assemblies: GRCh37, GRCh38");
                 }
-                assembly = postLoadCommandOptions.assembly;
             } else {
                 throw  new ParameterException("Providing human assembly is mandatory if loading clinical annotations. Available assemblies: GRCh37, GRCh38");
             }
@@ -81,8 +80,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         /**
          * Initialize VEP reader
           */
-//        VepFormatReader vepFormatReader = new VepFormatReader(clinicalAnnotationFilename.toString());
-        VepFormatReader vepFormatReader = new VepFormatReader("/tmp/clinvar.vep");
+        VepFormatReader vepFormatReader = new VepFormatReader(clinicalAnnotationFilename.toString());
         vepFormatReader.open();
         vepFormatReader.pre();
 
@@ -92,32 +90,29 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         org.opencb.cellbase.core.common.core.CellbaseConfiguration adaptorCellbaseConfiguration =
                 new org.opencb.cellbase.core.common.core.CellbaseConfiguration();
         adaptorCellbaseConfiguration.addSpeciesAlias("hsapiens", "hsapiens");
-//        adaptorCellbaseConfiguration.addSpeciesConnection("hsapiens", assembly,
-//                configuration.getDatabase().getHost(), "cellbase_hsapiens_"+assembly.toLowerCase()+"_"+
-//                        configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
-//                configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
-
+        adaptorCellbaseConfiguration.addSpeciesConnection("hsapiens", assembly,
+                configuration.getDatabase().getHost(), "cellbase_hsapiens_"+assembly.toLowerCase()+"_"+
+                        configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
+                configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
 
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(adaptorCellbaseConfiguration);
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", assembly);
-
 
         /**
          * Load annotations
          */
         int nVepAnnotatedVariants = 0;
-        List<VariantAnnotation> variantAnnotationList;
-        while((variantAnnotationList=vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE))!=null) {
+        List<VariantAnnotation> variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
+        while(!variantAnnotationList.isEmpty()) {
             nVepAnnotatedVariants += variantAnnotationList.size();
             clinicalDBAdaptor.updateAnnotations(variantAnnotationList, new QueryOptions());
             logger.info(Integer.valueOf(nVepAnnotatedVariants)+" read variants with vep annotations");
-//            logger.info(Integer.valueOf(nLoadedVariantAnnotations)+" mongo loaded VariantAnnotaions");
+            variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
         }
 
         vepFormatReader.post();
         vepFormatReader.close();
         logger.info(nVepAnnotatedVariants+" VEP annotated variants were read from "+clinicalAnnotationFilename.toString());
-//        logger.info(nLoadedVariantAnnotations+" VariantAnnotation objects were actually loaded into the DB");
         logger.info("Finished");
     }
 

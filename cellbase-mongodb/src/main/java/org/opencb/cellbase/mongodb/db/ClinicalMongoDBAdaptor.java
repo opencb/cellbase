@@ -641,7 +641,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             mongoDBCollection2.update(builder.get(), update, queryOptions);
         }
 
-        return new QueryResult<>("", ((int) (System.nanoTime() - start)), 1, 1, "", "", null);
+        return new QueryResult<>("", ((int) (System.nanoTime() - start)), 1, 1, "", "", new ArrayList());
     }
 
 //    private DBObject convertVariantAnnotation(VariantAnnotation variantAnnotation) {
