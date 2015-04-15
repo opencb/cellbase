@@ -488,6 +488,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             // FIXME quick solution to compile
 //            queryResult.setResult(clinicalData);
             queryResult.setResult(Arrays.asList(clinicalData));
+            queryResult.setNumResults(1);
         }
 
         return queryResultList;
