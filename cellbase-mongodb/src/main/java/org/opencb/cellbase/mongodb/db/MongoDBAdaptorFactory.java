@@ -97,8 +97,10 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
         MongoDBConfiguration mongoDBConfiguration;
         if(!config.getUsername(speciesId,assembly).equals("") || !config.getPass(speciesId, assembly).equals("")) {
-            mongoDBConfiguration = MongoDBConfiguration.builder().add("username", config.getUsername(speciesId, assembly)).
-                    add("password", config.getPass(speciesId, assembly)).init().build();
+            mongoDBConfiguration = MongoDBConfiguration.builder()
+                    .add("username", config.getUsername(speciesId, assembly))
+                    .add("password", config.getPass(speciesId, assembly))
+                    .add("authenticationDatabase", "admin").build();
         } else {
             mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
         }
