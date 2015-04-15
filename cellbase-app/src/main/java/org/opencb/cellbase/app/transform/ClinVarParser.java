@@ -75,7 +75,8 @@ public class ClinVarParser extends CellBaseParser{
         ClinvarPublicSet clinvarPublicSet = null;
         SequenceLocationType sequenceLocation = obtainAssembly37SequenceLocation(publicSet);
         if (sequenceLocation != null) {
-            clinvarPublicSet = new ClinvarPublicSet(new RefseqAccession(sequenceLocation.getAccession()).getChromosome(),
+
+            clinvarPublicSet = new ClinvarPublicSet(sequenceLocation.getChr(),
                     sequenceLocation.getStart().intValue(),
                     sequenceLocation.getStop().intValue(),
                     sequenceLocation.getReferenceAllele(),
