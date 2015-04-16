@@ -181,13 +181,21 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             }
 
             /****/
+            QueryBuilder builder;
             int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
             int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
-            for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
-                integerChunkIds.add(chunkId);
+            if(regionChunkStart == regionChunkEnd) {
+                builder = QueryBuilder.start("_chunkIds")
+                        .in(getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
+            } else {
+//                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
+//                    integerChunkIds.add(chunkId);
+//                }
+//    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
             /****/
 
 
