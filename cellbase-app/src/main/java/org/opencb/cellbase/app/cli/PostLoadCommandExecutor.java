@@ -29,6 +29,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
     private Path clinicalAnnotationFilename = null;
     private String assembly = null;
     private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
+//    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
 
     // TODO: remove constructor, just for debugging purposes
     public PostLoadCommandExecutor() {}
@@ -80,6 +81,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         /**
          * Initialize VEP reader
           */
+        logger.info("Initializing VEP reader...");
         VepFormatReader vepFormatReader = new VepFormatReader(clinicalAnnotationFilename.toString());
         vepFormatReader.open();
         vepFormatReader.pre();
@@ -87,11 +89,12 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         /**
          * Prepare clinical adaptor
          */
+        logger.info("Initializing adaptor, connecting to the database...");
         org.opencb.cellbase.core.common.core.CellbaseConfiguration adaptorCellbaseConfiguration =
                 new org.opencb.cellbase.core.common.core.CellbaseConfiguration();
         adaptorCellbaseConfiguration.addSpeciesAlias("hsapiens", "hsapiens");
         adaptorCellbaseConfiguration.addSpeciesConnection("hsapiens", assembly,
-                configuration.getDatabase().getHost(), "cellbase_hsapiens_"+assembly.toLowerCase()+"_"+
+                configuration.getDatabase().getHost(), "cellbase_hsapiens_" + assembly.toLowerCase() + "_" +
                         configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
                 configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
 
@@ -101,6 +104,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
         /**
          * Load annotations
          */
+        logger.info("Reading/Loading variant annotations...");
         int nVepAnnotatedVariants = 0;
         List<VariantAnnotation> variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
         while(!variantAnnotationList.isEmpty()) {
