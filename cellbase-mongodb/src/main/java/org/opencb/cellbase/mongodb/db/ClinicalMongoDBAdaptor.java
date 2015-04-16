@@ -67,6 +67,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         fields.put("end", 1);
         fields.put("reference", 1);
         fields.put("alternate", 1);
+        fields.put("annot", 1);
         pipeline.add(new BasicDBObject("$project", fields));
 
 
@@ -92,6 +93,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1))));
         filterSteps = addClinvarRcvAggregationFilter(filterSteps, options);
         filterSteps = addClinvarRsAggregationFilter(filterSteps, options);
+        filterSteps = addClinvarSoTermAggregationFilter(filterSteps, options);
         filterSteps = addClinvarRegionAggregationFilter(filterSteps, options);
         filterSteps = addClinvarGeneAggregationFilter(filterSteps, options);
         filterSteps = addClinvarPhenotypeAggregationFilter(filterSteps, options);
@@ -134,6 +136,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
                     new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
                             "rs")));
+        }
+        return filterSteps;
+    }
+
+    private List<DBObject> addClinvarSoTermAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+        List<String> soList = (List<String>) options.get("so");
+        if (soList != null && soList.size() > 0) {
+            logger.info("So filter activated, SO list: " + soList.toString());
+            filterSteps.add(new BasicDBObject("$match",
+                    new BasicDBObject("annot.consequenceTypes.soTerms.soName", new BasicDBObject("$in", soList))));
         }
         return filterSteps;
     }

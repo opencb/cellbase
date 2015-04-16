@@ -39,6 +39,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
     public Response getAll(@DefaultValue("") @QueryParam("rcv") String rcv,
                            @DefaultValue("") @QueryParam("rs") String rs,
+                           @DefaultValue("") @QueryParam("so") String so,
                            @DefaultValue("") @QueryParam("gene") String gene,
                            @DefaultValue("") @QueryParam("region") String region,
                            @DefaultValue("") @QueryParam("phenotype") String phenotype) {
@@ -52,6 +53,10 @@ public class ClinicalWSServer extends GenericRestWSServer {
             }
             if(rs != null && !rs.equals("")) {
                 queryOptions.add("rs", Arrays.asList(rs.split(",")));
+                noFilter = false;
+            }
+            if(so != null && !so.equals("")) {
+                queryOptions.add("so", Arrays.asList(so.split(",")));
                 noFilter = false;
             }
             if(gene != null && !gene.equals("")) {
