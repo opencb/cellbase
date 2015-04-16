@@ -272,7 +272,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "clinvar":
             case "gwas":
             case "clinical":
-                indexFileName = "clinical";
+                indexFileName = "clinical-indexes.js";
                 break;
             default:
                 break;
