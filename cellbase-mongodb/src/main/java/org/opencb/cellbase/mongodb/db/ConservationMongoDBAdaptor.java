@@ -86,7 +86,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
             if (regionChunkStart == regionChunkEnd) {
                 builder = QueryBuilder.start("_chunkIds")
-                        .in(getChunkIdPrefix(region.getChromosome(), region.getStart(), this.chunkSize));
+                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(), this.chunkSize));
             } else {
 //                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
 ////                    integerChunkIds.add(chunkId);
@@ -186,7 +186,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
             if(regionChunkStart == regionChunkEnd) {
                 builder = QueryBuilder.start("_chunkIds")
-                        .in(getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
+                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
             } else {
 //                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
 //                    integerChunkIds.add(chunkId);
