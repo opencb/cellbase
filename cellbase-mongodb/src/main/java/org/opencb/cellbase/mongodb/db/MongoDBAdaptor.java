@@ -639,7 +639,7 @@ public class MongoDBAdaptor {
     }
 
 
-    private int getChunkId(int position, int chunksize) {
+    protected int getChunkId(int position, int chunksize) {
         return position / chunksize;
     }
 

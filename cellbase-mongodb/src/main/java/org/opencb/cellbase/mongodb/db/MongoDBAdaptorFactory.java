@@ -257,7 +257,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             MongoDataStore mongoDataStore = createCellBaseMongoDatastore(speciesId, assembly);
             mongoDatastoreFactory.put(speciesAssemblyPrefix, mongoDataStore);
         }
-        return new ConservedRegionMongoDBAdaptor(speciesId, assembly, mongoDatastoreFactory.get(speciesAssemblyPrefix));
+        return new ConservationMongoDBAdaptor(speciesId, assembly, mongoDatastoreFactory.get(speciesAssemblyPrefix));
     }
 
 

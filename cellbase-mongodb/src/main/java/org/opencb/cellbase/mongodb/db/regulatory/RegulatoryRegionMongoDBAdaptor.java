@@ -196,13 +196,13 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
     }
 
 
-    private static int getChunkId(int position, int chunksize) {
-        if (chunksize <= 0) {
-            return position / regulatoryRegionChunkSize;
-        } else {
-            return position / chunksize;
-        }
-    }
+//    private int getChunkId(int position, int chunksize) {
+//        if (chunksize <= 0) {
+//            return position / regulatoryRegionChunkSize;
+//        } else {
+//            return position / chunksize;
+//        }
+//    }
 
     private static int getChunkStart(int id, int chunksize) {
         if (chunksize <= 0) {
