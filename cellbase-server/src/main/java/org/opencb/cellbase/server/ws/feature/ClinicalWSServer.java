@@ -40,6 +40,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAll(@DefaultValue("") @QueryParam("rcv") String rcv,
                            @DefaultValue("") @QueryParam("rs") String rs,
                            @DefaultValue("") @QueryParam("so") String so,
+                           @DefaultValue("") @QueryParam("type") String type,
+                           @DefaultValue("") @QueryParam("review") String review,
+                           @DefaultValue("") @QueryParam("significance") String significance,
                            @DefaultValue("") @QueryParam("gene") String gene,
                            @DefaultValue("") @QueryParam("region") String region,
                            @DefaultValue("") @QueryParam("phenotype") String phenotype) {
@@ -57,6 +60,18 @@ public class ClinicalWSServer extends GenericRestWSServer {
             }
             if(so != null && !so.equals("")) {
                 queryOptions.add("so", Arrays.asList(so.split(",")));
+                noFilter = false;
+            }
+            if(type != null && !type.equals("")) {
+                queryOptions.add("type", Arrays.asList(type.split(",")));
+                noFilter = false;
+            }
+            if(review != null && !review.equals("")) {
+                queryOptions.add("review", Arrays.asList(review.split(",")));
+                noFilter = false;
+            }
+            if(significance != null && !significance.equals("")) {
+                queryOptions.add("significance", Arrays.asList(significance.split(",")));
                 noFilter = false;
             }
             if(gene != null && !gene.equals("")) {
