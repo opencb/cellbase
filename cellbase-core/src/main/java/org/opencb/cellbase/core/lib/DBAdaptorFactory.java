@@ -53,7 +53,8 @@ public abstract class DBAdaptorFactory {
 
 	public DBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
 		this.cellBaseConfiguration = cellBaseConfiguration;
-		logger = LoggerFactory.getLogger(DBAdaptorFactory.class);
+
+		logger = LoggerFactory.getLogger(this.getClass());
 	}
 
 	protected CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
@@ -74,7 +75,7 @@ public abstract class DBAdaptorFactory {
 		} else {
 			for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
 				if(assemblyName.equalsIgnoreCase(assembly1.getName())) {
-					assembly = assembly1.getName().toLowerCase();
+					assembly = assembly1.getName();
 				}
 			}
 		}
@@ -99,7 +100,7 @@ public abstract class DBAdaptorFactory {
 //		return speciesPrefix;
 //	}
 
-	public abstract void setConfiguration(Properties properties);
+	public abstract void setConfiguration(CellBaseConfiguration cellBaseConfiguration);
 	
 	public abstract void open(String species, String version);
 	

@@ -7,7 +7,6 @@ import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.Species;
-import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.core.ChromosomeDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
@@ -23,7 +22,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 @Path("/{version}/{species}")
@@ -233,7 +235,7 @@ public class GenericRestWSServer implements IWSServer {
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
 
 
-        this.version = version.toUpperCase();;
+        this.version = version.toUpperCase();
         this.species = species;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
