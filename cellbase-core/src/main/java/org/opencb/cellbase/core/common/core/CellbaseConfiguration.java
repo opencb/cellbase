@@ -10,6 +10,7 @@ import java.util.*;
 /**
  * Created by javi on 16/09/14.
  */
+@Deprecated
 public class CellbaseConfiguration {
 
 
