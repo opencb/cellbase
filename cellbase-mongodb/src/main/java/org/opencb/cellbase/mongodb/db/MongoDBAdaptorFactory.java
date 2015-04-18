@@ -48,6 +48,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          cellbase_hsapiens_grch37_v3
          **/
 
+        // We need to look for the species object in the configuration
         CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);
         if(speciesObject != null) {
             species = speciesObject.getId();

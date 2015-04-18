@@ -1,21 +1,21 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import org.opencb.biodata.models.core.CpGIsland;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.StructuralVariation;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.lib.api.CpGIslandDBAdaptor;
+import org.opencb.cellbase.core.lib.api.CytobandDBAdaptor;
 import org.opencb.cellbase.core.lib.api.core.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.*;
+import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
-//import org.opencb.cellbase.core.common.variation.StructuralVariation;
 
 @Path("/{version}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
@@ -102,7 +100,8 @@ public class RegionWSServer extends GenericRestWSServer {
                                      @DefaultValue("true") @QueryParam("transcript") String transcripts,
                                      @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
-            checkParams();
+//            checkParams();
+            logger.info("Using version {}", version);
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
             List<Region> regions = Region.parseRegions(chregionId);
