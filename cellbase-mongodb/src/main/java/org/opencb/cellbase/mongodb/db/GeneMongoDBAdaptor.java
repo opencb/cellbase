@@ -27,14 +27,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
-    public GeneMongoDBAdaptor(String species, String assembly, int geneChunkSize, MongoDataStore mongoDataStore) {
+    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
 //        super(db, species, assembly);
 //        mongoDBCollection = db.getCollection("gene");
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
-        this.geneChunkSize = geneChunkSize;
+//        this.geneChunkSize = geneChunkSize;
     }
 
     @Override

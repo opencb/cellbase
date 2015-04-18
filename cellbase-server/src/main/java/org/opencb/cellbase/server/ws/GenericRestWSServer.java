@@ -23,8 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 @Path("/{version}/{species}")
@@ -102,7 +101,7 @@ public class GenericRestWSServer implements IWSServer {
     protected long endTime;
     protected QueryResponse queryResponse;
 
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected static Logger logger;
 
     /**
      * Loading properties file just one time to be more efficient. All methods
@@ -111,15 +110,16 @@ public class GenericRestWSServer implements IWSServer {
      */
     @Deprecated
     protected static Properties properties;
-    @Deprecated
-    protected static CellbaseConfiguration config = new CellbaseConfiguration();
+//    @Deprecated
+//    protected static CellbaseConfiguration config = new CellbaseConfiguration();
 
     protected static CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-
 
     /**
      *  Species for each version
      */
+
+    /*
     static {
         InputStream is = GenericRestWSServer.class.getClassLoader().getResourceAsStream("application.properties");
         properties = new Properties();
@@ -187,6 +187,7 @@ public class GenericRestWSServer implements IWSServer {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
+    */
 
     /**
      * DBAdaptorFactory creation, this object can be initialize with an
@@ -198,8 +199,30 @@ public class GenericRestWSServer implements IWSServer {
     static {
         // BasicConfigurator.configure();
         // dbAdaptorFactory = new HibernateDBAdaptorFactory();
-        dbAdaptorFactory = new MongoDBAdaptorFactory(config);
-        System.out.println("Static block #1");
+//        dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+
+        logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
+        try {
+            if (System.getenv("CELLBASE_HOME") != null) {
+                logger.debug("Loading configuration from '{}'", System.getenv("CELLBASE_HOME")+"/configuration.json");
+                cellBaseConfiguration = CellBaseConfiguration
+                        .load(new FileInputStream(new File(System.getenv("CELLBASE_HOME") + "/configuration.json")));
+            } else {
+                logger.debug("Loading configuration from '{}'",
+                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
+                cellBaseConfiguration = CellBaseConfiguration
+                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+            }
+
+            // If Configuration has been loaded we can create the DBAdaptorFactory
+            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+            logger.debug("Static block: DBAdapatorFactory created");
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectWriter = jsonObjectMapper.writer();
@@ -263,8 +286,9 @@ public class GenericRestWSServer implements IWSServer {
 
 //        if (availableVersionSpeciesMap.containsKey(version)) {
 //            if (!availableVersionSpeciesMap.get(version).contains(species)) {
-        if(!config.getVersion().equals(this.version)){
-            System.out.println("config = " + config.getVersion());
+        if(!cellBaseConfiguration.getVersion().equals(this.version)){
+//            System.out.println("config = " + config.getVersion());
+            logger.debug("Configuration:  {}", cellBaseConfiguration.getVersion());
             throw new VersionException("Version not valid: '" + version + "'");
         }
 

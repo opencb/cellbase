@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.lib;
 
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.lib.api.*;
 import org.opencb.cellbase.core.lib.api.core.*;
 import org.opencb.cellbase.core.lib.api.systems.PathwayDBAdaptor;
@@ -16,6 +17,7 @@ import java.util.Properties;
 
 public abstract class DBAdaptorFactory {
 
+	protected CellBaseConfiguration cellBaseConfiguration;
 	protected Logger logger;
 	
 //	protected static ResourceBundle resourceBundle;
@@ -46,8 +48,37 @@ public abstract class DBAdaptorFactory {
 //	}
 	
 	public DBAdaptorFactory() {
+		this(null);
+	}
+
+	public DBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
+		this.cellBaseConfiguration = cellBaseConfiguration;
 		logger = LoggerFactory.getLogger(DBAdaptorFactory.class);
-//		logger.setLevel(Logger.ERROR_LEVEL);
+	}
+
+	protected CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
+		CellBaseConfiguration.SpeciesProperties.Species species = null;
+		for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
+			if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
+				species = sp;
+				break;
+			}
+		}
+		return species;
+	}
+
+	protected String getAssembly(CellBaseConfiguration.SpeciesProperties.Species species, String assemblyName) {
+		String assembly = null;
+		if (assemblyName == null) {
+			assembly = species.getAssemblies().get(0).getName();
+		} else {
+			for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
+				if(assemblyName.equalsIgnoreCase(assembly1.getName())) {
+					assembly = assembly1.getName().toLowerCase();
+				}
+			}
+		}
+		return assembly;
 	}
 
 //	protected String getSpeciesVersionPrefix(String species, String version) {
@@ -101,7 +132,7 @@ public abstract class DBAdaptorFactory {
 	
 	
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species);
-	
+
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species, String assembly);
 
 

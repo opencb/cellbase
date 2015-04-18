@@ -6,6 +6,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +25,13 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
     public ClinVarMongoDBAdaptor(DB db, String species, String assembly) {
         super(db, species, assembly);
         mongoDBCollection = db.getCollection("clinvar");
+
+        logger.info("ClinVarMongoDBAdaptor: in 'constructor'");
+    }
+    public ClinVarMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("clinvar");
+        mongoDBCollection2 = mongoDataStore.getCollection("clinvar");
 
         logger.info("ClinVarMongoDBAdaptor: in 'constructor'");
     }

@@ -9,6 +9,7 @@ import org.opencb.cellbase.core.common.variation.GenomicVariantEffectPredictor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +36,13 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
         mongoDBCollection = db.getCollection("gene");
     }
 
+    public VariantEffectMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("gene");
+        mongoDBCollection2 = mongoDataStore.getCollection("gene");
+
+        logger.info("VariantEffectMongoDBAdaptor: in 'constructor'");
+    }
 
     @Override
     public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {

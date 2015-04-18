@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by parce on 12/02/15.
@@ -98,6 +99,7 @@ public class CellBaseConfiguration {
         private String port;
         private String user;
         private String password;
+        private Map<String, String> options;
 
         public String getHost() {
             return host;
@@ -129,6 +131,14 @@ public class CellBaseConfiguration {
 
         public void setPassword(String password) {
             this.password = password;
+        }
+
+        public Map<String, String> getOptions() {
+            return options;
+        }
+
+        public void setOptions(Map<String, String> options) {
+            this.options = options;
         }
     }
 
