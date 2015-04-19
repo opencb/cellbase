@@ -35,21 +35,21 @@ public class MongoDBAdaptor {
     protected ObjectMapper jsonObjectMapper;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    static {
-        // reading application.properties file
-        resourceBundle = ResourceBundle.getBundle("mongodb");
-//            applicationProperties = new Config(resourceBundle);
-        applicationProperties = new Properties();
-        if (resourceBundle != null) {
-            Set<String> keys = resourceBundle.keySet();
-            Iterator<String> iterator = keys.iterator();
-            String nextKey;
-            while (iterator.hasNext()) {
-                nextKey = iterator.next();
-                applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
-            }
-        }
-    }
+//    static {
+//        // reading application.properties file
+//        resourceBundle = ResourceBundle.getBundle("mongodb");
+////            applicationProperties = new Config(resourceBundle);
+//        applicationProperties = new Properties();
+//        if (resourceBundle != null) {
+//            Set<String> keys = resourceBundle.keySet();
+//            Iterator<String> iterator = keys.iterator();
+//            String nextKey;
+//            while (iterator.hasNext()) {
+//                nextKey = iterator.next();
+//                applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
+//            }
+//        }
+//    }
 
     @Deprecated
     public MongoDBAdaptor(DB db) {
