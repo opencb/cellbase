@@ -1,4 +1,7 @@
 
+// Usage:
+//    mongo -u ADMIN -p ADMIN_PASSWORD --authenticationDatabase admin --host HOST admin build/mongodb-scripts/grant-users.js
+
 var ownerUser = "cellbase";
 var readUser = "biouser";
 
