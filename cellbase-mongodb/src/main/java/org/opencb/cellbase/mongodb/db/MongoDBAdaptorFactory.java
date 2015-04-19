@@ -58,7 +58,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
     private MongoDataStore createMongoDBDatastore(String species, String assembly) {
         /**
-         Database name has the following pattern in lower case:
+         Database name has the following pattern in lower case and with no '.' in the name:
          cellbase_speciesId_assembly_cellbaseVersion
          Example:
          cellbase_hsapiens_grch37_v3
@@ -71,9 +71,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
             if (species != null && !species.isEmpty() && assembly != null && !assembly.isEmpty()) {
 
-                // if it does not exist then we create and store it
                 // Database name is built following the above pattern
-                String database = "cellbase" + "_" + species + "_" + assembly + "_" + cellBaseConfiguration.getVersion();
+                String database = "cellbase" + "_" + species + "_" + assembly.replaceAll("\\.", "_") + "_" + cellBaseConfiguration.getVersion();
                 logger.debug("Database for the species is '{}'", database);
 
                 MongoDBConfiguration mongoDBConfiguration;
