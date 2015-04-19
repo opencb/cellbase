@@ -73,27 +73,20 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
         BasicDBObject returnFields = getReturnFields(options);
         BasicDBList list = executeFind(queries.get(0), returnFields, options, db.getCollection("core"));
         long dbTimeStart, dbTimeEnd;
-        try {
 
+        GenomicVariantEffectPredictor genomicVariantEffectPredictor = new GenomicVariantEffectPredictor();
+//            List<Gene> genes = jsonObjectMapper.readValue(list.toString(), new TypeReference<List<Gene>>() { });
+        List<Gene> genes = new ArrayList<>();
+        dbTimeStart = System.currentTimeMillis();
+        List<GenomicVariantEffect> a = genomicVariantEffectPredictor.getAllEffectsByVariant(variants.get(0), genes, null);
+        dbTimeEnd = System.currentTimeMillis();
 
-            GenomicVariantEffectPredictor genomicVariantEffectPredictor = new GenomicVariantEffectPredictor();
-            List<Gene> genes = jsonObjectMapper.readValue(list.toString(), new TypeReference<List<Gene>>() { });
-            dbTimeStart = System.currentTimeMillis();
-            List<GenomicVariantEffect> a = genomicVariantEffectPredictor.getAllEffectsByVariant(variants.get(0), genes, null);
-            dbTimeEnd = System.currentTimeMillis();
+        QueryResult queryResult = new QueryResult();
+        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+        queryResult.setNumResults(list.size());
+        queryResult.setResult(a);
 
-            QueryResult queryResult = new QueryResult();
-            queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-            queryResult.setNumResults(list.size());
-            queryResult.setResult(a);
-
-            queryResults.add(queryResult);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        System.out.println(list.toString());
-
+        queryResults.add(queryResult);
 
         return queryResults;
     }
