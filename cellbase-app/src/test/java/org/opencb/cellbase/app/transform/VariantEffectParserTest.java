@@ -4,7 +4,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
-import org.opencb.cellbase.app.serializers.json.JsonParser;
+import org.opencb.cellbase.app.serializers.json.CellBaseJsonSerializer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -27,7 +27,7 @@ public class VariantEffectParserTest {
         URL resource = VariantEffectParserTest.class.getResource("/vep-example-output.txt");
         file = Paths.get(resource.toURI());
 
-        serializer = new JsonParser(Paths.get("/tmp"));
+        serializer = new CellBaseJsonSerializer(Paths.get("/tmp"));
 //        serializer = new JsonSerializer<>(Paths.get("/tmp/vep-example-output"));
 //        serializer.open();
 //        serializer.pre();

@@ -24,6 +24,7 @@ import java.util.Arrays;
 /**
  * Created by parce on 10/31/14.
  */
+@Deprecated
 public class CellBaseMongoDBSerializer extends CellBaseSerializer {
 
     private final String user;

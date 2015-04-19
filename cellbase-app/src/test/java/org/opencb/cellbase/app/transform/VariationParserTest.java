@@ -2,7 +2,7 @@ package org.opencb.cellbase.app.transform;
 
 import org.junit.Test;
 import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
-import org.opencb.cellbase.app.serializers.json.JsonParser;
+import org.opencb.cellbase.app.serializers.json.CellBaseJsonSerializer;
 
 import java.net.URL;
 import java.nio.file.Path;
@@ -14,7 +14,7 @@ public class VariationParserTest {
     public void testParse() throws Exception {
         URL resource = VariantEffectParserTest.class.getResource("/variationParser");
         Path inputDir = Paths.get(resource.toURI());
-        CellBaseFileSerializer serializer = new JsonParser(inputDir);
+        CellBaseFileSerializer serializer = new CellBaseJsonSerializer(inputDir);
         VariationParser variationParser = new VariationParser(inputDir, serializer);
         variationParser.parse();
         serializer.close();
