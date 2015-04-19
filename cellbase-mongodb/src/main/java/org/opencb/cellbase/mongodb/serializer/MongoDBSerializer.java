@@ -7,9 +7,9 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
-import org.opencb.cellbase.mongodb.serializer.converters.GeneConverter;
-import org.opencb.cellbase.mongodb.serializer.converters.VariantEffectConverter;
-import org.opencb.cellbase.mongodb.serializer.converters.VariationConverter;
+import org.opencb.cellbase.mongodb.loader.converters.GeneConverter;
+import org.opencb.cellbase.mongodb.loader.converters.VariantEffectConverter;
+import org.opencb.cellbase.mongodb.loader.converters.VariationConverter;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;

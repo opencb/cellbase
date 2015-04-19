@@ -1,4 +1,4 @@
-package org.opencb.cellbase.mongodb.serializer.converters;
+package org.opencb.cellbase.mongodb.loader.converters;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.BiMap;
