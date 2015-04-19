@@ -48,7 +48,7 @@ public class LoadCommandExecutor extends CommandExecutor {
      */
     public void execute() {
 
-        if (!Files.exists(input) || !Files.isDirectory(input)) {
+        if (Files.exists(input) && Files.isDirectory(input)) {
             checkParameters();
 
             if (loadCommandOptions.data != null) {
