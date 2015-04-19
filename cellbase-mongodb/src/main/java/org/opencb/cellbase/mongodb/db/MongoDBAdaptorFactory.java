@@ -15,31 +15,47 @@ import org.opencb.cellbase.mongodb.db.network.PathwayMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.network.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.regulatory.RegulatoryRegionMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.regulatory.TfbsMongoDBAdaptor;
+import org.opencb.datastore.core.config.DataStoreServerAddress;
 import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
 import org.opencb.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
-    private static MongoDataStoreManager mongoDataStoreManager;
+    private MongoDataStoreManager mongoDataStoreManager;
 //    private static Map<String, MongoDataStore> mongoDatastoreFactory;
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration){
         super(cellBaseConfiguration);
 
-        mongoDataStoreManager = new MongoDataStoreManager(
-                cellBaseConfiguration.getDatabase().getHost(),
-                Integer.parseInt(cellBaseConfiguration.getDatabase().getPort())
-        );
-
-        logger = LoggerFactory.getLogger(this.getClass());
-        logger.info("MongoDBAdaptorFactory constructor, this should be only be printed once");
+        init();
     }
 
+    private void init() {
+        if(mongoDataStoreManager == null) {
+            String[] hosts = cellBaseConfiguration.getDatabase().getHost().split(",");
+            List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
+            for (String host : hosts) {
+                String[] hostPort = host.split(":");
+                if(hostPort.length == 1) {
+                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], 27017));
+                } else {
+                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], Integer.parseInt(hostPort[1])));
+                }
+            }
+            mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
+            logger.info("MongoDBAdaptorFactory constructor, this should be only be printed once");
+        }
+
+//        logger = LoggerFactory.getLogger(this.getClass());
+    }
     private MongoDataStore createMongoDBDatastore(String species, String assembly) {
         /**
          Database name has the following pattern in lower case:
@@ -47,7 +63,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          Example:
          cellbase_hsapiens_grch37_v3
          **/
-
         // We need to look for the species object in the configuration
         CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);
         if(speciesObject != null) {
@@ -97,13 +112,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
-//    private String getSpeciesAssemblyId(String species, String assembly) {
-//        String speciesAssemblyid = null;
-//        if (species != null && !species.isEmpty() && assembly != null && !assembly.isEmpty()) {
-//            speciesAssemblyid = species + "_" + assembly.toLowerCase();
-//        }
-//        return speciesAssemblyid;
-//    }
 
     @Override
     public void setConfiguration(CellBaseConfiguration cellBaseConfiguration) {

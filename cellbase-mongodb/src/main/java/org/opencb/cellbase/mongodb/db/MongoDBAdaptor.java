@@ -1,6 +1,5 @@
 package org.opencb.cellbase.mongodb.db;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;

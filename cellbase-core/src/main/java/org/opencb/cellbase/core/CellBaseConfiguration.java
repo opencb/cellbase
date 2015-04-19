@@ -96,6 +96,7 @@ public class CellBaseConfiguration {
 
     public static class DatabaseProperties {
         private String host;
+        @Deprecated
         private String port;
         private String user;
         private String password;
