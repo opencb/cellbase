@@ -14,7 +14,7 @@ import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.GenericFeature;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializerOld;
 import org.opencb.cellbase.mongodb.model.ClinicalVariation;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.Arrays;
  * Created by parce on 10/31/14.
  */
 @Deprecated
-public class CellBaseMongoDBSerializer extends CellBaseSerializer {
+public class CellBaseMongoDBSerializer extends CellBaseSerializerOld {
 
     private final String user;
     private final int port;

@@ -8,7 +8,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
-import org.opencb.cellbase.app.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;

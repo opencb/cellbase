@@ -3,7 +3,7 @@ package org.opencb.cellbase.mongodb.loader.converters;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.cellbase.core.serializer.CellBaseTypeConverter;
+import org.opencb.cellbase.core.loader.CellBaseTypeConverter;
 
 /**
  * Created by imedina on 01/09/14.
