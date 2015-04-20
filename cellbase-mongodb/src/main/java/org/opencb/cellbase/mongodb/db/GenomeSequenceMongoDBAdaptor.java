@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.mongodb.db;
 
 import com.mongodb.*;
@@ -23,12 +39,6 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 
     public GenomeSequenceMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
-        mongoDBCollection = db.getCollection("genome_sequence");
-    }
-
-    public GenomeSequenceMongoDBAdaptor(DB db, String species, String version, int chunkSize) {
-        super(db, species, version);
-        this.chunkSize = chunkSize;
         mongoDBCollection = db.getCollection("genome_sequence");
     }
 
@@ -95,11 +105,9 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
                 chunkIds.add(chunkIdStr);
                 integerChunkIds.add(chunkId);
             }
-            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosome()).and("chunkId").in(chunkIds);
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("chunkId").in(integerChunkIds);
+//            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosome()).and("_chunkIds").in(chunkIds);
+            QueryBuilder builder = QueryBuilder.start("_chunkIds").in(chunkIds);
             /****/
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("chunkId")
-//                    .greaterThanEquals(getChunk(region.getStart())).lessThanEquals(getChunk(region.getEnd()));
             queries.add(builder.get());
             ids.add(region.toString());
 
@@ -107,8 +115,6 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
-
-
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);

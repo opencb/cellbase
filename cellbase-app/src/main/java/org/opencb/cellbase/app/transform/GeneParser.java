@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.formats.feature.gff.Gff2;
@@ -8,7 +24,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
-import org.opencb.cellbase.app.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
@@ -52,7 +68,8 @@ public class GeneParser extends CellBaseParser {
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
-    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath, CellBaseSerializer serializer) {
+    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
+                      Path mirnaFile, Path genomeSequenceFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -125,7 +142,8 @@ public class GeneParser extends CellBaseParser {
                 String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
                 ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
                 Map<String, String> gtfAttributes = gtf.getAttributes();
-                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"), gtfAttributes.get("transcript_biotype"),
+                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
+                        (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), transcriptTfbses);
                 String tags;
@@ -582,7 +600,7 @@ public class GeneParser extends CellBaseParser {
         bufferedReader.close();
 
         Statement stm = sqlConn.createStatement();
-        stm.executeUpdate("CREATE INDEX chunkkId_idx on genome_sequence(chunkId)");
+        stm.executeUpdate("CREATE INDEX chunkId_idx on genome_sequence(chunkId)");
     }
 
     private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert, StringBuilder sequenceStringBuilder) throws SQLException {
@@ -644,6 +662,8 @@ public class GeneParser extends CellBaseParser {
 
                 sqlInsert.executeBatch();
                 sqlConn.commit();
+
+                sqlConn.setAutoCommit(true);
             }
         }
     }

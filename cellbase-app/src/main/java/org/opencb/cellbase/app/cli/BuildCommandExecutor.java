@@ -1,9 +1,25 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
-import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
-import org.opencb.cellbase.app.serializers.CellBaseSerializer;
-import org.opencb.cellbase.app.serializers.json.JsonParser;
+import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration;
@@ -24,7 +40,7 @@ import java.util.List;
 public class BuildCommandExecutor extends CommandExecutor {
 
     // TODO: these two constants should be defined in the 'download' module
-    public static final String GWAS_INPUT_FILE_NAME = "gwascatalog.txt";
+    public static final String GWAS_INPUT_FILE_NAME = "gwas_catalog.tsv";
     public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
@@ -82,6 +98,10 @@ public class BuildCommandExecutor extends CommandExecutor {
                     species = sp;
                     break;
                 }
+            }
+
+            if(species == null) {
+                logger.error("Species '{}' not valid", buildCommandOptions.species);
             }
 
             if (buildCommandOptions.data != null) {
@@ -210,7 +230,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildGenomeSequence() {
         Path fastaFile = getFastaReferenceGenome();
-        CellBaseSerializer serializer = new JsonParser(output, "genome_sequence");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "genome_sequence");
         return new GenomeSequenceFastaParser(fastaFile, serializer);
     }
 
@@ -218,7 +238,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CellBaseParser buildGene() {
         Path geneFolderPath = input.resolve("gene");
         Path genomeFastaFilePath = getFastaReferenceGenome();
-        CellBaseSerializer serializer = new JsonParser(output, "gene");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
 
         return new GeneParser(geneFolderPath, genomeFastaFilePath, serializer);
     }
@@ -226,7 +246,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildVariation() {
         Path variationFolderPath = input.resolve("variation");
-        CellBaseFileSerializer serializer = new JsonParser(output);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
 
         return new VariationParser(variationFolderPath, serializer);
 
@@ -242,7 +262,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildRegulatoryRegion() {
         Path regulatoryRegionFilesDir = input.resolve("regulation");
-        CellBaseSerializer serializer = new JsonParser(output, "regulatory_region");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
 
     }
@@ -250,28 +270,28 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildProtein() {
         Path proteinFolder = common.resolve("protein");
-        if(!Files.exists(proteinFolder.resolve("uniprot_chunks"))) {
-            try {
-                makeDir(proteinFolder.resolve("uniprot_chunks"));
-                if(Files.exists(proteinFolder.resolve("uniprot_sprot.xml.gz"))) {
-                    Runtime.getRuntime().exec("gunzip " + proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
-                }
-
-                List<String> args = Arrays.asList(proteinFolder.resolve("uniprot_sprot.xml").toAbsolutePath().toString(),
-                        proteinFolder.resolve("uniprot_chunks").toAbsolutePath().toString());
-                runCommandLineProcess(proteinScriptsFolder,
-                        "./uniprot_spliter.pl",
-                        args,
-                        proteinFolder.resolve("uniprot_chunks").resolve("chunks.log").toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        if(!Files.exists(proteinFolder.resolve("uniprot_chunks"))) {
+//            try {
+//                makeDir(proteinFolder.resolve("uniprot_chunks"));
+//                if(Files.exists(proteinFolder.resolve("uniprot_sprot.xml.gz"))) {
+//                    Runtime.getRuntime().exec("gunzip " + proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+//                }
+//
+//                List<String> args = Arrays.asList(proteinFolder.resolve("uniprot_sprot.xml").toAbsolutePath().toString(),
+//                        proteinFolder.resolve("uniprot_chunks").toAbsolutePath().toString());
+//                runCommandLineProcess(proteinScriptsFolder,
+//                        "./uniprot_spliter.pl",
+//                        args,
+//                        proteinFolder.resolve("uniprot_chunks").resolve("chunks.log").toString());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
 //        String species = buildCommandOptions.species;
 //        checkMandatoryOption("species", species);
-        CellBaseSerializer serializer = new JsonParser(output, "protein");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein");
         return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
 
     }
@@ -299,7 +319,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser getInteractionParser()  {
         Path psimiTabFile = common.resolve("protein").resolve("intact.txt");
-        CellBaseSerializer serializer = new JsonParser(output, "protein_protein_interaction");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein_protein_interaction");
         return new InteractionParser(psimiTabFile, species.getScientificName(), serializer);
     }
 
@@ -315,13 +335,13 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path conservationFilesDir = input.resolve("conservation");
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         int conservationChunkSize = 0;
-        CellBaseFileSerializer serializer = new JsonParser(output);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
         return new ConservedRegionParser(conservationFilesDir, conservationChunkSize, serializer);
     }
 
 
     private CellBaseParser buildClinvar() {
-        Path clinvarFile = input.resolve("clinical");
+        Path clinvarFile = input.resolve("ClinVar.xml");
 
         String assembly = buildCommandOptions.assembly;
         checkMandatoryOption("assembly", assembly);
@@ -329,15 +349,15 @@ public class BuildCommandExecutor extends CommandExecutor {
             throw new ParameterException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY);
         }
 
-        CellBaseSerializer serializer = new JsonParser(output, "clinvar");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar");
         return new ClinVarParser(clinvarFile, assembly, serializer);
     }
 
     private CellBaseParser buildCosmic()  {
-        Path cosmicFilePath = input.resolve("clinical");
+        Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
-        CellBaseSerializer serializer = new JsonParser(output, "cosmic");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "cosmic");
         return new CosmicParser(cosmicFilePath, serializer);
     }
 
@@ -347,7 +367,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         FileUtils.checkPath(gwasFile);
         Path dbsnpFile = inputDir.resolve(DBSNP_INPUT_FILE_NAME);
         FileUtils.checkPath(dbsnpFile);
-        CellBaseSerializer serializer = new JsonParser(output, "gwas");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gwas");
         return new GwasParser(gwasFile, dbsnpFile, serializer);
     }
 

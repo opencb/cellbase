@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.mongodb.db;
 
 import com.google.common.base.Splitter;
@@ -6,6 +22,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.junit.Test;
 import org.opencb.biodata.models.feature.Region;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
@@ -24,12 +41,12 @@ public class ClinicalMongoDBAdaptorTest {
     @Test
     public void testGetAllByRegionList() throws Exception {
         try {
-            CellbaseConfiguration config = new CellbaseConfiguration();
+//            CellbaseConfiguration config = new CellbaseConfiguration();
+            CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
+//            config.addSpeciesAlias("hsapiens", "hsapiens");
 
-            config.addSpeciesAlias("hsapiens", "hsapiens");
-
-            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
             QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
@@ -61,17 +78,42 @@ public class ClinicalMongoDBAdaptorTest {
     @Test
     public void testGetClinvarById() throws Exception {
 
-        CellbaseConfiguration config = new CellbaseConfiguration();
+//        CellbaseConfiguration config = new CellbaseConfiguration();
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "localhost", "cellbase_hsapiens_grch37_v3", 22222,
-                "mongo", "biouser", "B10p@ss", 10, 10);
+//        config.addSpeciesAlias("hsapiens", "hsapiens");
 
-        config.addSpeciesAlias("hsapiens", "hsapiens");
-
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
 
         clinicalDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList("RCV000091359"), new QueryOptions());
+    }
+
+    @Test
+    public void testGetAll() throws  Exception {
+
+//        CellbaseConfiguration config = new CellbaseConfiguration();
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.addToListOption("include", "clinvar");
+//        queryOptions.add("phenotype", "ALZHEIMER DISEASE 2, DUE TO APOE4 ISOFORM");
+//        queryOptions.addToListOption("phenotype", "ALZHEIMER");
+//        queryOptions.addToListOption("phenotype", "alzheimer");
+//        queryOptions.addToListOption("phenotype", "diabetes");
+        queryOptions.addToListOption("region", new Region("3", 550000, 1166666));
+        queryOptions.addToListOption("region", new Region("13", 550000, 1166666));
+//        queryOptions.addToListOption("gene", "APOE");
+//        queryOptions.addToListOption("rs", "rs429358");
+//        queryOptions.addToListOption("rcv", "RCV000019455");
+
+//        ((List<String>) queryOptions.get("include")).remove(0);
+
+        clinicalDBAdaptor.getAll(queryOptions);
+
     }
 }

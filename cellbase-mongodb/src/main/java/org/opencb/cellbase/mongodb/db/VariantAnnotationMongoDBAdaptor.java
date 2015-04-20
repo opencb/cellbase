@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.mongodb.db;
 
 import com.mongodb.*;
@@ -388,7 +404,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
                                     if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
-                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
                                         if (proteinSubstitutionScores.get("ss") != null) {
                                             consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
                                                     "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
@@ -593,7 +609,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
                                     if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
-                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult();
+                                        BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
                                         if (proteinSubstitutionScores.get("ss") != null) {
                                             consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
                                                     "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
@@ -1874,7 +1890,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         long dbTimeStart, dbTimeEnd;
         String document = "";
         try {
-            currentTabix = new TabixReader(applicationProperties.getProperty("VARIANT_ANNOTATION.FILENAME"));
+//            currentTabix = new TabixReader(applicationProperties.getProperty("VARIANT_ANNOTATION.FILENAME"));
+            currentTabix = new TabixReader("");
             for(GenomicVariant genomicVariant: variants) {
                 System.out.println(">>>"+genomicVariant);
                 TabixReader.Iterator it = currentTabix.query(genomicVariant.getChromosome() + ":" + genomicVariant.getPosition() + "-" + genomicVariant.getPosition());
@@ -1952,15 +1969,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 variantAnnotation.setId(id);
 
                 BasicDBList freqsDBList = null;
-                freqsDBList = (BasicDBList) ((BasicDBObject) variationDBList.get(0)).get("populationFrequencies");
-                BasicDBObject freqDBObject;
-                for(int j=0; j<freqsDBList.size(); j++) {
-                    freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                    variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
-                            freqDBObject.get("pop").toString(),freqDBObject.get("superPop").toString(),
-                            freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                            Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                            Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                if((freqsDBList = (BasicDBList) ((BasicDBObject) variationDBList.get(0)).get("populationFrequencies")) != null) {
+                    BasicDBObject freqDBObject;
+                    for (int j = 0; j < freqsDBList.size(); j++) {
+                        freqDBObject = ((BasicDBObject) freqsDBList.get(j));
+                        variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
+                                freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                                Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                    }
                 }
             }
 

@@ -6,7 +6,11 @@
 	"host": "${CELLBASE.DB.HOST}",
 	"port": "${CELLBASE.DB.PORT}",
 	"user": "${CELLBASE.DB.USER}",
-	"password": "${CELLBASE.DB.PASSWORD}"
+	"password": "${CELLBASE.DB.PASSWORD}",
+	"options": {
+	  	"authenticationDatabase": "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}",
+	  	"readPreference": "${CELLBASE.DB.MONGODB.READPREFERENCE}"
+	}
   },
   "defaultOutdir": "/tmp",
   "download": {
@@ -637,7 +641,7 @@
 		"assemblies":[
 		  {
 			"ensemblVersion":"26_79_4",
-			"name":"R64-1-1"
+			"name":"R64_1_1"
 		  }
 		],
 		"data":[

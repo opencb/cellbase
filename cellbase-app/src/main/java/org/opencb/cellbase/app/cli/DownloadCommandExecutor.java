@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
@@ -11,7 +27,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Created by imedina on 03/02/15.
@@ -139,7 +157,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String spShortName = sp.getScientificName().toLowerCase()
                 .replaceAll("\\.", "")
                 .replaceAll("\\)", "")
-                .replaceAll("[-(/]", " ")
+                .replaceAll("\\(", "")
+                .replaceAll("[-/]", " ")
                 .replaceAll("\\s+", "_");
         String spAssembly = assembly.getName().toLowerCase();
         Path spFolder = output.resolve(spShortName + "_" + spAssembly);
@@ -424,6 +443,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String url = configuration.getDownload().getUniprot().getHost();
             downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
 
+            makeDir(proteinFolder.resolve("uniprot_chunks"));
+            splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
+
             url = configuration.getDownload().getIntact().getHost();
             downloadFile(url, proteinFolder.resolve("intact.txt").toString());
 
@@ -432,6 +454,55 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }else {
             logger.info("Protein: skipping this since it is already downloaded. Delete 'protein' folder to force download");
         }
+    }
+
+    private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
+        BufferedReader br;
+        if(uniprotFilePath.toString().endsWith(".gz")) {
+            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(uniprotFilePath.toFile()))));
+        }else {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(uniprotFilePath.toFile())));
+        }
+
+        PrintWriter pw = null;
+        StringBuilder header = new StringBuilder();
+        boolean beforeEntry = true;
+        boolean inEntry = false;
+        int count = 0;
+        int chunk = 0;
+        String line ;
+        while((line = br.readLine()) != null) {
+            if(line.trim().startsWith("<entry ")) {
+                inEntry = true;
+                beforeEntry = false;
+                if(count % 10000 == 0) {
+                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_"+chunk+".xml").toFile()));
+                    pw.println(header.toString().trim());
+                }
+                count++;
+            }
+
+            if(beforeEntry) {
+                header.append(line).append("\n");
+            }
+
+            if(inEntry) {
+                pw.println(line);
+            }
+
+            if(line.trim().startsWith("</entry>")) {
+                inEntry = false;
+                if(count % 10000 == 0) {
+                    pw.print("</uniprot>");
+                    pw.close();
+                    chunk++;
+                }
+            }
+        }
+        pw.print("</uniprot>");
+        pw.close();
+
+        br.close();
     }
 
     /**

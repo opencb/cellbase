@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
@@ -6,11 +22,13 @@ import com.mongodb.BasicDBObject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import org.opencb.cellbase.core.common.Region;
 import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.lib.api.core.XRefsDBAdaptor;
 import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -263,6 +281,33 @@ public class GeneWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getPPIByEnsemblId", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{geneId}/clinvar")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
+    public Response getAllClinvarByGene(@PathParam("geneId") String query,
+                                       @DefaultValue("") @QueryParam("id") String id,
+                                       @DefaultValue("") @QueryParam("region") String region,
+                                       @DefaultValue("") @QueryParam("phenotype") String phenotype) {
+        try {
+            checkParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            if(region != null && !region.equals("")) {
+                queryOptions.add("region", Region.parseRegions(query));
+            }
+            if(id != null && !id.equals("")) {
+                queryOptions.add("id", Arrays.asList(id.split(",")));
+            }
+            if(phenotype != null && !phenotype.equals("")) {
+                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
+            }
+
+            return createOkResponse(clinicalDBAdaptor.getAllClinvarByGeneList(Splitter.on(",").splitToList(query), queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getAllByAccessions", e.toString());
         }
     }
 

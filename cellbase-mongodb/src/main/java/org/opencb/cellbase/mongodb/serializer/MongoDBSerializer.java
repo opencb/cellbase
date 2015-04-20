@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.mongodb.serializer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -7,9 +23,9 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.core.serializer.DefaultJsonSerializer;
-import org.opencb.cellbase.mongodb.serializer.converters.GeneConverter;
-import org.opencb.cellbase.mongodb.serializer.converters.VariantEffectConverter;
-import org.opencb.cellbase.mongodb.serializer.converters.VariationConverter;
+import org.opencb.cellbase.mongodb.loader.converters.GeneConverter;
+import org.opencb.cellbase.mongodb.loader.converters.VariantEffectConverter;
+import org.opencb.cellbase.mongodb.loader.converters.VariationConverter;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -28,6 +44,7 @@ import java.util.zip.GZIPOutputStream;
  * Time: 5:41 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class MongoDBSerializer extends DefaultJsonSerializer {
 
     private VariantEffectConverter variantEffectConverter;

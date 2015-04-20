@@ -1,9 +1,24 @@
-package org.opencb.cellbase.app.serializers.json;
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.opencb.cellbase.core.serializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,7 +31,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * Created by parce on 2/6/15.
  */
-public class JsonParser implements CellBaseFileSerializer {
+public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
 
     private final Path outdir;
     private final String fileName;
@@ -25,15 +40,15 @@ public class JsonParser implements CellBaseFileSerializer {
     private boolean serializeEmptyValues;
     private ObjectWriter jsonObjectWriter;
 
-    public JsonParser(Path outdir) {
+    public CellBaseJsonFileSerializer(Path outdir) {
         this(outdir, null);
     }
 
-    public JsonParser(Path outdir, String baseFileName) {
+    public CellBaseJsonFileSerializer(Path outdir, String baseFileName) {
         this(outdir, baseFileName, false);
     }
 
-    public JsonParser(Path outdir, String baseFileName, boolean serializeEmptyValues) {
+    public CellBaseJsonFileSerializer(Path outdir, String baseFileName, boolean serializeEmptyValues) {
         this.outdir = outdir;
         this.fileName = baseFileName;
         this.serializeEmptyValues = serializeEmptyValues;

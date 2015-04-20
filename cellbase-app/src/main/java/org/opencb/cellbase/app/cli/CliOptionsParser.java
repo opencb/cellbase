@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
@@ -21,6 +37,7 @@ public class CliOptionsParser {
     private LoadCommandOptions loadCommandOptions;
     private QueryCommandOptions queryCommandOptions;
     private VariantAnnotationCommandOptions variantAnnotationCommandOptions;
+    private PostLoadCommandOptions postLoadCommandOptions;
 
 
     public CliOptionsParser() {
@@ -36,12 +53,14 @@ public class CliOptionsParser {
         loadCommandOptions = new LoadCommandOptions();
         queryCommandOptions = new QueryCommandOptions();
         variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
+        postLoadCommandOptions = new PostLoadCommandOptions();
 
         jcommander.addCommand("download", downloadCommandOptions);
         jcommander.addCommand("build", buildCommandOptions);
         jcommander.addCommand("load", loadCommandOptions);
         jcommander.addCommand("query", queryCommandOptions);
         jcommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
+        jcommander.addCommand("post-load", postLoadCommandOptions);
 
     }
 
@@ -81,7 +100,7 @@ public class CliOptionsParser {
         @Parameter(names = {"-v", "--verbose"}, description = "This parameter set the level of the logging", required = false, arity = 1)
         public boolean verbose;
 
-        @Parameter(names = {"-C", "--conf"}, description = "This parameter set the level of the logging", required = false, arity = 1)
+        @Parameter(names = {"-C", "--conf"}, description = "CellBase configuration json file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.json for an example", required = false, arity = 1)
         public String conf;
 
     }
@@ -239,6 +258,20 @@ public class CliOptionsParser {
 
     }
 
+    @Parameters(commandNames = {"post-load"}, commandDescription = "Description: complements data already loaded in CellBase")
+    public class PostLoadCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-a", "--assembly"}, description = "The name of the assembly", required = false, arity = 1)
+        public String assembly = null;
+
+        @Parameter(names = {"--clinical-annotation-file"}, description = "Specify a file containing variant annotations for CellBase clinical data. Accepted file formats: VEP's file format", required = false)
+        public String clinicalAnnotationFilename = null;
+
+    }
+
 
     public GeneralOptions getGeneralOptions() {
         return generalOptions;
@@ -260,8 +293,8 @@ public class CliOptionsParser {
         return queryCommandOptions;
     }
 
-    public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() {
-        return variantAnnotationCommandOptions;
-    }
+    public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }
+
+    public PostLoadCommandOptions getPostLoadCommandOptions() { return postLoadCommandOptions; }
 
 }

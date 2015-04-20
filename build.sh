@@ -2,7 +2,7 @@
 
 if [ $# -eq 1 ]; then
     if [ $1 == 'run-maven' ]; then
-        mvn clean install -DskipTests
+        mvn -T 4 clean install -DskipTests
     fi
 fi
 
@@ -19,4 +19,5 @@ cp -r cellbase-app/target/appassembler/* build/
 cp  cellbase-core/target/classes/configuration.json build/
 cp cellbase-server/target/cellbase.war build/
 cp README.md build/
+cp LICENSE build/
 

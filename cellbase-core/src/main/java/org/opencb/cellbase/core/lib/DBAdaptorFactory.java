@@ -1,53 +1,74 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.core.lib;
 
-import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.lib.api.CpGIslandDBAdaptor;
+import org.opencb.cellbase.core.lib.api.CytobandDBAdaptor;
 import org.opencb.cellbase.core.lib.api.core.*;
-import org.opencb.cellbase.core.lib.api.systems.PathwayDBAdaptor;
-import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.core.lib.api.systems.PathwayDBAdaptor;
+import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-
 
 public abstract class DBAdaptorFactory {
 
+	protected CellBaseConfiguration cellBaseConfiguration;
 	protected Logger logger;
 	
-//	protected static ResourceBundle resourceBundle;
-//	protected static Config applicationProperties;
-//	protected static Map<String, String> speciesAlias;
-//	static {
-//		speciesAlias = new HashMap<String, String>(20);
-//
-//		// reading application.properties file
-//		cellbaseResourceBundle = ResourceBundle.getBundle("cellbase");
-//		try {
-//			cellbaseProperties = new Config(cellbaseResourceBundle);
-//			String[] speciesArray = cellbaseProperties.getProperty("SPECIES").split(",");
-//			String[] alias = null;
-//			for(String species: speciesArray) {
-//				species = species.toUpperCase();
-//				alias = cellbaseProperties.getProperty(species + ".ALIAS").split(",");
-//				for(String al: alias) {
-//					speciesAlias.put(al, species);
-//				}
-//				// For to recognize the species code
-//				speciesAlias.put(species, species);
-//			}
-//		} catch (IOException e) {
-//			cellbaseProperties = new Config();
-//			e.printStackTrace();
-//		}
-//	}
-	
+
 	public DBAdaptorFactory() {
-		logger = LoggerFactory.getLogger(DBAdaptorFactory.class);
-//		logger.setLevel(Logger.ERROR_LEVEL);
+		this(null);
+	}
+
+	public DBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
+		this.cellBaseConfiguration = cellBaseConfiguration;
+
+		logger = LoggerFactory.getLogger(this.getClass());
+	}
+
+	protected CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
+		CellBaseConfiguration.SpeciesProperties.Species species = null;
+		for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
+			if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
+				species = sp;
+				break;
+			}
+		}
+		return species;
+	}
+
+	protected String getAssembly(CellBaseConfiguration.SpeciesProperties.Species species, String assemblyName) {
+		String assembly = null;
+		if (assemblyName == null) {
+			assembly = species.getAssemblies().get(0).getName();
+		} else {
+			for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
+				if(assemblyName.equalsIgnoreCase(assembly1.getName())) {
+					assembly = assembly1.getName();
+				}
+			}
+		}
+		return assembly;
 	}
 
 //	protected String getSpeciesVersionPrefix(String species, String version) {
@@ -68,7 +89,7 @@ public abstract class DBAdaptorFactory {
 //		return speciesPrefix;
 //	}
 
-	public abstract void setConfiguration(Properties properties);
+	public abstract void setConfiguration(CellBaseConfiguration cellBaseConfiguration);
 	
 	public abstract void open(String species, String version);
 	
@@ -101,7 +122,7 @@ public abstract class DBAdaptorFactory {
 	
 	
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species);
-	
+
 	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species, String assembly);
 
 

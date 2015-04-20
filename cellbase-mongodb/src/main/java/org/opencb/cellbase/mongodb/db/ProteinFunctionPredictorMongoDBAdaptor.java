@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.mongodb.db;
 
 import com.mongodb.*;
@@ -51,6 +67,7 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
 
     public ProteinFunctionPredictorMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("protein_functional_prediction");
         mongoDBCollection2 = mongoDataStore.getCollection("protein_functional_prediction");
 
         logger.info("ProteinFunctionPredictorMongoDBAdaptor: in 'constructor'");
@@ -92,15 +109,15 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
         proteinSubstitionScoresQueryResult.setDbTime(allChangesQueryResult.getDbTime());
         proteinSubstitionScoresQueryResult.setId(transcriptId+"-"+aaPosition+"-"+newAa);
 
-//        String currentAaShortName;
-//        Map aaPositions;
-//        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
-//                (aaPositions = ((HashMap) ((BasicDBObject) ((BasicDBList) allChangesQueryResult.getResult()).get(0)).get("aaPositions")))!=null) {
-//            proteinSubstitionScoresQueryResult.setNumResults(1);
-//            proteinSubstitionScoresQueryResult.setResult(((HashMap) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName));
-//        } else {
-//            proteinSubstitionScoresQueryResult.setNumResults(0);
-//        }
+        String currentAaShortName;
+        Map aaPositions;
+        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
+                (aaPositions = ((HashMap) ((BasicDBObject) allChangesQueryResult.getResult().get(0)).get("aaPositions")))!=null) {
+            proteinSubstitionScoresQueryResult.setNumResults(1);
+            proteinSubstitionScoresQueryResult.setResult(Arrays.asList(((BasicDBObject) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName)));
+        } else {
+            proteinSubstitionScoresQueryResult.setNumResults(0);
+        }
 
         return proteinSubstitionScoresQueryResult;
     }

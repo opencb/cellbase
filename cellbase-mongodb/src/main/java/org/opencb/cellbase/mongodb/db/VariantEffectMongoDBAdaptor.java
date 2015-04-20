@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.mongodb.db;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,6 +25,7 @@ import org.opencb.cellbase.core.common.variation.GenomicVariantEffectPredictor;
 import org.opencb.cellbase.core.lib.api.variation.VariantEffectDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +52,13 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
         mongoDBCollection = db.getCollection("gene");
     }
 
+    public VariantEffectMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("gene");
+        mongoDBCollection2 = mongoDataStore.getCollection("gene");
+
+        logger.info("VariantEffectMongoDBAdaptor: in 'constructor'");
+    }
 
     @Override
     public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
@@ -65,27 +89,20 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
         BasicDBObject returnFields = getReturnFields(options);
         BasicDBList list = executeFind(queries.get(0), returnFields, options, db.getCollection("core"));
         long dbTimeStart, dbTimeEnd;
-        try {
 
+        GenomicVariantEffectPredictor genomicVariantEffectPredictor = new GenomicVariantEffectPredictor();
+//            List<Gene> genes = jsonObjectMapper.readValue(list.toString(), new TypeReference<List<Gene>>() { });
+        List<Gene> genes = new ArrayList<>();
+        dbTimeStart = System.currentTimeMillis();
+        List<GenomicVariantEffect> a = genomicVariantEffectPredictor.getAllEffectsByVariant(variants.get(0), genes, null);
+        dbTimeEnd = System.currentTimeMillis();
 
-            GenomicVariantEffectPredictor genomicVariantEffectPredictor = new GenomicVariantEffectPredictor();
-            List<Gene> genes = jsonObjectMapper.readValue(list.toString(), new TypeReference<List<Gene>>() { });
-            dbTimeStart = System.currentTimeMillis();
-            List<GenomicVariantEffect> a = genomicVariantEffectPredictor.getAllEffectsByVariant(variants.get(0), genes, null);
-            dbTimeEnd = System.currentTimeMillis();
+        QueryResult queryResult = new QueryResult();
+        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+        queryResult.setNumResults(list.size());
+        queryResult.setResult(a);
 
-            QueryResult queryResult = new QueryResult();
-            queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-            queryResult.setNumResults(list.size());
-            queryResult.setResult(a);
-
-            queryResults.add(queryResult);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        System.out.println(list.toString());
-
+        queryResults.add(queryResult);
 
         return queryResults;
     }
