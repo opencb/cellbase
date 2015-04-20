@@ -5,7 +5,10 @@ import org.opencb.cellbase.core.loader.LoaderException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -44,87 +47,78 @@ public class LoadCommandExecutor extends CommandExecutor {
      * Parse specific 'data' command options
      */
     public void execute() {
-        try {
+
+        if (Files.exists(input) && Files.isDirectory(input)) {
             checkParameters();
 
             if (loadCommandOptions.data != null) {
                 loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
 
                 String[] buildOptions;
-                if(loadCommandOptions.data.equals("all")) {
+                if (loadCommandOptions.data.equals("all")) {
                     buildOptions = new String[]{"genome", "gene", "variation", "regulatory_region", "protein", "ppi",
                             "protein_functional_prediction", "conservation", "clinical"};
-                }else {
+                } else {
                     buildOptions = loadCommandOptions.data.split(",");
                 }
 
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
 
-                    switch (buildOption) {
-                        case "genome":
-                            loadRunner.load(input.resolve("genome_info.json"), "genome_info");
-                            loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
-                            loadRunner.index("genome_sequence");
-                            break;
-                        case "gene":
-                            loadRunner.load(input.resolve("gene.json.gz"), "gene");
-                            loadRunner.index("gene");
-                            break;
-                        case "variation":
-                            loadVariationData();
-                            break;
-                        case "regulatory_region":
-                            loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
-                            loadRunner.index("regulatory_region");
-                            break;
-                        case "protein":
-                            loadRunner.load(input.resolve("protein.json.gz"), "protein");
-                            loadRunner.index("protein");
-                            break;
-                        case "ppi":
-                            loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
-                            loadRunner.index("protein_protein_interaction");
-                            break;
-                        case "protein_functional_prediction":
-                            loadProteinFunctionalPrediction();
-                            break;
-                        case "conservation":
-                            loadConservation();
-                            break;
-                        case "clinical":
-                            loadRunner.load(input.resolve("clinvar.json.gz"), "clinvar");
-                            loadRunner.load(input.resolve("cosmic.json.gz"), "cosmic");
-                            loadRunner.load(input.resolve("gwas.json.gz"), "gwas");
-                            break;
+                    try {
+                        switch (buildOption) {
+                            case "genome":
+                                loadRunner.load(input.resolve("genome_info.json"), "genome_info");
+                                loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
+                                loadRunner.index("genome_sequence");
+                                break;
+                            case "gene":
+                                loadRunner.load(input.resolve("gene.json.gz"), "gene");
+                                loadRunner.index("gene");
+                                break;
+                            case "variation":
+                                loadVariationData();
+                                break;
+                            case "regulatory_region":
+                                loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
+                                loadRunner.index("regulatory_region");
+                                break;
+                            case "protein":
+                                loadRunner.load(input.resolve("protein.json.gz"), "protein");
+                                loadRunner.index("protein");
+                                break;
+                            case "ppi":
+                                loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
+                                loadRunner.index("protein_protein_interaction");
+                                break;
+                            case "protein_functional_prediction":
+                                loadProteinFunctionalPrediction();
+                                break;
+                            case "conservation":
+                                loadConservation();
+                                break;
+                            case "clinical":
+                                loadRunner.load(input.resolve("clinvar.json.gz"), "clinvar");
+                                loadRunner.load(input.resolve("cosmic.json.gz"), "cosmic");
+                                loadRunner.load(input.resolve("gwas.json.gz"), "gwas");
+                                break;
+                        }
+                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException
+                            | ExecutionException | NoSuchMethodException | InterruptedException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (LoaderException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-
                 }
             }
-        } catch (ExecutionException | InterruptedException e) {
-            logger.error("Error executing loader: " + e);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (LoaderException e) {
-            e.printStackTrace();
+        } else {
+            logger.error("Input parameter '{}' does not exist or is not a directory", input.toString());
         }
     }
 
-    private void checkParameters() throws IOException {
-        if (!Files.exists(input) || !Files.isDirectory(input)) {
-            throw new IOException("Input parameter '" + input.toString() + "' does not exist or is not a directory");
-        }
-
+    private void checkParameters() {
         if (loadCommandOptions.numThreads > 1) {
             numThreads = loadCommandOptions.numThreads;
         }else {

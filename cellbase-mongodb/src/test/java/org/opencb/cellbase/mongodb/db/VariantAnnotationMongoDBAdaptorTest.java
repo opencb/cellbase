@@ -11,6 +11,7 @@ import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
@@ -36,11 +37,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
     @Test
     public void testGetAnnotationByVariantList() throws Exception {
 
-        CellbaseConfiguration config = new CellbaseConfiguration();
+//        CellbaseConfiguration config = new CellbaseConfiguration();
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
-        config.addSpeciesAlias("hsapiens", "hsapiens");
+//        config.addSpeciesAlias("hsapiens", "hsapiens");
 
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
@@ -233,12 +235,13 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        String result = objectMapper.writeValueAsString(response);
 //        int a = 1;
 
-        CellbaseConfiguration config = new CellbaseConfiguration();
+//        CellbaseConfiguration config = new CellbaseConfiguration();
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
 //        config.addSpeciesAlias("agambiae", "agambiae");
-        config.addSpeciesAlias("hsapiens", "hsapiens");
+//        config.addSpeciesAlias("hsapiens", "hsapiens");
 
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 //        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("agambiae", "GRCh37");

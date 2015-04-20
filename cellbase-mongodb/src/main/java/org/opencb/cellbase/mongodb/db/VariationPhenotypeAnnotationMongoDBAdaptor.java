@@ -8,6 +8,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,14 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
     public VariationPhenotypeAnnotationMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("variation_phenotype_annotation");
+    }
+
+    public VariationPhenotypeAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("variation_phenotype_annotation");
+        mongoDBCollection2 = mongoDataStore.getCollection("variation_phenotype_annotation");
+
+        logger.info("variation_phenotype_annotation: in 'constructor'");
     }
 
     @Override

@@ -27,14 +27,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
-    public GeneMongoDBAdaptor(String species, String assembly, int geneChunkSize, MongoDataStore mongoDataStore) {
+    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
 //        super(db, species, assembly);
 //        mongoDBCollection = db.getCollection("gene");
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
-        this.geneChunkSize = geneChunkSize;
+//        this.geneChunkSize = geneChunkSize;
     }
 
     @Override
@@ -122,16 +122,15 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     @Override
     public QueryResult getAllBiotypes(QueryOptions options) {
 
-//        QueryBuilder builder = QueryBuilder.start("gene.biotype").(id);  //TODO query distinct biotypes in gene collection
+        QueryBuilder builder = QueryBuilder.start("gene.biotype");  //TODO query distinct biotypes in gene collection
 
-
-        String[] biotypes = applicationProperties.getProperty("CELLBASE.V3.BIOTYPES").split(",");
-        QueryResult queryResult = new QueryResult();
-        queryResult.setId("result");
-        DBObject result = new BasicDBObject("biotypes", biotypes);
-        queryResult.setResult(Arrays.asList(result));
-        queryResult.setDbTime(0);
-        return queryResult;
+//        String[] biotypes = applicationProperties.getProperty("CELLBASE.V3.BIOTYPES").split(",");
+//        QueryResult queryResult = new QueryResult();
+//        queryResult.setId("result");
+//        DBObject result = new BasicDBObject("biotypes", biotypes);
+//        queryResult.setResult(Arrays.asList(result));
+//        queryResult.setDbTime(0);
+        return null;
     }
 
     @Override

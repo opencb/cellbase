@@ -1,7 +1,7 @@
 package org.opencb.cellbase.app.transform
 
 import org.opencb.biodata.models.core.Gene
-import org.opencb.cellbase.app.serializers.CellBaseSerializer
+import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import spock.lang.Specification
 import spock.lang.Unroll
 
