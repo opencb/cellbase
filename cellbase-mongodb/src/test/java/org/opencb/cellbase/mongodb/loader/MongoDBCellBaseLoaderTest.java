@@ -3,7 +3,6 @@ package org.opencb.cellbase.mongodb.loader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 
 import java.util.ArrayList;
@@ -39,19 +38,19 @@ public class MongoDBCellBaseLoaderTest {
 
         // connection params
         Map<String, String> params = new HashMap<>();
-        params.put(CellBaseLoader.CELLBASE_HOST, "localhost");
-        params.put(CellBaseLoader.CELLBASE_PORT, "27017");
-        params.put(CellBaseLoader.CELLBASE_DATABASE_NAME_PROPERTY, "cellbaseTest");
+//        params.put(CellBaseLoader.CELLBASE_HOST, "localhost");
+//        params.put(CellBaseLoader.CELLBASE_PORT, "27017");
+//        params.put(CellBaseLoader.CELLBASE_DATABASE_NAME_PROPERTY, "cellbaseTest");
 
         // loader
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
-        loader = new MongoDBCellBaseLoader(queue, "cosmic", params);
-        loader.init();
+//        loader = new MongoDBCellBaseLoader(queue, "cosmic", params);
+//        loader.init();
     }
 
     @After
     public void tearDown() throws Exception {
-        loader.disconnect();
+        loader.close();
     }
 
     @Test

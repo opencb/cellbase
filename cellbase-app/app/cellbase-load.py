@@ -114,7 +114,7 @@ for collection in mongodb_collections:
             break
 
     if collection == 'variation':
-        ## we load first all files starting with "variation_chr"
+        ## we data first all files starting with "variation_chr"
         variation_files = [f for f in os.listdir(indir) if re.match(r'variation_chr*', f)]
         for variation_file in variation_files:
             result = import_collection(user, password, database, collection, indir+"/"+variation_file.replace(".gz", ""))

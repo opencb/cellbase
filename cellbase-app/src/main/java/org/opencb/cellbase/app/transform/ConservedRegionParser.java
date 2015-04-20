@@ -1,6 +1,6 @@
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +37,10 @@ public class ConservedRegionParser extends CellBaseParser {
 
     @Override
     public void parse() throws IOException {
+        if(conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
+            throw new IOException("Conservation directory whether does not exist, is not a directory or cannot be read");
+        }
+
         Map<String, Path> files = new HashMap<>();
         String chromosome;
         Set<String> chromosomes = new HashSet<>();

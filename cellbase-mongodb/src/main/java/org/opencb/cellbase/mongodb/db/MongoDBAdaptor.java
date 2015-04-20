@@ -1,6 +1,5 @@
 package org.opencb.cellbase.mongodb.db;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
@@ -16,10 +15,11 @@ import java.util.*;
 
 public class MongoDBAdaptor {
 
-    protected MongoDataStore mongoDataStore;
-    protected MongoDBCollection mongoDBCollection2;
     protected String species;
     protected String assembly;
+
+    protected MongoDataStore mongoDataStore;
+    protected MongoDBCollection mongoDBCollection2;
 
     //	Old classes
     @Deprecated
@@ -29,27 +29,9 @@ public class MongoDBAdaptor {
 
     protected static Map<String, Number> cachedQuerySizes = new HashMap<String, Number>();
 
-    protected static ResourceBundle resourceBundle;
-    protected static Properties applicationProperties;
+//    protected ObjectMapper jsonObjectMapper;
 
-    protected ObjectMapper jsonObjectMapper;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    static {
-        // reading application.properties file
-        resourceBundle = ResourceBundle.getBundle("mongodb");
-//            applicationProperties = new Config(resourceBundle);
-        applicationProperties = new Properties();
-        if (resourceBundle != null) {
-            Set<String> keys = resourceBundle.keySet();
-            Iterator<String> iterator = keys.iterator();
-            String nextKey;
-            while (iterator.hasNext()) {
-                nextKey = iterator.next();
-                applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
-            }
-        }
-    }
 
     @Deprecated
     public MongoDBAdaptor(DB db) {
@@ -64,22 +46,24 @@ public class MongoDBAdaptor {
         //		logger.warn(applicationProperties.toString());
         initSpeciesAssembly(species, assembly);
 
-        jsonObjectMapper = new ObjectMapper();
+//        jsonObjectMapper = new ObjectMapper();
     }
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
         this("", "", mongoDataStore);
+        this.db = mongoDataStore.getDb();
     }
 
     public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         this.species = species;
         this.assembly = assembly;
         this.mongoDataStore = mongoDataStore;
+        this.db = mongoDataStore.getDb();
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
         initSpeciesAssembly(species, assembly);
-        jsonObjectMapper = new ObjectMapper();
+//        jsonObjectMapper = new ObjectMapper();
     }
 
     @Deprecated
@@ -146,6 +130,52 @@ public class MongoDBAdaptor {
                 queryResult.setNumTotalResults(dbObjectList.size());
             }
             queryResult.setResult(dbObjectList);
+
+            queryResults.add(queryResult);
+        }
+
+        return queryResults;
+    }
+
+    protected QueryResult executeAggregation2(Object id, List<DBObject> pipeline, QueryOptions options) {
+        return executeAggregationist2(Arrays.asList(id), Arrays.asList(pipeline), options, mongoDBCollection2).get(0);
+    }
+
+    protected List<QueryResult> executeAggregationList2(List<? extends Object> ids, List<List<DBObject>> queries,
+                                                        QueryOptions options) {
+        return executeAggregationist2(ids, queries, options, mongoDBCollection2);
+    }
+
+    protected List<QueryResult> executeAggregationist2(List<? extends Object> ids, List<List<DBObject>> pipelines,
+                                                       QueryOptions options, MongoDBCollection mongoDBCollection2) {
+        List<QueryResult> queryResults = new ArrayList<>(ids.size());
+//        logger.info("executeQueryList2");
+//        System.out.println("executeQueryList2");
+        long dbTimeStart, dbTimeEnd;
+
+        for (int i = 0; i < pipelines.size(); i++) {
+            List<DBObject> pipeline = pipelines.get(i);
+//            QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
+
+            // Execute query and calculate time
+            dbTimeStart = System.currentTimeMillis();
+            QueryResult queryResult = mongoDBCollection2.aggregate(pipeline, options);
+//            List<DBObject> dbObjectList = new LinkedList<>();
+//            while (cursor.hasNext()) {
+//                dbObjectList.add(cursor.next());
+//            }
+            dbTimeEnd = System.currentTimeMillis();
+//            // setting queryResult fields
+            queryResult.setId(ids.get(i).toString());
+            queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+            queryResult.setNumResults(queryResult.getResult().size());
+//            // Limit is set in queryOptions, count number of total results
+//            if(options != null && options.getInt("limit", 0) > 0) {
+//                queryResult.setNumTotalResults(mongoDBCollection2.count(pipeline).first());
+//            } else {
+//                queryResult.setNumTotalResults(dbObjectList.size());
+//            }
+//            queryResult.setResult(dbObjectList);
 
             queryResults.add(queryResult);
         }
@@ -591,7 +621,7 @@ public class MongoDBAdaptor {
     }
 
 
-    private int getChunkId(int position, int chunksize) {
+    protected int getChunkId(int position, int chunksize) {
         return position / chunksize;
     }
 

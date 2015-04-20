@@ -1,4 +1,4 @@
-package org.opencb.cellbase.mongodb.serializer.converters;
+package org.opencb.cellbase.mongodb.loader.converters;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.BiMap;
@@ -7,7 +7,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.opencb.biodata.models.variant.annotation.*;
-import org.opencb.cellbase.core.serializer.CellBaseTypeConverter;
+import org.opencb.cellbase.core.loader.CellBaseTypeConverter;
 
 import java.util.*;
 

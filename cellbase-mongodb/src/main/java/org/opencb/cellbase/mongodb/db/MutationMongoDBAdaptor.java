@@ -6,6 +6,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +25,13 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
     public MutationMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
         mongoDBCollection = db.getCollection("mutation");
+    }
+    public MutationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+        super(species, assembly, mongoDataStore);
+        mongoDBCollection = db.getCollection("mutation");
+        mongoDBCollection2 = mongoDataStore.getCollection("mutation");
+
+        logger.info("MutationMongoDBAdaptor: in 'constructor'");
     }
 
 

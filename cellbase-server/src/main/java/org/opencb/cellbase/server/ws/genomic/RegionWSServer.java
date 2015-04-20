@@ -1,21 +1,21 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import org.opencb.biodata.models.core.CpGIsland;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.StructuralVariation;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.cellbase.core.lib.api.*;
+import org.opencb.cellbase.core.lib.api.CpGIslandDBAdaptor;
+import org.opencb.cellbase.core.lib.api.CytobandDBAdaptor;
 import org.opencb.cellbase.core.lib.api.core.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.*;
+import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
+import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//import org.opencb.cellbase.core.common.regulatory.MirnaTarget;
-//import org.opencb.cellbase.core.common.variation.StructuralVariation;
 
 @Path("/{version}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
@@ -102,7 +100,8 @@ public class RegionWSServer extends GenericRestWSServer {
                                      @DefaultValue("true") @QueryParam("transcript") String transcripts,
                                      @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
-            checkParams();
+//            checkParams();
+            logger.info("Using version {}", version);
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
             List<Region> regions = Region.parseRegions(chregionId);
@@ -231,51 +230,46 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/clinvar")
-    public Response getClinvarByRegion(@PathParam("chrRegionId") String query) {
+    public Response getClinvarByRegion(@PathParam("chrRegionId") String query,
+                                       @DefaultValue("") @QueryParam("gene") String gene,
+                                       @DefaultValue("") @QueryParam("id") String id,
+                                       @DefaultValue("") @QueryParam("phenotpe") String phenotpe) {
         try {
             checkParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
-
             if (hasHistogramQueryParam()) {
                 return null;
             } else {
-
-//                QueryOptions queryOptions = new QueryOptions("include", "clinvarList,chromosome,start,end");
-                queryOptions.addToListOption("include", "clinvarList");
-                queryOptions.addToListOption("include","chromosome");
-                queryOptions.addToListOption("include","start");
-                queryOptions.addToListOption("include","end");
-                queryOptions.addToListOption("include","reference");
-                queryOptions.addToListOption("include","alternate");
-                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByRegionList(regions, queryOptions);
-                List<QueryResult> queryResultList = new ArrayList<>();
-                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
-                    QueryResult queryResult = new QueryResult();
-                    queryResult.setId(clinicalQueryResult.getId());
-                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
-                    BasicDBList basicDBList = new BasicDBList();
-                    int numResults = 0;
-                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
-                        if(clinicalRecord.containsKey("clinvarList")) {
-                            basicDBList.add(clinicalRecord);
-                            numResults += 1;
-//                            for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
-//                                clinvarRecord.put("chromosome", clinicalRecord.get("chromosome"));
-//                                clinvarRecord.put("start", clinicalRecord.get("start"));
-//                                clinvarRecord.put("end", clinicalRecord.get("end"));
-//                                clinvarRecord.put("reference", clinicalRecord.get("reference"));
-//                                clinvarRecord.put("alternate", clinicalRecord.get("alternate"));
-//                                basicDBList.add(clinvarRecord);
-//                                numResults++;
-//                            }
-                        }
-                    }
-                    queryResult.setResult(basicDBList);
-                    queryResult.setNumResults(numResults);
-                    queryResultList.add(queryResult);
+                if(gene != null && !gene.equals("")) {
+                    queryOptions.add("gene", Arrays.asList(gene.split(",")));
                 }
-                return createOkResponse(queryResultList);
+                if(id != null && !id.equals("")) {
+                    queryOptions.add("id", Arrays.asList(id.split(",")));
+                }
+                if(phenotpe != null && !phenotpe.equals("")) {
+                    queryOptions.add("phenotpe", Arrays.asList(phenotpe.split(",")));
+                }
+//                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
+//                List<QueryResult> queryResultList = new ArrayList<>();
+//                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
+//                    QueryResult queryResult = new QueryResult();
+//                    queryResult.setId(clinicalQueryResult.getId());
+//                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
+//                    BasicDBList basicDBList = new BasicDBList();
+//                    int numResults = 0;
+//                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
+//                        if(clinicalRecord.containsKey("clinvarList")) {
+//                            basicDBList.add(clinicalRecord);
+//                            numResults += 1;
+//                        }
+//                    }
+//                    queryResult.setResult(basicDBList);
+//                    queryResult.setNumResults(numResults);
+//                    queryResultList.add(queryResult);
+//                }
+//                return createOkResponse(queryResultList);
+                return createOkResponse(clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions));
             }
 
         } catch (Exception e) {

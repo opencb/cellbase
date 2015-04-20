@@ -13,6 +13,7 @@ import java.util.List;
  */
 public interface ClinicalDBAdaptor {
 
+    public QueryResult getAll(QueryOptions options);
 
     public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
 
@@ -20,14 +21,30 @@ public interface ClinicalDBAdaptor {
 
     public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
 
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
-
-    public QueryResult getAllByRegion(Region region, QueryOptions options);
-
-    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
-
     public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options);
 
     public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options);
+
+    public QueryResult getListClinvarAccessions(QueryOptions queryOptions);
+
+    public QueryResult getById(String id, QueryOptions options);
+
+    public QueryResult getAllClinvar(QueryOptions options);
+
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+
+    public QueryResult getClinvarById(String id, QueryOptions options);
+
+    public List<QueryResult> getAllClinvarByIdList(List<String> idList, QueryOptions options);
+
+    public QueryResult getClinvarByGene(String id, QueryOptions options);
+
+    public List<QueryResult> getAllClinvarByGeneList(List<String> idList, QueryOptions options);
+
+    public QueryResult getAllClinvarByRegion(String chromosome, int start, int end, QueryOptions options);
+
+    public QueryResult getAllClinvarByRegion(Region region, QueryOptions options);
+
+    public List<QueryResult> getAllClinvarByRegionList(List<Region> regions, QueryOptions options);
 
 }

@@ -1,4 +1,4 @@
-package org.opencb.cellbase.mongodb.serializer.converters;
+package org.opencb.cellbase.mongodb.loader.converters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.DBObject;

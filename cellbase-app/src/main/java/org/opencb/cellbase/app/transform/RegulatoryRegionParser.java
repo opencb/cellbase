@@ -1,6 +1,6 @@
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.app.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
 
 import java.io.BufferedReader;
@@ -61,6 +61,10 @@ public class RegulatoryRegionParser extends CellBaseParser {
 
     @Override
     public void parse() throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
+        if(regulatoryRegionPath == null || !Files.exists(regulatoryRegionPath) || !Files.isDirectory(regulatoryRegionPath)) {
+            throw new IOException("Regulation directory whether does not exist, is not a directory or cannot be read");
+        }
+
         // Create the SQLite databases
         createSQLiteRegulatoryFiles(regulatoryRegionPath);
 

@@ -8,7 +8,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
-import org.opencb.cellbase.app.serializers.CellBaseSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
@@ -52,7 +52,8 @@ public class GeneParser extends CellBaseParser {
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
-    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile, Path genomeSequenceFilePath, CellBaseSerializer serializer) {
+    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
+                      Path mirnaFile, Path genomeSequenceFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -108,7 +109,7 @@ public class GeneParser extends CellBaseParser {
             String transcriptId = gtf.getAttributes().get("transcript_id");
 
             if (newGene(gene, geneId)) {
-                // If new geneId is different from the current then we must serialize before load new gene
+                // If new geneId is different from the current then we must serialize before data new gene
                 if (gene != null) {
                     serializer.serialize(gene);
                 }
@@ -125,7 +126,8 @@ public class GeneParser extends CellBaseParser {
                 String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
                 ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
                 Map<String, String> gtfAttributes = gtf.getAttributes();
-                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"), gtfAttributes.get("transcript_biotype"),
+                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
+                        (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), transcriptTfbses);
                 String tags;
@@ -358,7 +360,7 @@ public class GeneParser extends CellBaseParser {
     }
 
     private Map<String, SortedSet<Gff2>> getTfbsMap() {
-        // load MotifFeatures content in a Map
+        // data MotifFeatures content in a Map
         Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
         try {
             if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
@@ -582,7 +584,7 @@ public class GeneParser extends CellBaseParser {
         bufferedReader.close();
 
         Statement stm = sqlConn.createStatement();
-        stm.executeUpdate("CREATE INDEX chunkkId_idx on genome_sequence(chunkId)");
+        stm.executeUpdate("CREATE INDEX chunkId_idx on genome_sequence(chunkId)");
     }
 
     private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert, StringBuilder sequenceStringBuilder) throws SQLException {
@@ -644,6 +646,8 @@ public class GeneParser extends CellBaseParser {
 
                 sqlInsert.executeBatch();
                 sqlConn.commit();
+
+                sqlConn.setAutoCommit(true);
             }
         }
     }

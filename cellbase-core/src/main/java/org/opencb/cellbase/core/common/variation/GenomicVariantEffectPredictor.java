@@ -15,6 +15,7 @@ import java.util.*;
  * Time: 11:40 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class GenomicVariantEffectPredictor {
     //	private static int FEATURE_MAP_CHUNK_SIZE = 400;
 
