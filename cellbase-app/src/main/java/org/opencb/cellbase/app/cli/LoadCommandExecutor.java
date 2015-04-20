@@ -70,7 +70,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
-
+                    
                     try {
                         switch (buildOption) {
                             case "genome":
@@ -107,6 +107,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                 loadRunner.load(input.resolve("clinvar.json.gz"), "clinvar");
                                 loadRunner.load(input.resolve("cosmic.json.gz"), "cosmic");
                                 loadRunner.load(input.resolve("gwas.json.gz"), "gwas");
+                                loadRunner.index("clinical");
                                 break;
                         }
                     } catch (IllegalAccessException | InstantiationException | InvocationTargetException
