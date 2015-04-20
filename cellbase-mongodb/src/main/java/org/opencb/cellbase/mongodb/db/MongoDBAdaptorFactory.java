@@ -77,19 +77,21 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
                 MongoDBConfiguration mongoDBConfiguration;
                 // For authenticated databases
-                if(!cellBaseConfiguration.getDatabase().getUser().equals("")
-                        && !cellBaseConfiguration.getDatabase().getPassword().equals("")) {
+                if(!cellBaseConfiguration.getDatabase().getUser().isEmpty()
+                        && !cellBaseConfiguration.getDatabase().getPassword().isEmpty()) {
                     // MongoDB could authenticate against different databases
                     if(cellBaseConfiguration.getDatabase().getOptions().containsKey("authenticationDatabase")) {
                         mongoDBConfiguration = MongoDBConfiguration.builder()
                                 .add("username", cellBaseConfiguration.getDatabase().getUser())
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
+                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"))
                                 .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"))
                                 .build();
                     } else {
                         mongoDBConfiguration = MongoDBConfiguration.builder()
                                 .add("username", cellBaseConfiguration.getDatabase().getUser())
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
+                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"))
                                 .build();
                     }
                 } else {
