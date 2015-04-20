@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.zip.GZIPInputStream;
 
@@ -24,9 +23,6 @@ public class LoadRunner {
 
     private String database;
     private String loader;
-
-//    @Deprecated
-//    private Map<String, String> loaderParams;
 
     private final int numThreads;
     private CellBaseConfiguration cellBaseConfiguration;
@@ -51,18 +47,6 @@ public class LoadRunner {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-//    public LoadRunner(String loader, String database, Map<String, String> loaderParams, int numThreads,
-//                      CellBaseConfiguration cellBaseConfiguration) {
-//        this.loader = loader;
-//        this.database = database;
-////        this.loaderParams = loaderParams;
-//        this.numThreads = numThreads;
-//        this.cellBaseConfiguration = cellBaseConfiguration;
-//
-//        this.blockingQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
-//
-//        logger = LoggerFactory.getLogger(this.getClass());
-//    }
 
     /**
      *
@@ -89,9 +73,7 @@ public class LoadRunner {
             for (int i=0; i < numThreads; i++) {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-//                        .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
                         .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
-//                        .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration));
                         .newInstance(blockingQueue, data, database, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
             }
@@ -180,49 +162,9 @@ public class LoadRunner {
     public void index(String data) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException, LoaderException {
         CellBaseLoader cellBaseLoader = (CellBaseLoader) Class.forName(loader)
-//                .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
                 .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
-//                .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration);
                 .newInstance(blockingQueue, data, database, cellBaseConfiguration);
         cellBaseLoader.createIndex(data);
     }
 
-//    protected void checkLoadedRecords(int inputRecords, int loadedRecords) {
-//        if (inputRecords == loadedRecords) {
-//            logger.info("All records have been loaded");
-//        } else {
-//            logger.warn("Just " + loadedRecords + " of " + inputRecords + " have been loaded");
-//        }
-//    }
-
-    //    protected List<CellBaseLoader> createCellBaseLoaders() throws ClassNotFoundException, NoSuchMethodException,
-//            InvocationTargetException, InstantiationException, IllegalAccessException {
-////        numCellBaseLoaders = numThreads > 2 ? numThreads - 1 : 1;
-//        numCellBaseLoaders = Math.max(numThreads, 1);
-//
-//        List<CellBaseLoader> cellBaseLoaders = new ArrayList<>(numCellBaseLoaders);
-//        for (int i=0; i < numCellBaseLoaders; i++) {
-////            consumers.add(createCellBaseLoader());
-//            /**
-//             * This code use Java reflection to create a data serializer for a specific database engine,
-//             * only a default JSON and MongoDB serializers have been implemented so far, this DI pattern
-//             * may be applied to get other database outputs.
-//             * This is in charge of creating the specific data model for the database backend.
-//             */
-//            cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-//                    .getConstructor(BlockingQueue.class, String.class, Map.class, CellBaseConfiguration.class)
-//                    .newInstance(blockingQueue, data, loaderParams, cellBaseConfiguration));
-//        }
-//        logger.debug("Loader: {} CellBase loaders threads created", numCellBaseLoaders);
-//        return cellBaseLoaders;
-//    }
-
-    //    private List<Future<Integer>> startCellBaseLoaders(ExecutorService executorService, List<CellBaseLoader> consumers) throws LoaderException {
-//        List<Future<Integer>> futures = new ArrayList<>(numThreads);
-//        for (CellBaseLoader cellBaseLoader : consumers) {
-//            cellBaseLoader.init();
-//            futures.add(executorService.submit(cellBaseLoader));
-//        }
-//        return futures;
-//    }
 }

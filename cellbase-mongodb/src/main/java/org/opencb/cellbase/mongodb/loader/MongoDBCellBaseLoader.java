@@ -48,13 +48,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-//    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
-//                                 Map<String, String> params, CellBaseConfiguration cellBaseConfiguration) {
-//        super(queue, data, database, params, cellBaseConfiguration);
-//        if(loaderParams.get("mongodb-index-folder") != null) {
-//            indexScriptFolder = Paths.get(loaderParams.get("mongodb-index-folder"));
-//        }
-//    }
 
     @Override
     public void init() throws LoaderException {
@@ -329,16 +322,5 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
         return executedWithoutErrors;
     }
-
-//    private ProcessBuilder getProcessBuilder(List<String> args, String logFilePath) {
-//        ProcessBuilder builder = new ProcessBuilder(args);
-//
-//        builder.redirectErrorStream(true);
-//        if (logFilePath != null) {
-//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
-//        }
-//
-//        return builder;
-//    }
 
 }
