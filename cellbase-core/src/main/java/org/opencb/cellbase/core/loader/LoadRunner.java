@@ -89,7 +89,8 @@ public class LoadRunner {
             for (int i=0; i < numThreads; i++) {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                        .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
+//                        .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
+                        .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
 //                        .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration));
                         .newInstance(blockingQueue, data, database, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
@@ -179,7 +180,8 @@ public class LoadRunner {
     public void index(String data) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException, LoaderException {
         CellBaseLoader cellBaseLoader = (CellBaseLoader) Class.forName(loader)
-                .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
+//                .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
+                .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
 //                .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration);
                 .newInstance(blockingQueue, data, database, cellBaseConfiguration);
         cellBaseLoader.createIndex(data);
