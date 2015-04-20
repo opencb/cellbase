@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.Xref;
-import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
 

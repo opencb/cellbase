@@ -7,6 +7,7 @@ import com.mongodb.DBCursor;
 import org.opencb.cellbase.core.lib.api.systems.PathwayDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
+import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -41,9 +42,11 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
         super(db, species, version);
     }
 
-    public PathwayMongoDBAdaptor(DB db, String species, String version, int genomeSequenceChunkSize) {
-        super(db, species, version);
-        this.genomeSequenceChunkSize = genomeSequenceChunkSize;
+    public PathwayMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+		super(species, assembly, mongoDataStore);
+		mongoDBCollection2 = mongoDataStore.getCollection("pathway");
+
+		logger.info("PathwayMongoDBAdaptor: in 'constructor'");
     }
 	
 	private int getChunk(int position){

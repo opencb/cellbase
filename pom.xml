@@ -22,7 +22,7 @@
 
     <properties>
         <cellbase.version>3.1-SNAPSHOT</cellbase.version>
-        <biodata.version>0.4.1</biodata.version>
+        <biodata.version>0.4.2</biodata.version>
         <datastore.version>0.3.2</datastore.version>
         <compileSource>1.7</compileSource>
         <build.dir>build</build.dir>
@@ -135,12 +135,12 @@
             <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet</artifactId>
-                <version>2.16</version>
+                <version>2.17</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-client</artifactId>
-                <version>2.16</version>
+                <version>2.17</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>

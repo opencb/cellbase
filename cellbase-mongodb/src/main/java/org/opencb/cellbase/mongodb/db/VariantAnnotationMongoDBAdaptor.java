@@ -1874,7 +1874,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         long dbTimeStart, dbTimeEnd;
         String document = "";
         try {
-            currentTabix = new TabixReader(applicationProperties.getProperty("VARIANT_ANNOTATION.FILENAME"));
+//            currentTabix = new TabixReader(applicationProperties.getProperty("VARIANT_ANNOTATION.FILENAME"));
+            currentTabix = new TabixReader("");
             for(GenomicVariant genomicVariant: variants) {
                 System.out.println(">>>"+genomicVariant);
                 TabixReader.Iterator it = currentTabix.query(genomicVariant.getChromosome() + ":" + genomicVariant.getPosition() + "-" + genomicVariant.getPosition());

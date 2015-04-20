@@ -1,6 +1,8 @@
 package org.opencb.cellbase.core.lib.api.variation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.datastore.core.QueryOptions;
@@ -46,5 +48,7 @@ public interface ClinicalDBAdaptor {
     public QueryResult getAllClinvarByRegion(Region region, QueryOptions options);
 
     public List<QueryResult> getAllClinvarByRegionList(List<Region> regions, QueryOptions options);
+
+    public QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions);
 
 }

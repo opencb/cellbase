@@ -1,10 +1,17 @@
 package org.opencb.cellbase.mongodb.db;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mongodb.*;
+import com.mongodb.util.JSON;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.Clinvar;
 import org.opencb.biodata.models.variant.annotation.Cosmic;
 import org.opencb.biodata.models.variant.annotation.Gwas;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 
@@ -632,9 +639,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     public QueryResult getListClinvarAccessions(QueryOptions queryOptions) {
-//        QueryBuilder builder = QueryBuilder.start("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").exists(true);
         QueryBuilder builder = QueryBuilder.start("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc").exists(true);
-//        queryOptions.put("include", Arrays.asList("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc"));
         queryOptions.put("include", Arrays.asList("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc"));
         QueryResult queryResult = executeQuery("", builder.get(), queryOptions);
         List accInfoList = (List) queryResult.getResult();
@@ -644,11 +649,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         for(Object accInfoObject: accInfoList) {
             accInfo = (BasicDBObject) accInfoObject;
-//            if(accInfo.containsKey("clinvarList")) {
-                accInfo = (BasicDBObject) accInfo.get("clinvarSet");
-                accList.add((String) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) accInfo
-                        .get("referenceClinVarAssertion"))).get("clinVarAccession")).get("acc"));
-//            }
+            accInfo = (BasicDBObject) accInfo.get("clinvarSet");
+            accList.add((String) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) accInfo
+                    .get("referenceClinVarAssertion"))).get("clinVarAccession")).get("acc"));
         }
 
         // setting listAccessionsToReturn fields
@@ -661,4 +664,45 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return listAccessionsToReturn;
     }
 
+    public QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions) {
+
+        /**
+         * Multiple documents may contain the same annotation
+         */
+        queryOptions.put("multi", true);
+
+        /**
+         * Prepare jackson to generate json strings
+         */
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectWriter writer = jsonObjectMapper.writer();
+
+        long start = System.nanoTime();
+        for (VariantAnnotation variantAnnotation : variantAnnotations) {
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(variantAnnotation.getChromosome())
+                    .and("start").is(variantAnnotation.getStart()).and("reference")
+                    .is(variantAnnotation.getReferenceAllele())
+                    .and("alternate").is(variantAnnotation.getAlternativeAllele());
+            DBObject update = null;
+            try {
+                update = new BasicDBObject("$set", new BasicDBObject("annot",
+                        JSON.parse(writer.writeValueAsString(variantAnnotation))));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+//            DBObject update = new BasicDBObject("$set", new BasicDBObject("annotation",
+//                    convertVariantAnnotation(variantAnnotation)));
+            mongoDBCollection2.update(builder.get(), update, queryOptions);
+        }
+
+        return new QueryResult<>("", ((int) (System.nanoTime() - start)), 1, 1, "", "", new ArrayList());
+    }
+
+//    private DBObject convertVariantAnnotation(VariantAnnotation variantAnnotation) {
+//        BasicDBObject basicDBObject = new BasicDBObject();
+//
+//        basicDBObject.put("")
+//    }
 }

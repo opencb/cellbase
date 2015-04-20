@@ -1,6 +1,6 @@
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

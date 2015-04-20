@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.serializer;
+package org.opencb.cellbase.core.loader;
 
 /**
  * Created by imedina on 17/06/14.

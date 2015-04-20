@@ -31,7 +31,8 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
     public ExonMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("clinical");
+		mongoDBCollection = db.getCollection("gene");
+        mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("ExonMongoDBAdaptor: in 'constructor'");
     }

@@ -1,4 +1,4 @@
-package org.opencb.cellbase.app.serializers;
+package org.opencb.cellbase.core.serializer;
 
 /**
  * Created by parce on 9/02/15.
