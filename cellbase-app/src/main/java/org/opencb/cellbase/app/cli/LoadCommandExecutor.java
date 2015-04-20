@@ -52,6 +52,12 @@ public class LoadCommandExecutor extends CommandExecutor {
             checkParameters();
 
             if (loadCommandOptions.data != null) {
+                // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
+                if (!loadCommandOptions.loaderParams.containsKey("authenticationDatabase")
+                        && configuration.getDatabase().getOptions().get("authenticationDatabase") != null) {
+                    loadCommandOptions.loaderParams.put("authenticationDatabase", configuration.getDatabase().getOptions().get("authenticationDatabase"));
+                }
+
                 loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
 
                 String[] buildOptions;
