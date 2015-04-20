@@ -1,6 +1,6 @@
 package org.opencb.cellbase.app.transform
 
-import org.opencb.cellbase.app.serializers.CellBaseSerializer
+import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import org.opencb.cellbase.app.transform.formats.Cadd
 import spock.lang.Specification
 import spock.lang.Unroll

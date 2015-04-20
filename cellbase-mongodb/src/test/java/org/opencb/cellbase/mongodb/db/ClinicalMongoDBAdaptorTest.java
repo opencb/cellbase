@@ -6,6 +6,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.junit.Test;
 import org.opencb.biodata.models.feature.Region;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
@@ -24,12 +25,12 @@ public class ClinicalMongoDBAdaptorTest {
     @Test
     public void testGetAllByRegionList() throws Exception {
         try {
-            CellbaseConfiguration config = new CellbaseConfiguration();
+//            CellbaseConfiguration config = new CellbaseConfiguration();
+            CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
+//            config.addSpeciesAlias("hsapiens", "hsapiens");
 
-            config.addSpeciesAlias("hsapiens", "hsapiens");
-
-            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
             QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
@@ -61,11 +62,12 @@ public class ClinicalMongoDBAdaptorTest {
     @Test
     public void testGetClinvarById() throws Exception {
 
-        CellbaseConfiguration config = new CellbaseConfiguration();
+//        CellbaseConfiguration config = new CellbaseConfiguration();
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
-        config.addSpeciesAlias("hsapiens", "hsapiens");
+//        config.addSpeciesAlias("hsapiens", "hsapiens");
 
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
 
@@ -75,14 +77,15 @@ public class ClinicalMongoDBAdaptorTest {
     @Test
     public void testGetAll() throws  Exception {
 
-        CellbaseConfiguration config = new CellbaseConfiguration();
+//        CellbaseConfiguration config = new CellbaseConfiguration();
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
-        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
-                "B10p@ss", 10, 10);
+//        config.addSpeciesConnection("hsapiens", "GRCh37", "mongodb-hxvm-var-001", "cellbase_hsapiens_grch37_v3", 27017, "mongo", "biouser",
+//                "B10p@ss", 10, 10);
 
-        config.addSpeciesAlias("hsapiens", "hsapiens");
+//        config.addSpeciesAlias("hsapiens", "hsapiens");
 
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(config);
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();

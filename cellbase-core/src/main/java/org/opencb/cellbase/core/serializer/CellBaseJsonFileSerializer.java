@@ -1,9 +1,8 @@
-package org.opencb.cellbase.app.serializers.json;
+package org.opencb.cellbase.core.serializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.cellbase.app.serializers.CellBaseFileSerializer;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,7 +15,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * Created by parce on 2/6/15.
  */
-public class JsonParser implements CellBaseFileSerializer {
+public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
 
     private final Path outdir;
     private final String fileName;
@@ -25,15 +24,15 @@ public class JsonParser implements CellBaseFileSerializer {
     private boolean serializeEmptyValues;
     private ObjectWriter jsonObjectWriter;
 
-    public JsonParser(Path outdir) {
+    public CellBaseJsonFileSerializer(Path outdir) {
         this(outdir, null);
     }
 
-    public JsonParser(Path outdir, String baseFileName) {
+    public CellBaseJsonFileSerializer(Path outdir, String baseFileName) {
         this(outdir, baseFileName, false);
     }
 
-    public JsonParser(Path outdir, String baseFileName, boolean serializeEmptyValues) {
+    public CellBaseJsonFileSerializer(Path outdir, String baseFileName, boolean serializeEmptyValues) {
         this.outdir = outdir;
         this.fileName = baseFileName;
         this.serializeEmptyValues = serializeEmptyValues;

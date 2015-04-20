@@ -75,7 +75,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
             String chunkId = position.getChromosome() + "_" + getChunkId(position.getPosition(), regulatoryRegionChunkSize)+"_"+ regulatoryRegionChunkSize /1000+"k";
             BasicDBList chunksId = new BasicDBList();
             chunksId.add(chunkId);
-            QueryBuilder builder = QueryBuilder.start("chunkIds").in(chunksId).and("start").is(position.getPosition());
+            QueryBuilder builder = QueryBuilder.start("_chunkIds").in(chunksId).and("start").is(position.getPosition());
             if (featureType != null) {
                 builder.and("featureType").is(featureType);
             }
@@ -126,7 +126,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
 //            logger.info(chunksId.toString());
 
-            builder = builder.start("chunkIds").in(chunksId)
+            builder = builder.start("_chunkIds").in(chunksId)
                              .and("start").lessThanEquals(region.getEnd())
                              .and("end").greaterThanEquals(region.getStart());
 
@@ -165,11 +165,11 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         QueryBuilder builder;
         if (options.getString("strand") == null || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
             // db.core.find({chromosome: "1", start: {$gt: 1000000}}).sort({start: 1}).limit(1)
-            builder = QueryBuilder.start("chunkIds").in(chunksId).and("chromosome").is(chromosome).and("start").greaterThan(position);
+            builder = QueryBuilder.start("_chunkIds").in(chunksId).and("chromosome").is(chromosome).and("start").greaterThan(position);
             options.put("sort", new BasicDBObject("start", 1));
             options.put("limit", 1);
         } else {
-            builder = QueryBuilder.start("chunkIds").in(chunksId).and("chromosome").is(chromosome).and("end").lessThan(position);
+            builder = QueryBuilder.start("_chunkIds").in(chunksId).and("chromosome").is(chromosome).and("end").lessThan(position);
             options.put("sort", new BasicDBObject("end", -1));
             options.put("limit", 1);
         }
@@ -196,13 +196,13 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
     }
 
 
-    private static int getChunkId(int position, int chunksize) {
-        if (chunksize <= 0) {
-            return position / regulatoryRegionChunkSize;
-        } else {
-            return position / chunksize;
-        }
-    }
+//    private int getChunkId(int position, int chunksize) {
+//        if (chunksize <= 0) {
+//            return position / regulatoryRegionChunkSize;
+//        } else {
+//            return position / chunksize;
+//        }
+//    }
 
     private static int getChunkStart(int id, int chunksize) {
         if (chunksize <= 0) {

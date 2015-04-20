@@ -141,7 +141,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String spShortName = sp.getScientificName().toLowerCase()
                 .replaceAll("\\.", "")
                 .replaceAll("\\)", "")
-                .replaceAll("[-(/]", " ")
+                .replaceAll("\\(", "")
+                .replaceAll("[-/]", " ")
                 .replaceAll("\\s+", "_");
         String spAssembly = assembly.getName().toLowerCase();
         Path spFolder = output.resolve(spShortName + "_" + spAssembly);

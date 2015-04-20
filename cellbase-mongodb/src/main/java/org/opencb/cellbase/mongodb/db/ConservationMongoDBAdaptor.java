@@ -12,28 +12,28 @@ import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
-public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
+public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
 
 
     private int chunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
 
-    public ConservedRegionMongoDBAdaptor(DB db) {
+    public ConservationMongoDBAdaptor(DB db) {
         super(db);
     }
 
-    public ConservedRegionMongoDBAdaptor(DB db, String species, String version) {
+    public ConservationMongoDBAdaptor(DB db, String species, String version) {
         super(db, species, version);
 //        this.chunkSize = 2000;
         mongoDBCollection = db.getCollection("conservation");
     }
 
-    public ConservedRegionMongoDBAdaptor(DB db, String species, String version, int chunkSize) {
+    public ConservationMongoDBAdaptor(DB db, String species, String version, int chunkSize) {
         super(db, species, version);
         this.chunkSize = chunkSize;
         mongoDBCollection = db.getCollection("conservation");
     }
 
-    public ConservedRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = db.getCollection("conservation");
         mongoDBCollection2 = mongoDataStore.getCollection("conservation");
@@ -41,17 +41,17 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
         logger.info("ConservedRegionMongoDBAdaptor: in 'constructor'");
     }
 
-    private int getChunk(int position) {
-        return (position / this.chunkSize);
-    }
-
-    private int getChunkStart(int id) {
-        return (id == 0) ? 1 : id * chunkSize;
-    }
-
-    private int getChunkEnd(int id) {
-        return (id * chunkSize) + chunkSize - 1;
-    }
+//    private int getChunk(int position) {
+//        return (position / this.chunkSize);
+//    }
+//
+//    private int getChunkStart(int id) {
+//        return (id == 0) ? 1 : id * chunkSize;
+//    }
+//
+//    private int getChunkEnd(int id) {
+//        return (id * chunkSize) + chunkSize - 1;
+//    }
 
     private int getOffset(int position) {
         return ((position) % chunkSize);
@@ -69,7 +69,7 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
         //TODO not finished yet
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
-        List<Integer> integerChunkIds;
+        List<String> integerChunkIds;
         for (Region region : regions) {
             integerChunkIds = new ArrayList<>();
             // positions below 1 are not allowed
@@ -81,24 +81,31 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
             }
 
             /****/
-            int regionChunkStart = getChunk(region.getStart());
-            int regionChunkEnd = getChunk(region.getEnd());
-            for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
-                integerChunkIds.add(chunkId);
+            QueryBuilder builder;
+            int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
+            int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
+            if (regionChunkStart == regionChunkEnd) {
+                builder = QueryBuilder.start("_chunkIds")
+                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(), this.chunkSize));
+            } else {
+//                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
+////                    integerChunkIds.add(chunkId);
+//                    integerChunkIds.add(region.getChromosome() + "_" + chunkId + "_" + this.chunkSize/1000 + "k");
+//                }
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }
 //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
             /****/
-
 
             queries.add(builder.get());
             ids.add(region.toString());
 
             logger.info(builder.get().toString());
-
         }
-        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
 
+        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
 
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
@@ -174,13 +181,21 @@ public class ConservedRegionMongoDBAdaptor extends MongoDBAdaptor implements Con
             }
 
             /****/
-            int regionChunkStart = getChunk(region.getStart());
-            int regionChunkEnd = getChunk(region.getEnd());
-            for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
-                integerChunkIds.add(chunkId);
+            QueryBuilder builder;
+            int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
+            int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
+            if(regionChunkStart == regionChunkEnd) {
+                builder = QueryBuilder.start("_chunkIds")
+                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
+            } else {
+//                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
+//                    integerChunkIds.add(chunkId);
+//                }
+//    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
             /****/
 
 

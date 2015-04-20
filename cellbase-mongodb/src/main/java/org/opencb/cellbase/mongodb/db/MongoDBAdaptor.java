@@ -1,6 +1,5 @@
 package org.opencb.cellbase.mongodb.db;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
@@ -16,10 +15,11 @@ import java.util.*;
 
 public class MongoDBAdaptor {
 
-    protected MongoDataStore mongoDataStore;
-    protected MongoDBCollection mongoDBCollection2;
     protected String species;
     protected String assembly;
+
+    protected MongoDataStore mongoDataStore;
+    protected MongoDBCollection mongoDBCollection2;
 
     //	Old classes
     @Deprecated
@@ -29,27 +29,9 @@ public class MongoDBAdaptor {
 
     protected static Map<String, Number> cachedQuerySizes = new HashMap<String, Number>();
 
-    protected static ResourceBundle resourceBundle;
-    protected static Properties applicationProperties;
+//    protected ObjectMapper jsonObjectMapper;
 
-    protected ObjectMapper jsonObjectMapper;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    static {
-        // reading application.properties file
-        resourceBundle = ResourceBundle.getBundle("mongodb");
-//            applicationProperties = new Config(resourceBundle);
-        applicationProperties = new Properties();
-        if (resourceBundle != null) {
-            Set<String> keys = resourceBundle.keySet();
-            Iterator<String> iterator = keys.iterator();
-            String nextKey;
-            while (iterator.hasNext()) {
-                nextKey = iterator.next();
-                applicationProperties.put(nextKey, resourceBundle.getString(nextKey));
-            }
-        }
-    }
 
     @Deprecated
     public MongoDBAdaptor(DB db) {
@@ -64,7 +46,7 @@ public class MongoDBAdaptor {
         //		logger.warn(applicationProperties.toString());
         initSpeciesAssembly(species, assembly);
 
-        jsonObjectMapper = new ObjectMapper();
+//        jsonObjectMapper = new ObjectMapper();
     }
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
@@ -81,7 +63,7 @@ public class MongoDBAdaptor {
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
         initSpeciesAssembly(species, assembly);
-        jsonObjectMapper = new ObjectMapper();
+//        jsonObjectMapper = new ObjectMapper();
     }
 
     @Deprecated
@@ -639,7 +621,7 @@ public class MongoDBAdaptor {
     }
 
 
-    private int getChunkId(int position, int chunksize) {
+    protected int getChunkId(int position, int chunksize) {
         return position / chunksize;
     }
 
