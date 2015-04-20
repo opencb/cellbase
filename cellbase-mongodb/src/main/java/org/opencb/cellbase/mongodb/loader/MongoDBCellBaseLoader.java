@@ -61,7 +61,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 Integer.parseInt(cellBaseConfiguration.getDatabase().getPort()));
 
         MongoDBConfiguration mongoDBConfiguration;
-        if(cellBaseConfiguration != null && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null) {
+        if(cellBaseConfiguration != null
+                && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null
+                && !cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase").isEmpty()) {
             mongoDBConfiguration = MongoDBConfiguration.builder()
                     .add("username", cellBaseConfiguration.getDatabase().getUser())
                     .add("password", cellBaseConfiguration.getDatabase().getPassword())
