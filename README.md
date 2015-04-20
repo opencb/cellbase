@@ -10,7 +10,7 @@ Note: This repository is a major refactoring of https://github.com/opencb-cloud.
 ### Documentation
 You can find CellBase documentation and tutorials at: https://github.com/opencb/cellbase/wiki.
 
-For documenting RESTful web services [Swagger](http://swagger.io/) has been set-up and is available at http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/eb.  
+For documenting RESTful web services [Swagger](http://swagger.io/) has been set-up and is available at http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/.  
 
 ### Issues Tracking
 You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
