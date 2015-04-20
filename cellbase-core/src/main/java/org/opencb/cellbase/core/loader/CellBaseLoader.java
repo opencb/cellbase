@@ -18,23 +18,45 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     protected final BlockingQueue<List<String>> blockingQueue;
     protected String data;
     protected String database;
-    protected Map<String, String> loaderParams;
+
+//    @Deprecated
+//    protected Map<String, String> loaderParams;
 
     protected CellBaseConfiguration cellBaseConfiguration;
 
     protected final Logger logger;
 
-    public CellBaseLoader (BlockingQueue<List<String>> blockingQueue, String data, String database,
-                           Map<String, String> loaderParams) {
-        this(blockingQueue, data, database, loaderParams, null);
-    }
+//    public CellBaseLoader (BlockingQueue<List<String>> blockingQueue, String data, String database,
+//                           Map<String, String> loaderParams) {
+//        this(blockingQueue, data, database, loaderParams, null);
+//    }
+
+//    public CellBaseLoader (BlockingQueue<List<String>> blockingQueue, String data, String database,
+//                           Map<String, String> loaderParams, CellBaseConfiguration cellBaseConfiguration) {
+//        this.blockingQueue = blockingQueue;
+//        this.data = data;
+//        this.database = database;
+////        this.loaderParams = loaderParams;
+//
+//        if(cellBaseConfiguration != null) {
+//            this.cellBaseConfiguration = cellBaseConfiguration;
+//        }else {
+//            try {
+//                this.cellBaseConfiguration = CellBaseConfiguration
+//                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        logger = LoggerFactory.getLogger(this.getClass());
+//    }
 
     public CellBaseLoader (BlockingQueue<List<String>> blockingQueue, String data, String database,
-                           Map<String, String> loaderParams, CellBaseConfiguration cellBaseConfiguration) {
+                           CellBaseConfiguration cellBaseConfiguration) {
         this.blockingQueue = blockingQueue;
         this.data = data;
         this.database = database;
-        this.loaderParams = loaderParams;
 
         if(cellBaseConfiguration != null) {
             this.cellBaseConfiguration = cellBaseConfiguration;

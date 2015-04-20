@@ -16,14 +16,12 @@ import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
 import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -38,18 +36,25 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private Path indexScriptFolder;
     private int[] chunkSizes;
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
-                                 Map<String, String> params) {
-        this(queue, data, database, params, null);
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
+        this(queue, data, database, null);
     }
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
-                                 Map<String, String> params, CellBaseConfiguration cellBaseConfiguration) {
-        super(queue, data, database, params, cellBaseConfiguration);
-        if(loaderParams.get("mongodb-index-folder") != null) {
-            indexScriptFolder = Paths.get(loaderParams.get("mongodb-index-folder"));
+                                 CellBaseConfiguration cellBaseConfiguration) {
+        super(queue, data, database, cellBaseConfiguration);
+        if(cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder") != null) {
+            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder"));
         }
     }
+
+//    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
+//                                 Map<String, String> params, CellBaseConfiguration cellBaseConfiguration) {
+//        super(queue, data, database, params, cellBaseConfiguration);
+//        if(loaderParams.get("mongodb-index-folder") != null) {
+//            indexScriptFolder = Paths.get(loaderParams.get("mongodb-index-folder"));
+//        }
+//    }
 
     @Override
     public void init() throws LoaderException {
@@ -63,13 +68,13 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 Integer.parseInt(cellBaseConfiguration.getDatabase().getPort()));
 
         MongoDBConfiguration mongoDBConfiguration;
-        if(loaderParams != null && loaderParams.get("authenticationDatabase") != null) {
+        if(cellBaseConfiguration != null && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null) {
             mongoDBConfiguration = MongoDBConfiguration.builder()
                     .add("username", cellBaseConfiguration.getDatabase().getUser())
                     .add("password", cellBaseConfiguration.getDatabase().getPassword())
-                    .add("authenticationDatabase", loaderParams.get("authenticationDatabase")).build();
+                    .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase")).build();
             logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
-                    loaderParams.get("authenticationDatabase"));
+                    cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
         }else {
             mongoDBConfiguration = MongoDBConfiguration.builder()
                     .add("username", cellBaseConfiguration.getDatabase().getUser())
@@ -295,11 +300,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     "-p", cellBaseConfiguration.getDatabase().getPassword()
             ));
         }
-        if(loaderParams != null && loaderParams.get("authenticationDatabase") != null) {
+        if(cellBaseConfiguration != null && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null) {
             args.add("--authenticationDatabase");
-            args.add(loaderParams.get("authenticationDatabase"));
+            args.add(cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
             logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
-                    loaderParams.get("authenticationDatabase"));
+                    cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
         }
         args.add(database);
         args.add(indexFilePath.toString());

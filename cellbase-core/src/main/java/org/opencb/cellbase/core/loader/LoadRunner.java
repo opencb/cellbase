@@ -24,7 +24,10 @@ public class LoadRunner {
 
     private String database;
     private String loader;
-    private Map<String, String> loaderParams;
+
+//    @Deprecated
+//    private Map<String, String> loaderParams;
+
     private final int numThreads;
     private CellBaseConfiguration cellBaseConfiguration;
 
@@ -37,11 +40,9 @@ public class LoadRunner {
     public static final List<String> POISON_PILL = new ArrayList<>();
 
 
-    public LoadRunner(String loader, String database, Map<String, String> loaderParams, int numThreads,
-                      CellBaseConfiguration cellBaseConfiguration) {
+    public LoadRunner(String loader, String database, int numThreads, CellBaseConfiguration cellBaseConfiguration) {
         this.loader = loader;
         this.database = database;
-        this.loaderParams = loaderParams;
         this.numThreads = numThreads;
         this.cellBaseConfiguration = cellBaseConfiguration;
 
@@ -49,6 +50,19 @@ public class LoadRunner {
 
         logger = LoggerFactory.getLogger(this.getClass());
     }
+
+//    public LoadRunner(String loader, String database, Map<String, String> loaderParams, int numThreads,
+//                      CellBaseConfiguration cellBaseConfiguration) {
+//        this.loader = loader;
+//        this.database = database;
+////        this.loaderParams = loaderParams;
+//        this.numThreads = numThreads;
+//        this.cellBaseConfiguration = cellBaseConfiguration;
+//
+//        this.blockingQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
+//
+//        logger = LoggerFactory.getLogger(this.getClass());
+//    }
 
     /**
      *
@@ -76,7 +90,8 @@ public class LoadRunner {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
                         .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
-                        .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration));
+//                        .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration));
+                        .newInstance(blockingQueue, data, database, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
             }
 
@@ -165,7 +180,8 @@ public class LoadRunner {
             IllegalAccessException, InvocationTargetException, InstantiationException, LoaderException {
         CellBaseLoader cellBaseLoader = (CellBaseLoader) Class.forName(loader)
                 .getConstructor(BlockingQueue.class, String.class, String.class, Map.class, CellBaseConfiguration.class)
-                .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration);
+//                .newInstance(blockingQueue, data, database, loaderParams, cellBaseConfiguration);
+                .newInstance(blockingQueue, data, database, cellBaseConfiguration);
         cellBaseLoader.createIndex(data);
     }
 

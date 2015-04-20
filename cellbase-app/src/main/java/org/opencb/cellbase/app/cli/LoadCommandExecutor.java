@@ -52,13 +52,17 @@ public class LoadCommandExecutor extends CommandExecutor {
             checkParameters();
 
             if (loadCommandOptions.data != null) {
+
+                if (loadCommandOptions.loaderParams.containsKey("mongodb-index-folder")) {
+                    configuration.getDatabase().getOptions().put("mongodb-index-folder", loadCommandOptions.loaderParams.get("mongodb-index-folder"));
+                }
                 // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
-                if (!loadCommandOptions.loaderParams.containsKey("authenticationDatabase")
-                        && configuration.getDatabase().getOptions().get("authenticationDatabase") != null) {
-                    loadCommandOptions.loaderParams.put("authenticationDatabase", configuration.getDatabase().getOptions().get("authenticationDatabase"));
+                if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
+                    configuration.getDatabase().getOptions().put("authenticationDatabase", loadCommandOptions.loaderParams.get("authenticationDatabase"));
                 }
 
-                loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
+//                loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
+                loadRunner = new LoadRunner(loader, database, numThreads, configuration);
 
                 String[] buildOptions;
                 if (loadCommandOptions.data.equals("all")) {
@@ -70,7 +74,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
-                    
+
                     try {
                         switch (buildOption) {
                             case "genome":
