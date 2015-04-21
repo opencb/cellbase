@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -21,7 +21,7 @@
     </modules>
 
     <properties>
-        <cellbase.version>3.1.0</cellbase.version>
+        <cellbase.version>3.1.1</cellbase.version>
         <biodata.version>0.4.2</biodata.version>
         <datastore.version>0.3.2</datastore.version>
         <compileSource>1.7</compileSource>
