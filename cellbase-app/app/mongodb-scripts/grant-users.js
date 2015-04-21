@@ -50,7 +50,7 @@ var databases = [
   "cellbase_hsapiens_grch37_v3",
   "cellbase_osativa_irgsp-1_0_v3",
   "cellbase_rnorvegicus_rnor_5_0_v3",
-  "cellbase_zays_agpv3_v3"
+  "cellbase_zmays_agpv3_v3"
 ];
 
 
