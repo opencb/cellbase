@@ -10,7 +10,7 @@ Note: This repository is a major refactoring of https://github.com/opencb-cloud.
 ### Documentation
 You can find CellBase documentation and tutorials at: https://github.com/opencb/cellbase/wiki.
 
-For documenting RESTful web services [Swagger](http://swagger.io/) has been set-up and is available at http://wwwdev.ebi.ac.uk/cellbase/webservices/.  
+For documenting RESTful web services [Swagger](http://swagger.io/) has been set-up and is available at http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/.  
 
 ### Issues Tracking
 You can report bugs or request new features at [GitHub issue tracking](https://github.com/opencb/cellbase/issues).
@@ -32,7 +32,7 @@ We recommend to contact CellBase developers by writing to OpenCB mailing list op
 
 ##### Other Contributors
 * Marta Bleda (mb2033@cam.ac.uk)
-* Antonio Rueda (antonior@bioinfomgp.org)
+* Antonio Rueda (antonio.rueda-martin@genomicsengland.co.uk)
 
 ##### Contributing
 CellBase is an open-source and collaborative project. We appreciate any help and feeback from users, you can contribute in many different ways such as simple bug reporting and feature request. Dependending on your skills you are more than welcome to develop client tools, new features or even fixing bugs.
@@ -81,6 +81,10 @@ We use maven to inject the properties values, you need to add this maven configu
        <CELLBASE.DB.PORT>27017</CELLBASE.DB.PORT>
        <CELLBASE.DB.USER></CELLBASE.DB.USER>
        <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
+       <CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>admin</CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE> 
+       <CELLBASE.DB.MONGODB.READPREFERENCE>nearest</CELLBASE.DB.MONGODB.READPREFERENCE> 
+       <CELLBASE.VERSION>v3</CELLBASE.VERSION> 
+       <CELLBASE.ENSEMBL.LIBS>/home/imedina/apis/ensembl/api_79</CELLBASE.ENSEMBL.LIBS> 
      </properties>
      </profile>
 

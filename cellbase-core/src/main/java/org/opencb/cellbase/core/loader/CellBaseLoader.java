@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.core.loader;
 
 import org.opencb.cellbase.core.CellBaseConfiguration;
@@ -6,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 
@@ -18,23 +33,17 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     protected final BlockingQueue<List<String>> blockingQueue;
     protected String data;
     protected String database;
-    protected Map<String, String> loaderParams;
 
     protected CellBaseConfiguration cellBaseConfiguration;
 
     protected final Logger logger;
 
-    public CellBaseLoader (BlockingQueue<List<String>> blockingQueue, String data, String database,
-                           Map<String, String> loaderParams) {
-        this(blockingQueue, data, database, loaderParams, null);
-    }
 
     public CellBaseLoader (BlockingQueue<List<String>> blockingQueue, String data, String database,
-                           Map<String, String> loaderParams, CellBaseConfiguration cellBaseConfiguration) {
+                           CellBaseConfiguration cellBaseConfiguration) {
         this.blockingQueue = blockingQueue;
         this.data = data;
         this.database = database;
-        this.loaderParams = loaderParams;
 
         if(cellBaseConfiguration != null) {
             this.cellBaseConfiguration = cellBaseConfiguration;

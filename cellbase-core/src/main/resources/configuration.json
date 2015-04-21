@@ -8,7 +8,8 @@
 	"user": "${CELLBASE.DB.USER}",
 	"password": "${CELLBASE.DB.PASSWORD}",
 	"options": {
-	  	"authenticationDatabase": "admin"
+	  	"authenticationDatabase": "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}",
+	  	"readPreference": "${CELLBASE.DB.MONGODB.READPREFERENCE}"
 	}
   },
   "defaultOutdir": "/tmp",
