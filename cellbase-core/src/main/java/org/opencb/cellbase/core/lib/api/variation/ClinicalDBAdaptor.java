@@ -45,25 +45,9 @@ public interface ClinicalDBAdaptor {
 
     public QueryResult getListClinvarAccessions(QueryOptions queryOptions);
 
-    public QueryResult getById(String id, QueryOptions options);
+//    public QueryResult getById(String id, QueryOptions options);
 
     public QueryResult getAllClinvar(QueryOptions options);
-
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
-
-    public QueryResult getClinvarById(String id, QueryOptions options);
-
-    public List<QueryResult> getAllClinvarByIdList(List<String> idList, QueryOptions options);
-
-    public QueryResult getClinvarByGene(String id, QueryOptions options);
-
-    public List<QueryResult> getAllClinvarByGeneList(List<String> idList, QueryOptions options);
-
-    public QueryResult getAllClinvarByRegion(String chromosome, int start, int end, QueryOptions options);
-
-    public QueryResult getAllClinvarByRegion(Region region, QueryOptions options);
-
-    public List<QueryResult> getAllClinvarByRegionList(List<Region> regions, QueryOptions options);
 
     public QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions);
 
