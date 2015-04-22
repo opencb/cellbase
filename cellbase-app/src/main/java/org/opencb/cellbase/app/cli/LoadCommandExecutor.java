@@ -150,7 +150,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             numThreads = loadCommandOptions.numThreads;
         }else {
             numThreads = 1;
-            logger.warn("Incorrect number of threads, it must be a positive value. This has been set to '{}'", numThreads);
+            logger.warn("Incorrect number of numThreads, it must be a positive value. This has been set to '{}'", numThreads);
         }
 
         try {

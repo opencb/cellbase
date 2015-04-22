@@ -373,9 +373,9 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
 //    private Path getInputFileFromCommandLine() {
-//        File inputFile = new File(input.toString());
-//        if (inputFile.exists()) {
-//            if (inputFile.isDirectory()) {
+//        File input = new File(input.toString());
+//        if (input.exists()) {
+//            if (input.isDirectory()) {
 //                throw new ParameterException(input + " is a directory: it must be a file for " + buildCommandOptions.data + " builder");
 //            } else {
 //                return input;
