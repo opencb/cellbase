@@ -284,32 +284,32 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{geneId}/clinvar")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
-    public Response getAllClinvarByGene(@PathParam("geneId") String query,
-                                       @DefaultValue("") @QueryParam("id") String id,
-                                       @DefaultValue("") @QueryParam("region") String region,
-                                       @DefaultValue("") @QueryParam("phenotype") String phenotype) {
-        try {
-            checkParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            if(region != null && !region.equals("")) {
-                queryOptions.add("region", Region.parseRegions(query));
-            }
-            if(id != null && !id.equals("")) {
-                queryOptions.add("id", Arrays.asList(id.split(",")));
-            }
-            if(phenotype != null && !phenotype.equals("")) {
-                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
-            }
-
-            return createOkResponse(clinicalDBAdaptor.getAllClinvarByGeneList(Splitter.on(",").splitToList(query), queryOptions));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{geneId}/clinvar")
+//    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
+//    public Response getAllClinvarByGene(@PathParam("geneId") String query,
+//                                       @DefaultValue("") @QueryParam("id") String id,
+//                                       @DefaultValue("") @QueryParam("region") String region,
+//                                       @DefaultValue("") @QueryParam("phenotype") String phenotype) {
+//        try {
+//            checkParams();
+//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+//            if(region != null && !region.equals("")) {
+//                queryOptions.add("region", Region.parseRegions(query));
+//            }
+//            if(id != null && !id.equals("")) {
+//                queryOptions.add("id", Arrays.asList(id.split(",")));
+//            }
+//            if(phenotype != null && !phenotype.equals("")) {
+//                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
+//            }
+//
+//            return createOkResponse(clinicalDBAdaptor.getAllClinvarByGeneList(Splitter.on(",").splitToList(query), queryOptions));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getAllByAccessions", e.toString());
+//        }
+//    }
 
     @GET
     public Response getHelp() {

@@ -108,20 +108,28 @@ public class ClinicalMongoDBAdaptorTest {
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();
-//        queryOptions.addToListOption("include", "clinvar");
+        queryOptions.addToListOption("include", "clinvar");
 //        queryOptions.add("phenotype", "ALZHEIMER DISEASE 2, DUE TO APOE4 ISOFORM");
 //        queryOptions.addToListOption("phenotype", "ALZHEIMER");
-//        queryOptions.addToListOption("phenotype", "alzheimer");
+        queryOptions.addToListOption("phenotype", "alzheimer");
 //        queryOptions.addToListOption("phenotype", "diabetes");
 //        queryOptions.addToListOption("region", new Region("3", 550000, 1166666));
-//        queryOptions.addToListOption("region", new Region("13", 550000, 1166666));
+//        queryOptions.addToListOption("region", new Region("1", 550000, 1166666));
 //        queryOptions.addToListOption("gene", "APOE");
+//        queryOptions.addToListOption("significance", "Likely_pathogenic");
+//        queryOptions.addToListOption("review", "REVIEWED_BY_PROFESSIONAL_SOCIETY");
+//        queryOptions.addToListOption("type", "Indel");
+//        queryOptions.addToListOption("so", "missense_variant");
 //        queryOptions.addToListOption("rs", "rs429358");
-        queryOptions.addToListOption("rcv", "RCV000019455");
+//        queryOptions.addToListOption("rcv", "RCV000019455");
+        queryOptions.add("limit", 100);
 
 //        ((List<String>) queryOptions.get("include")).remove(0);
 
-        clinicalDBAdaptor.getAll(queryOptions);
+        QueryResult queryResult = clinicalDBAdaptor.getAll(queryOptions);
+        int a;
+        a = 1;
+
 
     }
 }
