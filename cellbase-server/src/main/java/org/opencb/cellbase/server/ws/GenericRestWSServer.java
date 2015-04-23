@@ -20,6 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.Species;
@@ -46,6 +48,7 @@ import java.util.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
+@Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
     // Common application parameters
@@ -301,6 +304,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @GET
     @Path("/species")
+    @Deprecated
     public Response getSpecies() {
         List<Species> speciesList = getSpeciesList();
         MediaType mediaType = MediaType.valueOf("application/javascript");
@@ -323,25 +327,57 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     @GET
-    @Path("/{species}/i")
-    public Response getSpeciesInfo2(@PathParam("species") String species, @DefaultValue("json") @QueryParam("of") String of) {
-        ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(species, this.assembly);
-        return createOkResponse(chromosomeDBAdaptor.speciesInfoTmp(species, queryOptions));
+    @Path("/i")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves genome info for current species", response = QueryResponse.class)
+    public Response getSpeciesInfo2(@ApiParam(value = "String indicating the output format.", allowableValues = "json", defaultValue = "json")
+                                        @DefaultValue("json") @QueryParam("of") String of) {
+        return createOkResponse(getSpeciesDataFromDB(species));
+    }
+
+    /**
+     * Given a species return all data regarding its genome stored in the DB.
+     *
+     * @param species    String containing the species id, either the short name or the scientific name (e.g. hsapiens, Homo sapiens)
+     * @return A QueryResult containing genome data.
+     */
+    private QueryResult getSpeciesDataFromDB(String species) {
+        // Not all species indicated at configuration.json are necessarily installed in the DB.
+        try {
+            ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(species, this.assembly);
+            return chromosomeDBAdaptor.speciesInfoTmp(getSpecies(species).getScientificName(), queryOptions);
+        } catch (com.mongodb.MongoException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Given a species name returns all species info stored at the configuration data.
+     *
+     * @param speciesName    String containing the species id, either the short name or the scientific name (e.g. hsapiens, Homo sapiens)
+     * @return A Species object containing all species info stored with configuration data.
+     */
+    private CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
+        CellBaseConfiguration.SpeciesProperties.Species species = null;
+        for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
+            if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
+                species = sp;
+                break;
+            }
+        }
+        return species;
     }
 
     @GET
     @Path("/speciesinfo")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves genome info for all available species in current installation", response = QueryResponse.class)
     public Response getSpeciesInfo() {
-        List<String> speciesList = new ArrayList<>(3);
-        speciesList.add("Homo sapiens");
-        speciesList.add("Mus musculus");
-        speciesList.add("Rattus norvegicus");
-
-        List<QueryResult> queryResults = new ArrayList<>(speciesList.size());
-        for(String specie: speciesList) {
-            ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(specie, this.assembly);
-            queryResults.add(chromosomeDBAdaptor.speciesInfoTmp(specie, queryOptions));
-
+        List<QueryResult> queryResults = new ArrayList<>();
+        for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
+            QueryResult queryResult = getSpeciesDataFromDB(sp.getId());
+            if(queryResult!=null) {
+                queryResults.add(queryResult);
+            }
         }
         return createOkResponse(queryResults);
     }
