@@ -1066,7 +1066,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 consequenceTypeTemplate.setAaPosition(null);
                 consequenceTypeTemplate.setAaChange(null);
                 consequenceTypeTemplate.setCodon(null);
-                consequenceTypeTemplate.setStrand((String) geneInfo.get("strand"));
+                consequenceTypeTemplate.setStrand(transcriptStrand);
                 consequenceTypeTemplate.setBiotype((String) transcriptInfo.get("biotype"));
                 consequenceTypeTemplate.setProteinSubstitutionScores(null);
                 miRnaInfo = null;
