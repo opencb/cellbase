@@ -132,4 +132,28 @@ public class ClinicalMongoDBAdaptorTest {
 
 
     }
+
+    @Test
+    public void testGetPhenotypeGeneRelations() throws Exception {
+
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+
+        try {
+            cellBaseConfiguration = CellBaseConfiguration
+                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.addToListOption("include", "clinvar");
+        queryOptions.addToListOption("include", "cosmic");
+        List<QueryResult> queryResultList = clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions);
+        int a;
+        a=1;
+
+    }
 }

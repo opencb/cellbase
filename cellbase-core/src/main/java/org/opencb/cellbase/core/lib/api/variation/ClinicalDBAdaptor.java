@@ -51,4 +51,6 @@ public interface ClinicalDBAdaptor {
 
     public QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions);
 
+    public List<QueryResult> getPhenotypeGeneRelations(QueryOptions queryOptions);
+
 }

@@ -120,7 +120,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 builder = builder.start("phenotype").is(pheno);
             }
         }
-        return executeQuery("result", builder.get(), options, mongoVariationPhenotypeDBCollection);
+        return executeQuery("result", builder.get(), options);
+//        return executeQuery("result", builder.get(), options, mongoVariationPhenotypeDBCollection);
     }
 
     @Override

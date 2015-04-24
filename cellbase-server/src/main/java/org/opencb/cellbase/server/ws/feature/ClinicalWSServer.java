@@ -113,31 +113,20 @@ public class ClinicalWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{acc}/info")
-//    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar info from a list of accession IDs")
-//    public Response getAllByAccessions(@PathParam("acc") String query,
-//                                       @DefaultValue("") @QueryParam("gene") String gene,
-//                                       @DefaultValue("") @QueryParam("region") String region,
-//                                       @DefaultValue("") @QueryParam("phenotype") String phenotype) {
-//        try {
-//            checkParams();
-//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-//            if(gene != null && !gene.equals("")) {
-//                queryOptions.add("gene", Arrays.asList(gene.split(",")));
-//            }
-//            if(phenotype != null && !phenotype.equals("")) {
-//                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
-//            }
-//            if(region != null && !region.equals("")) {
-//                queryOptions.add("region", Region.parseRegions(region));
-//            }
-//            return createOkResponse(clinicalDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getAllByAccessions", e.toString());
-//        }
-//    }
+    @GET
+    @Path("/phenotype-gene")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get all phenotype-gene relations")
+    public Response getPhenotypeGeneRelations() {
+
+        try {
+            checkParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getPhenotypeGeneRelations", e.toString());
+        }
+    }
 
     @GET
     @Path("/listAcc")

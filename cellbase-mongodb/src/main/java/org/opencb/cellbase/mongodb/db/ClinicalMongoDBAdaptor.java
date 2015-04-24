@@ -704,4 +704,65 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //
 //        basicDBObject.put("")
 //    }
+
+    public List<QueryResult> getPhenotypeGeneRelations(QueryOptions queryOptions) {
+
+        List<QueryResult> queryResultList = new ArrayList<>();
+        if(!queryOptions.containsKey("include") || queryOptions.getAsStringList("include").equals("") ||
+                includeContains(queryOptions.getAsStringList("include"), "clinvar")) {
+            queryResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
+
+        }
+        if(!queryOptions.containsKey("include") || queryOptions.getAsStringList("include").equals("") ||
+                includeContains(queryOptions.getAsStringList("include"), "cosmic")) {
+            queryResultList.add(getCosmicPhenotypeGeneRelations(queryOptions));
+        }
+
+        return queryResultList;
+    }
+
+    private QueryResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
+
+        List<DBObject> pipeline = new ArrayList<>();
+        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc", new BasicDBObject("$exists", 1))));
+//        pipeline.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1))));
+        pipeline.add(new BasicDBObject("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure"));
+        pipeline.add(new BasicDBObject("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship"));
+        pipeline.add(new BasicDBObject("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol"));
+        pipeline.add(new BasicDBObject("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait"));
+        pipeline.add(new BasicDBObject("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name"));
+        DBObject groupFields = new BasicDBObject();
+        groupFields.put("_id","$clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
+        groupFields.put("associatedGenes", new BasicDBObject("$addToSet", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value"));
+        pipeline.add(new BasicDBObject("$group", groupFields));
+        DBObject fields = new BasicDBObject();
+        fields.put("_id", 0);
+        fields.put("phenotype", "$_id");
+        fields.put("associatedGenes", 1);
+        pipeline.add(new BasicDBObject("$project", fields));
+
+        return executeAggregation2("", pipeline, queryOptions);
+
+    }
+
+    private QueryResult getCosmicPhenotypeGeneRelations(QueryOptions queryOptions) {
+
+        List<DBObject> pipeline = new ArrayList<>();
+        pipeline.add(new BasicDBObject("$match", new BasicDBObject("snpIdCurrent", new BasicDBObject("$exists", 1)))); // Select only GWAS documents
+        pipeline.add(new BasicDBObject("$unwind", "$studies"));
+        pipeline.add(new BasicDBObject("$unwind", "$studies.traits"));
+        DBObject groupFields = new BasicDBObject();
+        groupFields.put("_id","$studies.traits.diseaseTrait");
+        groupFields.put("associatedGenes", new BasicDBObject("$addToSet", "$reportedGenes"));
+        pipeline.add(new BasicDBObject("$group", groupFields));
+        DBObject fields = new BasicDBObject();
+        fields.put("_id", 0);
+        fields.put("phenotype", "$_id");
+        fields.put("associatedGenes", 1);
+        pipeline.add(new BasicDBObject("$project", fields));
+
+        return executeAggregation2("", pipeline, queryOptions);
+
+    }
+
 }
