@@ -235,26 +235,29 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"--species"}, description = "", required = true)
+        @Parameter(names = {"-s", "--species"}, description = "The name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens' [Homo sapiens]", required = true)
         public String species;
 
-        @Parameter(names = {"--assembly"}, description = "", required = false)
+        @Parameter(names = {"-a", "--assembly"}, description = "The name of the assembly, if empty the first assembly in configuration.json will be read", required = false)
         public String assembly;
 
-        @Parameter(names = {"-i", "--input-file"}, description = "", required = true, arity = 1)
-        public String inputFile;
+        @Parameter(names = {"-i", "--input-file"}, description = "Input file with the data file to be annotated", required = true, arity = 1)
+        public String input;
 
-        @Parameter(names = {"-o", "--output-file"}, description = "", required = true, arity = 1)
-        public String outputFile;
+        @Parameter(names = {"-o", "--output-file"}, description = "Output file with the annotations", required = true, arity = 1)
+        public String output;
 
-        @Parameter(names = {"--host-url"}, description = "", required = false, arity = 1)
-        public String url = "wwwdev.ebi.ac.uk";
+        @Parameter(names = {"-u", "--host-url"}, description = "The URL of CellBase REST web services [bioinfo.hpc.cam.ac.uk]", required = false, arity = 1)
+        public String url = "bioinfo.hpc.cam.ac.uk";
 
-        @Parameter(names = {"--port"}, description = "", required = false, arity = 1)
+        @Parameter(names = {"--port"}, description = "The port where REST web services are listening[80]", required = false, arity = 1)
         public int port = 80;
 
-        @Parameter(names = {"--num-threads"}, description = "", required = false, arity = 1)
-        public int threads = 2;
+        @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used [4]", required = false, arity = 1)
+        public int numThreads = 4;
+
+        @Parameter(names = {"--batch-size"}, description = "Number of variants per thread [200]", required = false, arity = 1)
+        public int batchSize = 200;
 
     }
 

@@ -47,26 +47,26 @@ public class QueryCommandExecutor extends CommandExecutor {
     @Override
     public void execute() {
         checkParameters();
-        if(queryCommandOptions.annotate) {
-            VariantAnnotatorRunner variantAnnotatorRunner = null;
-            try {
-                variantAnnotatorRunner = new VariantAnnotatorRunner(inputFile, outputFile,
-                        getCellBaseClient(), queryCommandOptions.threads);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-            try {
-                variantAnnotatorRunner.run();
-            } catch (ExecutionException | InterruptedException e) {
-                logger.error("Error executing annotator: " + e);
-            }
-        }
+//        if(queryCommandOptions.annotate) {
+//            VariantAnnotatorRunner variantAnnotatorRunner = null;
+//            try {
+//                variantAnnotatorRunner = new VariantAnnotatorRunner(inputFile, outputFile,
+//                        getCellBaseClient(), queryCommandOptions.threads);
+//            } catch (URISyntaxException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                variantAnnotatorRunner.run();
+//            } catch (ExecutionException | InterruptedException e) {
+//                logger.error("Error executing annotator: " + e);
+//            }
+//        }
 
 //        checkParameters();
 //        try {
 //            CellBaseClient cellBaseClient = getCellBaseClient();
-//            if (queryCommandOptions.annotate && inputFile != null && inputFile.toString().toLowerCase().endsWith(".vcf")) {
-//                VcfAnnotator vcfAnnotator= new VcfAnnotator(inputFile, outputFile, cellBaseClient);
+//            if (queryCommandOptions.annotate && input != null && input.toString().toLowerCase().endsWith(".vcf")) {
+//                VcfAnnotator vcfAnnotator= new VcfAnnotator(input, output, cellBaseClient);
 //                vcfAnnotator.annotateVcfFile();
 //            }
 //        } catch (ParameterException e) {

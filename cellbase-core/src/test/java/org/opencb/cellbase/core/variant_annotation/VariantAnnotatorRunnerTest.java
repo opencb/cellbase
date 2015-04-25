@@ -29,7 +29,7 @@ public class VariantAnnotatorRunnerTest {
     @Test
     public void testReadInputFile() throws URISyntaxException {
         VariantAnnotatorRunner variantAnnotatorRunner = new VariantAnnotatorRunner(Paths.get("/tmp/test1.vcf"),
-                Paths.get("/tmp/test.json"), new CellBaseClient("wwwdev.ebi.ac.uk", 1, "/hola/adios", "", ""), 4);
+                Paths.get("/tmp/test.json"), new CellBaseClient("wwwdev.ebi.ac.uk", 1, "/hola/adios", "", ""), 4, 200);
 //        variantAnnotatorRunner.readInputFile();
     }
 }
