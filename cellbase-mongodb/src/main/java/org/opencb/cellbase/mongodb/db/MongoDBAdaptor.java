@@ -103,6 +103,21 @@ public class MongoDBAdaptor {
         }
     }
 
+    protected QueryResult executeDistinct(Object id, String fields, DBObject query) {
+//        long dbTimeStart, dbTimeEnd;
+//        dbTimeStart = System.currentTimeMillis();
+        QueryResult queryResult = mongoDBCollection2.distinct(fields, query);
+//        List<DBObject> dbObjectList = new LinkedList<>();
+//        while (cursor.hasNext()) {
+//            dbObjectList.add(cursor.next());
+//        }
+//        dbTimeEnd = System.currentTimeMillis();
+        // setting queryResult fields
+        queryResult.setId(id.toString());
+//        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+//        queryResult.setNumResults(dbObjectList.size());
+        return queryResult;
+    }
 
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
@@ -311,24 +326,24 @@ public class MongoDBAdaptor {
         return list;
     }
 
-    @Deprecated
-    protected QueryResult executeDistinct(Object id, String key) {
-        return executeDistinct(id, key, mongoDBCollection);
-    }
-
-    @Deprecated
-    protected QueryResult executeDistinct(Object id, String key, DBCollection dbCollection) {
-        QueryResult queryResult = new QueryResult();
-        long dbTimeStart = System.currentTimeMillis();
-        List<String> diseases = dbCollection.distinct(key);
-        long dbTimeEnd = System.currentTimeMillis();
-        queryResult.setId(id.toString());
-//        queryResult.setDbTime(dbTimeEnd - dbTimeStart);
-        queryResult.setResult(diseases);
-        queryResult.setNumResults(diseases.size());
-
-        return queryResult;
-    }
+//    @Deprecated
+//    protected QueryResult executeDistinct(Object id, String key) {
+//        return executeDistinct(id, key, mongoDBCollection);
+//    }
+//
+//    @Deprecated
+//    protected QueryResult executeDistinct(Object id, String key, DBCollection dbCollection) {
+//        QueryResult queryResult = new QueryResult();
+//        long dbTimeStart = System.currentTimeMillis();
+//        List<String> diseases = dbCollection.distinct(key);
+//        long dbTimeEnd = System.currentTimeMillis();
+//        queryResult.setId(id.toString());
+////        queryResult.setDbTime(dbTimeEnd - dbTimeStart);
+//        queryResult.setResult(diseases);
+//        queryResult.setNumResults(diseases.size());
+//
+//        return queryResult;
+//    }
 
 //    @Deprecated
 //    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {

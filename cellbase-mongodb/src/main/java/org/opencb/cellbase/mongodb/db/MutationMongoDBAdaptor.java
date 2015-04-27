@@ -86,7 +86,8 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 //        List<String> diseases = mongoDBCollection.distinct("primaryHistology");
 //        DBObject distinct = new BasicDBObject("distinct", "primaryHistology");
 //        System.out.println(distinct.toString());
-        return executeDistinct("distinct", "primaryHistology");
+//        return executeDistinct("distinct", "primaryHistology");
+        return null;
     }
 
     @Override
