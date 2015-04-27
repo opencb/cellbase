@@ -137,16 +137,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult getAllBiotypes(QueryOptions options) {
+        DBObject query = null;
 
-        QueryBuilder builder = QueryBuilder.start("gene.biotype");  //TODO query distinct biotypes in gene collection
-
-//        String[] biotypes = applicationProperties.getProperty("CELLBASE.V3.BIOTYPES").split(",");
-//        QueryResult queryResult = new QueryResult();
-//        queryResult.setId("result");
-//        DBObject result = new BasicDBObject("biotypes", biotypes);
-//        queryResult.setResult(Arrays.asList(result));
-//        queryResult.setDbTime(0);
-        return null;
+        if(options != null && options.get("chromosome") != null) {
+            query = QueryBuilder.start("chromosome").is(options.get("chromosome")).get();
+        }
+        return executeDistinct("", "biotype", query);
     }
 
     @Override

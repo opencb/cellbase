@@ -229,6 +229,14 @@ public class GenericRestWSServer implements IWSServer {
 
         outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
         filename = (multivaluedMap.get("filename") != null) ? multivaluedMap.get("filename").get(0) : "result";
+
+        // Now we add all the others QueryParams in the URL
+        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+            if(!queryOptions.containsKey(entry.getKey())) {
+                logger.info("Adding '{}' to queryOptions", entry);
+                queryOptions.put(entry.getKey(), entry.getValue().get(0));
+            }
+        }
     }
 
     @Override

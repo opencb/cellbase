@@ -68,7 +68,8 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
 
     @Override
     public QueryResult getAllPhenotypes(QueryOptions options) {
-        return executeDistinct("distinct", "phenotype");
+//        return executeDistinct("distinct", "phenotype");
+        return null;
     }
 
     @Override
