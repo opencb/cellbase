@@ -36,7 +36,6 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
-import javax.management.Query;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -708,14 +707,14 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public List<QueryResult> getPhenotypeGeneRelations(QueryOptions queryOptions) {
 
         List<QueryResult> queryResultList = new ArrayList<>();
-        if(!queryOptions.containsKey("include") || queryOptions.getAsStringList("include").equals("") ||
+        if(!queryOptions.containsKey("include") || queryOptions.getAsStringList("include").size()==0 ||
                 includeContains(queryOptions.getAsStringList("include"), "clinvar")) {
             queryResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
 
         }
-        if(!queryOptions.containsKey("include") || queryOptions.getAsStringList("include").equals("") ||
-                includeContains(queryOptions.getAsStringList("include"), "cosmic")) {
-            queryResultList.add(getCosmicPhenotypeGeneRelations(queryOptions));
+        if(!queryOptions.containsKey("include") || queryOptions.getAsStringList("include").size()==0 ||
+                includeContains(queryOptions.getAsStringList("include"), "gwas")) {
+            queryResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
         }
 
         return queryResultList;
@@ -745,7 +744,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     }
 
-    private QueryResult getCosmicPhenotypeGeneRelations(QueryOptions queryOptions) {
+    private QueryResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
 
         List<DBObject> pipeline = new ArrayList<>();
         pipeline.add(new BasicDBObject("$match", new BasicDBObject("snpIdCurrent", new BasicDBObject("$exists", 1)))); // Select only GWAS documents

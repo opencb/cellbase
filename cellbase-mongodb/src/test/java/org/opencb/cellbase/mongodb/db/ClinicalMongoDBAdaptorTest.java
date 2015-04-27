@@ -149,8 +149,8 @@ public class ClinicalMongoDBAdaptorTest {
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();
-        queryOptions.addToListOption("include", "clinvar");
-        queryOptions.addToListOption("include", "cosmic");
+//        queryOptions.addToListOption("include", "clinvar");
+//        queryOptions.addToListOption("include", "gwas");
         List<QueryResult> queryResultList = clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions);
         int a;
         a=1;
