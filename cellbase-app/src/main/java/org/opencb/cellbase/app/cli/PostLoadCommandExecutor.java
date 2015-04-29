@@ -20,21 +20,15 @@ import com.beust.jcommander.ParameterException;
 import org.opencb.biodata.formats.annotation.io.VepFormatReader;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
-import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.lib.DBAdaptorFactory;
 import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
-import org.opencb.cellbase.core.variant_annotation.VariantAnnotator;
-import org.opencb.cellbase.core.variant_annotation.VariantAnnotatorRunner;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.datastore.core.QueryOptions;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by fjlopez on 14/04/15.
