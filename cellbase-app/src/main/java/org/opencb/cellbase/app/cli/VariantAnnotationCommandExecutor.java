@@ -91,41 +91,49 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     public void execute() {
         checkParameters();
 
-        if(customFiles!=null) {
-            createIndexes();
-        }
-
-        List<ParallelTaskRunner.Task<Variant,VariantAnnotation>> variantAnnotatorRunnerList = new ArrayList<>(numThreads);
-        for(int i = 0; i<numThreads; i++) {
-            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
-            variantAnnotatorRunnerList.add(new VariantAnnotatorRunner(variantAnnotatorList));
-        }
-
-        ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-        DataReader dataReader = new VariantVcfReader(new VariantSource(input.toString(), "", "", ""),
-                input.toString());
-
-        DataWriter dataWriter;
-        if(output.toString().endsWith(".json")) {
-            dataWriter = new JsonAnnotationWriter(output.toString());
-        } else {
-            dataWriter = new VepFormatWriter(output.toString());
-        }
-
-        ParallelTaskRunner<Variant, VariantAnnotation> runner = null;
         try {
-            runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorRunnerList, dataWriter, config);
+            if (customFiles != null) {
+                createIndexes();
+            }
+
+            String path = "/cellbase/webservices/rest/";
+            CellBaseClient cellBaseClient = new CellBaseClient(url, port, path,
+                    configuration.getVersion(), species);
+            List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorRunnerList = new ArrayList<>(numThreads);
+            for (int i = 0; i < numThreads; i++) {
+                List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
+                variantAnnotatorRunnerList.add(new VariantAnnotatorRunner(variantAnnotatorList));
+            }
+
+            ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+            DataReader dataReader = new VariantVcfReader(new VariantSource(input.toString(), "", "", ""),
+                    input.toString());
+
+            DataWriter dataWriter;
+            if (output.toString().endsWith(".json")) {
+                dataWriter = new JsonAnnotationWriter(output.toString());
+            } else {
+                dataWriter = new VepFormatWriter(output.toString());
+            }
+
+            ParallelTaskRunner<Variant, VariantAnnotation> runner = null;
+            try {
+                runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorRunnerList, dataWriter, config);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+            runner.run();
+
+            if (customFiles != null) {
+                closeIndexes();
+            }
+
+            logger.info("Variant annotation finished.");
+
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
         }
-        runner.run();
-
-        if(customFiles!=null) {
-            closeIndexes();
-        }
-
-        logger.info("Variant annotation finished.");
     }
 
     private void closeIndexes() {
@@ -140,20 +148,13 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private List<VariantAnnotator> createAnnotators() {
+    private List<VariantAnnotator> createAnnotators(CellBaseClient cellBaseClient) {
         List<VariantAnnotator> variantAnnotatorList;
         variantAnnotatorList = new ArrayList<>();
 
         // CellBase annotator is always called
-        try {
-            String path = "/cellbase/webservices/rest/";
-            CellBaseClient cellBaseClient = new CellBaseClient(url, port, path,
-                    configuration.getVersion(), species);
-            variantAnnotatorList.add(new CellbaseWSVariantAnnotator(cellBaseClient));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        variantAnnotatorList.add(new CellbaseWSVariantAnnotator(cellBaseClient));
+
         // Include custom annotators if required
         if(customFiles!=null) {
             for (int i = 0; i < customFiles.size(); i++) {
