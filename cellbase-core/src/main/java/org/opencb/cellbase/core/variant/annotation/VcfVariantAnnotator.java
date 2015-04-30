@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.rocksdb.RocksDB;
@@ -10,7 +9,6 @@ import org.rocksdb.RocksDBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -66,7 +64,7 @@ public class VcfVariantAnnotator implements VariantAnnotator {
     private void fillVariantAnnotationList(List<Variant> variantList) {
         for(int i=0; i<variantList.size(); i++) {
             VariantAnnotation variantAnnotation = new VariantAnnotation();
-            Map<String, Object> customAnnotation = getInfoAnnotation(variantList.get(i));
+            Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
             if(customAnnotation!=null && ((Map) customAnnotation.get(fileId)).size()>0) {
@@ -84,7 +82,7 @@ public class VcfVariantAnnotator implements VariantAnnotator {
      */
     private void udpateVariantAnnotationList(List<Variant> variantList) {
         for(int i=0; i<variantList.size(); i++) {
-            Map<String, Object> customAnnotation = getInfoAnnotation(variantList.get(i));
+            Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
             if(customAnnotation!=null && ((Map) customAnnotation.get(fileId)).size()>0) {
@@ -103,53 +101,23 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         }
     }
 
-    private Map<String,Object> getInfoAnnotation(Variant variant) {
+    private Map<String,Object> getCustomAnnotation(Variant variant) {
         try {
             byte[] dbContent = dbIndex.get((variant.getChromosome() + "_" + variant.getStart() + "_"
                     + variant.getReference() + "_" + variant.getAlternate()).getBytes());
             if(dbContent==null) {
                 return null;
             } else {
-                reader.seek(ByteBuffer.wrap(dbContent).getLong());
-                String[] fields = reader.readLine().split("\t");
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String,Object> infoAttributes = mapper.readValue(dbContent, Map.class);
+                Map<String,Object> customAnnotation = new HashMap<>(1);
+                customAnnotation.put(fileId, infoAttributes);
 
-                return parseInfoAttributes(fields[7], getAlleleNumber(variant.getAlternate(), fields[4]));
+                return customAnnotation;
             }
         } catch (RocksDBException | IOException e) {
             return null;
         }
-    }
-
-    protected int getAlleleNumber(String alternate, String altField) {
-        return Arrays.asList(altField.split(",")).indexOf(alternate);
-    }
-
-    protected Map<String, Object> parseInfoAttributes(String info, int numAllele) {
-        Map<String, Object> infoAttributes = new HashMap<>();
-        for (String var : info.split(";")) {
-            String[] splits = var.split("=");
-            if (splits.length == 2 && infoFields.contains(splits[0])) {
-                // Managing values for the allele
-                String[] values = splits[1].split(",");
-                if(NumberUtils.isNumber(values[numAllele])) {
-                    try {
-                        infoAttributes.put(splits[0], Integer.parseInt(values[numAllele]));
-                    } catch (NumberFormatException e) {
-                        try {
-                            infoAttributes.put(splits[0], Float.parseFloat(values[numAllele]));
-                        } catch (NumberFormatException e1) {
-                            infoAttributes.put(splits[0], Double.parseDouble(values[numAllele]));
-                        }
-                    }
-                } else {
-                    infoAttributes.put(splits[0], values[numAllele]);
-                }
-            }
-        }
-        Map<String,Object> customAnnotations = new HashMap<>(1);
-        customAnnotations.put(fileId, infoAttributes);
-
-        return customAnnotations;
     }
 
     public boolean close() {

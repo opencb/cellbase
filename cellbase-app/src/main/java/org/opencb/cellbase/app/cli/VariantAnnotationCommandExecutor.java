@@ -17,7 +17,10 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.opencb.biodata.formats.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
@@ -36,17 +39,15 @@ import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by fjlopez on 18/03/15.
@@ -90,7 +91,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     public void execute() {
         checkParameters();
 
-        createIndexes();
+        if(customFiles!=null) {
+            createIndexes();
+        }
+
         List<ParallelTaskRunner.Task<Variant,VariantAnnotation>> variantAnnotatorRunnerList = new ArrayList<>(numThreads);
         for(int i = 0; i<numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
@@ -117,7 +121,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
         runner.run();
 
-        closeIndexes();
+        if(customFiles!=null) {
+            closeIndexes();
+        }
 
         logger.info("Variant annotation finished.");
     }
@@ -135,22 +141,27 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private List<VariantAnnotator> createAnnotators() {
-        List<VariantAnnotator> variantAnnotatorList = new ArrayList<>(customFiles.size()+1);  // +1 because CellbaseAnnotator will always be included
+        List<VariantAnnotator> variantAnnotatorList;
+        variantAnnotatorList = new ArrayList<>();
 
+        // CellBase annotator is always called
         try {
             String path = "/cellbase/webservices/rest/";
             CellBaseClient cellBaseClient = new CellBaseClient(url, port, path,
                     configuration.getVersion(), species);
             variantAnnotatorList.add(new CellbaseWSVariantAnnotator(cellBaseClient));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        // Include custom annotators if required
+        if(customFiles!=null) {
             for (int i = 0; i < customFiles.size(); i++) {
-                if (customFiles.get(i).toString().endsWith(".vcf")) {
+                if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
                     variantAnnotatorList.add(new VcfVariantAnnotator(customFiles.get(i).toString(), dbIndexes.get(i),
                             customFileIds.get(i), customFileFields.get(i)));
                 }
             }
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            System.exit(1);
         }
 
         return variantAnnotatorList;
@@ -160,9 +171,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         dbIndexes = new ArrayList<>(customFiles.size());
         dbOptions = new ArrayList<>(customFiles.size());
         dbLocations = new ArrayList<>(customFiles.size());
-        for(Path customFile : customFiles) {
-            if(customFile.toString().endsWith(".vcf")) {
-                Object[] dbConnection = indexCustomVcfFile(customFile);
+        for(int i=0; i<customFiles.size(); i++) {
+            if(customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
+                Object[] dbConnection = indexCustomVcfFile(i);
                 dbIndexes.add((RocksDB) dbConnection[0]);
                 dbOptions.add((Options) dbConnection[1]);
                 dbLocations.add((String) dbConnection[2]);
@@ -170,7 +181,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private Object[] indexCustomVcfFile(Path filePath) {
+    private Object[] indexCustomVcfFile(int customFileNumber) {
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+
         // a static method that loads the RocksDB C++ library.
         RocksDB.loadLibrary();
         // the Options class contains a set of configurable DB options
@@ -190,29 +204,33 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             System.exit(1);
         }
 
-        logger.info("Indexing {} ", filePath);
-        RandomAccessFile reader;
+        logger.info("Indexing {} ", customFiles.get(customFileNumber));
+        BufferedReader reader;
         try {
-            reader = new RandomAccessFile(filePath.toString(), "r");
+            if (customFiles.get(customFileNumber).toFile().getName().endsWith(".gz")) {
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(customFiles.get(customFileNumber).toFile()))));
+            } else {
+                reader = Files.newBufferedReader(customFiles.get(customFileNumber), Charset.defaultCharset());
+            }
             String line;
             int lineCounter = 0;
-            long filePosition = 0;
             while((line = reader.readLine())!=null && (line.trim().equals("") || line.startsWith("#"))) {
-                filePosition = reader.getFilePointer();
                 lineCounter++;
             }
             while(line!=null) {
                 String[] fields = line.split("\t");
                 // Reference positions will not be indexed
                 if(!fields[4].equals(".")) {
-                    for (String alt : line.split("\t")[4].split(",")) {
-                        db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alt).getBytes(), ByteBuffer.allocate(8).putLong(filePosition).array());
+                    String[] alternates = line.split("\t")[4].split(",");
+                    List<Map<String,Object>> parsedInfo = parseInfoAttributes(fields[7], alternates.length, customFileNumber);
+                    for (int i=0; i<alternates.length; i++) {
+                        db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alternates[i]).getBytes(),
+                                jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
                     }
                 }
-                filePosition = reader.getFilePointer();
                 line = reader.readLine();
                 lineCounter++;
-                if(lineCounter%10000 == 0) {
+                if(lineCounter%100000 == 0) {
                     logger.info("{} lines indexed", lineCounter);
                 }
             }
@@ -223,6 +241,50 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         return new Object[] {db,options,dbLocation};
+    }
+
+    protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
+        List<Map<String, Object>> infoAttributes = new ArrayList<>(numAlleles);
+        for(int i=0; i<numAlleles; i++) {
+            infoAttributes.add(new HashMap<>());
+        }
+        for (String var : info.split(";")) {
+            String[] splits = var.split("=");
+            if (splits.length == 2 && customFileFields.get(customFileNumber).contains(splits[0])) {
+                // Managing values for the allele
+                String[] values = splits[1].split(",");
+                // numAlleles and values.length may be different. For example, in the Exac vcf AN presents just one
+                // value even if there are multiple alleles or, for example, for the AC_Het provide counts for all posible
+                // heterozigous genotypes. In those cases, the hole string is pasted to all alleles
+                if(values.length==numAlleles) {
+                    for (int i = 0; i < numAlleles; i++) {
+                        infoAttributes.get(i).put(splits[0], getValueFromString(values[i]));
+                    }
+                } else {
+                    for (int i=0; i<numAlleles; i++) {
+                        infoAttributes.get(i).put(splits[0], getValueFromString(splits[1]));
+                    }
+                }
+            }
+        }
+
+        return infoAttributes;
+    }
+
+    private Object getValueFromString(String value) {
+        if (NumberUtils.isNumber(value)) {
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                try {
+                    return Float.parseFloat(value);
+                } catch (NumberFormatException e1) {
+                    return Double.parseDouble(value);
+                }
+            }
+        } else {
+            return value;
+        }
     }
 
     private void checkParameters() {
@@ -250,7 +312,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             numThreads = variantAnnotationCommandOptions.numThreads;
         } else {
             numThreads = 1;
-            logger.warn("Incorrect number of numThreads, it must be a positive value. This has been set to '{}'", numThreads);
+            logger.warn("Incorrect number of numThreads, it must be a positive value. This has been reset to '{}'", numThreads);
         }
         // Batch size
         if (variantAnnotationCommandOptions.batchSize >= 1 && variantAnnotationCommandOptions.batchSize <= 2000) {
@@ -284,7 +346,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             for(String customFile : customFileStrings) {
                 Path customFilePath = Paths.get(customFile);
                 fileExists(customFilePath);
-                if(!customFilePath.toString().endsWith(".vcf")) {
+                if(!(customFilePath.toString().endsWith(".vcf") || customFilePath.toString().endsWith(".vcf.gz"))) {
                     throw new ParameterException("Only VCF format is currently accepted for custom annotation files.");
                 }
                 customFiles.add(customFilePath);
