@@ -447,7 +447,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         int i=cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
         int codonPosition;
         for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
-            modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
+            if(i>=transcriptSequence.length()) {
+                // TODO: change this by the proper assignment
+                modifiedCodonArray[codonPosition] = 'N';
+            } else {
+                modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
+            }
             i++;
         }
 
@@ -665,7 +670,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         int i=0;
         int codonPosition;
         for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
-            modifiedCodonArray[codonPosition] = complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
+            if(i>=reverseTranscriptSequence.length()) {
+                // TODO: change this by the proper assignment
+                modifiedCodonArray[codonPosition] = 'N';
+            } else {
+                modifiedCodonArray[codonPosition] = complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
+            }
             i++;
         }
 
