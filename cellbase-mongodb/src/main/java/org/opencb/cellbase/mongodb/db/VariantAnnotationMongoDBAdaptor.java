@@ -446,17 +446,22 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         char[] modifiedCodonArray = referenceCodon1.toCharArray();
         int i=cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
         int codonPosition;
+        boolean endTranscriptReached=false;
         for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
             if(i>=transcriptSequence.length()) {
                 // TODO: change this by the proper assignment
                 modifiedCodonArray[codonPosition] = 'N';
+                endTranscriptReached=true;
             } else {
                 modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
             }
             i++;
         }
 
-        decideStopCodonModificationAnnotation(SoNames, isStopCodon(referenceCodon2)?referenceCodon2:referenceCodon1, modifiedCodonArray);
+        // TODO: remove this and properly handle end of transcript
+        if(!endTranscriptReached) {
+            decideStopCodonModificationAnnotation(SoNames, isStopCodon(referenceCodon2) ? referenceCodon2 : referenceCodon1, modifiedCodonArray);
+        }
     }
 
     private void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
@@ -669,18 +674,23 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
         int i=0;
         int codonPosition;
+        boolean endTranscriptReached = false;
         for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
             if(i>=reverseTranscriptSequence.length()) {
                 // TODO: change this by the proper assignment
                 modifiedCodonArray[codonPosition] = 'N';
+                endTranscriptReached = true;
             } else {
                 modifiedCodonArray[codonPosition] = complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
             }
             i++;
         }
 
-        decideStopCodonModificationAnnotation(SoNames, isStopCodon(String.valueOf(referenceCodon2Array))?String.valueOf(referenceCodon2Array):String.valueOf(referenceCodon1Array),
-                modifiedCodonArray);
+        // TODO: remove this and properly handle end of transcript
+        if(!endTranscriptReached) {
+            decideStopCodonModificationAnnotation(SoNames, isStopCodon(String.valueOf(referenceCodon2Array)) ? String.valueOf(referenceCodon2Array) : String.valueOf(referenceCodon1Array),
+                    modifiedCodonArray);
+        }
     }
 
     private void solveStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart,
