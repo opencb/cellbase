@@ -132,5 +132,5 @@ At this moment the only fully developed storage engine plugin is [MongoDB](https
 # Supporters
 JetBrains is supporting this open source project with:
 
-[![Intellij IDEA](https://www.jetbrains.com/company/docs/logo_jetbrains.png)]
+[![Intellij IDEA](https://www.jetbrains.com/idea/docs/logo_intellij_idea.png)]
 (http://www.jetbrains.com/idea/)
