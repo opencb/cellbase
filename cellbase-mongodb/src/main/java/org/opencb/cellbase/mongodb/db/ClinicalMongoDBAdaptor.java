@@ -141,8 +141,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarGeneFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> geneList = (List<String>) options.get("gene");
-//        List<String> geneList = options.getAsStringList("gene", null);
+//        List<String> geneList = (List<String>) options.get("gene");
+        List<String> geneList = options.getAsStringList("gene");
         if (geneList != null && geneList.size() > 0) {
             logger.info("gene filter activated, gene list: " + geneList.toString());
             builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
@@ -152,7 +152,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarRegionFilter(QueryBuilder builder, QueryOptions options) {
-        List<Region> regionList = (List<Region>) options.get("region");
+        List<Region> regionList = Region.parseRegions((String) options.get("region"));
+//        List<Region> regionList = (List<Region>) options.get("region");
         if (regionList != null && regionList.size() > 0) {
             logger.info("region filter activated, region list: " + regionList.toString());
             builder = builder.and(getClinvarRegionFilterDBObject(regionList));
@@ -176,7 +177,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
 
     private QueryBuilder addClinvarClinicalSignificanceFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> clinicalSignificanceList = (List<String>) options.get("significance");
+        List<String> clinicalSignificanceList = (List<String>) options.getAsStringList("significance");
+//        List<String> clinicalSignificanceList = (List<String>) options.get("significance");
         if (clinicalSignificanceList != null && clinicalSignificanceList.size() > 0) {
             for(int i=0; i<clinicalSignificanceList.size(); i++) {
                 clinicalSignificanceList.set(i, clinicalSignificanceList.get(i).replace("_"," "));
@@ -189,7 +191,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarReviewFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> reviewStatusList = (List<String>) options.get("review");
+        List<String> reviewStatusList = (List<String>) options.getAsStringList("review");
+//        List<String> reviewStatusList = (List<String>) options.get("review");
         if (reviewStatusList != null && reviewStatusList.size() > 0) {
             for(int i=0; i<reviewStatusList.size(); i++) {
                 reviewStatusList.set(i, reviewStatusList.get(i).toUpperCase());
@@ -203,7 +206,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
 
     private QueryBuilder addClinvarTypeFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> typeList = (List<String>) options.get("type");
+        List<String> typeList = (List<String>) options.getAsStringList("type");
+//        List<String> typeList = (List<String>) options.get("type");
         if (typeList != null && typeList.size() > 0) {
             for(int i=0; i<typeList.size(); i++) {
                 typeList.set(i, typeList.get(i).replace("_"," "));
@@ -216,7 +220,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarSoTermFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> soList = (List<String>) options.get("so");
+        List<String> soList = (List<String>) options.getAsStringList("so");
+//        List<String> soList = (List<String>) options.get("so");
         if (soList != null && soList.size() > 0) {
             logger.info("So filter activated, SO list: " + soList.toString());
             builder = builder.and(new BasicDBObject("annot.consequenceTypes.soTerms.soName", new BasicDBObject("$in", soList)));
@@ -225,8 +230,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarRsFilter(QueryBuilder builder, QueryOptions options) {
-//        List<String> rsStringList = options.getAsStringList("rs", null);
-        List<String> rsStringList = (List<String>) options.get("rs");
+        List<String> rsStringList = options.getAsStringList("rs");
+//        List<String> rsStringList = (List<String>) options.get("rs");
         if (rsStringList != null && rsStringList.size() > 0) {
             logger.info("rs filter activated, res list: "+rsStringList.toString());
             List<String> rsList = new ArrayList<>(rsStringList.size());
@@ -242,7 +247,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarRcvFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> rcvList = (List<String>) options.get("rcv");
+//        List<String> rcvList = (List<String>) options.get("rcv");
+        List<String> rcvList = (List<String>) options.getAsStringList("rcv");
         if (rcvList != null && rcvList.size() > 0) {
             logger.info("rcv filter activated, rcv list: "+rcvList.toString());
             builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
@@ -289,7 +295,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Deprecated
     private List<DBObject> addClinvarRsAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-//        List<String> rsStringList = options.getAsStringList("rs", null);
+//        List<String> rsStringList = options.getAsStringList("rs");
         List<String> rsStringList = (List<String>) options.get("rs");
         if (rsStringList != null && rsStringList.size() > 0) {
             logger.info("rs filter activated, res list: "+rsStringList.toString());
