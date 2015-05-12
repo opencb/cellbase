@@ -125,8 +125,8 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         //  db.regulatory_region.find({"chunkIds": {$in:["1_200", "1_300"]}, "start": 601156})
         QueryBuilder builder = new QueryBuilder();
 
-        List<Object> featureType = options.getList("featureType", null);
-        List<Object> featureClass = options.getList("featureClass", null);
+        List<Object> featureType = options.getAsList("featureType");
+        List<Object> featureClass = options.getAsList("featureClass");
 
 //        options = addExcludeReturnFields("chunkIds", options);
 
