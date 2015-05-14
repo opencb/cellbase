@@ -56,6 +56,23 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
+
+    @Override
+    public QueryResult first() {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public QueryResult stats() {
+        return null;
+    }
+
+
     @Override
     public QueryResult getAll(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
@@ -217,6 +234,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         return super.getAllIntervalFrequencies(regions, queryOptions);
     }
+
 
 //    @Override
 //    public QueryResult getIntervalFrequencies(Region region, int interval) {

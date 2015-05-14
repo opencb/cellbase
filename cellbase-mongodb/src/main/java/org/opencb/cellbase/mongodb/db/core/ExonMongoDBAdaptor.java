@@ -74,6 +74,21 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
 
     @Override
+    public QueryResult first() {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public QueryResult stats() {
+        return null;
+    }
+
+    @Override
     public QueryResult getAllByXref(String name, QueryOptions queryOptions) {
         BasicDBObject query = new BasicDBObject("transcripts.xrefs.id", name.toUpperCase());
         QueryResult result = new QueryResult();

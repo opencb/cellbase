@@ -16,39 +16,17 @@
 
 package org.opencb.cellbase.core.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opencb.datastore.core.QueryResult;
 
-@Deprecated
-public abstract class DBAdaptor {
+public interface DBAdaptor {
 
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-//	protected Logger logger= Logger.getLogger(this.getClass().getSimpleName());
-	
-//	protected static ResourceBundle resourceBundle;
+
 //	protected static Config applicationProperties;
-//
-//
-//	static {
-//		// reading application.properties file
-//		resourceBundle = ResourceBundle.getBundle("cellbase");
-//		try {
-//			applicationProperties = new Config(resourceBundle);
-//		} catch (IOException e) {
-//			applicationProperties = new Config();
-//			e.printStackTrace();
-//		}
-//	}
-	
-	public DBAdaptor() {
-		logger= LoggerFactory.getLogger(this.getClass().getSimpleName());
-//		logger.setLevel(Level.DEBUG);
-		
-//		logger.info(applicationProperties.toString());
-		
-	}
-	
-	public Logger getLogger() {
-		return logger;
-	}
+
+    QueryResult first();
+
+    long count();
+
+    QueryResult stats();
+
 }

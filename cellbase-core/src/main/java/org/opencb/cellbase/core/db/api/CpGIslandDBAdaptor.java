@@ -22,7 +22,7 @@ import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 
 import java.util.List;
 
-
+@Deprecated
 public interface CpGIslandDBAdaptor {
 	
 	public List<CpGIsland> getAllByRegion(Region region);

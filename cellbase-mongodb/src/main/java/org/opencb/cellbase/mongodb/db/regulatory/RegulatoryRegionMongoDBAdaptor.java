@@ -49,6 +49,22 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
     }
 
+
+    @Override
+    public QueryResult first() {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public QueryResult stats() {
+        return null;
+    }
+
     @Override
     public QueryResult getAllById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);

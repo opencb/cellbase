@@ -50,6 +50,21 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
 
     @Override
+    public QueryResult first() {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public QueryResult stats() {
+        return null;
+    }
+    
+    @Override
     public QueryResult getAll(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
 

@@ -18,13 +18,14 @@ package org.opencb.cellbase.core.db.api;
 
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
+import org.opencb.cellbase.core.db.DBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
 
-public interface FeatureDBAdaptor {
+public interface FeatureDBAdaptor extends DBAdaptor {
 
 
     QueryResult getAll(QueryOptions options);
