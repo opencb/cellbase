@@ -61,6 +61,20 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     }
 
     @Override
+    public QueryResult next(String id, QueryOptions options) {
+        QueryOptions _options = new QueryOptions();
+        _options.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, _options);
+        if(queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject)queryResult.getResult().get(0);
+            String chromosome = gene.get("chromosome").toString();
+            int start = Integer.parseInt(gene.get("start").toString());
+            return next(chromosome, start, options);
+        }
+        return null;
+    }
+
+    @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
         options.put("featureType", "TF_binding_site_motif");
         return super.next(chromosome, position, options);

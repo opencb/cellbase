@@ -184,6 +184,19 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
         return executeQueryList2(ids, queries, options);
     }
 
+    @Override
+    public QueryResult next(String id, QueryOptions options) {
+        QueryOptions _options = new QueryOptions();
+        _options.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, _options);
+        if(queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject)queryResult.getResult().get(0);
+            String chromosome = gene.get("chromosome").toString();
+            int start = Integer.parseInt(gene.get("start").toString());
+            return next(chromosome, start, options);
+        }
+        return null;
+    }
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {

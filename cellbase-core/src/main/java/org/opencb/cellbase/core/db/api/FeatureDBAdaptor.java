@@ -29,6 +29,8 @@ public interface FeatureDBAdaptor {
 
     QueryResult getAll(QueryOptions options);
 
+    QueryResult next(String id, QueryOptions options);
+
     QueryResult next(String chromosome, int position, QueryOptions options);
 
 

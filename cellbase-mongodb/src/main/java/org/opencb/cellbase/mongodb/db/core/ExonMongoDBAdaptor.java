@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.db.core;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
@@ -27,6 +28,7 @@ import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor {
@@ -105,6 +107,20 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+
+    @Override
+    public QueryResult next(String id, QueryOptions options) {
+        QueryOptions _options = new QueryOptions();
+        _options.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, _options);
+        if(queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject)queryResult.getResult().get(0);
+            String chromosome = gene.get("chromosome").toString();
+            int start = Integer.parseInt(gene.get("start").toString());
+            return next(chromosome, start, options);
+        }
+        return null;
+    }
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {

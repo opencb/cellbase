@@ -16,7 +16,10 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -28,7 +31,6 @@ import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor {
@@ -70,49 +72,33 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     }
 
     @Override
-    public QueryResult next(String chromosome, int position, QueryOptions options) {
-        if (options.getString("strand") == null || options.getString("strand").equals("") || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
-            // db.core.find({chromosome: "1", start: {$gt: 1000000}}).sort({start: 1}).limit(1)
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(chromosome).and("start").greaterThanEquals(position);
-            // options.put("sortAsc", "start");
-            options.put("sort", new HashMap<String, String>().put("start", "asc"));
-            options.put("limit", 1);
-            // mongoDBCollection.find().sort(new BasicDBObject("", "")).limit(1);
-            return executeQuery("result", builder.get(), options);
-        } else {
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(chromosome).and("end").lessThanEquals(position);
-            // options.put("sortDesc", "end");
-            options.put("sort", new HashMap<String, String>().put("end", "desc"));
-            options.put("limit", 1);
-            //              mongoDBCollection.find().sort(new BasicDBObject("", "")).limit(1);
-            return executeQuery("result", builder.get(), options);
+    public QueryResult next(String id, QueryOptions options) {
+        QueryOptions _options = new QueryOptions();
+        _options.put("include", Arrays.asList("chromosome", "start", "strand"));
+        QueryResult queryResult = getAllById(id, _options);
+        if(queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject)queryResult.getResult().get(0);
+            String chromosome = gene.get("chromosome").toString();
+//            options.put("strand", gene.get("strand").toString());
+            int start = Integer.parseInt(gene.get("start").toString());
+            return next(chromosome, start, options);
         }
+        return null;
     }
 
-//    @Override
-//    public QueryResult next(String id, QueryOptions options) {
-//        // TODO Auto-generated method stub
-//        QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").is(id);
-//        DBObject returnFields = getReturnFields(options);
-//        BasicDBList list = executeFind(builder.get(), returnFields, options);
-//        if (list != null && list.size() > 0) {
-//            DBObject gene = (DBObject) list.get(0);
-//            System.out.println(Integer.parseInt(gene.get("start").toString()));
-//            return next((String) gene.get("chromosome"), Integer.parseInt(gene.get("start").toString()), options);
-//        }
-//        return null;
-//    }
+    @Override
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
+        return next(chromosome, position+1, options, mongoDBCollection2);
+    }
 
-    // INFO:
-    // next(chromosome, position) method has been moved to MongoDBAdaptor class
 
     @Override
-    public org.opencb.datastore.core.QueryResult getAllById(String id, QueryOptions options) {
+    public QueryResult getAllById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
     @Override
-    public List<org.opencb.datastore.core.QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         //		QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").in(idList);
 
         List<DBObject> queries = new ArrayList<>(idList.size());

@@ -119,6 +119,28 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/{geneId}/next")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)")
+    public Response getNextByEnsemblId(@PathParam("geneId") String query) {
+        try {
+            checkParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+
+//			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
+//			queryOptions.put("include", include );
+            QueryResult genes = geneDBAdaptor.next(Splitter.on(",").splitToList(query).get(0), queryOptions);
+//            List genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            System.out.println(genes.get(0).getResult().get(0).getClass().toString());
+            return createOkResponse(genes);
+//			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
+            //	return generateResponse(query, Arrays.asList(this.getGeneDBAdaptor().getAllByEnsemblIdList(StringUtils.toList(query, ","))));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getAllByAccessions", e.toString());
+        }
+    }
+
+    @GET
     @Path("/{geneId}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs")
     public Response getTranscriptsByGeneId(@PathParam("geneId") String query) {
