@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor implements ProteinFunctionPredictorDBAdaptor {
 
-    private static Map<String,String> aaShortName = new HashMap();
+    private static Map<String,String> aaShortName = new HashMap<>();
 
     static {
         aaShortName.put("ALA","A");
@@ -54,20 +54,10 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
         aaShortName.put("VAL","V");
     }
 
-    public ProteinFunctionPredictorMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public ProteinFunctionPredictorMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("protein_functional_prediction");
-
-        logger.info("ProteinFunctionPredictorMongoDBAdaptor: in 'constructor'");
-    }
 
     public ProteinFunctionPredictorMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("protein_functional_prediction");
+//        mongoDBCollection = db.getCollection("protein_functional_prediction");
         mongoDBCollection2 = mongoDataStore.getCollection("protein_functional_prediction");
 
         logger.info("ProteinFunctionPredictorMongoDBAdaptor: in 'constructor'");
@@ -97,7 +87,7 @@ public class ProteinFunctionPredictorMongoDBAdaptor  extends MongoDBAdaptor impl
         }
 
 //        options = addExcludeReturnFields("transcripts", options);
-        return executeQueryList(transcriptIdList, queries, options);
+        return executeQueryList2(transcriptIdList, queries, options);
     }
 
     public QueryResult getByAaChange(String transcriptId, Integer aaPosition, String newAa, QueryOptions queryOptions) {

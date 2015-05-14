@@ -36,16 +36,6 @@ import java.util.List;
  */
 public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor implements ProteinProteinInteractionDBAdaptor {
 
-    public ProteinProteinInteractionMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public ProteinProteinInteractionMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("protein_protein_interaction");
-
-        logger.info("ProteinProteinInteractionMongoDBAdaptor: in 'constructor'");
-    }
 
     public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -152,7 +142,7 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
             queries.add(builder.get());
         }
 //        options = addExcludeReturnFields("transcripts", options);
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override

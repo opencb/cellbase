@@ -32,7 +32,7 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 
 //	private final static int CHUNK_SIZE = 2000;
 
-	
+
 //	public PathwayMongoDBAdaptor(SessionFactory sessionFactory) {
 //		super(sessionFactory);
 //	}
@@ -40,31 +40,24 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 //	public PathwayMongoDBAdaptor(SessionFactory sessionFactory, String species, String version) {
 //		super(sessionFactory, species, version);
 //	}
-	
+
 //	DB db = this.mongoClient.getDB("reactome");
-	DBCollection coll = db.getCollection("pathway");
-	
+//	DBCollection coll = db.getCollection("pathway");
+
 //	public PathwayMongoDBAdaptor(String species, String version) {
 //		super(species, version);
 //	}
 
-    private int genomeSequenceChunkSize = MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
+	private int genomeSequenceChunkSize = MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
 
-    public PathwayMongoDBAdaptor(DB db) {
-        super(db);
-    }
 
-    public PathwayMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-    }
-
-    public PathwayMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+	public PathwayMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
 		super(species, assembly, mongoDataStore);
 		mongoDBCollection2 = mongoDataStore.getCollection("pathway");
 
 		logger.info("PathwayMongoDBAdaptor: in 'constructor'");
-    }
-	
+	}
+
 	private int getChunk(int position){
 		return (position / genomeSequenceChunkSize);
 	}
@@ -72,68 +65,71 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 	private int getOffset(int position){
 		return ((position) % genomeSequenceChunkSize);
 	}
-	
+
 	@Override
 	public String getPathways() {
 		BasicDBObject query = new BasicDBObject();
-		
+
 		BasicDBObject returnFields = new BasicDBObject();
 		returnFields.put("_id", 0);
 		returnFields.put("name", 1);
 		returnFields.put("displayName", 1);
 		returnFields.put("subPathways", 1);
 		returnFields.put("parentPathway", 1);
-		
+
 		BasicDBObject orderBy = new BasicDBObject();
 		orderBy.put("name", 1);
-		
-		DBCursor cursor = coll.find(query, returnFields).sort(orderBy);
-		String result = cursor.toArray().toString();
-		cursor.close();
-		
-		return result;
+
+//		DBCursor cursor = coll.find(query, returnFields).sort(orderBy);
+//		String result = cursor.toArray().toString();
+//		cursor.close();
+//
+//		return result;
+		return null;
 	}
-	
+
 	@Override
 	public String getTree() {
 		BasicDBObject query = new BasicDBObject();
 		query.put("parentPathway", "none");
-		
+
 		BasicDBObject returnFields = new BasicDBObject();
 		returnFields.put("_id", 0);
 		returnFields.put("name", 1);
 		returnFields.put("displayName", 1);
 		returnFields.put("subPathways", 1);
-		
+
 		BasicDBObject orderBy = new BasicDBObject();
 		orderBy.put("displayName", 1);
-		
-		DBCursor cursor = coll.find(query, returnFields).sort(orderBy);
-		String result = cursor.toArray().toString();
-		cursor.close();
-		
-		return result;
+
+//		DBCursor cursor = coll.find(query, returnFields).sort(orderBy);
+//		String result = cursor.toArray().toString();
+//		cursor.close();
+//
+//		return result;
+		return null;
 	}
-	
+
 	@Override
 	public String getPathway(String pathwayId) {
 		BasicDBObject query = new BasicDBObject();
 		query.put("name", pathwayId);
-		
+
 		BasicDBObject returnFields = new BasicDBObject();
 		returnFields.put("_id", 0);
-		
-		DBCursor cursor = coll.find(query, returnFields);
-		String result = cursor.toArray().toString();
-		cursor.close();
-		
-		return result;
+
+//		DBCursor cursor = coll.find(query, returnFields);
+//		String result = cursor.toArray().toString();
+//		cursor.close();
+//
+//		return result;
+		return null;
 	}
-	
+
 	@Override
 	public String search(String searchBy, String searchText, boolean returnOnlyIds) {
 		Pattern regex = Pattern.compile(searchText, Pattern.CASE_INSENSITIVE);
-		
+
 		BasicDBObject query = new BasicDBObject();
 		if(searchBy.equalsIgnoreCase("pathway")) {
 			query.put("displayName", regex);
@@ -146,19 +142,20 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 			queryList.add(query2);
 			query.put("$or", queryList);
 		}
-		
+
 		System.out.println("Query: "+query);
-		
+
 		BasicDBObject returnFields = new BasicDBObject();
 		returnFields.put("_id", 0);
 		if(returnOnlyIds) {
 			returnFields.put("name", 1);
 		}
-		
-		DBCursor cursor = coll.find(query, returnFields);
-		String result = cursor.toArray().toString();
-		cursor.close();
-		return result;
+
+//		DBCursor cursor = coll.find(query, returnFields);
+//		String result = cursor.toArray().toString();
+//		cursor.close();
+//		return result;
+		return null;
 	}
 
 	/*

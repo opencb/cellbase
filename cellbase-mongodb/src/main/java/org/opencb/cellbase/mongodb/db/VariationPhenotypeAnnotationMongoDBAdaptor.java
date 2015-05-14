@@ -36,14 +36,10 @@ import java.util.List;
 @Deprecated
 public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariationPhenotypeAnnotationDBAdaptor {
 
-    public VariationPhenotypeAnnotationMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("variation_phenotype_annotation");
-    }
 
     public VariationPhenotypeAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("variation_phenotype_annotation");
+//        mongoDBCollection = db.getCollection("variation_phenotype_annotation");
         mongoDBCollection2 = mongoDataStore.getCollection("variation_phenotype_annotation");
 
         logger.info("variation_phenotype_annotation: in 'constructor'");
@@ -62,7 +58,7 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
             queries.add(builder.get());
         }
 
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
 
@@ -91,7 +87,7 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
             QueryBuilder builder = QueryBuilder.start("associatedGenes").is(id);
             queries.add(builder.get());
         }
-        return executeQueryList(geneList, queries, options);
+        return executeQueryList2(geneList, queries, options);
     }
 
 
@@ -108,7 +104,7 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
             QueryBuilder builder = QueryBuilder.start("phenotype").is(id);
             queries.add(builder.get());
         }
-        return executeQueryList(phenotypeList, queries, options);
+        return executeQueryList2(phenotypeList, queries, options);
     }
 
 
@@ -153,7 +149,7 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
             ids.add(region.toString());
         }
 
-        return executeQueryList(ids, queries, options);
+        return executeQueryList2(ids, queries, options);
     }
 
 }

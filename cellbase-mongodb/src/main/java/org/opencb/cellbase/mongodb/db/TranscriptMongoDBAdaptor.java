@@ -34,14 +34,6 @@ import java.util.List;
 
 public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor {
 
-    public TranscriptMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public TranscriptMongoDBAdaptor(DB db, String species, String assembly) {
-        super(db, species, assembly);
-        mongoDBCollection = db.getCollection("gene");
-    }
 
     public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -71,7 +63,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         }
 
         //		options = addExcludeReturnFields("transcripts", options);
-        return executeAggregation("result", commands, options);
+        return executeAggregation2("result", Arrays.asList(commands), options);
     }
 
 
@@ -90,17 +82,21 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
 //        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.id": "ENST00000343281"}})
 
-        List<DBObject[]> commandsList = new ArrayList<>(idList.size());
+        List<List<DBObject>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
-            DBObject[] commands = new DBObject[3];
+//            DBObject[] commands = new DBObject[3];
+            List<DBObject> commandList = new ArrayList<>(3);
             DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.id", id));
             DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
-            commands[0] = match;
-            commands[1] = unwind;
-            commands[2] = match;
-            commandsList.add(commands);
+//            commands[0] = match;
+//            commands[1] = unwind;
+//            commands[2] = match;
+            commandList.add(match);
+            commandList.add(unwind);
+            commandList.add(match);
+            commandsList.add(commandList);
         }
-        return executeAggregationList(idList, commandsList, options);
+        return executeAggregationList2(idList, commandsList, options);
     }
 
     @Override

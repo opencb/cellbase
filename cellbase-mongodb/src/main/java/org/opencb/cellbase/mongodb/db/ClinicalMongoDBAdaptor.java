@@ -46,16 +46,6 @@ import java.util.regex.Pattern;
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor {
 
 
-    public ClinicalMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public ClinicalMongoDBAdaptor(DB db, String species, String assembly) {
-        super(db, species, assembly);
-        mongoDBCollection = db.getCollection("clinical");
-        logger.info("ClinicalVarMongoDBAdaptor: in 'constructor'");
-    }
-
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("clinical");

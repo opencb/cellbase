@@ -33,14 +33,6 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 
     private int chunkSize = MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
 
-    public GenomeSequenceMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public GenomeSequenceMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("genome_sequence");
-    }
 
     public GenomeSequenceMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);

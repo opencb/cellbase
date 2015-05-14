@@ -34,23 +34,23 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     private int geneChunkSize = MongoDBCollectionConfiguration.GENE_CHUNK_SIZE;
 
-    public GeneMongoDBAdaptor(DB db) { super(db); }
+//    public GeneMongoDBAdaptor(DB db) {
+//        super(db);
+//    }
 
-    public GeneMongoDBAdaptor(DB db, String species, String assembly) {
-        super(db, species, assembly);
-        mongoDBCollection = db.getCollection("gene");
-
-        logger.info("GeneMongoDBAdaptor: in 'constructor'");
-    }
-
-    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+//    @Deprecated
+//    public GeneMongoDBAdaptor(DB db, String species, String assembly) {
 //        super(db, species, assembly);
 //        mongoDBCollection = db.getCollection("gene");
+//
+//        logger.info("GeneMongoDBAdaptor: in 'constructor'");
+//    }
+
+    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
-//        this.geneChunkSize = geneChunkSize;
     }
 
     @Override
@@ -222,8 +222,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
 
     @Override
-    public QueryResult getAllIntervalFrequencies(Region region, QueryOptions queryOptions) {
-        return super.getAllIntervalFrequencies(region, queryOptions);
+    public QueryResult getIntervalFrequencies(Region region, QueryOptions queryOptions) {
+        return super.getIntervalFrequencies(region, queryOptions);
     }
 
     @Override
@@ -232,7 +232,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     }
 
 //    @Override
-//    public QueryResult getAllIntervalFrequencies(Region region, int interval) {
+//    public QueryResult getIntervalFrequencies(Region region, int interval) {
 //
 //        BasicDBObject start = new BasicDBObject("$gt", region.getStart());
 //        start.append("$lt", region.getEnd());
@@ -335,10 +335,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 //    }
 //
 //    @Override
-//    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
+//    public List<QueryResult> getIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
 //        List<QueryResult> queryResult = new ArrayList<>(regions.size());
 //        for (Region region :regions){
-//            queryResult.add(getAllIntervalFrequencies(region, queryOptions));
+//            queryResult.add(getIntervalFrequencies(region, queryOptions));
 //        }
 //        return queryResult;
 //    }

@@ -34,31 +34,15 @@ import java.util.List;
 
 public class VariationMongoDBAdaptor extends MongoDBAdaptor implements VariationDBAdaptor {
 
-    private DBCollection mongoVariationPhenotypeDBCollection;
+//    private DBCollection mongoVariationPhenotypeDBCollection;
     private MongoDBCollection mongoVariationPhenotypeDBCollection2;
 
     private int variationChunkSize = MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE;
 
-    public VariationMongoDBAdaptor(DB db) { super(db); }
-
-    public VariationMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("variation");
-        mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
-    }
-
-    public VariationMongoDBAdaptor(DB db, String species, String version, int variationChunkSize) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("variation");
-        mongoVariationPhenotypeDBCollection = db.getCollection("variation_phenotype");
-        this.variationChunkSize = variationChunkSize;
-
-        mongoDBCollection2 = mongoDataStore.getCollection("variation");
-    }
 
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("variation");
+//        mongoDBCollection = db.getCollection("variation");
         mongoDBCollection2 = mongoDataStore.getCollection("variation");
         mongoVariationPhenotypeDBCollection2 = mongoDataStore.getCollection("variation_phenotype");
 
@@ -77,7 +61,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             QueryBuilder builder = QueryBuilder.start("id").is(id);
             queries.add(builder.get());
         }
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override
@@ -105,7 +89,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             QueryBuilder builder = QueryBuilder.start("transcriptVariations.transcriptId").is(id);
             queries.add(builder.get());
         }
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
 
@@ -162,7 +146,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 ids.add(region.toString());
             }
         }
-        return executeQueryList(ids, queries, options, db.getCollection("variation_phenotype_annotation"));
+        return executeQueryList2(ids, queries, options, mongoVariationPhenotypeDBCollection2);
     }
 
 
@@ -191,7 +175,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     @Override
     public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
-        return executeQuery(phenotype, builder.get(), options, mongoVariationPhenotypeDBCollection);
+        return executeQuery(phenotype, builder.get(), options, mongoVariationPhenotypeDBCollection2);
     }
 
     @Override
@@ -201,7 +185,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             QueryBuilder builder = QueryBuilder.start("phenotype").is(id);
             queries.add(builder.get());
         }
-        return executeQueryList(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection);
+        return executeQueryList2(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection2);
     }
 
 
@@ -248,7 +232,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 queries.add(builder.get());
                 ids.add(region.toString());
             }
-            return executeQueryList(ids, queries, options, db.getCollection("variation_phenotype_annotation"));
+            return executeQueryList2(ids, queries, options, mongoVariationPhenotypeDBCollection2);
         }else {
             String consequenceTypes = options.getString("consequence_type", null);
             BasicDBList consequenceTypeDBList = new BasicDBList();
@@ -268,12 +252,12 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 ids.add(region.toString());
             }
 
-            return executeQueryList(ids, queries, options);
+            return executeQueryList2(ids, queries, options);
         }
     }
     @Override
     public QueryResult getAllIntervalFrequencies(Region region, QueryOptions queryOptions) {
-        return super.getAllIntervalFrequencies(region, queryOptions);
+        return super.getIntervalFrequencies(region, queryOptions);
     }
 
     @Override

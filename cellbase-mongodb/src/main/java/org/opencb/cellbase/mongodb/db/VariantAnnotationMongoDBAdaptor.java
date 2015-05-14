@@ -209,14 +209,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
     }
 
-    public VariantAnnotationMongoDBAdaptor(DB db, String species, String assembly) {
-        super(db, species, assembly);
-    }
-
-    public VariantAnnotationMongoDBAdaptor(DB db, String species, String assembly, int geneChunkSize) {
-        super(db, species, assembly);
-        this.geneChunkSize = geneChunkSize;
-    }
 
     public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);

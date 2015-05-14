@@ -26,7 +26,6 @@ import org.opencb.cellbase.core.lib.api.CytobandDBAdaptor;
 import org.opencb.cellbase.core.lib.api.core.*;
 import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
@@ -39,7 +38,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -124,7 +122,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
             if (hasHistogramQueryParam()) {
                 queryOptions.put("interval", getHistogramIntervalSize());
-                QueryResult res = geneDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
+                QueryResult res = geneDBAdaptor.getIntervalFrequencies(regions.get(0), queryOptions);
                 return createOkResponse(res);
             } else {
                 if(biotype != null && !biotype.equals("")) {
@@ -226,9 +224,9 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
-//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
+//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getIntervalFrequencies(
 //						regions.get(0), getHistogramIntervalSize());
-                QueryResult queryResult = mutationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
+                QueryResult queryResult = mutationDBAdaptor.getIntervalFrequencies(regions.get(0), queryOptions);
 //				return generateResponse(query, intervalList);
                 return createOkResponse(queryResult);
             } else {
@@ -303,7 +301,7 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
-//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getAllIntervalFrequencies(
+//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getIntervalFrequencies(
 //						regions.get(0), getHistogramIntervalSize());
                 QueryResult queryResult = variationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
 //				return generateResponse(query, intervalList);

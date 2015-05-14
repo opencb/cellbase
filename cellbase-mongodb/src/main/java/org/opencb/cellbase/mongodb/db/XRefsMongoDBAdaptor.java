@@ -32,18 +32,10 @@ import java.util.regex.Pattern;
 
 public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdaptor {
 
-    public XRefsMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public XRefsMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("gene");
-    }
 
     public XRefsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("gene");
+//        mongoDBCollection = db.getCollection("gene");
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("XrefsMongoDBAdaptor: in 'constructor'");
@@ -138,7 +130,7 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
         System.out.println(options.getInt("limit"));
         options.put("include", Arrays.asList("chromosome", "start", "end", "id", "name"));
 
-        return executeQueryList(ids, queries, options);
+        return executeQueryList2(ids, queries, options);
     }
 
     @Override
@@ -236,7 +228,7 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 
 // Biotype if gene given: db.core.find({"transcripts.xrefs.id": "BRCA2"}, {"biotype":1})
 // Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}}, {$project:{"transcripts.biotype":1}})
-        List<DBObject[]> commandsList = new ArrayList<>(ids.size());
+        List<List<DBObject>> commandsList = new ArrayList<>(ids.size());
         for (String id : ids) {
             List<DBObject> commands = new ArrayList<>(ids.size());
 
@@ -276,11 +268,11 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
             commands.add(project);
 
             //ArrayList to array
-            DBObject[] commandsArray = commands.toArray(new DBObject[0]);
+//            DBObject[] commandsArray = commands.toArray(new DBObject[0]);
 
-            commandsList.add(commandsArray);
+            commandsList.add(commands);
         }
-        return executeAggregationList(ids, commandsList, options);
+        return executeAggregationList2(ids, commandsList, options);
     }
 
 

@@ -65,7 +65,7 @@ public interface MutationDBAdaptor extends FeatureDBAdaptor {
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
 
-    public QueryResult getAllIntervalFrequencies(Region region, QueryOptions options);
+    public QueryResult getIntervalFrequencies(Region region, QueryOptions options);
 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 
@@ -90,6 +90,6 @@ public interface MutationDBAdaptor extends FeatureDBAdaptor {
 //	public List<List<MutationPhenotypeAnnotation>> getAllByRegionList(List<Region> regionList);
 //
 //
-//	public List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
+//	public List<IntervalFeatureFrequency> getIntervalFrequencies(Region region, int interval);
 	
 }

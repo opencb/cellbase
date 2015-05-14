@@ -32,10 +32,6 @@ import java.util.List;
  */
 public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAdaptor {
 
-    public ProteinMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("protein");
-    }
 
     public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -65,7 +61,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         }
 
 //        options = addExcludeReturnFields("transcripts", options);
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override

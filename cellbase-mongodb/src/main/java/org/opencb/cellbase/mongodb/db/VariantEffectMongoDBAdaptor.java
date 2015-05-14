@@ -16,8 +16,10 @@
 
 package org.opencb.cellbase.mongodb.db;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.variation.GenomicVariantEffect;
@@ -27,7 +29,6 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,18 +44,9 @@ import java.util.List;
 public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements VariantEffectDBAdaptor {
 
 
-    public VariantEffectMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public VariantEffectMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("gene");
-    }
-
     public VariantEffectMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("gene");
+//        mongoDBCollection = db.getCollection("gene");
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("VariantEffectMongoDBAdaptor: in 'constructor'");
@@ -86,8 +78,8 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
 
         options = addExcludeReturnFields("transcripts.xrefs", options);
 
-        BasicDBObject returnFields = getReturnFields(options);
-        BasicDBList list = executeFind(queries.get(0), returnFields, options, db.getCollection("core"));
+//        BasicDBObject returnFields = getReturnFields(options);
+//        BasicDBList list = executeFind(queries.get(0), returnFields, options, db.getCollection("core"));
         long dbTimeStart, dbTimeEnd;
 
         GenomicVariantEffectPredictor genomicVariantEffectPredictor = new GenomicVariantEffectPredictor();
@@ -99,7 +91,7 @@ public class VariantEffectMongoDBAdaptor extends MongoDBAdaptor implements Varia
 
         QueryResult queryResult = new QueryResult();
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-        queryResult.setNumResults(list.size());
+//        queryResult.setNumResults(list.size());
         queryResult.setResult(a);
 
         queryResults.add(queryResult);

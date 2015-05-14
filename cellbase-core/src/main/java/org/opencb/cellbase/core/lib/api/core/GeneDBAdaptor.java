@@ -26,9 +26,9 @@ import java.util.List;
 public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
 
-	public QueryResult getAllById(String id, QueryOptions options);
+    QueryResult getAllById(String id, QueryOptions options);
 
-	public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
     /**
@@ -37,28 +37,22 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
      * @param options
      * @return Any gene found having that Xref id
      */
-    public QueryResult getAllByXref(String id, QueryOptions options);
+    QueryResult getAllByXref(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options);
-
-
-	public QueryResult getAllBiotypes(QueryOptions options);
-
-	public QueryResult getAllTargetsByTf(String id);
-
-	public List<QueryResult> getAllTargetsByTfList(List<String> idList);
+    List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options);
 
 
-//	public QueryResult getAllByTf(String id);
-//
-//	public List<QueryResult> getAllByTfList(List<String> idList);
-//
-//	public List<Gene> getAllByTfName(String tfName);
-//
-//	public List<List<Gene>> getAllByTfNameList(List<String> tfNameList);
-//
+    QueryResult getAllBiotypes(QueryOptions options);
+
+    QueryResult getAllTargetsByTf(String id);
+
+    List<QueryResult> getAllTargetsByTfList(List<String> idList);
+
+
+//	QueryResult getAllByTfName(String tfName);
+//	List<QueryResult> getAllByTfNameList(List<String> tfNameList);
+
 //	public List<Gene> getAllByMiRnaMature(String mirbaseId);
-//
 //	public List<List<Gene>> getAllByMiRnaMatureList(List<String> mirbaseIds);
 
 }

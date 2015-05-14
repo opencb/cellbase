@@ -133,6 +133,6 @@ public interface SnpDBAdaptor {
 //	
 //	public List<List<ConsequenceType>> getAllConsequenceTypeList(List<String> nameList);
 //	
-//	public List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
+//	public List<IntervalFeatureFrequency> getIntervalFrequencies(Region region, int interval);
 	
 }

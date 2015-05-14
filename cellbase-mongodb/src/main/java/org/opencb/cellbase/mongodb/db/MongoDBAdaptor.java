@@ -38,43 +38,41 @@ public class MongoDBAdaptor {
     protected MongoDBCollection mongoDBCollection2;
 
     //	Old classes
-    @Deprecated
-    protected DB db;
-    @Deprecated
-    protected DBCollection mongoDBCollection;
+//    @Deprecated
+//    protected DB db;
+//    @Deprecated
+//    protected DBCollection mongoDBCollection;
+//
+//    protected static Map<String, Number> cachedQuerySizes = new HashMap<>();
 
-    protected static Map<String, Number> cachedQuerySizes = new HashMap<String, Number>();
-
-//    protected ObjectMapper jsonObjectMapper;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Deprecated
-    public MongoDBAdaptor(DB db) {
-        this.db = db;
-    }
-
-    @Deprecated
-    public MongoDBAdaptor(DB db, String species, String assembly) {
-        this.db = db;
-        this.species = species;
-        this.assembly = assembly;
-        //		logger.warn(applicationProperties.toString());
-        initSpeciesAssembly(species, assembly);
-
-//        jsonObjectMapper = new ObjectMapper();
-    }
+//    @Deprecated
+//    public MongoDBAdaptor(DB db) {
+//        this.db = db;
+//    }
+//
+//    @Deprecated
+//    public MongoDBAdaptor(DB db, String species, String assembly) {
+//        this.db = db;
+//        this.species = species;
+//        this.assembly = assembly;
+//        //		logger.warn(applicationProperties.toString());
+//        initSpeciesAssembly(species, assembly);
+//
+//    }
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
         this("", "", mongoDataStore);
-        this.db = mongoDataStore.getDb();
+//        this.db = mongoDataStore.getDb();
     }
 
     public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         this.species = species;
         this.assembly = assembly;
         this.mongoDataStore = mongoDataStore;
-        this.db = mongoDataStore.getDb();
+//        this.db = mongoDataStore.getDb();
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
@@ -283,48 +281,48 @@ public class MongoDBAdaptor {
         return returnFields;
     }
 
-    @Deprecated
-    protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options) {
-        return executeFind(query, returnFields, options, mongoDBCollection);
-    }
-
-    @Deprecated
-    protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options, DBCollection dbCollection) {
-        BasicDBList list = new BasicDBList();
-
-        if (options.getBoolean("count")) {
-            Long count = dbCollection.count(query);
-            list.add(new BasicDBObject("count", count));
-        }else {
-            DBCursor cursor = dbCollection.find(query, returnFields);
-
-            int limit = options.getInt("limit", 0);
-            if (limit > 0) {
-                cursor.limit(limit);
-            }
-            int skip = options.getInt("skip", 0);
-            if (skip > 0) {
-                cursor.skip(skip);
-            }
-
-            BasicDBObject sort = (BasicDBObject) options.get("sort");
-            if (sort != null) {
-                cursor.sort(sort);
-            }
-            try {
-                if (cursor != null) {
-                    while (cursor.hasNext()) {
-                        list.add(cursor.next());
-                    }
-                }
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
-        return list;
-    }
+//    @Deprecated
+//    protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options) {
+//        return executeFind(query, returnFields, options, mongoDBCollection);
+//    }
+//
+//    @Deprecated
+//    protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options, DBCollection dbCollection) {
+//        BasicDBList list = new BasicDBList();
+//
+//        if (options.getBoolean("count")) {
+//            Long count = dbCollection.count(query);
+//            list.add(new BasicDBObject("count", count));
+//        }else {
+//            DBCursor cursor = dbCollection.find(query, returnFields);
+//
+//            int limit = options.getInt("limit", 0);
+//            if (limit > 0) {
+//                cursor.limit(limit);
+//            }
+//            int skip = options.getInt("skip", 0);
+//            if (skip > 0) {
+//                cursor.skip(skip);
+//            }
+//
+//            BasicDBObject sort = (BasicDBObject) options.get("sort");
+//            if (sort != null) {
+//                cursor.sort(sort);
+//            }
+//            try {
+//                if (cursor != null) {
+//                    while (cursor.hasNext()) {
+//                        list.add(cursor.next());
+//                    }
+//                }
+//            } finally {
+//                if (cursor != null) {
+//                    cursor.close();
+//                }
+//            }
+//        }
+//        return list;
+//    }
 
 //    @Deprecated
 //    protected QueryResult executeDistinct(Object id, String key) {
@@ -350,141 +348,141 @@ public class MongoDBAdaptor {
 //        return executeQuery(id, query, options, mongoDBCollection);
 //    }
 
-    @Deprecated
-    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, DBCollection dbCollection) {
-        return executeQueryList(Arrays.asList(id), Arrays.asList(query), options, dbCollection).get(0);
-    }
+//    @Deprecated
+//    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, DBCollection dbCollection) {
+//        return executeQueryList(Arrays.asList(id), Arrays.asList(query), options, dbCollection).get(0);
+//    }
+//
+//    @Deprecated
+//    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
+//        return executeQueryList(ids, queries, options, mongoDBCollection);
+//    }
+//
+//    @Deprecated
+//    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options, DBCollection dbCollection) {
+////		QueryResponse queryResponse = new QueryResponse();
+//        List<QueryResult> queryResults = new ArrayList<>(ids.size());
+//
+//        // Select which fields are excluded and included in MongoDB query
+//        BasicDBObject returnFields = getReturnFields(options);
+////        System.out.println(returnFields.toString());
+//        // Time parameters
+////		long timeStart = System.currentTimeMillis();
+//        long dbTimeStart, dbTimeEnd;
+//
+//        for (int i = 0; i < queries.size(); i++) {
+//            DBObject query = queries.get(i);
+//            QueryResult queryResult = new QueryResult();
+//
+//            // Execute query and calculate time
+//            dbTimeStart = System.currentTimeMillis();
+//            BasicDBList list = executeFind(query, returnFields, options, dbCollection);
+//            dbTimeEnd = System.currentTimeMillis();
+//
+//            // setting queryResult fields
+//            queryResult.setId(ids.get(i).toString());
+////            queryResult.setDbTime((dbTimeEnd - dbTimeStart));
+//            // Limit is set in queryOptions, count number of total results
+//            if(options.getInt("limit", 0) > 0) {
+//                queryResult.setNumResults((int) dbCollection.count(query));
+//            } else {
+//                queryResult.setNumResults(list.size());
+//            }
+//
+//            queryResult.setResult(list);
+//
+//            queryResults.add(queryResult);
+//
+//
+////          //TODO move query response to webservicve
+////			// Save QueryResult into QueryResponse object
+////			if(ids.get(i) != null && !ids.get(i).equals("")) {
+////				queryResponse.put(ids.get(i).toString(), queryResult);
+////			}else {
+////				// some 'getAll' queries do not have a query ID, for those
+////				// cases an empty string is accepted and 'result' is written
+////				queryResponse.put("result", queryResult);
+////			}
+//        }
+////		long timeEnd = System.currentTimeMillis();
+//
+////        //TODO
+////		// Check if 'metadata' field must be returned
+////		if (options != null && options.getBoolean("metadata", true)) {
+////			queryResponse.getMetadata().put("queryIds", ids);
+////			queryResponse.getMetadata().put("time", timeEnd - timeStart);
+////		} else {
+////			queryResponse.removeField("metadata");
+////		}
+//
+//        return queryResults;
+//    }
 
-    @Deprecated
-    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
-        return executeQueryList(ids, queries, options, mongoDBCollection);
-    }
 
-    @Deprecated
-    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options, DBCollection dbCollection) {
-//		QueryResponse queryResponse = new QueryResponse();
-        List<QueryResult> queryResults = new ArrayList<>(ids.size());
-
-        // Select which fields are excluded and included in MongoDB query
-        BasicDBObject returnFields = getReturnFields(options);
-//        System.out.println(returnFields.toString());
-        // Time parameters
-//		long timeStart = System.currentTimeMillis();
-        long dbTimeStart, dbTimeEnd;
-
-        for (int i = 0; i < queries.size(); i++) {
-            DBObject query = queries.get(i);
-            QueryResult queryResult = new QueryResult();
-
-            // Execute query and calculate time
-            dbTimeStart = System.currentTimeMillis();
-            BasicDBList list = executeFind(query, returnFields, options, dbCollection);
-            dbTimeEnd = System.currentTimeMillis();
-
-            // setting queryResult fields
-            queryResult.setId(ids.get(i).toString());
-//            queryResult.setDbTime((dbTimeEnd - dbTimeStart));
-            // Limit is set in queryOptions, count number of total results
-            if(options.getInt("limit", 0) > 0) {
-                queryResult.setNumResults((int) dbCollection.count(query));
-            } else {
-                queryResult.setNumResults(list.size());
-            }
-
-            queryResult.setResult(list);
-
-            queryResults.add(queryResult);
-
-
-//          //TODO move query response to webservicve
-//			// Save QueryResult into QueryResponse object
-//			if(ids.get(i) != null && !ids.get(i).equals("")) {
-//				queryResponse.put(ids.get(i).toString(), queryResult);
-//			}else {
-//				// some 'getAll' queries do not have a query ID, for those
-//				// cases an empty string is accepted and 'result' is written
-//				queryResponse.put("result", queryResult);
-//			}
-        }
-//		long timeEnd = System.currentTimeMillis();
-
-//        //TODO
-//		// Check if 'metadata' field must be returned
-//		if (options != null && options.getBoolean("metadata", true)) {
-//			queryResponse.getMetadata().put("queryIds", ids);
-//			queryResponse.getMetadata().put("time", timeEnd - timeStart);
-//		} else {
-//			queryResponse.removeField("metadata");
-//		}
-
-        return queryResults;
-    }
-
-
-    protected QueryResult executeAggregation(Object id, DBObject[] operations, QueryOptions options) {
-        return executeAggregation(id, operations, options, mongoDBCollection);
-    }
-
-    protected QueryResult executeAggregation(Object id, DBObject[] operations, QueryOptions options, DBCollection dbCollection) {
-        List<DBObject[]> operationsList = new ArrayList<>();
-        operationsList.add(operations);
-        return executeAggregationList(Arrays.asList(id), operationsList, options, dbCollection).get(0);
-    }
-
-    protected List<QueryResult> executeAggregationList(List<? extends Object> ids, List<DBObject[]> operationsList, QueryOptions options) {
-        return executeAggregationList(ids, operationsList, options, mongoDBCollection);
-    }
-
-    protected List<QueryResult> executeAggregationList(List<? extends Object> ids, List<DBObject[]> operationsList, QueryOptions options, DBCollection dbCollection) {
-        List<QueryResult> queryResults = new ArrayList<>(ids.size());
-        AggregationOutput aggregationOutput;
-
-        long dbTimeStart, dbTimeEnd;
-        for (int i = 0; i < operationsList.size(); i++) {
-            DBObject[] operations = operationsList.get(i);
-
-            // MongoDB aggregate method signature is: public AggregationOutput aggregate( DBObject firstOp, DBObject ... additionalOps)
-            // so the operations array must be decomposed, TODO check operations length
-            DBObject firstOperation = operations[0];
-            DBObject[] additionalOperations = Arrays.copyOfRange(operations, 1, operations.length);
-
-            QueryResult queryResult = new QueryResult();
-
-            // Execute query and calculate time
-            dbTimeStart = System.currentTimeMillis();
-            aggregationOutput = dbCollection.aggregate(firstOperation, additionalOperations);
-            dbTimeEnd = System.currentTimeMillis();
-
-            BasicDBList list = new BasicDBList();
-            try {
-                if (aggregationOutput != null) {
-                    Iterator<DBObject> results = aggregationOutput.results().iterator();
-                    while (results.hasNext()) {
-                        list.add(results.next());
-                    }
-                }
-            } finally {
-
-            }
-            queryResult.setId(ids.get(i).toString());
-//            queryResult.setDbTime((dbTimeEnd - dbTimeStart));
-            queryResult.setResult(list);
-
-            queryResults.add(queryResult);
-        }
-        return queryResults;
-    }
+//    protected QueryResult executeAggregation(Object id, DBObject[] operations, QueryOptions options) {
+//        return executeAggregation(id, operations, options, mongoDBCollection);
+//    }
+//
+//    protected QueryResult executeAggregation(Object id, DBObject[] operations, QueryOptions options, DBCollection dbCollection) {
+//        List<DBObject[]> operationsList = new ArrayList<>();
+//        operationsList.add(operations);
+//        return executeAggregationList(Arrays.asList(id), operationsList, options, dbCollection).get(0);
+//    }
+//
+//    protected List<QueryResult> executeAggregationList(List<? extends Object> ids, List<DBObject[]> operationsList, QueryOptions options) {
+//        return executeAggregationList(ids, operationsList, options, mongoDBCollection);
+//    }
+//
+//    protected List<QueryResult> executeAggregationList(List<? extends Object> ids, List<DBObject[]> operationsList, QueryOptions options, DBCollection dbCollection) {
+//        List<QueryResult> queryResults = new ArrayList<>(ids.size());
+//        AggregationOutput aggregationOutput;
+//
+//        long dbTimeStart, dbTimeEnd;
+//        for (int i = 0; i < operationsList.size(); i++) {
+//            DBObject[] operations = operationsList.get(i);
+//
+//            // MongoDB aggregate method signature is: public AggregationOutput aggregate( DBObject firstOp, DBObject ... additionalOps)
+//            // so the operations array must be decomposed, TODO check operations length
+//            DBObject firstOperation = operations[0];
+//            DBObject[] additionalOperations = Arrays.copyOfRange(operations, 1, operations.length);
+//
+//            QueryResult queryResult = new QueryResult();
+//
+//            // Execute query and calculate time
+//            dbTimeStart = System.currentTimeMillis();
+//            aggregationOutput = dbCollection.aggregate(firstOperation, additionalOperations);
+//            dbTimeEnd = System.currentTimeMillis();
+//
+//            BasicDBList list = new BasicDBList();
+//            try {
+//                if (aggregationOutput != null) {
+//                    Iterator<DBObject> results = aggregationOutput.results().iterator();
+//                    while (results.hasNext()) {
+//                        list.add(results.next());
+//                    }
+//                }
+//            } finally {
+//
+//            }
+//            queryResult.setId(ids.get(i).toString());
+////            queryResult.setDbTime((dbTimeEnd - dbTimeStart));
+//            queryResult.setResult(list);
+//
+//            queryResults.add(queryResult);
+//        }
+//        return queryResults;
+//    }
 
 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         List<QueryResult> queryResult = new ArrayList<>(regions.size());
         for (Region region : regions) {
-            queryResult.add(getAllIntervalFrequencies(region, queryOptions));
+            queryResult.add(getIntervalFrequencies(region, queryOptions));
         }
         return queryResult;
     }
 
-    public QueryResult getAllIntervalFrequencies(Region region, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Region region, QueryOptions options) {
         //  MONGO QUERY TO IMPLEMENT
         //    db.variation.aggregate({$match: {$and: [{chromosome: "1"}, {start: {$gt: 251391, $lt: 2701391}}]}}, {$group: {_id: {$subtract: [{$divide: ["$start", 40000]}, {$divide: [{$mod: ["$start", 40000]}, 40000]}]}, totalCount: {$sum: 1}}})
         //        {
@@ -554,19 +552,16 @@ public class MongoDBAdaptor {
 
         BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("_id", 1));
 
-        logger.info("getAllIntervalFrequencies - (>·_·)>");
+        logger.info("getIntervalFrequencies - (>·_·)>");
         System.out.println(options.toString());
 
         System.out.println(match.toString());
         System.out.println(group.toString());
         System.out.println(sort.toString());
 
-        AggregationOutput output = mongoDBCollection.aggregate(match, group, sort);
-
-        System.out.println(output.getCommand());
-
+        QueryResult<DBObject> aggregationOutput = mongoDBCollection2.aggregate(Arrays.asList(match, group, sort), options);
         Map<Long, DBObject> ids = new HashMap<>();
-        for (DBObject intervalObj : output.results()) {
+        for (DBObject intervalObj : aggregationOutput.getResult()) {
             Long _id = Math.round((Double) intervalObj.get("_id"));//is double
 
             DBObject intervalVisited = ids.get(_id);

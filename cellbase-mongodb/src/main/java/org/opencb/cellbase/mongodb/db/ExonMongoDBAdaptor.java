@@ -36,52 +36,44 @@ import java.util.Map;
 
 public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor {
 
-	public ExonMongoDBAdaptor(DB db) {
-		super(db);
-	}
-
-	public ExonMongoDBAdaptor(DB db, String species, String version) {
-		super(db, species, version);
-		mongoDBCollection = db.getCollection("gene");
-	}
 
     public ExonMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-		mongoDBCollection = db.getCollection("gene");
+//		mongoDBCollection = db.getCollection("gene");
         mongoDBCollection2 = mongoDataStore.getCollection("gene");
 
         logger.info("ExonMongoDBAdaptor: in 'constructor'");
     }
 
-    private List<Gene> executeQuery(DBObject query, List<String> excludeFields) {
-        List<Gene> result = null;
-
-        DBCursor cursor = null;
-        if (excludeFields != null && excludeFields.size() > 0) {
-            BasicDBObject returnFields = new BasicDBObject("_id", 0);
-            for (String field : excludeFields) {
-                returnFields.put(field, 0);
-            }
-            cursor = mongoDBCollection.find(query, returnFields);
-        } else {
-            cursor = mongoDBCollection.find(query);
-        }
-
-        try {
-            if (cursor != null) {
-                result = new ArrayList<Gene>(cursor.size());
-//                Gson jsonObjectMapper = new Gson();
-                Gene gene = null;
-                while (cursor.hasNext()) {
-//                    gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
-                    result.add(gene);
-                }
-            }
-        } finally {
-            cursor.close();
-        }
-        return result;
-    }
+//    private List<Gene> executeQuery(DBObject query, List<String> excludeFields) {
+//        List<Gene> result = null;
+//
+//        DBCursor cursor = null;
+//        if (excludeFields != null && excludeFields.size() > 0) {
+//            BasicDBObject returnFields = new BasicDBObject("_id", 0);
+//            for (String field : excludeFields) {
+//                returnFields.put(field, 0);
+//            }
+//            cursor = mongoDBCollection.find(query, returnFields);
+//        } else {
+//            cursor = mongoDBCollection.find(query);
+//        }
+//
+//        try {
+//            if (cursor != null) {
+//                result = new ArrayList<Gene>(cursor.size());
+////                Gson jsonObjectMapper = new Gson();
+//                Gene gene = null;
+//                while (cursor.hasNext()) {
+////                    gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
+//                    result.add(gene);
+//                }
+//            }
+//        } finally {
+//            cursor.close();
+//        }
+//        return result;
+//    }
 
 
     @Override

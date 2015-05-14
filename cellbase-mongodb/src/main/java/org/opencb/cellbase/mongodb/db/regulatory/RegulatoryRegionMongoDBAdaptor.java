@@ -41,14 +41,6 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     private static int regulatoryRegionChunkSize = MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE;
 
-    public RegulatoryRegionMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public RegulatoryRegionMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("regulatory_region");
-    }
 
     public RegulatoryRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);

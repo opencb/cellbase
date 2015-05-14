@@ -34,19 +34,10 @@ import java.util.List;
 @Deprecated
 public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAdaptor {
 
-    public ClinVarMongoDBAdaptor(DB db) {
-        super(db);
-    }
 
-    public ClinVarMongoDBAdaptor(DB db, String species, String assembly) {
-        super(db, species, assembly);
-        mongoDBCollection = db.getCollection("clinvar");
-
-        logger.info("ClinVarMongoDBAdaptor: in 'constructor'");
-    }
     public ClinVarMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("clinvar");
+//        mongoDBCollection = db.getCollection("clinvar");
         mongoDBCollection2 = mongoDataStore.getCollection("clinvar");
 
         logger.info("ClinVarMongoDBAdaptor: in 'constructor'");
@@ -65,7 +56,7 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
             queries.add(builder.get());
         }
 
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override
@@ -112,7 +103,7 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
             queries.add(builder.get());
             ids.add(region.toString());
         }
-        return executeQueryList(ids, queries, options);
+        return executeQueryList2(ids, queries, options);
     }
 
     public QueryResult getListAccessions(QueryOptions queryOptions) {

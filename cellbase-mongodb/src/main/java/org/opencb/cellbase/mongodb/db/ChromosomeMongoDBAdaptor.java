@@ -29,14 +29,6 @@ import java.util.List;
 
 public class ChromosomeMongoDBAdaptor extends MongoDBAdaptor implements ChromosomeDBAdaptor {
 
-    public ChromosomeMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public ChromosomeMongoDBAdaptor(DB db, String species, String assembly) {
-        super(db, species, assembly);
-        mongoDBCollection = db.getCollection("genome_info");
-    }
 
     public ChromosomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);

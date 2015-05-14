@@ -30,28 +30,12 @@ import java.util.*;
 
 public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
 
-
     private int chunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
 
-    public ConservationMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public ConservationMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-//        this.chunkSize = 2000;
-        mongoDBCollection = db.getCollection("conservation");
-    }
-
-    public ConservationMongoDBAdaptor(DB db, String species, String version, int chunkSize) {
-        super(db, species, version);
-        this.chunkSize = chunkSize;
-        mongoDBCollection = db.getCollection("conservation");
-    }
 
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("conservation");
+//        mongoDBCollection = db.getCollection("conservation");
         mongoDBCollection2 = mongoDataStore.getCollection("conservation");
 
         logger.info("ConservedRegionMongoDBAdaptor: in 'constructor'");
@@ -121,7 +105,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             logger.info(builder.get().toString());
         }
 
-        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
+        List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
 
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);

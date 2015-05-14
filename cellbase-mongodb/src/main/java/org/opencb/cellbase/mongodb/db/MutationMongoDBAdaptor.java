@@ -38,13 +38,10 @@ import java.util.List;
 @Deprecated
 public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDBAdaptor {
 
-    public MutationMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("mutation");
-    }
+
     public MutationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = db.getCollection("mutation");
+//        mongoDBCollection = db.getCollection("mutation");
         mongoDBCollection2 = mongoDataStore.getCollection("mutation");
 
         logger.info("MutationMongoDBAdaptor: in 'constructor'");
@@ -78,7 +75,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
             queries.add(builder.get());
         }
 
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override
@@ -103,7 +100,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
             queries.add(builder.get());
         }
 
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override
@@ -119,7 +116,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
             queries.add(builder.get());
         }
 
-        return executeQueryList(geneNameList, queries, options);
+        return executeQueryList2(geneNameList, queries, options);
     }
 
     @Override
@@ -135,7 +132,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
             queries.add(builder.get());
         }
 
-        return executeQueryList(proteinIdList, queries, options);
+        return executeQueryList2(proteinIdList, queries, options);
     }
 
     @Override
@@ -183,7 +180,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
             ids.add(region.toString());
         }
 
-        return executeQueryList(ids, queries, options);
+        return executeQueryList2(ids, queries, options);
     }
 
 
