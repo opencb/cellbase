@@ -21,8 +21,8 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 
 import org.opencb.biodata.models.core.Exon;
-import org.opencb.cellbase.core.lib.api.core.ExonDBAdaptor;
-import org.opencb.cellbase.core.lib.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -36,7 +36,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Path("/{version}/{species}/feature/exon")

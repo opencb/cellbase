@@ -17,7 +17,7 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.CytobandDBAdaptor;
+import org.opencb.cellbase.core.db.api.CytobandDBAdaptor;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 

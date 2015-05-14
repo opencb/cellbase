@@ -16,14 +16,9 @@
 
 package org.opencb.cellbase.server.ws.feature;
 
-import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import org.opencb.biodata.models.feature.Region;
-import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.ClinVarDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResponse;
@@ -34,8 +29,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author imedina

@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.server.ws.network;
 
-import org.opencb.cellbase.core.lib.api.systems.PathwayDBAdaptor;
+import org.opencb.cellbase.core.db.api.systems.PathwayDBAdaptor;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 

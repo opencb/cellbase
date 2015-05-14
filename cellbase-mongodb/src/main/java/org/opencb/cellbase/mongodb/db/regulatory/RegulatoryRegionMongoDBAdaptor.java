@@ -19,7 +19,7 @@ package org.opencb.cellbase.mongodb.db.regulatory;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
+import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
