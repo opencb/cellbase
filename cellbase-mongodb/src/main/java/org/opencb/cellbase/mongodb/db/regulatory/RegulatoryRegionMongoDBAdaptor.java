@@ -19,7 +19,7 @@ package org.opencb.cellbase.mongodb.db.regulatory;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.lib.api.regulatory.RegulatoryRegionDBAdaptor;
+import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -41,20 +41,28 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     private static int regulatoryRegionChunkSize = MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE;
 
-    public RegulatoryRegionMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public RegulatoryRegionMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("regulatory_region");
-    }
 
     public RegulatoryRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection2 = mongoDataStore.getCollection("regulatory_region");
 
         logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
+    }
+
+
+    @Override
+    public QueryResult first() {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public QueryResult stats() {
+        return null;
     }
 
     @Override
@@ -125,8 +133,8 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         //  db.regulatory_region.find({"chunkIds": {$in:["1_200", "1_300"]}, "start": 601156})
         QueryBuilder builder = new QueryBuilder();
 
-        List<Object> featureType = options.getList("featureType", null);
-        List<Object> featureClass = options.getList("featureClass", null);
+        List<Object> featureType = options.getAsList("featureType");
+        List<Object> featureClass = options.getAsList("featureClass");
 
 //        options = addExcludeReturnFields("chunkIds", options);
 
@@ -163,6 +171,20 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 //        System.out.println(">>"+regionList);
 //        System.out.println(">>"+builder.get().toString());
         return executeQueryList2(regionList, queries, options);
+    }
+
+    @Override
+    public QueryResult next(String id, QueryOptions options) {
+        QueryOptions _options = new QueryOptions();
+        _options.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, _options);
+        if(queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject)queryResult.getResult().get(0);
+            String chromosome = gene.get("chromosome").toString();
+            int start = Integer.parseInt(gene.get("start").toString());
+            return next(chromosome, start, options);
+        }
+        return null;
     }
 
     @Override

@@ -18,9 +18,9 @@ package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryOptions;

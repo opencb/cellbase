@@ -128,3 +128,9 @@ We have developed fast and efficient algorithms to build almost all data models 
 
 ##### Loading data
 At this moment the only fully developed storage engine plugin is [MongoDB](https://www.mongodb.org/). MongoDB is free and open-source and can be downloaded from [here](https://www.mongodb.org/downloads).
+
+# Supporters
+JetBrains is supporting this open source project with:
+
+[![Intellij IDEA](https://www.jetbrains.com/idea/docs/logo_intellij_idea.png)]
+(http://www.jetbrains.com/idea/)

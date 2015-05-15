@@ -17,12 +17,12 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.core.ExonDBAdaptor;
-import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.core.ProteinFunctionPredictorDBAdaptor;
-import org.opencb.cellbase.core.lib.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryOptions;

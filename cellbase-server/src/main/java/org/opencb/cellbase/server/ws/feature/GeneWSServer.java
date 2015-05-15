@@ -22,15 +22,13 @@ import com.mongodb.BasicDBObject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-import org.opencb.cellbase.core.common.Region;
-import org.opencb.cellbase.core.lib.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.lib.api.regulatory.MirnaDBAdaptor;
-import org.opencb.cellbase.core.lib.api.core.XRefsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
-import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
+import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResponse;
@@ -109,6 +107,28 @@ public class GeneWSServer extends GenericRestWSServer {
 //			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 //			queryOptions.put("include", include );
             List<org.opencb.datastore.core.QueryResult> genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            List genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            System.out.println(genes.get(0).getResult().get(0).getClass().toString());
+            return createOkResponse(genes);
+//			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
+            //	return generateResponse(query, Arrays.asList(this.getGeneDBAdaptor().getAllByEnsemblIdList(StringUtils.toList(query, ","))));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getAllByAccessions", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{geneId}/next")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)")
+    public Response getNextByEnsemblId(@PathParam("geneId") String query) {
+        try {
+            checkParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+
+//			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
+//			queryOptions.put("include", include );
+            QueryResult genes = geneDBAdaptor.next(Splitter.on(",").splitToList(query).get(0), queryOptions);
 //            List genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
 //            System.out.println(genes.get(0).getResult().get(0).getClass().toString());
             return createOkResponse(genes);
