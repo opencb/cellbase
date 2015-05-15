@@ -17,7 +17,7 @@
 package org.opencb.cellbase.core.db.api.core;
 
 import org.opencb.biodata.models.core.Exon;
-import org.opencb.cellbase.core.db.api.FeatureDBAdaptor;
+import org.opencb.cellbase.core.db.FeatureDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 

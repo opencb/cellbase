@@ -161,37 +161,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
 
     @Override
-    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
-        return getAllByRegion(new Region(chromosome, position, position), options);
-    }
-
-    @Override
-    public QueryResult getAllByPosition(Position position, QueryOptions options) {
-        return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
-    }
-
-    @Override
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
-        List<Region> regions = new ArrayList<>();
-        for (Position position : positionList) {
-            regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
-        }
-        return getAllByRegionList(regions, options);
-    }
-
-
-    @Override
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
-        return getAllByRegion(new Region(chromosome, start, end), options);
-    }
-
-    //	db.core_chunks.find( {chunkIds: "1_36248", "start": {$lte: 144998347}, "end": {$gte: 144998347}}, {id:1, start:1, end:1}).explain()
-    @Override
-    public QueryResult getAllByRegion(Region region, QueryOptions options) {
-        return getAllByRegionList(Arrays.asList(region), options).get(0);
-    }
-
-    @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
 

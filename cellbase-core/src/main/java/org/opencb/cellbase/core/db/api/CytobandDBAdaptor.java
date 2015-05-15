@@ -18,6 +18,7 @@ package org.opencb.cellbase.core.db.api;
 
 import org.opencb.biodata.models.core.Cytoband;
 import org.opencb.biodata.models.feature.Region;
+import org.opencb.cellbase.core.db.FeatureDBAdaptor;
 
 import java.util.List;
 

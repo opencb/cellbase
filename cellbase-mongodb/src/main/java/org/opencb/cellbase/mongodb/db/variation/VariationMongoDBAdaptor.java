@@ -35,7 +35,6 @@ import java.util.List;
 
 public class VariationMongoDBAdaptor extends MongoDBAdaptor implements VariationDBAdaptor {
 
-//    private DBCollection mongoVariationPhenotypeDBCollection;
     private MongoDBCollection mongoVariationPhenotypeDBCollection2;
 
     private int variationChunkSize = MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE;
@@ -43,7 +42,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-//        mongoDBCollection = db.getCollection("variation");
         mongoDBCollection2 = mongoDataStore.getCollection("variation");
         mongoVariationPhenotypeDBCollection2 = mongoDataStore.getCollection("variation_phenotype");
 
@@ -51,9 +49,51 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
+    public QueryResult first() {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public QueryResult stats() {
+        return null;
+    }
+
+    @Override
+    public QueryResult getAll(QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult next(String id, QueryOptions options) {
+        QueryOptions _options = new QueryOptions();
+        _options.put("include", Arrays.asList("chromosome", "start", "strand"));
+        QueryResult queryResult = getById(id, _options);
+        if(queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject)queryResult.getResult().get(0);
+            String chromosome = gene.get("chromosome").toString();
+//            options.put("strand", gene.get("strand").toString());
+            int start = Integer.parseInt(gene.get("start").toString());
+            return next(chromosome, start, options);
+        }
+        return null;
+    }
+
+    @Override
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
+        return next(chromosome, position+1, options, mongoDBCollection2);
+    }
+
+    @Override
     public QueryResult getById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);
     }
+
+
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
@@ -92,7 +132,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         }
         return executeQueryList2(idList, queries, options);
     }
-
 
 
     @Override
@@ -150,7 +189,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         return executeQueryList2(ids, queries, options, mongoVariationPhenotypeDBCollection2);
     }
 
-
     @Override
     public QueryResult getAllByPhenotype(String phenotype, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
@@ -173,6 +211,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         return null;
     }
 
+
     @Override
     public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
@@ -188,38 +227,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         }
         return executeQueryList2(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection2);
     }
-
-
-    @Override
-    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
-        return getAllByRegion(chromosome, position, position, options);
-    }
-
-    @Override
-    public QueryResult getAllByPosition(Position position, QueryOptions options) {
-        return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
-    }
-
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
-        List<Region> regions = new ArrayList<>();
-        for (Position position : positionList) {
-            regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
-        }
-        return getAllByRegionList(regions, options);
-    }
-
-
-    @Override
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
-        return getAllByRegion(new Region(chromosome, start, end), options);
-    }
-
-    @Override
-    //  public QueryResponse getAllByRegion(String chromosome, int start, int end, List<String> consequence_types, List<String> exclude) {
-    public QueryResult getAllByRegion(Region region, QueryOptions options) {
-        return getAllByRegionList(Arrays.asList(region), options).get(0);
-    }
-
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
@@ -256,6 +263,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             return executeQueryList2(ids, queries, options);
         }
     }
+
     @Override
     public QueryResult getAllIntervalFrequencies(Region region, QueryOptions queryOptions) {
         return super.getIntervalFrequencies(region, queryOptions);
