@@ -126,11 +126,6 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
 
 
-//	public abstract GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species);
-//
-//	public abstract GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species, String assembly);
-
-
     public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species);
 
     public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species, String assembly);

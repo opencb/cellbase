@@ -148,17 +148,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     }
 
-//    @Override
-//    public GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species) {
-//        return getGenomeSequenceDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDataStore = createMongoDBDatastore(species, assembly);
-//        return new GenomeSequenceMongoDBAdaptor(species, assembly, mongoDataStore);
-//    }
-
 
     @Override
     public GenomeDBAdaptor getGenomeDBAdaptor(String species) {
