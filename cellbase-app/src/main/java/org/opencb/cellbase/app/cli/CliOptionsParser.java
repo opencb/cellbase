@@ -259,6 +259,14 @@ public class CliOptionsParser {
         @Parameter(names = {"--batch-size"}, description = "Number of variants per thread [200]", required = false, arity = 1)
         public int batchSize = 200;
 
+        @Parameter(names = {"--custom-file"}, description = "String with a comma separated list (no spaces in between) of files with custom annotation to be included during the annotation process. File format must be VCF. For example: file1.vcf,file2.vcf,file3.vcf", required = false)
+        public String customFiles;
+
+        @Parameter(names = {"--custom-file-id"}, description = "String with a comma separated list (no spaces in between) of short identifiers for each custom file. For example: fileId1,fileId2,fileId3", required = false)
+        public String customFileIds;
+
+        @Parameter(names = {"--custom-file-fields"}, description = "String containing a colon separated list (no spaces in between) of field lists which indicate the info fields to be taken from each VCF file. For example: field1File1,field2File1:field1File2,field3File2", required = false, arity = 1)
+        public String customFileFields;
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Description: complements data already loaded in CellBase")

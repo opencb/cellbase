@@ -24,6 +24,7 @@
         <cellbase.version>3.2-SNAPSHOT</cellbase.version>
         <biodata.version>0.5-SNAPSHOT</biodata.version>
         <datastore.version>0.4-SNAPSHOT</datastore.version>
+        <java-common-libs.version>3.0-SNAPSHOT</java-common-libs.version>
         <compileSource>1.8</compileSource>
         <build.dir>build</build.dir>
     </properties>
@@ -105,6 +106,11 @@
                 <artifactId>datastore-mongodb</artifactId>
                 <version>${datastore.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.opencb.commons</groupId>
+                <artifactId>commons-lib</artifactId>
+                <version>${java-common-libs.version}</version>
+            </dependency>
 
             <!-- General dependencies -->
             <dependency>
@@ -141,6 +147,11 @@
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-client</artifactId>
                 <version>2.17</version>
+            </dependency>
+            <dependency>
+                <groupId>org.rocksdb</groupId>
+                <artifactId>rocksdbjni</artifactId>
+                <version>3.10.0</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
