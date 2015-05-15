@@ -24,6 +24,7 @@ import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -33,12 +34,15 @@ import java.util.List;
 
 public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdaptor {
 
+    private MongoDBCollection genomeSequenceCollection;
+
     private int chunkSize = MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
 
 
     public GenomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("genome_info");
+        genomeSequenceCollection = mongoDataStore.getCollection("genome_sequence");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
@@ -145,7 +149,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             logger.info(builder.get().toString());
         }
 
-        List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
+        List<QueryResult> queryResults = executeQueryList2(ids, queries, options, genomeSequenceCollection);
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
