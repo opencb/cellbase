@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.db.api.systems;
 
+import org.opencb.cellbase.core.db.DBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
@@ -28,18 +29,18 @@ import java.util.List;
  * Time: 4:48 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface ProteinProteinInteractionDBAdaptor {
-
-    public QueryResult getAll(QueryOptions options);
-
-    public QueryResult getAllById(String id, QueryOptions options);
-
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+public interface ProteinProteinInteractionDBAdaptor extends DBAdaptor {
 
 
-    public QueryResult getAllByInteractorId(String id, QueryOptions options);
+    QueryResult getAll(QueryOptions options);
 
-    public List<QueryResult> getAllByInteractorIdList(List<String> idList, QueryOptions options);
+    QueryResult getAllById(String id, QueryOptions options);
 
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+
+
+    QueryResult getAllByInteractorId(String id, QueryOptions options);
+
+    List<QueryResult> getAllByInteractorIdList(List<String> idList, QueryOptions options);
 
 }
