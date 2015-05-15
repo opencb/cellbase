@@ -26,6 +26,7 @@ import org.opencb.cellbase.core.db.api.CytobandDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.*;
 import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.StructuralVariationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
@@ -38,6 +39,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -242,55 +244,55 @@ public class RegionWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{chrRegionId}/clinvar")
-//    public Response getClinvarByRegion(@PathParam("chrRegionId") String query,
-//                                       @DefaultValue("") @QueryParam("gene") String gene,
-//                                       @DefaultValue("") @QueryParam("id") String id,
-//                                       @DefaultValue("") @QueryParam("phenotpe") String phenotpe) {
-//        try {
-//            checkParams();
-//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-//            List<Region> regions = Region.parseRegions(query);
-//            if (hasHistogramQueryParam()) {
-//                return null;
-//            } else {
-//                if(gene != null && !gene.equals("")) {
-//                    queryOptions.add("gene", Arrays.asList(gene.split(",")));
+    @GET
+    @Path("/{chrRegionId}/clinical")
+    public Response getClinicalByRegion(@PathParam("chrRegionId") String query,
+                                        @DefaultValue("") @QueryParam("gene") String gene,
+                                        @DefaultValue("") @QueryParam("id") String id,
+                                        @DefaultValue("") @QueryParam("phenotpe") String phenotpe) {
+        try {
+            checkParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            List<Region> regions = Region.parseRegions(query);
+            if (hasHistogramQueryParam()) {
+                return null;
+            } else {
+                if(gene != null && !gene.equals("")) {
+                    queryOptions.add("gene", Arrays.asList(gene.split(",")));
+                }
+                if(id != null && !id.equals("")) {
+                    queryOptions.add("id", Arrays.asList(id.split(",")));
+                }
+                if(phenotpe != null && !phenotpe.equals("")) {
+                    queryOptions.add("phenotpe", Arrays.asList(phenotpe.split(",")));
+                }
+//                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
+//                List<QueryResult> queryResultList = new ArrayList<>();
+//                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
+//                    QueryResult queryResult = new QueryResult();
+//                    queryResult.setId(clinicalQueryResult.getId());
+//                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
+//                    BasicDBList basicDBList = new BasicDBList();
+//                    int numResults = 0;
+//                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
+//                        if(clinicalRecord.containsKey("clinvarList")) {
+//                            basicDBList.add(clinicalRecord);
+//                            numResults += 1;
+//                        }
+//                    }
+//                    queryResult.setResult(basicDBList);
+//                    queryResult.setNumResults(numResults);
+//                    queryResultList.add(queryResult);
 //                }
-//                if(id != null && !id.equals("")) {
-//                    queryOptions.add("id", Arrays.asList(id.split(",")));
-//                }
-//                if(phenotpe != null && !phenotpe.equals("")) {
-//                    queryOptions.add("phenotpe", Arrays.asList(phenotpe.split(",")));
-//                }
-////                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
-////                List<QueryResult> queryResultList = new ArrayList<>();
-////                for(QueryResult clinicalQueryResult: clinicalQueryResultList) {
-////                    QueryResult queryResult = new QueryResult();
-////                    queryResult.setId(clinicalQueryResult.getId());
-////                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
-////                    BasicDBList basicDBList = new BasicDBList();
-////                    int numResults = 0;
-////                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
-////                        if(clinicalRecord.containsKey("clinvarList")) {
-////                            basicDBList.add(clinicalRecord);
-////                            numResults += 1;
-////                        }
-////                    }
-////                    queryResult.setResult(basicDBList);
-////                    queryResult.setNumResults(numResults);
-////                    queryResultList.add(queryResult);
-////                }
-////                return createOkResponse(queryResultList);
-//                return createOkResponse(clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions));
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getMutationByRegion", e.toString());
-//        }
-//    }
+//                return createOkResponse(queryResultList);
+                return createOkResponse(clinicalDBAdaptor.getAllByRegionList(regions, queryOptions));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getMutationByRegion", e.toString());
+        }
+    }
 
     @GET
     @Path("/{chrRegionId}/phenotype")

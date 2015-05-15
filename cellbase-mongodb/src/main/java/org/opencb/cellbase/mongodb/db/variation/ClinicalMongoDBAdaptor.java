@@ -250,7 +250,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 rsList.add(rsString.substring(2));
             }
             builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
-                            new BasicDBObject("$in", rsList)));
+                    new BasicDBObject("$in", rsList)));
             builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
                     "rs"));
         }
@@ -263,7 +263,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (rcvList != null && rcvList.size() > 0) {
             logger.info("rcv filter activated, rcv list: "+rcvList.toString());
             builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-                            new BasicDBObject("$in", rcvList)));
+                    new BasicDBObject("$in", rcvList)));
         }
         return builder;
     }
@@ -446,7 +446,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
-        return null;
+        List<DBObject> queries = new ArrayList<>();
+
+        List<String> ids = new ArrayList<>(regions.size());
+        for (Region region : regions) {
+
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome())
+                    .and("end").greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+
+            queries.add(builder.get());
+            ids.add(region.toString());
+        }
+        return executeQueryList2(ids, queries, options);
     }
 
 //    @Override
@@ -497,7 +508,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             if (genomicVariant.getReference() != null){
                 builder = builder.and("reference").is(genomicVariant.getReference());
             }
-                    queries.add(builder.get());
+            queries.add(builder.get());
             ids.add(genomicVariant.toString());
         }
 
