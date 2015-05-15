@@ -27,7 +27,9 @@ import java.util.List;
 public interface TranscriptDBAdaptor extends FeatureDBAdaptor {
 
 
-    QueryResult getAllById(String id, QueryOptions options);
+    QueryResult next(String id, QueryOptions options);
+
+    QueryResult getById(String id, QueryOptions options);
 
     List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
@@ -43,23 +45,18 @@ public interface TranscriptDBAdaptor extends FeatureDBAdaptor {
     List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options);
 
 
-	QueryResult getAllByEnsemblExonId(String ensemblExonId, QueryOptions options);
+    QueryResult getAllByEnsemblExonId(String ensemblExonId, QueryOptions options);
 
-	List<QueryResult> getAllByEnsemblExonIdList(List<String> ensemblExonIdList, QueryOptions options);
-	
-	
-	QueryResult getAllByTFBSId(String tfbsId, QueryOptions options);
+    List<QueryResult> getAllByEnsemblExonIdList(List<String> ensemblExonIdList, QueryOptions options);
 
-	List<QueryResult> getAllByTFBSIdList(List<String> tfbsIdList, QueryOptions options);
-	
-	
-//	public List<Transcript> getAllByProteinName(String proteinName);
-//
-//	public List<List<Transcript>> getAllByProteinNameList(List<String> proteinNameList);
-	
-	
-	List<Transcript> getAllByMirnaMature(String mirnaID);
-	
-	List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList);
+
+    QueryResult getAllTargetsByTf(String tfId, QueryOptions options);
+
+    List<QueryResult> getAllTargetsByTfList(List<String> tfIdList, QueryOptions options);
+
+
+    List<Transcript> getAllByMirnaMature(String mirnaID);
+
+    List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList);
 
 }

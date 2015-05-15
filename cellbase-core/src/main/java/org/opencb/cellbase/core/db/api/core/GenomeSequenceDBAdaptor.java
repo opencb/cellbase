@@ -22,15 +22,14 @@ import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
-
+@Deprecated
 public interface GenomeSequenceDBAdaptor {
 
-	
-	public QueryResult getByRegion(String chromosome, int start, int end, QueryOptions options);
 
-	public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+	QueryResult getByRegion(String chromosome, int start, int end, QueryOptions options);
 
-	public String getRevComp(String sequence);
+	List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
-	
+	String getRevComp(String sequence);
+
 }

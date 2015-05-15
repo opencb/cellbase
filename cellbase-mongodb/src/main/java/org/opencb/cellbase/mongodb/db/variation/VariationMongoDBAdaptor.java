@@ -19,7 +19,6 @@ package org.opencb.cellbase.mongodb.db.variation;
 import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -42,7 +41,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("variation");
+        mongoDBCollection = mongoDataStore.getCollection("variation");
         mongoVariationPhenotypeDBCollection2 = mongoDataStore.getCollection("variation_phenotype");
 
         logger.info("VariationMongoDBAdaptor: in 'constructor'");
@@ -68,7 +67,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         return null;
     }
 
-    @Override
     public QueryResult next(String id, QueryOptions options) {
         QueryOptions _options = new QueryOptions();
         _options.put("include", Arrays.asList("chromosome", "start", "strand"));
@@ -85,7 +83,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
-        return next(chromosome, position+1, options, mongoDBCollection2);
+        return next(chromosome, position+1, options, mongoDBCollection);
     }
 
     @Override
@@ -116,6 +114,20 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         return null;
     }
 
+    @Override
+    public QueryResult getAllConsequenceTypesById(String id, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult getByGeneId(String id, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public List<QueryResult> getAllByGeneIdList(List<String> idList, QueryOptions options) {
+        return null;
+    }
 
 
     @Override
@@ -289,7 +301,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             queries.add(builder.get());
         }
 
-        results = executeQueryList2(variations, queries, options, mongoDBCollection2);
+        results = executeQueryList2(variations, queries, options, mongoDBCollection);
 
 
         for (QueryResult result: results){
@@ -325,7 +337,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             queries.add(builder.get());
         }
 
-        results = executeQueryList2(variations, queries, options, mongoDBCollection2);
+        results = executeQueryList2(variations, queries, options, mongoDBCollection);
 //        results = executeQueryList(variations, queries, options, mongoDBCollection);
 
         return results;

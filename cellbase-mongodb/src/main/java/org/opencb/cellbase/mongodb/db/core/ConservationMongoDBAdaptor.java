@@ -37,7 +37,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
 //        mongoDBCollection = db.getCollection("conservation");
-        mongoDBCollection2 = mongoDataStore.getCollection("conservation");
+        mongoDBCollection = mongoDataStore.getCollection("conservation");
 
         logger.info("ConservedRegionMongoDBAdaptor: in 'constructor'");
     }
@@ -163,7 +163,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         return queryResults;
     }
 
-    // TODO: this is an exact copy of getAllByRegionList in which Score objects are returned rather than ConservedRegionFeature
+    // TODO: this is an exact copy of getAllSequencesByRegionList in which Score objects are returned rather than ConservedRegionFeature
     // TODO: objects. Fix all calls to the method above and replace by this one.
     @Override
     public List<QueryResult> getAllScoresByRegionList(List<Region> regions, QueryOptions options) {
@@ -282,7 +282,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
 
 //    @Override
-//    public List<ConservedRegion> getByRegion(String chromosome, int start, int end) {
+//    public List<ConservedRegion> getSequenceByRegion(String chromosome, int start, int end) {
 //        // positions below 1 are not allowed
 //        if (start < 1) {
 //            start = 1;
@@ -303,7 +303,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //    public List<List<ConservedRegion>> getByRegionList(List<Region> regions) {
 //        List<List<ConservedRegion>> result = new ArrayList<List<ConservedRegion>>(regions.size());
 //        for (Region region : regions) {
-//            result.add(getByRegion(region.getSequenceName(), region.getStart(), region.getEnd()));
+//            result.add(getSequenceByRegion(region.getSequenceName(), region.getStart(), region.getEnd()));
 //        }
 //        return result;
 //    }

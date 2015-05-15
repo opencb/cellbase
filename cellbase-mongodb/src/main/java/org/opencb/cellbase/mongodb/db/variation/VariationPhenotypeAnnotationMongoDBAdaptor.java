@@ -40,7 +40,7 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
     public VariationPhenotypeAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
 //        mongoDBCollection = db.getCollection("variation_phenotype_annotation");
-        mongoDBCollection2 = mongoDataStore.getCollection("variation_phenotype_annotation");
+        mongoDBCollection = mongoDataStore.getCollection("variation_phenotype_annotation");
 
         logger.info("variation_phenotype_annotation: in 'constructor'");
     }

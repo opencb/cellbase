@@ -58,7 +58,7 @@ public class PositionWSServer extends GenericRestWSServer {
 ////			
 ////			
 //			GenomicRegionFeatureDBAdaptor adaptor = dbAdaptorFactory.getFeatureMapDBAdaptor(this.species);
-////			GenomicRegionFeatures maps = adaptor.getByRegion(new Region(chromosome, position, position));
+////			GenomicRegionFeatures maps = adaptor.getSequenceByRegion(new Region(chromosome, position, position));
 ////			System.out.println(maps.getGenes().size());
 ////			result.add(maps);
 ////			

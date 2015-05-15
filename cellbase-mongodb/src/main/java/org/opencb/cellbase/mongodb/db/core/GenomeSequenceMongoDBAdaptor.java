@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements GenomeSequenceDBAdaptor {
 
     private int chunkSize = MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
@@ -37,18 +38,16 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 
     public GenomeSequenceMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("genome_sequence");
+        mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
 
         logger.info("GenomeSequenceMongoDBAdaptor: in 'constructor'");
     }
 
-    private int getChunk(int position) {
-        return (position / this.chunkSize);
-    }
 
     private int getOffset(int position) {
         return (position % this.chunkSize);
     }
+
 
     public static String getComplementarySequence(String sequence) {
         sequence = sequence.replace("A", "1");
@@ -91,8 +90,8 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
             }
 
             /****/
-            int regionChunkStart = getChunk(region.getStart());
-            int regionChunkEnd = getChunk(region.getEnd());
+            int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
+            int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
             for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
                 String chunkIdStr = region.getChromosome() + "_" + chunkId + "_" + chunkIdSuffix;
                 chunkIds.add(chunkIdStr);
@@ -124,7 +123,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 
             String subStr = "";
 
-            if (getChunk(region.getStart()) > 0) {
+            if (getChunkId(region.getStart(), this.chunkSize) > 0) {
                 if (sb.toString().length() > 0 && sb.toString().length() >= endStr) {
                     subStr = sb.toString().substring(startStr, endStr);
                 }
@@ -169,7 +168,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 
 
 //	@Override
-//	public GenomeSequenceFeature getByRegion(String chromosome, int start, int end) {
+//	public GenomeSequenceFeature getSequenceByRegion(String chromosome, int start, int end) {
 //		// positions below 1 are not allowed
 //		if (start < 1) {
 //			start = 1;
@@ -204,8 +203,8 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 //	}
 //
 //	@Override
-//	public GenomeSequenceFeature getByRegion(String chromosome, int start, int end, int strand) {
-//		GenomeSequenceFeature genomeSequence = this.getByRegion(chromosome, start, end);
+//	public GenomeSequenceFeature getSequenceByRegion(String chromosome, int start, int end, int strand) {
+//		GenomeSequenceFeature genomeSequence = this.getSequenceByRegion(chromosome, start, end);
 //
 //		if (strand == -1) {
 //			genomeSequence.setSequence(getRevComp(genomeSequence.getSequence()));
@@ -218,7 +217,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 //	public List<GenomeSequenceFeature> getByRegionList(List<Region> regions) {
 //		List<GenomeSequenceFeature> result = new ArrayList<GenomeSequenceFeature>(regions.size());
 //		for (Region region : regions) {
-//			result.add(getByRegion(region.getSequenceName(), region.getStart(), region.getEnd(), 1));
+//			result.add(getSequenceByRegion(region.getSequenceName(), region.getStart(), region.getEnd(), 1));
 //		}
 //		return result;
 //	}
@@ -227,7 +226,7 @@ public class GenomeSequenceMongoDBAdaptor extends MongoDBAdaptor implements Geno
 //	public List<GenomeSequenceFeature> getByRegionList(List<Region> regions, int strand) {
 //		List<GenomeSequenceFeature> result = new ArrayList<GenomeSequenceFeature>(regions.size());
 //		for (Region region : regions) {
-//			result.add(getByRegion(region.getSequenceName(), region.getStart(), region.getEnd(), strand));
+//			result.add(getSequenceByRegion(region.getSequenceName(), region.getStart(), region.getEnd(), strand));
 //		}
 //		return result;
 //	}

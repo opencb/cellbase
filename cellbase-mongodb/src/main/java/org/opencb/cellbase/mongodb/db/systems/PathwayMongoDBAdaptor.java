@@ -50,7 +50,7 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 
 	public PathwayMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
 		super(species, assembly, mongoDataStore);
-		mongoDBCollection2 = mongoDataStore.getCollection("pathway");
+		mongoDBCollection = mongoDataStore.getCollection("pathway");
 
 		logger.info("PathwayMongoDBAdaptor: in 'constructor'");
 	}

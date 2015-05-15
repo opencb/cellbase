@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.db.api.variation;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
+import org.opencb.cellbase.core.db.FeatureDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
@@ -27,28 +28,28 @@ import java.util.List;
 /**
  * Created by antonior on 11/18/14.
  */
-public interface ClinicalDBAdaptor {
+public interface ClinicalDBAdaptor extends FeatureDBAdaptor {
 
-    public QueryResult getAll(QueryOptions options);
+    QueryResult getAll(QueryOptions options);
 
-    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
+//    QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
+//
+//    QueryResult getAllByPosition(Position position, QueryOptions options);
+//
+//    List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
 
-    public QueryResult getAllByPosition(Position position, QueryOptions options);
+    QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options);
 
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
+    List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options);
 
-    public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options);
+    QueryResult getListClinvarAccessions(QueryOptions queryOptions);
 
-    public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options);
+//    public QueryResult getChromosomeById(String id, QueryOptions options);
 
-    public QueryResult getListClinvarAccessions(QueryOptions queryOptions);
+    QueryResult getAllClinvar(QueryOptions options);
 
-//    public QueryResult getById(String id, QueryOptions options);
+    QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions);
 
-    public QueryResult getAllClinvar(QueryOptions options);
-
-    public QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions);
-
-    public List<QueryResult> getPhenotypeGeneRelations(QueryOptions queryOptions);
+    List<QueryResult> getPhenotypeGeneRelations(QueryOptions queryOptions);
 
 }

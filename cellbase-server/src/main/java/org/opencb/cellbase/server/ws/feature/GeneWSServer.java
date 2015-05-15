@@ -72,7 +72,7 @@ public class GeneWSServer extends GenericRestWSServer {
             return createOkResponse(geneDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getAll", e.toString());
+            return createErrorResponse("getGenomeInfo", e.toString());
         }
     }
 
@@ -92,7 +92,7 @@ public class GeneWSServer extends GenericRestWSServer {
             return createOkResponse(geneDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getAll", e.toString());
+            return createErrorResponse("getGenomeInfo", e.toString());
         }
     }
 
@@ -107,7 +107,7 @@ public class GeneWSServer extends GenericRestWSServer {
 //			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 //			queryOptions.put("include", include );
             List<org.opencb.datastore.core.QueryResult> genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
-//            List genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            List genes = geneDBAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions);
 //            System.out.println(genes.get(0).getResult().get(0).getClass().toString());
             return createOkResponse(genes);
 //			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
@@ -129,7 +129,7 @@ public class GeneWSServer extends GenericRestWSServer {
 //			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 //			queryOptions.put("include", include );
             QueryResult genes = geneDBAdaptor.next(Splitter.on(",").splitToList(query).get(0), queryOptions);
-//            List genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+//            List genes = geneDBAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions);
 //            System.out.println(genes.get(0).getResult().get(0).getClass().toString());
             return createOkResponse(genes);
 //			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
@@ -276,19 +276,19 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{geneId}/reactome")
-    @ApiOperation(httpMethod = "GET", value = "Get the Reactome pathways in which this gene is involved")
-    public Response getReactomeByEnsemblId(@PathParam("geneId") String query) {
-        try {
-            checkParams();
-            XRefsDBAdaptor xRefsDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            return generateResponse(query, xRefsDBAdaptor.getAllByDBName(Splitter.on(",").splitToList(query), "reactome"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getReactomeByEnsemblId", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{geneId}/reactome")
+//    @ApiOperation(httpMethod = "GET", value = "Get the Reactome pathways in which this gene is involved")
+//    public Response getReactomeByEnsemblId(@PathParam("geneId") String query) {
+//        try {
+//            checkParams();
+//            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
+//            return generateResponse(query, xRefDBAdaptor.getAllByDBName(Splitter.on(",").splitToList(query), "reactome"));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getReactomeByEnsemblId", e.toString());
+//        }
+//    }
 
     @GET
     @Path("/{geneId}/protein")

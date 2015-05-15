@@ -19,23 +19,24 @@ package org.opencb.cellbase.core.db.api.variation;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variation.StructuralVariation;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
+import org.opencb.cellbase.core.db.DBAdaptor;
 
 import java.util.List;
 
 
-public interface StructuralVariationDBAdaptor {
+public interface StructuralVariationDBAdaptor extends DBAdaptor {
 	
 	
-	public List<StructuralVariation> getAllByRegion(Region region);
+	List<StructuralVariation> getAllByRegion(Region region);
 	
-	public List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList);
-	
-	
-	public List< StructuralVariation> getAllByRegion(Region region, int minLength, int maxLength);
-	
-	public List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList, int minLength, int maxLength);
+	List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList);
 	
 	
-	public List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
+	List< StructuralVariation> getAllByRegion(Region region, int minLength, int maxLength);
+	
+	List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList, int minLength, int maxLength);
+	
+	
+	List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
 	
 }

@@ -44,7 +44,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     public RegulatoryRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("regulatory_region");
+        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
         logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
     }
@@ -173,7 +173,6 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         return executeQueryList2(regionList, queries, options);
     }
 
-    @Override
     public QueryResult next(String id, QueryOptions options) {
         QueryOptions _options = new QueryOptions();
         _options.put("include", Arrays.asList("chromosome", "start"));

@@ -19,7 +19,7 @@ package org.opencb.cellbase.server.ws.genomic;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.db.api.core.ChromosomeDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryOptions;
@@ -53,8 +53,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomesAll() {
 		try {
 			checkParams();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
-			return createOkResponse(dbAdaptor.getAll(queryOptions));
+			GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
+			return createOkResponse(dbAdaptor.getGenomeInfo(queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("all", e.toString());
@@ -67,10 +67,10 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomes() {
 		try {
 			checkParams();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
+			GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
 			QueryOptions options = new QueryOptions();
 			options.put("include", "chromosomes.name");
-			return createOkResponse(dbAdaptor.getAll(options));
+			return createOkResponse(dbAdaptor.getGenomeInfo(options));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("list", e.toString());
@@ -82,8 +82,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomes(@PathParam("chromosomeName") String query) {
 		try {
 			checkParams();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
-			return createOkResponse(dbAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+			GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
+			return createOkResponse(dbAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("/{chromosomeName}/info", e.toString());
@@ -95,10 +95,10 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getChromosomeSize(@PathParam("chromosomeName") String query) {
 		try {
 			checkParams();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
+			GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
 			QueryOptions options = new QueryOptions();
 			options.put("include", "size");
-			return createOkResponse(dbAdaptor.getById(query, options));
+			return createOkResponse(dbAdaptor.getChromosomeById(query, options));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("/{chromosomeName}/cytoband", e.toString());
@@ -110,7 +110,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 	public Response getByChromosomeName(@PathParam("chromosomeName") String query) {
 		try {
 			checkParams();
-			ChromosomeDBAdaptor dbAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(this.species, this.assembly);
+			GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
 			return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
 		} catch (Exception e) {
 			e.printStackTrace();

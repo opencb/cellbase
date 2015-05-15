@@ -19,9 +19,7 @@ package org.opencb.cellbase.mongodb.db.core;
 import com.mongodb.BasicDBList;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.feature.Region;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -51,7 +49,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection("gene");
 
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
@@ -88,7 +86,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         return executeQuery("result", builder.get(), options);
     }
 
-    @Override
     public QueryResult next(String id, QueryOptions options) {
         QueryOptions _options = new QueryOptions();
         _options.put("include", Arrays.asList("chromosome", "start", "strand"));
@@ -105,7 +102,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
-        return next(chromosome, position+1, options, mongoDBCollection2);
+        return next(chromosome, position+1, options, mongoDBCollection);
     }
 
 
@@ -150,12 +147,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     }
 
     @Override
-    public QueryResult getAllTargetsByTf(String id) {
+    public QueryResult getAllTargetsByTf(String tfId, QueryOptions queryOptions) {
         return null;
     }
 
     @Override
-    public List<QueryResult> getAllTargetsByTfList(List<String> idList) {
+    public List<QueryResult> getAllTargetsByTfList(List<String> tfIdList, QueryOptions queryOptions) {
         return null;
     }
 

@@ -16,10 +16,12 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.DBName;
 import org.opencb.biodata.models.core.Xref;
-import org.opencb.cellbase.core.common.XRefs;
 import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -37,79 +39,29 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
     public XRefsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
 //        mongoDBCollection = db.getCollection("gene");
-        mongoDBCollection2 = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection("gene");
 
         logger.info("XrefsMongoDBAdaptor: in 'constructor'");
     }
 
-//	private List<Xref> executeQuery(DBObject query) {
-//		List<Xref> result = null;
-//		Set<Xref> xrefSet = new LinkedHashSet<Xref>();
-//		
-//		BasicDBObject returnFields = new BasicDBObject("transcripts", 1);
-//		DBCursor cursor = mongoDBCollection.find(query, returnFields);
-//
-//		try {
-//			if (cursor != null) {
-////				Gson jsonObjectMapper = new Gson();
-//				Gene gene;
-//				while (cursor.hasNext()) {
-////					gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
-//					gene = (Gene) jsonObjectMapper.writeValueAsBytes(cursor.next().toString(), Gene.class);
-//					for (Transcript transcript : gene.getTranscripts()) {
-//						xrefSet.addAll(transcript.getXrefs());
-//					}
-//				}
-//			}
-//			result = new ArrayList<Xref>(xrefSet);
-//		} finally {
-//			cursor.close();
-//		}
-//
-//		return result;
-//	}
 
     @Override
-    public List<DBName> getAllDBNames() {
+    public QueryResult getAllDBNames() {
         // TODO Auto-generated method stub
         return null;
     }
 
+
     @Override
-    public List<DBName> getAllDBNamesById(String id) {
-        // TODO Auto-generated method stub
+    public QueryResult getById(String id, QueryOptions options) {
         return null;
     }
 
     @Override
-    public List<String> getAllTypes() {
-        // TODO Auto-generated method stub
+    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         return null;
     }
 
-    @Override
-    public List<DBName> getAllDBNamesByType(String type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<String> getAllIdsByDBName(String dbname) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Xref> getById(String id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Xref>> getAllByIdList(List<String> idList) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public QueryResult getByStartsWithQuery(String id, QueryOptions options) {
@@ -134,54 +86,22 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
         return executeQueryList2(ids, queries, options);
     }
 
-    @Override
-    public QueryResult getByStartsWithSnpQuery(String id, QueryOptions options) {
-        return null;
-    }
 
     @Override
-    public List<QueryResult> getByStartsWithSnpQueryList(List<String> ids, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public List<Xref> getByContainsQuery(String likeQuery) {
+    public QueryResult getByContainsQuery(String likeQuery, QueryOptions options) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<List<Xref>> getByContainsQueryList(List<String> likeQuery) {
+    public List<QueryResult> getByContainsQueryList(List<String> likeQuery, QueryOptions options) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
-    public XRefs getById(String id, String type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<XRefs> getAllByIdList(List<String> ids, String type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Xref> getByDBName(String id, String dbname) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<List<Xref>> getAllByDBName(List<String> ids, String dbname) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
 //	@Override
-//	public List<Xref> getByDBNameList(String id, List<String> dbnames) {
+//	public List<Xref> getByDBName(String id, List<String> dbnames) {
 //
 //		QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").is(id.toUpperCase());
 //		List<Xref> xrefQuery = new ArrayList<>();//;executeQuery(builder.get());
@@ -205,13 +125,13 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 //	public List<List<Xref>> getAllByDBNameList(List<String> ids, List<String> dbnames) {
 //		List<List<Xref>> xrefs = new ArrayList<List<Xref>>(ids.size());
 //		for (String id : ids) {
-//			xrefs.add(getByDBNameList(id, dbnames));
+//			xrefs.add(getByDBName(id, dbnames));
 //		}
 //		return xrefs;
 //	}
 
     @Override
-    public QueryResult getByDBNameList(String id, QueryOptions options) {
+    public QueryResult getByDBName(String id, QueryOptions options) {
         return getAllByDBNameList(Arrays.asList(id), options).get(0);
     }
 
@@ -276,29 +196,31 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
         return executeAggregationList2(ids, commandsList, options);
     }
 
-
-    @Override
-    public XRefs getByDBName(String id, String dbname, String type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<XRefs> getAllByDBName(List<String> ids, String dbname, String type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public XRefs getByDBNameList(String id, List<String> dbnames, String type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<XRefs> getAllByDBNameList(List<String> ids, List<String> dbnames, String type) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    //	private List<Xref> executeQuery(DBObject query) {
+//		List<Xref> result = null;
+//		Set<Xref> xrefSet = new LinkedHashSet<Xref>();
+//
+//		BasicDBObject returnFields = new BasicDBObject("transcripts", 1);
+//		DBCursor cursor = mongoDBCollection.find(query, returnFields);
+//
+//		try {
+//			if (cursor != null) {
+////				Gson jsonObjectMapper = new Gson();
+//				Gene gene;
+//				while (cursor.hasNext()) {
+////					gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
+//					gene = (Gene) jsonObjectMapper.writeValueAsBytes(cursor.next().toString(), Gene.class);
+//					for (Transcript transcript : gene.getTranscripts()) {
+//						xrefSet.addAll(transcript.getXrefs());
+//					}
+//				}
+//			}
+//			result = new ArrayList<Xref>(xrefSet);
+//		} finally {
+//			cursor.close();
+//		}
+//
+//		return result;
+//	}
 
 }

@@ -76,7 +76,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 			
 			return createJsonResponse(null);
-//			return generateResponse("", "PROTEIN", adaptor.getAll());
+//			return generateResponse("", "PROTEIN", adaptor.getGenomeInfo());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return createErrorResponse("getAllByAccessions", e.toString());

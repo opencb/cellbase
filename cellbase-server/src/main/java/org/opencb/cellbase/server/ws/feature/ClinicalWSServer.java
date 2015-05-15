@@ -94,7 +94,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse("getAll", e.toString());
+            return createErrorResponse("getGenomeInfo", e.toString());
         }
     }
 

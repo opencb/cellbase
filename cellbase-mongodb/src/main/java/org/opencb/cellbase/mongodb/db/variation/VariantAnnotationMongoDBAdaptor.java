@@ -26,7 +26,7 @@ import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
@@ -66,7 +66,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor;
     private VariationDBAdaptor variationDBAdaptor;
     private ClinicalDBAdaptor clinicalDBAdaptor;
-    private ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor;
+//    private ProteinFunctionPredictorDBAdaptor proteinDBAdaptor;
+    private ProteinDBAdaptor proteinDBAdaptor;
     private ConservedRegionDBAdaptor conservedRegionDBAdaptor;
 
     static {
@@ -232,12 +233,20 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         this.clinicalDBAdaptor = clinicalDBAdaptor;
     }
 
-    public ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor() {
-        return proteinFunctionPredictorDBAdaptor;
+//    public ProteinFunctionPredictorDBAdaptor getProteinDBAdaptor() {
+//        return proteinDBAdaptor;
+//    }
+//
+//    public void setProteinDBAdaptor(ProteinFunctionPredictorDBAdaptor proteinDBAdaptor) {
+//        this.proteinDBAdaptor = proteinDBAdaptor;
+//    }
+
+    public ProteinDBAdaptor getProteinDBAdaptor() {
+        return proteinDBAdaptor;
     }
 
-    public void setProteinFunctionPredictorDBAdaptor(ProteinFunctionPredictorDBAdaptor proteinFunctionPredictorDBAdaptor) {
-        this.proteinFunctionPredictorDBAdaptor = proteinFunctionPredictorDBAdaptor;
+    public void setProteinDBAdaptor(ProteinDBAdaptor proteinDBAdaptor) {
+        this.proteinDBAdaptor = proteinDBAdaptor;
     }
 
     public ConservedRegionDBAdaptor getConservedRegionDBAdaptor() {
@@ -393,7 +402,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
                                 }
                                 if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon). If the 3prime end is incompletely annotated and execution reaches this line, finalNtPhase can only be 2
-                                    QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                    QueryResult proteinSubstitutionScoresQueryResult = proteinDBAdaptor.getFunctionPredictionByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
                                     if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
                                         BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
@@ -608,7 +617,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     SoNames.add(isStopCodon(String.valueOf(modifiedCodonArray)) ? "stop_gained" : "missense_variant");
                                 }
                                 if (cdnaVariantEnd < (cdnaCodingEnd - 2)) {  // Variant does not affect the last codon (probably stop codon). If the 3prime end is incompletely annotated and execution reaches this line, finalNtPhase can only be 2
-                                    QueryResult proteinSubstitutionScoresQueryResult = proteinFunctionPredictorDBAdaptor.getByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
+                                    QueryResult proteinSubstitutionScoresQueryResult = proteinDBAdaptor.getFunctionPredictionByAaChange(consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getAaPosition(), alternativeA, new QueryOptions());
                                     if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
                                         BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);

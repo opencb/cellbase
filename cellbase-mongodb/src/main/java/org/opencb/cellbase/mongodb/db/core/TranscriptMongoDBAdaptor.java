@@ -37,7 +37,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection("gene");
 
         logger.info("TranscriptMongoDBAdaptor: in 'constructor'");
     }
@@ -83,11 +83,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         return executeAggregation2("result", Arrays.asList(commands), options);
     }
 
-    @Override
     public QueryResult next(String id, QueryOptions options) {
         QueryOptions _options = new QueryOptions();
         _options.put("include", Arrays.asList("chromosome", "start"));
-        QueryResult queryResult = getAllById(id, _options);
+        QueryResult queryResult = getById(id, _options);
         if(queryResult != null && queryResult.getResult() != null) {
             DBObject gene = (DBObject)queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
@@ -103,7 +102,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult getAllById(String id, QueryOptions options) {
+    public QueryResult getById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);
 
     }
@@ -237,14 +236,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
 
     @Override
-    public QueryResult getAllByTFBSId(String tfbsId, QueryOptions options) {
+    public QueryResult getAllTargetsByTf(String tfId, QueryOptions options) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List<QueryResult> getAllByTFBSIdList(List<String> tfbsIdList,
-                                                QueryOptions options) {
+    public List<QueryResult> getAllTargetsByTfList(List<String> tfIdList,
+                                                   QueryOptions options) {
         // TODO Auto-generated method stub
         return null;
     }

@@ -28,12 +28,20 @@ import java.util.List;
 public interface VariationDBAdaptor extends FeatureDBAdaptor {
 
 
+    QueryResult next(String id, QueryOptions options);
+
     QueryResult getById(String id, QueryOptions options);
 
     List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
     QueryResult getAllConsequenceTypes(QueryOptions options);
 
+    QueryResult getAllConsequenceTypesById(String id, QueryOptions options);
+
+
+    QueryResult getByGeneId(String id, QueryOptions options);
+
+    List<QueryResult> getAllByGeneIdList(List<String> idList, QueryOptions options);
 
     QueryResult getByTranscriptId(String id, QueryOptions options);
 
@@ -53,20 +61,11 @@ public interface VariationDBAdaptor extends FeatureDBAdaptor {
 
     List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
 
+    ////	public List<SnpPopulationFrequency> getAllSnpPopulationFrequency(String name);
+////
+////	public List<List<SnpPopulationFrequency>> getAllSnpPopulationFrequencyList(List<String> nameList);
+////
 
-//
-//    QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
-//
-//    QueryResult getAllByPosition(Position position, QueryOptions options);
-//
-//    List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
-//
-//
-//    QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
-//
-//    QueryResult getAllByRegion(Region region, QueryOptions options);
-//
-//    List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
     QueryResult getAllIntervalFrequencies(Region region, QueryOptions options);
 

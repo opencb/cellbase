@@ -49,9 +49,24 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("clinical");
+        mongoDBCollection = mongoDataStore.getCollection("clinical");
 
         logger.info("ClinicalMongoDBAdaptor: in 'constructor'");
+    }
+
+    @Override
+    public QueryResult first() {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public QueryResult stats() {
+        return null;
     }
 
     @Override
@@ -62,6 +77,11 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             // TODO implement!
             return new QueryResult();
         }
+    }
+
+    @Override
+    public QueryResult next(String chromosome, int position, QueryOptions options) {
+        return null;
     }
 
     @Override
@@ -423,35 +443,19 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return new BasicDBObject("$match", new BasicDBObject("$or", orDBList));
     }
 
-    @Override
-    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options) {
-        //return getAllByRegion(new Region(chromosome, position, position), options);
-        return new QueryResult();
-    }
 
     @Override
-    public QueryResult getAllByPosition(Position position, QueryOptions options) {
-        //return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
-        return new QueryResult();
-    }
-
-    @Override
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
-        //List<Region> regions = new ArrayList<>();
-        //for (Position position : positionList) {
-        //    regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
-        //}
-        //return getAllByRegionList(regions, options);
-        return new ArrayList<>();
+    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
+        return null;
     }
 
 //    @Override
-//    public QueryResult getById(String id, QueryOptions options) {
-//        return getAllByIdList(Arrays.asList(id), options).get(0);
+//    public QueryResult getChromosomeById(String id, QueryOptions options) {
+//        return getAllByChromosomeIdList(Arrays.asList(id), options).get(0);
 //    }
 
 //    @Override
-//    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
+//    public List<QueryResult> getAllByChromosomeIdList(List<String> idList, QueryOptions options) {
 ////        if(includeContains((List<String>) options.get("include"), "clinvar")) {
 ////            return getAllClinvarByIdList(idList, options);
 ////        } else {
@@ -689,7 +693,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             }
 //            DBObject update = new BasicDBObject("$set", new BasicDBObject("annotation",
 //                    convertVariantAnnotation(variantAnnotation)));
-            mongoDBCollection2.update(builder.get(), update, queryOptions);
+            mongoDBCollection.update(builder.get(), update, queryOptions);
         }
 
         return new QueryResult<>("", ((int) (System.nanoTime() - start)), 1, 1, "", "", new ArrayList());

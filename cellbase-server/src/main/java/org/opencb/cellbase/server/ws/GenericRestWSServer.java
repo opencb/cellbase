@@ -26,7 +26,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
-import org.opencb.cellbase.core.db.api.core.ChromosomeDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -351,8 +351,8 @@ public class GenericRestWSServer implements IWSServer {
     private QueryResult getSpeciesDataFromDB(String species) {
         // Not all species indicated at configuration.json are necessarily installed in the DB.
         try {
-            ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(species, this.assembly);
-            return chromosomeDBAdaptor.speciesInfoTmp(getSpecies(species).getScientificName(), queryOptions);
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
+            return genomeDBAdaptor.speciesInfoTmp(getSpecies(species).getScientificName(), queryOptions);
         } catch (com.mongodb.MongoException e) {
             e.printStackTrace();
             return null;

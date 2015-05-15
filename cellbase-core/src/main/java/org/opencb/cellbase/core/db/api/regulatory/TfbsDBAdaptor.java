@@ -57,7 +57,7 @@ public interface TfbsDBAdaptor extends RegulatoryRegionDBAdaptor {
 //
 //	public List<Tfbs> getAllByRegion(Region region);
 //
-//	public List<List<Tfbs>> getAllByRegionList(List<Region> regionList);
+//	public List<List<Tfbs>> getAllSequencesByRegionList(List<Region> regionList);
 
 //	public QueryResponse getAllByPosition(String chromosome, int position, QueryOptions options);
 

@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.core.db.api.core;
 
-import org.opencb.biodata.models.core.Exon;
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
@@ -27,30 +26,22 @@ import java.util.List;
 public interface ExonDBAdaptor extends FeatureDBAdaptor {
 
 
-    public QueryResult getAllById(String id, QueryOptions options);
+    QueryResult next(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+    QueryResult getById(String id, QueryOptions options);
 
-
-    /**
-     * This method search the given 'id' in the XRefs array
-     * @param id Any possible XRef id
-     * @param options
-     * @return Any gene found having that Xref id
-     */
-    public QueryResult getAllByXref(String id, QueryOptions options);
-
-    public List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options);
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
-	public List<Exon> getAllByEnsemblIdList(List<String> ensemblIdList);
-	
-	public List<Exon> getByEnsemblTranscriptId(String transcriptId);
-	
-	public List<List<Exon>> getByEnsemblTranscriptIdList(List<String> transcriptIdList);
+    QueryResult getAllByGeneId(String geneId);
 
-	public List<Exon> getByEnsemblGeneId(String geneId);
-	
-	public List<List<Exon>> getByEnsemblGeneIdList(List<String> geneIdList);
+	List<QueryResult> getAllByGeneIdList(List<String> geneIdList);
+
+
+    QueryResult getAllByTranscriptId(String transcriptId);
+
+	List<QueryResult> getAllByTranscriptIdList(List<String> transcriptIdList);
+
+
 
 }

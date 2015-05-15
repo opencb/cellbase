@@ -26,6 +26,8 @@ import java.util.List;
 public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
 
+    QueryResult next(String id, QueryOptions options);
+
     QueryResult getAllById(String id, QueryOptions options);
 
     List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
@@ -44,9 +46,10 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
     QueryResult getAllBiotypes(QueryOptions options);
 
-    QueryResult getAllTargetsByTf(String id);
 
-    List<QueryResult> getAllTargetsByTfList(List<String> idList);
+    QueryResult getAllTargetsByTf(String tfId, QueryOptions queryOptions);
+
+    List<QueryResult> getAllTargetsByTfList(List<String> tfIdList, QueryOptions queryOptions);
 
 
 //	QueryResult getAllByTfName(String tfName);

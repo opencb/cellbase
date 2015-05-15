@@ -140,7 +140,7 @@ public class TfWSServer extends RegulatoryWSServer {
 				e.printStackTrace();
 				return createErrorResponse("getAllByTfbs", e.toString());
 			}
-//			return createOkResponse(adaptor.getAllByIdList(Splitter.on(",").splitToList(query)), celltype, iStart, iEnd));
+//			return createOkResponse(adaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query)), celltype, iStart, iEnd));
 			return createOkResponse(adaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
 //			return generateResponse(query, adaptor.getAllByTfGeneNameList(Splitter.on(",").splitToList(query))));
 		} catch (Exception e) {

@@ -34,20 +34,22 @@ import java.util.List;
 
 public interface RegulatoryRegionDBAdaptor extends FeatureDBAdaptor {
 
-    public QueryResult getAllById(String id, QueryOptions options);
+    QueryResult next(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+    QueryResult getAllById(String id, QueryOptions options);
 
-    public QueryResult getAllByPosition(Position position, QueryOptions options);
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
+    QueryResult getAllByPosition(Position position, QueryOptions options);
+
+    List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
 
 
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+    QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
 
-    public QueryResult getAllByRegion(Region region, QueryOptions options);
+    QueryResult getAllByRegion(Region region, QueryOptions options);
 
-    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+    List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
 
 //	public List<Tfbs> getAllByTfGeneName(String tfGeneName, String celltype, int start, int end);
@@ -81,7 +83,7 @@ public interface RegulatoryRegionDBAdaptor extends FeatureDBAdaptor {
 //
 //	public List<Tfbs> getAllByRegion(Region region);
 //
-//	public List<List<Tfbs>> getAllByRegionList(List<Region> regionList);
+//	public List<List<Tfbs>> getAllSequencesByRegionList(List<Region> regionList);
 
 //	public QueryResponse getAllByPosition(String chromosome, int position, QueryOptions options);
 

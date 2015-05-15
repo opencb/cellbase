@@ -24,50 +24,50 @@ import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
-
+@Deprecated
 public interface MutationDBAdaptor extends FeatureDBAdaptor {
 
-    public QueryResult getAllById(String id, QueryOptions options);
+    QueryResult getAllById(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
-
-
-    public QueryResult getAllDiseases(QueryOptions options);
-
-    public QueryResult getAllByDisease(String geneName, QueryOptions options);
-
-    public List<QueryResult> getAllByDiseaseList(List<String> geneName, QueryOptions options);
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
-    public QueryResult getByGeneName(String geneName, QueryOptions options);
+    QueryResult getAllDiseases(QueryOptions options);
 
-    public List<QueryResult> getAllByGeneNameList(List<String> geneNameList, QueryOptions options);
+    QueryResult getAllByDisease(String geneName, QueryOptions options);
 
-
-    public QueryResult getByProteinId(String proteinId, QueryOptions options);
-
-    public List<QueryResult> getAllByProteinIdList(List<String> proteinIdList, QueryOptions options);
-
-    public QueryResult getByProteinRegion(String proteinId, int start, int end, QueryOptions options);
+    List<QueryResult> getAllByDiseaseList(List<String> geneName, QueryOptions options);
 
 
-    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
+    QueryResult getByGeneName(String geneName, QueryOptions options);
 
-    public QueryResult getAllByPosition(Position position, QueryOptions options);
-
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
+    List<QueryResult> getAllByGeneNameList(List<String> geneNameList, QueryOptions options);
 
 
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+    QueryResult getByProteinId(String proteinId, QueryOptions options);
 
-    public QueryResult getAllByRegion(Region region, QueryOptions options);
+    List<QueryResult> getAllByProteinIdList(List<String> proteinIdList, QueryOptions options);
 
-    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+    QueryResult getByProteinRegion(String proteinId, int start, int end, QueryOptions options);
 
 
-    public QueryResult getIntervalFrequencies(Region region, QueryOptions options);
+    QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
 
-    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
+    QueryResult getAllByPosition(Position position, QueryOptions options);
+
+    List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
+
+
+    QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+
+    QueryResult getAllByRegion(Region region, QueryOptions options);
+
+    List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+
+
+    QueryResult getIntervalFrequencies(Region region, QueryOptions options);
+
+    List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 
 
 //	public List<MutationPhenotypeAnnotation> getAllMutationPhenotypeAnnotationByGeneName(String geneName);
@@ -87,7 +87,7 @@ public interface MutationDBAdaptor extends FeatureDBAdaptor {
 //
 //	public List<MutationPhenotypeAnnotation> getAllByRegion(Region region);
 //
-//	public List<List<MutationPhenotypeAnnotation>> getAllByRegionList(List<Region> regionList);
+//	public List<List<MutationPhenotypeAnnotation>> getAllSequencesByRegionList(List<Region> regionList);
 //
 //
 //	public List<IntervalFeatureFrequency> getIntervalFrequencies(Region region, int interval);

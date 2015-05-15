@@ -135,10 +135,10 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getByContainsQuery(@PathParam("id") String query) {
         try {
             checkParams();
-            XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            List<List<Xref>> xrefs = x.getByContainsQueryList(Splitter.on(",").splitToList(query));
+            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
+            List<QueryResult> xrefs = xRefDBAdaptor.getByContainsQueryList(Splitter.on(",").splitToList(query), queryOptions);
             if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
-                List<QueryResult> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query),queryOptions);
+//                List<QueryResult> snpXrefs = xRefDBAdaptor.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query),queryOptions);
 //                for (List<Xref> xrefList : snpXrefs) {
 //                    xrefs.get(0).addAll(xrefList);
 //                }

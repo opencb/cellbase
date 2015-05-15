@@ -39,7 +39,7 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
 
     public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("protein_protein_interaction");
+        mongoDBCollection = mongoDataStore.getCollection("protein_protein_interaction");
 
         logger.info("ProteinProteinInteractionMongoDBAdaptor: in 'constructor'");
     }

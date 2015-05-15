@@ -25,10 +25,12 @@ import java.util.List;
 
 public interface ConservedRegionDBAdaptor {
 
-    public QueryResult getAllByRegion(Region region, QueryOptions options);
 
-    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+    QueryResult getAllByRegion(Region region, QueryOptions options);
 
-    public List<QueryResult> getAllScoresByRegionList(List<Region> regions, QueryOptions options);
+    List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+
+
+    List<QueryResult> getAllScoresByRegionList(List<Region> regions, QueryOptions options);
 
 }

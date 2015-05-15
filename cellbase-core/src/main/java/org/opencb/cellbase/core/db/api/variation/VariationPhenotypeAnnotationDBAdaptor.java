@@ -28,36 +28,36 @@ import java.util.List;
  */
 public interface VariationPhenotypeAnnotationDBAdaptor {
 
-    public QueryResult getById(String id, QueryOptions options);
+    QueryResult getById(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
-
-
-    public QueryResult getAllPhenotypes(QueryOptions options);
-
-    public QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
-
-    public QueryResult getAllByGene(String gene, QueryOptions options);
-
-    public List<QueryResult> getAllByGeneList(List<String> geneList, QueryOptions options);
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
-    public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options);
+    QueryResult getAllPhenotypes(QueryOptions options);
 
-    public List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
+    QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
 
+    QueryResult getAllByGene(String gene, QueryOptions options);
 
-    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
-
-    public QueryResult getAllByPosition(Position position, QueryOptions options);
-
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
+    List<QueryResult> getAllByGeneList(List<String> geneList, QueryOptions options);
 
 
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+    QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options);
 
-    public QueryResult getAllByRegion(Region region, QueryOptions options);
+    List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
 
-    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+
+    QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
+
+    QueryResult getAllByPosition(Position position, QueryOptions options);
+
+    List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
+
+
+    QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+
+    QueryResult getAllByRegion(Region region, QueryOptions options);
+
+    List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
 }

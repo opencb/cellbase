@@ -171,7 +171,7 @@ public class RegionWSServer extends GenericRestWSServer {
             checkParams();
             ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
-//            return createOkResponse(exonDBAdaptor.getAllByRegionList(regions));
+//            return createOkResponse(exonDBAdaptor.getAllSequencesByRegionList(regions));
             return createOkResponse("not implemented");
         } catch (Exception e) {
             e.printStackTrace();
@@ -230,7 +230,7 @@ public class RegionWSServer extends GenericRestWSServer {
 //				return generateResponse(query, intervalList);
                 return createOkResponse(queryResult);
             } else {
-//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
+//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllSequencesByRegionList(regions);
                 List<QueryResult> queryResults = mutationDBAdaptor.getAllByRegionList(regions, queryOptions);
 //				return this.generateResponse(query, "MUTATION", mutationList);
                 return createOkResponse(queryResults);
@@ -310,7 +310,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 if (source != null && !source.equals("")) {
                     queryOptions.put("source", Splitter.on(",").splitToList(source));
                 }
-//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllByRegionList(regions);
+//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllSequencesByRegionList(regions);
                 List<QueryResult> queryResults = variationDBAdaptor.getAllPhenotypeByRegion(regions, queryOptions);
 //				return this.generateResponse(query, "MUTATION", mutationList);
                 return createOkResponse(queryResults);
@@ -381,9 +381,9 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             checkParams();
             List<Region> regions = Region.parseRegions(chregionId);
-            GenomeSequenceDBAdaptor genomeSequenceDBAdaptor = dbAdaptorFactory.getGenomeSequenceDBAdaptor(this.species,	this.assembly);
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             queryOptions.put("strand", strandParam);
-            return createOkResponse(genomeSequenceDBAdaptor.getAllByRegionList(regions, queryOptions));
+            return createOkResponse(genomeDBAdaptor.getAllSequencesByRegionList(regions, queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getSequenceByRegion", e.toString());
@@ -397,9 +397,9 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             checkParams();
             List<Region> regions = Region.parseRegions(chregionId);
-            GenomeSequenceDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeSequenceDBAdaptor(this.species, this.assembly);
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             queryOptions.put("strand", -1);
-            return createOkResponse(dbAdaptor.getAllByRegionList(regions, queryOptions));
+            return createOkResponse(genomeDBAdaptor.getAllSequencesByRegionList(regions, queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getReverseSequenceByRegion", e.toString());
@@ -471,9 +471,9 @@ public class RegionWSServer extends GenericRestWSServer {
 ////			} else {
 ////				List<List<RegulatoryRegion>> results;
 ////				if (type.equals("")) {
-////					results = regulatoryRegionDBAdaptor.getAllByRegionList(regions);
+////					results = regulatoryRegionDBAdaptor.getAllSequencesByRegionList(regions);
 ////				} else {
-////					results = regulatoryRegionDBAdaptor.getAllByRegionList(regions, Arrays.asList(type.split(",")));
+////					results = regulatoryRegionDBAdaptor.getAllSequencesByRegionList(regions, Arrays.asList(type.split(",")));
 ////				}
 ////				return generateResponse(chregionId, "REGULATORY_REGION", results);
 ////			}

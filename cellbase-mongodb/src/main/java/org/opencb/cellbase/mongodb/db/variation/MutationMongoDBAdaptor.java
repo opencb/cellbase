@@ -43,7 +43,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
     public MutationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
 //        mongoDBCollection = db.getCollection("mutation");
-        mongoDBCollection2 = mongoDataStore.getCollection("mutation");
+        mongoDBCollection = mongoDataStore.getCollection("mutation");
 
         logger.info("MutationMongoDBAdaptor: in 'constructor'");
     }
@@ -199,7 +199,6 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
         return executeQueryList2(ids, queries, options);
     }
 
-    @Override
     public QueryResult next(String id, QueryOptions options) {
         QueryOptions _options = new QueryOptions();
         _options.put("include", Arrays.asList("chromosome", "start"));

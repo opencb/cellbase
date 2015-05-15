@@ -32,44 +32,44 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DBAdaptorFactory {
 
-	protected CellBaseConfiguration cellBaseConfiguration;
-	protected Logger logger;
-	
+    protected CellBaseConfiguration cellBaseConfiguration;
+    protected Logger logger;
 
-	public DBAdaptorFactory() {
-		this(null);
-	}
 
-	public DBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
-		this.cellBaseConfiguration = cellBaseConfiguration;
+    public DBAdaptorFactory() {
+        this(null);
+    }
 
-		logger = LoggerFactory.getLogger(this.getClass());
-	}
+    public DBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
+        this.cellBaseConfiguration = cellBaseConfiguration;
 
-	protected CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
-		CellBaseConfiguration.SpeciesProperties.Species species = null;
-		for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
-			if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
-				species = sp;
-				break;
-			}
-		}
-		return species;
-	}
+        logger = LoggerFactory.getLogger(this.getClass());
+    }
 
-	protected String getAssembly(CellBaseConfiguration.SpeciesProperties.Species species, String assemblyName) {
-		String assembly = null;
-		if (assemblyName == null) {
-			assembly = species.getAssemblies().get(0).getName();
-		} else {
-			for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
-				if(assemblyName.equalsIgnoreCase(assembly1.getName())) {
-					assembly = assembly1.getName();
-				}
-			}
-		}
-		return assembly;
-	}
+    protected CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
+        CellBaseConfiguration.SpeciesProperties.Species species = null;
+        for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
+            if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
+                species = sp;
+                break;
+            }
+        }
+        return species;
+    }
+
+    protected String getAssembly(CellBaseConfiguration.SpeciesProperties.Species species, String assemblyName) {
+        String assembly = null;
+        if (assemblyName == null) {
+            assembly = species.getAssemblies().get(0).getName();
+        } else {
+            for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
+                if(assemblyName.equalsIgnoreCase(assembly1.getName())) {
+                    assembly = assembly1.getName();
+                }
+            }
+        }
+        return assembly;
+    }
 
 //	protected String getSpeciesVersionPrefix(String species, String version) {
 //		String speciesPrefix = null;
@@ -89,91 +89,76 @@ public abstract class DBAdaptorFactory {
 //		return speciesPrefix;
 //	}
 
-	public abstract void setConfiguration(CellBaseConfiguration cellBaseConfiguration);
-	
-	public abstract void open(String species, String version);
-	
-	public abstract void close();
+    public abstract void setConfiguration(CellBaseConfiguration cellBaseConfiguration);
+
+    public abstract void open(String species, String version);
+
+    public abstract void close();
 
 
-	public abstract GeneDBAdaptor getGeneDBAdaptor(String species);
-	
-	public abstract GeneDBAdaptor getGeneDBAdaptor(String species, String assembly);
+    public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species);
 
-	
-	public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species);
-	
-	public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
-	
-	
-	public abstract ChromosomeDBAdaptor getChromosomeDBAdaptor(String species);
-	
-	public abstract ChromosomeDBAdaptor getChromosomeDBAdaptor(String species, String assembly);
-	
+    public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species, String assembly);
 
-	public abstract ExonDBAdaptor getExonDBAdaptor(String species);
-	
-	public abstract ExonDBAdaptor getExonDBAdaptor(String species, String assembly);
-	
 
-//	public abstract GenomicRegionFeatureDBAdaptor getFeatureMapDBAdaptor(String species);
-//	
-//	public abstract GenomicRegionFeatureDBAdaptor getFeatureMapDBAdaptor(String species, String assembly);
-	
-	
-	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species);
+    public abstract GeneDBAdaptor getGeneDBAdaptor(String species);
 
-	public abstract VariantEffectDBAdaptor getGenomicVariantEffectDBAdaptor(String species, String assembly);
+    public abstract GeneDBAdaptor getGeneDBAdaptor(String species, String assembly);
+
+
+    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species);
+
+    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
+
+
+    public abstract ExonDBAdaptor getExonDBAdaptor(String species);
+
+    public abstract ExonDBAdaptor getExonDBAdaptor(String species, String assembly);
 
 
     public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
 
     public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
 
-	
-	public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
-	
-	public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
-	
-	
-	public abstract SnpDBAdaptor getSnpDBAdaptor(String species);
-	
-	public abstract SnpDBAdaptor getSnpDBAdaptor(String species,  String version);
 
-	
-	public abstract GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species);
-	
-	public abstract GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species, String assembly);
+    public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
+
+    public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
 
 
-	public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species);
-	
-	public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species, String assembly);
+//	public abstract GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species);
+//
+//	public abstract GenomeSequenceDBAdaptor getGenomeSequenceDBAdaptor(String species, String assembly);
 
 
-	public abstract XRefsDBAdaptor getXRefDBAdaptor(String species);
-	
-	public abstract XRefsDBAdaptor getXRefDBAdaptor(String species, String assembly);
-	
-	
-	public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species);
-	
-	public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species, String assembly);
+    public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species);
+
+    public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species, String assembly);
 
 
-	public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species);
-	
-	public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly);
-	
-	
-	public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species);
-	
-	public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species, String assembly);
+    public abstract XRefsDBAdaptor getXRefDBAdaptor(String species);
+
+    public abstract XRefsDBAdaptor getXRefDBAdaptor(String species, String assembly);
 
 
-	public abstract MutationDBAdaptor getMutationDBAdaptor(String species);
-	
-	public abstract MutationDBAdaptor getMutationDBAdaptor(String species, String assembly);
+    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species);
+
+    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species, String assembly);
+
+
+    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species);
+
+    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly);
+
+
+    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species);
+
+    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species, String assembly);
+
+
+    public abstract MutationDBAdaptor getMutationDBAdaptor(String species);
+
+    public abstract MutationDBAdaptor getMutationDBAdaptor(String species, String assembly);
 
 
     public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species);
@@ -181,24 +166,24 @@ public abstract class DBAdaptorFactory {
     public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly);
 
 
-	public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
+    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
 
-	public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
+    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
 
 
-	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);
-	
-	public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species, String assembly);
-	
-	
-	public abstract StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species);
-	
-	public abstract StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species, String assembly);
-	
-	
-	public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species);
-	
-	public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species, String assembly);
+    public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);
+
+    public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species, String assembly);
+
+
+    public abstract StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species);
+
+    public abstract StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species, String assembly);
+
+
+    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species);
+
+    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species, String assembly);
 
 
     public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
@@ -219,11 +204,6 @@ public abstract class DBAdaptorFactory {
     public abstract ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species);
 
     public abstract ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species, String assembly);
-
-
-    public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species);
-
-    public abstract ProteinFunctionPredictorDBAdaptor getProteinFunctionPredictorDBAdaptor(String species, String assembly);
 
 
     public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species);

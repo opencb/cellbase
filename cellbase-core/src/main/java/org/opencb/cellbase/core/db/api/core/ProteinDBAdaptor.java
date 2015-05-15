@@ -16,27 +16,45 @@
 
 package org.opencb.cellbase.core.db.api.core;
 
+import org.opencb.cellbase.core.db.DBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
 
-public interface ProteinDBAdaptor { //extends FeatureDBAdaptor
+public interface ProteinDBAdaptor extends DBAdaptor {
 
 
-    public QueryResult getAll(QueryOptions options);
+    QueryResult getAll(QueryOptions options);
 
 
-    public QueryResult getAllById(String id, QueryOptions options);
+    QueryResult getAllById(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
-    public QueryResult getAllByAccession(String id, QueryOptions options);
+    QueryResult getAllByAccession(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByAccessionList(List<String> idList, QueryOptions options);
+    List<QueryResult> getAllByAccessionList(List<String> idList, QueryOptions options);
 
+
+    /**
+     * This method search the given 'id' in the XRefs array
+     * @param id Any possible XRef id
+     * @param options
+     * @return Any gene found having that Xref id
+     */
+    QueryResult getAllByXref(String id, QueryOptions options);
+
+    List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options);
+
+
+    QueryResult getAllFunctionPredictionByEnsemblTranscriptId(String transcriptId, QueryOptions options);
+
+    List<QueryResult> getAllFunctionPredictionByEnsemblTranscriptIdList(List<String> transcriptIdList, QueryOptions options);
+
+    QueryResult getFunctionPredictionByAaChange(String transcriptId, Integer aaPosition, String newAa, QueryOptions options);
 
 
 //	public List<String> getAllUniprotAccessions();
@@ -58,9 +76,9 @@ public interface ProteinDBAdaptor { //extends FeatureDBAdaptor
 //
 //	public List<List<Protein>> getAllByEnsemblGeneList(List<String> ensemblGeneList);
 //
-//	public List<Protein> getAllByEnsemblTranscriptId(String transcriptId);
+//	public List<Protein> getAllFunctionPredictionByEnsemblTranscriptId(String transcriptId);
 //
-//	public List<List<Protein>> getAllByEnsemblTranscriptIdList(List<String> transcriptIdList);
+//	public List<List<Protein>> getAllFunctionPredictionByEnsemblTranscriptIdList(List<String> transcriptIdList);
 //
 //	public List<Protein> getAllByGeneName(String geneName);
 //

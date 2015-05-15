@@ -19,7 +19,7 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.ProteinFunctionPredictorDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
@@ -54,14 +54,14 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
 //    @GET
 //    @Path("/all")
-//    public Response getAll() {
+//    public Response getGenomeInfo() {
 //        try {
 //            checkParams();
 //            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(Arrays.asList(transcriptDBAdaptor.getAll(queryOptions)));
+//            return createOkResponse(Arrays.asList(transcriptDBAdaptor.getGenomeInfo(queryOptions)));
 //        } catch (Exception e) {
 //            e.printStackTrace();
-//            return createErrorResponse("getAll", e.toString());
+//            return createErrorResponse("getGenomeInfo", e.toString());
 //        }
 //    }
 
@@ -88,7 +88,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //			checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<String> queryStrList = Splitter.on(",").splitToList(query);
-//			List<List<Gene>> queryGeneList = geneDBAdaptor.getAllByIdList(queryStrList, queryOptions);
+//			List<List<Gene>> queryGeneList = geneDBAdaptor.getAllByChromosomeIdList(queryStrList, queryOptions);
 //
 //			JsonArray qlist = new JsonArray();
 //
@@ -174,10 +174,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
             // ","));
             //
             // List<Gene> genes =
-            // geneDBAdaptor.getAllByEnsemblTranscriptIdList(StringUtils.toList(query,
+            // geneDBAdaptor.getAllFunctionPredictionByEnsemblTranscriptIdList(StringUtils.toList(query,
             // ","));
             // List<List<Exon>> exonLists =
-            // exonDBAdaptor.getByEnsemblTranscriptIdList(StringUtils.toList(query,
+            // exonDBAdaptor.getAllByTranscriptIdList(StringUtils.toList(query,
             // ","));
             // List<List<Xref>> goLists =
             // xRefsDBAdaptor.getAllByDBName(StringUtils.toList(query,
@@ -189,7 +189,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             // xRefsDBAdaptor.getAllByDBName(StringUtils.toList(query,
             // ","),"reactome");
             // List<List<Snp>> snpLists =
-            // snpDBAdaptor.getAllByEnsemblTranscriptIdList(StringUtils.toList(query,
+            // snpDBAdaptor.getAllFunctionPredictionByEnsemblTranscriptIdList(StringUtils.toList(query,
             // ","));
             // List<List<MutationPhenotypeAnnotation>> mutLists =
             // mutDBAdaptor.getAllMutationPhenotypeAnnotationByEnsemblTranscriptList(StringUtils.toList(query,
@@ -274,7 +274,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(dbAdaptor.getByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query)));
+//            return createOkResponse(dbAdaptor.getAllByTranscriptIdList(Splitter.on(",").splitToList(query)));
             return createOkResponse("not implemented");
         } catch (Exception e) {
             e.printStackTrace();
@@ -351,8 +351,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
             checkParams();
             queryOptions.put("aaPosition", aaPosition);
             queryOptions.put("aaChange", aaChange);
-            ProteinFunctionPredictorDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinFunctionPredictorDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = mutationAdaptor.getAllByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions);
+            ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
+            List<QueryResult> queryResults = mutationAdaptor.getAllFunctionPredictionByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             e.printStackTrace();
@@ -381,7 +381,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //			List<String> transcripts = StringUtils.toList(query, ",");
-//			List<List<Exon>> exonListList = dbAdaptor.getByEnsemblTranscriptIdList(transcripts);
+//			List<List<Exon>> exonListList = dbAdaptor.getAllByTranscriptIdList(transcripts);
 //			List<String> cdnaSequenceList = new ArrayList<String>(transcripts.size());
 //			for (List<Exon> exonList : exonListList) {
 //

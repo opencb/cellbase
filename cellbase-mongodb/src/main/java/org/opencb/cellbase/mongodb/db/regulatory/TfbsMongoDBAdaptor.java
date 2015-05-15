@@ -44,7 +44,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
 
     public TfbsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("regulatory_region");
+        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
         logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
     }
@@ -189,7 +189,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     }
 
 //    @Override
-//    public QueryResult getAll(QueryOptions options) {
+//    public QueryResult getGenomeInfo(QueryOptions options) {
 //        return null;  //To change body of implemented methods use File | Settings | File Templates.
 //    }
 

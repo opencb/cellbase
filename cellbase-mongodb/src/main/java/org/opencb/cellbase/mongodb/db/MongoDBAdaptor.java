@@ -35,7 +35,7 @@ public class MongoDBAdaptor {
     protected String assembly;
 
     protected MongoDataStore mongoDataStore;
-    protected MongoDBCollection mongoDBCollection2;
+    protected MongoDBCollection mongoDBCollection;
 
     //	Old classes
 //    @Deprecated
@@ -104,7 +104,7 @@ public class MongoDBAdaptor {
     protected QueryResult executeDistinct(Object id, String fields, DBObject query) {
 //        long dbTimeStart, dbTimeEnd;
 //        dbTimeStart = System.currentTimeMillis();
-        QueryResult queryResult = mongoDBCollection2.distinct(fields, query);
+        QueryResult queryResult = mongoDBCollection.distinct(fields, query);
 //        List<DBObject> dbObjectList = new LinkedList<>();
 //        while (cursor.hasNext()) {
 //            dbObjectList.add(cursor.next());
@@ -118,7 +118,7 @@ public class MongoDBAdaptor {
     }
 
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
-        return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
+        return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection).get(0);
     }
 
     protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
@@ -126,7 +126,7 @@ public class MongoDBAdaptor {
     }
 
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
-        return executeQueryList2(ids, queries, options, mongoDBCollection2);
+        return executeQueryList2(ids, queries, options, mongoDBCollection);
     }
 
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<DBObject> queries, QueryOptions options,
@@ -167,12 +167,12 @@ public class MongoDBAdaptor {
     }
 
     protected QueryResult executeAggregation2(Object id, List<DBObject> pipeline, QueryOptions options) {
-        return executeAggregationist2(Arrays.asList(id), Arrays.asList(pipeline), options, mongoDBCollection2).get(0);
+        return executeAggregationist2(Arrays.asList(id), Arrays.asList(pipeline), options, mongoDBCollection).get(0);
     }
 
     protected List<QueryResult> executeAggregationList2(List<? extends Object> ids, List<List<DBObject>> queries,
                                                         QueryOptions options) {
-        return executeAggregationist2(ids, queries, options, mongoDBCollection2);
+        return executeAggregationist2(ids, queries, options, mongoDBCollection);
     }
 
     protected List<QueryResult> executeAggregationist2(List<? extends Object> ids, List<List<DBObject>> pipelines,
@@ -200,7 +200,7 @@ public class MongoDBAdaptor {
             queryResult.setNumResults(queryResult.getResult().size());
 //            // Limit is set in queryOptions, count number of total results
 //            if(options != null && options.getInt("limit", 0) > 0) {
-//                queryResult.setNumTotalResults(mongoDBCollection2.count(pipeline).first());
+//                queryResult.setNumTotalResults(mongoDBCollection.count(pipeline).first());
 //            } else {
 //                queryResult.setNumTotalResults(dbObjectList.size());
 //            }
@@ -414,7 +414,7 @@ public class MongoDBAdaptor {
 ////			if(ids.get(i) != null && !ids.get(i).equals("")) {
 ////				queryResponse.put(ids.get(i).toString(), queryResult);
 ////			}else {
-////				// some 'getAll' queries do not have a query ID, for those
+////				// some 'getGenomeInfo' queries do not have a query ID, for those
 ////				// cases an empty string is accepted and 'result' is written
 ////				queryResponse.put("result", queryResult);
 ////			}
@@ -574,7 +574,7 @@ public class MongoDBAdaptor {
         System.out.println(group.toString());
         System.out.println(sort.toString());
 
-        QueryResult<DBObject> aggregationOutput = mongoDBCollection2.aggregate(Arrays.asList(match, group, sort), options);
+        QueryResult<DBObject> aggregationOutput = mongoDBCollection.aggregate(Arrays.asList(match, group, sort), options);
         Map<Long, DBObject> ids = new HashMap<>();
         for (DBObject intervalObj : aggregationOutput.getResult()) {
             Long _id = Math.round((Double) intervalObj.get("_id"));//is double
