@@ -24,9 +24,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
-import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -52,9 +51,33 @@ import java.util.List;
 @Api(value = "Gene", description = "Gene RESTful Web Services API")
 public class GeneWSServer extends GenericRestWSServer {
 
+
     public GeneWSServer(@PathParam("version") String version, @PathParam("species") String species,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
+    }
+
+    @GET
+    @Path("/first")
+    @Override
+    public Response first() {
+        return null;
+    }
+
+    @GET
+    @Path("/count")
+    @Override
+    public Response count() {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+//        return createOkResponse(geneDBAdaptor.count());
+        return null;
+    }
+
+    @GET
+    @Path("/stats")
+    @Override
+    public Response stats() {
+        return super.stats();
     }
 
     @GET
@@ -248,20 +271,6 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
 
-//    @GET
-//    @Path("/{geneId}/protein_feature")
-//    public Response getProteinFeature(@PathParam("geneId") String query) {
-//        try {
-//            checkParams();
-//            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-//            return generateResponse(query, "PROTEIN_FEATURE", proteinDBAdaptor.getAllProteinFeaturesByGeneNameList(Splitter.on(",").splitToList(query)));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getProteinFeature", e.toString());
-//        }
-//    }
-
-
     @GET
     @Path("/{geneId}/exon")
     @ApiOperation(httpMethod = "GET", value = "Get all exons for this gene(s)")
@@ -332,7 +341,7 @@ public class GeneWSServer extends GenericRestWSServer {
 //    }
 
     @GET
-    public Response getHelp() {
+    public Response defaultMethod() {
         return help();
     }
 

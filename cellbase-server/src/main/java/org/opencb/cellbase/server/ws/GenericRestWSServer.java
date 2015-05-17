@@ -24,7 +24,6 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
-import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
@@ -52,8 +51,8 @@ import java.util.*;
 public class GenericRestWSServer implements IWSServer {
 
     // Common application parameters
-//    @DefaultValue("")
-//    @PathParam("version")
+    @DefaultValue("")
+    @PathParam("version")
     @ApiParam(name = "version", value = "CellBase version. Use 'latest' for last version stable.",
             allowableValues = "v3,latest", defaultValue = "v3")
     protected String version;
@@ -129,7 +128,7 @@ public class GenericRestWSServer implements IWSServer {
      * will check parameters so to avoid extra operations this config can load
      * versions and species
      */
-    protected static CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+    protected static CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
 
     /**
      * DBAdaptorFactory creation, this object can be initialize with an
@@ -139,10 +138,7 @@ public class GenericRestWSServer implements IWSServer {
     protected static DBAdaptorFactory dbAdaptorFactory;
 
     static {
-//        dbAdaptorFactory = new MongoDBAdaptorFactory(config);
-
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
-
         logger.info("Static block, creating MongoDBAdapatorFactory");
         try {
             if (System.getenv("CELLBASE_HOME") != null) {
@@ -158,7 +154,6 @@ public class GenericRestWSServer implements IWSServer {
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
             dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -171,18 +166,16 @@ public class GenericRestWSServer implements IWSServer {
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
-        logger.debug("Executing GenericRestWSServer constructor");
-
         this.version = version;
         this.species = species;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
 
+        logger.debug("Executing GenericRestWSServer constructor");
         init(version, species, uriInfo);
     }
 
     protected void init(String version, String species, UriInfo uriInfo) throws VersionException, IOException {
-
         startTime = System.currentTimeMillis();
         queryResponse = new QueryResponse();
 
@@ -243,7 +236,7 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     @Override
-    public String stats() {
+    public Response stats() {
         return null;
     }
 
@@ -253,18 +246,39 @@ public class GenericRestWSServer implements IWSServer {
         return createOkResponse("No help available");
     }
 
+    @GET
+    public Response defaultMethod() {
+        switch (species) {
+            case "species":
+                return getAllSpecies();
+            case "echo":
+                return createStringResponse("Status active");
+        }
+        return createOkResponse("Not valid option");
+    }
+
+    @GET
+    @Path("/info")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves genome info for current species", response = QueryResponse.class)
+    public Response getSpeciesInfo() {
+        try {
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
+            return createOkResponse(genomeDBAdaptor.getGenomeInfo(queryOptions));
+        } catch (com.mongodb.MongoException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @GET
+    @Path("/version")
+    public Response getVersion() {
+        return createOkResponse(cellBaseConfiguration.getDownload(), MediaType.APPLICATION_JSON_TYPE);
+    }
+
     /**
      * Auxiliar methods
      */
-    @GET
-    @Path("/{species}")
-    public Response getCategories(@PathParam("species") String species) {
-        if (isSpecieAvailable(species)) {
-            return createOkResponse("feature\ngenomic\nnetwork\nregulatory");
-        }
-        return getSpecies();
-    }
-
     @GET
     @Path("/{species}/{category}")
     public Response getCategory(@PathParam("species") String species, @PathParam("category") String category) {
@@ -283,7 +297,7 @@ public class GenericRestWSServer implements IWSServer {
             }
             return createOkResponse("feature\ngenomic\nnetwork\nregulatory");
         } else {
-            return getSpecies();
+            return getAllSpecies();
         }
     }
 
@@ -294,119 +308,15 @@ public class GenericRestWSServer implements IWSServer {
         return getCategory(species, category);
     }
 
-    @GET
-    @Path("/version")
-    public Response getVersion() {
-        StringBuilder versionMessage = new StringBuilder();
-        versionMessage.append("Homo sapiens").append("\t").append("Ensembl 64").append("\n");
-        versionMessage.append("Mus musculus").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Rattus norvegicus").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Drosophila melanogaster").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Canis familiaris").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("...").append("\n\n");
-        versionMessage
-                .append("The rest of nfo will be added soon, sorry for the inconveniences. You can find mor info at:")
-                .append("\n\n").append("http://docs.bioinfo.cipf.es/projects/variant/wiki/Databases");
-        return createOkResponse(versionMessage.toString(), MediaType.valueOf("text/plain"));
-    }
 
-    @GET
-    @Path("/species")
-    @Deprecated
-    public Response getSpecies() {
-        List<Species> speciesList = getSpeciesList();
-        MediaType mediaType = MediaType.valueOf("application/javascript");
-        if (uriInfo.getQueryParameters().get("of") != null
-                && uriInfo.getQueryParameters().get("of").get(0).equalsIgnoreCase("json")) {
-            try {
-                return createOkResponse(jsonObjectWriter.writeValueAsString(speciesList), mediaType);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        } else {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (Species sp : speciesList) {
-                stringBuilder.append(sp.toString()).append("\n");
-            }
-            mediaType = MediaType.valueOf("text/plain");
-            return createOkResponse(stringBuilder.toString(), mediaType);
-        }
-    }
-
-    @GET
-    @Path("/i")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves genome info for current species", response = QueryResponse.class)
-    public Response getSpeciesInfo2(@ApiParam(value = "String indicating the output format.", allowableValues = "json", defaultValue = "json")
-                                        @DefaultValue("json") @QueryParam("of") String of) {
-        return createOkResponse(getSpeciesDataFromDB(species));
-    }
-
-    /**
-     * Given a species return all data regarding its genome stored in the DB.
-     *
-     * @param species    String containing the species id, either the short name or the scientific name (e.g. hsapiens, Homo sapiens)
-     * @return A QueryResult containing genome data.
-     */
-    private QueryResult getSpeciesDataFromDB(String species) {
-        // Not all species indicated at configuration.json are necessarily installed in the DB.
+    private Response getAllSpecies() {
         try {
-            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
-            return genomeDBAdaptor.speciesInfoTmp(getSpecies(species).getScientificName(), queryOptions);
-        } catch (com.mongodb.MongoException e) {
+            List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
+            return createOkResponse(jsonObjectWriter.writeValueAsString(speciesList), MediaType.APPLICATION_JSON_TYPE);
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return null;
         }
-    }
-
-    /**
-     * Given a species name returns all species info stored at the configuration data.
-     *
-     * @param speciesName    String containing the species id, either the short name or the scientific name (e.g. hsapiens, Homo sapiens)
-     * @return A Species object containing all species info stored with configuration data.
-     */
-    private CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
-        CellBaseConfiguration.SpeciesProperties.Species species = null;
-        for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
-            if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
-                species = sp;
-                break;
-            }
-        }
-        return species;
-    }
-
-    @GET
-    @Path("/speciesinfo")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves genome info for all available species in current installation", response = QueryResponse.class)
-    public Response getSpeciesInfo() {
-        List<QueryResult> queryResults = new ArrayList<>();
-        for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
-            QueryResult queryResult = getSpeciesDataFromDB(sp.getId());
-            if(queryResult!=null) {
-                queryResults.add(queryResult);
-            }
-        }
-        return createOkResponse(queryResults);
-    }
-
-    @GET
-    @Path("/{species}/chromosomes")
-    public Response getChromosomes(@PathParam("species") String species) {
         return null;
-//        // TODO uncomment
-//        return createOkResponse(config.getProperty("CELLBASE." + species.toUpperCase() + ".CHROMOSOMES"),
-//                MediaType.valueOf("text/plain"));
-    }
-
-    @GET
-    @Path("/echo/{msg}")
-    public Response echo(@PathParam("msg") String msg) {
-        logger.info(msg);
-        logger.warn(msg);
-        logger.debug(msg);
-        logger.error(msg);
-        return createStringResponse(msg);
     }
 
 
@@ -509,113 +419,18 @@ public class GenericRestWSServer implements IWSServer {
         return responseBuilder.header("Access-Control-Allow-Origin", "*").build();
     }
 
-    @GET
-    public Response getHelp() {
-        return getSpecies();
-    }
 
-    private List<Species> getSpeciesList() {
-        List<Species> speciesList = new ArrayList<>(11);
-        speciesList.add(new Species("hsa", "human", "Homo sapiens", "GRCh37.p7"));
-        speciesList.add(new Species("mmu", "mouse", "Mus musculus", "NCBIM37"));
-        speciesList.add(new Species("rno", "rat", "Rattus norvegicus", "RGSC 3.4"));
-        speciesList.add(new Species("dre", "zebrafish", "Danio rerio", "Zv9"));
-        speciesList.add(new Species("cel", "worm", "Caenorhabditis elegans", "WS230"));
-        speciesList.add(new Species("dme", "fruitfly", "Drosophila melanogaster", "BDGP 5.39"));
-        speciesList.add(new Species("sce", "yeast", "Saccharomyces cerevisiae", "EF 4"));
-        speciesList.add(new Species("cfa", "dog", "Canis familiaris", "CanFam 2.0"));
-        speciesList.add(new Species("ssc", "pig", "Sus scrofa", "Sscrofa10.2"));
-        speciesList.add(new Species("aga", "mosquito", "Anopheles gambiae", "AgamP3"));
-        speciesList.add(new Species("pfa", "malaria parasite", "Plasmodium falciparum", "3D7"));
-        speciesList.add(new Species("hsapiens", "", "", ""));
-        speciesList.add(new Species("mmusculus", "", "", ""));
-        speciesList.add(new Species("rnorvegicus", "", "", ""));
-        speciesList.add(new Species("ptroglodytes", "", "", ""));
-        speciesList.add(new Species("ggorilla", "", "", ""));
-        speciesList.add(new Species("pabelii", "", "", ""));
-        speciesList.add(new Species("mmulatta", "", "", ""));
-        speciesList.add(new Species("sscrofa", "", "", ""));
-        speciesList.add(new Species("cfamiliaris", "", "", ""));
-        speciesList.add(new Species("ecaballus", "", "", ""));
-        speciesList.add(new Species("ocuniculus", "", "", ""));
-        speciesList.add(new Species("ggallus", "", "", ""));
-        speciesList.add(new Species("btaurus", "", "", ""));
-        speciesList.add(new Species("fcatus", "", "", ""));
-        speciesList.add(new Species("drerio", "", "", ""));
-        speciesList.add(new Species("cintestinalis", "", "", ""));
-        speciesList.add(new Species("dmelanogaster", "", "", ""));
-        speciesList.add(new Species("dsimulans", "", "", ""));
-        speciesList.add(new Species("dyakuba", "", "", ""));
-        speciesList.add(new Species("agambiae", "", "", ""));
-        speciesList.add(new Species("celegans", "", "", ""));
-        speciesList.add(new Species("scerevisiae", "", "", ""));
-        speciesList.add(new Species("spombe", "", "", ""));
-        speciesList.add(new Species("afumigatus", "", "", ""));
-        speciesList.add(new Species("aniger", "", "", ""));
-        speciesList.add(new Species("anidulans", "", "", ""));
-        speciesList.add(new Species("aoryzae", "", "", ""));
-        speciesList.add(new Species("pfalciparum", "", "", ""));
-        speciesList.add(new Species("lmajor", "", "", ""));
-        speciesList.add(new Species("athaliana", "", "", ""));
-        speciesList.add(new Species("alyrata", "", "", ""));
-        speciesList.add(new Species("bdistachyon", "", "", ""));
-        speciesList.add(new Species("osativa", "", "", ""));
-        speciesList.add(new Species("gmax", "", "", ""));
-        speciesList.add(new Species("vvinifera", "", "", ""));
-        speciesList.add(new Species("zmays", "", "", ""));
-
-
-//        speciesList.add(new Species("hsapiens", "human", "Homo sapiens", "GRCh37.p13");
-//        speciesList.add(new Species("mmusculus", "mouse", "Mus musculus", "GRCm38.p2"));
-//        speciesList.add(new Species("rnorvegicus", "rat", "Rattus norvegicus", "Rnor_5.0"));
-//        speciesList.add(new Species("ptroglodytes", "chimp", "Pan troglodytes", "CHIMP2.1.4"));
-//        speciesList.add(new Species("ggorilla", "gorilla", "Gorilla gorilla", "gorGor3.1"));
-//        speciesList.add(new Species("pabelii", "orangutan", "Pongo abelii", "PPYG2"));
-//        speciesList.add(new Species("mmulatta", "macaque", "Macaca mulatta", "MMUL 1.0"));
-//        speciesList.add(new Species("sscrofa", "pig", "Sus scrofa", "Sscrofa10.2"));
-//        speciesList.add(new Species("cfamiliaris", "dog", "Canis familiaris", "CanFam 3.1"));
-//        speciesList.add(new Species("ecaballus", "horse", "Equus caballus", "Equ Cab 2"));
-//        speciesList.add(new Species("ocuniculus", "rabbit", "Oryctolagus cuniculus", "OryCun2.0"));
-//        speciesList.add(new Species("ggallus", "chicken", "Gallus gallus", "Galgal4"));
-//        speciesList.add(new Species("btaurus", "cow", "Bos taurus", "UMD3.1"));
-//        speciesList.add(new Species("fcatus", "cat", "Felis catus", "Felis_catus_6.2"));
-//        speciesList.add(new Species("drerio", "zebrafish", "Danio rerio", "Zv9"));
-//        speciesList.add(new Species("cintestinalis", "", "Ciona intestinalis", "KH"));
-//        speciesList.add(new Species("dmelanogaster", "fruitfly", "Drosophila melanogaster", "BDGP 5"));
-//        speciesList.add(new Species("dsimulans", "", "Drosophila simulans", "dsim_caf1"));
-//        speciesList.add(new Species("dyakuba", "", "Drosophila yakuba", "dyak_caf1"));
-//        speciesList.add(new Species("agambiae", "mosquito", "Anopheles gambiae", "AgamP4"));
-//        speciesList.add(new Species("celegans", "worm", "Caenorhabditis elegans", "WS235"));
-//        speciesList.add(new Species("scerevisiae", "yeast", "Saccharomyces cerevisiae", "R64-1-1"));
-//        speciesList.add(new Species("spombe", "", "Schizosaccharomyces pombe", "ASM294v2"));
-//        speciesList.add(new Species("afumigatus", "", "Aspergillus fumigatus", "TIGR"));
-//        speciesList.add(new Species("aniger", "", "Aspergillus niger", "DSM"));
-//        speciesList.add(new Species("anidulans", "", "Aspergillus nidulans", "ASM1142v1"));
-//        speciesList.add(new Species("aoryzae", "", "Aspergillus oryzae", "NITE"));
-//        speciesList.add(new Species("pfalciparum", "malaria parasite", "Plasmodium falciparum", "3D7"));
-//        speciesList.add(new Species("lmajor", "", "Plasmodium falciparum", "ASM276v1"));
-//        speciesList.add(new Species("athaliana", "", "Arabidopsis thaliana", "TAIR10"));
-//        speciesList.add(new Species("alyrata", "", "Arabidopsis lyrata", "v.1.0"));
-//        speciesList.add(new Species("bdistachyon", "", "Brachypodium distachyon", "v1.0"));
-//        speciesList.add(new Species("osativa", "", "Oryza sativa Indica", "ASM465v1"));
-//        speciesList.add(new Species("gmax", "", "Glycine max", "V1.0"));
-//        speciesList.add(new Species("vvinifera", "", "Vitis vinifera", "IGGP_12x"));
-//        speciesList.add(new Species("zmays", "", "Zea mays", "AGPv3"));
-
-
-        return speciesList;
-    }
 
     /**
      * TO DELETE
      */
     @Deprecated
     private boolean isSpecieAvailable(String species) {
-        List<Species> speciesList = getSpeciesList();
+        List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
         for (int i = 0; i < speciesList.size(); i++) {
             // This only allows to show the information if species is in 3
             // letters format
-            if (species.equalsIgnoreCase(speciesList.get(i).getSpecies())) {
+            if (species.equalsIgnoreCase(speciesList.get(i).getId())) {
                 return true;
             }
         }

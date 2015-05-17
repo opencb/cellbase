@@ -330,7 +330,7 @@ public class SnpWSServer extends GenericRestWSServer {
     }
 
     @GET
-    public Response getHelp() {
+    public Response defaultMethod() {
         return help();
     }
 

@@ -376,6 +376,17 @@ public class CellBaseConfiguration {
             private List<Assembly> assemblies;
             private List<String> data;
 
+            @Override
+            public String toString() {
+                return "Species{" +
+                        "id='" + id + '\'' +
+                        ", scientificName='" + scientificName + '\'' +
+                        ", commonName='" + commonName + '\'' +
+                        ", assemblies=" + assemblies +
+                        ", data=" + data +
+                        '}';
+            }
+
             public String getId() {
                 return id;
             }

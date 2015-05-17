@@ -47,6 +47,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         logger.info("GeneMongoDBAdaptor: in 'constructor'");
     }
 
+    @Deprecated
     public QueryResult speciesInfoTmp(String id, QueryOptions options){
         // reading application.properties file
 
@@ -66,10 +67,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     @Override
     public QueryResult getGenomeInfo(QueryOptions options) {
-        QueryResult qr = executeQuery("result", new BasicDBObject(), options);
-//        BasicDBList list = (BasicDBList)qr.getResult();
-//        qr.setResult(list.get(0));
-        return qr;
+        return executeQuery(species, new BasicDBObject(), options);
     }
 
 

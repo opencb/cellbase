@@ -29,7 +29,6 @@ import org.opencb.biodata.models.variant.annotation.Cosmic;
 import org.opencb.biodata.models.variant.annotation.Gwas;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.Position;
 
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;

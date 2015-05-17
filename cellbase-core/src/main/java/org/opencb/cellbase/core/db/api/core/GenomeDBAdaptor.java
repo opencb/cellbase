@@ -27,6 +27,7 @@ import java.util.List;
 public interface GenomeDBAdaptor {
 
 
+    @Deprecated
     QueryResult speciesInfoTmp(String id, QueryOptions options);
 
 	QueryResult getGenomeInfo(QueryOptions options);
