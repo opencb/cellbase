@@ -45,12 +45,12 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public QueryResult first() {
-        return null;
+        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
     }
 
     @Override
-    public long count() {
-        return 0;
+    public QueryResult count() {
+        return mongoDBCollection.count();
     }
 
     @Override

@@ -61,7 +61,8 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/first")
     @Override
     public Response first() {
-        return null;
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+        return createOkResponse(geneDBAdaptor.first());
     }
 
     @GET
@@ -69,8 +70,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @Override
     public Response count() {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//        return createOkResponse(geneDBAdaptor.count());
-        return null;
+        return createOkResponse(geneDBAdaptor.count());
     }
 
     @GET

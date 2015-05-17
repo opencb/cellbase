@@ -77,8 +77,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     }
 
     @Override
-    public long count() {
-        return 0;
+    public QueryResult count() {
+        return mongoDBCollection.count();
     }
 
     @Override

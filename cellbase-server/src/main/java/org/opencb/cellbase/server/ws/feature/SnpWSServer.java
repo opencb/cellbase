@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -40,10 +41,35 @@ import java.util.Arrays;
 @Api(value = "SNP", description = "SNP RESTful Web Services API")
 public class SnpWSServer extends GenericRestWSServer {
 
+
     public SnpWSServer(@PathParam("version") String version, @PathParam("species") String species,
                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
     }
+
+    @GET
+    @Path("/first")
+    @Override
+    public Response first() {
+        VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+        return createOkResponse(variationDBAdaptor.first());
+    }
+
+    @GET
+    @Path("/count")
+    @Override
+    public Response count() {
+        VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+        return createOkResponse(variationDBAdaptor.count());
+    }
+
+    @GET
+    @Path("/stats")
+    @Override
+    public Response stats() {
+        return super.stats();
+    }
+
 
     @GET
     @Path("/{snpId}/info")

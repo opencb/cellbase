@@ -25,7 +25,7 @@ public interface DBAdaptor {
 
     QueryResult first();
 
-    long count();
+    QueryResult count();
 
     QueryResult stats();
 

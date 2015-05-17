@@ -52,6 +52,31 @@ public class TranscriptWSServer extends GenericRestWSServer {
         this.exclude = Arrays.asList(exclude.trim().split(","));
     }
 
+
+    @GET
+    @Path("/first")
+    @Override
+    public Response first() {
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+        return createOkResponse(transcriptDBAdaptor.first());
+    }
+
+    @GET
+    @Path("/count")
+    @Override
+    public Response count() {
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+        return createOkResponse(transcriptDBAdaptor.count());
+    }
+
+    @GET
+    @Path("/stats")
+    @Override
+    public Response stats() {
+        return super.stats();
+    }
+
+
 //    @GET
 //    @Path("/all")
 //    public Response getGenomeInfo() {
