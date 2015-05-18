@@ -64,19 +64,20 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("1", 220603289, "-", "GTGT"))  // Should not return null
                 , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16050612, "C", "G"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("13", 45411941, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("2", 130498751, "A", "G"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16050612, "C", "G"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("13", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("2", 130498751, "A", "G"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "T"))  // Should return any result
 //                , new QueryOptions());
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "G"))  // Should return any result
@@ -274,7 +275,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 167385325, "A", "-"), new QueryOptions());  // should
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 220603289, "-", "GTGT"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 167385325, "A", "-"), new QueryOptions());  // should
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16287365, "C", "T"), new QueryOptions());  // should
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("19", 45411941, "T", "C"), new QueryOptions());  // should
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("5", 150407694, "G", "A"), new QueryOptions());  // should
