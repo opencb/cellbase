@@ -486,7 +486,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
         String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
         char[] modifiedCodonArray = referenceCodon.toCharArray();
-        char[] referenceCodonArray = referenceCodon.toCharArray();
         int i=0;
         int transcriptSequencePosition = cdnaVariantStart;  // indexing over transcriptSequence is 0 based, transcriptSequencePosition points to cdnaVariantEnd actually
         int modifiedCodonPosition;
@@ -499,8 +498,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
                 modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
                 transcriptSequencePosition++;
-//                modifiedCodonArray[modifiedCodonPosition] = referenceCodonArray[variantPhaseShift];
-//                variantPhaseShift++;
             }
             decideStopCodonModificationAnnotation(SoNames, referenceCodon, modifiedCodonArray);
             modifiedCodonPositionStart = 0;  // Reset the position where the next modified codon must be started to be filled
@@ -661,7 +658,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 transcriptSequence.length() - modifiedCodon1Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
         String reverseCodon2 = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodon2Start - 2,
                 transcriptSequence.length() - modifiedCodon2Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
-        String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - cdnaVariantEnd - 3,
+        String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(((transcriptSequence.length()-cdnaVariantEnd)>2)?(transcriptSequence.length()-cdnaVariantEnd-3):0,  // Be careful reaching the end of the transcript sequence
                 transcriptSequence.length() - cdnaVariantEnd)).reverse().toString(); // Rigth limit of the substring -2 because substring does not include that position
         char[] referenceCodon1Array = reverseCodon1.toCharArray();
         referenceCodon1Array[0] = complementaryNt.get(referenceCodon1Array[0]);
@@ -700,7 +697,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
         String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
                 transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
-        String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - cdnaVariantEnd - 3,
+        String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(((transcriptSequence.length()-cdnaVariantEnd)>2)?(transcriptSequence.length()-cdnaVariantEnd-3):0,  // Be careful reaching the end of the transcript sequence
                 transcriptSequence.length() - cdnaVariantEnd)).reverse().toString(); // Rigth limit of the substring -2 because substring does not include that position
         char[] referenceCodonArray = reverseCodon.toCharArray();
         referenceCodonArray[0] = complementaryNt.get(referenceCodonArray[0]);
