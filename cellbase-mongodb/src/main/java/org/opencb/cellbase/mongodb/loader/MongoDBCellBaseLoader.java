@@ -73,8 +73,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
          * 2. a 'datastore' object connects to a specific database
          * 3. finally a connection to the collection is stored in 'mongoDBCollection'
          */
-        mongoDataStoreManager = new MongoDataStoreManager(cellBaseConfiguration.getDatabase().getHost(),
-                Integer.parseInt(cellBaseConfiguration.getDatabase().getPort()));
+        String[] hostAndPort = cellBaseConfiguration.getDatabase().getHost().split(":");
+        mongoDataStoreManager = new MongoDataStoreManager(hostAndPort[0], (hostAndPort.length == 2) ? Integer.parseInt(hostAndPort[1]) : 27017);
 
         MongoDBConfiguration mongoDBConfiguration;
         if(cellBaseConfiguration != null
