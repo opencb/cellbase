@@ -217,7 +217,7 @@ public class TfWSServer extends RegulatoryWSServer {
 	}
 
 	@GET
-	public Response getHelp() {
+	public Response defaultMethod() {
 		return help();
 	}
 	

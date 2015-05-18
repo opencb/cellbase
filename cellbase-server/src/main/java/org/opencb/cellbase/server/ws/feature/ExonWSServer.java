@@ -22,6 +22,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -44,9 +45,35 @@ import java.util.List;
 @Api(value = "Exon", description = "Exon RESTful Web Services API")
 public class ExonWSServer extends GenericRestWSServer {
 
+
     public ExonWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
     }
+
+
+    @GET
+    @Path("/first")
+    @Override
+    public Response first() {
+        ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
+        return createOkResponse(exonDBAdaptor.first());
+    }
+
+    @GET
+    @Path("/count")
+    @Override
+    public Response count() {
+        ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
+        return createOkResponse(exonDBAdaptor.count());
+    }
+
+    @GET
+    @Path("/stats")
+    @Override
+    public Response stats() {
+        return super.stats();
+    }
+
 
     @GET
     @Path("/{exonId}/info")
@@ -158,7 +185,7 @@ public class ExonWSServer extends GenericRestWSServer {
     }
 
     @GET
-    public Response getHelp() {
+    public Response defaultMethod() {
         return help();
     }
 

@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.db.core;
 
 import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.feature.Region;
@@ -57,12 +58,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult first() {
-        return null;
+        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
     }
 
     @Override
-    public long count() {
-        return 0;
+    public QueryResult count() {
+        return mongoDBCollection.count();
     }
 
     @Override

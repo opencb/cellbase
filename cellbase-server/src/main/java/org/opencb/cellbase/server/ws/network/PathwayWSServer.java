@@ -249,7 +249,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	}
 	*/
 	@GET
-	public Response getHelp() {
+	public Response defaultMethod() {
 		return help();
 	}
 	

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
@@ -41,12 +42,12 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
     @Override
     public QueryResult first() {
-        return null;
+        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
     }
 
     @Override
-    public long count() {
-        return 0;
+    public QueryResult count() {
+        return mongoDBCollection.count();
     }
 
     @Override

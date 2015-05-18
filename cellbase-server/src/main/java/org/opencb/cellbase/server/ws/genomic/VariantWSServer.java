@@ -227,7 +227,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
 
     @GET
-    public Response getHelp() {
+    public Response defaultMethod() {
         return help();
     }
 
