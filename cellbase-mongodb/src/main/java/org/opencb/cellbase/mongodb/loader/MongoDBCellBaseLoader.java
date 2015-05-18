@@ -77,7 +77,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         String[] hosts = cellBaseConfiguration.getDatabase().getHost().split(",");
         List<DataStoreServerAddress> dataStoreServerAddressList = new ArrayList<>(hosts.length);
         for (String host: hosts) {
-            String[] hostAndPort = cellBaseConfiguration.getDatabase().getHost().split(":");
+            String[] hostAndPort = host.split(":");
             dataStoreServerAddressList.add(new DataStoreServerAddress(hostAndPort[0], (hostAndPort.length == 2) ? Integer.parseInt(hostAndPort[1]) : 27017));
         }
         mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddressList);
