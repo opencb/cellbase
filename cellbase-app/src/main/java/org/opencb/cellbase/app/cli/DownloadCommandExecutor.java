@@ -209,6 +209,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadClinical(sp, spShortName, assembly.getName(), spFolder);
                         }
                         break;
+                    case "gene2disease":
+                        if(speciesHasInfoToDownload(sp, "gene2disease")) {
+                            downloadGene2Disease(sp, spShortName, assembly.getName(), spFolder);
+                        }
+                        break;
                 }
             }
         }
@@ -582,6 +587,19 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
+    private void downloadGene2Disease(Species species, String shortName, String assembly, Path speciesFolder)
+            throws IOException, InterruptedException {
+
+        if(species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading gene to disease information ...");
+
+            Path gene2diseaseFolder = speciesFolder.resolve("gene2disease");
+            makeDir(gene2diseaseFolder);
+            String url = configuration.getDownload().getDisgenet().getHost();
+            downloadFile(url, gene2diseaseFolder.resolve("disgenet.tar.gz").toString());
+
+        }
+    }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");

@@ -70,6 +70,9 @@
 	},
 	"gwasCatalog": {
 	  "host": "http://www.ebi.ac.uk/gwas/api/search/downloads/full"
+	},
+	"disgenet": {
+	  "host": "http://www.disgenet.org/ds/DisGeNET/results/all_gene_disease_associations.tar.gz"
 	}
   },
   "species":{
@@ -94,7 +97,8 @@
 		  "regulation",
 		  "protein",
 		  "conservation",
-		  "clinical"
+		  "clinical",
+		  "gene2disease"
 		]
 	  },
 	  {

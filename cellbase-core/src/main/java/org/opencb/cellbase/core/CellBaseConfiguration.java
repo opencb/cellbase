@@ -173,6 +173,7 @@ public class CellBaseConfiguration {
         private URLProperties interpro;
         private URLProperties conservation;
         private URLProperties clinvar;
+        private URLProperties disgenet;
         private URLProperties gwasCatalog;
 
         public EnsemblProperties getEnsembl() {
@@ -206,6 +207,10 @@ public class CellBaseConfiguration {
         public void setClinvar(URLProperties clinvar) {
             this.clinvar = clinvar;
         }
+
+        public URLProperties getDisgenet() { return disgenet; }
+
+        public void setDisgenet(URLProperties disgenet) { this.disgenet = disgenet; }
 
         public URLProperties getConservation() {
             return conservation;
