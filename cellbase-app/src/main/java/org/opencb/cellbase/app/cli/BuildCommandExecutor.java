@@ -41,6 +41,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     // TODO: these two constants should be defined in the 'download' module
     public static final String GWAS_INPUT_FILE_NAME = "gwas_catalog.tsv";
+    public static final String DISGENET_INPUT_FILE_NAME = "disgenet.tar.gz";
     public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
@@ -158,6 +159,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                             break;
                         case "gwas":
                             parser = buildGwas();
+                            break;
+                        case "disgenet":
+                            parser = buildDisgenet();
                             break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
@@ -369,6 +373,14 @@ public class BuildCommandExecutor extends CommandExecutor {
         FileUtils.checkPath(dbsnpFile);
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gwas");
         return new GwasParser(gwasFile, dbsnpFile, serializer);
+    }
+
+    private CellBaseParser buildDisgenet() throws IOException {
+        Path inputDir = getInputDirFromCommandLine();
+        Path disgenetFile = inputDir.resolve(DISGENET_INPUT_FILE_NAME);
+        FileUtils.checkPath(disgenetFile);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "disgenet");
+        return new DisgenetParser(disgenetFile, serializer);
     }
 
 
