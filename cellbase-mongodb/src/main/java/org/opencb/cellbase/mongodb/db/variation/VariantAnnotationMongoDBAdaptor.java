@@ -24,8 +24,10 @@ import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
+import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
@@ -69,6 +71,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //    private ProteinFunctionPredictorDBAdaptor proteinDBAdaptor;
     private ProteinDBAdaptor proteinDBAdaptor;
     private ConservedRegionDBAdaptor conservedRegionDBAdaptor;
+    private GenomeDBAdaptor genomeDBAdaptor;
 
     static {
 
@@ -254,9 +257,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     @Override
-    public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor) {
-        this.conservedRegionDBAdaptor = conservedRegionDBAdaptor;
-    }
+    public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor) { this.conservedRegionDBAdaptor = conservedRegionDBAdaptor; }
+
+    public void setGenomeDBAdaptor(GenomeDBAdaptor genomeDBAdaptor) { this.genomeDBAdaptor = genomeDBAdaptor; }
 
     public GeneDBAdaptor getGeneDBAdaptor() {
         return geneDBAdaptor;
@@ -301,11 +304,11 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return stop;
     }
 
-    private void solvePositiveCodingEffect(Boolean splicing, String transcriptSequence, Integer transcriptEnd,
-                                           Integer genomicCodingEnd, Integer cdnaCodingStart, Integer cdnaCodingEnd,
-                                           Integer cdnaVariantStart, Integer cdnaVariantEnd, BasicDBList transcriptFlags,
-                                           String variantRef, String variantAlt, HashSet<String> SoNames,
-                                           ConsequenceType consequenceTypeTemplate) {
+    private void solvePositiveCodingEffect(Boolean splicing, String transcriptSequence, String chromosome,
+                                           Integer transcriptEnd, Integer genomicCodingEnd, Integer cdnaCodingStart,
+                                           Integer cdnaCodingEnd, Integer cdnaVariantStart, Integer cdnaVariantEnd,
+                                           BasicDBList transcriptFlags, String variantRef, String variantAlt,
+                                           HashSet<String> SoNames, ConsequenceType consequenceTypeTemplate) {
 
         Boolean codingAnnotationAdded = false;  // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
 
@@ -326,8 +329,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                         SoNames.add("frameshift_variant");
                     }
                     stopToSolve = false;  // Stop codon annotation will be solved in the line below.
-                    solveStopCodonPositiveDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd,
-                            SoNames);
+                    solveStopCodonPositiveDeletion(transcriptSequence, chromosome, transcriptEnd, cdnaCodingStart,
+                            cdnaVariantStart, cdnaVariantEnd, SoNames);
                 }
                 if (cdnaVariantEnd >= (cdnaCodingEnd - finalNtPhase)) {
                     if (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF")) {
@@ -435,9 +438,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
     }
 
-    private void solveStopCodonPositiveDeletion(String transcriptSequence, Integer cdnaCodingStart,
-                                                  Integer cdnaVariantStart, Integer cdnaVariantEnd,
-                                                  Set<String> SoNames) {
+    private void solveStopCodonPositiveDeletion(String transcriptSequence, String chromosome, Integer transcriptEnd,
+                                                  Integer cdnaCodingStart, Integer cdnaVariantStart,
+                                                  Integer cdnaVariantEnd, Set<String> SoNames) {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
@@ -451,8 +454,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
             if(i>=transcriptSequence.length()) {
                 // TODO: change this by the proper assignment
-                modifiedCodonArray[codonPosition] = 'N';
-                endTranscriptReached=true;
+                int genomicCoordinate = transcriptEnd+(i-transcriptSequence.length())+1;
+                modifiedCodonArray[codonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(chromosome,
+                        genomicCoordinate, genomicCoordinate+1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
             } else {
                 modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
             }
@@ -460,9 +464,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
 
         // TODO: remove this and properly handle end of transcript
-        if(!endTranscriptReached) {
-            decideStopCodonModificationAnnotation(SoNames, isStopCodon(referenceCodon2) ? referenceCodon2 : referenceCodon1, modifiedCodonArray);
-        }
+        decideStopCodonModificationAnnotation(SoNames, isStopCodon(referenceCodon2) ? referenceCodon2 : referenceCodon1, modifiedCodonArray);
     }
 
     private void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
@@ -726,10 +728,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
 }
 
-    private void solveCodingPositiveTranscriptEffect(Boolean splicing, String transcriptSequence, Integer transcriptStart, Integer transcriptEnd, Integer genomicCodingStart,
-                                                     Integer genomicCodingEnd, Integer variantStart, Integer variantEnd,
-                                                     Integer cdnaCodingStart, Integer cdnaCodingEnd, Integer cdnaVariantStart,
-                                                     Integer cdnaVariantEnd, Integer cdsLength,
+    private void solveCodingPositiveTranscriptEffect(Boolean splicing, String transcriptSequence, String chromosome,
+                                                     Integer transcriptStart, Integer transcriptEnd,
+                                                     Integer genomicCodingStart, Integer genomicCodingEnd,
+                                                     Integer variantStart, Integer variantEnd,
+                                                     Integer cdnaCodingStart, Integer cdnaCodingEnd,
+                                                     Integer cdnaVariantStart, Integer cdnaVariantEnd, Integer cdsLength,
                                                      BasicDBList transcriptFlags, int firstCdsPhase, String variantRef,
                                                      String variantAlt, HashSet<String> SoNames,
                                                      ConsequenceType consequenceTypeTemplate) {
@@ -766,7 +770,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1)/3)+1);
                 }
                 if(variantEnd <= genomicCodingEnd) {  // Variant end also within coding region
-                    solvePositiveCodingEffect(splicing, transcriptSequence, transcriptEnd, genomicCodingEnd,
+                    solvePositiveCodingEffect(splicing, transcriptSequence, chromosome, transcriptEnd, genomicCodingEnd,
                             cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd, transcriptFlags,
                             variantRef, variantAlt, SoNames, consequenceTypeTemplate);
                 } else {
@@ -1530,10 +1534,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     cdnaVariantEnd = cdnaVariantStart + 1;
                 }
             }
-            solveCodingPositiveTranscriptEffect(splicing, transcriptSequence, transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd,
-                    variantStart, variantEnd, cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd,  // Be careful, originalVariantStart is used here!
-                    cdsLength, transcriptFlags, firstCdsPhase, variant.getReference(), variant.getAlternative(), SoNames,
-                    consequenceTypeTemplate);
+            solveCodingPositiveTranscriptEffect(splicing, transcriptSequence, variant.getChromosome(),
+                    transcriptStart, transcriptEnd, genomicCodingStart, genomicCodingEnd, variantStart, variantEnd,
+                    cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd, cdsLength, transcriptFlags, // Be careful, originalVariantStart is used here!
+                    firstCdsPhase, variant.getReference(), variant.getAlternative(), SoNames, consequenceTypeTemplate);
         }
     }
 
