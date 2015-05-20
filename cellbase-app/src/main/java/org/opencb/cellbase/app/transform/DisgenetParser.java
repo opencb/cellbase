@@ -1,6 +1,7 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.cellbase.build.transform.formats.disgenet.Disease;
+import org.opencb.cellbase.core.common.genedisease.Disgenet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.build.transform.formats.disgenet.DisGeNet;
 
