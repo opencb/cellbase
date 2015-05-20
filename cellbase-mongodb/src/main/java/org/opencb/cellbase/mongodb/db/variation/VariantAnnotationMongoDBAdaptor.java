@@ -358,8 +358,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 } else {
                     SoNames.add("frameshift_variant");
                 }
-                solveStopCodonPositiveInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart,
-                        variantAlt, SoNames);
+                solveStopCodonPositiveInsertion(transcriptSequence, chromosome, transcriptEnd, cdnaCodingStart,
+                        cdnaVariantStart, variantAlt, SoNames);
 //                if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
 //                    if (cdnaVariantStart != null && cdnaVariantStart > (cdnaCodingEnd - 3)) { // -3 because alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
 //                        char[] modifiedCodonArray = solveStopCodonPositiveInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, variantAlt);
@@ -453,7 +453,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         boolean endTranscriptReached=false;
         for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
             if(i>=transcriptSequence.length()) {
-                // TODO: change this by the proper assignment
                 int genomicCoordinate = transcriptEnd+(i-transcriptSequence.length())+1;
                 modifiedCodonArray[codonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(chromosome,
                         genomicCoordinate, genomicCoordinate+1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
@@ -463,7 +462,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             i++;
         }
 
-        // TODO: remove this and properly handle end of transcript
         decideStopCodonModificationAnnotation(SoNames, isStopCodon(referenceCodon2) ? referenceCodon2 : referenceCodon1, modifiedCodonArray);
     }
 
@@ -482,8 +480,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
     }
 
-    private void solveStopCodonPositiveInsertion(String transcriptSequence, Integer cdnaCodingStart,
-                                            Integer cdnaVariantStart, String variantAlt, Set<String> SoNames) {
+    private void solveStopCodonPositiveInsertion(String transcriptSequence, String chromosome, Integer transcriptEnd,
+                                                 Integer cdnaCodingStart, Integer cdnaVariantStart, String variantAlt,
+                                                 Set<String> SoNames) {
         Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
         int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
         String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
@@ -498,7 +497,13 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 i++;
             }
             for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
+                if(transcriptSequencePosition>=transcriptSequence.length()) {
+                    int genomicCoordinate = transcriptEnd + (transcriptSequencePosition - transcriptSequence.length()) + 1;
+                    modifiedCodonArray[modifiedCodonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(chromosome,
+                            genomicCoordinate, genomicCoordinate+1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
+                } else {
+                    modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
+                }
                 transcriptSequencePosition++;
             }
             decideStopCodonModificationAnnotation(SoNames, referenceCodon, modifiedCodonArray);
