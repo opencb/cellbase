@@ -1379,10 +1379,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     private List<ConsequenceType> filterConsequenceTypesBySoTerms(List<ConsequenceType> consequenceTypeList, List<String> querySoTerms) {
-        for (Iterator<ConsequenceType> iterator = consequenceTypeList.iterator(); iterator.hasNext();  ) {
-            ConsequenceType consequenceType = iterator.next();
-            if (!consequenceTypeContainsSoTerm(consequenceType, querySoTerms)) {
-                iterator.remove();
+        if (querySoTerms.size() > 0) {
+            boolean hasAnyOfQuerySoTerms = false;
+            for (ConsequenceType consequenceType : consequenceTypeList) {
+                if (consequenceTypeContainsSoTerm(consequenceType, querySoTerms)) {
+                    hasAnyOfQuerySoTerms = true;
+                    break;
+                }
+            }
+            if (!hasAnyOfQuerySoTerms) {
+                consequenceTypeList = Collections.EMPTY_LIST;
             }
         }
         return consequenceTypeList;
@@ -1954,54 +1960,85 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
     public List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions) {
 
+        // TODO: validation of queryoption 'include' values
+        List<String> includeList = queryOptions.getAsStringList("include");
+        if (includeList.isEmpty()) {
+            includeList = Arrays.asList("variation", "clinical", "consequenceType", "conservation");
+        }
 
-        List<QueryResult> variationQueryResultList = variationDBAdaptor.getAllByVariantList(variantList, queryOptions);
-        List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
-        List<QueryResult> variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
-        List<QueryResult> conservedRegionQueryResultList = conservedRegionDBAdaptor.getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
-
-        VariantAnnotation variantAnnotation;
-
-        Integer i=0;
-        for(QueryResult clinicalQueryResult: clinicalQueryResultList){
-            Map<String,Object> phenotype = new HashMap<>();
-            if(clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size()>0) {
-                phenotype = (Map<String, Object>) clinicalQueryResult.getResult().get(0);
+        List<QueryResult> annotations = null;
+        List<QueryResult> variationQueryResultList = null;
+        if (includeList.contains("variation")) {
+            variationQueryResultList = variationDBAdaptor.getAllByVariantList(variantList, queryOptions);
+            annotations = variationQueryResultList;
+        }
+        List<QueryResult> clinicalQueryResultList = null;
+        if (includeList.contains("clinical")) {
+            clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+            if (annotations == null) {
+                annotations = clinicalQueryResultList;
             }
+        }
+        List<QueryResult> variationConsequenceTypeList = null;
+        if (includeList.contains("consequenceType")) {
+            variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
+            if (annotations == null) {
+                annotations = variationConsequenceTypeList;
+            }
+        }
+        List<QueryResult> conservedRegionQueryResultList = null;
+        if (includeList.contains("conservation")) {
+            conservedRegionQueryResultList = conservedRegionDBAdaptor.getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
+            if (annotations == null) {
+                annotations = conservedRegionQueryResultList;
+            }
+        }
 
-            List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>)variationConsequenceTypeList.get(i).getResult();
-
-
+        for(int i=0; i <  variantList.size(); i++){
             // TODO: start & end are both being set to variantList.get(i).getPosition(), modify this for indels
-            variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(),
+            VariantAnnotation variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(),
                     variantList.get(i).getPosition(),variantList.get(i).getPosition(),variantList.get(i).getReference(),variantList.get(i).getAlternative());
 
+            Map<String,Object> phenotype = new HashMap<>();
+            if (clinicalQueryResultList != null) {
+                QueryResult clinicalQueryResult = clinicalQueryResultList.get(i);
+                if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
+                    phenotype = (Map<String, Object>) clinicalQueryResult.getResult().get(0);
+                }
+            }
             variantAnnotation.setClinicalData(phenotype);
-            variantAnnotation.setConsequenceTypes(consequenceTypeList);
-            variantAnnotation.setConservedRegionScores((List<Score>) conservedRegionQueryResultList.get(i).getResult());
 
-            List<BasicDBObject> variationDBList = (List<BasicDBObject>) variationQueryResultList.get(i).getResult();
+            if (variationConsequenceTypeList != null) {
+                variantAnnotation.setConsequenceTypes((List<ConsequenceType>) variationConsequenceTypeList.get(i).getResult());
+            }
+
+            if (conservedRegionQueryResultList != null) {
+                variantAnnotation.setConservedRegionScores((List<Score>) conservedRegionQueryResultList.get(i).getResult());
+            }
+
+            List<BasicDBObject> variationDBList = null;
+            if (variationQueryResultList != null) {
+                variationDBList = (List<BasicDBObject>) variationQueryResultList.get(i).getResult();
+            }
+
             if(variationDBList!=null && variationDBList.size()>0) {
-                String id = null;
-                id = ((BasicDBObject) variationDBList.get(0)).get("id").toString();
+                String id = variationDBList.get(0).get("id").toString();
                 variantAnnotation.setId(id);
 
-                BasicDBList freqsDBList = null;
-                if((freqsDBList = (BasicDBList) ((BasicDBObject) variationDBList.get(0)).get("populationFrequencies")) != null) {
-                    BasicDBObject freqDBObject;
-                    for (int j = 0; j < freqsDBList.size(); j++) {
-                        freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                        variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
-                                freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-                                freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                                Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                                Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
-                    }
+                BasicDBList freqsDBList = (BasicDBList) variationDBList.get(0).get("populationFrequencies");
+                BasicDBObject freqDBObject;
+                for(int j=0; j<freqsDBList.size(); j++) {
+                    freqDBObject = ((BasicDBObject) freqsDBList.get(j));
+                    variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
+                            freqDBObject.get("pop").toString(),freqDBObject.get("superPop").toString(),
+                            freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                            Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                            Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
                 }
             }
 
             List<VariantAnnotation> value = Collections.singletonList(variantAnnotation);
-            clinicalQueryResult.setResult(value);
+            annotations.get(i).setResult(value);
             i++;
         }
 
