@@ -109,18 +109,18 @@ public class PostLoadCommandExecutor extends CommandExecutor{
 //                        configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
 //                configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
 
-        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-        try {
-            cellBaseConfiguration = CellBaseConfiguration
-                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+//        try {
+//            cellBaseConfiguration = CellBaseConfiguration
+//                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
-        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration.getDatabase().getUser());
-        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration.getDatabase().getHost());
-        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration.getDatabase().getPassword());
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getUser());
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getHost());
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getPassword());
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
 //        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(adaptorCellbaseConfiguration);
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", assembly);
 

@@ -27,6 +27,7 @@ import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
+import org.opencb.datastore.core.config.DataStoreServerAddress;
 import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.datastore.mongodb.MongoDataStore;
@@ -73,8 +74,13 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
          * 2. a 'datastore' object connects to a specific database
          * 3. finally a connection to the collection is stored in 'mongoDBCollection'
          */
-        mongoDataStoreManager = new MongoDataStoreManager(cellBaseConfiguration.getDatabase().getHost(),
-                Integer.parseInt(cellBaseConfiguration.getDatabase().getPort()));
+        String[] hosts = cellBaseConfiguration.getDatabase().getHost().split(",");
+        List<DataStoreServerAddress> dataStoreServerAddressList = new ArrayList<>(hosts.length);
+        for (String host: hosts) {
+            String[] hostAndPort = host.split(":");
+            dataStoreServerAddressList.add(new DataStoreServerAddress(hostAndPort[0], (hostAndPort.length == 2) ? Integer.parseInt(hostAndPort[1]) : 27017));
+        }
+        mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddressList);
 
         MongoDBConfiguration mongoDBConfiguration;
         if(cellBaseConfiguration != null
