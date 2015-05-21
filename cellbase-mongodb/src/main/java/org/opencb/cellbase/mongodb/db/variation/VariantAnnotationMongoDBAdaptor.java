@@ -723,7 +723,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 if(reverseTranscriptSequencePosition>=reverseTranscriptSequence.length()) {
                     int genomicCoordinate = transcriptStart - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
                     modifiedCodonArray[modifiedCodonPosition] = complementaryNt.get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(chromosome,
-                            genomicCoordinate, genomicCoordinate+1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
+                            genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
                 } else {
                     modifiedCodonArray[modifiedCodonPosition] = complementaryNt.get(reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
                     reverseTranscriptSequencePosition++;
@@ -2055,7 +2055,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             i++;
         }
 
-        return clinicalQueryResultList;
+        return annotations;
+//        return clinicalQueryResultList;
     }
 
     private List<Region> variantListToRegionList(List<GenomicVariant> variantList) {
