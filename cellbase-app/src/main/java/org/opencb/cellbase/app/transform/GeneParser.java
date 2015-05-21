@@ -24,6 +24,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.variant.annotation.ExpressionValue;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -97,6 +98,7 @@ public class GeneParser extends CellBaseParser {
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
         Map<String, SortedSet<Gff2>> tfbsMap = getTfbsMap();
         Map<String, MiRNAGene> mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
+        Map<String, ExpressionValue> geneExpressionMap = getGeneExpressionMap(species, geneExpressionFile);
 
 
         // Preparing the fasta file for fast accessing
@@ -132,7 +134,8 @@ public class GeneParser extends CellBaseParser {
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
-                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(), mirnaGeneMap.get(geneId));
+                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(),
+                        mirnaGeneMap.get(geneId), geneExpressionMap.get(geneId));
                 // Do not change order!! size()-1 is the index of the gene ID
             }
 
