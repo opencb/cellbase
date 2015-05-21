@@ -2039,14 +2039,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 variantAnnotation.setId(id);
 
                 BasicDBList freqsDBList = (BasicDBList) variationDBList.get(0).get("populationFrequencies");
-                BasicDBObject freqDBObject;
-                for(int j=0; j<freqsDBList.size(); j++) {
-                    freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                    variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
-                            freqDBObject.get("pop").toString(),freqDBObject.get("superPop").toString(),
-                            freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                            Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                            Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                if(freqsDBList!=null) {
+                    BasicDBObject freqDBObject;
+                    for (int j = 0; j < freqsDBList.size(); j++) {
+                        freqDBObject = ((BasicDBObject) freqsDBList.get(j));
+                        variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
+                                freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                                Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                    }
                 }
             }
 
