@@ -140,7 +140,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> phenotypeList = options.getAsStringList("phenotype", ";");
+        List<String> phenotypeList = options.getAsStringList("phenotype", "|");
         if (phenotypeList != null && phenotypeList.size() > 0) {
             logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
 
