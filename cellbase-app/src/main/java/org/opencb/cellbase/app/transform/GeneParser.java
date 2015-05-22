@@ -25,6 +25,8 @@ import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.annotation.ExpressionValue;
+import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -35,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 public class GeneParser extends CellBaseParser {
 
@@ -50,7 +53,10 @@ public class GeneParser extends CellBaseParser {
     private Path uniprotIdMappingFile;
     private Path tfbsFile;
     private Path mirnaFile;
+    private Path geneExpressionFile;
     private Path genomeSequenceFilePath;
+
+    private CellBaseConfiguration.SpeciesProperties.Species species;
 
     private Connection sqlConn;
     private PreparedStatement sqlQuery;
@@ -60,17 +66,21 @@ public class GeneParser extends CellBaseParser {
     private Set<String> indexedSequences;
 
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseSerializer serializer) {
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
+                      CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
-                geneDirectoryPath.resolve("mirna.txt"), genomeSequenceFastaFile, serializer);
+                geneDirectoryPath.resolve("mirna.txt"),
+                geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
+                genomeSequenceFastaFile, species, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
-                      Path mirnaFile, Path genomeSequenceFilePath, CellBaseSerializer serializer) {
+                      Path mirnaFile, Path geneExpressionFile, Path genomeSequenceFilePath,
+                      CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -78,7 +88,9 @@ public class GeneParser extends CellBaseParser {
         this.uniprotIdMappingFile = uniprotIdMappingFile;
         this.tfbsFile = tfbsFile;
         this.mirnaFile = mirnaFile;
+        this.geneExpressionFile = geneExpressionFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
+        this.species = species;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
@@ -98,7 +110,7 @@ public class GeneParser extends CellBaseParser {
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
         Map<String, SortedSet<Gff2>> tfbsMap = getTfbsMap();
         Map<String, MiRNAGene> mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
-        Map<String, ExpressionValue> geneExpressionMap = getGeneExpressionMap(species, geneExpressionFile);
+        Map<String, List<ExpressionValue>> geneExpressionMap = getGeneExpressionMap();
 
 
         // Preparing the fasta file for fast accessing
@@ -307,6 +319,55 @@ public class GeneParser extends CellBaseParser {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private Map<String, List<ExpressionValue>> getGeneExpressionMap() throws IOException {
+        Map<String,List<ExpressionValue>> geneExpressionMap = new HashMap<>();
+
+        BufferedReader br;
+        if (geneExpressionFile.toFile().getName().endsWith(".gz")) {
+            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(geneExpressionFile.toFile()))));
+        } else {
+            br = Files.newBufferedReader(geneExpressionFile, Charset.defaultCharset());
+        }
+
+        logger.info("Loading gene expression data form {}", geneExpressionFile);
+        // Skip header. Column name line does not start with # so the last line read by this while will be this one
+        int lineCounter = 0;
+        String line;
+        while (((line = br.readLine()) != null) && (line.startsWith("#"))) {
+            lineCounter++;
+        }
+
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.split("\t");
+            if(species.getScientificName().equals(parts[2])) {
+                if(parts[7].equals("UP")) {
+                    addExpressionValue(geneExpressionMap, parts[1], new ExpressionValue(parts[3], parts[4], parts[5], parts[6],
+                            ExpressionValue.Expression.UP, Float.valueOf(parts[8])));
+                } else if (parts[7].equals("DOWN")) {
+                    addExpressionValue(geneExpressionMap, parts[1], new ExpressionValue(parts[3], parts[4], parts[5], parts[6],
+                            ExpressionValue.Expression.DOWN, Float.valueOf(parts[8])));
+                } else {
+                    logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
+                }
+            }
+            lineCounter++;
+        }
+        br.close();
+        return geneExpressionMap;
+    }
+
+    private void addExpressionValue(Map<String,List<ExpressionValue>> geneExpressionMap, String geneName,
+                                    ExpressionValue expressionValue){
+        if(geneExpressionMap.containsKey(geneName)) {
+            geneExpressionMap.get(geneName).add(expressionValue);
+        } else {
+            List<ExpressionValue> expressionValueList = new ArrayList<>();
+            expressionValueList.add(expressionValue);
+            geneExpressionMap.put(geneName, expressionValueList);
+        }
+
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
