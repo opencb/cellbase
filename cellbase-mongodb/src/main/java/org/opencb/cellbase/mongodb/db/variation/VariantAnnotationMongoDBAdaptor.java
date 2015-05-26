@@ -16,10 +16,12 @@
 
 package org.opencb.cellbase.mongodb.db.variation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
+import org.opencb.biodata.models.variant.annotation.ExpressionValue;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
@@ -1038,7 +1040,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         dbTimeStart = System.currentTimeMillis();
 //        QueryResult geneQueryResult = executeQuery(variant.toString(), builderGene.get(), options);
         QueryOptions geneQueryOptions = new QueryOptions();
-        geneQueryOptions.add("include", "name,id,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
+        geneQueryOptions.add("include", "name,id,expressionValues,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
         QueryResult geneQueryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(), variantStart-5000,
                 variantEnd+5000), geneQueryOptions);
 //        mongoDBCollection = db.getCollection("regulatory_region");
@@ -1050,14 +1052,17 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         LinkedList geneInfoList = (LinkedList) geneQueryResult.getResult();
 //        BasicDBList geneInfoList = (BasicDBList) geneQueryResult.getResult();
 
-
-
-
         for(Object geneInfoObject: geneInfoList) {
             geneInfo = (BasicDBObject) geneInfoObject;
             consequenceTypeTemplate.setGeneName((String) geneInfo.get("name"));
             consequenceTypeTemplate.setEnsemblGeneId((String) geneInfo.get("id"));
-
+            consequenceTypeTemplate.setExpressionValues(new ArrayList<ExpressionValue>());
+            if(geneInfo.get("expressionValues")!=null) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                for (Object expressionBasicDBObject : (BasicDBList) geneInfo.get("expressionValues")) {
+                    consequenceTypeTemplate.getExpressionValues().add(objectMapper.convertValue(expressionBasicDBObject, ExpressionValue.class));
+                }
+            }
 
             transcriptInfoList = (BasicDBList) geneInfo.get("transcripts");
             for(Object transcriptInfoObject: transcriptInfoList) {
@@ -1095,7 +1100,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                 consequenceTypeTemplate.getEnsemblGeneId(),
                                 consequenceTypeTemplate.getEnsemblTranscriptId(),
                                 consequenceTypeTemplate.getStrand(),
-                                consequenceTypeTemplate.getBiotype(), Collections.singletonList("transcript_ablation")));
+                                consequenceTypeTemplate.getBiotype(), Collections.singletonList("transcript_ablation"),
+                                consequenceTypeTemplate.getExpressionValues()));
                     } else {
                         // Check variant overlaps transcript start/end coordinates
                         if(regionsOverlap(transcriptStart,transcriptEnd,variantStart,variantEnd) &&
@@ -1137,7 +1143,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                             consequenceTypeTemplate.getAaPosition(),
                                             consequenceTypeTemplate.getAaChange(),
                                             consequenceTypeTemplate.getCodon(),
-                                            consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
+                                            consequenceTypeTemplate.getProteinSubstitutionScores(),
+                                            new ArrayList<>(SoNames), consequenceTypeTemplate.getExpressionValues()));
                                     break;
                                     /**
                                      * pseudogenes, antisense should not be annotated as non-coding genes
@@ -1157,7 +1164,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                             consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getStrand(),
                                             consequenceTypeTemplate.getBiotype(),
-                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames),
+                                            consequenceTypeTemplate.getExpressionValues()));
                                     break;
                                     /**
                                      * Non-coding biotypes
@@ -1199,7 +1207,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                             consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getStrand(),
                                             consequenceTypeTemplate.getBiotype(),
-                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames),
+                                            consequenceTypeTemplate.getExpressionValues()));
                                     break;
                             }
                         } else {
@@ -1210,7 +1219,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                         consequenceTypeTemplate.getEnsemblGeneId(),
                                         consequenceTypeTemplate.getEnsemblTranscriptId(),
                                         consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                                        consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames),
+                                        consequenceTypeTemplate.getExpressionValues()));
                             }
                         }
                     }
@@ -1220,7 +1230,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                 consequenceTypeTemplate.getEnsemblGeneId(),
                                 consequenceTypeTemplate.getEnsemblTranscriptId(),
                                 consequenceTypeTemplate.getStrand(),
-                                consequenceTypeTemplate.getBiotype(), Collections.singletonList("transcript_ablation")));
+                                consequenceTypeTemplate.getBiotype(), Collections.singletonList("transcript_ablation"),
+                                consequenceTypeTemplate.getExpressionValues()));
                     } else {
                         // Check overlaps transcript start/end coordinates
                         if (regionsOverlap(transcriptStart, transcriptEnd, variantStart, variantEnd) &&
@@ -1262,7 +1273,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                             consequenceTypeTemplate.getAaPosition(),
                                             consequenceTypeTemplate.getAaChange(),
                                             consequenceTypeTemplate.getCodon(),
-                                            consequenceTypeTemplate.getProteinSubstitutionScores(), new ArrayList<>(SoNames)));
+                                            consequenceTypeTemplate.getProteinSubstitutionScores(),
+                                            new ArrayList<>(SoNames),
+                                            consequenceTypeTemplate.getExpressionValues()));
                                     break;
                                     /**
                                      * pseudogenes, antisense should not be annotated as non-coding genes
@@ -1281,7 +1294,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                             consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getStrand(),
                                             consequenceTypeTemplate.getBiotype(),
-                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames),
+                                            consequenceTypeTemplate.getExpressionValues()));
                                     break;
                                     /**
                                      * Non-coding biotypes
@@ -1322,7 +1336,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                             consequenceTypeTemplate.getEnsemblTranscriptId(),
                                             consequenceTypeTemplate.getStrand(),
                                             consequenceTypeTemplate.getBiotype(),
-                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames)));
+                                            consequenceTypeTemplate.getcDnaPosition(), new ArrayList<>(SoNames),
+                                            consequenceTypeTemplate.getExpressionValues()));
                                     break;
                             }
                         } else {
@@ -1333,7 +1348,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                         consequenceTypeTemplate.getEnsemblGeneId(),
                                         consequenceTypeTemplate.getEnsemblTranscriptId(),
                                         consequenceTypeTemplate.getStrand(),
-                                        consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames)));
+                                        consequenceTypeTemplate.getBiotype(), new ArrayList<>(SoNames),
+                                        consequenceTypeTemplate.getExpressionValues()));
                             }
                         }
                     }
