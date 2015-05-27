@@ -1782,7 +1782,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
             int i = 0;
             while(i<matureMiRnaInfo.size()  && !regionsOverlap((Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaStart"),
-                    (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"), cdnaVariantStart, cdnaVariantEnd)) {
+                    (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"),
+                    cdnaVariantStart==null?1:cdnaVariantStart, cdnaVariantEnd==null?cdnaExonEnd:cdnaVariantEnd)) {
                 i++;
             }
             if(i<matureMiRnaInfo.size()) {  // Variant overlaps at least one mature miRNA
@@ -1890,7 +1891,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             BasicDBList matureMiRnaInfo = (BasicDBList) miRnaInfo.get("matures");
             int i = 0;
             while(i<matureMiRnaInfo.size()  && !regionsOverlap((Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaStart"),
-                    (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"), cdnaVariantStart, cdnaVariantEnd)) {
+                    (Integer) ((BasicDBObject) matureMiRnaInfo.get(i)).get("cdnaEnd"),
+                    cdnaVariantStart==null?1:cdnaVariantStart, cdnaVariantEnd==null?cdnaExonEnd:cdnaVariantEnd)) {
                 i++;
             }
             if(i<matureMiRnaInfo.size()) {  // Variant overlaps at least one mature miRNA
