@@ -1,5 +1,8 @@
 package org.opencb.cellbase.app.transform;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.tools.tar.TarInputStream;
 import org.opencb.cellbase.core.common.genedisease.Disease;
 import org.opencb.cellbase.core.common.genedisease.Disgenet;
@@ -30,15 +33,16 @@ public class DisgenetParser extends CellBaseParser {
         BufferedReader reader;
         try {
             if (disgenetFilePath.toFile().getName().endsWith("tar.gz")) {
-                TarInputStream tis = new TarInputStream(new GZIPInputStream(new FileInputStream(disgenetFilePath.toFile())));
-                reader = new BufferedReader(new InputStreamReader(tis));
+                TarArchiveInputStream tarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(disgenetFilePath.toFile())));
+                TarArchiveEntry currentEntry = tarInput.getNextTarEntry();
+                BufferedReader br = null;
+                reader = new BufferedReader(new InputStreamReader(tarInput)); // Read directly from tarInput
             } else if (disgenetFilePath.toFile().getName().endsWith(".gz")) {
                 reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(disgenetFilePath.toFile()))));
             } else {
                 reader = Files.newBufferedReader(disgenetFilePath, Charset.defaultCharset());
             }
 
-//        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(disgenetFilePath.toFile())))) {
             logger.info("Parsing Disgenet file " + disgenetFilePath + " ...");
 
             // first line is the header -> ignore it
@@ -70,35 +74,6 @@ public class DisgenetParser extends CellBaseParser {
         logger.info("Serialized " + serializedGenes + " genes");
     }
 
-    private Map<String, List<String>> parseEntrezIdToEnsemblIdFile(Path entrezIdToEnsemblIdFile) {
-        logger.info("Parsing \"entrezId to Ensembl Id\" file " + entrezIdToEnsemblIdFile + " ...");
-        Map<String, List<String>> entrezIdToEnsemblId = new HashMap<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(entrezIdToEnsemblIdFile.toFile())))) {
-            // first line is the header -> ignore it
-            reader.readLine();
-            for (String line; (line = reader.readLine()) != null;) {
-                String[] fields = line.split("\t");
-                List<String> ensemblIds = entrezIdToEnsemblId.get(fields[1]);
-                if (ensemblIds == null) {
-                    ensemblIds = new ArrayList<>();
-                    ensemblIds.add(fields[0]);
-                    entrezIdToEnsemblId.put(fields[1], ensemblIds);
-                } else {
-                    ensemblIds.add(fields[0]);
-                }
-            }
-            reader.close();
-            logger.info("Done");
-        } catch (FileNotFoundException e) {
-            logger.error("File " + entrezIdToEnsemblIdFile + " doesn't exist");
-            logger.error("Ensembl Ids won't be added to Disgenet objects");
-        } catch (IOException e) {
-            logger.error("Error reading "+ entrezIdToEnsemblIdFile + ": " + e.getMessage());
-            logger.error("Ensembl Ids won't be added to Disgenet objects");
-        }
-        return entrezIdToEnsemblId;
-    }
-
     private long fillDisgenetMap(Map<String, Disgenet> disGeNetMap, BufferedReader reader) throws IOException {
         long linesProcessed = 0;
 
@@ -126,6 +101,9 @@ public class DisgenetParser extends CellBaseParser {
             }
 
             linesProcessed++;
+            if((linesProcessed%10000)==0) {
+                logger.info("{} lines processed");
+            }
         }
 
         return linesProcessed;

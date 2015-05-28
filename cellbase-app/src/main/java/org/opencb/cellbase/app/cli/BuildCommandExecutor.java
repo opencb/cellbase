@@ -377,7 +377,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildDisgenet() throws IOException {
         Path inputDir = getInputDirFromCommandLine();
-        Path disgenetFile = inputDir.resolve(DISGENET_INPUT_FILE_NAME);
+        Path disgenetFile = inputDir.resolve("gene2disease/"+DISGENET_INPUT_FILE_NAME);
         FileUtils.checkPath(disgenetFile);
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "disgenet");
         return new DisgenetParser(disgenetFile, serializer);
