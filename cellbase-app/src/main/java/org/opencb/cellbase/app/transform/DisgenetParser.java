@@ -102,7 +102,7 @@ public class DisgenetParser extends CellBaseParser {
 
             linesProcessed++;
             if((linesProcessed%10000)==0) {
-                logger.info("{} lines processed");
+                logger.info("{} lines processed", linesProcessed);
             }
         }
 
