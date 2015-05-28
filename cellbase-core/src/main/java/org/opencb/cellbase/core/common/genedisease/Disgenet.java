@@ -15,7 +15,7 @@ public class Disgenet {
 
     private List<Disease> diseases;
 
-    public Disgenet(List<String> geneEnsemblIds, String geneName, String geneSymbol, List<Disease> diseases) {
+    public Disgenet(String geneName, String geneSymbol, List<Disease> diseases) {
         this.geneName = geneName;
         this.geneSymbol = geneSymbol;
         this.diseases = diseases;

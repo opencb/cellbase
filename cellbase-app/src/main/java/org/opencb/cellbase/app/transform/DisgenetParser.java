@@ -1,13 +1,16 @@
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.build.transform.formats.disgenet.Disease;
+import org.apache.tools.tar.TarInputStream;
+import org.opencb.cellbase.core.common.genedisease.Disease;
 import org.opencb.cellbase.core.common.genedisease.Disgenet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.build.transform.formats.disgenet.DisGeNet;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by fjlopez on 19/05/15.
@@ -24,13 +27,24 @@ public class DisgenetParser extends CellBaseParser {
     public void parse() {
         Map<String, Disgenet> disgenetMap = new HashMap<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(disgenetFilePath.toFile())))) {
+        BufferedReader reader;
+        try {
+            if (disgenetFilePath.toFile().getName().endsWith("tar.gz")) {
+                TarInputStream tis = new TarInputStream(new GZIPInputStream(new FileInputStream(disgenetFilePath.toFile())));
+                reader = new BufferedReader(new InputStreamReader(tis));
+            } else if (disgenetFilePath.toFile().getName().endsWith(".gz")) {
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(disgenetFilePath.toFile()))));
+            } else {
+                reader = Files.newBufferedReader(disgenetFilePath, Charset.defaultCharset());
+            }
+
+//        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(disgenetFilePath.toFile())))) {
             logger.info("Parsing Disgenet file " + disgenetFilePath + " ...");
 
             // first line is the header -> ignore it
             reader.readLine();
 
-            long processedDisgenetLines = fillDisgenetMap(entrezIdToEnsemblIdMap, disgenetMap, reader);
+            long processedDisgenetLines = fillDisgenetMap(disgenetMap, reader);
             logger.info("Done");
 
             logger.info("Serializing parsed variants ...");
@@ -85,7 +99,7 @@ public class DisgenetParser extends CellBaseParser {
         return entrezIdToEnsemblId;
     }
 
-    private long fillDisgenetMap(Map<String, List<String>> entrezIdToEnsemblIdMap, Map<String, Disgenet> disGeNetMap, BufferedReader reader) throws IOException {
+    private long fillDisgenetMap(Map<String, Disgenet> disGeNetMap, BufferedReader reader) throws IOException {
         long linesProcessed = 0;
 
         String line;
@@ -93,7 +107,6 @@ public class DisgenetParser extends CellBaseParser {
             String[] fields = line.split("\t");
 
             String geneId = fields[0];
-            List<String> ensemblGeneIds = entrezIdToEnsemblIdMap.get(geneId);
             String geneSymbol = fields[1];
             String geneName = fields[2];
             String diseaseId = fields[3];
@@ -107,7 +120,8 @@ public class DisgenetParser extends CellBaseParser {
                 if (disGeNetMap.get(geneId) != null){
                     updateElementDisgenetMap(disGeNetMap, geneId, diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
                 } else {
-                    insertNewElementToDisgenetMap(disGeNetMap, geneId, ensemblGeneIds, geneSymbol, geneName, diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
+                    insertNewElementToDisgenetMap(disGeNetMap, geneId, geneSymbol, geneName, diseaseId, diseaseName,
+                            score, numberOfPubmeds, associationType, sources);
                 }
             }
 
@@ -117,12 +131,14 @@ public class DisgenetParser extends CellBaseParser {
         return linesProcessed;
     }
 
-    private void insertNewElementToDisgenetMap(Map<String, Disgenet> disGeNetMap, String geneId, List<String> ensemblGeneIds, String geneSymbol, String geneName, String diseaseId, String diseaseName, Float score, Integer numberOfPubmeds, String associationType, Set<String> sources) {
+    private void insertNewElementToDisgenetMap(Map<String, Disgenet> disGeNetMap, String geneId, String geneSymbol,
+                                               String geneName, String diseaseId, String diseaseName, Float score,
+                                               Integer numberOfPubmeds, String associationType, Set<String> sources) {
         Disease diseaseToAddToNewGene =
                 new Disease(diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
         List<Disease> diseases = new ArrayList<>();
         diseases.add(diseaseToAddToNewGene);
-        Disgenet disGeNet = new Disgenet(ensemblGeneIds, geneName, geneSymbol, diseases);
+        Disgenet disGeNet = new Disgenet(geneName, geneSymbol, diseases);
         disGeNetMap.put(geneId, disGeNet);
     }
 
