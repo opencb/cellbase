@@ -16,7 +16,10 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 /**
- * Created by fjlopez on 19/05/15.
+ * Class for parsing Disgenet files as the one that can be downloaded from
+ * http://www.disgenet.org/ds/DisGeNET/results/all_gene_disease_associations.tar.gz
+ *
+ * @author      Javi Lopez fjlopez@ebi.ac.uk
  */
 public class DisgenetParser extends CellBaseParser {
 
@@ -27,11 +30,17 @@ public class DisgenetParser extends CellBaseParser {
         this.disgenetFilePath = disgenetFilePath;
     }
 
+    /**
+     * Parses a Disgenet file ad the one that can be downloaded from
+     * http://www.disgenet.org/ds/DisGeNET/results/all_gene_disease_associations.tar.gz and writes corresponding json
+     * objects
+     */
     public void parse() {
         Map<String, Disgenet> disgenetMap = new HashMap<>();
 
         BufferedReader reader;
         try {
+            // Disgenet file is usually downloaded as a .tar.gz file
             if (disgenetFilePath.toFile().getName().endsWith("tar.gz")) {
                 TarArchiveInputStream tarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(disgenetFilePath.toFile())));
                 TarArchiveEntry currentEntry = tarInput.getNextTarEntry();
@@ -44,12 +53,9 @@ public class DisgenetParser extends CellBaseParser {
             }
 
             logger.info("Parsing Disgenet file " + disgenetFilePath + " ...");
-
             // first line is the header -> ignore it
             reader.readLine();
-
             long processedDisgenetLines = fillDisgenetMap(disgenetMap, reader);
-            logger.info("Done");
 
             logger.info("Serializing parsed variants ...");
             Collection <Disgenet> allDisgenetRecords = disgenetMap.values();
@@ -74,6 +80,15 @@ public class DisgenetParser extends CellBaseParser {
         logger.info("Serialized " + serializedGenes + " genes");
     }
 
+    /**
+     * Loads a map {geneId -> Disgenet info} from the Disgenet file
+     *
+     * @param disGeNetMap: Map where keys are Disgenet gene ids and values are Disgenet objects. Will be filled within
+     *                   this method.
+     * @param reader: BufferedReader pointing to the first line containing actual Disgenet info (header assumed to be
+     *              skipped).
+     * @exception  IOException in case any problem occurs reading the file.
+     */
     private long fillDisgenetMap(Map<String, Disgenet> disGeNetMap, BufferedReader reader) throws IOException {
         long linesProcessed = 0;
 
