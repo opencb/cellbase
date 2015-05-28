@@ -130,6 +130,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 if(biotype != null && !biotype.equals("")) {
                     queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
                 }
+                System.out.println("queryOptions = " + queryOptions.get("exclude"));
                 logger.debug("queryOptions: " + queryOptions);
                 return createOkResponse(geneDBAdaptor.getAllByRegionList(regions, queryOptions));
             }

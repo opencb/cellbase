@@ -244,7 +244,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
 
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, serializer);
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, serializer);
     }
 
 

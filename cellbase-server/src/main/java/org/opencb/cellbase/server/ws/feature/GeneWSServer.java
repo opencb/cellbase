@@ -127,8 +127,6 @@ public class GeneWSServer extends GenericRestWSServer {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
-//			QueryOptions queryOptions = new QueryOptions("exclude", exclude);
-//			queryOptions.put("include", include );
             List<org.opencb.datastore.core.QueryResult> genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
 //            List genes = geneDBAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions);
 //            System.out.println(genes.get(0).getResult().get(0).getClass().toString());

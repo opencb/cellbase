@@ -70,7 +70,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getAll(QueryOptions options) {
-        if(includeContains(options.getAsStringList("include"), "clinvar")) {
+        System.out.println("options = " + options.get("exclude"));
+        if(includeContains(options.getAsStringList("source"), "clinvar")) {
             return getAllClinvar(options);
         } else {
             // TODO implement!
@@ -85,13 +86,13 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getAllClinvar(QueryOptions options) {
-        options.addToListOption("include", "clinvarSet");
-        options.addToListOption("include", "chromosome");
-        options.addToListOption("include", "start");
-        options.addToListOption("include", "end");
-        options.addToListOption("include", "reference");
-        options.addToListOption("include", "alternate");
-        options.addToListOption("include", "annot");
+//        options.addToListOption("include", "clinvarSet");
+//        options.addToListOption("include", "chromosome");
+//        options.addToListOption("include", "start");
+//        options.addToListOption("include", "end");
+//        options.addToListOption("include", "reference");
+//        options.addToListOption("include", "alternate");
+//        options.addToListOption("include", "annot");
         QueryBuilder builder = QueryBuilder.start();
 
         builder = addClinvarFilters(builder, options);
@@ -139,7 +140,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> phenotypeList = (List<String>) options.getAsStringList("phenotype");
+        List<String> phenotypeList = options.getAsStringList("phenotype", "\\|");
         if (phenotypeList != null && phenotypeList.size() > 0) {
             logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
 
@@ -481,7 +482,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 i++;
             }
             if (i < includeContent.size()) {
-                includeContent.remove(i);  // Avoid term "clinvar" (for instance) to be passed to datastore
+//                includeContent.remove(i);  // Avoid term "clinvar" (for instance) to be passed to datastore
                 return true;
             } else {
                 return false;

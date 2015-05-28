@@ -124,7 +124,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
 //        options = addExcludeReturnFields("transcripts", options);
 //        return executeQueryList(idList, queries, options);
-        return executeQueryList2(idList, queries, null);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override

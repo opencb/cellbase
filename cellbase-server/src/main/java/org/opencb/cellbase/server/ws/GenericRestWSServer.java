@@ -217,8 +217,29 @@ public class GenericRestWSServer implements IWSServer {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
 
-        queryOptions.put("exclude", (exclude != null && !exclude.equals("")) ? new LinkedList<>(Splitter.on(",").splitToList(exclude)) : null);
-        queryOptions.put("include", (include != null && !include.equals("")) ? new LinkedList<>(Splitter.on(",").splitToList(include)) : null);
+//        System.out.println("multivaluedMap.get(\"exclude\") = " + multivaluedMap.get("exclude"));
+//        queryOptions.put("exclude", (exclude != null && !exclude.equals(""))
+//                ? new LinkedList<>(Splitter.on(",").splitToList(exclude))
+//                : Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0).toString()));
+//        queryOptions.put("include", (include != null && !include.equals(""))
+//                ? new LinkedList<>(Splitter.on(",").splitToList(include))
+//                : Splitter.on(",").splitToList(multivaluedMap.get("include").get(0).toString()));
+        if(exclude != null && !exclude.equals("")) {
+            queryOptions.put("exclude", new LinkedList<>(Splitter.on(",").splitToList(exclude)));
+        } else {
+            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
+                    : null);
+        }
+
+        if(include != null && !include.equals("")) {
+            queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
+        } else {
+            queryOptions.put("include", (multivaluedMap.get("include") != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get("include").get(0))
+                    : null);
+        }
+
         queryOptions.put("limit", (limit > 0) ? limit : -1);
         queryOptions.put("skip", (skip > 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);
