@@ -546,13 +546,24 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 }
             }
             Map<String, Object> clinicalData = new HashMap<>();
-            clinicalData.put("Cosmic", cosmicList);
-            clinicalData.put("Gwas", gwasList);
-            clinicalData.put("Clinvar", clinvarList);
-            // FIXME quick solution to compile
-//            queryResult.setResult(clinicalData);
-            queryResult.setResult(Arrays.asList(clinicalData));
-            queryResult.setNumResults(1);
+            if(cosmicList!=null && cosmicList.size()>0) {
+                clinicalData.put("Cosmic", cosmicList);
+            }
+            if(gwasList!=null && gwasList.size()>0) {
+                clinicalData.put("Gwas", gwasList);
+            }
+            if(clinvarList!=null && clinvarList.size()>0) {
+                clinicalData.put("Clinvar", clinvarList);
+            }
+            if(!clinicalData.isEmpty()) {
+                // FIXME quick solution to compile
+                //            queryResult.setResult(clinicalData);
+                queryResult.setResult(Arrays.asList(clinicalData));
+                queryResult.setNumResults(cosmicList.size()+clinvarList.size()+gwasList.size());
+            } else {
+                queryResult.setResult(null);
+                queryResult.setNumResults(0);
+            }
         }
 
         return queryResultList;

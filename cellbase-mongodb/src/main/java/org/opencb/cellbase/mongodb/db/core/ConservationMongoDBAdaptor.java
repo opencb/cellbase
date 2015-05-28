@@ -251,10 +251,16 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             BasicDBList resultList = new BasicDBList();
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
                 for(Float value : elem.getValue()) {
-                    resultList.add(value!=null?(new Score(new Double(value), elem.getKey())):null);
+                    if(value!=null) {
+                        resultList.add(new Score(new Double(value), elem.getKey()));
+                    }
                 }
             }
-            queryResult.setResult(resultList);
+            if(!resultList.isEmpty()) {
+                queryResult.setResult(resultList);
+            } else {
+                queryResult.setResult(null);
+            }
         }
 
         return queryResults;

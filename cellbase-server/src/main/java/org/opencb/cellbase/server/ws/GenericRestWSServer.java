@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -161,6 +162,7 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 

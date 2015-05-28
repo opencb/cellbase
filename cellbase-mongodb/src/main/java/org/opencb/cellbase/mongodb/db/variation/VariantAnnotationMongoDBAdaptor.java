@@ -2030,14 +2030,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             VariantAnnotation variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(),
                     variantList.get(i).getPosition(),variantList.get(i).getPosition(),variantList.get(i).getReference(),variantList.get(i).getAlternative());
 
-            Map<String,Object> phenotype = new HashMap<>();
             if (clinicalQueryResultList != null) {
                 QueryResult clinicalQueryResult = clinicalQueryResultList.get(i);
                 if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
-                    phenotype = (Map<String, Object>) clinicalQueryResult.getResult().get(0);
+                    variantAnnotation.setClinicalData((Map<String, Object>) clinicalQueryResult.getResult().get(0));
                 }
             }
-            variantAnnotation.setClinicalData(phenotype);
 
             if (variationConsequenceTypeList != null) {
                 variantAnnotation.setConsequenceTypes((List<ConsequenceType>) variationConsequenceTypeList.get(i).getResult());
