@@ -19,7 +19,7 @@ package org.opencb.cellbase.mongodb.loader;
 import com.mongodb.BulkWriteResult;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
