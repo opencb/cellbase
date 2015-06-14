@@ -334,9 +334,14 @@ public class GenericRestWSServer implements IWSServer {
 
     private Response getAllSpecies() {
         try {
-            List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
-            return createOkResponse(jsonObjectWriter.writeValueAsString(speciesList), MediaType.APPLICATION_JSON_TYPE);
-        } catch (JsonProcessingException e) {
+//            List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
+//            return createOkResponse(jsonObjectWriter.writeValueAsString(speciesList), MediaType.APPLICATION_JSON_TYPE);
+            QueryResult queryResult = new QueryResult();
+            queryResult.setId("species");
+            queryResult.setDbTime(0);
+            queryResult.setResult(Arrays.asList(cellBaseConfiguration.getSpecies()));
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

@@ -517,31 +517,31 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         for (QueryResult queryResult : queryResultList){
             List<BasicDBObject> clinicalList = (List<BasicDBObject>) queryResult.getResult();
 
-            List<Cosmic> cosmicList = null;
-            List<Gwas> gwasList = null;
-            List<Clinvar> clinvarList = null;
+            List<Cosmic> cosmicList = new ArrayList<>();
+            List<Gwas> gwasList = new ArrayList<>();
+            List<Clinvar> clinvarList = new ArrayList<>();
 
             for(Object clinicalObject: clinicalList) {
                 BasicDBObject clinical = (BasicDBObject) clinicalObject;
 
                 if (isCosmic(clinical)) {
                     Cosmic cosmic = getCosmic(clinical);
-                    if (cosmicList == null) {
-                        cosmicList = new ArrayList<>();
-                    }
+//                    if (cosmicList == null) {
+//                        cosmicList = new ArrayList<>();
+//                    }
                     cosmicList.add(cosmic);
                 } else if (isGwas(clinical)) {
                     Gwas gwas = getGwas(clinical);
-                    if (gwasList == null) {
-                        gwasList = new ArrayList<>();
-                    }
+//                    if (gwasList == null) {
+//                        gwasList = new ArrayList<>();
+//                    }
                     gwasList.add(gwas);
 
                 } else if (isClinvar(clinical)) {
                     Clinvar clinvar = getClinvar(clinical);
-                    if (clinvarList == null) {
-                        clinvarList = new ArrayList<>();
-                    }
+//                    if (clinvarList == null) {
+//                        clinvarList = new ArrayList<>();
+//                    }
                     clinvarList.add(clinvar);
                 }
             }

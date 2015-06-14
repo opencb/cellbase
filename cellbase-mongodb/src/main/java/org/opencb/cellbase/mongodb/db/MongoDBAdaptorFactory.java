@@ -89,7 +89,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             if (species != null && !species.isEmpty() && assembly != null && !assembly.isEmpty()) {
 
                 // Database name is built following the above pattern
-                String database = "cellbase" + "_" + species + "_" + assembly.replaceAll("\\.", "_") + "_" + cellBaseConfiguration.getVersion();
+                String database = "cellbase" + "_" + species + "_" + assembly.replaceAll("\\.", "").replaceAll("-", "").replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
                 logger.debug("Database for the species is '{}'", database);
 
                 MongoDBConfiguration mongoDBConfiguration;
