@@ -2067,10 +2067,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     }
                 }
             }
-
             List<VariantAnnotation> value = Collections.singletonList(variantAnnotation);
             annotations.get(i).setResult(value);
-            i++;
         }
 
         return annotations;
