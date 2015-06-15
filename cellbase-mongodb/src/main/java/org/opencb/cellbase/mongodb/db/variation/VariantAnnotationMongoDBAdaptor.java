@@ -1036,6 +1036,13 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             variantStart = variant.getPosition();
         }
 
+        if(variant.getReference().equalsIgnoreCase("<INS>") || variant.getReference().equalsIgnoreCase("<DEL>")) {
+            queryResult.setErrorMsg("INS and DEL are not yet implemented");
+            queryResult.setNumResults(1);
+            queryResult.setResult(consequenceTypeList);
+            return queryResult;
+        }
+
 
 //        builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
 //                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
