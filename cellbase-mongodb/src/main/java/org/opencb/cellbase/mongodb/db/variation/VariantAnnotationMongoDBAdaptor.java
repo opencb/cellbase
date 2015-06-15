@@ -1036,7 +1036,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             variantStart = variant.getPosition();
         }
 
-        if(variant.getReference().equalsIgnoreCase("<INS>") || variant.getReference().equalsIgnoreCase("<DEL>")) {
+        if(variant.getAlternative().equalsIgnoreCase("<INS>") || variant.getAlternative().equalsIgnoreCase("<DEL>")) {
             queryResult.setErrorMsg("INS and DEL are not yet implemented");
             queryResult.setNumResults(1);
             queryResult.setResult(consequenceTypeList);
