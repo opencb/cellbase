@@ -543,7 +543,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             checkParams();
             List<Region> regions = Region.parseRegions(query);
-            ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species,	this.version);
+            ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species,	this.assembly);
             return createOkResponse(conservedRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
             e.printStackTrace();

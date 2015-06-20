@@ -111,7 +111,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
-            BasicDBList list = (BasicDBList) queryResult.getResult();
+//            BasicDBList list = (BasicDBList) queryResult.getResult();
+            List list = queryResult.getResult();
 
             Map<String, List<Float>> typeMap = new HashMap();
 
