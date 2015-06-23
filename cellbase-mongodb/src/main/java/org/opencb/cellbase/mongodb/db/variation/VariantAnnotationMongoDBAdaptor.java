@@ -19,6 +19,7 @@ package org.opencb.cellbase.mongodb.db.variation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
 import org.broad.tribble.readers.TabixReader;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.ExpressionValue;
@@ -35,6 +36,8 @@ import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.ConsequenceTypeCalculator;
+import org.opencb.cellbase.core.variant.annotation.ConsequenceTypeSNVCalculator;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -567,7 +570,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 } else {
                     SoNames.add("frameshift_variant");
                 }
-                solveStopCodonNegativeInsertion(transcriptSequence,chromosome, transcriptStart, cdnaCodingStart,
+                solveStopCodonNegativeInsertion(transcriptSequence, chromosome, transcriptStart, cdnaCodingStart,
                         cdnaVariantEnd, variantAlt, SoNames); // Be careful, cdnaVariantEnd is being used in this case!!!
 
 //                if(cdnaCodingEnd!=0) { // Some transcripts do not have a STOP codon annotated in the ENSEMBL gtf. This causes CellbaseBuilder to leave cdnaVariantEnd to 0
@@ -686,7 +689,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             if(i>=reverseTranscriptSequence.length()) {
                 int genomicCoordinate = transcriptStart-(i-reverseTranscriptSequence.length()+1);
                 modifiedCodonArray[codonPosition] = complementaryNt.get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(chromosome,
-                        genomicCoordinate, genomicCoordinate+1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
+                        genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
             } else {
                 modifiedCodonArray[codonPosition] = complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
             }
@@ -950,50 +953,105 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 }
             }
         }
-
-
-//        if(regionsOverlap(spliceSite1-3,spliceSite2+3,variantStart,variantEnd)) {  // Variant is intronic and/or splicing
-//            if (regionsOverlap(spliceSite1 - 3, spliceSite1 + 7, variantStart, variantEnd)) {  // Variant within left splicing region
-//                if (regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {
-//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-//                        SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-//                        isDonorAcceptor = true;
-//                    }
-//                    junctionSolution[0] = true;
-//                } else {
-//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-//                        SoNames.add("splice_region_variant");
-//                    }
-//                    if(variantEnd>=spliceSite1) {  // At least one portion of the variant affects the non-coding region
-//                        junctionSolution[0] = true;
-//                    }
-//                }
-//            }
-//            if (regionsOverlap(spliceSite2 - 7, spliceSite2 + 3, variantStart, variantEnd)) {  // Variant within right splicing region
-//                if (regionsOverlap(spliceSite2 - 1, spliceSite2, variantStart, variantEnd)) {
-//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-//                        SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
-//                        isDonorAcceptor = true;
-//                    }
-//                    junctionSolution[0] = true;
-//                } else {
-//                    if((variantEnd-variantStart)<=bigVariantSizeThreshold) {  // Big deletions should not be annotated with such a detail
-//                        SoNames.add("splice_region_variant");
-//                    }
-//                    if(variantStart<=spliceSite2) {  // At least one portion of the variant affects the non-coding region
-//                        junctionSolution[0] = true;
-//                    }
-//                }
-//            }
-//            if(variantStart>=spliceSite1 && variantEnd<=spliceSite2) {
-//                junctionSolution[1] = true;  // variant start & end fall within the intron
-//            }
-////            if(regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
-//            if(!isDonorAcceptor && regionsOverlap(spliceSite1, spliceSite2, variantStart, variantEnd)) {  // no intronic annotation added already. Variant out of splice region limits
-//                SoNames.add("intron_variant");
-//            }
-//        }
     }
+
+
+
+
+
+
+
+
+
+
+    @Override
+    public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
+        long dbTimeStart = System.currentTimeMillis();
+        List<Gene> geneList = getAffectedGenes(variant);
+        List<Region> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
+        ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
+
+        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
+                regulatoryRegionList);
+
+        for(ConsequenceType consequenceType : consequenceTypeList) {
+            if(nonSynonymous(consequenceType)) {
+                List<Score> scoreList = getProteinSubstitutionScores(consequenceType);
+                consequenceType.setProteinSubstitutionScores(scoreList);
+            }
+        }
+
+        long dbTimeEnd = System.currentTimeMillis();
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId(variant.toString());
+        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+        queryResult.setNumResults(consequenceTypeList.size());
+        queryResult.setNumTotalResults(consequenceTypeList.size());
+        queryResult.setResult(consequenceTypeList);
+
+        return queryResult;
+
+    }
+
+    public ConsequenceTypeCalculator getConsequenceTypeCalculator(GenomicVariant variant) {
+        if(variant.getReference().length()==1 && variant.getAlternative().length()==1) {
+            return new ConsequenceTypeSNVCalculator();
+        } else if (variant.getReference().equals("-")) {
+            return new ConsequenceTypeInsertionCalculator();
+        } else if (variant.getAlternative().equals("-")) {
+            if(variant.getReference().length()>50) {
+                return new ConsequenceTypeBigDeletionCalculator();
+            } else {
+                return new ConsequenceTypeDeletionCalculator();
+            }
+        }
+        throw new UnsupportedURLVariantFormat();
+    }
+
+    public List<Region> getAffectedRegulatoryRegions(GenomicVariant variant) {
+        int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("include", "chromosome,start,end");
+        QueryResult queryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+                variantStart, variant.getPosition() + variant.getReference().length()-1), queryOptions);
+
+        List<Region> regionList = new ArrayList<>(queryResult.getNumResults());
+        for(Object object : queryResult.getResult()) {
+            DBObject dbObject = (DBObject) object;
+            regionList.add(new Region((String) dbObject.get("chromosome"), (int) dbObject.get("start"),
+                    (int) dbObject.get("end")));
+        }
+
+        return regionList;
+    }
+
+    public List<Gene> getAffectedGenes(GenomicVariant variant) {
+        int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("include", "name,id,expressionValues,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
+        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+                variantStart-5000, variant.getPosition() + variant.getReference().length()-1+5000), queryOptions);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
+        for(Object object : queryResult.getResult()) {
+            geneList.add(objectMapper.convertValue((BasicDBObject) object, Gene.class));
+        }
+
+        return geneList;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
@@ -1998,34 +2056,34 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
     public List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions) {
 
-        // TODO: validation of queryoption 'include' values
+//        // TODO: validation of queryoption 'include' values
         List<String> includeList = queryOptions.getAsStringList("include");
-        if (includeList.isEmpty()) {
-            includeList = Arrays.asList("variation", "clinical", "consequenceType", "conservation");
-        }
+//        if (includeList.isEmpty()) {
+//            includeList = Arrays.asList("variation", "clinical", "consequenceType", "conservation");
+//        }
 
         List<QueryResult> annotations = null;
         List<QueryResult> variationQueryResultList = null;
-        if (includeList.contains("variation")) {
+        if (includeList.isEmpty() || includeList.contains("variation")) {
             variationQueryResultList = variationDBAdaptor.getAllByVariantList(variantList, queryOptions);
             annotations = variationQueryResultList;
         }
         List<QueryResult> clinicalQueryResultList = null;
-        if (includeList.contains("clinical")) {
+        if (includeList.isEmpty() || includeList.contains("clinical")) {
             clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
             if (annotations == null) {
                 annotations = clinicalQueryResultList;
             }
         }
         List<QueryResult> variationConsequenceTypeList = null;
-        if (includeList.contains("consequenceType")) {
+        if (includeList.isEmpty() || includeList.contains("consequenceType")) {
             variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
             if (annotations == null) {
                 annotations = variationConsequenceTypeList;
             }
         }
         List<QueryResult> conservedRegionQueryResultList = null;
-        if (includeList.contains("conservation")) {
+        if (includeList.isEmpty() || includeList.contains("conservation")) {
             conservedRegionQueryResultList = conservedRegionDBAdaptor.getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
             if (annotations == null) {
                 annotations = conservedRegionQueryResultList;
