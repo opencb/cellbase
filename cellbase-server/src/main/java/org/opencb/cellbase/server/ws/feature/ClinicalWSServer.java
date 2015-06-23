@@ -93,8 +93,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
             return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getGenomeInfo", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -108,8 +107,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPhenotypeGeneRelations", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -122,8 +120,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllListAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 

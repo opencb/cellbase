@@ -19,10 +19,8 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -50,6 +48,11 @@ public class ExonWSServer extends GenericRestWSServer {
         super(version, species, uriInfo, hsr);
     }
 
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Exon.class);
+    }
 
     @GET
     @Path("/first")
@@ -86,8 +89,7 @@ public class ExonWSServer extends GenericRestWSServer {
 
             return createOkResponse(exonDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -115,10 +117,9 @@ public class ExonWSServer extends GenericRestWSServer {
 //					}
                 }
             }
-            return generateResponse(query, sequenceList);
+            return createOkResponse(sequenceList);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAminoByExon", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -149,8 +150,7 @@ public class ExonWSServer extends GenericRestWSServer {
 //			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query))));
             return Response.ok().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSequencesByIdList", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -165,8 +165,7 @@ public class ExonWSServer extends GenericRestWSServer {
 //			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query))));
             return Response.ok().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getRegionsByIdList", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -179,8 +178,7 @@ public class ExonWSServer extends GenericRestWSServer {
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             return createOkResponse(transcriptDBAdaptor.getAllByEnsemblExonIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getTranscriptsByEnsemblId", e.toString());
+            return createErrorResponse(e);
         }
     }
 
