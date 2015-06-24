@@ -19,9 +19,10 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import org.opencb.biodata.formats.protein.uniprot.v140jaxb.Protein;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
-import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -51,7 +52,13 @@ public class ProteinWSServer extends GenericRestWSServer {
 //			return createErrorResponse("getAllByAccessions", e.toString());
 //		}
 //	}
-	
+
+	@GET
+	@Path("/model")
+	public Response getModel() {
+		return createModelResponse(Protein.class);
+	}
+
 	@GET
 	@Path("/{proteinId}/fullinfo")
 	public Response getFullInfoByEnsemblId(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("sources") String sources) {
@@ -60,8 +67,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getTranscriptsById", e.toString());
+            return createErrorResponse(e);
         }
 	}
 	
@@ -74,12 +80,11 @@ public class ProteinWSServer extends GenericRestWSServer {
 		try {
 			checkParams();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-			
-			return createJsonResponse(null);
+
+			return createOkResponse(adaptor.getAll(queryOptions));
 //			return generateResponse("", "PROTEIN", adaptor.getGenomeInfo());
 		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getAllByAccessions", e.toString());
+			return createErrorResponse(e);
 		}
 	}
 
@@ -92,8 +97,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(id), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getTranscriptsById", e.toString());
+            return createErrorResponse(e);
         }
     }
 

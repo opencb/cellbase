@@ -20,16 +20,20 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.datastore.core.ObjectMap;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
@@ -348,87 +352,66 @@ public class GenericRestWSServer implements IWSServer {
     }
 
 
-    @Deprecated
-    protected Response generateResponse(String queryString, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
-    }
+    protected Response createModelResponse(Class clazz) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+            mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
+            JsonSchema jsonSchema = visitor.finalSchema();
 
-    @Deprecated
-    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
-    }
-
-
-    protected Response createErrorResponse(String method, String errorMessage) {
-        if (!errorMessage.contains("Species") && !errorMessage.contains("Version")) {
-            // StringBuilder message = new StringBuilder();
-            // message.append("URI: "+uriInfo.getAbsolutePath().toString()).append("\n");
-            // message.append("Method: "+httpServletRequest.getMethod()+" "+method).append("\n");
-            // message.append("Message: "+errorMessage).append("\n");
-            // message.append("Remote Addr: http://ipinfodb.com/ip_locator.php?ip="+httpServletRequest.getRemoteAddr()).append("\n");
-            // HttpUtils.send("correo.cipf.es", "fsalavert@cipf.es",
-            // "babelomics@cipf.es", "Infrared error notice",
-            // message.toString());
-        }
-        if (outputFormat.equalsIgnoreCase("json")) {
-            try {
-                return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("error", errorMessage)), MediaType.APPLICATION_JSON_TYPE));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        } else {
-            String error = "An error occurred: " + errorMessage;
-            return buildResponse(Response.ok(error, MediaType.valueOf("text/plain")));
-        }
-        return null;
-    }
-
-    protected Response createErrorResponse(Object o) {
-        String objMsg = o.toString();
-        if (objMsg.startsWith("ERROR:")) {
-            return buildResponse(Response.ok("" + o));
-        } else {
-            return buildResponse(Response.ok("ERROR: " + o));
+            return createOkResponse(jsonSchema);
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
     }
 
-    protected Response createOkResponse(String message) {
-        return buildResponse(Response.ok(message));
-    }
+    protected Response createErrorResponse(Exception e) {
+        // First we print the exception in Server logs
+        e.printStackTrace();
 
-    protected Response createOkResponse(QueryResult queryResult) {
-        return createOkResponse(Arrays.asList(queryResult));
-    }
-
-    protected Response createOkResponse(List<QueryResult> queryResults) {
-        switch (outputFormat.toLowerCase()) {
-            case "json":
-                return createJsonResponse(queryResults);
-            case "xml":
-                return createOkResponse(queryResults, MediaType.APPLICATION_XML_TYPE);
-            default:
-                return buildResponse(Response.ok(queryResults));
-        }
-    }
-
-    protected Response createJsonResponse(List<QueryResult> obj) {
-        endTime = System.currentTimeMillis() - startTime;
-        queryResponse.setTime((int) endTime);
+        // Now we prepare the response to client
+        queryResponse = new QueryResponse();
+        queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         queryResponse.setQueryOptions(queryOptions);
-        queryResponse.setResponse(obj);
+        queryResponse.setError(e.toString());
 
-//        queryResponse.put("species", species);
-//        queryResponse.put("queryOptions", queryOptions);
-//        queryResponse.put("response", obj);
+        QueryResult<ObjectMap> result = new QueryResult();
+        result.setWarningMsg("Future errors will ONLY be shown in the QueryResponse body");
+        result.setErrorMsg("DEPRECATED: " + e.toString());
+        queryResponse.setResponse(Arrays.asList(result));
 
+        return Response
+                .fromResponse(createJsonResponse(queryResponse))
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+    }
+
+    protected Response createErrorResponse(String method, String errorMessage) {
         try {
-            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            logger.error("Error parsing queryResponse object");
-            return null;
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)), MediaType.APPLICATION_JSON_TYPE));
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
+    }
+
+    protected Response createOkResponse(Object obj) {
+        queryResponse = new QueryResponse();
+        queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
+        queryResponse.setApiVersion(version);
+        queryResponse.setQueryOptions(queryOptions);
+
+        // Guarantee that the QueryResponse object contains a list of results
+        List list;
+        if (obj instanceof List) {
+            list = (List) obj;
+        } else {
+            list = new ArrayList(1);
+            list.add(obj);
+        }
+        queryResponse.setResponse(list);
+
+        return createJsonResponse(queryResponse);
     }
 
     protected Response createOkResponse(Object obj, MediaType mediaType) {
@@ -443,15 +426,39 @@ public class GenericRestWSServer implements IWSServer {
         return buildResponse(Response.ok(str));
     }
 
-    private Response buildResponse(ResponseBuilder responseBuilder) {
-        return responseBuilder.header("Access-Control-Allow-Origin", "*").build();
+    protected Response createJsonResponse(QueryResponse queryResponse) {
+        try {
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            logger.error("Error parsing queryResponse object");
+            return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));
+        }
     }
+
+    private Response buildResponse(ResponseBuilder responseBuilder) {
+        return responseBuilder
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "x-requested-with, content-type")
+                .build();
+    }
+
 
 
 
     /**
      * TO DELETE
      */
+    @Deprecated
+    protected Response generateResponse(String queryString, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is drepecated");
+    }
+
+    @Deprecated
+    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is drepecated");
+    }
+
     @Deprecated
     private boolean isSpecieAvailable(String species) {
         List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
@@ -464,6 +471,60 @@ public class GenericRestWSServer implements IWSServer {
         }
         return false;
     }
+
+    //    @Deprecated
+//    protected Response createJsonResponse(List<QueryResult> obj) {
+//        endTime = System.currentTimeMillis() - startTime;
+//        queryResponse.setTime((int) endTime);
+//        queryResponse.setApiVersion(version);
+//        queryResponse.setQueryOptions(queryOptions);
+//        queryResponse.setResponse(obj);
+//
+////        queryResponse.put("species", species);
+////        queryResponse.put("queryOptions", queryOptions);
+////        queryResponse.put("response", obj);
+//
+//        try {
+//            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//            logger.error("Error parsing queryResponse object");
+//            return null;
+//        }
+//    }
+
+
+//    @Deprecated
+//    protected Response createErrorResponse(Object o) {
+//        String objMsg = o.toString();
+//        if (objMsg.startsWith("ERROR:")) {
+//            return buildResponse(Response.ok("" + o));
+//        } else {
+//            return buildResponse(Response.ok("ERROR: " + o));
+//        }
+//    }
+
+//    @Deprecated
+//    protected Response createOkResponse(String message) {
+//        return buildResponse(Response.ok(message));
+//    }
+
+//    @Deprecated
+//    protected Response createOkResponse(QueryResult queryResult) {
+//        return createOkResponse(Arrays.asList(queryResult));
+//    }
+
+//    @Deprecated
+//    protected Response createOkResponse(List<QueryResult> queryResults) {
+//        switch (outputFormat.toLowerCase()) {
+//            case "json":
+//                return createJsonResponse(queryResults);
+//            case "xml":
+//                return createOkResponse(queryResults, MediaType.APPLICATION_XML_TYPE);
+//            default:
+//                return buildResponse(Response.ok(queryResults));
+//        }
+//    }
 
     //    protected Response createResponse(String response, MediaType mediaType) throws IOException {
 //        logger.debug("CellBase - CreateResponse, QueryParams: FileFormat => " + fileFormat + ", OutputFormat => " + outputFormat + ", Compress => " + outputCompress);

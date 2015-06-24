@@ -53,8 +53,7 @@ public class MutationWSServer  extends GenericRestWSServer {
             queryOptions.put("disease", Splitter.on(",").splitToList(disease));
             return createOkResponse(variationDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -66,8 +65,7 @@ public class MutationWSServer  extends GenericRestWSServer {
             MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllDiseases(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -79,8 +77,7 @@ public class MutationWSServer  extends GenericRestWSServer {
             MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 

@@ -19,7 +19,7 @@ package org.opencb.cellbase.server.ws.genomic;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -50,6 +50,11 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         super(version, species, uriInfo, hsr);
     }
 
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Chromosome.class);
+    }
 
     @GET
     @Path("/all")
@@ -60,8 +65,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             return createOkResponse(dbAdaptor.getGenomeInfo(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("all", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -76,8 +80,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             options.put("include", "chromosomes.name");
             return createOkResponse(dbAdaptor.getGenomeInfo(options));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("list", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -89,8 +92,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             return createOkResponse(dbAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("/{chromosomeName}/info", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -104,8 +106,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             options.put("include", "size");
             return createOkResponse(dbAdaptor.getChromosomeById(query, options));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("/{chromosomeName}/cytoband", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -117,8 +118,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("/{chromosomeName}/cytoband", e.toString());
+            return createErrorResponse(e);
         }
     }
 

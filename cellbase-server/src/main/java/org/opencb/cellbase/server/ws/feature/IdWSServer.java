@@ -50,6 +50,12 @@ public class IdWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Xref.class);
+    }
+
+    @GET
     @Path("/{id}/xref")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references for the ID")
     public Response getByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
@@ -67,8 +73,7 @@ public class IdWSServer extends GenericRestWSServer {
 //                return generateResponse(query, "XREF", x.getAllByDBNameList(Splitter.on(",").splitToList(query), Splitter.on(",").splitToList(dbName)));
 //            }
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -79,15 +84,11 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 
-            return createJsonResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
-
-//			return generateResponse(query, "GENE",  x.getAllByNameList(Splitter.on(",").splitToList(query),exclude));
+            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -101,8 +102,7 @@ public class IdWSServer extends GenericRestWSServer {
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -122,8 +122,7 @@ public class IdWSServer extends GenericRestWSServer {
 //            return generateResponse(query, "XREF", xrefs);
             return createOkResponse(x.getByStartsWithQueryList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -145,8 +144,7 @@ public class IdWSServer extends GenericRestWSServer {
             }
             return generateResponse(query, xrefs);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 

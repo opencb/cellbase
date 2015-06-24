@@ -129,8 +129,7 @@ public class PositionWSServer extends GenericRestWSServer {
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSNPByPosition", e.toString());
+            return createErrorResponse(e);
         }
     }
 

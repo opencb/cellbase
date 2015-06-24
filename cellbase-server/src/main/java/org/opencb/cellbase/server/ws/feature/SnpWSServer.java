@@ -19,7 +19,7 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -45,6 +45,12 @@ public class SnpWSServer extends GenericRestWSServer {
     public SnpWSServer(@PathParam("version") String version, @PathParam("species") String species,
                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
+    }
+
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Variation.class);
     }
 
     @GET
@@ -80,8 +86,7 @@ public class SnpWSServer extends GenericRestWSServer {
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -95,8 +100,7 @@ public class SnpWSServer extends GenericRestWSServer {
             QueryResult snps = variationDBAdaptor.next(Splitter.on(",").splitToList(query).get(0), queryOptions);
             return createOkResponse(snps);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
     @Deprecated
@@ -108,8 +112,7 @@ public class SnpWSServer extends GenericRestWSServer {
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllConsequenceTypes(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -125,8 +128,7 @@ public class SnpWSServer extends GenericRestWSServer {
 
             return createOkResponse(variationDBAdaptor.getAllPhenotypes(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -210,10 +212,9 @@ public class SnpWSServer extends GenericRestWSServer {
 //			response.replace(response.length()-1, response.length(), "");
 //			response.append("]");
 //			return  generateResponse(query,Arrays.asList(response));
-            return  null;
+            return null;
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getFullInfoById", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -239,7 +240,6 @@ public class SnpWSServer extends GenericRestWSServer {
 //			return generateResponse(snpId, "SNP_CONSEQUENCE_TYPE", snpDBAdaptor.getAllConsequenceTypesBySnpIdList(StringUtils.toList(snpId, ",")));
             return generateResponse(snpId, "SNP_CONSEQUENCE_TYPE", Arrays.asList(""));
         } catch (Exception e) {
-            e.printStackTrace();
             return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
         }
     }
@@ -263,14 +263,10 @@ public class SnpWSServer extends GenericRestWSServer {
     private Response getRegulatoryType(String snpId) {
         try {
             checkParams();
-//            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//			return generateResponse(snpId, "SNP_REGULATORY", snpDBAdaptor.getAllSnpRegulatoryBySnpNameList(StringUtils.toList(snpId, ",")));
             return null;
-//			return generateResponse(snpId, "", snpDBAdaptor.getAllSnpRegulatoryBySnpNameList(StringUtils.toList(snpId, ",")));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -302,23 +298,18 @@ public class SnpWSServer extends GenericRestWSServer {
 
             return createOkResponse("Mongo TODO");
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSnpPhenotypesByPositionByGet", e.toString());
+            return createErrorResponse(e);
         }
     }
-
-
-
 
     @GET
     @Path("/{snpId}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the adjacent sequence to the SNP(s)")
     public Response getSequence(@PathParam("snpId") String query) {
         try {
-            return  null;
+            return null;
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSequence", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -331,11 +322,9 @@ public class SnpWSServer extends GenericRestWSServer {
             checkParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//			return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", snpDBAdaptor.getAllSnpPopulationFrequencyList(StringUtils.toList(snpId, ",")));
             return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", Arrays.asList(""));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPopulationFrequency", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -345,13 +334,10 @@ public class SnpWSServer extends GenericRestWSServer {
     public Response getXrefs(@PathParam("snpId") String query) {
         try {
             checkParams();
-//            SnpDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//			return  createOkResponse(tfbsDBAdaptor.getAllByTargetGeneNameList(StringUtils.toList(query, ",")));
             return null;
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getXrefs", e.toString());
+            return createErrorResponse(e);
         }
     }
 

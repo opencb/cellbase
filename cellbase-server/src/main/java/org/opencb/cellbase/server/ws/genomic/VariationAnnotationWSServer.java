@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -40,6 +41,12 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
 
     public VariationAnnotationWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
+    }
+
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(VariantAnnotation.class);
     }
 
     @GET

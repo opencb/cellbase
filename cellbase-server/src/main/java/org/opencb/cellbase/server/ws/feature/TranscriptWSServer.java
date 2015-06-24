@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
@@ -25,7 +26,6 @@ import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +52,11 @@ public class TranscriptWSServer extends GenericRestWSServer {
         this.exclude = Arrays.asList(exclude.trim().split(","));
     }
 
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Transcript.class);
+    }
 
     @GET
     @Path("/first")
@@ -95,12 +100,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("transcriptId") String query) {
         try {
             checkParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
-                    this.assembly);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             return createOkResponse(transcriptDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -269,7 +272,6 @@ public class TranscriptWSServer extends GenericRestWSServer {
             // //Remove the last comma
             // return generateResponse(query,Arrays.asList(response));
         } catch (Exception e) {
-            e.printStackTrace();
             return createErrorResponse("getFullInfoByEnsemblId", e.toString());
         }
     }
@@ -280,16 +282,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-
-            QueryOptions queryOptions = new QueryOptions("exclude", exclude);
-
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
-
-//			return generateResponse(query, "GENE",
-//					geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","), exclude));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getGeneByTranscriptIdList", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -299,11 +294,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             checkParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(dbAdaptor.getAllByTranscriptIdList(Splitter.on(",").splitToList(query)));
             return createOkResponse("not implemented");
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getExonsByTranscriptId", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -315,8 +308,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getExonsByTranscriptId", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -327,11 +319,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
             checkParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
                     this.assembly);
-//            return generateResponse(query, transcriptDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query)));
             return Response.ok().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSequencesByIdList", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -340,13 +330,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getRegionsByIdList(@PathParam("transcriptId") String query) {
         try {
             checkParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
-                    this.assembly);
-//            return generateResponse(query, transcriptDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query)));
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             return Response.ok().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getRegionsByIdList", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -359,11 +346,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor
 //                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
             List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
-//            return generateResponse(query, "MUTATION", queryResults);
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByGene", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -380,8 +365,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             List<QueryResult> queryResults = mutationAdaptor.getAllFunctionPredictionByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByGene", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -414,8 +398,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //			return generateResponse(query, "", cdnaSequenceList);
             return null;
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByGene", e.toString());
+            return createErrorResponse(e);
         }
     }
 

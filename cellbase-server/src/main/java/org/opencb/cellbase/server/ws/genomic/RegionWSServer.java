@@ -57,6 +57,12 @@ public class RegionWSServer extends GenericRestWSServer {
 //        this.exclude = Arrays.asList(exclude.trim().split(","));
     }
 
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Region.class);
+    }
+
     // private RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor =
     // dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species);
     // private MutationDBAdaptor mutationDBAdaptor =
@@ -135,8 +141,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 return createOkResponse(geneDBAdaptor.getAllByRegionList(regions, queryOptions));
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getGenesByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -161,8 +166,7 @@ public class RegionWSServer extends GenericRestWSServer {
             }
             return createOkResponse(transcriptDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getTranscriptByRegion", e.toString());
+            return createErrorResponse(e);
         }
 
     }
@@ -177,7 +181,6 @@ public class RegionWSServer extends GenericRestWSServer {
 //            return createOkResponse(exonDBAdaptor.getAllSequencesByRegionList(regions));
             return createOkResponse("not implemented");
         } catch (Exception e) {
-            e.printStackTrace();
             return createErrorResponse("getExonByRegion", e.toString());
         }
     }
@@ -213,8 +216,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 return createOkResponse(variationDBAdaptor.getAllByRegionList(regions, queryOptions));
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSnpByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -240,8 +242,7 @@ public class RegionWSServer extends GenericRestWSServer {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -290,8 +291,7 @@ public class RegionWSServer extends GenericRestWSServer {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -320,8 +320,7 @@ public class RegionWSServer extends GenericRestWSServer {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -357,8 +356,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 return this.generateResponse(query, "STRUCTURAL_VARIATION", structuralVariationList);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getStructuralVariationByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -371,8 +369,7 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regions = Region.parseRegions(chregionId);
             return generateResponse(chregionId, cytobandDBAdaptor.getAllByRegionList(regions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getCytobandByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -388,8 +385,7 @@ public class RegionWSServer extends GenericRestWSServer {
             queryOptions.put("strand", strandParam);
             return createOkResponse(genomeDBAdaptor.getAllSequencesByRegionList(regions, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSequenceByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -404,8 +400,7 @@ public class RegionWSServer extends GenericRestWSServer {
             queryOptions.put("strand", -1);
             return createOkResponse(genomeDBAdaptor.getAllSequencesByRegionList(regions, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getReverseSequenceByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -424,8 +419,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 return createOkResponse(tfbsDBAdaptor.getAllByRegionList(regions, queryOptions));
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getTfByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -447,8 +441,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
             return createOkResponse(regulatoryRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getFeatureMap", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -530,10 +523,8 @@ public class RegionWSServer extends GenericRestWSServer {
                 List<List<CpGIsland>> cpGIslandList = cpGIslandDBAdaptor.getAllByRegionList(regions);
                 return this.generateResponse(query, cpGIslandList);
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getCpgIslandByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -546,8 +537,7 @@ public class RegionWSServer extends GenericRestWSServer {
             ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species,	this.assembly);
             return createOkResponse(conservedRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("conserved_region", e.toString());
+            return createErrorResponse(e);
         }
 	}
 
@@ -571,8 +561,7 @@ public class RegionWSServer extends GenericRestWSServer {
             return createOkResponse(conservedRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getConservedRegionByRegion2", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -642,8 +631,7 @@ public class RegionWSServer extends GenericRestWSServer {
             // return generateResponse(region, exonIds);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPeptideByRegion", e.toString());
+            return createErrorResponse(e);
         }
     }
 
