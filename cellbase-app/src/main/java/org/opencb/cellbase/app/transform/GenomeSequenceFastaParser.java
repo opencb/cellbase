@@ -55,7 +55,7 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
                 } else {
                     // new chromosome, save data
                     if (sequenceStringBuilder.length() > 0) {
-                        if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+                        if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR") && !sequenceName.contains("contig")) {
                             System.out.println(sequenceName);
                             serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
                         }
@@ -69,7 +69,7 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
                 }
             }
             // Last chromosome must be processed
-            if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")) {
+            if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR") && !sequenceName.contains("contig")) {
                 serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
             }
 
