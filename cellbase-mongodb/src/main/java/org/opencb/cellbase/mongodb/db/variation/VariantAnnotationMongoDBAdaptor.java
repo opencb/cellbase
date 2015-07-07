@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
 import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.ExpressionValue;
@@ -28,6 +29,7 @@ import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -38,6 +40,8 @@ import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.ConsequenceTypeCalculator;
 import org.opencb.cellbase.core.variant.annotation.ConsequenceTypeSNVCalculator;
+import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -217,6 +221,21 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         siftDescriptions.put(1,"deleterious");
 
     }
+
+
+
+    private List<Gene> geneList;
+    private Map<String,MiRNAGene> miRNAMap;
+    private Map<String,List<ExpressionValue>> expressionValueMap;
+    private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2; // Just two prediction methods are currently returned: SIFT and POLYPHEN
+
+
+
+
+
+
+
+
 
 
     public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
@@ -837,7 +856,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
-                    consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1)/3)+1);
+                    consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1) / 3) + 1);
                 }
                 if(variantStart >= genomicCodingStart) {  // Variant start also within coding region
                     solveNegativeCodingEffect(splicing, transcriptSequence, chromosome, transcriptStart,
@@ -955,106 +974,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
     }
 
-
-
-
-
-
-
-
-
-
-    @Override
-    public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
-        long dbTimeStart = System.currentTimeMillis();
-        List<Gene> geneList = getAffectedGenes(variant);
-        List<Region> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
-        ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
-
-        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
-                regulatoryRegionList);
-
-        for(ConsequenceType consequenceType : consequenceTypeList) {
-            if(nonSynonymous(consequenceType)) {
-                List<Score> scoreList = getProteinSubstitutionScores(consequenceType);
-                consequenceType.setProteinSubstitutionScores(scoreList);
-            }
-        }
-
-        long dbTimeEnd = System.currentTimeMillis();
-        QueryResult queryResult = new QueryResult();
-        queryResult.setId(variant.toString());
-        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-        queryResult.setNumResults(consequenceTypeList.size());
-        queryResult.setNumTotalResults(consequenceTypeList.size());
-        queryResult.setResult(consequenceTypeList);
-
-        return queryResult;
-
-    }
-
-    public ConsequenceTypeCalculator getConsequenceTypeCalculator(GenomicVariant variant) {
-        if(variant.getReference().length()==1 && variant.getAlternative().length()==1) {
-            return new ConsequenceTypeSNVCalculator();
-        } else if (variant.getReference().equals("-")) {
-            return new ConsequenceTypeInsertionCalculator();
-        } else if (variant.getAlternative().equals("-")) {
-            if(variant.getReference().length()>50) {
-                return new ConsequenceTypeBigDeletionCalculator();
-            } else {
-                return new ConsequenceTypeDeletionCalculator();
-            }
-        }
-        throw new UnsupportedURLVariantFormat();
-    }
-
-    public List<Region> getAffectedRegulatoryRegions(GenomicVariant variant) {
-        int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", "chromosome,start,end");
-        QueryResult queryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-                variantStart, variant.getPosition() + variant.getReference().length()-1), queryOptions);
-
-        List<Region> regionList = new ArrayList<>(queryResult.getNumResults());
-        for(Object object : queryResult.getResult()) {
-            DBObject dbObject = (DBObject) object;
-            regionList.add(new Region((String) dbObject.get("chromosome"), (int) dbObject.get("start"),
-                    (int) dbObject.get("end")));
-        }
-
-        return regionList;
-    }
-
-    public List<Gene> getAffectedGenes(GenomicVariant variant) {
-        int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", "name,id,expressionValues,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
-        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-                variantStart-5000, variant.getPosition() + variant.getReference().length()-1+5000), queryOptions);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
-        for(Object object : queryResult.getResult()) {
-            geneList.add(objectMapper.convertValue((BasicDBObject) object, Gene.class));
-        }
-
-        return geneList;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @Override
-    public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
+    @Deprecated
+    public QueryResult getAllConsequenceTypesByVariantOld(GenomicVariant variant, QueryOptions options) {
 
         Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -1976,18 +1897,177 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @Override
+    public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
+        long dbTimeStart = System.currentTimeMillis();
+        getAffectedGenesInfo(variant);
+        List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
+        ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
+
+        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, miRNAMap,
+                regulatoryRegionList);
+
+        for(ConsequenceType consequenceType : consequenceTypeList) {
+            if(nonSynonymous(consequenceType)) {
+                List<Score> scoreList = getProteinSubstitutionScores(consequenceType);
+                consequenceType.setProteinSubstitutionScores(scoreList);
+            }
+        }
+
+        long dbTimeEnd = System.currentTimeMillis();
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId(variant.toString());
+        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+        queryResult.setNumResults(consequenceTypeList.size());
+        queryResult.setNumTotalResults(consequenceTypeList.size());
+        queryResult.setResult(consequenceTypeList);
+
+        return queryResult;
+
+    }
+
+    private boolean nonSynonymous(ConsequenceType consequenceType) {
+        if(consequenceType.getCodon()==null) {
+            return false;
+        } else {
+            String[] parts = consequenceType.getCodon().split("/");
+            return !VariantAnnotationUtils.isSynonymousCodon.get(String.valueOf(parts[0]).toUpperCase())
+                    .get(String.valueOf(parts[1]).toUpperCase());
+        }
+    }
+
+    private List<Score> getProteinSubstitutionScores(ConsequenceType consequenceType) {
+        QueryResult proteinSubstitutionScoresQueryResult = proteinDBAdaptor.getFunctionPredictionByAaChange(
+                consequenceType.getEnsemblTranscriptId(), consequenceType.getAaPosition(),
+                consequenceType.getAaChange().split("/")[1], new QueryOptions());
+        List<Score> scoreList = null;
+        if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
+            scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
+            DBObject proteinSubstitutionScores = (DBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
+            if (proteinSubstitutionScores.get("ss") != null) {
+                scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
+                        "Sift", VariantAnnotationUtils.siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+            }
+            if (proteinSubstitutionScores.get("ps") != null) {
+                scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
+                        "Polyphen", VariantAnnotationUtils.polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+            }
+        }
+        return scoreList;
+    }
+
+    private ConsequenceTypeCalculator getConsequenceTypeCalculator(GenomicVariant variant) {
+        if(variant.getReference().length()==1 && variant.getAlternative().length()==1) {
+            return new ConsequenceTypeSNVCalculator();
+        } else if (variant.getReference().equals("-")) {
+            return null;
+//            return new ConsequenceTypeInsertionCalculator();
+        } else if (variant.getAlternative().equals("-")) {
+            if(variant.getReference().length()>50) {
+                return null;
+//                return new ConsequenceTypeBigDeletionCalculator();
+            } else {
+                return null;
+//                return new ConsequenceTypeDeletionCalculator();
+            }
+        }
+        throw new UnsupportedURLVariantFormat();
+    }
+
+    private List<RegulatoryRegion> getAffectedRegulatoryRegions(GenomicVariant variant) {
+        int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("include", "chromosome,start,end");
+        QueryResult queryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+                variantStart, variant.getPosition() + variant.getReference().length()-1), queryOptions);
+
+        List<RegulatoryRegion> regionList = new ArrayList<>(queryResult.getNumResults());
+        for(Object object : queryResult.getResult()) {
+            DBObject dbObject = (DBObject) object;
+            RegulatoryRegion regulatoryRegion = new RegulatoryRegion();
+            regulatoryRegion.setChromosome((String) dbObject.get("chromosome"));
+            regulatoryRegion.setStart((int) dbObject.get("start"));
+            regulatoryRegion.setEnd((int) dbObject.get("end"));
+            regulatoryRegion.setType((String) dbObject.get("featureType"));
+            regionList.add(regulatoryRegion);
+        }
+
+        return regionList;
+    }
+
+    private void getAffectedGenesInfo(GenomicVariant variant) {
+        int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("include", "name,id,expressionValues,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
+        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+                variantStart-5000, variant.getPosition() + variant.getReference().length()-1+5000), queryOptions);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        geneList = new ArrayList<>(queryResult.getNumResults());
+        miRNAMap = new HashMap<>();
+        expressionValueMap = new HashMap<>();
+        for(Object object : queryResult.getResult()) {
+            Gene gene = objectMapper.convertValue(object, Gene.class);
+            geneList.add(gene);
+
+            DBObject miRnaInfo;
+            if((miRnaInfo = (BasicDBObject) ((DBObject) object).get("mirna"))!=null) {
+                // Assuming if this is a miRNA just one transcript will be found
+                miRNAMap.put(gene.getId(), objectMapper.convertValue(miRnaInfo, MiRNAGene.class));
+            }
+
+            BasicDBList expressionValuesInfo;
+            if((expressionValuesInfo = (BasicDBList) ((DBObject) object).get("expressionValues"))!=null &&
+                    expressionValuesInfo.size()>0) {
+                expressionValueMap.put(gene.getId(), new ArrayList<>(expressionValuesInfo.size()));
+                for(Object expressionObject : expressionValuesInfo) {
+                    expressionValueMap.get(gene.getId()).add(objectMapper.convertValue(expressionObject,
+                            ExpressionValue.class));
+                }
+            }
+        }
+    }
+
     @Override
     public List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options) {
-
         List<QueryResult> queryResults = new ArrayList<>(variants.size());
-
-//        try {
-            for (GenomicVariant genomicVariant : variants) {
+        for (GenomicVariant genomicVariant : variants) {
+            try {
                 queryResults.add(getAllConsequenceTypesByVariant(genomicVariant, options));
+            } catch (UnsupportedURLVariantFormat e) {
+                logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
+                        genomicVariant.toString());
             }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        }
 
         return queryResults;
 
