@@ -35,8 +35,9 @@ public abstract class ConsequenceTypeCalculator {
             consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.REGULATORY_REGION_VARIANT));
             boolean TFBSFound=false;
             for(int i=0; (i<regulatoryRegionList.size() && !TFBSFound); i++) {
-                TFBSFound = regulatoryRegionList.get(i).getType().equals("TF_binding_site") ||
-                        regulatoryRegionList.get(i).getType().equals("TF_binding_site_motif");
+                String regulatoryRegionType = regulatoryRegionList.get(i).getType();
+                TFBSFound = regulatoryRegionType!=null && (regulatoryRegionType.equals("TF_binding_site") ||
+                        regulatoryRegionList.get(i).getType().equals("TF_binding_site_motif"));
             }
             if(TFBSFound) {
                 consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT));
