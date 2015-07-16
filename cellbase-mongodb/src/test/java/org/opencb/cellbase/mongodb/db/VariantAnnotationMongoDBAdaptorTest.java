@@ -635,6 +635,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                     alt = lineFields[2];
                 }
                 // TODO: Remove this if as refactoring implements consequence types for other variant types
+                // TODO: PARECE Q NO ESTA ENTRANDO AQUI NUNCA, NO SE PQ, DEPURAR
                 if(!alt.equals("-") && coordinatesParts.length==1) {
                     if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
                             !previousAlt.equals(alt)) {
