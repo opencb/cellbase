@@ -413,11 +413,11 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                         BasicDBObject proteinSubstitutionScores = (BasicDBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
                                         if (proteinSubstitutionScores.get("ss") != null) {
                                             consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-                                                    "Sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                                                    "sift", siftDescriptions.get(proteinSubstitutionScores.get("se"))));
                                         }
                                         if (proteinSubstitutionScores.get("ps") != null) {
                                             consequenceTypeTemplate.addProteinSubstitutionScore(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-                                                    "Polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+                                                    "polyphen", polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
                                         }
                                     }
                                 }
@@ -2040,7 +2040,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             if (clinicalQueryResultList != null) {
                 QueryResult clinicalQueryResult = clinicalQueryResultList.get(i);
                 if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
-                    variantAnnotation.setClinicalData((Map<String, Object>) clinicalQueryResult.getResult().get(0));
+                    variantAnnotation.setClinical((Map<String, Object>) clinicalQueryResult.getResult().get(0));
                 }
             }
 
@@ -2049,7 +2049,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
 
             if (conservedRegionQueryResultList != null) {
-                variantAnnotation.setConservedRegionScores((List<Score>) conservedRegionQueryResultList.get(i).getResult());
+                variantAnnotation.setConservationScores((List<Score>) conservedRegionQueryResultList.get(i).getResult());
             }
 
             List<BasicDBObject> variationDBList = null;

@@ -241,8 +241,7 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @GET
-    //@Consumes("application/x-www-form-urlencoded")
-    @Path("/{variants}/full_annotation")
+    @Path("/{variants}/annotation")
     public Response getAnnotationByVariantsGET(@PathParam("variants") String variants) {
         try {
             checkParams();
@@ -256,6 +255,13 @@ public class VariantWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    @Deprecated
+    @GET
+    @Path("/{variants}/full_annotation")
+    public Response getFullAnnotationByVariantsGET(@PathParam("variants") String variants) {
+        return getAnnotationByVariantsGET(variants);
     }
 
     @POST
