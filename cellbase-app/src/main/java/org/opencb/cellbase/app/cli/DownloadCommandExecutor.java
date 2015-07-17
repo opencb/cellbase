@@ -289,7 +289,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         if(species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
 
-            Path geneDrugFolder = speciesFolder.resolve("geneDrug");
+            Path geneDrugFolder = speciesFolder.resolve("gene/geneDrug");
             makeDir(geneDrugFolder);
             String url = configuration.getDownload().getDgidb().getHost();
             downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
