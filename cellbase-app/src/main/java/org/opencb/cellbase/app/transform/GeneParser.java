@@ -24,8 +24,8 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
-import org.opencb.biodata.models.variant.annotation.DrugInteraction;
 import org.opencb.biodata.models.variant.annotation.ExpressionValue;
+import org.opencb.biodata.models.variant.annotation.GeneDrugInteraction;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -114,7 +114,7 @@ public class GeneParser extends CellBaseParser {
         Map<String, SortedSet<Gff2>> tfbsMap = getTfbsMap();
         Map<String, MiRNAGene> mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
         Map<String, List<ExpressionValue>> geneExpressionMap = getGeneExpressionMap();
-        Map<String, List<DrugInteraction>> geneDrugMap = getGeneDrugMap();
+        Map<String, List<GeneDrugInteraction>> geneDrugMap = getGeneDrugMap();
 
 
         // Preparing the fasta file for fast accessing
@@ -325,8 +325,8 @@ public class GeneParser extends CellBaseParser {
         }
     }
 
-    private Map<String, List<DrugInteraction>> getGeneDrugMap() throws IOException {
-        Map<String,List<DrugInteraction>> geneDrugMap = new HashMap<>();
+    private Map<String, List<GeneDrugInteraction>> getGeneDrugMap() throws IOException {
+        Map<String,List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
         BufferedReader br;
         if (geneDrugFile.toFile().getName().endsWith(".gz")) {
             br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(geneDrugFile.toFile()))));
@@ -342,7 +342,8 @@ public class GeneParser extends CellBaseParser {
         String line;
         while ((line = br.readLine()) != null) {
             String[] parts = line.split("\t");
-            addValueToMapElement(geneDrugMap, parts[0], new DrugInteraction(parts[4], "DGIdb", parts[2], parts[3]));
+            addValueToMapElement(geneDrugMap, parts[0], new GeneDrugInteraction(parts[1], parts[4], "dgidb", parts[2],
+                    parts[3]));
             lineCounter++;
         }
 
