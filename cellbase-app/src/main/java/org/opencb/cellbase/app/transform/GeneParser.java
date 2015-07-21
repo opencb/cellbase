@@ -342,7 +342,7 @@ public class GeneParser extends CellBaseParser {
         String line;
         while ((line = br.readLine()) != null) {
             String[] parts = line.split("\t");
-            addValueToMapElement(geneDrugMap, parts[0], new GeneDrugInteraction(parts[1], parts[4], "dgidb", parts[2],
+            addValueToMapElement(geneDrugMap, parts[0], new GeneDrugInteraction(parts[0], parts[4], "dgidb", parts[2],
                     parts[3]));
             lineCounter++;
         }
