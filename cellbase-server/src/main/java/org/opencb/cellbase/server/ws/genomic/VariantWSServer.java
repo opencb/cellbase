@@ -17,9 +17,13 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.db.api.variation.*;
+import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResult;
@@ -31,7 +35,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @Path("/{version}/{species}/genomic/variant")
 @Produces(MediaType.APPLICATION_JSON)
@@ -42,7 +48,13 @@ public class VariantWSServer extends GenericRestWSServer {
     public VariantWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
     }
-    
+
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Variant.class);
+    }
+
 //    @GET
 //    @Path("/{variants}/effect")
 //    public Response getEffectByPositionByGet(@PathParam("variants") String variants,
@@ -154,8 +166,7 @@ public class VariantWSServer extends GenericRestWSServer {
             VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.assembly);
             return createOkResponse(va.getAllByPhenotype(phenotype,queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getVariantsByPhenotype", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -185,8 +196,7 @@ public class VariantWSServer extends GenericRestWSServer {
 //			return generateResponse(variants, "SNP_PHENOTYPE", snpDBAdaptor.getAllSnpPhenotypeAnnotationListByPositionList(positionList));
             return createOkResponse("Mongo TODO");
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSnpPhenotypesByPositionByGet", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -220,8 +230,7 @@ public class VariantWSServer extends GenericRestWSServer {
 //            return generateResponse(variants, "MUTATION", mutationPhenotypeAnnotList);
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationPhenotypesByPositionByGet", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -232,23 +241,7 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/help")
-    public Response help() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Input:\n");
-        sb.append("Variant format: chr:position:new allele (i.e.: 1:150044250:G)\n\n\n");
-        sb.append("Resources:\n");
-        sb.append("- consequence_type: Suppose that we have obtained some variants from a resequencing analysis and we want to obtain the consequence type of a variant over the transcripts\n");
-        sb.append(" Output columns: chromosome, start, end, feature ID, feature name, consequence type, biotype, feature chromosome, feature start, feature end, feature strand, snp ID, ancestral allele, alternative allele, gene Ensembl ID, Ensembl transcript ID, gene name, SO consequence type ID, SO consequence type name, consequence type description, consequence type category, aminoacid change, codon change.\n\n\n");
-        sb.append("Documentation:\n");
-        sb.append("http://docs.bioinfo.cipf.es/projects/cellbase/wiki/Genomic_rest_ws_api#Variant");
-
-        return createOkResponse(sb.toString());
-    }
-
-    @GET
-    //@Consumes("application/x-www-form-urlencoded")
-    @Path("/{variants}/full_annotation")
+    @Path("/{variants}/annotation")
     public Response getAnnotationByVariantsGET(@PathParam("variants") String variants) {
         try {
             checkParams();
@@ -260,9 +253,15 @@ public class VariantWSServer extends GenericRestWSServer {
 
             return createOkResponse(clinicalQueryResultList);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAnnotationByVariants", e.toString());
+            return createErrorResponse(e);
         }
+    }
+
+    @Deprecated
+    @GET
+    @Path("/{variants}/full_annotation")
+    public Response getFullAnnotationByVariantsGET(@PathParam("variants") String variants) {
+        return getAnnotationByVariantsGET(variants);
     }
 
     @POST
@@ -279,9 +278,23 @@ public class VariantWSServer extends GenericRestWSServer {
 
             return createOkResponse(clinicalQueryResultList);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAnnotationByVariants", e.toString());
+            return createErrorResponse(e);
         }
+    }
+
+    @GET
+    @Path("/help")
+    public Response help() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Input:\n");
+        sb.append("Variant format: chr:position:new allele (i.e.: 1:150044250:G)\n\n\n");
+        sb.append("Resources:\n");
+        sb.append("- consequence_type: Suppose that we have obtained some variants from a resequencing analysis and we want to obtain the consequence type of a variant over the transcripts\n");
+        sb.append(" Output columns: chromosome, start, end, feature ID, feature name, consequence type, biotype, feature chromosome, feature start, feature end, feature strand, snp ID, ancestral allele, alternative allele, gene Ensembl ID, Ensembl transcript ID, gene name, SO consequence type ID, SO consequence type name, consequence type description, consequence type category, aminoacid change, codon change.\n\n\n");
+        sb.append("Documentation:\n");
+        sb.append("http://docs.bioinfo.cipf.es/projects/cellbase/wiki/Genomic_rest_ws_api#Variant");
+
+        return createOkResponse(sb.toString());
     }
 
 }

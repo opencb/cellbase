@@ -547,13 +547,13 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             }
             Map<String, Object> clinicalData = new HashMap<>();
             if(cosmicList!=null && cosmicList.size()>0) {
-                clinicalData.put("Cosmic", cosmicList);
+                clinicalData.put("cosmic", cosmicList);
             }
             if(gwasList!=null && gwasList.size()>0) {
-                clinicalData.put("Gwas", gwasList);
+                clinicalData.put("gwas", gwasList);
             }
             if(clinvarList!=null && clinvarList.size()>0) {
-                clinicalData.put("Clinvar", clinvarList);
+                clinicalData.put("clinvar", clinvarList);
             }
             if(!clinicalData.isEmpty()) {
                 // FIXME quick solution to compile
@@ -705,7 +705,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             QueryBuilder builder = QueryBuilder.start("chromosome").is(variantAnnotation.getChromosome())
                     .and("start").is(variantAnnotation.getStart()).and("reference")
                     .is(variantAnnotation.getReferenceAllele())
-                    .and("alternate").is(variantAnnotation.getAlternativeAllele());
+                    .and("alternate").is(variantAnnotation.getAlternateAllele());
             DBObject update = null;
             try {
                 update = new BasicDBObject("$set", new BasicDBObject("annot",

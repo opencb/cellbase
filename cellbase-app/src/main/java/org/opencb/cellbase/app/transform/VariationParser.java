@@ -155,24 +155,28 @@ public class VariationParser extends CellBaseParser {
 
                     // For code sanity save chromosome, start, end and id
                     String chromosome = seqRegionMap.get(variationFeatureFields[1]);
-                    int start = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[2]) : 0;
-                    int end = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[3]) : 0;
-                    String id = (variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "";
-                    String reference = (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "";
-                    String alternate = (allelesArray[1] != null && !allelesArray[1].equals("\\N")) ? allelesArray[1] : "";
 
-                    // Preparing frequencies
-                    //List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(variationId, allelesArray);
-                    List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(chromosome, start, end, id, reference, alternate);
+                    if (!chromosome.contains("PATCH") && !chromosome.contains("HSCHR") && !chromosome.contains("contig")) {
+                        int start = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[2]) : 0;
+                        int end = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[3]) : 0;
+                        String id = (variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "";
+                        String reference = (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "";
+                        String alternate = (allelesArray[1] != null && !allelesArray[1].equals("\\N")) ? allelesArray[1] : "";
 
-                    // TODO: check that variationFeatureFields is always different to null and intergenic-variant is never used
-                    //List<String> consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")) : Arrays.asList("intergenic_variant");
-                    List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));
-                    String displayConsequenceType = getDisplayConsequenceType(consequenceTypes);
+                        // Preparing frequencies
+                        //List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(variationId, allelesArray);
+                        List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(chromosome, start, end, id, reference, alternate);
+
+                        // TODO: check that variationFeatureFields is always different to null and intergenic-variant is never used
+                        //List<String> consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")) : Arrays.asList("intergenic_variant");
+                        List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));
+                        String displayConsequenceType = getDisplayConsequenceType(consequenceTypes);
 
 
-                    // we have all the necessary to construct the 'variation' object
-                    variation = buildVariation(variationFields, variationFeatureFields, chromosome, start, end, id, reference, alternate, transcriptVariation, xrefs, populationFrequencies, allelesArray, consequenceTypes, displayConsequenceType);
+                        // we have all the necessary to construct the 'variation' object
+                        variation = buildVariation(variationFields, variationFeatureFields, chromosome, start, end, id, reference, alternate, transcriptVariation, xrefs, populationFrequencies, allelesArray, consequenceTypes, displayConsequenceType);
+                        fileSerializer.serialize(variation, getOutputFileName(chromosome));
+                    }
 
                     if (++countprocess % 100000 == 0 && countprocess != 0) {
                         logger.info("Processed variations: " + countprocess);
@@ -181,7 +185,6 @@ public class VariationParser extends CellBaseParser {
                         batchWatch.start();
                     }
 
-                    fileSerializer.serialize(variation, getOutputFileName(chromosome));
                 } catch (Exception e) {
                     e.printStackTrace();
                     logger.error("Error parsing variation: " + e.getMessage());

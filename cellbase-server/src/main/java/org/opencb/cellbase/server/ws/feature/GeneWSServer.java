@@ -22,6 +22,7 @@ import com.mongodb.BasicDBObject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
@@ -58,6 +59,12 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Gene.class);
+    }
+
+    @GET
     @Path("/first")
     @Override
     public Response first() {
@@ -84,7 +91,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects", response = QueryResponse.class)
     public Response getAll(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
-                               @DefaultValue("") @QueryParam("biotype") List<String> biotypes) {
+                           @DefaultValue("") @QueryParam("biotype") List<String> biotypes) {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
@@ -94,8 +101,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
             return createOkResponse(geneDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getGenomeInfo", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -103,7 +109,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/list")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs")
     public Response getAllIDs(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
-                                  @DefaultValue("") @QueryParam("biotype") String biotypes) {
+                              @DefaultValue("") @QueryParam("biotype") String biotypes) {
         try {
             checkParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
@@ -114,8 +120,7 @@ public class GeneWSServer extends GenericRestWSServer {
             }
             return createOkResponse(geneDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getGenomeInfo", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -134,8 +139,7 @@ public class GeneWSServer extends GenericRestWSServer {
 //			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
             //	return generateResponse(query, Arrays.asList(this.getGeneDBAdaptor().getAllByEnsemblIdList(StringUtils.toList(query, ","))));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -156,8 +160,7 @@ public class GeneWSServer extends GenericRestWSServer {
 //			return generateResponse(query, "GENE", geneDBAdaptor.getAllByNameList(StringUtils.toList(query, ","),exclude));
             //	return generateResponse(query, Arrays.asList(this.getGeneDBAdaptor().getAllByEnsemblIdList(StringUtils.toList(query, ","))));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -170,8 +173,7 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getTranscriptsById", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -184,11 +186,9 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllBiotypes(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getTranscriptsById", e.toString());
+            return createErrorResponse(e);
         }
     }
-
 
     @GET
     @Path("/{geneId}/snp")
@@ -217,10 +217,10 @@ public class GeneWSServer extends GenericRestWSServer {
 
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getSNPByGene", e.toString());
+            return createErrorResponse(e);
         }
     }
+
 
     @GET
     @Path("/{geneId}/mutation")
@@ -234,11 +234,9 @@ public class GeneWSServer extends GenericRestWSServer {
 //            return generateResponse(query, "MUTATION", queryResults);
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMutationByGene", e.toString());
+            return createErrorResponse(e);
         }
     }
-
 
     @GET
     @Path("/{geneId}/tfbs")
@@ -249,10 +247,10 @@ public class GeneWSServer extends GenericRestWSServer {
             TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
             return createOkResponse(tfbsDBAdaptor.getAllByTargetGeneIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllTfbs", e.toString());
+            return createErrorResponse(e);
         }
     }
+
 
     @GET
     @Path("/{geneId}/mirna_target")
@@ -263,11 +261,9 @@ public class GeneWSServer extends GenericRestWSServer {
             MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
             return generateResponse(query, "MIRNA_TARGET", mirnaDBAdaptor.getAllMiRnaTargetsByGeneNameList(Splitter.on(",").splitToList(query)));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllMirna", e.toString());
+            return createErrorResponse(e);
         }
     }
-
 
     @GET
     @Path("/{geneId}/exon")
@@ -278,24 +274,10 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getExonByGene", e.toString());
+            return createErrorResponse(e);
         }
     }
 
-//    @GET
-//    @Path("/{geneId}/reactome")
-//    @ApiOperation(httpMethod = "GET", value = "Get the Reactome pathways in which this gene is involved")
-//    public Response getReactomeByEnsemblId(@PathParam("geneId") String query) {
-//        try {
-//            checkParams();
-//            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-//            return generateResponse(query, xRefDBAdaptor.getAllByDBName(Splitter.on(",").splitToList(query), "reactome"));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getReactomeByEnsemblId", e.toString());
-//        }
-//    }
 
     @GET
     @Path("/{geneId}/protein")
@@ -306,10 +288,11 @@ public class GeneWSServer extends GenericRestWSServer {
             ProteinProteinInteractionDBAdaptor PPIDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             return createOkResponse(PPIDBAdaptor.getAllByInteractorIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPPIByEnsemblId", e.toString());
+            return createErrorResponse(e);
         }
     }
+
+
 
 //    @GET
 //    @Path("/{geneId}/clinvar")

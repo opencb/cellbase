@@ -81,7 +81,11 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 region.setEnd(1);
             }
 
-            /****/
+            // Max region size is 10000bp
+            if(region.getEnd() - region.getStart() > 10000) {
+                region.setEnd(region.getStart() + 10000);
+            }
+
             QueryBuilder builder;
             int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
             int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
@@ -103,15 +107,16 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             queries.add(builder.get());
             ids.add(region.toString());
 
+
             logger.info(builder.get().toString());
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
-
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
-            BasicDBList list = (BasicDBList) queryResult.getResult();
+//            BasicDBList list = (BasicDBList) queryResult.getResult();
+            List list = queryResult.getResult();
 
             Map<String, List<Float>> typeMap = new HashMap();
 
