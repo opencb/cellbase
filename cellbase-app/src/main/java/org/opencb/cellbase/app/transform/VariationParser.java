@@ -55,13 +55,16 @@ public class VariationParser extends CellBaseParser {
     private static final int TRANSCRIPT_VARIATION_FILE_ID = 1;
     private static final int VARIATION_SYNONYM_FILE_ID = 2;
 
-    private static final String THOUSAND_GENOMES_STUDY = "1000GENOMES";
+    private static final String THOUSAND_GENOMES_PHASE_1_STUDY = "1000GENOMES_phase_1";
+    private static final String THOUSAND_GENOMES_PHASE_3_STUDY = "1000GENOMES_phase_3";
     private static final String ESP_6500_STUDY = "ESP_6500";
-    private static final String THOUSAND_GENOMES_ALL_POPULATION = "phase_1_ALL";
-    private static final String THOUSAND_GENOMES_AMERICAN_POPULATION = "phase_1_AMR";
-    private static final String THOUSAND_GENOMES_ASIAN_POPULATION = "phase_1_ASN";
-    private static final String THOUSAND_GENOMES_AFRICAN_POPULATION = "phase_1_AFR";
-    private static final String THOUSAND_GENOMES_EUROPEAN_POPULATION = "phase_1_EUR";
+    private static final String THOUSAND_GENOMES_ALL_POPULATION = "ALL";
+    private static final String THOUSAND_GENOMES_AMERICAN_POPULATION = "AMR";
+    private static final String THOUSAND_GENOMES_ASIAN_POPULATION = "ASN";
+    private static final String THOUSAND_GENOMES_AFRICAN_POPULATION = "AFR";
+    private static final String THOUSAND_GENOMES_EUROPEAN_POPULATION = "EUR";
+    private static final String THOUSAND_GENOMES_EASTASIAN_POPULATION = "EAS";
+    private static final String THOUSAND_GENOMES_SOUTHASIAN_POPULATION = "SAS";
     private static final String ESP_EUROPEAN_AMERICAN_POPULATION = "European_American";
     private static final String ESP_AFRICAN_AMERICAN_POPULATION = "African_American";
 
@@ -88,7 +91,8 @@ public class VariationParser extends CellBaseParser {
     private static final String REFERENCE_FREQUENCY_GROUP = "ref";
     private static final String ALTERNATE_FREQUENCY_GROUP = "alt";
     private TabixReader frequenciesTabixReader;
-    private final Set<String> thousandGenomesMissedPopulations;
+    private final Set<String> thousandGenomesPhase1MissedPopulations;
+    private final Set<String> thousandGenomesPhase3MissedPopulations;
 
     private CellBaseFileSerializer fileSerializer;
     private Map<String, String> outputFileNames;
@@ -98,7 +102,8 @@ public class VariationParser extends CellBaseParser {
         fileSerializer = serializer;
         this.variationDirectoryPath = variationDirectoryPath;
         populationFrequnciesPattern = Pattern.compile("(?<" + POPULATION_ID_GROUP + ">\\w+):(?<" + REFERENCE_FREQUENCY_GROUP + ">\\d+.\\d+),(?<" + ALTERNATE_FREQUENCY_GROUP + ">\\d+.\\d+)");
-        thousandGenomesMissedPopulations = new HashSet<>();
+        thousandGenomesPhase1MissedPopulations = new HashSet<>();
+        thousandGenomesPhase3MissedPopulations = new HashSet<>();
         outputFileNames = new HashMap<>();
     }
 
@@ -523,7 +528,23 @@ public class VariationParser extends CellBaseParser {
         for (String populationFrequency : variationFrequenciesString.split(";")) {
             frequencies.add(parsePopulationFrequency(populationFrequency, referenceAllele, alternativeAllele));
         }
-        frequencies = add1000GenomesMissedPopulations(frequencies);
+
+        thousandGenomesPhase1MissedPopulations.add(THOUSAND_GENOMES_AFRICAN_POPULATION);
+        thousandGenomesPhase1MissedPopulations.add(THOUSAND_GENOMES_AMERICAN_POPULATION);
+        thousandGenomesPhase1MissedPopulations.add(THOUSAND_GENOMES_EUROPEAN_POPULATION);
+        thousandGenomesPhase1MissedPopulations.add(THOUSAND_GENOMES_ASIAN_POPULATION);
+        frequencies = addMissedPopulations(frequencies, thousandGenomesPhase1MissedPopulations,
+                THOUSAND_GENOMES_PHASE_1_STUDY, THOUSAND_GENOMES_ALL_POPULATION);
+
+        thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_AFRICAN_POPULATION);
+        thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_AMERICAN_POPULATION);
+        thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_EUROPEAN_POPULATION);
+        thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_EASTASIAN_POPULATION);
+        thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_SOUTHASIAN_POPULATION);
+        thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_ASIAN_POPULATION);
+        frequencies = addMissedPopulations(frequencies, thousandGenomesPhase3MissedPopulations,
+                THOUSAND_GENOMES_PHASE_3_STUDY, THOUSAND_GENOMES_ALL_POPULATION);
+
         return frequencies;
     }
 
@@ -536,25 +557,53 @@ public class VariationParser extends CellBaseParser {
             String study = "";
             String population = m.group(POPULATION_ID_GROUP);
             switch (population) {
-                case "1000G_AF":
-                    study = THOUSAND_GENOMES_STUDY;
+                case "1000G_PHASE_1_AF":
+                    study = THOUSAND_GENOMES_PHASE_1_STUDY;
                     populationName = THOUSAND_GENOMES_ALL_POPULATION;
                     break;
-                case "1000G_AMR_AF":
-                    study = THOUSAND_GENOMES_STUDY;
+                case "1000G_PHASE_1_AMR_AF":
+                    study = THOUSAND_GENOMES_PHASE_1_STUDY;
                     populationName = THOUSAND_GENOMES_AMERICAN_POPULATION;
                     break;
-                case "1000G_ASN_AF":
-                    study = THOUSAND_GENOMES_STUDY;
+                case "1000G_PHASE_1_ASN_AF":
+                    study = THOUSAND_GENOMES_PHASE_1_STUDY;
                     populationName = THOUSAND_GENOMES_ASIAN_POPULATION;
                     break;
-                case "1000G_AFR_AF":
-                    study = THOUSAND_GENOMES_STUDY;
+                case "1000G_PHASE_1_AFR_AF":
+                    study = THOUSAND_GENOMES_PHASE_1_STUDY;
                     populationName = THOUSAND_GENOMES_AFRICAN_POPULATION;
                     break;
-                case "1000G_EUR_AF":
-                    study = THOUSAND_GENOMES_STUDY;
+                case "1000G_PHASE_1_EUR_AF":
+                    study = THOUSAND_GENOMES_PHASE_1_STUDY;
                     populationName = THOUSAND_GENOMES_EUROPEAN_POPULATION;
+                    break;
+                case "1000G_PHASE_3_AF":
+                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
+                    populationName = THOUSAND_GENOMES_ALL_POPULATION;
+                    break;
+                case "1000G_PHASE_3_AMR_AF":
+                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
+                    populationName = THOUSAND_GENOMES_AMERICAN_POPULATION;
+                    break;
+                case "1000G_PHASE_3_ASN_AF":
+                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
+                    populationName = THOUSAND_GENOMES_ASIAN_POPULATION;
+                    break;
+                case "1000G_PHASE_3_AFR_AF":
+                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
+                    populationName = THOUSAND_GENOMES_AFRICAN_POPULATION;
+                    break;
+                case "1000G_PHASE_3_EUR_AF":
+                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
+                    populationName = THOUSAND_GENOMES_EUROPEAN_POPULATION;
+                    break;
+                case "1000G_PHASE_3_EAS_AF":
+                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
+                    populationName = THOUSAND_GENOMES_EASTASIAN_POPULATION;
+                    break;
+                case "1000G_PHASE_3_SAS_AF":
+                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
+                    populationName = THOUSAND_GENOMES_SOUTHASIAN_POPULATION;
                     break;
                 case "ESP_EA_AF":
                     study = ESP_6500_STUDY;
@@ -576,29 +625,27 @@ public class VariationParser extends CellBaseParser {
         return populationFrequency;
     }
 
-    private List<PopulationFrequency> add1000GenomesMissedPopulations(List<PopulationFrequency> frequencies) {
-        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_AFRICAN_POPULATION);
-        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_AMERICAN_POPULATION);
-        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_EUROPEAN_POPULATION);
-        thousandGenomesMissedPopulations.add(THOUSAND_GENOMES_ASIAN_POPULATION);
-        int thousandGenomesPopulationsNumber = thousandGenomesMissedPopulations.size();
+    private List<PopulationFrequency> addMissedPopulations(List<PopulationFrequency> frequencies,
+                                                           Set<String> missedPopulations, String study,
+                                                           String allPopulation) {
+        int thousandGenomesPopulationsNumber = missedPopulations.size();
 
         String refAllele = null;
         String altAllele = null;
         for (PopulationFrequency frequency : frequencies) {
-            if (frequency.getStudy()!= null && frequency.getStudy().equals(THOUSAND_GENOMES_STUDY)) {
-                if (frequency.getPop().equals(THOUSAND_GENOMES_ALL_POPULATION)) {
+            if (frequency.getStudy()!= null && frequency.getStudy().equals(study)) {
+                if (frequency.getPop().equals(allPopulation)) {
                     refAllele = frequency.getRefAllele();
                     altAllele = frequency.getAltAllele();
                 }
-                thousandGenomesMissedPopulations.remove(frequency.getPop());
+                missedPopulations.remove(frequency.getPop());
             }
         }
 
-        // if the variation has some 1000 genomes superpopulation frequency, but not all, add the missed superpopulations with 1 as ref allele proportion
-        if (!thousandGenomesMissedPopulations.isEmpty() && thousandGenomesMissedPopulations.size() != thousandGenomesPopulationsNumber) {
-            for (String population : thousandGenomesMissedPopulations) {
-                frequencies.add(new PopulationFrequency(THOUSAND_GENOMES_STUDY, population, population, refAllele, altAllele, 1, 0));
+        // if the variation has some superpopulation frequency, but not all, add the missed superpopulations with 1 as ref allele proportion
+        if (!missedPopulations.isEmpty() && missedPopulations.size() != thousandGenomesPopulationsNumber) {
+            for (String population : missedPopulations) {
+                frequencies.add(new PopulationFrequency(study, population, population, refAllele, altAllele, 1, 0));
             }
         }
 
