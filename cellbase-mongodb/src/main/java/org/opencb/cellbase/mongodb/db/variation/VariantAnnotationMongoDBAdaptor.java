@@ -38,10 +38,7 @@ import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.variant.annotation.ConsequenceTypeCalculator;
-import org.opencb.cellbase.core.variant.annotation.ConsequenceTypeSNVCalculator;
-import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.core.variant.annotation.*;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -1989,8 +1986,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         if(variant.getReference().length()==1 && variant.getAlternative().length()==1) {
             return new ConsequenceTypeSNVCalculator();
         } else if (variant.getReference().equals("-")) {
-            return null;
-//            return new ConsequenceTypeInsertionCalculator();
+            return new ConsequenceTypeInsertionCalculator();
         } else if (variant.getAlternative().equals("-")) {
             if(variant.getReference().length()>50) {
                 return null;
