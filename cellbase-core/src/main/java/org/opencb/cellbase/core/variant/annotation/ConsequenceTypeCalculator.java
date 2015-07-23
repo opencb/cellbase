@@ -30,6 +30,10 @@ public abstract class ConsequenceTypeCalculator {
     public List<ConsequenceType> run(GenomicVariant variant, List<Gene> geneList, Map<String,MiRNAGene> miRNAMap,
                                      List<RegulatoryRegion> regulatoryRegionList) { return null; }
 
+    protected Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
+        return (region2Start <= region1End && region2End >= region1Start);
+    }
+
     protected void solveRegulatoryRegions(List<RegulatoryRegion> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
         if(!regulatoryRegionList.isEmpty()) {
             consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.REGULATORY_REGION_VARIANT));
