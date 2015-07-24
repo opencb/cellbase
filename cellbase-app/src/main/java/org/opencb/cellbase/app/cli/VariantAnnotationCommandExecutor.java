@@ -40,8 +40,6 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -93,7 +91,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         try {
             if (customFiles != null) {
-                createIndexes();
+                getIndexes();
             }
 
             String path = "/cellbase/webservices/rest/";
@@ -137,15 +135,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private void closeIndexes() {
-        try {
+        //try {
             for (int i = 0; i < dbIndexes.size(); i++) {
                 dbIndexes.get(i).close();
                 dbOptions.get(i).dispose();
-                FileUtils.deleteDirectory(new File(dbLocations.get(i)));
+                //FileUtils.deleteDirectory(new File(dbLocations.get(i)));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //} catch (IOException e) {
+            //    e.printStackTrace();
+            //}
     }
 
     private List<VariantAnnotator> createAnnotators(CellBaseClient cellBaseClient) {
@@ -168,34 +166,40 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorList;
     }
 
-    private void createIndexes() {
+    private void getIndexes() {
         dbIndexes = new ArrayList<>(customFiles.size());
         dbOptions = new ArrayList<>(customFiles.size());
         dbLocations = new ArrayList<>(customFiles.size());
         for(int i=0; i<customFiles.size(); i++) {
             if(customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
-                Object[] dbConnection = indexCustomVcfFile(i);
-                dbIndexes.add((RocksDB) dbConnection[0]);
-                dbOptions.add((Options) dbConnection[1]);
-                dbLocations.add((String) dbConnection[2]);
+                Object[] dbConnection = getDBConnection(customFiles.get(i).toString()+".idx");
+                RocksDB rocksDB = (RocksDB) dbConnection[0];
+                Options dbOption = (Options) dbConnection[1];
+                String dbLocation = (String) dbConnection[2];
+                boolean indexingNeeded = (boolean) dbConnection[3];
+                if(indexingNeeded) {
+                    logger.info("Creating index DB at {} ", dbLocation);
+                    indexCustomVcfFile(i, rocksDB);
+                } else {
+                    logger.info("Index found at {}", dbLocation);
+                    logger.info("Skipping index creation");
+                }
+                dbIndexes.add(rocksDB);
+                dbOptions.add(dbOption);
+                dbLocations.add(dbLocation);
             }
         }
     }
 
-    private Object[] indexCustomVcfFile(int customFileNumber) {
-        ObjectMapper jsonObjectMapper = new ObjectMapper();
-        ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
-
+    private Object[] getDBConnection(String dbLocation) {
+        boolean indexingNeeded = !Files.exists(Paths.get(dbLocation));
         // a static method that loads the RocksDB C++ library.
         RocksDB.loadLibrary();
         // the Options class contains a set of configurable DB options
         // that determines the behavior of a database.
         Options options = new Options().setCreateIfMissing(true);
         RocksDB db = null;
-        String dbLocation = null;
         try {
-            dbLocation = TMP_DIR+System.currentTimeMillis();
-            logger.info("Creating index DB at {} ", dbLocation);
             // a factory method that returns a RocksDB instance
             db = RocksDB.open(options, dbLocation);
             // do something
@@ -205,7 +209,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             System.exit(1);
         }
 
-        logger.info("Indexing {} ", customFiles.get(customFileNumber));
+        return new Object[] {db,options,dbLocation,indexingNeeded};
+
+    }
+
+    private void indexCustomVcfFile(int customFileNumber, RocksDB db) {
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+
         BufferedReader reader;
         try {
             if (customFiles.get(customFileNumber).toFile().getName().endsWith(".gz")) {
@@ -247,8 +258,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             e.printStackTrace();
             System.exit(1);
         }
-
-        return new Object[] {db,options,dbLocation};
     }
 
     protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
