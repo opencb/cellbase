@@ -225,8 +225,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     String[] alternates = line.split("\t")[4].split(",");
                     List<Map<String,Object>> parsedInfo = parseInfoAttributes(fields[7], alternates.length, customFileNumber);
                     for (int i=0; i<alternates.length; i++) {
-                        db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alternates[i]).getBytes(),
-                                jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
+                        // INDEL
+                        if(fields[3].length()>1  || alternates[i].length()>1) {
+                            db.put((fields[0] + "_" + (Integer.valueOf(fields[1])+1) + "_" + fields[3].substring(1) + "_" + alternates[i].substring(1)).getBytes(),
+                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
+                        // SNV
+                        } else {
+                            db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alternates[i]).getBytes(),
+                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
+                        }
                     }
                 }
                 line = reader.readLine();
