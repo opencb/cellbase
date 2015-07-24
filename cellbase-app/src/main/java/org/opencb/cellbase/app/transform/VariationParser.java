@@ -633,7 +633,7 @@ public class VariationParser extends CellBaseParser {
         String refAllele = null;
         String altAllele = null;
         for (PopulationFrequency frequency : frequencies) {
-            if (frequency.getStudy()!= null && frequency.getStudy().equals(study)) {
+            if (frequency != null && frequency.getStudy()!= null && frequency.getStudy().equals(study)) {
                 if (frequency.getPop().equals(allPopulation)) {
                     refAllele = frequency.getRefAllele();
                     altAllele = frequency.getAltAllele();
