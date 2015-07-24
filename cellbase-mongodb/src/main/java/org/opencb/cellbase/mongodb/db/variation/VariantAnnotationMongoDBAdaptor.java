@@ -1056,12 +1056,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             consequenceTypeTemplate.setGeneName((String) geneInfo.get("name"));
             consequenceTypeTemplate.setEnsemblGeneId((String) geneInfo.get("id"));
             consequenceTypeTemplate.setExpressionValues(new ArrayList<ExpressionValue>());
-            if(geneInfo.get("expressionValues")!=null) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                for (Object expressionBasicDBObject : (BasicDBList) geneInfo.get("expressionValues")) {
-                    consequenceTypeTemplate.getExpressionValues().add(objectMapper.convertValue(expressionBasicDBObject, ExpressionValue.class));
-                }
-            }
+//            if(geneInfo.get("expressionValues")!=null) {
+//                ObjectMapper objectMapper = new ObjectMapper();
+//                for (Object expressionBasicDBObject : (BasicDBList) geneInfo.get("expressionValues")) {
+//                    consequenceTypeTemplate.getExpressionValues().add(objectMapper.convertValue(expressionBasicDBObject, ExpressionValue.class));
+//                }
+//            }
 
             transcriptInfoList = (BasicDBList) geneInfo.get("transcripts");
             for(Object transcriptInfoObject: transcriptInfoList) {
