@@ -100,13 +100,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             CellBaseClient cellBaseClient;
             if (url.contains(":")) {
                 String[] hostAndPort = url.split(":");
+                url = hostAndPort[0];
                 port = Integer.parseInt(hostAndPort[1]);
-                cellBaseClient = new CellBaseClient(hostAndPort[0], port, path,
+                cellBaseClient = new CellBaseClient(url, port, path,
                         configuration.getVersion(), species);
             } else {
                 cellBaseClient = new CellBaseClient(url, port, path,
                         configuration.getVersion(), species);
             }
+            logger.debug("URL set to: {}", url+":"+port+path);
+
             List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorRunnerList = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
                 List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
