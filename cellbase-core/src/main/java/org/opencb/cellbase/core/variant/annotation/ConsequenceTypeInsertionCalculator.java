@@ -223,61 +223,42 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         }
         // Is not intron variant (both ends fall within the same intron)
         if(!junctionSolution[1]) {
-            solveExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaVariantPosition, firstCdsPhase);
+            solveExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaVariantStart, cdnaVariantEnd,
+                    firstCdsPhase);
         }
     }
 
     private void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantPosition, int firstCdsPhase) {
-        if(variantStart<genomicCodingStart) {
-//        if(variantStart<genomicCodingStart || (variantRef.equals("-") && variantStart.equals(genomicCodingStart))) {
-//            variantEnd -= variantRef.equals("-")?1:0;  // Insertion coordinates are peculiar: the actual inserted nts are assumed to be pasted on the left of variantStart, be careful with left edges
-            if(transcriptStart<genomicCodingStart || (transcriptFlags!=null && transcriptFlags.contains("cds_start_NF"))) {// Check transcript has 3 UTR
-                SoNames.add("5_prime_UTR_variant");
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+        if(variantStart<transcript.getGenomicCodingStart()) {
+            if(transcript.getStart()<transcript.getGenomicCodingStart() || (transcript.getAnnotationFlags()!=null &&
+                    transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_START_NF))) {// Check transcript has 3 UTR
+                SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
             }
-            if((variantEnd >= genomicCodingStart) && !(variantRef.equals("-") && variantEnd.equals(genomicCodingStart))) {
-                SoNames.add("coding_sequence_variant");
-                if(transcriptFlags==null || cdnaCodingStart>0 || !transcriptFlags.contains("cds_start_NF")) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
-                    SoNames.add("initiator_codon_variant");
+        } else if(variantStart <= transcript.getGenomicCodingEnd()) {  // Variant start within coding region
+            int cdnaCodingStart = transcript.getCdnaCodingStart();  // Need to define a local cdnaCodingStart because may modified in two lines below
+            if(cdnaVariantStart!=-1) {  // cdnaVariantStart may be -1 if variantStart falls in an intron
+                if(transcript.getAnnotationFlags()!=null &&
+                        transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_START_NF)) {
+                    cdnaCodingStart -= ((3-firstCdsPhase)%3);
                 }
-                if(variantEnd>(genomicCodingEnd-3)) {
-                    SoNames.add("stop_lost");
-                    if (variantEnd > genomicCodingEnd) {
-                        if (transcriptEnd > genomicCodingEnd || (transcriptFlags != null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
-                            SoNames.add("3_prime_UTR_variant");
-                        }
-                    }
-                }
+                int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
+                consequenceType.setCdsPosition(cdsVariantStart);
+                consequenceType.setAaPosition(((cdsVariantStart - 1)/3)+1);
             }
-//            variantEnd += variantRef.equals("-")?1:0;  // Recover original value of variantEnd for next transcripts
-        } else {
-            if(variantStart <= genomicCodingEnd) {  // Variant start within coding region
-                if(cdnaVariantStart!=null) {  // cdnaVariantStart may be null if variantStart falls in an intron
-                    if(transcriptFlags!=null && transcriptFlags.contains("cds_start_NF")) {
-                        cdnaCodingStart -= ((3-firstCdsPhase)%3);
-//                        cdnaCodingStart -= firstCdsPhase;
-                    }
-                    int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
-                    consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
-                    consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1)/3)+1);
-                }
-                if(variantEnd <= genomicCodingEnd) {  // Variant end also within coding region
-                    solvePositiveCodingEffect(splicing, transcriptSequence, chromosome, transcriptEnd, genomicCodingEnd,
-                            cdnaCodingStart, cdnaCodingEnd, cdnaVariantStart, cdnaVariantEnd, transcriptFlags,
-                            variantRef, variantAlt, SoNames, consequenceTypeTemplate);
-                } else {
-                    if(transcriptEnd>genomicCodingEnd || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
-                        SoNames.add("3_prime_UTR_variant");
-                    }
-                    if(!variantRef.equals("-")) {  // If it is an insertion, it is located between the genomicCodingEnd and the next base, does not affect the stop codon and is not part of the coding sequence
-                        SoNames.add("coding_sequence_variant");
-                        SoNames.add("stop_lost");
-                    }
-                }
+            if(variantEnd <= transcript.getGenomicCodingEnd()) {  // Variant end also within coding region
+                solveCodingExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaCodingStart,
+                        cdnaVariantStart, cdnaVariantEnd);
             } else {
-                if(transcriptEnd>genomicCodingEnd || (transcriptFlags!=null && transcriptFlags.contains("cds_end_NF"))) {// Check transcript has 3 UTR)
-                    SoNames.add("3_prime_UTR_variant");
+                if(transcript.getEnd()>transcript.getGenomicCodingEnd() || (transcript.getAnnotationFlags()!=null &&
+                        transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_END_NF))) {// Check transcript has 3 UTR)
+                    SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
                 }
+            }
+        } else {
+            if(transcript.getEnd()>transcript.getGenomicCodingEnd() || (transcript.getAnnotationFlags()!=null &&
+                    transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_END_NF))) {// Check transcript has 3 UTR)
+                SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
             }
         }
     }
