@@ -248,7 +248,7 @@ public class CliOptionsParser {
         public String output;
 
         @Parameter(names = {"-u", "--host-url"}, description = "The URL of CellBase REST web services [bioinfo.hpc.cam.ac.uk]", required = false, arity = 1)
-        public String url = "bioinfo.hpc.cam.ac.uk";
+        public String url = "bioinfodev.hpc.cam.ac.uk";
 
         @Parameter(names = {"--port"}, description = "The port where REST web services are listening[80]", required = false, arity = 1)
         public int port = 80;
