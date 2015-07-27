@@ -97,8 +97,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
 
             String path = "/cellbase/webservices/rest/";
-            CellBaseClient cellBaseClient = new CellBaseClient(url, port, path,
-                    configuration.getVersion(), species);
+            CellBaseClient cellBaseClient;
+            if (url.contains(":")) {
+                String[] hostAndPort = url.split(":");
+                cellBaseClient = new CellBaseClient(hostAndPort[0], Integer.parseInt(hostAndPort[1]), path,
+                        configuration.getVersion(), species);
+            } else {
+                cellBaseClient = new CellBaseClient(url, port, path,
+                        configuration.getVersion(), species);
+            }
             List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorRunnerList = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
                 List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
