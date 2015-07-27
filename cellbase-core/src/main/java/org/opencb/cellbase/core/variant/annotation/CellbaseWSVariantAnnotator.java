@@ -71,7 +71,11 @@ public class CellbaseWSVariantAnnotator implements VariantAnnotator {
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
         for (QueryResult<VariantAnnotation> queryResult : response.getResponse()) {
-            variantAnnotationList.add(queryResult.getResult().get(0));
+            if (queryResult.getResult().size() > 0) {
+                variantAnnotationList.add(queryResult.getResult().get(0));
+            } else {
+                logger.warn("Emtpy result for '{}'", queryResult.getId());
+            }
         }
         return variantAnnotationList;
     }
