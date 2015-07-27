@@ -2086,11 +2086,19 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     BasicDBObject freqDBObject;
                     for (int j = 0; j < freqsDBList.size(); j++) {
                         freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                        variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
-                                freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-                                freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                                Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                                Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                        if (freqDBObject.containsKey("study")) {
+                            variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
+                                    freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                    freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                                    Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                    Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                        } else {
+                            variantAnnotation.addPopulationFrequency(new PopulationFrequency("1000G_PHASE_3",
+                                    freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                    freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                                    Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                    Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                        }
                     }
                 }
             }
