@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by fjlopez on 19/06/15.
@@ -45,6 +46,21 @@ public abstract class ConsequenceTypeCalculator {
             }
             if(TFBSFound) {
                 consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT));
+            }
+        }
+    }
+
+    protected void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
+                                                         char[] modifiedCodonArray) {
+        if (VariantAnnotationUtils.isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
+            if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+                SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
+            }
+        } else {
+            if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
+                SoNames.add(VariantAnnotationUtils.STOP_LOST);
+            } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
+                SoNames.add(VariantAnnotationUtils.STOP_GAINED);
             }
         }
     }

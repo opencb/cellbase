@@ -41,6 +41,7 @@ public class VariantAnnotationUtils {
     public static final String SNRNA="snRNA";
     public static final String SNORNA="snoRNA";
     public static final String NONSENSE_MEDIATED_DECAY="nonsense_mediated_decay";
+    public static final String NMD_TRANSCRIPT_VARIANT="NMD_transcript_variant";
     public static final String UNPROCESSED_PSEUDOGENE="unprocessed_pseudogene";
     public static final String TRANSCRIBED_UNPROCESSED_PSEUDGENE="transcribed_unprocessed_pseudogene";
     public static final String RETAINED_INTRON="retained_intron";
@@ -84,6 +85,9 @@ public class VariantAnnotationUtils {
     public static final String MATURE_MIRNA_VARIANT="mature_miRNA_variant";
     public static final String NON_CODING_TRANSCRIPT_EXON_VARIANT="non_coding_transcript_exon_variant";
     public static final String NON_CODING_TRANSCRIPT_VARIANT="non_coding_transcript_variant";
+    public static final String INFRAME_INSERTION="inframe_insertion";
+    public static final String FRAMESHIFT_VARIANT="frameshift_variant";
+    public static final String CODING_SEQUENCE_VARIANT="coding_sequence_variant";
 
     public static final String CDS_START_NF="cds_start_NF";
     public static final String CDS_END_NF="cds_end_NF";

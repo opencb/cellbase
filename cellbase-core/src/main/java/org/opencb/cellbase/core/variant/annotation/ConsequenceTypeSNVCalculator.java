@@ -55,7 +55,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                              * Coding biotypes
                              */
                             case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
-                                SoNames.add("NMD_transcript_variant");
+                                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
                             case VariantAnnotationUtils.IG_C_GENE:
                             case VariantAnnotationUtils.IG_D_GENE:
                             case VariantAnnotationUtils.IG_J_GENE:
@@ -101,7 +101,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                              * Coding biotypes
                              */
                             case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
-                                SoNames.add("NMD_transcript_variant");
+                                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
                             case VariantAnnotationUtils.IG_C_GENE:
                             case VariantAnnotationUtils.IG_D_GENE:
                             case VariantAnnotationUtils.IG_J_GENE:
@@ -238,15 +238,12 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     private void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantPosition, int firstCdsPhase) {
         if(variant.getPosition() > transcript.getGenomicCodingEnd() &&
-            (transcript.getEnd()>transcript.getGenomicCodingEnd() ||
-                (transcript.getAnnotationFlags()!=null &&
-                    transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_START_NF)))) {// Check transcript has 3 UTR
+            (transcript.getEnd()>transcript.getGenomicCodingEnd() || transcript.unconfirmedStart())) {// Check transcript has 3 UTR
                 SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
         } else if(variant.getPosition()>=transcript.getGenomicCodingStart()) {
             int cdnaCodingStart = transcript.getCdnaCodingStart();  // Need to define a local cdnaCodingStart because may modified in two lines below
             if(cdnaVariantPosition!=-1) {  // cdnaVariantStart may be null if variantEnd falls in an intron
-                if(transcript.getAnnotationFlags()!=null &&
-                        transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_START_NF)) {
+                if(transcript.unconfirmedStart()) {
                     cdnaCodingStart -= ((3-firstCdsPhase)%3);
                 }
                 int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
@@ -255,8 +252,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
             solveCodingExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaCodingStart, cdnaVariantPosition);
         } else {
-            if(transcript.getStart()<transcript.getGenomicCodingStart() || (transcript.getAnnotationFlags()!=null &&
-                    transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_END_NF))) {// Check transcript has 3 UTR)
+            if(transcript.getStart()<transcript.getGenomicCodingStart() || transcript.unconfirmedEnd()) {// Check transcript has 3 UTR)
                 SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
             }
         }
@@ -461,15 +457,12 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     private void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantPosition, int firstCdsPhase) {
         if(variant.getPosition()<transcript.getGenomicCodingStart() &&
-                (transcript.getStart()<transcript.getGenomicCodingStart() ||
-                    (transcript.getAnnotationFlags()!=null &&
-                            transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_START_NF)))) {// Check transcript has 5 UTR
+                (transcript.getStart()<transcript.getGenomicCodingStart() || transcript.unconfirmedStart())) {// Check transcript has 5 UTR
             SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
         } else if(variant.getPosition()<=transcript.getGenomicCodingEnd()) {  // Variant start within coding region
             int cdnaCodingStart = transcript.getCdnaCodingStart();  // Need to define a local cdnaCodingStart because may modified in two lines below
             if(cdnaVariantPosition!=-1) {  // cdnaVariantStart may be -1 if variantStart falls in an intron
-                if(transcript.getAnnotationFlags()!=null &&
-                        transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_START_NF)) {
+                if(transcript.unconfirmedStart()) {
                     cdnaCodingStart -= ((3-firstCdsPhase)%3);
                 }
                 int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
@@ -479,8 +472,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             solveCodingExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaCodingStart,
                     cdnaVariantPosition);
         } else {
-            if(transcript.getEnd()>transcript.getGenomicCodingEnd() || (transcript.getAnnotationFlags()!=null &&
-                    transcript.getAnnotationFlags().contains(VariantAnnotationUtils.CDS_END_NF))) {// Check transcript has 3 UTR)
+            if(transcript.getEnd()>transcript.getGenomicCodingEnd() || transcript.unconfirmedEnd()) {// Check transcript has 3 UTR)
                 SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
             }
         }
@@ -536,7 +528,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
         }
         if(!codingAnnotationAdded) {
-            SoNames.add("coding_sequence_variant");
+            SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
         }
     }
 
