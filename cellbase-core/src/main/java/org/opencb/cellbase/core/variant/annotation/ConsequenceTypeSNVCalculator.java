@@ -32,10 +32,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         miRNAMap = inputMiRNAMap;
-        boolean isIntegernic = false;
+        boolean isIntegernic = true;
         for(Gene currentGene: geneList) {
             gene = currentGene;
-            isIntegernic = isIntegernic || (variant.getPosition()<gene.getStart() || variant.getPosition()>gene.getEnd());
+            isIntegernic = isIntegernic && (variant.getPosition()<gene.getStart() || variant.getPosition()>gene.getEnd());
             for(Transcript currentTranscript : gene.getTranscripts()) {
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();

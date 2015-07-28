@@ -279,6 +279,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 172663, "G", "A"), new QueryOptions());  // should return intergenic_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 114340663, "GCTGGGCATCCT", "-"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 114340663, "GCTGGGCATCCT", "ACTGGGCATCCT"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 220603289, "-", "GTGT"), new QueryOptions());  // should not return null
@@ -636,7 +638,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 }
                 // TODO: Remove this if as refactoring implements consequence types for other variant types
                 // TODO: PARECE Q NO ESTA ENTRANDO AQUI NUNCA, NO SE PQ, DEPURAR
-                if(!alt.equals("-") && coordinatesParts.length==1) {
+                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
                     if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
                             !previousAlt.equals(alt)) {
                         nReadVariants++;
