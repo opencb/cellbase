@@ -26,7 +26,10 @@ public class GenomeSequenceFeature {
 	private String assembly;
 	private String sequence;
 
-	public GenomeSequenceFeature(String chromosome, int start, int end, String sequence){
+    public GenomeSequenceFeature() {
+    }
+
+    public GenomeSequenceFeature(String chromosome, int start, int end, String sequence){
 		this.sequenceName = chromosome;
 		this.start = start;
 		this.end = end;
