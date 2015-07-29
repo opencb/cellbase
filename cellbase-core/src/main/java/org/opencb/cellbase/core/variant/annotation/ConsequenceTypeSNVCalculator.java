@@ -558,7 +558,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 junctionSolution[0] = (variant.getPosition()<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
             } else {
-                if(variant.getPosition()>(spliceSite1-3) && variant.getPosition()<spliceSite1) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
+                if(variant.getPosition()>(spliceSite1-4) && variant.getPosition()<spliceSite1) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
                     SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 }
             }
@@ -572,7 +572,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 junctionSolution[0] = (variant.getPosition()<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
             } else {
-                if(variant.getPosition()<(spliceSite2+3) && variant.getPosition()>spliceSite2) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
+                if(variant.getPosition()<(spliceSite2+4) && variant.getPosition()>spliceSite2) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
                     SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 }
             }
