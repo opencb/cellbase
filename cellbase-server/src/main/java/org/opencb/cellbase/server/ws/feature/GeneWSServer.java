@@ -206,7 +206,14 @@ public class GeneWSServer extends GenericRestWSServer {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(qr.getId());
 
-                BasicDBObject gene = (BasicDBObject) qr.getResult().get(0);
+                BasicDBObject gene;
+                if (queryOptions.containsKey("count") && queryOptions.getBoolean("count")) {
+                    queryOptions.remove("count");
+                    gene = (BasicDBObject) qr.getResult().get(0);
+                    queryOptions.put("count", true);
+                } else {
+                    gene = (BasicDBObject) qr.getResult().get(0);
+                }
                 QueryResult variationQueryResult = variationDBAdaptor.getAllByRegion(gene.getString("chromosome"), gene.getInt("start"), gene.getInt("end"), queryOptions);
 
                 queryResult.setNumResults(variationQueryResult.getNumResults());
