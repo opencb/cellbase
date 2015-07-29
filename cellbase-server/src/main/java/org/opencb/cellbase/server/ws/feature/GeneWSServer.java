@@ -200,20 +200,21 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
-            List<org.opencb.datastore.core.QueryResult> qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+            List<org.opencb.datastore.core.QueryResult> qrList;
+            if (queryOptions.containsKey("count") && queryOptions.getBoolean("count")) {
+                queryOptions.remove("count");
+                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+                queryOptions.put("count", true);
+            } else {
+                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+            }
+
             List<QueryResult> queryResults = new ArrayList<>();
             for (org.opencb.datastore.core.QueryResult qr : qrList) {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(qr.getId());
 
-                BasicDBObject gene;
-                if (queryOptions.containsKey("count") && queryOptions.getBoolean("count")) {
-                    queryOptions.remove("count");
-                    gene = (BasicDBObject) qr.getResult().get(0);
-                    queryOptions.put("count", true);
-                } else {
-                    gene = (BasicDBObject) qr.getResult().get(0);
-                }
+                BasicDBObject gene = (BasicDBObject) qr.getResult().get(0);
                 QueryResult variationQueryResult = variationDBAdaptor.getAllByRegion(gene.getString("chromosome"), gene.getInt("start"), gene.getInt("end"), queryOptions);
 
                 queryResult.setNumResults(variationQueryResult.getNumResults());
