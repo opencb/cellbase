@@ -1957,8 +1957,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             return false;
         } else {
             String[] parts = consequenceType.getCodon().split("/");
-            return !VariantAnnotationUtils.isSynonymousCodon.get(String.valueOf(parts[0]).toUpperCase())
-                    .get(String.valueOf(parts[1]).toUpperCase());
+            String ref = String.valueOf(parts[0]).toUpperCase();
+            String alt = String.valueOf(parts[1]).toUpperCase();
+            return !VariantAnnotationUtils.isSynonymousCodon.get(ref).get(alt) &&
+                    !VariantAnnotationUtils.isStopCodon(ref);
         }
     }
 
@@ -1972,11 +1974,11 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             DBObject proteinSubstitutionScores = (DBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
             if (proteinSubstitutionScores.get("ss") != null) {
                 scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-                        "Sift", VariantAnnotationUtils.siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                        "sift", VariantAnnotationUtils.siftDescriptions.get(proteinSubstitutionScores.get("se"))));
             }
             if (proteinSubstitutionScores.get("ps") != null) {
                 scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-                        "Polyphen", VariantAnnotationUtils.polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+                        "polyphen", VariantAnnotationUtils.polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
             }
         }
         return scoreList;

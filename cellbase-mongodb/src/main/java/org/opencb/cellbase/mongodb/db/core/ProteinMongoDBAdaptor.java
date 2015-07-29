@@ -171,8 +171,20 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         Map aaPositions;
         if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
                 (aaPositions = ((HashMap) ((BasicDBObject) allChangesQueryResult.getResult().get(0)).get("aaPositions")))!=null) {
-            proteinSubstitionScoresQueryResult.setNumResults(1);
-            proteinSubstitionScoresQueryResult.setResult(Arrays.asList(((BasicDBObject) aaPositions.get(Integer.toString(aaPosition))).get(currentAaShortName)));
+            DBObject positionDBObject;
+            if((positionDBObject = (BasicDBObject) aaPositions.get(Integer.toString(aaPosition)))!=null) {
+                Object aaObject;
+                if((aaObject = positionDBObject.get(currentAaShortName))!=null) {
+                    proteinSubstitionScoresQueryResult.setNumResults(1);
+                    proteinSubstitionScoresQueryResult.setResult(Arrays.asList(aaObject));
+                } else {
+                    proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted AA "+currentAaShortName+". Available AA changes for transcript "+transcriptId+", position "+aaPosition+": "+positionDBObject.keySet().toString());
+                    return proteinSubstitionScoresQueryResult;
+                }
+            } else {
+                proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted position "+Integer.toString(aaPosition)+". Available positions for transcript "+transcriptId+": "+aaPositions.keySet().toString());
+                return proteinSubstitionScoresQueryResult;
+            }
         } else {
             proteinSubstitionScoresQueryResult.setNumResults(0);
         }
