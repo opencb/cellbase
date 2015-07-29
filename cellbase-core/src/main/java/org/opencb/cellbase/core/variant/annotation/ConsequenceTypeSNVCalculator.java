@@ -378,23 +378,26 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveMiRNA(int cdnaVariantPosition, boolean isIntronicVariant) {
         if (transcript.getBiotype().equals(VariantAnnotationUtils.MIRNA)) {  // miRNA with miRBase data
-            // This if provides equivalent functionality to the one in the original (before refactoring) version, may be modified in the future
-            if(cdnaVariantPosition==-1) {
-                SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
-            } else {
-                List<MiRNAGene.MiRNAMature> miRNAMatureList = miRNAMap.get(gene.getId()).getMatures();
-                int i = 0;
-                while (i < miRNAMatureList.size() && (cdnaVariantPosition<miRNAMatureList.get(i).cdnaStart ||
-                        cdnaVariantPosition>miRNAMatureList.get(i).cdnaEnd)) {
-                    i++;
-                }
-                if (i < miRNAMatureList.size()) {  // Variant overlaps at least one mature miRNA
+            MiRNAGene miRNAGene;
+            if(miRNAMap!=null && (miRNAGene = miRNAMap.get(gene.getId()))!=null) {
+                // This if provides equivalent functionality to the one in the original (before refactoring) version, may be modified in the future
+                if (cdnaVariantPosition == -1) {
                     SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
                 } else {
-                    if (!isIntronicVariant) {  // Exon variant
-                        SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
+                    List<MiRNAGene.MiRNAMature> miRNAMatureList = miRNAGene.getMatures();
+                    int i = 0;
+                    while (i < miRNAMatureList.size() && (cdnaVariantPosition < miRNAMatureList.get(i).cdnaStart ||
+                            cdnaVariantPosition > miRNAMatureList.get(i).cdnaEnd)) {
+                        i++;
                     }
-                    SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
+                    if (i < miRNAMatureList.size()) {  // Variant overlaps at least one mature miRNA
+                        SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
+                    } else {
+                        if (!isIntronicVariant) {  // Exon variant
+                            SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
+                        }
+                        SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
+                    }
                 }
             }
         } else {

@@ -279,7 +279,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 172663, "G", "A"), new QueryOptions());  // should return intergenic_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 114340663, "GCTGGGCATCCT", "-"), new QueryOptions());  // should not return null
