@@ -379,12 +379,12 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     private void solveMiRNA(int cdnaVariantPosition, boolean isIntronicVariant) {
         if (transcript.getBiotype().equals(VariantAnnotationUtils.MIRNA)) {  // miRNA with miRBase data
             MiRNAGene miRNAGene;
-            if(miRNAMap!=null && (miRNAGene = miRNAMap.get(gene.getId()))!=null) {
+            if(gene.getMirna()!=null) {
                 // This if provides equivalent functionality to the one in the original (before refactoring) version, may be modified in the future
                 if (cdnaVariantPosition == -1) {
                     SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
                 } else {
-                    List<MiRNAGene.MiRNAMature> miRNAMatureList = miRNAGene.getMatures();
+                    List<MiRNAGene.MiRNAMature> miRNAMatureList = gene.getMirna().getMatures();
                     int i = 0;
                     while (i < miRNAMatureList.size() && (cdnaVariantPosition < miRNAMatureList.get(i).cdnaStart ||
                             cdnaVariantPosition > miRNAMatureList.get(i).cdnaEnd)) {

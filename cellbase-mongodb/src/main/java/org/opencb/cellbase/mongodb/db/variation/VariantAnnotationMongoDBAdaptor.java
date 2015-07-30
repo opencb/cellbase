@@ -223,7 +223,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
     private List<Gene> geneList;
     private Map<String,MiRNAGene> miRNAMap;
-    private Map<String,List<ExpressionValue>> expressionValueMap;
+//    private Map<String,List<ExpressionValue>> expressionValueMap;
     private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2; // Just two prediction methods are currently returned: SIFT and POLYPHEN
 
 
@@ -2032,26 +2032,27 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         ObjectMapper objectMapper = new ObjectMapper();
         geneList = new ArrayList<>(queryResult.getNumResults());
         miRNAMap = new HashMap<>();
-        expressionValueMap = new HashMap<>();
+//        expressionValueMap = new HashMap<>();
         for(Object object : queryResult.getResult()) {
+
+            DBObject miRnaInfo;
+//            if((miRnaInfo = (BasicDBObject) ((DBObject) object).get("mirna"))!=null) {
+//                // Assuming if this is a miRNA just one transcript will be found
+//                miRNAMap.put("hola", objectMapper.convertValue(miRnaInfo, MiRNAGene.class));
+////                miRNAMap.put(gene.getId(), objectMapper.convertValue(miRnaInfo, MiRNAGene.class));
+//            }
             Gene gene = objectMapper.convertValue(object, Gene.class);
             geneList.add(gene);
 
-            DBObject miRnaInfo;
-            if((miRnaInfo = (BasicDBObject) ((DBObject) object).get("mirna"))!=null) {
-                // Assuming if this is a miRNA just one transcript will be found
-                miRNAMap.put(gene.getId(), objectMapper.convertValue(miRnaInfo, MiRNAGene.class));
-            }
-
-            BasicDBList expressionValuesInfo;
-            if((expressionValuesInfo = (BasicDBList) ((DBObject) object).get("expressionValues"))!=null &&
-                    expressionValuesInfo.size()>0) {
-                expressionValueMap.put(gene.getId(), new ArrayList<>(expressionValuesInfo.size()));
-                for(Object expressionObject : expressionValuesInfo) {
-                    expressionValueMap.get(gene.getId()).add(objectMapper.convertValue(expressionObject,
-                            ExpressionValue.class));
-                }
-            }
+//            BasicDBList expressionValuesInfo;
+//            if((expressionValuesInfo = (BasicDBList) ((DBObject) object).get("expressionValues"))!=null &&
+//                    expressionValuesInfo.size()>0) {
+//                expressionValueMap.put(gene.getId(), new ArrayList<>(expressionValuesInfo.size()));
+//                for(Object expressionObject : expressionValuesInfo) {
+//                    expressionValueMap.get(gene.getId()).add(objectMapper.convertValue(expressionObject,
+//                            ExpressionValue.class));
+//                }
+//            }
         }
     }
 

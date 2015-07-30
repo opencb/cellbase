@@ -811,8 +811,11 @@ public class GeneParser extends CellBaseParser {
                 mirnaMatures = fields[6].split(",");
                 for (String s : mirnaMatures) {
                     mirnaMaturesFields = s.split("\\|");
+                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2])+1;
+                    int cdnaEnd = cdnaStart+mirnaMaturesFields[2].length()-1;
                     // Save directly into MiRNAGene object.
-                    miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2]);
+                    miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2],
+                            cdnaStart, cdnaEnd);
                 }
 
                 // Add object to Map<EnsemblID, MiRNAGene>
