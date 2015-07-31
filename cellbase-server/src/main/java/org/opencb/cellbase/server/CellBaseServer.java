@@ -35,7 +35,7 @@ public class CellBaseServer extends ResourceConfig {
 //        beanConfig.setVersion("1.0.2");
 //        beanConfig.setSchemes(new String[]{"http"});
 //        beanConfig.setHost("localhost:8080");
-//        beanConfig.setBasePath("/cellbase/api");
+//        beanConfig.setBasePath("/api");
 //        beanConfig.setResourcePackage("io.swagger.resources");
 //        beanConfig.setScan(true);
 

@@ -18,6 +18,7 @@ package org.opencb.cellbase.server.ws.feature;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -29,6 +30,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.lang.annotation.Inherited;
 
 /**
  * @author imedina
@@ -38,6 +40,7 @@ import java.io.IOException;
 @Api(value = "ClinVar", description = "ClinVar RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
 
+
     public ClinicalWSServer(@PathParam("version") String version, @PathParam("species") String species,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
         super(version, species, uriInfo, hsr);
@@ -45,7 +48,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/all")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
+    @ApiOperation(httpMethod = "GET", notes = "description?", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
     public Response getAll() {
         try {
             checkParams();

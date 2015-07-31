@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.annotation.Inherited;
 import java.util.*;
 
 @Path("/{version}/{species}")
@@ -86,9 +87,9 @@ public class GenericRestWSServer implements IWSServer {
     // file name without extension which server will give back when file format is !null
     private String filename;
 
+    @ApiParam(name = "excluded fields", value = "Fields excluded in response. Whole JSON path e.g.: transcripts.id")
     @DefaultValue("")
     @QueryParam("exclude")
-    @ApiParam(name = "excluded fields", value = "Fields excluded in response. Whole JSON path e.g.: transcripts.id")
     protected String exclude;
 
     @DefaultValue("")
