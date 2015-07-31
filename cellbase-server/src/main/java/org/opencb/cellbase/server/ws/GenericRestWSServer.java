@@ -20,13 +20,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import org.opencb.biodata.models.core.Gene;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.codehaus.jackson.schema.JsonSchema;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -354,12 +352,13 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createModelResponse(Class clazz) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
-            mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
-            JsonSchema jsonSchema = visitor.finalSchema();
-
-            return createOkResponse(jsonSchema);
+//            ObjectMapper mapper = new ObjectMapper();
+//            SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+//            mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
+//            JsonSchema jsonSchema = visitor.finalSchema();
+//
+//            return createOkResponse(jsonSchema);
+            return null;
         } catch (Exception e) {
             return createErrorResponse(e);
         }

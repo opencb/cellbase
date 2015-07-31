@@ -28,9 +28,9 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.variant.annotation.CellbaseWSVariantAnnotator;
+import org.opencb.cellbase.core.variant.annotation.CellBaseWSVariantAnnotator;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotatorRunner;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotatorTask;
 import org.opencb.cellbase.core.variant.annotation.VcfVariantAnnotator;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
@@ -40,8 +40,6 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -82,6 +80,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         if(variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
         }
+
         if(variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
         }
@@ -110,10 +109,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
             logger.debug("URL set to: {}", url+":"+port+path);
 
-            List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorRunnerList = new ArrayList<>(numThreads);
+            List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
                 List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
-                variantAnnotatorRunnerList.add(new VariantAnnotatorRunner(variantAnnotatorList));
+                variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
             }
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
@@ -127,13 +126,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 dataWriter = new VepFormatWriter(output.toString());
             }
 
-            ParallelTaskRunner<Variant, VariantAnnotation> runner = null;
-            try {
-                runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorRunnerList, dataWriter, config);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
+            ParallelTaskRunner<Variant, VariantAnnotation> runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
             runner.run();
 
             if (customFiles != null) {
@@ -164,7 +157,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         variantAnnotatorList = new ArrayList<>();
 
         // CellBase annotator is always called
-        variantAnnotatorList.add(new CellbaseWSVariantAnnotator(cellBaseClient));
+        variantAnnotatorList.add(new CellBaseWSVariantAnnotator(cellBaseClient));
 
         // Include custom annotators if required
         if(customFiles!=null) {

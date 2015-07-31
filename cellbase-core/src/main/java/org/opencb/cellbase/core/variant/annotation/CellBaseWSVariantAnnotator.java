@@ -36,14 +36,14 @@ import java.util.concurrent.Callable;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class CellbaseWSVariantAnnotator implements VariantAnnotator {
+public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
-    private Logger logger;
     private CellBaseClient cellBaseClient;
     private List<VariantAnnotation> variantAnnotationList;
 
+    private Logger logger;
 
-    public CellbaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
+    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
         this.cellBaseClient = cellBaseClient;
         logger = LoggerFactory.getLogger(this.getClass());
     }

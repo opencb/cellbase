@@ -235,22 +235,25 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
+        @Parameter(names = {"-i", "--input-file"}, description = "Input file with the data file to be annotated", required = true, arity = 1)
+        public String input;
+
+        @Parameter(names = {"-o", "--output-file"}, description = "Output file with the annotations", required = false, arity = 1)
+        public String output;
+
         @Parameter(names = {"-s", "--species"}, description = "The name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens' [Homo sapiens]", required = true)
         public String species;
 
         @Parameter(names = {"-a", "--assembly"}, description = "The name of the assembly, if empty the first assembly in configuration.json will be read", required = false)
         public String assembly;
 
-        @Parameter(names = {"-i", "--input-file"}, description = "Input file with the data file to be annotated", required = true, arity = 1)
-        public String input;
+        @Parameter(names = {"-l", "--local"}, description = "Database credentials for local annotation are read from configuration.json file", required = false, arity = 0)
+        public boolean local;
 
-        @Parameter(names = {"-o", "--output-file"}, description = "Output file with the annotations", required = true, arity = 1)
-        public String output;
-
-        @Parameter(names = {"-u", "--host-url"}, description = "The URL of CellBase REST web services [bioinfo.hpc.cam.ac.uk]", required = false, arity = 1)
+        @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present  [bioinfo.hpc.cam.ac.uk]", required = false, arity = 1)
         public String url = "bioinfodev.hpc.cam.ac.uk";
 
-        @Parameter(names = {"--port"}, description = "The port where REST web services are listening[80]", required = false, arity = 1)
+        @Parameter(names = {"--remote-port"}, description = "The port where REST web services are listening[80]", required = false, arity = 1)
         public int port = 80;
 
         @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used [4]", required = false, arity = 1)
@@ -258,6 +261,9 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--batch-size"}, description = "Number of variants per thread [200]", required = false, arity = 1)
         public int batchSize = 200;
+
+        @Parameter(names = {"--resume"}, description = "Whether we resume annotation or overwrite the annotation in the output file", required = false, arity = 0)
+        public boolean resume = false;
 
         @Parameter(names = {"--custom-file"}, description = "String with a comma separated list (no spaces in between) of files with custom annotation to be included during the annotation process. File format must be VCF. For example: file1.vcf,file2.vcf,file3.vcf", required = false)
         public String customFiles;
@@ -267,6 +273,13 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--custom-file-fields"}, description = "String containing a colon separated list (no spaces in between) of field lists which indicate the info fields to be taken from each VCF file. For example: field1File1,field2File1:field1File2,field3File2", required = false, arity = 1)
         public String customFileFields;
+
+        @Parameter(names = {"--output-format"}, description = "Values: JSON, PB, VEP", required = false, arity = 1)
+        public String outputFormat;
+
+        @Parameter(names = {"--gzip"}, description = "Whether output file is gzipped", required = false, arity = 0)
+        public boolean gzip = false;
+
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Description: complements data already loaded in CellBase")
