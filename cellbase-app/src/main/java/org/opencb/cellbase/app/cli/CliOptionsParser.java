@@ -72,12 +72,16 @@ public class CliOptionsParser {
         return (jcommander.getParsedCommand() != null) ? jcommander.getParsedCommand(): "";
     }
 
-    public void printUsage(){
-        if(getCommand().isEmpty()) {
-            jcommander.usage();
-        } else {
-            jcommander.usage(getCommand());
+    public boolean isHelp() {
+        String parsedCommand = jcommander.getParsedCommand();
+        if (parsedCommand != null) {
+            JCommander jCommander = jcommander.getCommands().get(parsedCommand);
+            List<Object> objects = jCommander.getObjects();
+            if (!objects.isEmpty() && objects.get(0) instanceof CommonCommandOptions) {
+                return ((CommonCommandOptions) objects.get(0)).help;
+            }
         }
+        return getCommonCommandOptions().help;
     }
 
     public class GeneralOptions {
@@ -296,9 +300,57 @@ public class CliOptionsParser {
 
     }
 
+    public void printUsage(){
+        if(getCommand().isEmpty()) {
+            System.err.println("");
+            System.err.println("Program:     CellBase (OpenCB)");
+            System.err.println("Version:     3.2.0");
+            System.err.println("Description: High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
+            System.err.println("");
+            System.err.println("Usage:       cellbase.sh [-h|--help] [--version] <command> [options]");
+            System.err.println("");
+            System.err.println("Commands:");
+            printMainUsage();
+            System.err.println("");
+        } else {
+            String parsedCommand = getCommand();
+            System.err.println("");
+            System.err.println("Usage:   cellbase.sh " + parsedCommand + " [options]");
+            System.err.println("");
+            System.err.println("Options:");
+            printCommandUsage(jcommander.getCommands().get(parsedCommand));
+            System.err.println("");
+        }
+    }
+
+    private void printMainUsage() {
+        for (String s : jcommander.getCommands().keySet()) {
+            System.err.printf("%20s  %s\n", s, jcommander.getCommandDescription(s));
+        }
+    }
+
+    private void printCommandUsage(JCommander commander) {
+        for (ParameterDescription parameterDescription : commander.getParameters()) {
+            String type = "";
+            if (parameterDescription.getParameterized().getParameter() != null && parameterDescription.getParameterized().getParameter().arity() > 0) {
+                type = parameterDescription.getParameterized().getGenericType().getTypeName().replace("java.lang.", "").toUpperCase();
+            }
+            System.err.printf("%5s %-20s %-10s %s [%s]\n",
+                    (parameterDescription.getParameterized().getParameter() != null
+                            && parameterDescription.getParameterized().getParameter().required()) ? "*": "",
+                    parameterDescription.getNames(),
+                    type,
+                    parameterDescription.getDescription(),
+                    parameterDescription.getDefault());
+        }
+    }
 
     public GeneralOptions getGeneralOptions() {
         return generalOptions;
+    }
+
+    public CommonCommandOptions getCommonCommandOptions() {
+        return commonCommandOptions;
     }
 
     public DownloadCommandOptions getDownloadCommandOptions() {
