@@ -64,18 +64,9 @@ public class GenericRestWSServer implements IWSServer {
     @DefaultValue("")
     @PathParam("species")
     @ApiParam(name = "species", value = "Name of the species to query",
-            defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla,pabelii," +
-            "mmulatta,sscrofa,cfamiliaris,ecaballus,ocuniculus,ggallus,btaurus,fcatus,cintestinalis,ttruncatus,lafricana,cjacchus," +
-            "nleucogenys,aplatyrhynchos,falbicollis,celegans,dmelanogaster,dsimulans,dyakuba,agambiae,adarlingi,nvectensis," +
-            "spurpuratus,bmori,aaegypti,apisum,scerevisiae,spombe,afumigatus,aniger,anidulans,aoryzae,foxysporum,pgraminis," +
-            "ptriticina,moryzae,umaydis,ssclerotiorum,cneoformans,ztritici,pfalciparum,lmajor,ddiscoideum,pinfestans,glamblia," +
-            "pultimum,alaibachii,athaliana,alyrata,bdistachyon,osativa,gmax,vvinifera,zmays,hvulgare,macuminata,sbicolor,sitalica," +
-            "taestivum,brapa,ptrichocarpa,slycopersicum,stuberosum,smoellendorffii,creinhardtii,cmerolae,ecolimg1655,spneumoniae70585," +
-            "sagalactiaenem316,saureusst398,saureusn315,smelilotiak83,sfrediingr234,sentericact18,sentericalt2,pluminescenstto1," +
-            "nmeningitidisz2491,mgenitaliumg37,mtuberculosisasm19595v2,mavium104,lmonocytogenesegde,lplantarumwcfs1,hinfluenzaekw20," +
-            "cglutamicumasm19633v1,cbotulinumhall,ctrachomatisduw3cx,blongumncc2705,bsubtilis168,blicheniformisasm1164v1," +
-            "abaumanniiaye,paeruginosapa7,paeruginosapa14,paeruginosampao1p1,paeruginosampao1p2,cpneumoniaecwl029,pacanthamoebaeuv7," +
-            "wchondrophila861044,cprotochlamydiauwe25,snegevensisz,csabeus,oaries,olatipes")
+            defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla," +
+            "mmulatta,sscrofa,cfamiliaris,ggallus,btaurus,cintestinalis,celegans,dmelanogaster,agambiae,pfalciparum," +
+            "scerevisiae,lmajor,athaliana,osativa,gmax,vvinifera,zmays,slycopersicum,csabeus,oaries,olatipes,sbicolor,afumigatus")
     protected String species;
 
     protected String assembly = null;
