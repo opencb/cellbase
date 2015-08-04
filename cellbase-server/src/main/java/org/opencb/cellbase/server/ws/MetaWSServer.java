@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.ws;
 import io.swagger.annotations.Api;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -30,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Created by imedina on 04/08/15.
@@ -46,9 +48,15 @@ public class MetaWSServer extends GenericRestWSServer {
 
 
     @GET
-    @Path("/version")
+    @Path("/versions")
     public Response getVersion() {
         return createOkResponse(cellBaseConfiguration.getDownload(), MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    @GET
+    @Path("/species")
+    public Response getSpecies() {
+        return getAllSpecies();
     }
 
     /**
@@ -79,5 +87,17 @@ public class MetaWSServer extends GenericRestWSServer {
         return getCategory(category);
     }
 
+    private Response getAllSpecies() {
+        try {
+            QueryResult queryResult = new QueryResult();
+            queryResult.setId("species");
+            queryResult.setDbTime(0);
+            queryResult.setResult(Arrays.asList(cellBaseConfiguration.getSpecies()));
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }

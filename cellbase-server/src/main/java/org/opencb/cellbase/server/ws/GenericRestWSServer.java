@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -50,7 +52,6 @@ import java.util.*;
 @Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
-    // Common application parameters
     @DefaultValue("")
     @PathParam("version")
     @ApiParam(name = "version", value = "CellBase version. Use 'latest' for last version stable.",
@@ -156,6 +157,7 @@ public class GenericRestWSServer implements IWSServer {
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 
+
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr) throws VersionException, SpeciesException {
         this.version = version;
@@ -176,6 +178,7 @@ public class GenericRestWSServer implements IWSServer {
         logger.debug("Executing GenericRestWSServer constructor");
         init(true);
     }
+
 
     protected void init(boolean checkSpecies) throws VersionException, SpeciesException {
         startTime = System.currentTimeMillis();
@@ -212,17 +215,9 @@ public class GenericRestWSServer implements IWSServer {
 
     @Override
     public void parseQueryParams() {
-//        parseCommonQueryParameters(uriInfo.getQueryParameters());
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
 
-//        System.out.println("multivaluedMap.get(\"exclude\") = " + multivaluedMap.get("exclude"));
-//        queryOptions.put("exclude", (exclude != null && !exclude.equals(""))
-//                ? new LinkedList<>(Splitter.on(",").splitToList(exclude))
-//                : Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0).toString()));
-//        queryOptions.put("include", (include != null && !include.equals(""))
-//                ? new LinkedList<>(Splitter.on(",").splitToList(include))
-//                : Splitter.on(",").splitToList(multivaluedMap.get("include").get(0).toString()));
         if(exclude != null && !exclude.equals("")) {
             queryOptions.put("exclude", new LinkedList<>(Splitter.on(",").splitToList(exclude)));
         } else {
@@ -255,10 +250,6 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    @Override
-    public Response stats() {
-        return null;
-    }
 
     @GET
     @Path("/help")
@@ -269,8 +260,6 @@ public class GenericRestWSServer implements IWSServer {
     @GET
     public Response defaultMethod() {
         switch (species) {
-            case "species":
-                return getAllSpecies();
             case "echo":
                 return createStringResponse("Status active");
         }
@@ -278,32 +267,14 @@ public class GenericRestWSServer implements IWSServer {
     }
 
 
-
-    private Response getAllSpecies() {
-        try {
-//            List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
-//            return createOkResponse(jsonObjectWriter.writeValueAsString(speciesList), MediaType.APPLICATION_JSON_TYPE);
-            QueryResult queryResult = new QueryResult();
-            queryResult.setId("species");
-            queryResult.setDbTime(0);
-            queryResult.setResult(Arrays.asList(cellBaseConfiguration.getSpecies()));
-            return createOkResponse(queryResult);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
     protected Response createModelResponse(Class clazz) {
         try {
-//            ObjectMapper mapper = new ObjectMapper();
-//            SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
-//            mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
-//            JsonSchema jsonSchema = visitor.finalSchema();
-//
-//            return createOkResponse(jsonSchema);
-            return null;
+            ObjectMapper mapper = new ObjectMapper();
+            SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+            mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
+            JsonSchema jsonSchema = visitor.finalSchema();
+
+            return createOkResponse(jsonSchema);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
