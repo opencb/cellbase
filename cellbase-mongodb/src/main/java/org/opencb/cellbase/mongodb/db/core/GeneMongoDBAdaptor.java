@@ -76,7 +76,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     public QueryResult getAll(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
 
-        List<Object> biotypes = options.getList("biotypes", null);
+        List<String> biotypes = options.getAsStringList("biotype");
         if (biotypes != null && biotypes.size() > 0) {
             BasicDBList biotypeIds = new BasicDBList();
             biotypeIds.addAll(biotypes);
@@ -144,7 +144,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         if(options != null && options.get("chromosome") != null) {
             query = QueryBuilder.start("chromosome").is(options.get("chromosome")).get();
         }
-        return executeDistinct("", "biotype", query);
+        return executeDistinct("distinct", "biotype", query);
     }
 
     @Override

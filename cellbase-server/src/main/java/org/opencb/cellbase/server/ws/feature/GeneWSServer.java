@@ -91,7 +91,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects", response = QueryResponse.class)
     public Response getAll(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
-                           @DefaultValue("") @QueryParam("biotype") List<String> biotypes) {
+                           @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
@@ -178,7 +178,7 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/biotypes")
+    @Path("/biotype")
     @ApiOperation(httpMethod = "GET", value = "Get the list of existing biotypes")
     public Response getAllBiotypes() {
         try {
