@@ -21,6 +21,7 @@ import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryOptions;
@@ -38,7 +39,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class PositionWSServer extends GenericRestWSServer {
 
-	public PositionWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+	public PositionWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
 		super(version, species, uriInfo, hsr);
 	}
 
@@ -83,7 +84,7 @@ public class PositionWSServer extends GenericRestWSServer {
 	@Path("/{geneId}/gene")
 	public Response getGeneByPosition(@PathParam("geneId") String query) {
 		try {
-			checkParams();
+			parseQueryParams();
 			List<Position> positionList = Position.parsePositions(query);
 			GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 			QueryOptions queryOptions = new QueryOptions("exclude", null);
@@ -99,7 +100,7 @@ public class PositionWSServer extends GenericRestWSServer {
 	@Path("/{geneId}/transcript")
 	public Response getTranscriptByPosition(@PathParam("geneId") String query) {
 		try {
-			checkParams();
+			parseQueryParams();
 			List<Position> positionList = Position.parsePositions(query);
 			TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
 			return createOkResponse(transcriptDBAdaptor.getAllByPositionList(positionList, queryOptions));
@@ -124,7 +125,7 @@ public class PositionWSServer extends GenericRestWSServer {
 
     private Response getSNPByPosition(String query) {
         try {
-            checkParams();
+            parseQueryParams();
             List<Position> positionList = Position.parsePositions(query);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));

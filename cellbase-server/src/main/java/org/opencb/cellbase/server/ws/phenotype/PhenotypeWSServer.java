@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws.phenotype;
 
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -32,7 +33,7 @@ public class PhenotypeWSServer extends GenericRestWSServer {
 
 
     public PhenotypeWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                          @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                          @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
 //        this.exclude = Arrays.asList(exclude.trim().split(","));
     }

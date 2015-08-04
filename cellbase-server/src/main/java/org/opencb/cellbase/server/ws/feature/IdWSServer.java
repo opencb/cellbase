@@ -23,6 +23,7 @@ import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryOptions;
@@ -45,7 +46,7 @@ import java.util.List;
 public class IdWSServer extends GenericRestWSServer {
 
     public IdWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                      @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                      @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -60,7 +61,7 @@ public class IdWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references for the ID")
     public Response getByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
         try {
-            checkParams();
+            parseQueryParams();
             XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             if (!dbname.equals("")) {
                 queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
@@ -82,7 +83,7 @@ public class IdWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the gene for the given ID")
     public Response getGeneByEnsemblId(@PathParam("id") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             QueryOptions queryOptions = new QueryOptions("exclude", exclude);
 
@@ -98,7 +99,7 @@ public class IdWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the SNP for the given ID")
     public Response getSnpByFeatureId(@PathParam("id") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
@@ -111,7 +112,7 @@ public class IdWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the genes that match the beginning of the given string")
     public Response getByLikeQuery(@PathParam("id") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
 //            if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
 //                List<List<Xref>> snpXrefs = x.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query));
@@ -133,7 +134,7 @@ public class IdWSServer extends GenericRestWSServer {
 */
     public Response getByContainsQuery(@PathParam("id") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             List<QueryResult> xrefs = xRefDBAdaptor.getByContainsQueryList(Splitter.on(",").splitToList(query), queryOptions);
             if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {

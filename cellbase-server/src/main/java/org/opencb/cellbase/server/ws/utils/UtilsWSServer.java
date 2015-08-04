@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws.utils;
 
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -31,15 +32,15 @@ import java.io.IOException;
 @Produces("text/plain")
 public class UtilsWSServer extends GenericRestWSServer {
 
-//	public UtilsWSServer(@Context UriInfo uriInfo) throws VersionException, IOException {
+//	public UtilsWSServer(@Context UriInfo uriInfo) throws VersionException, SpeciesException, IOException {
 //		super(uriInfo);
 //	}
 	
-	public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+	public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
 		super(version, species, uriInfo, hsr);
 	}
 	
-//	public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo) throws VersionException, IOException {
+//	public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo) throws VersionException, SpeciesException, IOException {
 //		super(version, species, uriInfo);
 //	}
 	

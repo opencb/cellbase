@@ -18,8 +18,8 @@ package org.opencb.cellbase.server.ws.feature;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResponse;
@@ -30,7 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.lang.annotation.Inherited;
 
 /**
  * @author imedina
@@ -42,7 +41,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
 
     public ClinicalWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -51,7 +50,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "description?", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
     public Response getAll() {
         try {
-            checkParams();
+            parseQueryParams();
 //            Boolean noFilter = true;
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 //            if(rcv != null && !rcv.equals("")) {
@@ -106,7 +105,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getPhenotypeGeneRelations() {
 
         try {
-            checkParams();
+            parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions));
         } catch (Exception e) {
@@ -119,7 +118,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
     public Response getAllListAccessions() {
         try {
-            checkParams();
+            parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
         } catch (Exception e) {
