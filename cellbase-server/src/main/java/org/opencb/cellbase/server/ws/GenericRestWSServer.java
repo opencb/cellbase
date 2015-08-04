@@ -49,7 +49,7 @@ import java.util.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
-@Api(value = "Generic", description = "Generic RESTful Web Services API")
+//@Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("")

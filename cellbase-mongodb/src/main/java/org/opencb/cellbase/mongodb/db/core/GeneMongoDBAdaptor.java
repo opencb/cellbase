@@ -83,7 +83,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             builder = builder.and("biotype").in(biotypeIds);
         }
 
-        //		options = addExcludeReturnFields("transcripts", options);
         return executeQuery("result", builder.get(), options);
     }
 

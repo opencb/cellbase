@@ -113,16 +113,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
         List<List<DBObject>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
-//            DBObject[] commands = new DBObject[3];
             List<DBObject> commandList = new ArrayList<>(3);
             DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.id", id));
             DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
-//            commands[0] = match;
-//            commands[1] = unwind;
-//            commands[2] = match;
+//            DBObject project = new BasicDBObject("$project", new BasicDBObject("transcripts", 1));
             commandList.add(match);
             commandList.add(unwind);
             commandList.add(match);
+//            commandList.add(project);
             commandsList.add(commandList);
         }
         return executeAggregationList2(idList, commandsList, options);
@@ -135,7 +133,23 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options) {
-        return null;
+//        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.id": "ENST00000343281"}})
+
+        List<List<DBObject>> commandsList = new ArrayList<>(idList.size());
+        for (String id : idList) {
+//            DBObject[] commands = new DBObject[3];
+            List<DBObject> commandList = new ArrayList<>(3);
+            DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.id", id));
+            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
+//            commands[0] = match;
+//            commands[1] = unwind;
+//            commands[2] = match;
+            commandList.add(match);
+            commandList.add(unwind);
+            commandList.add(match);
+            commandsList.add(commandList);
+        }
+        return executeAggregationList2(idList, commandsList, options);
     }
 
     @Override
