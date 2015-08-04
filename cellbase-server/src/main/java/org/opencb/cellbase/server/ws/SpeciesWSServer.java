@@ -37,7 +37,7 @@ import java.io.IOException;
  * Created by imedina on 04/08/15.
  */
 @Path("/{version}/{species}")
-@Produces("application/jsonz")
+@Produces("application/json")
 @Api(value = "Species", description = "Species RESTful Web Services API")
 public class SpeciesWSServer extends GenericRestWSServer {
 
