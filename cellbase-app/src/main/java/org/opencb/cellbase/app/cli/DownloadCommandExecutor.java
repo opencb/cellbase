@@ -277,9 +277,24 @@ public class DownloadCommandExecutor extends CommandExecutor {
         makeDir(geneFolder);
 
         downloadEnsemblData(sp, spShortName, geneFolder, host);
+        downloadDrugData(sp, speciesFolder);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas(speciesFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
+    }
+
+    private void downloadDrugData(Species species, Path speciesFolder)
+            throws IOException, InterruptedException {
+
+        if(species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading drug-gene data...");
+
+            Path geneDrugFolder = speciesFolder.resolve("gene/geneDrug");
+            makeDir(geneDrugFolder);
+            String url = configuration.getDownload().getDgidb().getHost();
+            downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
+
+        }
     }
 
     private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {

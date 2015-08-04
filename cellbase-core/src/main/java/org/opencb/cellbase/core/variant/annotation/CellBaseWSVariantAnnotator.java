@@ -36,14 +36,14 @@ import java.util.concurrent.Callable;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class CellbaseWSVariantAnnotator implements VariantAnnotator {
+public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
-    private Logger logger;
     private CellBaseClient cellBaseClient;
     private List<VariantAnnotation> variantAnnotationList;
 
+    private Logger logger;
 
-    public CellbaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
+    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
         this.cellBaseClient = cellBaseClient;
         logger = LoggerFactory.getLogger(this.getClass());
     }
@@ -69,8 +69,13 @@ public class CellbaseWSVariantAnnotator implements VariantAnnotator {
         }
 
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
+//        variantAnnotationList = new ArrayList<>(variantList.size());
         for (QueryResult<VariantAnnotation> queryResult : response.getResponse()) {
-            variantAnnotationList.add(queryResult.getResult().get(0));
+            if (queryResult.getResult().size() > 0) {
+                variantAnnotationList.add(queryResult.getResult().get(0));
+            } else {
+                logger.warn("Emtpy result for '{}'", queryResult.getId());
+            }
         }
         return variantAnnotationList;
     }
@@ -96,12 +101,18 @@ public class CellbaseWSVariantAnnotator implements VariantAnnotator {
             if (variant.getAlternate().equals("<DEL>")) {  // large deletion
                 int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));  // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
                 ref = StringUtils.repeat("N", end - variant.getStart());
+                return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+                        ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
+            // TODO: structural variants are not yet properly handled. Implement and remove this patch asap
+            } else if(variant.getAlternate().startsWith("<") || (variant.getAlternate().length()>1 && variant.getReference().length()>1)) {
+                return null;
             } else {
                 ref = variant.getReference().equals("") ? "-" : variant.getReference();
+                return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+                        ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
             }
-            return new GenomicVariant(variant.getChromosome(), variant.getStart(),
-                    ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
-            //        return new GenomicVariant(variant.getChromosome(), ensemblPos, ref, alt);
+//            return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+//                    ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
         }
     }
 

@@ -26,11 +26,11 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class VariantAnnotatorRunner implements ParallelTaskRunner.Task<Variant,VariantAnnotation> {
+public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant,VariantAnnotation> {
 
     private List<VariantAnnotator> variantAnnotatorList;
 
-    public VariantAnnotatorRunner(List<VariantAnnotator> variantAnnotatorList) {
+    public VariantAnnotatorTask(List<VariantAnnotator> variantAnnotatorList) {
         this.variantAnnotatorList = variantAnnotatorList;
     }
 

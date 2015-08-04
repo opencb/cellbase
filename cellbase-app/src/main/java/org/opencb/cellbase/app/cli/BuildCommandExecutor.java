@@ -109,7 +109,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if(buildCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{"genome_info", "genome", "gene", "variation", "regulatory_region",
+                    buildOptions = new String[]{"genome_info", "genome", "gene", "variation", "regulation",
                             "protein", "ppi", "conservation", "drug", "clinvar", "cosmic", "gwas"};
                 }else {
                     buildOptions = buildCommandOptions.data.split(",");
@@ -136,8 +136,8 @@ public class BuildCommandExecutor extends CommandExecutor {
 //                        case "variation-phen-annot":
 //                            parser = buildVariationPhenotypeAnnotation();
 //                            break;
-                        case "regulatory_region":
-                            parser = buildRegulatoryRegion();
+                        case "regulation":
+                            parser = buildRegulation();
                             break;
                         case "protein":
                             parser = buildProtein();
@@ -264,7 +264,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 //    }
 
 
-    private CellBaseParser buildRegulatoryRegion() {
+    private CellBaseParser buildRegulation() {
         Path regulatoryRegionFilesDir = input.resolve("regulation");
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);

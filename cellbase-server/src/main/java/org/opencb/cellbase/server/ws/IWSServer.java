@@ -17,13 +17,18 @@
 package org.opencb.cellbase.server.ws;
 
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.datastore.core.QueryResult;
 
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 public interface IWSServer {
+
 
     void checkParams() throws VersionException, SpeciesException;
 

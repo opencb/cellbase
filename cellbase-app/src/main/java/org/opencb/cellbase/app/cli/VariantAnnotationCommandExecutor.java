@@ -28,9 +28,9 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.variant.annotation.CellbaseWSVariantAnnotator;
+import org.opencb.cellbase.core.variant.annotation.CellBaseWSVariantAnnotator;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotatorRunner;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotatorTask;
 import org.opencb.cellbase.core.variant.annotation.VcfVariantAnnotator;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
@@ -80,6 +80,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         if(variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
         }
+
         if(variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
         }
@@ -95,12 +96,23 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
 
             String path = "/cellbase/webservices/rest/";
-            CellBaseClient cellBaseClient = new CellBaseClient(url, port, path,
-                    configuration.getVersion(), species);
-            List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorRunnerList = new ArrayList<>(numThreads);
+            CellBaseClient cellBaseClient;
+            if (url.contains(":")) {
+                String[] hostAndPort = url.split(":");
+                url = hostAndPort[0];
+                port = Integer.parseInt(hostAndPort[1]);
+                cellBaseClient = new CellBaseClient(url, port, path,
+                        configuration.getVersion(), species);
+            } else {
+                cellBaseClient = new CellBaseClient(url, port, path,
+                        configuration.getVersion(), species);
+            }
+            logger.debug("URL set to: {}", url+":"+port+path);
+
+            List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
                 List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
-                variantAnnotatorRunnerList.add(new VariantAnnotatorRunner(variantAnnotatorList));
+                variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
             }
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
@@ -114,13 +126,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 dataWriter = new VepFormatWriter(output.toString());
             }
 
-            ParallelTaskRunner<Variant, VariantAnnotation> runner = null;
-            try {
-                runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorRunnerList, dataWriter, config);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
+            ParallelTaskRunner<Variant, VariantAnnotation> runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
             runner.run();
 
             if (customFiles != null) {
@@ -151,7 +157,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         variantAnnotatorList = new ArrayList<>();
 
         // CellBase annotator is always called
-        variantAnnotatorList.add(new CellbaseWSVariantAnnotator(cellBaseClient));
+        variantAnnotatorList.add(new CellBaseWSVariantAnnotator(cellBaseClient));
 
         // Include custom annotators if required
         if(customFiles!=null) {
@@ -345,7 +351,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             throw new ParameterException("Please check command line sintax. Provide a valid URL to access CellBase web services.");
         }
         // port
-        if (variantAnnotationCommandOptions.port>0) {
+        if (variantAnnotationCommandOptions.port > 0) {
             port = variantAnnotationCommandOptions.port;
         } else {
             throw new ParameterException("Please check command line sintax. Provide a valid port to access CellBase web services.");

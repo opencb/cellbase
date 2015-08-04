@@ -139,26 +139,30 @@ public class MongoDBAdaptor {
         for (int i = 0; i < queries.size(); i++) {
             DBObject query = queries.get(i);
             QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
+            queryResult.setId(ids.get(i).toString());
 
             // Execute query and calculate time
             dbTimeStart = System.currentTimeMillis();
-            DBCursor cursor = mongoDBCollection2.nativeQuery().find(query, options);
-            List<DBObject> dbObjectList = new LinkedList<>();
-            while (cursor.hasNext()) {
-                dbObjectList.add(cursor.next());
+            if (options.containsKey("count") && options.getBoolean("count")) {
+                queryResult = mongoDBCollection2.count(query);
+            } else {
+                DBCursor cursor = mongoDBCollection2.nativeQuery().find(query, options);
+                List<DBObject> dbObjectList = new LinkedList<>();
+                while (cursor.hasNext()) {
+                    dbObjectList.add(cursor.next());
+                }
+                queryResult.setNumResults(dbObjectList.size());
+                queryResult.setResult(dbObjectList);
+
+                // Limit is set in queryOptions, count number of total results
+                if(options != null && options.getInt("limit", 0) > 0) {
+                    queryResult.setNumTotalResults(mongoDBCollection2.count(query).first());
+                } else {
+                    queryResult.setNumTotalResults(dbObjectList.size());
+                }
             }
             dbTimeEnd = System.currentTimeMillis();
-            // setting queryResult fields
-            queryResult.setId(ids.get(i).toString());
             queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-            queryResult.setNumResults(dbObjectList.size());
-            // Limit is set in queryOptions, count number of total results
-            if(options != null && options.getInt("limit", 0) > 0) {
-                queryResult.setNumTotalResults(mongoDBCollection2.count(query).first());
-            } else {
-                queryResult.setNumTotalResults(dbObjectList.size());
-            }
-            queryResult.setResult(dbObjectList);
 
             queryResults.add(queryResult);
         }
