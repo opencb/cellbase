@@ -39,7 +39,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //        mongoDBCollection = db.getCollection("conservation");
         mongoDBCollection = mongoDataStore.getCollection("conservation");
 
-        logger.info("ConservedRegionMongoDBAdaptor: in 'constructor'");
+        logger.debug("ConservedRegionMongoDBAdaptor: in 'constructor'");
     }
 
 //    private int getChunk(int position) {
@@ -108,7 +108,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             ids.add(region.toString());
 
 
-            logger.info(builder.get().toString());
+            logger.debug(builder.get().toString());
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
@@ -208,7 +208,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             queries.add(builder.get());
             ids.add(region.toString());
 
-            logger.info(builder.get().toString());
+            logger.debug(builder.get().toString());
 
         }
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);

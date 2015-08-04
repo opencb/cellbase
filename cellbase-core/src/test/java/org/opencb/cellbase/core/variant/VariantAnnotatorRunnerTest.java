@@ -16,13 +16,6 @@
 
 package org.opencb.cellbase.core.variant;
 
-import org.junit.Test;
-import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotatorRunner;
-
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-
 public class VariantAnnotatorRunnerTest {
 
 //    @Test

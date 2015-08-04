@@ -19,9 +19,9 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
@@ -200,14 +200,21 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
-            List<org.opencb.datastore.core.QueryResult> qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+            List<org.opencb.datastore.core.QueryResult> qrList;
+            if (queryOptions.containsKey("count") && queryOptions.getBoolean("count")) {
+                queryOptions.remove("count");
+                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+                queryOptions.put("count", true);
+            } else {
+                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
+            }
+
             List<QueryResult> queryResults = new ArrayList<>();
             for (org.opencb.datastore.core.QueryResult qr : qrList) {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(qr.getId());
 
-                BasicDBList genes = (BasicDBList) qr.getResult();
-                BasicDBObject gene = (BasicDBObject) genes.get(0);
+                BasicDBObject gene = (BasicDBObject) qr.getResult().get(0);
                 QueryResult variationQueryResult = variationDBAdaptor.getAllByRegion(gene.getString("chromosome"), gene.getInt("start"), gene.getInt("end"), queryOptions);
 
                 queryResult.setNumResults(variationQueryResult.getNumResults());
