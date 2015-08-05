@@ -570,7 +570,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         } else {
             if(variant.getPosition()<(spliceSite2-1) && variant.getPosition()>(spliceSite2-8)) {
                 SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
-                junctionSolution[0] = (variant.getPosition()<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+                junctionSolution[0] = (spliceSite1<=variant.getPosition());  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
             } else {
                 if(variant.getPosition()<(spliceSite2+4) && variant.getPosition()>spliceSite2) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
                     SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
