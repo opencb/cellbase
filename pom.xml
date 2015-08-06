@@ -25,6 +25,10 @@
         <biodata.version>0.5-SNAPSHOT</biodata.version>
         <datastore.version>0.4-SNAPSHOT</datastore.version>
         <java-common-libs.version>3.0-SNAPSHOT</java-common-libs.version>
+
+        <jackson.version>2.5.4</jackson.version>
+        <jersey.version>2.19</jersey.version>
+
         <compileSource>1.8</compileSource>
         <build.dir>build</build.dir>
     </properties>
@@ -126,12 +130,12 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.5.4</version>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
+                <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jsonSchema</artifactId>
-                <version>2.5.4</version>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xerial</groupId>
@@ -141,12 +145,12 @@
             <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet</artifactId>
-                <version>2.17</version>
+                <version>${jersey.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-client</artifactId>
-                <version>2.17</version>
+                <version>${jersey.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.rocksdb</groupId>
