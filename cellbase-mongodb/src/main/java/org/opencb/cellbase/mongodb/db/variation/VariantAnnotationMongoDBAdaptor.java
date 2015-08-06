@@ -795,7 +795,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     }
                     int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                     consequenceTypeTemplate.setCdsPosition(cdsVariantStart);
-                    consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1)/3)+1);
+                    consequenceTypeTemplate.setAaPosition(((cdsVariantStart - 1) / 3) + 1);
                 }
                 if(variantEnd <= genomicCodingEnd) {  // Variant end also within coding region
                     solvePositiveCodingEffect(splicing, transcriptSequence, chromosome, transcriptEnd, genomicCodingEnd,
@@ -1985,12 +1985,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(GenomicVariant variant) {
-        if(variant.getReference().length()==1 && variant.getAlternative().length()==1) {
-            return new ConsequenceTypeSNVCalculator();
-        } else if (variant.getReference().equals("-")) {
+        if (variant.getReference().equals("-")) {
             return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
         } else if (variant.getAlternative().equals("-")) {
             return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+        } else if(variant.getReference().length()==1 && variant.getAlternative().length()==1) {
+            return new ConsequenceTypeSNVCalculator();
         }
         throw new UnsupportedURLVariantFormat();
     }
