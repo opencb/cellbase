@@ -26,9 +26,8 @@ public abstract class ConsequenceTypeCalculator {
     protected Gene gene;
     protected Transcript transcript;
     protected GenomicVariant variant;
-    protected Map<String,MiRNAGene> miRNAMap;
 
-    public List<ConsequenceType> run(GenomicVariant variant, List<Gene> geneList, Map<String,MiRNAGene> miRNAMap,
+    public List<ConsequenceType> run(GenomicVariant variant, List<Gene> geneList,
                                      List<RegulatoryRegion> regulatoryRegionList) { return null; }
 
     protected Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
@@ -64,5 +63,44 @@ public abstract class ConsequenceTypeCalculator {
             }
         }
     }
+
+    protected void solveMiRNA(int cdnaVariantStart, int cdnaVariantEnd, boolean isIntronicVariant) {
+        if (transcript.getBiotype().equals(VariantAnnotationUtils.MIRNA)) {  // miRNA with miRBase data
+            if(gene.getMirna()!=null) {
+                if (cdnaVariantStart == -1) {  // Probably deletion starting before the miRNA location
+                    cdnaVariantStart = 1;       // Truncate to the first transcript position to avoid null exception
+                }
+                if (cdnaVariantEnd == -1) {    // Probably deletion ending after the miRNA location
+                    cdnaVariantEnd = gene.getMirna().getSequence().length();  // Truncate to the last transcript position to avoid null exception
+                }
+                List<MiRNAGene.MiRNAMature> miRNAMatureList = gene.getMirna().getMatures();
+                int i = 0;
+                while (i < miRNAMatureList.size() && !regionsOverlap(miRNAMatureList.get(i).cdnaStart,
+                        miRNAMatureList.get(i).cdnaEnd, cdnaVariantStart, cdnaVariantEnd)) {
+                    i++;
+                }
+                if (i < miRNAMatureList.size()) {  // Variant overlaps at least one mature miRNA
+                    SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
+                } else {
+                    if (!isIntronicVariant) {  // Exon variant
+                        SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
+                    }
+                    SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
+                }
+            } else {
+                addNonCodingSOs(isIntronicVariant);
+            }
+        } else {
+            addNonCodingSOs(isIntronicVariant);
+        }
+    }
+
+    protected void addNonCodingSOs(boolean isIntronicVariant) {
+        if (!isIntronicVariant) {  // Exon variant
+            SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
+        }
+        SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
+    }
+
 
 }

@@ -1930,7 +1930,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
 
-        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, miRNAMap,
+        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
                 regulatoryRegionList);
 
         for(ConsequenceType consequenceType : consequenceTypeList) {
@@ -1990,13 +1990,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         } else if (variant.getReference().equals("-")) {
             return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
         } else if (variant.getAlternative().equals("-")) {
-            if(variant.getReference().length()>50) {
-                return null;
-//                return new ConsequenceTypeBigDeletionCalculator();
-            } else {
-                return null;
-//                return new ConsequenceTypeDeletionCalculator();
-            }
+            return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
         }
         throw new UnsupportedURLVariantFormat();
     }

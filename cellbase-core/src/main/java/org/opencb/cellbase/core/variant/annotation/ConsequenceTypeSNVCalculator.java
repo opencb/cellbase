@@ -22,16 +22,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     }
 
     public List<ConsequenceType> run(GenomicVariant inputVariant, List<Gene> geneList,
-                                     List<RegulatoryRegion> regulatoryRegionList) {
-        return run(inputVariant, geneList, null, regulatoryRegionList);
-    }
-
-    public List<ConsequenceType> run(GenomicVariant inputVariant, List<Gene> geneList,
-                                 Map<String,MiRNAGene> inputMiRNAMap, List<RegulatoryRegion> regulatoryRegionList) {
+                                 List<RegulatoryRegion> regulatoryRegionList) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        miRNAMap = inputMiRNAMap;
         boolean isIntegernic = true;
         for(Gene currentGene: geneList) {
             gene = currentGene;
@@ -378,7 +372,6 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveMiRNA(int cdnaVariantPosition, boolean isIntronicVariant) {
         if (transcript.getBiotype().equals(VariantAnnotationUtils.MIRNA)) {  // miRNA with miRBase data
-            MiRNAGene miRNAGene;
             if(gene.getMirna()!=null) {
                 // This if provides equivalent functionality to the one in the original (before refactoring) version, may be modified in the future
                 if (cdnaVariantPosition == -1) {
@@ -393,18 +386,14 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     if (i < miRNAMatureList.size()) {  // Variant overlaps at least one mature miRNA
                         SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
                     } else {
-                        if (!isIntronicVariant) {  // Exon variant
-                            SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
-                        }
-                        SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
+                        addNonCodingSOs(isIntronicVariant);
                     }
                 }
+            } else {
+                addNonCodingSOs(isIntronicVariant);
             }
         } else {
-            if (!isIntronicVariant) {  // Exon variant
-                SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
-            }
-            SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
+            addNonCodingSOs(isIntronicVariant);
         }
     }
 

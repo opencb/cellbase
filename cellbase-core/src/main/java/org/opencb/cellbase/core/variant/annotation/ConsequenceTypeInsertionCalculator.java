@@ -36,15 +36,9 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
     public List<ConsequenceType> run(GenomicVariant inputVariant, List<Gene> geneList,
                                      List<RegulatoryRegion> regulatoryRegionList) {
-        return run(inputVariant, geneList, null, regulatoryRegionList);
-    }
-
-    public List<ConsequenceType> run(GenomicVariant inputVariant, List<Gene> geneList,
-                                     Map<String,MiRNAGene> inputMiRNAMap, List<RegulatoryRegion> regulatoryRegionList) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        miRNAMap = inputMiRNAMap;
         variantEnd = variant.getPosition();
         variantStart = variant.getPosition() - 1;
         boolean isIntegernic = false;
@@ -462,36 +456,6 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             exonCounter++;
         }
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
-    }
-
-    private void solveMiRNA(int cdnaVariantStart, int cdnaVariantEnd, boolean isIntronicVariant) {
-        if (transcript.getBiotype().equals(VariantAnnotationUtils.MIRNA)) {  // miRNA with miRBase data
-            if(cdnaVariantStart==-1) {  // Probably deletion starting before the miRNA location
-                cdnaVariantStart=1;       // Truncate to the first transcript position to avoid null exception
-            }
-            if(cdnaVariantEnd==-1) {    // Probably deletion ending after the miRNA location
-                cdnaVariantEnd=miRNAMap.get(gene.getId()).getSequence().length();  // Truncate to the last transcript position to avoid null exception
-            }
-            List<MiRNAGene.MiRNAMature> miRNAMatureList = miRNAMap.get(gene.getId()).getMatures();
-            int i = 0;
-            while(i<miRNAMatureList.size()  && !regionsOverlap(miRNAMatureList.get(i).cdnaStart,
-                    miRNAMatureList.get(i).cdnaEnd, cdnaVariantStart, cdnaVariantEnd)) {
-                i++;
-            }
-            if(i<miRNAMatureList.size()) {  // Variant overlaps at least one mature miRNA
-                SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
-            } else {
-                if (!isIntronicVariant) {  // Exon variant
-                    SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
-                }
-                SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
-            }
-        } else {
-            if (!isIntronicVariant) {  // Exon variant
-                SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
-            }
-            SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
-        }
     }
 
     private void solveCodingPositiveTranscript() {

@@ -88,6 +88,9 @@ public class VariantAnnotationUtils {
     public static final String INFRAME_INSERTION="inframe_insertion";
     public static final String FRAMESHIFT_VARIANT="frameshift_variant";
     public static final String CODING_SEQUENCE_VARIANT="coding_sequence_variant";
+    public static final String TRANSCRIPT_ABLATION="transcript_ablation";
+    public static final String FEATURE_TRUNCATION="feature_truncation";
+    public static final String INFRAME_DELETION="inframe_deletion";
 
     public static final String CDS_START_NF="cds_start_NF";
     public static final String CDS_END_NF="cds_end_NF";
