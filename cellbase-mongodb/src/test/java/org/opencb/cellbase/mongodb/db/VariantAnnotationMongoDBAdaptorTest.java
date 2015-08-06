@@ -279,6 +279,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 52365874, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 133761141, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 12172775, "G", "A"), new QueryOptions());  // should return 10      12172775        A       ENSG00000265653 ENST00000584402 -       non_coding_transcript_exon_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 10993859, "G", "C"), new QueryOptions());  // should return 10      10993859        C       ENSG00000229240 ENST00000598573 -       splice_region_variant
@@ -533,7 +534,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         int processedVariants = 0;
 
         for (VcfRecord vcfRecord : vcfRecordList) {
-            boolean isSnv = false;
+//            boolean isSnv = false;
             // Short deletion
             if (vcfRecord.getReference().length() > 1) {
                 ref = vcfRecord.getReference().substring(1);
@@ -571,10 +572,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 alt = vcfRecord.getAlternate();
                 ensemblPos = vcfRecord.getPosition();
                 pos = Integer.toString(ensemblPos);
-                isSnv = true;
+//                isSnv = true;
             }
             // TODO: Remove this if as refactoring implements consequence types for other variant types
-            if(isSnv) {
+//            if(isSnv) {
                 processedVariants++;
                 try {
                     queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), ensemblPos,
@@ -604,7 +605,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                     }
                 }
             }
-        }
+//        }
         return processedVariants;
 //        return vcfRecordList.size();
     }
@@ -647,8 +648,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                     alt = lineFields[2];
                 }
                 // TODO: Remove this if as refactoring implements consequence types for other variant types
-                // TODO: PARECE Q NO ESTA ENTRANDO AQUI NUNCA, NO SE PQ, DEPURAR
-                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
+//                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
                     if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
                             !previousAlt.equals(alt)) {
                         nReadVariants++;
@@ -669,7 +669,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
                         previousAlt = alt;
                         filePointer = raf.getFilePointer();
                     }
-                }
+//                }
             }
 
             raf.seek(filePointer);
