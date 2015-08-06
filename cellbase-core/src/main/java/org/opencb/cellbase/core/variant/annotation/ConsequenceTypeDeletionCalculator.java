@@ -37,10 +37,10 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         variantEnd = variant.getPosition() + variant.getReference().length() - 1;
         variantStart = variant.getPosition();
         isBigDeletion = ((variantEnd - variantStart) > bigVariantSizeThreshold);
-        boolean isIntegernic = false;
+        boolean isIntegernic = true;
         for (Gene currentGene : geneList) {
             gene = currentGene;
-            isIntegernic = isIntegernic || (variantEnd < gene.getStart() || variantStart > gene.getEnd());
+            isIntegernic = isIntegernic && (variantEnd < gene.getStart() || variantStart > gene.getEnd());
             for (Transcript currentTranscript : gene.getTranscripts()) {
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
@@ -193,6 +193,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         int exonCounter = 1;
         while (exonCounter < transcript.getExons().size() && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
             int prevSpliceSite = exon.getStart() - 1;
+            exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
             if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
             }
@@ -254,6 +255,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         int exonCounter = 1;
         while (exonCounter < transcript.getExons().size() && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
             int prevSpliceSite = exon.getStart() - 1;
+            exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
             transcriptSequence = exon.getSequence() + transcriptSequence;
             if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
@@ -461,6 +463,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         int exonCounter = 1;
         while (exonCounter < transcript.getExons().size() && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
             int prevSpliceSite = exon.getEnd() + 1;
+            exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
             transcriptSequence = transcriptSequence + exon.getSequence();
             if (firstCdsPhase == -1 && transcript.getGenomicCodingStart() <= exon.getEnd()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
@@ -528,6 +531,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         int exonCounter = 1;
         while (exonCounter < transcript.getExons().size() && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
             int prevSpliceSite = exon.getEnd() + 1;
+            exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
             if (firstCdsPhase == -1 && transcript.getGenomicCodingStart() <= exon.getEnd()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
             }

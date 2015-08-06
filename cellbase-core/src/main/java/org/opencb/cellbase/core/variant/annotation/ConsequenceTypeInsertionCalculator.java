@@ -41,10 +41,10 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         variant = inputVariant;
         variantEnd = variant.getPosition();
         variantStart = variant.getPosition() - 1;
-        boolean isIntegernic = false;
+        boolean isIntegernic = true;
         for (Gene currentGene : geneList) {
             gene = currentGene;
-            isIntegernic = isIntegernic || (variantEnd < gene.getStart() || variantStart > gene.getEnd());
+            isIntegernic = isIntegernic && (variantEnd < gene.getStart() || variantStart > gene.getEnd());
             for (Transcript currentTranscript : gene.getTranscripts()) {
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
@@ -187,6 +187,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         int exonCounter = 1;
         while(exonCounter<transcript.getExons().size() && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
             int prevSpliceSite = exon.getStart()-1;
+            exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
             if(firstCdsPhase==-1 && exon.getGenomicCodingEnd()>=exon.getStart()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
             }
@@ -246,6 +247,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         int exonCounter = 1;
         while(exonCounter<transcript.getExons().size() && variantAhead) {  // This is not a do-while since we cannot call solveJunction  until
             int prevSpliceSite = exon.getStart()-1;
+            exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
             transcriptSequence = exon.getSequence()+transcriptSequence;
             if(firstCdsPhase==-1 && exon.getGenomicCodingEnd()>=exon.getStart()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
