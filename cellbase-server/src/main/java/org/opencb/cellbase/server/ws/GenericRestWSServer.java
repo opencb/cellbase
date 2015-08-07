@@ -130,6 +130,9 @@ public class GenericRestWSServer implements IWSServer {
      */
     protected static DBAdaptorFactory dbAdaptorFactory;
 
+    private static final int LIMIT_DEFAULT = 1000;
+    private static final int LIMIT_MAX = 5000;
+
     static {
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
         logger.info("Static block, creating MongoDBAdapatorFactory");
@@ -235,7 +238,7 @@ public class GenericRestWSServer implements IWSServer {
                     : null);
         }
 
-        queryOptions.put("limit", (limit > 0) ? limit : 1000);
+        queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX): LIMIT_DEFAULT);
         queryOptions.put("skip", (skip > 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
