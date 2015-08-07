@@ -154,6 +154,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private QueryBuilder addClinvarGeneFilter(QueryBuilder builder, QueryOptions options) {
 //        List<String> geneList = (List<String>) options.get("gene");
         List<String> geneList = options.getAsStringList("gene");
+        System.out.println("geneList = " + geneList);
         if (geneList != null && geneList.size() > 0) {
             logger.info("gene filter activated, gene list: " + geneList.toString());
             builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",

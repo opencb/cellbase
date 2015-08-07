@@ -23,12 +23,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -94,7 +96,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects", response = QueryResponse.class)
-    public Response getAll(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
+    public Response getAll(@ApiParam(value = "String with the list of biotypes to return")
                            @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
@@ -195,7 +197,7 @@ public class GeneWSServer extends GenericRestWSServer {
             }
 
             List<QueryResult> queryResults = new ArrayList<>();
-            for (org.opencb.datastore.core.QueryResult qr : qrList) {
+            for (QueryResult qr : qrList) {
                 QueryResult queryResult = new QueryResult();
                 queryResult.setId(qr.getId());
 
@@ -217,7 +219,8 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/mutation")
-    @ApiOperation(httpMethod = "GET", value = "Get all variants within the specified gene(s)")
+    @ApiOperation(httpMethod = "GET", value = "[DEPRECATED] Get all variants within the specified gene(s)")
+    @Deprecated
     public Response getMutationByGene(@PathParam("geneId") String query) {
         try {
             parseQueryParams();
@@ -238,7 +241,8 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
-            return createOkResponse(tfbsDBAdaptor.getAllByTargetGeneIdList(Splitter.on(",").splitToList(query), queryOptions));
+            List<QueryResult> queryResults = tfbsDBAdaptor.getAllByTargetGeneIdList(Splitter.on(",").splitToList(query), queryOptions);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -248,11 +252,11 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/mirna_target")
     @ApiOperation(httpMethod = "GET", value = "Get all microRNAs binding sites for this gene(s)")
-    public Response getAllMirna(@PathParam("geneId") String query) {
+    public Response getAllMirna(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
             MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-            return createOkResponse(mirnaDBAdaptor.getAllMiRnaTargetsByGeneNameList(Splitter.on(",").splitToList(query)));
+            return createOkResponse(mirnaDBAdaptor.getAllMiRnaTargetsByGeneNameList(Splitter.on(",").splitToList(geneId)));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -261,11 +265,12 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/exon")
     @ApiOperation(httpMethod = "GET", value = "Get all exons for this gene(s)")
-    public Response getExonByGene(@PathParam("geneId") String query) {
+    public Response getExonByGene(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            List<QueryResult> queryResults = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(geneId), queryOptions);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -274,12 +279,13 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/protein")
-    @ApiOperation(httpMethod = "GET", value = "Get the protein-protein interactions in which this gene is involved")
-    public Response getProteinById(@PathParam("geneId") String query) {
+    @ApiOperation(httpMethod = "GET", value = "Return UniProt info of the proteins")
+    public Response getProteinById(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            return createOkResponse(proteinDBAdaptor.getAllByXrefList(Splitter.on(",").splitToList(query), queryOptions));
+            List<QueryResult> queryResults = proteinDBAdaptor.getAllByXrefList(Splitter.on(",").splitToList(geneId), queryOptions);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -299,32 +305,30 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
 
-//    @GET
-//    @Path("/{geneId}/clinvar")
-//    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
-//    public Response getAllClinvarByGene(@PathParam("geneId") String query,
-//                                       @DefaultValue("") @QueryParam("id") String id,
-//                                       @DefaultValue("") @QueryParam("region") String region,
-//                                       @DefaultValue("") @QueryParam("phenotype") String phenotype) {
-//        try {
-//            parseQueryParams();
-//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+    @GET
+    @Path("/{geneId}/clinical")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
+    public Response getAllClinvarByGene(@PathParam("geneId") String geneId, @DefaultValue("") @QueryParam("phenotype") String phenotype) {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 //            if(region != null && !region.equals("")) {
-//                queryOptions.add("region", Region.parseRegions(query));
+//                queryOptions.add("region", Region.parseRegions(region));
 //            }
 //            if(id != null && !id.equals("")) {
 //                queryOptions.add("id", Arrays.asList(id.split(",")));
 //            }
-//            if(phenotype != null && !phenotype.equals("")) {
-//                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
-//            }
-//
-//            return createOkResponse(clinicalDBAdaptor.getAllClinvarByGeneList(Splitter.on(",").splitToList(query), queryOptions));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getAllByAccessions", e.toString());
-//        }
-//    }
+
+            queryOptions.add("source", "clinvar");
+            queryOptions.add("gene", geneId);
+            if(phenotype != null && !phenotype.isEmpty()) {
+                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
+            }
+            return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 
     @GET
     public Response defaultMethod() {

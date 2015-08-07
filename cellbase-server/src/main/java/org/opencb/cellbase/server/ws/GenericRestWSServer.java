@@ -54,26 +54,21 @@ public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("")
     @PathParam("version")
-    @ApiParam(name = "version", value = "CellBase version. Use 'latest' for last version stable.",
-            allowableValues = "v3,latest", defaultValue = "v3")
+    @ApiParam(name = "version", value = "Use 'latest' for last stable version", allowableValues = "v3,latest", defaultValue = "v3")
     protected String version;
 
     @DefaultValue("")
     @PathParam("species")
-    @ApiParam(name = "species", value = "Name of the species to query",
-            defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla," +
-            "mmulatta,sscrofa,cfamiliaris,ggallus,btaurus,cintestinalis,celegans,dmelanogaster,agambiae,pfalciparum," +
-            "scerevisiae,lmajor,athaliana,osativa,gmax,vvinifera,zmays,slycopersicum,csabeus,oaries,olatipes,sbicolor,afumigatus")
+    @ApiParam(name = "species", value = "Name of the species to query", defaultValue = "hsapiens",
+            allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla," +
+                    "mmulatta,sscrofa,cfamiliaris,ggallus,btaurus,cintestinalis,celegans,dmelanogaster,agambiae,pfalciparum," +
+                    "scerevisiae,lmajor,athaliana,osativa,gmax,vvinifera,zmays,slycopersicum,csabeus,oaries,olatipes,sbicolor,afumigatus")
     protected String species;
 
-    protected String assembly = null;
-    protected UriInfo uriInfo;
-    protected HttpServletRequest httpServletRequest;
-
-    protected QueryOptions queryOptions;
-
-    // file name without extension which server will give back when file format is !null
-    private String filename;
+    @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g.: grch38")
+    @DefaultValue("")
+    @QueryParam("assembly")
+    protected String assembly;
 
     @ApiParam(name = "excluded fields", value = "Set which fields are excluded in the response, e.g.: transcripts.exons")
     @DefaultValue("")
@@ -106,12 +101,18 @@ public class GenericRestWSServer implements IWSServer {
     @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json", allowableValues = "json,pb (Not implemented yet)")
     protected String outputFormat;
 
+
+    protected QueryResponse queryResponse;
+    protected QueryOptions queryOptions;
+
+    protected UriInfo uriInfo;
+    protected HttpServletRequest httpServletRequest;
+
     protected static ObjectMapper jsonObjectMapper;
     protected static ObjectWriter jsonObjectWriter;
 
     protected long startTime;
     protected long endTime;
-    protected QueryResponse queryResponse;
 
     protected static Logger logger;
 
@@ -237,9 +238,7 @@ public class GenericRestWSServer implements IWSServer {
         queryOptions.put("limit", (limit > 0) ? limit : 1000);
         queryOptions.put("skip", (skip > 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);
-
-        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
-        filename = (multivaluedMap.get("filename") != null) ? multivaluedMap.get("filename").get(0) : "result";
+//        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
         // Now we add all the others QueryParams in the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {

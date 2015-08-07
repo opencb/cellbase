@@ -59,7 +59,7 @@ public abstract class DBAdaptorFactory {
 
     protected String getAssembly(CellBaseConfiguration.SpeciesProperties.Species species, String assemblyName) {
         String assembly = null;
-        if (assemblyName == null) {
+        if (assemblyName == null || assemblyName.isEmpty()) {
             assembly = species.getAssemblies().get(0).getName();
         } else {
             for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
