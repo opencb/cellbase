@@ -197,7 +197,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
             }
-            solveJunction(prevSpliceSite, exon.getStart() - 1, VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT,
+            solveJunction(exon.getEnd()+1, prevSpliceSite, VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_DONOR_VARIANT, junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
@@ -260,7 +260,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {  // Set firsCdsPhase only when the first coding exon is reached
                 firstCdsPhase = exon.getPhase();
             }
-            solveJunction(prevSpliceSite, exon.getStart() - 1, VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT,
+            solveJunction(exon.getEnd()+1, prevSpliceSite, VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_DONOR_VARIANT, junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
