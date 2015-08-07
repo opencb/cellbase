@@ -111,8 +111,9 @@ public abstract class DBAdaptorFactory {
     public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
 
 
+    @Deprecated
     public abstract ExonDBAdaptor getExonDBAdaptor(String species);
-
+    @Deprecated
     public abstract ExonDBAdaptor getExonDBAdaptor(String species, String assembly);
 
 

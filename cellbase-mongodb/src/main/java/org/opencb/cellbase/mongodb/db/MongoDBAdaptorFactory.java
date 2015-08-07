@@ -198,11 +198,13 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
+    @Deprecated
     public ExonDBAdaptor getExonDBAdaptor(String species) {
         return getExonDBAdaptor(species, null);
     }
 
     @Override
+    @Deprecated
     public ExonDBAdaptor getExonDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ExonMongoDBAdaptor(species, assembly, mongoDatastore);

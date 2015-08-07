@@ -28,6 +28,7 @@ import org.opencb.datastore.mongodb.MongoDataStore;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor {
 
 

@@ -42,6 +42,7 @@ import java.util.List;
 @Path("/{version}/{species}/feature/exon")
 @Produces("text/plain")
 @Api(value = "Exon", description = "Exon RESTful Web Services API")
+@Deprecated
 public class ExonWSServer extends GenericRestWSServer {
 
 
