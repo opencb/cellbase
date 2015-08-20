@@ -20,19 +20,16 @@ package org.opencb.cellbase.core.common.clinical.gwas;
  * Created by lcruz on 26/05/14.
  */
 
+import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /** @author Luis Miguel Cruz
  *  @version 1.2.3
  *  @since October 08, 2014  */
-public class Gwas {
+public class Gwas extends ClinicalVariant{
 
-    private String chromosome;
-    private Integer start;
-    private Integer end;
-    private String reference;
-    private String alternate;
     private String region;
     private String reportedGenes;
     private String mappedGene;
@@ -51,17 +48,11 @@ public class Gwas {
     private String cnv;
     private List<GwasStudy> studies;
 
-    public Gwas() {}
-
     public Gwas(String chromosome, Integer start, Integer end, String reference, String alternate, String region,
                 String reportedGenes, String mappedGene, String upstreamGeneId, String downstreamGeneId, String snpGeneIds,
                 String upstreamGeneDistance, String downstreamGeneDistance, String strongestSNPRiskAllele, String snpId,
                 String merged, String snpIdCurrent, String context, String intergenic, Float riskAlleleFrequency, String cnv) {
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
-        this.reference = reference;
-        this.alternate = alternate;
+        super(chromosome, start, end, reference, alternate, "gwas");
         this.region = region;
         this.reportedGenes = reportedGenes;
         this.mappedGene = mappedGene;
@@ -82,11 +73,7 @@ public class Gwas {
     }
 
     public Gwas(Gwas other) {
-        this.chromosome = other.chromosome;
-        this.start = other.start;
-        this.end = other.end;
-        this.reference = other.reference;
-        this.alternate = other.alternate;
+        super(other.getChromosome(), other.getStart(), other.getEnd(), other.getReference(), other.getAlternate(), "gwas");
         this.region = other.region;
         this.reportedGenes = other.reportedGenes;
         this.mappedGene = other.mappedGene;
@@ -114,30 +101,6 @@ public class Gwas {
 
     public void setRegion(String region) {
         this.region = region;
-    }
-
-    public String getChromosome() {
-        return chromosome;
-    }
-
-    public void setChromosome(String chromosome) {
-        this.chromosome = chromosome;
-    }
-
-    public Integer getStart() {
-        return start;
-    }
-
-    public void setStart(Integer start) {
-        this.start = start;
-    }
-
-    public Integer getEnd() {
-        return end;
-    }
-
-    public void setEnd(Integer end) {
-        this.end = end;
     }
 
     public String getReportedGenes() {
@@ -260,22 +223,6 @@ public class Gwas {
         this.cnv = cnv;
     }
 
-    public String getReference() {
-        return reference;
-    }
-
-    public void setReference(String reference) {
-        this.reference = reference;
-    }
-
-    public String getAlternate() {
-        return alternate;
-    }
-
-    public void setAlternate(String alternate) {
-        this.alternate = alternate;
-    }
-
     public List<GwasStudy> getStudies() {
         return this.studies;
     }
@@ -298,64 +245,4 @@ public class Gwas {
             this.studies.add(study);
         }
     }
-
-    public String toString(){
-        StringBuilder result = new StringBuilder();
-
-        result.append("-------- GWAS OBJECT -------\n");
-        result.append("\t Region: \t"+region+"\n");
-        result.append("\t Chromosome_id: \t"+chromosome+"\n");
-        result.append("\t Start: \t"+start+"\n");
-        result.append("\t End: \t"+end+"\n");
-        result.append("\t Reference: \t"+reference+"\n");
-        result.append("\t Alternate: \t"+alternate+"\n");
-        result.append("\t Reported Gene(s): \t"+reportedGenes+"\n");
-        result.append("\t Mapped_gene: \t"+mappedGene+"\n");
-        result.append("\t Upstream_gene_id: \t"+upstreamGeneId+"\n");
-        result.append("\t Downstream_gene_id: \t"+downstreamGeneId+"\n");
-        result.append("\t Snp_gene_ids: \t"+snpGeneIds+"\n");
-        result.append("\t Upstream_gene_distance: \t"+upstreamGeneDistance+"\n");
-        result.append("\t Downstream_gene_distance: \t"+downstreamGeneDistance+"\n");
-        result.append("\t Strongest SNP-Risk Allele: \t"+strongestSNPRiskAllele+"\n");
-        result.append("\t SNPs: \t"+ snpId +"\n");
-        result.append("\t Merged: \t"+merged+"\n");
-        result.append("\t Snp_id_current: \t"+snpIdCurrent+"\n");
-        result.append("\t Context: \t"+context+"\n");
-        result.append("\t Intergenic: \t"+intergenic+"\n");
-        result.append("\t Risk Allele Frequency: \t"+riskAlleleFrequency+"\n");
-        result.append("\t CNV: \t"+cnv+"\n");
-        result.append("\t-------- STUDIES -------\n");
-        for (GwasStudy study : studies) {
-            result.append("\t\t-------- Study: -------\n");
-            result.append("\t\t PUBMEDID: \t"+ study.getPubmedId() +"\n");
-            result.append("\t\t First Author: \t"+ study.getFirstAuthor() +"\n");
-            result.append("\t\t Date: \t"+ study.getDate() +"\n");
-            result.append("\t\t Journal: \t"+ study.getJournal() +"\n");
-            result.append("\t\t Link: \t"+ study.getLink() +"\n");
-            result.append("\t\t Study: \t"+ study.getStudy() +"\n");
-
-            result.append("\t\t Initial Sample Size: \t"+ study.getInitialSampleSize() +"\n");
-            result.append("\t\t Replication Sample Size: \t"+ study.getReplicationSampleSize() +"\n");
-            result.append("\t\t Platform [SNPs passing QC]: \t"+ study.getPlatform() +"\n");
-            result.append("\t\t-------- TRAITS -------\n");
-            for (GwasTrait trait : study.getTraits()) {
-                result.append("\t\t\t-------- Trait: -------\n");
-                result.append("\t\t\t Disease/Trait: \t"+ trait.getDiseaseTrait() +"\n");
-                result.append("\t\t\t Date Added to Catalog: \t"+ trait.getDateAddedToCatalog() +"\n");
-                result.append("\t\t\t-------- TESTS -------\n");
-                for (GwasTest test : trait.getTests()) {
-                    result.append("\t\t\t\t-------- Test: -------\n");
-                    result.append("\t\t\t\t p-Value: \t"+ test.getpValue() +"\n");
-                    result.append("\t\t\t\t Pvalue_mlog: \t"+ test.getpValueMlog() +"\n");
-                    result.append("\t\t\t\t p-Value (text): \t"+ test.getpValueText() +"\n");
-                    result.append("\t\t\t\t OR or beta: \t"+ test.getOrBeta() +"\n");
-                    result.append("\t\t\t\t 95% CI (text): \t"+ test.getPercentCI() +"\n");
-                }
-            }
-        }
-        result.append("----------------------------\n");
-
-        return result.toString();
-    }
-
 }

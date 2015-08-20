@@ -74,19 +74,21 @@ class ClinVarParserTest extends Specification {
         variant.end == end
         variant.reference.equals(ref)
         variant.alternate.equals(alt)
+        variant.source.equals(source)
         variant.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc == referenceClinvarAccession
         noEfoVariant.chromosome.equals(chr)
         noEfoVariant.start == start
         noEfoVariant.end == end
         noEfoVariant.reference.equals(ref)
         noEfoVariant.alternate.equals(alt)
+        noEfoVariant.source.equals(source)
         noEfoVariant.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc == referenceClinvarAccession
 
         where:
-        clinvarID || chr  | start     | end       | ref | alt  |  referenceClinvarAccession
-        3489885   || "12" | 2795019   | 2795019   | "C" | "T"  |  "RCV000079303"
-        3193940   || "14" | 24709794  | 24709794  | "G" | "-"  |  "RCV000032179"
-        3194294   || "4"  | 187120195 | 187120196 | "A" | "AA" |  "RCV000032546"
+        clinvarID || chr  | start     | end       | ref | alt  | source    | referenceClinvarAccession
+        3489885   || "12" | 2795019   | 2795019   | "C" | "T"  | "clinvar" | "RCV000079303"
+        3193940   || "14" | 24709794  | 24709794  | "G" | "-"  | "clinvar" | "RCV000032179"
+        3194294   || "4"  | 187120195 | 187120196 | "A" | "AA" | "clinvar" | "RCV000032546"
     }
 
     @Unroll

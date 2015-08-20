@@ -32,8 +32,8 @@ class GwasParserTest extends Specification {
 
     def setupSpec() {
         // gwas file containing 10 lines, and a dbsnp subset containing all the snps of the gwas file
-        def gwasTestFile = Paths.get(VariantEffectParserTest.class.getResource("/gwasTest.csv").toURI())
-        def dbSnpFile = Paths.get(VariantEffectParserTest.class.getResource("/dbSnpTest.gz").toURI())
+        def gwasTestFile = Paths.get(GwasParserTest.class.getResource("/gwasTest.csv").toURI())
+        def dbSnpFile = Paths.get(GwasParserTest.class.getResource("/dbSnpTest.gz").toURI())
 
         // custom test serializer that adds the serialized variants to a list
         def serializer = Mock(CellBaseSerializer)
@@ -54,12 +54,12 @@ class GwasParserTest extends Specification {
         gwas.studies.first().traits.first().tests.size() == tests
 
         where:
-        chr  | start     | reference | alternate || studies | traits | tests
-        "11" | 89011046  | "G"       | "A"       ||  1      | 2      | 1
-        "16" | 89986117  | "C"       | "G"       ||  1      | 4      | 1
-        "16" | 89986117  | "C"       | "T"       ||  1      | 4      | 1
-        "9"  | 16915021  | "T"       | "C"       ||  3      | 1      | 2
-        "X"  | 102302457 | "A"       | "G"       ||  1      | 1      | 1
+        chr  | start     | reference | alternate || studies | traits | tests | source
+        "11" | 89011046  | "G"       | "A"       ||  1      | 2      | 1     | "gwas"
+        "16" | 89986117  | "C"       | "G"       ||  1      | 4      | 1     | "gwas"
+        "16" | 89986117  | "C"       | "T"       ||  1      | 4      | 1     | "gwas"
+        "9"  | 16915021  | "T"       | "C"       ||  3      | 1      | 2     | "gwas"
+        "X"  | 102302457 | "A"       | "G"       ||  1      | 1      | 1     | "gwas"
     }
 
     @Unroll
