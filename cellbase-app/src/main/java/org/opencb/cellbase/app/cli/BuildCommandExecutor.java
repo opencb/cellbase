@@ -70,7 +70,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         if(buildCommandOptions.common != null) {
             common = Paths.get(buildCommandOptions.common);
         }else {
-            common = output.getParent().getParent().resolve("common");
+            common = input.getParent().getParent().resolve("common");
         }
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
@@ -345,7 +345,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildClinvar() {
-        Path clinvarFile = input.resolve("ClinVar.xml");
+        Path clinvarFile = input.resolve("ClinVar.xml.gz");
 
         String assembly = buildCommandOptions.assembly;
         checkMandatoryOption("assembly", assembly);
