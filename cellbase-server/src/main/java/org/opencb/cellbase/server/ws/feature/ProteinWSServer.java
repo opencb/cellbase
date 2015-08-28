@@ -63,6 +63,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
 	@GET
 	@Path("/{proteinId}/fullinfo")
+	@ApiOperation(httpMethod = "GET", value = "", response = Protein.class)
 	public Response getFullInfoByEnsemblId(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("sources") String sources) {
         try {
             parseQueryParams();
