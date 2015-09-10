@@ -55,6 +55,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {  // Deletion - whole transcript removed
                         SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
                         consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                        consequenceTypeList.add(consequenceType);
                     } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
                         if (isBigDeletion) {  // Big deletion
                             SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
@@ -104,6 +105,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {  // Deletion - whole transcript removed
                         SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
                         consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                        consequenceTypeList.add(consequenceType);
                     } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
                         if (isBigDeletion) {  // Big deletion
                             SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);

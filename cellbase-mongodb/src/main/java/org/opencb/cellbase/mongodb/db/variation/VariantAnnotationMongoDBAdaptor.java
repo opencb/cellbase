@@ -2019,7 +2019,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private void getAffectedGenesInfo(GenomicVariant variant) {
         int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
         QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", "name,id,expressionValues,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
+        queryOptions.add("include", "name,id,start,end,expressionValues,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
         QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
                 variantStart-5000, variant.getPosition() + variant.getReference().length()-1+5000), queryOptions);
 
