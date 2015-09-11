@@ -43,6 +43,7 @@ import org.opencb.datastore.core.QueryResult;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -54,7 +55,7 @@ import java.util.List;
  * @author imedina
  */
 @Path("/{version}/{species}/feature/gene")
-@Produces("application/json")
+@Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Gene", description = "Gene RESTful Web Services API")
 public class GeneWSServer extends GenericRestWSServer {
 
@@ -66,6 +67,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
     public Response getModel() {
         return createModelResponse(Gene.class);
     }
@@ -73,6 +75,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
     public Response first() {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
         return createOkResponse(geneDBAdaptor.first());
@@ -81,6 +84,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/count")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
     public Response count() {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
         return createOkResponse(geneDBAdaptor.count());
@@ -219,7 +223,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/mutation")
-    @ApiOperation(httpMethod = "GET", value = "[DEPRECATED] Get all variants within the specified gene(s)")
+//    @ApiOperation(httpMethod = "GET", value = "[DEPRECATED] Get all variants within the specified gene(s)")
     @Deprecated
     public Response getMutationByGene(@PathParam("geneId") String query) {
         try {
@@ -264,7 +268,8 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/exon")
-    @ApiOperation(httpMethod = "GET", value = "Get all exons for this gene(s)")
+//    @ApiOperation(httpMethod = "GET", value = "Get all exons for this gene(s)")
+    @Deprecated
     public Response getExonByGene(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();

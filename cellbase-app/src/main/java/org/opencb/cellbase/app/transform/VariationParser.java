@@ -17,8 +17,8 @@
 package org.opencb.cellbase.app.transform;
 
 import com.google.common.base.Stopwatch;
+import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.io.IOUtils;
-import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variation.TranscriptVariation;

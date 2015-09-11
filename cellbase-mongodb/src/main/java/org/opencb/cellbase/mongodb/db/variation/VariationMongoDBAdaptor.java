@@ -111,7 +111,9 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 //        DBObject result = new BasicDBObject("consequenceTypes", consquenceTypes);
 //        queryResult.setResult(Arrays.asList(result));
 //        queryResult.setDbTime(0);
-        return null;
+        DBObject query = new BasicDBObject("chromosome", "22");
+        QueryResult queryResult = executeDistinct("", "consequenceTypes", query);
+        return queryResult;
     }
 
     @Override

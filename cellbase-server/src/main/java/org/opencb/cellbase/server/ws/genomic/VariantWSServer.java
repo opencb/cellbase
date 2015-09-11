@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
+import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variation.GenomicVariant;
@@ -53,6 +54,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
     public Response getModel() {
         return createModelResponse(Variant.class);
     }
@@ -166,7 +168,7 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(va.getAllByPhenotype(phenotype,queryOptions));
+            return createOkResponse(va.getAllByPhenotype(phenotype, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

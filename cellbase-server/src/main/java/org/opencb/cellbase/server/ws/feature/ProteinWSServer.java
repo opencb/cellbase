@@ -57,12 +57,27 @@ public class ProteinWSServer extends GenericRestWSServer {
 
 	@GET
 	@Path("/model")
+	@ApiOperation(httpMethod = "GET", value = "Get the object data model")
 	public Response getModel() {
 		return createModelResponse(Protein.class);
 	}
 
+    @GET
+    @Path("/{proteinId}/info")
+    @ApiOperation(httpMethod = "GET", value = "Get the protein info")
+    public Response getInfoByEnsemblId(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("sources") String sources) {
+        try {
+            parseQueryParams();
+            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
+            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
 	@GET
 	@Path("/{proteinId}/fullinfo")
+    @Deprecated
 	public Response getFullInfoByEnsemblId(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("sources") String sources) {
         try {
             parseQueryParams();
@@ -82,17 +97,15 @@ public class ProteinWSServer extends GenericRestWSServer {
 		try {
 			parseQueryParams();
 			ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-
 			return createOkResponse(adaptor.getAll(queryOptions));
-//			return generateResponse("", "PROTEIN", adaptor.getGenomeInfo());
 		} catch (Exception e) {
 			return createErrorResponse(e);
 		}
 	}
 
-    @Deprecated
     @GET
     @Path("/{proteinId}/name")
+    @Deprecated
     public Response getproteinByName(@PathParam("proteinId") String id) {
         try {
             parseQueryParams();

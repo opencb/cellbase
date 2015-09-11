@@ -17,6 +17,8 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -40,7 +42,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author imedina
+ */
 @Path("/{version}/{species}/feature/transcript")
+@Api(value = "Gene", description = "Gene RESTful Web Services API")
 @Produces(MediaType.APPLICATION_JSON)
 public class TranscriptWSServer extends GenericRestWSServer {
 
@@ -55,6 +61,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
     public Response getModel() {
         return createModelResponse(Transcript.class);
     }
@@ -62,6 +69,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
     public Response first() {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.first());
@@ -70,6 +78,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/count")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
     public Response count() {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.count());

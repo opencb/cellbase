@@ -16,11 +16,16 @@
 
 package org.opencb.cellbase.mongodb.db.variation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.*;
-import org.broad.tribble.readers.TabixReader;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
+import htsjdk.tribble.readers.TabixReader;
 import org.opencb.biodata.models.feature.Region;
-import org.opencb.biodata.models.variant.annotation.*;
+import org.opencb.biodata.models.variant.annotation.ConsequenceType;
+import org.opencb.biodata.models.variant.annotation.ExpressionValue;
+import org.opencb.biodata.models.variant.annotation.Score;
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
@@ -40,10 +45,8 @@ import org.opencb.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.io.IOException;
 import java.util.*;
-//import java.util.logging.Logger;
 
 /**
  * Created by imedina on 11/07/14.

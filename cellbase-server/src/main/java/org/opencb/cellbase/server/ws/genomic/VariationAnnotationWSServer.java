@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
+import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
