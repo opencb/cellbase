@@ -29,8 +29,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         boolean isIntegernic = true;
         for(Gene currentGene: geneList) {
             gene = currentGene;
-            isIntegernic = isIntegernic && (variant.getPosition()<gene.getStart() || variant.getPosition()>gene.getEnd());
             for(Transcript currentTranscript : gene.getTranscripts()) {
+                isIntegernic = isIntegernic && (variant.getPosition()<currentTranscript.getStart() ||
+                        variant.getPosition()>currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
                 consequenceType.setGeneName(gene.getName());

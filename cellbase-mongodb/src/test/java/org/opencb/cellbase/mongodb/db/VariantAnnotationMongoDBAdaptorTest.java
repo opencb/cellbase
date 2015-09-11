@@ -279,7 +279,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 108309064, StringUtils.repeat("N",2252), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 6638139, "A", "T"), new QueryOptions());  // should return intergenic_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 108309064, StringUtils.repeat("N",2252), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 124814698, StringUtils.repeat("N",1048), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 327947, "A", "-"), new QueryOptions());  // should return
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 327947, "A", "-"), new QueryOptions());  // should return
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 101786, "A", "-"), new QueryOptions());  // should return ENSG00000173876 ENST00000413237 -       intron_variant

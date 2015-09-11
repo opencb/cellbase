@@ -44,8 +44,9 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         boolean isIntegernic = true;
         for (Gene currentGene : geneList) {
             gene = currentGene;
-            isIntegernic = isIntegernic && (variantEnd < gene.getStart() || variantStart > gene.getEnd());
             for (Transcript currentTranscript : gene.getTranscripts()) {
+                isIntegernic = isIntegernic && (variantEnd < currentTranscript.getStart() ||
+                        variantStart > currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
                 consequenceType.setGeneName(gene.getName());
