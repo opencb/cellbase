@@ -22,9 +22,9 @@
 
     <properties>
         <cellbase.version>3.2-SNAPSHOT</cellbase.version>
-        <biodata.version>0.5-SNAPSHOT</biodata.version>
-        <datastore.version>0.4-SNAPSHOT</datastore.version>
-        <java-common-libs.version>3.0-SNAPSHOT</java-common-libs.version>
+        <biodata.version>0.5.0</biodata.version>
+        <datastore.version>0.4.0</datastore.version>
+        <java-common-libs.version>3.0.0</java-common-libs.version>
 
         <jackson.version>2.5.4</jackson.version>
         <jersey.version>2.19</jersey.version>
