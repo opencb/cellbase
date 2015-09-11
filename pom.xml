@@ -28,7 +28,6 @@
 
         <jackson.version>2.5.4</jackson.version>
         <jersey.version>2.19</jersey.version>
-
         <compileSource>1.8</compileSource>
         <build.dir>build</build.dir>
     </properties>
