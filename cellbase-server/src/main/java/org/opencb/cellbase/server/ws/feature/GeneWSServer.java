@@ -124,7 +124,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/info")
-    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class)
     public Response getByEnsemblId(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
