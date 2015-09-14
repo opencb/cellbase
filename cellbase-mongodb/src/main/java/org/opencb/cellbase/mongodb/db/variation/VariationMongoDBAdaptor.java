@@ -22,10 +22,12 @@ import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
+import org.opencb.cellbase.mongodb.db.core.GeneMongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,11 +40,14 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     private int variationChunkSize = MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE;
 
+    private GeneMongoDBAdaptor geneMongoDBAdaptor;
 
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("variation");
         mongoVariationPhenotypeDBCollection2 = mongoDataStore.getCollection("variation_phenotype");
+
+        geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDataStore);
 
         logger.info("VariationMongoDBAdaptor: in 'constructor'");
     }
@@ -105,30 +110,37 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public QueryResult getAllConsequenceTypes(QueryOptions options) {
-//        String[] consquenceTypes = applicationProperties.getProperty("CELLBASE.V3.CONSEQUENCE_TYPES").split(",");
-//        QueryResult queryResult = new QueryResult();
-//        queryResult.setId("result");
-//        DBObject result = new BasicDBObject("consequenceTypes", consquenceTypes);
-//        queryResult.setResult(Arrays.asList(result));
-//        queryResult.setDbTime(0);
-        DBObject query = new BasicDBObject("chromosome", "22");
-        QueryResult queryResult = executeDistinct("", "consequenceTypes", query);
-        return queryResult;
+        return new QueryResult("consequenceTypes", 0, consequenceTypes.size(), consequenceTypes.size(), null, null, consequenceTypes);
     }
 
-    @Override
-    public QueryResult getAllConsequenceTypesById(String id, QueryOptions options) {
-        return null;
-    }
 
     @Override
     public QueryResult getByGeneId(String id, QueryOptions options) {
-        return null;
+        return getAllByGeneIdList(Arrays.asList(id), options).get(0);
     }
 
     @Override
     public List<QueryResult> getAllByGeneIdList(List<String> idList, QueryOptions options) {
-        return null;
+        int offset = 5000;
+        if (options != null && options.containsKey("offset")) {
+            offset = options.getInt("offset");
+        }
+
+        List<Region> regions = new ArrayList<>(idList.size());
+        QueryOptions geneQueryOptions = new QueryOptions("include", "chromosome,start,end");
+        for (String id : idList) {
+            QueryResult queryResult = geneMongoDBAdaptor.getAllById(id, geneQueryOptions);
+            if (queryResult != null && queryResult.getResult().size() > 0) {
+                DBObject gene = (DBObject)geneMongoDBAdaptor.getAllById(id, geneQueryOptions).getResult().get(0);
+                regions.add(new Region(gene.get("chromosome").toString(),
+                        Integer.parseInt(gene.get("start").toString()) - offset,
+                        Integer.parseInt(gene.get("end").toString()) + offset));
+
+            } else {
+                regions.add(new Region("", -1, -1));
+            }
+        }
+        return getAllByRegionList(regions, options);
     }
 
 

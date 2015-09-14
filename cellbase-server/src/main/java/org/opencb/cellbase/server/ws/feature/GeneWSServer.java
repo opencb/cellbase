@@ -184,36 +184,12 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/snp")
     @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified gene(s)")
-    public Response getSNPByGeneId(@PathParam("geneId") String query) {
+    public Response getSNPByGeneId(@PathParam("geneId") String query, @DefaultValue("5000") @QueryParam("offset") int offset) {
         try {
             parseQueryParams();
-
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-
-            List<QueryResult> qrList;
-            if (queryOptions.containsKey("count") && queryOptions.getBoolean("count")) {
-                queryOptions.remove("count");
-                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
-                queryOptions.put("count", true);
-            } else {
-                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
-            }
-
-            List<QueryResult> queryResults = new ArrayList<>();
-            for (QueryResult qr : qrList) {
-                QueryResult queryResult = new QueryResult();
-                queryResult.setId(qr.getId());
-
-                // FIXME MongoDB code should not be here
-                BasicDBObject gene = (BasicDBObject) qr.getResult().get(0);
-                QueryResult variationQueryResult = variationDBAdaptor.getAllByRegion(gene.getString("chromosome"), gene.getInt("start"), gene.getInt("end"), queryOptions);
-
-                queryResult.setNumResults(variationQueryResult.getNumResults());
-                queryResult.setResult(variationQueryResult.getResult());
-                queryResults.add(queryResult);
-            }
-
+            queryOptions.put("offset", offset);
+            List<QueryResult> queryResults = variationDBAdaptor.getAllByGeneIdList(Splitter.on(",").splitToList(query), queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
