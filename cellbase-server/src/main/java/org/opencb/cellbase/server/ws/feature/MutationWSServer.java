@@ -38,6 +38,7 @@ import java.io.IOException;
  */
 @Path("/{version}/{species}/feature/mutation")
 @Produces("application/json")
+@Deprecated
 public class MutationWSServer  extends GenericRestWSServer {
 
     public MutationWSServer(@PathParam("version") String version, @PathParam("species") String species,

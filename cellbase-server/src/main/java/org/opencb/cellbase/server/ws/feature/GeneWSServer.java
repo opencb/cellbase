@@ -17,16 +17,12 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import com.mongodb.BasicDBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
@@ -36,7 +32,6 @@ import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
 
@@ -47,7 +42,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -183,7 +177,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/snp")
-    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified gene(s)")
+    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes and offset")
     public Response getSNPByGeneId(@PathParam("geneId") String query, @DefaultValue("5000") @QueryParam("offset") int offset) {
         try {
             parseQueryParams();
@@ -237,21 +231,6 @@ public class GeneWSServer extends GenericRestWSServer {
             parseQueryParams();
             MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
             return createOkResponse(mirnaDBAdaptor.getAllMiRnaTargetsByGeneNameList(Splitter.on(",").splitToList(geneId)));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/{geneId}/exon")
-//    @ApiOperation(httpMethod = "GET", value = "Get all exons for this gene(s)")
-    @Deprecated
-    public Response getExonByGene(@PathParam("geneId") String geneId) {
-        try {
-            parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(geneId), queryOptions);
-            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

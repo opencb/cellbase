@@ -67,14 +67,12 @@ public class IdWSServer extends GenericRestWSServer {
             XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             List<String> list = Splitter.on(",").splitToList(query);
             List<QueryResult> dbNameList = xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions);
-//            List<QueryResult> queryResultList = new ArrayList<>();
             for (int i = 0; i < dbNameList.size(); i++) {
                 for (Object o : dbNameList.get(i).getResult()) {
                     if (((DBObject)o).get("id").equals(list.get(i))) {
                         List<Object> objectList = new ArrayList<>(1);
                         objectList.add(o);
                         dbNameList.get(i).setResult(objectList);
-//                        queryResultList.add(dbNameList.get(i));
                         break;
                     }
                 }
