@@ -34,10 +34,10 @@
         url = decodeURIComponent(url[1]);
         console.log(url);
       } else {
-        url = "http://" + window.location.hostname + ":8080";
-//        if (window.location.port == "80") {
-//          url += ":" + window.location.port;
-//        }
+        url = "http://" + window.location.hostname;
+        if (window.location.port != "80") {
+          url += ":" + window.location.port;
+        }
 //        url = "http://petstore.swagger.io/v2/swagger.json";
         url += "/cellbase/webservices/rest/swagger.json";
         console.log(">>"+url);
