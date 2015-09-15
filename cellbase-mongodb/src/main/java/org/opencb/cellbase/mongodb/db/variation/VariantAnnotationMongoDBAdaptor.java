@@ -392,11 +392,11 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 }
             }
 
-            if (includeList.contains("consequenceType")) {
+            if (includeList.isEmpty() || includeList.contains("consequenceType")) {
                 variantAnnotation.setConsequenceTypes((List<ConsequenceType>) getAllConsequenceTypesByVariant(variantList.get(i), new QueryOptions()).getResult());
             }
 
-            if (includeList.contains("drugInteraction")) {
+            if (includeList.isEmpty() || includeList.contains("drugInteraction")) {
                 Map<String, List<Object>> geneDrugInteractionMap = new HashMap<>(1);
                 geneDrugInteractionMap.put("dgidb", getGeneDrugInteractions(variantList.get(i)));
                 variantAnnotation.setGeneDrugInteraction(geneDrugInteractionMap);
