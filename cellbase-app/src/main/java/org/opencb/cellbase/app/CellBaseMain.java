@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app;
 
+import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.cli.*;
 
 import java.io.IOException;
@@ -29,64 +30,58 @@ public class CellBaseMain {
     public static final String VERSION = "3.1.0-RC";
 
     public static void main(String[] args) {
+
         CliOptionsParser cliOptionsParser = new CliOptionsParser();
-        cliOptionsParser.parse(args);
+        try {
+            cliOptionsParser.parse(args);
+        } catch (ParameterException e) {
+            System.err.println(e.getMessage());
+            cliOptionsParser.printUsage();
+            System.exit(1);
+        }
 
         String parsedCommand = cliOptionsParser.getCommand();
         if(parsedCommand == null || parsedCommand.isEmpty()) {
             if(cliOptionsParser.getGeneralOptions().help) {
                 cliOptionsParser.printUsage();
-            }
-            if(cliOptionsParser.getGeneralOptions().version) {
-                System.out.println("Version " + VERSION);
+                System.exit(0);
+            } else {
+                if(cliOptionsParser.getGeneralOptions().version) {
+                    System.out.println("Version " + VERSION);
+                    System.exit(0);
+                } else {
+                    cliOptionsParser.printUsage();
+                    System.exit(1);
+                }
             }
         }else {
             CommandExecutor commandExecutor = null;
-            switch (parsedCommand) {
-                case "download":
-                    if (cliOptionsParser.getDownloadCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    } else {
+            if(cliOptionsParser.isHelp()) {
+                cliOptionsParser.printUsage();
+                System.exit(0);
+            } else {
+                switch (parsedCommand) {
+                    case "download":
                         commandExecutor = new DownloadCommandExecutor(cliOptionsParser.getDownloadCommandOptions());
-                    }
-                    break;
-                case "build":
-                    if (cliOptionsParser.getBuildCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    } else {
+                        break;
+                    case "build":
                         commandExecutor = new BuildCommandExecutor(cliOptionsParser.getBuildCommandOptions());
-                    }
-                    break;
-                case "load":
-                    if (cliOptionsParser.getLoadCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    } else {
+                        break;
+                    case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
-                    }
-                    break;
-                case "query":
-                    if (cliOptionsParser.getQueryCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    } else {
+                        break;
+                    case "query":
                         commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryCommandOptions());
-                    }
-                    break;
-                case "variant-annotation":
-                    if (cliOptionsParser.getVariantAnnotationCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    } else {
+                        break;
+                    case "variant-annotation":
                         commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
-                    }
-                    break;
-                case "post-load":
-                    if (cliOptionsParser.getVariantAnnotationCommandOptions().commonOptions.help) {
-                        cliOptionsParser.printUsage();
-                    } else {
+                        break;
+                    case "post-load":
                         commandExecutor = new PostLoadCommandExecutor(cliOptionsParser.getPostLoadCommandOptions());
-                    }
-                    break;
-                default:
-                    break;
+                        break;
+                    default:
+                        break;
+                }
             }
 
             if (commandExecutor != null) {
@@ -95,6 +90,7 @@ public class CellBaseMain {
                     commandExecutor.execute();
                 } catch (IOException | URISyntaxException e) {
                     commandExecutor.getLogger().error("Error reading CellBase configuration: " + e.getMessage());
+                    System.exit(1);
                 }
             }
         }

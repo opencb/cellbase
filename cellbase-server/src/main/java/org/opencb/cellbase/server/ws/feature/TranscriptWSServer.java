@@ -17,6 +17,8 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -24,6 +26,7 @@ import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResult;
@@ -39,7 +42,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author imedina
+ */
 @Path("/{version}/{species}/feature/transcript")
+@Api(value = "Gene", description = "Gene RESTful Web Services API")
 @Produces(MediaType.APPLICATION_JSON)
 public class TranscriptWSServer extends GenericRestWSServer {
 
@@ -47,13 +54,14 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     public TranscriptWSServer(@PathParam("version") String version, @PathParam("species") String species,
                               @DefaultValue("") @QueryParam("exclude") String exclude,
-                              @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                              @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
         this.exclude = Arrays.asList(exclude.trim().split(","));
     }
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
     public Response getModel() {
         return createModelResponse(Transcript.class);
     }
@@ -61,6 +69,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
     public Response first() {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.first());
@@ -69,6 +78,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/count")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
     public Response count() {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.count());
@@ -86,7 +96,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //    @Path("/all")
 //    public Response getGenomeInfo() {
 //        try {
-//            checkParams();
+//            parseQueryParams();
 //            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
 //            return createOkResponse(Arrays.asList(transcriptDBAdaptor.getGenomeInfo(queryOptions)));
 //        } catch (Exception e) {
@@ -99,7 +109,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/info")
     public Response getByEnsemblId(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             return createOkResponse(transcriptDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
@@ -113,7 +123,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
 //		return createJsonResponse("{}");
 
-//			checkParams();
+//			parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<String> queryStrList = Splitter.on(",").splitToList(query);
 //			List<List<Gene>> queryGeneList = geneDBAdaptor.getAllByChromosomeIdList(queryStrList, queryOptions);
@@ -280,7 +290,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/gene")
     public Response getGeneById(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
@@ -292,7 +302,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/exon")
     public Response getExonsByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
             return createOkResponse("not implemented");
         } catch (Exception e) {
@@ -304,7 +314,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/variation")
     public Response getVariationsByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
@@ -316,7 +326,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/sequence")
     public Response getSequencesByIdList(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
                     this.assembly);
             return Response.ok().build();
@@ -329,7 +339,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/region")
     public Response getRegionsByIdList(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             return Response.ok().build();
         } catch (Exception e) {
@@ -341,7 +351,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/mutation")
     public Response getMutationByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
 //            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor
 //                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
@@ -358,7 +368,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                                @DefaultValue("") @QueryParam("aaPosition") String aaPosition,
                                                                @DefaultValue("") @QueryParam("aaChange") String aaChange) {
         try {
-            checkParams();
+            parseQueryParams();
             queryOptions.put("aaPosition", aaPosition);
             queryOptions.put("aaChange", aaChange);
             ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
@@ -373,7 +383,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //    @Path("/{transcriptId}/protein_feature")
 //    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
 //        try {
-//            checkParams();
+//            parseQueryParams();
 //            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
 //            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
 //            return generateResponse(query, "PROTEIN_FEATURE", geneList);
@@ -387,7 +397,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcriptId}/cdna")
     public Response getCdnaByTranscriptId(@PathParam("transcriptId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //			List<String> transcripts = StringUtils.toList(query, ",");
 //			List<List<Exon>> exonListList = dbAdaptor.getAllByTranscriptIdList(transcripts);

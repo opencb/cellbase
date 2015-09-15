@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.ws.network;
 
 import org.opencb.cellbase.core.db.api.systems.PathwayDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -31,7 +32,8 @@ import java.io.IOException;
 @Produces("text/plain")
 public class PathwayWSServerMongo extends GenericRestWSServer {
 
-	public PathwayWSServerMongo(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+	public PathwayWSServerMongo(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+								@Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
 		super(version, species, uriInfo, hsr);
 	}
 
@@ -39,7 +41,7 @@ public class PathwayWSServerMongo extends GenericRestWSServer {
 	@Path("/list")
 	public Response getAllPathways() {
 		try {
-//			checkParams();
+//			parseQueryParams();
 			
 			PathwayDBAdaptor pathwayDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 	        String pathways = pathwayDBAdaptor.getPathways();

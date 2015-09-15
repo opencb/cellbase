@@ -26,6 +26,7 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 
@@ -70,6 +71,8 @@ public class ClinVarParser extends CellBaseParser{
 
         } catch (JAXBException e) {
             logger.error("Error unmarshalling clinvar Xml file "+ clinvarXmlFile + ": " + e.getMessage());
+        } catch (IOException e) {
+            logger.error("File not found: "+ clinvarXmlFile + ": " + e.getMessage());
         }
     }
 
@@ -120,7 +123,7 @@ public class ClinVarParser extends CellBaseParser{
                 location.getStop() != null;
     }
 
-    private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException {
+    private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException, IOException {
         return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v19);
     }
 }

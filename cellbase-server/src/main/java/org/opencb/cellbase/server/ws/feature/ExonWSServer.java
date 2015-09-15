@@ -17,11 +17,12 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResult;
@@ -41,10 +42,12 @@ import java.util.List;
 @Path("/{version}/{species}/feature/exon")
 @Produces("text/plain")
 @Api(value = "Exon", description = "Exon RESTful Web Services API")
+@Deprecated
 public class ExonWSServer extends GenericRestWSServer {
 
 
-    public ExonWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+    public ExonWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+                        @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -83,7 +86,7 @@ public class ExonWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to get exon information from exon ID")
     public Response getByEnsemblId(@PathParam("exonId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //            return  generateResponse(query,exonDBAdaptor.getAllByEnsemblIdList(Splitter.on(",").splitToList(query)));
 
@@ -101,7 +104,7 @@ public class ExonWSServer extends GenericRestWSServer {
 */
     public Response getAminoByExon(@PathParam("exonId") String query) {
         try{
-            checkParams();
+            parseQueryParams();
             ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //            List<Exon> exons = exonDBAdaptor.getAllByEnsemblIdList(Splitter.on(",").splitToList(query));
             List<QueryResult> exons = exonDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
@@ -145,7 +148,7 @@ public class ExonWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to get the DNA sequence from an exon ID")
     public Response getSequencesByIdList(@PathParam("exonId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllSequencesByIdList(Splitter.on(",").splitToList(query))));
             return Response.ok().build();
@@ -160,7 +163,7 @@ public class ExonWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to get the genetic coordinates of an exon ID")
     public Response getRegionsByIdList(@PathParam("exonId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             ExonDBAdaptor exonDBAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
 //			return generateResponse(query, Arrays.asList(exonDBAdaptor.getAllRegionsByIdList(Splitter.on(",").splitToList(query))));
             return Response.ok().build();
@@ -174,7 +177,7 @@ public class ExonWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to get the transcripts that include an exon ID")
     public Response getTranscriptsByEnsemblId(@PathParam("exonId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             return createOkResponse(transcriptDBAdaptor.getAllByEnsemblExonIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {

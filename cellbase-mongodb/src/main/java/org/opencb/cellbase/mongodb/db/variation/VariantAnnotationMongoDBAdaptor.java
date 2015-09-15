@@ -18,9 +18,9 @@ package org.opencb.cellbase.mongodb.db.variation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
-import org.broad.tribble.readers.TabixReader;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
+import htsjdk.tribble.readers.TabixReader;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.ExpressionValue;
@@ -47,10 +47,8 @@ import org.opencb.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.io.IOException;
 import java.util.*;
-//import java.util.logging.Logger;
 
 /**
  * Created by imedina on 11/07/14.
@@ -78,6 +76,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private ProteinDBAdaptor proteinDBAdaptor;
     private ConservedRegionDBAdaptor conservedRegionDBAdaptor;
     private GenomeDBAdaptor genomeDBAdaptor;
+    private List<DBObject> geneInfoList;
 
     static {
 
@@ -1020,44 +1019,26 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
 
 
-//        builderGene = QueryBuilder.start("chromosome").is(variant.getChromosome()).and("end")
-//                    .greaterThanEquals(variant.getPosition() - 5000).and("start").lessThanEquals(variantEnd + 5000); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
-
-        // Get all regulatory regions surrounding the variant
-//        String chunkId = getChunkIdPrefix(variant.getChromosome(), variant.getPosition(), regulatoryRegionChunkSize);
-//        BasicDBList chunksId = new BasicDBList();
-//        chunksId.add(chunkId);
-//        builderRegulatory = QueryBuilder.start("chunkIds").in(chunksId).and("start").lessThanEquals(variantEnd).and("end")
-//                .greaterThanEquals(variant.getPosition()); // variantEnd is used rather than variant.getPosition() to account for deletions which end falls within the 5kb left area of the gene
 
         // Execute query and calculate time
-//        mongoDBCollection = db.getCollection("gene");
         dbTimeStart = System.currentTimeMillis();
-//        QueryResult geneQueryResult = executeQuery(variant.toString(), builderGene.get(), options);
-        QueryOptions geneQueryOptions = new QueryOptions();
-        geneQueryOptions.add("include", "name,id,expressionValues,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
-        QueryResult geneQueryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(), variantStart-5000,
-                variantEnd+5000), geneQueryOptions);
-//        mongoDBCollection = db.getCollection("regulatory_region");
-//        QueryResult regulatoryQueryResult = executeQuery(variant.toString(), builderRegulatory.get(), options);
+        getAffectedGenesInfo(variant.getChromosome(), variantStart, variantEnd);
         QueryResult regulatoryQueryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(), variantStart,
                 variantEnd), options);
 
         dbTimeEnd = System.currentTimeMillis();
-        LinkedList geneInfoList = (LinkedList) geneQueryResult.getResult();
-//        BasicDBList geneInfoList = (BasicDBList) geneQueryResult.getResult();
 
         for(Object geneInfoObject: geneInfoList) {
             geneInfo = (BasicDBObject) geneInfoObject;
             consequenceTypeTemplate.setGeneName((String) geneInfo.get("name"));
             consequenceTypeTemplate.setEnsemblGeneId((String) geneInfo.get("id"));
             consequenceTypeTemplate.setExpressionValues(new ArrayList<ExpressionValue>());
-            if(geneInfo.get("expressionValues")!=null) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                for (Object expressionBasicDBObject : (BasicDBList) geneInfo.get("expressionValues")) {
-                    consequenceTypeTemplate.getExpressionValues().add(objectMapper.convertValue(expressionBasicDBObject, ExpressionValue.class));
-                }
-            }
+//            if(geneInfo.get("expressionValues")!=null) {
+//                ObjectMapper objectMapper = new ObjectMapper();
+//                for (Object expressionBasicDBObject : (BasicDBList) geneInfo.get("expressionValues")) {
+//                    consequenceTypeTemplate.getExpressionValues().add(objectMapper.convertValue(expressionBasicDBObject, ExpressionValue.class));
+//                }
+//            }
 
             transcriptInfoList = (BasicDBList) geneInfo.get("transcripts");
             for(Object transcriptInfoObject: transcriptInfoList) {
@@ -1387,6 +1368,15 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         queryResult.setResult(consequenceTypeList);
 
         return queryResult;
+    }
+
+    private void getAffectedGenesInfo(String chromosome, Integer variantStart, Integer variantEnd) {
+        QueryOptions geneQueryOptions = new QueryOptions();
+        geneQueryOptions.add("include", "name,id,expressionValues,drugInteractions,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
+        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(chromosome, variantStart - 5000,
+                variantEnd + 5000), geneQueryOptions);
+        geneInfoList = (LinkedList) queryResult.getResult();
+
     }
 
     private List<ConsequenceType> filterConsequenceTypesBySoTerms(List<ConsequenceType> consequenceTypeList, List<String> querySoTerms) {
@@ -2075,6 +2065,30 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return null;
     }
 
+    private List<Object> getGeneDrugInteractions(GenomicVariant variant) {
+        if(geneInfoList==null) {
+            int variantEnd = variant.getPosition() + variant.getReference().length() - 1;  //TODO: Check deletion input format to ensure that variantEnd is correctly calculated
+            Boolean isInsertion = variant.getReference().equals("-");
+            int variantStart;
+            if(isInsertion) {
+                variantStart = variant.getPosition()-1;
+            } else {
+                variantStart = variant.getPosition();
+            }
+            getAffectedGenesInfo(variant.getChromosome(), variantStart, variantEnd);
+        }
+
+        List<Object> geneDrugInteractions = new ArrayList<>();
+        for(DBObject geneDBObject : geneInfoList) {
+            if(geneDBObject.get("drugInteractions")!=null) {
+                geneDrugInteractions.addAll((List) geneDBObject.get("drugInteractions"));
+            }
+        }
+
+        return geneDrugInteractions;
+
+    }
+
     @Override
     public List<QueryResult> getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options) {
         List<QueryResult> queryResults = new ArrayList<>(variants.size());
@@ -2131,9 +2145,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
 //        // TODO: validation of queryoption 'include' values
         List<String> includeList = queryOptions.getAsStringList("include");
-//        if (includeList.isEmpty()) {
-//            includeList = Arrays.asList("variation", "clinical", "consequenceType", "conservation");
-//        }
 
         List<QueryResult> annotations = null;
         List<QueryResult> variationQueryResultList = null;
@@ -2148,13 +2159,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 annotations = clinicalQueryResultList;
             }
         }
-        List<QueryResult> variationConsequenceTypeList = null;
-        if (includeList.isEmpty() || includeList.contains("consequenceType")) {
-            variationConsequenceTypeList = getAllConsequenceTypesByVariantList(variantList, queryOptions);
-            if (annotations == null) {
-                annotations = variationConsequenceTypeList;
-            }
-        }
+
         List<QueryResult> conservedRegionQueryResultList = null;
         if (includeList.isEmpty() || includeList.contains("conservation")) {
             conservedRegionQueryResultList = conservedRegionDBAdaptor.getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
@@ -2175,8 +2180,14 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 }
             }
 
-            if (variationConsequenceTypeList != null) {
-                variantAnnotation.setConsequenceTypes((List<ConsequenceType>) variationConsequenceTypeList.get(i).getResult());
+            if (includeList.contains("consequenceType")) {
+                variantAnnotation.setConsequenceTypes((List<ConsequenceType>) getAllConsequenceTypesByVariant(variantList.get(i), new QueryOptions()).getResult());
+            }
+
+            if (includeList.contains("drugInteraction")) {
+                Map<String, List<Object>> geneDrugInteractionMap = new HashMap<>(1);
+                geneDrugInteractionMap.put("dgidb", getGeneDrugInteractions(variantList.get(i)));
+                variantAnnotation.setGeneDrugInteraction(geneDrugInteractionMap);
             }
 
             if (conservedRegionQueryResultList != null) {
@@ -2193,20 +2204,29 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 variantAnnotation.setId(id);
 
                 BasicDBList freqsDBList = (BasicDBList) variationDBList.get(0).get("populationFrequencies");
-                if(freqsDBList!=null) {
+                if (freqsDBList != null) {
                     BasicDBObject freqDBObject;
                     for (int j = 0; j < freqsDBList.size(); j++) {
                         freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                        variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
-                                freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-                                freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                                Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                                Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                        if(freqDBObject != null) {
+                            if (freqDBObject.containsKey("study")) {
+                                variantAnnotation.addPopulationFrequency(new PopulationFrequency(freqDBObject.get("study").toString(),
+                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(), Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                            } else {
+                                variantAnnotation.addPopulationFrequency(new PopulationFrequency("1000G_PHASE_3",
+                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
+                            }
+                        }
                     }
                 }
             }
             List<VariantAnnotation> value = Collections.singletonList(variantAnnotation);
-            annotations.get(i).setResult(value);
+                annotations.get(i).setResult(value);
         }
 
         return annotations;

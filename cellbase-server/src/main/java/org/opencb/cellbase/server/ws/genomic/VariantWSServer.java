@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
+import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variation.GenomicVariant;
@@ -24,6 +25,7 @@ import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResult;
@@ -45,12 +47,14 @@ public class VariantWSServer extends GenericRestWSServer {
 
     protected static HashMap<String, List<Transcript>> CACHE_TRANSCRIPT = new HashMap<>();
 
-    public VariantWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+    public VariantWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
     public Response getModel() {
         return createModelResponse(Variant.class);
     }
@@ -118,7 +122,7 @@ public class VariantWSServer extends GenericRestWSServer {
 //        List<QueryResult> genomicVariantConsequenceTypes = null;
 //        VariantEffectDBAdaptor gv = null;
 //        try {
-//            checkParams();
+//            parseQueryParams();
 ////			System.out.println("PAKO: "+ variants);
 //            genomicVariantList = GenomicVariant.parseVariants(variants);
 //            if (genomicVariantList != null && excludes != null) {
@@ -162,9 +166,9 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{phenotype}/phenotype")
     public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationPhenotypeAnnotationDBAdaptor va = dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(va.getAllByPhenotype(phenotype,queryOptions));
+            return createOkResponse(va.getAllByPhenotype(phenotype, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -185,7 +189,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     public Response getSnpPhenotypesByPosition(String variants, String outputFormat) {
         try {
-            checkParams();
+            parseQueryParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
@@ -217,7 +221,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     public Response getMutationPhenotypesByPosition(String variants, String outputFormat) {
         try {
-            checkParams();
+            parseQueryParams();
             MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             List<Position> positionList = new ArrayList<Position>(variantList.size());
@@ -244,7 +248,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{variants}/annotation")
     public Response getAnnotationByVariantsGET(@PathParam("variants") String variants) {
         try {
-            checkParams();
+            parseQueryParams();
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
@@ -269,7 +273,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/full_annotation")
     public Response getAnnotationByVariantsPOST(String variants) {
         try {
-            checkParams();
+            parseQueryParams();
             List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 

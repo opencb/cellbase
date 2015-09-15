@@ -17,10 +17,11 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResult;
@@ -43,12 +44,13 @@ public class SnpWSServer extends GenericRestWSServer {
 
 
     public SnpWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
     public Response getModel() {
         return createModelResponse(Variation.class);
     }
@@ -56,6 +58,7 @@ public class SnpWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
     public Response first() {
         VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
         return createOkResponse(variationDBAdaptor.first());
@@ -82,7 +85,7 @@ public class SnpWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) SNPs")
     public Response getByEnsemblId(@PathParam("snpId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
@@ -92,10 +95,10 @@ public class SnpWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{snpId}/next")
-    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP")
     public Response getNextById(@PathParam("snpId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             QueryResult snps = variationDBAdaptor.next(Splitter.on(",").splitToList(query).get(0), queryOptions);
             return createOkResponse(snps);
@@ -103,12 +106,11 @@ public class SnpWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-    @Deprecated
     @GET
     @Path("/consequence_types")
     public Response getAllConsequenceTypes() {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllConsequenceTypes(queryOptions));
         } catch (Exception e) {
@@ -116,103 +118,17 @@ public class SnpWSServer extends GenericRestWSServer {
         }
     }
 
-    @Deprecated
     @GET
     @Path("/phenotypes")
+    @Deprecated
     public Response getAllPhenotypes(@QueryParam("phenotype") String phenotype) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
             queryOptions.put("phenotype", phenotype);
 
             return createOkResponse(variationDBAdaptor.getAllPhenotypes(queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    //	private int snpId;
-    //	private String name;
-    //	private String chromosome;
-    //	private int start;
-    //	private int end;
-    //	private String strand;
-    //	private int mapWeight;
-    //	private String alleleString;
-    //	private String ancestralAllele;
-    //	private String source;
-    //	private String displaySoConsequence;
-    //	private String soConsequenceType;
-    //	private String displayConsequence;
-    //	private String sequence;
-
-
-    @GET
-    @Path("/{snpId}/fullinfo")
-    public Response getFullInfoById(@PathParam("snpId") String query) {
-        try {
-            checkParams();
-//            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.assembly);
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-
-//			List<List<Snp>> snpListList = snpDBAdaptor.getAllBySnpIdList(StringUtils.toList(query, ","));
-//			List<List<SnpToTranscript>> snpToTranscript = snpDBAdaptor.getAllSnpToTranscriptList(StringUtils.toList(query, ","));
-//			List<List<SnpPopulationFrequency>> snpPopulation = snpDBAdaptor.getAllSnpPopulationFrequencyList(StringUtils.toList(query, ","));
-//			List<List<VariationPhenotypeAnnotation>> snpPhenotype = snpDBAdaptor.getAllSnpPhenotypeAnnotationListBySnpNameList(StringUtils.toList(query, ","));
-
-//			List<List<Transcript>> transcripts = new ArrayList<List<Transcript>>(StringUtils.toList(query, ",").size());
-//			for (int i = 0; i < snpToTranscript.size(); i++) {
-//				List<Transcript> transcript = new ArrayList<Transcript>();
-//				for (int j = 0; j < snpToTranscript.get(i).size(); j++) {
-//					transcript.add(snpToTranscript.get(i).get(j).getTranscriptId());
-//				}
-//				transcripts.add(transcript);
-//			}
-
-//			StringBuilder response = new StringBuilder();
-//			response.append("[");
-//			for (int i = 0; i < snpListList.size(); i++) {
-//				response.append("[");
-//				boolean removeComma = false;
-//				for (int j = 0; j < snpListList.get(i).size(); j++) {
-//					removeComma = true;
-//					response.append("{");
-//					response.append("\"name\":"+"\""+snpListList.get(i).get(j).getName()+"\",");
-//					response.append("\"chromosome\":"+"\""+snpListList.get(i).get(j).getSequenceName()+"\",");
-//					response.append("\"start\":"+snpListList.get(i).get(j).getStart()+",");
-//					response.append("\"end\":"+snpListList.get(i).get(j).getEnd()+",");
-//					response.append("\"strand\":"+"\""+snpListList.get(i).get(j).getStrand()+"\",");
-//					response.append("\"mapWeight\":"+snpListList.get(i).get(j).getEnd()+",");
-//					response.append("\"alleleString\":"+"\""+snpListList.get(i).get(j).getAlleleString()+"\",");
-//					response.append("\"ancestralAllele\":"+"\""+snpListList.get(i).get(j).getAncestralAllele()+"\",");
-//					response.append("\"source\":"+"\""+snpListList.get(i).get(j).getSource()+"\",");
-//					response.append("\"displaySoConsequence\":"+"\""+snpListList.get(i).get(j).getDisplaySoConsequence()+"\",");
-//					response.append("\"soConsequenceType\":"+"\""+snpListList.get(i).get(j).getSoConsequenceType()+"\",");
-//					response.append("\"displayConsequence\":"+"\""+snpListList.get(i).get(j).getDisplayConsequence()+"\",");
-//					response.append("\"sequence\":"+"\""+snpListList.get(i).get(j).getSequence()+"\",");
-//					response.append("\"population\":"+gson.toJson(snpPopulation.get(i))+",");
-//
-////					String aux = gson.toJson(snpToTranscript.get(i));
-//////					System.out.println(aux);
-////					for (int k = 0; k < snpToTranscript.get(i).size(); k++) {
-////						aux = aux.replace("\"snpToTranscriptId\":"+snpToTranscript.get(i).get(k).getSnpToTranscriptId(), "\"transcript\":"+gson.toJson(snpToTranscript.get(i).get(k).getTranscriptId())+", \"consequenceTypeSoAccession\":"+gson.toJson(snpToTranscript.get(i).get(k).getConsequenceTypeSoAccession()));
-////					}
-////					response.append("\"snptotranscript\":"+aux+",");
-////					System.out.println(aux);
-//
-////					response.append("\"phenotype\":"+gson.toJson(snpPhenotype.get(i))+"");//TODO
-//					response.append("},");
-//				}
-//				if(removeComma){
-//					response.replace(response.length()-1, response.length(), "");
-//				}
-//				response.append("],");
-//			}
-//			response.replace(response.length()-1, response.length(), "");
-//			response.append("]");
-//			return  generateResponse(query,Arrays.asList(response));
-            return null;
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -234,7 +150,7 @@ public class SnpWSServer extends GenericRestWSServer {
 
     private Response getConsequenceType(String snpId) {
         try {
-            checkParams();
+            parseQueryParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 //			return generateResponse(snpId, "SNP_CONSEQUENCE_TYPE", snpDBAdaptor.getAllConsequenceTypesBySnpIdList(StringUtils.toList(snpId, ",")));
@@ -262,7 +178,7 @@ public class SnpWSServer extends GenericRestWSServer {
 
     private Response getRegulatoryType(String snpId) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return null;
         } catch (Exception e) {
@@ -289,7 +205,7 @@ public class SnpWSServer extends GenericRestWSServer {
 
     public Response getSnpPhenotypesByName(String snps, String outputFormat) {
         try {
-            checkParams();
+            parseQueryParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 //			List<List<VariationPhenotypeAnnotation>> snpPhenotypeAnnotList = snpDBAdaptor.getAllSnpPhenotypeAnnotationListBySnpNameList(StringUtils.toList(snps, ","));
@@ -319,7 +235,7 @@ public class SnpWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the frequencies in the population for the SNP(s)")
     public Response getPopulationFrequency(@PathParam("snpId") String snpId) {
         try {
-            checkParams();
+            parseQueryParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", Arrays.asList(""));
@@ -333,7 +249,7 @@ public class SnpWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieve all external references for the SNP(s)")
     public Response getXrefs(@PathParam("snpId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return null;
         } catch (Exception e) {

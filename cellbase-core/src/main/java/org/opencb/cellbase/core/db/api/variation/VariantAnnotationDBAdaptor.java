@@ -26,6 +26,7 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 11/07/14.

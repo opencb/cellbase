@@ -173,6 +173,8 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                     subStr = sb.toString().substring(startStr - 1, endStr - 1);
                 }
             }
+            logger.info("((BasicDBObject)list.get(0)).getString(\"sequenceType\") = {}",((BasicDBObject)list.get(0)).getString("sequenceType"));
+            logger.info("((BasicDBObject)list.get(0)).getString(\"assembly\") = {}", ((BasicDBObject)list.get(0)).getString("assembly"));
             GenomeSequenceFeature genomeSequenceFeature = new GenomeSequenceFeature(region.getChromosome(), region.getStart(), region.getEnd(), 1, ((BasicDBObject)list.get(0)).getString("sequenceType"), ((BasicDBObject)list.get(0)).getString("assembly"), subStr);
 //            GenomeSequenceChunk genomeSequenceChunk = new GenomeSequenceChunk(region.getSequenceName(), region.getStart(), region.getEnd(), subStr);
 

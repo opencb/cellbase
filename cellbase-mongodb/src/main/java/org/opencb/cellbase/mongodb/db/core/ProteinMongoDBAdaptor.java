@@ -128,7 +128,15 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options) {
-        return null;
+        List<DBObject> queries = new ArrayList<>(idList.size());
+        for (String id : idList) {
+            QueryBuilder builder = QueryBuilder.start("dbReference.id").is(id);
+            queries.add(builder.get());
+        }
+
+//        options = addExcludeReturnFields("transcripts", options);
+//        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override

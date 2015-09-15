@@ -18,6 +18,7 @@ package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.db.api.CytobandDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -37,7 +38,8 @@ import java.io.IOException;
 public class KaryotypeWSServer extends GenericRestWSServer {
 	
 	
-	public KaryotypeWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+	public KaryotypeWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+							 @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
 		super(version, species, uriInfo, hsr);
 	}
 
@@ -45,7 +47,7 @@ public class KaryotypeWSServer extends GenericRestWSServer {
 	@Path("/{chromosomeName}/cytoband")
 	public Response getByChromosomeName(@PathParam("chromosomeName") String chromosome) {
 		try {
-			checkParams();
+			parseQueryParams();
 			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
 			return generateResponse(chromosome, dbAdaptor.getAllByChromosomeList(Splitter.on(",").splitToList(chromosome)));
 		} catch (Exception e) {
@@ -58,7 +60,7 @@ public class KaryotypeWSServer extends GenericRestWSServer {
 	@Path("/chromosome")
 	public Response getChromosomes() {
 		try {
-			checkParams();
+			parseQueryParams();
 			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
 			return generateResponse("", dbAdaptor.getAllChromosomeNames());
 		} catch (Exception e) {
