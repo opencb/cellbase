@@ -48,7 +48,7 @@ class ClinVarParserTest extends Specification {
         serializer.serialize(_) >> { ClinvarPublicSet arg -> serializedVariants.add(arg) }
         noEfoSerializer.serialize(_) >> { ClinvarPublicSet arg -> noEfoSerializedVariants.add(arg) }
 
-        def clinvarXmlFile = Paths.get(ClinVarParserTest.class.getResource("/clinvarParser/clinvar_v19_test.xml").toURI())
+        def clinvarXmlFile = Paths.get(ClinVarParserTest.class.getResource("/clinvarParser/clinvar_v19_test.xml.gz").toURI())
         def efosFile = Paths.get(ClinVarParserTest.class.getResource("/clinvarParser/ClinVar_Traits_EFO_Names.csv").toURI())
 
         clinvarParser = new ClinVarParser(clinvarXmlFile, efosFile,ClinVarParser.GRCH37_ASSEMBLY, serializer)

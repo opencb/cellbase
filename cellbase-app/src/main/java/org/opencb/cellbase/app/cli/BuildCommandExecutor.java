@@ -346,7 +346,6 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildClinvar() {
         Path clinvarFile = input.resolve("ClinVar.xml.gz");
-        // TODO: add this file to the cellbase FTP and to the configuration file
         Path efosFilePath = input.resolve("ClinVar_Traits_EFO_Names.csv");
         if (!efosFilePath.toFile().exists()) {
             efosFilePath = null;
