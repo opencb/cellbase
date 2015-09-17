@@ -153,6 +153,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             if(nonSynonymous(consequenceType)) {
                 List<Score> scoreList = getProteinSubstitutionScores(consequenceType);
                 consequenceType.setProteinSubstitutionScores(scoreList);
+                consequenceType.setFunctionalDescription(getFunctionalDescription(consequenceType));
             }
         }
 
@@ -207,6 +208,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
         }
         return scoreList;
+    }
+
+    private String getFunctionalDescription(ConsequenceType consequenceType) {
+        QueryResult variantInfo = proteinDBAdaptor.getVariantInfo(consequenceType.getEnsemblTranscriptId(),
+                consequenceType.getAaPosition(), consequenceType.getAaChange().split("/")[1], new QueryOptions());
+
+        if (variantInfo.getNumResults() > 0) {
+            return (String) ((BasicDBObject) variantInfo.getResult().get(0)).get("description");
+        }
+        return null;
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(GenomicVariant variant) {

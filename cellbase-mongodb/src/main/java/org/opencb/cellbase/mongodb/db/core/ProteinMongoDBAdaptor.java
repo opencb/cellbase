@@ -199,4 +199,29 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
         return proteinSubstitionScoresQueryResult;
     }
+
+    @Override
+    public QueryResult getVariantInfo(String ensemblTranscriptId, Integer AaPosition, String alternativeAa,
+                                       QueryOptions queryOptions) {
+
+        String shortAlternativeAa = aaShortName.get(alternativeAa);
+        if(shortAlternativeAa!=null) {
+            QueryBuilder builder = QueryBuilder.start("dbReference.id").is(ensemblTranscriptId)
+                    .and("feature.location.position.position").is(AaPosition)
+                    .and("feature.variation").is(shortAlternativeAa);
+            BasicDBObject attributeValues = new BasicDBObject();
+            attributeValues.put("location.position.position", AaPosition);
+            attributeValues.put("variation", shortAlternativeAa);
+            BasicDBObject elemMatch = new BasicDBObject();
+            elemMatch.put("$elemMatch", attributeValues);
+            BasicDBObject projection = new BasicDBObject();
+            projection.put("feature", elemMatch);
+            queryOptions.put("elemMatch",projection);
+            return executeQuery(ensemblTranscriptId + "_" + String.valueOf(AaPosition) + "_" + alternativeAa, builder.get(),
+                    queryOptions);
+        } else {
+            return new QueryResult();
+        }
+    }
+
 }
