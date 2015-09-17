@@ -127,6 +127,37 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     }
 
     @Override
+    public List<QueryResult> getStatsById(String id, QueryOptions options) {
+
+        gene name
+        ensembl gene id
+        chr
+        start
+        end
+        sequence length
+        coding sequence length
+        num transcripts
+        breakdown num transcripts by biotype
+        num exons
+        num drug interactions
+        Clinical Variants {
+            #
+            Breakdown by clinical significance
+            Breakdown by SO
+        }
+
+        List<DBObject> queries = new ArrayList<>(idList.size());
+        for (String id : idList) {
+            QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").is(id);
+            queries.add(builder.get());
+        }
+
+//        options = addExcludeReturnFields("transcripts", options);
+//        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
+    }
+
+    @Override
     public QueryResult getAllByXref(String id, QueryOptions options) {
         return null;
     }

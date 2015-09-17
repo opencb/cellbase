@@ -51,6 +51,7 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
     List<QueryResult> getAllTargetsByTfList(List<String> tfIdList, QueryOptions queryOptions);
 
+    QueryResult getStatsById(String id);
 
 //	QueryResult getAllByTfName(String tfName);
 //	List<QueryResult> getAllByTfNameList(List<String> tfNameList);
