@@ -24,10 +24,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
 import org.opencb.biodata.models.feature.Region;
-import org.opencb.biodata.models.variant.annotation.Clinvar;
-import org.opencb.biodata.models.variant.annotation.Cosmic;
-import org.opencb.biodata.models.variant.annotation.Gwas;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.annotation.*;
 import org.opencb.biodata.models.variation.GenomicVariant;
 
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
@@ -546,21 +543,24 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                     clinvarList.add(clinvar);
                 }
             }
-            Map<String, Object> clinicalData = new HashMap<>();
-            if(cosmicList!=null && cosmicList.size()>0) {
-                clinicalData.put("cosmic", cosmicList);
-            }
-            if(gwasList!=null && gwasList.size()>0) {
-                clinicalData.put("gwas", gwasList);
-            }
-            if(clinvarList!=null && clinvarList.size()>0) {
-                clinicalData.put("clinvar", clinvarList);
-            }
-            if(!clinicalData.isEmpty()) {
+//            Map<String, Object> clinicalData = new HashMap<>();
+//            if(cosmicList!=null && cosmicList.size()>0) {
+//                clinicalData.put("cosmic", cosmicList);
+//            }
+//            if(gwasList!=null && gwasList.size()>0) {
+//                clinicalData.put("gwas", gwasList);
+//            }
+//            if(clinvarList!=null && clinvarList.size()>0) {
+//                clinicalData.put("clinvar", clinvarList);
+//            }
+            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(cosmicList, gwasList,
+                    clinvarList);
+            if(!(variantTraitAssociation.getCosmicList().isEmpty() && variantTraitAssociation.getGwasList().isEmpty() &&
+                    variantTraitAssociation.getClinvarList().isEmpty())) {
                 // FIXME quick solution to compile
                 //            queryResult.setResult(clinicalData);
-                queryResult.setResult(Arrays.asList(clinicalData));
-                queryResult.setNumResults(cosmicList.size()+clinvarList.size()+gwasList.size());
+                queryResult.setResult(Collections.singletonList(variantTraitAssociation));
+                queryResult.setNumResults(variantTraitAssociation.size());
             } else {
                 queryResult.setResult(null);
                 queryResult.setNumResults(0);
@@ -705,8 +705,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         for (VariantAnnotation variantAnnotation : variantAnnotations) {
             QueryBuilder builder = QueryBuilder.start("chromosome").is(variantAnnotation.getChromosome())
                     .and("start").is(variantAnnotation.getStart()).and("reference")
-                    .is(variantAnnotation.getReferenceAllele())
-                    .and("alternate").is(variantAnnotation.getAlternateAllele());
+                    .is(variantAnnotation.getReference())
+                    .and("alternate").is(variantAnnotation.getAlternate());
             DBObject update = null;
             try {
                 update = new BasicDBObject("$set", new BasicDBObject("annot",
