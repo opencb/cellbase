@@ -18,15 +18,13 @@ package org.opencb.cellbase.mongodb.db.variation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.*;
-import javassist.compiler.ast.Expr;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.MiRNAGene;
 import htsjdk.tribble.readers.TabixReader;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.*;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -42,8 +40,6 @@ import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -76,7 +72,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private List<DBObject> geneInfoList;
 
     private List<Gene> geneList;
-    private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2; // Just two prediction methods are currently returned: SIFT and POLYPHEN
 
     public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -149,9 +144,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
         for(ConsequenceType consequenceType : consequenceTypeList) {
             if(nonSynonymous(consequenceType)) {
-                List<Score> scoreList = getProteinSubstitutionScores(consequenceType);
-                consequenceType.setProteinSubstitutionScores(scoreList);
-                consequenceType.setFunctionalDescription(getFunctionalDescription(consequenceType));
+                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
                 int a = 1;
             }
         }
@@ -189,33 +182,13 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
     }
 
-    private List<Score> getProteinSubstitutionScores(ConsequenceType consequenceType) {
-        QueryResult proteinSubstitutionScoresQueryResult = proteinDBAdaptor.getFunctionPredictionByAaChange(
-                consequenceType.getEnsemblTranscriptId(), consequenceType.getAaPosition(),
-                consequenceType.getAaChange().split("/")[1], new QueryOptions());
-        List<Score> scoreList = null;
-        if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
-            scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
-            DBObject proteinSubstitutionScores = (DBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
-            if (proteinSubstitutionScores.get("ss") != null) {
-                scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-                        "sift", VariantAnnotationUtils.siftDescriptions.get(proteinSubstitutionScores.get("se"))));
-            }
-            if (proteinSubstitutionScores.get("ps") != null) {
-                scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-                        "polyphen", VariantAnnotationUtils.polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
-            }
-        }
-        return scoreList;
-    }
+    private ProteinVariantAnnotation getProteinAnnotation(ConsequenceType consequenceType) {
+        QueryResult proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
+                consequenceType.getEnsemblTranscriptId(), consequenceType.getAAPosition(),
+                consequenceType.getAAReference(), consequenceType.getAAAlternate(), new QueryOptions());
 
-    private String getFunctionalDescription(ConsequenceType consequenceType) {
-        QueryResult variantInfo = proteinDBAdaptor.getVariantInfo(consequenceType.getEnsemblTranscriptId(),
-                consequenceType.getAaPosition(), consequenceType.getAaChange().split("/")[1], new QueryOptions());
-
-        if (variantInfo.getNumResults() > 0) {
-            return (String) ((BasicDBObject) ((List) ((BasicDBObject) variantInfo.getResult().get(0)).get("feature")).get(0))
-                    .get("description");
+        if (proteinVariantAnnotation.getNumResults() > 0) {
+            return (ProteinVariantAnnotation) proteinVariantAnnotation.getResult().get(0);
         }
         return null;
     }

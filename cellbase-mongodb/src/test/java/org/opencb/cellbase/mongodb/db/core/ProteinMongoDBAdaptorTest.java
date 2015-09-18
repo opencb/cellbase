@@ -16,11 +16,11 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testGetVariantInfo() throws Exception {
-
+    public void testGetVariantAnnotation() throws Exception {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
-        QueryResult queryResult = proteinDBAdaptor.getVariantInfo("ENST00000252487", 49, "ARG", new QueryOptions());
-//        QueryResult queryResult = proteinDBAdaptor.getVariantInfo("ENST00000252487", 130, "ARG", new QueryOptions());
+        //QueryResult queryResult = proteinDBAdaptor.getVariantAnnotation("ENST00000252487", 49, "ARG", new QueryOptions());
+        QueryResult queryResult = proteinDBAdaptor.getVariantAnnotation("ENST00000252487", 49,"-", "ARG", new QueryOptions());
+        int a=1;
 
     }
 }
