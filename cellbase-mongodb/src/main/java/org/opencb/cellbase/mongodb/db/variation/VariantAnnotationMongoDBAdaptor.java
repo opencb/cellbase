@@ -152,6 +152,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 List<Score> scoreList = getProteinSubstitutionScores(consequenceType);
                 consequenceType.setProteinSubstitutionScores(scoreList);
                 consequenceType.setFunctionalDescription(getFunctionalDescription(consequenceType));
+                int a = 1;
             }
         }
 
@@ -213,7 +214,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 consequenceType.getAaPosition(), consequenceType.getAaChange().split("/")[1], new QueryOptions());
 
         if (variantInfo.getNumResults() > 0) {
-            return (String) ((BasicDBObject) variantInfo.getResult().get(0)).get("description");
+            return (String) ((BasicDBObject) ((List) ((BasicDBObject) variantInfo.getResult().get(0)).get("feature")).get(0))
+                    .get("description");
         }
         return null;
     }
