@@ -20,6 +20,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
         //QueryResult queryResult = proteinDBAdaptor.getVariantAnnotation("ENST00000252487", 49, "ARG", new QueryOptions());
         QueryResult queryResult = proteinDBAdaptor.getVariantAnnotation("ENST00000252487", 49,"-", "ARG", new QueryOptions());
+//        QueryResult queryResult = proteinDBAdaptor.getVariantAnnotation("ENST00000252487", 4934123,"-", "ARG", new QueryOptions()); // Should not return any result
         int a=1;
 
     }

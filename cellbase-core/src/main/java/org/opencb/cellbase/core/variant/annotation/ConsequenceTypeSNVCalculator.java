@@ -298,7 +298,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         }
                     }
                     // Set consequenceTypeTemplate.aChange
-                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
+//                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
+                    consequenceType.setAAReference(referenceA);
+                    consequenceType.setAAAlternate(alternativeA);
                     // Fill consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
                     char[] referenceCodonArray = String.valueOf(referenceCodon).toLowerCase().toCharArray();
                     referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
@@ -510,7 +512,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         }
                     }
                     // Set consequenceTypeTemplate.aChange
-                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
+//                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
+                    consequenceType.setAAReference(referenceA);
+                    consequenceType.setAAAlternate(alternativeA);
                     // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
                     char[] referenceCodonArray = referenceCodon.toLowerCase().toCharArray();
                     referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
