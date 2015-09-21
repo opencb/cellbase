@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant,VariantAnnotation> {
+public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, VariantAnnotation> {
 
     private List<VariantAnnotator> variantAnnotatorList;
 
@@ -35,7 +35,7 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant,Var
     }
 
     public void pre() {
-        for(VariantAnnotator variantAnnotator : variantAnnotatorList) {
+        for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             variantAnnotator.open();
         }
     }
@@ -44,7 +44,7 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant,Var
         // A new variantAnnotationList must be created each time apply is called to avoid overwriting previous results
         // of the apply method
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
-        for(VariantAnnotator variantAnnotator : variantAnnotatorList) {
+        for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             // All annotators must have a reference to the same variantAnnotationList so that each one updates the
             // annotation of the others
             variantAnnotator.setVariantAnnotationList(variantAnnotationList);
@@ -54,7 +54,7 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant,Var
     }
 
     public void post() {
-        for(VariantAnnotator variantAnnotator : variantAnnotatorList) {
+        for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             variantAnnotator.close();
         }
     }
