@@ -10,9 +10,12 @@ import java.util.List;
  */
 public interface VariantAnnotator {
 
-    public boolean open();
-    public List<VariantAnnotation> run(List<Variant> variantList);
-    public void setVariantAnnotationList(List<VariantAnnotation> variantAnnotationList);
-    public boolean close();
+    boolean open();
+
+    List<VariantAnnotation> run(List<Variant> variantList);
+
+    void setVariantAnnotationList(List<VariantAnnotation> variantAnnotationList);
+
+    boolean close();
 
 }

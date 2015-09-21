@@ -63,7 +63,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         QueryResponse<QueryResult<VariantAnnotation>> response;
         try {
             response = cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
-                            CellBaseClient.SubCategory.variant, batch, new QueryOptions("post", true));
+                    CellBaseClient.SubCategory.variant, batch, new QueryOptions("post", true));
         } catch (IOException e) {
             return null;
         }
@@ -85,7 +85,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         List<GenomicVariant> genomicVariants = new ArrayList<>(vcfBatch.size());
         for (Variant variant : vcfBatch) {
             GenomicVariant genomicVariant;
-            if((genomicVariant = getGenomicVariant(variant))!=null) {
+            if ((genomicVariant = getGenomicVariant(variant)) != null) {
                 genomicVariants.add(genomicVariant);
             }
         }
@@ -103,7 +103,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
                 ref = StringUtils.repeat("N", end - variant.getStart());
                 return new GenomicVariant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
-            // TODO: structural variants are not yet properly handled. Implement and remove this patch asap
+                // TODO: structural variants are not yet properly handled. Implement and remove this patch asap
             } else if(variant.getAlternate().startsWith("<") || (variant.getAlternate().length()>1 && variant.getReference().length()>1)) {
                 return null;
             } else {
