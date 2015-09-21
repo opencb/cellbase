@@ -7,6 +7,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
@@ -243,7 +244,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 }
                 int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
                 consequenceType.setCdsPosition(cdsVariantStart);
-                consequenceType.setAaPosition(((cdsVariantStart - 1)/3)+1);
+                // First place where protein variant annotation is added to the Consequence type, must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1)/3)+1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
             solveCodingExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaCodingStart, cdnaVariantPosition);
         } else {
@@ -299,8 +303,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     }
                     // Set consequenceTypeTemplate.aChange
 //                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
-                    consequenceType.setAAReference(referenceA);
-                    consequenceType.setAAAlternate(alternativeA);
+                    consequenceType.getProteinVariantAnnotation().setReference(referenceA);
+                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
                     // Fill consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
                     char[] referenceCodonArray = String.valueOf(referenceCodon).toLowerCase().toCharArray();
                     referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
@@ -462,7 +466,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 }
                 int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
                 consequenceType.setCdsPosition(cdsVariantStart);
-                consequenceType.setAaPosition(((cdsVariantStart - 1)/3)+1);
+                // First place where protein variant annotation is added to the Consequence type, must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1)/3)+1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
             solveCodingExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaCodingStart,
                     cdnaVariantPosition);
@@ -513,8 +520,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     }
                     // Set consequenceTypeTemplate.aChange
 //                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
-                    consequenceType.setAAReference(referenceA);
-                    consequenceType.setAAAlternate(alternativeA);
+                    consequenceType.getProteinVariantAnnotation().setReference(referenceA);
+                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
                     // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase. Careful with upper/lower case letters
                     char[] referenceCodonArray = referenceCodon.toLowerCase().toCharArray();
                     referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);

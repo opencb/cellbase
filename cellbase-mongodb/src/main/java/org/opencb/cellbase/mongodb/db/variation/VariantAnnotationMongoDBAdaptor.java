@@ -183,12 +183,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     private ProteinVariantAnnotation getProteinAnnotation(ConsequenceType consequenceType) {
-        QueryResult proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
-                consequenceType.getEnsemblTranscriptId(), consequenceType.getAAPosition(),
-                consequenceType.getAAReference(), consequenceType.getAAAlternate(), new QueryOptions());
+        if(consequenceType.getProteinVariantAnnotation()!=null) {
+            QueryResult proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
+                    consequenceType.getEnsemblTranscriptId(),
+                    consequenceType.getProteinVariantAnnotation().getPosition(),
+                    consequenceType.getProteinVariantAnnotation().getReference(),
+                    consequenceType.getProteinVariantAnnotation().getAlternate(), new QueryOptions());
 
-        if (proteinVariantAnnotation.getNumResults() > 0) {
-            return (ProteinVariantAnnotation) proteinVariantAnnotation.getResult().get(0);
+            if (proteinVariantAnnotation.getNumResults() > 0) {
+                return (ProteinVariantAnnotation) proteinVariantAnnotation.getResult().get(0);
+            }
         }
         return null;
     }

@@ -10,6 +10,7 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.ExpressionValue;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.DBAdaptor;
@@ -300,7 +301,10 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 }
                 int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                 consequenceType.setCdsPosition(cdsVariantStart);
-                consequenceType.setAaPosition(((cdsVariantStart - 1) / 3) + 1);
+                // First place where protein variant annotation is added to the Consequence type, must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
             if(variantStart >= transcript.getGenomicCodingStart()) {  // Variant start also within coding region
                 solveCodingExonVariantInNegativeTranscript(transcriptSequence, cdnaCodingStart, cdnaVariantStart,
@@ -557,7 +561,10 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 }
                 int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                 consequenceType.setCdsPosition(cdsVariantStart);
-                consequenceType.setAaPosition(((cdsVariantStart - 1)/3)+1);
+                // First place where protein variant annotation is added to the Consequence type, must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1)/3)+1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
             if(variantEnd <= transcript.getGenomicCodingEnd()) {  // Variant end also within coding region
                 solveCodingExonVariantInPositiveTranscript(transcriptSequence, cdnaCodingStart, cdnaVariantStart);
