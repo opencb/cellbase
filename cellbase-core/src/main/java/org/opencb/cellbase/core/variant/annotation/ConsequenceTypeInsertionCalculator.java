@@ -276,6 +276,11 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         }
         // Is not intron variant (both ends fall within the same intron)
         if(!junctionSolution[1]) {
+            if(cdnaVariantStart==-1 && cdnaVariantEnd!=-1) {  // To account for those insertions in the 3' end of an intron
+                cdnaVariantStart = cdnaVariantEnd - 1;
+            } else if(cdnaVariantEnd==-1 && cdnaVariantStart!=-1) {  // To account for those insertions in the 5' end of an intron
+                cdnaVariantEnd = cdnaVariantStart + 1;
+            }
             solveExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaVariantStart, cdnaVariantEnd,
                     firstCdsPhase);
         }
@@ -528,6 +533,11 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         }
         // Is not intron variant (both ends fall within the same intron)
         if(!junctionSolution[1]) {
+            if(cdnaVariantStart==-1 && cdnaVariantEnd!=-1) {  // To account for those insertions in the 3' end of an intron
+                cdnaVariantStart = cdnaVariantEnd - 1;
+            } else if(cdnaVariantEnd==-1 && cdnaVariantStart!=-1) {  // To account for those insertions in the 5' end of an intron
+                cdnaVariantEnd = cdnaVariantStart + 1;
+            }
             solveExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaVariantStart, cdnaVariantEnd,
                     firstCdsPhase);
         }
