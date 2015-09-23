@@ -16,6 +16,9 @@
 
 package org.opencb.cellbase.mongodb.db;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -282,6 +285,28 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("13", 52718051, "-", "T"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("13", 32893271, "A", "G"), new QueryOptions());  // should set functional description "In BC and ovarian cancer; unknown pathological significance; dbSNP:rs4987046" for ENST00000380152
+        QueryResult queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("19", 45411941, "T", "C"), new QueryOptions());  // should return intergenic_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 6638139, "A", "T"), new QueryOptions());  // should return intergenic_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 108309064, StringUtils.repeat("N",2252), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 124814698, StringUtils.repeat("N",1048), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 327947, "A", "-"), new QueryOptions());  // should return
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 327947, "A", "-"), new QueryOptions());  // should return
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 327947, "A", "-"), new QueryOptions());  // should return
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 101786, "A", "-"), new QueryOptions());  // should return ENSG00000173876 ENST00000413237 -       intron_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 10103931, "A", "-"), new QueryOptions());  // should return ENSG00000224788 ENST00000429539 -       intron_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 10005684, "-", "AT"), new QueryOptions());  // should return intergenic_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 696869, "C", "-"), new QueryOptions());  // should not return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 52365874, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 133761141, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 12172775, "G", "A"), new QueryOptions());  // should return 10      12172775        A       ENSG00000265653 ENST00000584402 -       non_coding_transcript_exon_variant
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 10993859, "G", "C"), new QueryOptions());  // should return 10      10993859        C       ENSG00000229240 ENST00000598573 -       splice_region_variant
+//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new GenomicVariant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 172663, "G", "A"), new QueryOptions());  // should return intergenic_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 114340663, "GCTGGGCATCCT", "-"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 114340663, "GCTGGGCATCCT", "ACTGGGCATCCT"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 220603289, "-", "GTGT"), new QueryOptions());  // should not return null
@@ -303,7 +328,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("4", 48896023, "G", "C"), new QueryOptions());  // should
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 12837706, "-", "CC"), new QueryOptions());  // should not return null
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("19", 20047783, "-", "AAAAAA"), new QueryOptions());  // should return stop_gained
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 115828861, "C", "G"), new QueryOptions());  // should return stop_lost
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 115828861, "C", "G"), new QueryOptions());  // should return
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("16", 32859177, "C", "T"), new QueryOptions());  // should return stop_lost
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("10", 13481174, "NN", "-"), new QueryOptions());  // should return stop_lost
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 153600596, "-", "C"), new QueryOptions());  // should
@@ -416,10 +441,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
         /**
          * Calculates annotation for vcf file variants, loads vep annotations, compares batches and writes results
          */
-        String DIROUT = "/home/fjlopez/tmp/";
+        String DIROUT = "/homes/fjlopez/tmp/";
 //        String DIROUT = "/homes/fjlopez/tmp/";
         List<String> VCFS = new ArrayList<>();
-        VCFS.add("/tmp/test.vcf");
+//        VCFS.add("/tmp/test.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
@@ -445,30 +470,30 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 
         List<String> VEPFILENAMES = new ArrayList<>();
-        VEPFILENAMES.add("/tmp/test.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr13.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr14.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr15.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr16.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr17.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr18.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr19.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr20.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr2.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr3.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr4.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr5.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr6.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr7.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr8.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr9.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/eva_output/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/tmp/test.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr13.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr14.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr15.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr16.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr17.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr18.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr19.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr20.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr2.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr3.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr4.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr5.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr6.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr7.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr8.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr9.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 
 
 
@@ -525,8 +550,10 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         List<VcfRecord> vcfRecordList = vcfReader.read(1000);
         int ensemblPos;
+        int processedVariants = 0;
 
         for (VcfRecord vcfRecord : vcfRecordList) {
+//            boolean isSnv = false;
             // Short deletion
             if (vcfRecord.getReference().length() > 1) {
                 ref = vcfRecord.getReference().substring(1);
@@ -564,35 +591,42 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 alt = vcfRecord.getAlternate();
                 ensemblPos = vcfRecord.getPosition();
                 pos = Integer.toString(ensemblPos);
+//                isSnv = true;
             }
-            try {
-                queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), ensemblPos,
-                        ref, alt), new QueryOptions());
-            } catch (Exception e) {
-                System.out.println("new GenomicVariant = " + new GenomicVariant(vcfRecord.getChromosome(), ensemblPos, ref, alt));
-                System.exit(1);
-            }
+            // TODO: Remove this if as refactoring implements consequence types for other variant types
+//            if(isSnv) {
+                processedVariants++;
+                try {
+                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant(vcfRecord.getChromosome(), ensemblPos,
+                            ref, alt), new QueryOptions());
+                } catch (Exception e) {
+                    System.out.println("new GenomicVariant = " + new GenomicVariant(vcfRecord.getChromosome(), ensemblPos, ref, alt));
+                    e.printStackTrace();
+                    System.exit(1);
+                }
 
-            int i;
-            List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
-            for (i = 0; i < consequenceTypeList.size(); i++) {
-                for (ConsequenceType.ConsequenceTypeEntry soTerm : consequenceTypeList.get(i).getSoTerms()) {
-                    if (soTerm.getSoName().equals("2KB_upstream_gene_variant")) {
-                        SoNameToTest = "upstream_gene_variant";
-                    } else if (soTerm.getSoName().equals("2KB_downstream_gene_variant")) {
-                        SoNameToTest = "downstream_gene_variant";
-                    } else {
-                        SoNameToTest = soTerm.getSoName();
+                int i;
+                List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
+                for (i = 0; i < consequenceTypeList.size(); i++) {
+                    for (ConsequenceType.ConsequenceTypeEntry soTerm : consequenceTypeList.get(i).getSoTerms()) {
+                        if (soTerm.getSoName().equals("2KB_upstream_gene_variant")) {
+                            SoNameToTest = "upstream_gene_variant";
+                        } else if (soTerm.getSoName().equals("2KB_downstream_gene_variant")) {
+                            SoNameToTest = "downstream_gene_variant";
+                        } else {
+                            SoNameToTest = soTerm.getSoName();
+                        }
+                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
+                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
+                                consequenceTypeList.get(i).getEnsemblTranscriptId() == null ? "-" : consequenceTypeList.get(i).getEnsemblTranscriptId(),
+                                consequenceTypeList.get(i).getBiotype() == null ? "-" : consequenceTypeList.get(i).getBiotype(),
+                                SoNameToTest));
                     }
-                    uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
-                            consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
-                            consequenceTypeList.get(i).getEnsemblTranscriptId() == null ? "-" : consequenceTypeList.get(i).getEnsemblTranscriptId(),
-                            consequenceTypeList.get(i).getBiotype() == null ? "-" : consequenceTypeList.get(i).getBiotype(),
-                            SoNameToTest));
                 }
             }
-        }
-        return vcfRecordList.size();
+//        }
+        return processedVariants;
+//        return vcfRecordList.size();
     }
 
     private int getEndFromInfoField(VcfRecord vcfRecord) {
@@ -632,26 +666,29 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 } else {
                     alt = lineFields[2];
                 }
-                if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
-                        !previousAlt.equals(alt)) {
-                    nReadVariants++;
-                }
-                if (nReadVariants <= nVariantsToRead) {
-                    for (String SOname : lineFields[6].split(",")) {
-                        if (SOname.equals("nc_transcript_variant")) {
-                            SOname = "non_coding_transcript_variant";
-                        }
-                        if (!SOname.equals("regulatory_region_variant")) {
-                            nNonRegulatoryAnnotations++;
-                        }
-                        vepAnnotationSet.add(new AnnotationComparisonObject(coordinatesParts[0], coordinatesParts[1], alt, lineFields[3],
-                                lineFields[4], SOname));
+                // TODO: Remove this if as refactoring implements consequence types for other variant types
+//                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
+                    if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
+                            !previousAlt.equals(alt)) {
+                        nReadVariants++;
                     }
-                    previousChr = coordinatesParts[0];
-                    previousPosition = coordinatesParts[1];
-                    previousAlt = alt;
-                    filePointer = raf.getFilePointer();
-                }
+                    if (nReadVariants <= nVariantsToRead) {
+                        for (String SOname : lineFields[6].split(",")) {
+                            if (SOname.equals("nc_transcript_variant")) {
+                                SOname = "non_coding_transcript_variant";
+                            }
+                            if (!SOname.equals("regulatory_region_variant")) {
+                                nNonRegulatoryAnnotations++;
+                            }
+                            vepAnnotationSet.add(new AnnotationComparisonObject(coordinatesParts[0], coordinatesParts[1], alt, lineFields[3],
+                                    lineFields[4], SOname));
+                        }
+                        previousChr = coordinatesParts[0];
+                        previousPosition = coordinatesParts[1];
+                        previousAlt = alt;
+                        filePointer = raf.getFilePointer();
+                    }
+//                }
             }
 
             raf.seek(filePointer);
