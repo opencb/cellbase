@@ -53,7 +53,7 @@
     </dependencies>
 
     <build>
-        <finalName>cellbase-${cellbase.version}</finalName>
+        <finalName>cellbase</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
 
