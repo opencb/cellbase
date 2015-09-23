@@ -414,15 +414,11 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
 
             if (includeList.isEmpty() || includeList.contains("expression")) {
-                Map<String, List<ExpressionValue>> geneExpressionValuesMap = new HashMap<>(1);
-                geneExpressionValuesMap.put("expressionAtlas", getGeneExpressionValues(variantList.get(i)));
-                variantAnnotation.setExpressionValues(geneExpressionValuesMap);
+                variantAnnotation.setExpressionValues(getGeneExpressionValues(variantList.get(i)));
             }
 
             if (includeList.isEmpty() || includeList.contains("drugInteraction")) {
-                Map<String, List<GeneDrugInteraction>> geneDrugInteractionMap = new HashMap<>(1);
-                geneDrugInteractionMap.put("dgidb", getGeneDrugInteractions(variantList.get(i)));
-                variantAnnotation.setGeneDrugInteraction(geneDrugInteractionMap);
+                variantAnnotation.setGeneDrugInteraction(getGeneDrugInteractions(variantList.get(i)));
             }
 
             if (conservedRegionQueryResultList != null) {
