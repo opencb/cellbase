@@ -417,11 +417,11 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 variantAnnotation.setConsequenceTypes((List<ConsequenceType>) getAllConsequenceTypesByVariant(variantList.get(i), new QueryOptions()).getResult());
             }
 
-            if (includeList.isEmpty() || includeList.contains("expression")) {
+            if (annotatorsSet.contains("expression")) {
                 variantAnnotation.setExpressionValues(getGeneExpressionValues(variantList.get(i)));
             }
 
-            if (includeList.isEmpty() || includeList.contains("drugInteraction")) {
+            if (annotatorsSet.contains("drugInteraction")) {
                 variantAnnotation.setGeneDrugInteraction(getGeneDrugInteractions(variantList.get(i)));
             }
 
