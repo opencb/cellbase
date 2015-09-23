@@ -308,7 +308,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         long dbTimeEnd = System.currentTimeMillis();
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
 
-        if (proteinVariantAnnotation.getSubstitutionScores() != null || proteinVariantAnnotation.getAccession() != null) {
+        if (proteinVariantAnnotation.getSubstitutionScores() != null || proteinVariantAnnotation.getUniprotAccession() != null) {
             queryResult.setNumResults(1);
             queryResult.setResult(Collections.singletonList(proteinVariantAnnotation));
         }
@@ -319,7 +319,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     private ProteinVariantAnnotation processProteinVariantData(ProteinVariantAnnotation proteinVariantAnnotation,
                                                                String shortAlternativeAa,
                                                                BasicDBObject proteinVariantData) {
-        proteinVariantAnnotation.setAccession((String) ((BasicDBList) proteinVariantData.get("_id")).get(0));
+        proteinVariantAnnotation.setUniprotAccession((String) ((BasicDBList) proteinVariantData.get("_id")).get(0));
 
         for(Object keywordObject : ((BasicDBList) ((BasicDBList) proteinVariantData.get("keyword")).get(0))) {
             proteinVariantAnnotation.addUniprotKeyword((String)((BasicDBObject) keywordObject).get("value"));
@@ -336,7 +336,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //                            .get("position"))==proteinVariantAnnotation.getPosition()) {
             // Current feature corresponds to current variant
             if(variationDBList!=null && variationDBList.contains(shortAlternativeAa)) {
-                proteinVariantAnnotation.setVariantId((String) featureDBObject.get("id"));
+                proteinVariantAnnotation.setUniprotVariantId((String) featureDBObject.get("id"));
                 proteinVariantAnnotation.setFunctionalDescription((String) featureDBObject.get("description"));
             // Not a protein variant, another type of feature e.g. protein domain
             } else {
