@@ -78,7 +78,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
 
-        logger.info("VariantAnnotationMongoDBAdaptor: in 'constructor'");
+        logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
 
     public VariationDBAdaptor getVariationDBAdaptor() {
@@ -414,7 +414,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                     variantList.get(i).getPosition(), variantList.get(i).getReference(), variantList.get(i).getAlternative());
 
             if (annotatorsSet.contains("consequenceType")) {
-                variantAnnotation.setConsequenceTypes((List<ConsequenceType>) getAllConsequenceTypesByVariant(variantList.get(i), new QueryOptions()).getResult());
+                try {
+                    variantAnnotation.setConsequenceTypes((List<ConsequenceType>) getAllConsequenceTypesByVariant(variantList.get(i), new QueryOptions()).getResult());
+                } catch (UnsupportedURLVariantFormat e) {
+                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
+                            variantList.get(i).toString());
+                }
             }
 
             if (annotatorsSet.contains("expression")) {

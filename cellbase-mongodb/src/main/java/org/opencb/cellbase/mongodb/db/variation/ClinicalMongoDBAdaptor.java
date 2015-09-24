@@ -47,7 +47,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("clinical");
 
-        logger.info("ClinicalMongoDBAdaptor: in 'constructor'");
+        logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
 
     @Override

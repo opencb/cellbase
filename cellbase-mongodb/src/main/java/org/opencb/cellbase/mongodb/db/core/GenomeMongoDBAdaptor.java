@@ -44,7 +44,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         mongoDBCollection = mongoDataStore.getCollection("genome_info");
         genomeSequenceCollection = mongoDataStore.getCollection("genome_sequence");
 
-        logger.info("GeneMongoDBAdaptor: in 'constructor'");
+        logger.debug("GeneMongoDBAdaptor: in 'constructor'");
     }
 
     @Deprecated
