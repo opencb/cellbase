@@ -227,30 +227,34 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
 
             for (int j = 0; j < list.size(); j++) {
-                BasicDBObject chunk = (BasicDBObject) list.get(j);
-                String type = chunk.getString("type");
-                List<Float> valuesList;
-                if (!typeMap.containsKey(type)) {
-                    valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
-                    for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
-                        valuesList.add(null);
+                BasicDBObject chunk = list.get(j);
+
+                if (!chunk.isEmpty()) {
+                    String type = chunk.getString("type");
+                    List<Float> valuesList;
+                    if (!typeMap.containsKey(type)) {
+                        valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
+                        for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
+                            valuesList.add(null);
+                        }
+                        typeMap.put(type, valuesList);
+                    } else {
+                        valuesList = typeMap.get(type);
                     }
-                    typeMap.put(type, valuesList);
+
+                    BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
+                    int pos = 0;
+                    if (region.getStart() > chunk.getInt("start")) {
+                        pos = region.getStart() - chunk.getInt("start");
+                    }
+
+                    for (; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
+                        valuesList.set(pos + chunk.getInt("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                    }
                 } else {
-                    valuesList = typeMap.get(type);
+                    continue;
                 }
 
-                BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
-
-                int pos = 0;
-                if( region.getStart() > chunk.getInt("start")){
-                    pos = region.getStart() - chunk.getInt("start");
-                }
-
-
-                for (; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
-                    valuesList.set(pos + chunk.getInt("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
-                }
             }
 
             BasicDBList resultList = new BasicDBList();

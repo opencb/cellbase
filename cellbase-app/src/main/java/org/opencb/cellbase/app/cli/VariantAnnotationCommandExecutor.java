@@ -149,7 +149,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         variantAnnotatorList.add(createCellBaseAnnotator());
 
         // Include custom annotators if required
-        if(customFiles!=null) {
+        if (customFiles != null) {
             for (int i = 0; i < customFiles.size(); i++) {
                 if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
                     variantAnnotatorList.add(new VcfVariantAnnotator(customFiles.get(i).toString(), dbIndexes.get(i),
@@ -199,14 +199,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         dbIndexes = new ArrayList<>(customFiles.size());
         dbOptions = new ArrayList<>(customFiles.size());
         dbLocations = new ArrayList<>(customFiles.size());
-        for(int i=0; i<customFiles.size(); i++) {
-            if(customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
+        for (int i=0; i<customFiles.size(); i++) {
+            if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
                 Object[] dbConnection = getDBConnection(customFiles.get(i).toString()+".idx");
                 RocksDB rocksDB = (RocksDB) dbConnection[0];
                 Options dbOption = (Options) dbConnection[1];
                 String dbLocation = (String) dbConnection[2];
                 boolean indexingNeeded = (boolean) dbConnection[3];
-                if(indexingNeeded) {
+                if (indexingNeeded) {
                     logger.info("Creating index DB at {} ", dbLocation);
                     indexCustomVcfFile(i, rocksDB);
                 } else {
@@ -255,10 +255,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
             String line;
             int lineCounter = 0;
-            while((line = reader.readLine())!=null && (line.trim().equals("") || line.startsWith("#"))) {
+            while ((line = reader.readLine())!=null && (line.trim().equals("") || line.startsWith("#"))) {
                 lineCounter++;
             }
-            while(line!=null) {
+            while (line != null) {
                 String[] fields = line.split("\t");
                 // Reference positions will not be indexed
                 if(!fields[4].equals(".")) {
@@ -278,7 +278,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 }
                 line = reader.readLine();
                 lineCounter++;
-                if(lineCounter%100000 == 0) {
+                if (lineCounter % 100000 == 0) {
                     logger.info("{} lines indexed", lineCounter);
                 }
             }
@@ -291,7 +291,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
         List<Map<String, Object>> infoAttributes = new ArrayList<>(numAlleles);
-        for(int i=0; i<numAlleles; i++) {
+        for (int i=0; i<numAlleles; i++) {
             infoAttributes.add(new HashMap<>());
         }
         for (String var : info.split(";")) {
