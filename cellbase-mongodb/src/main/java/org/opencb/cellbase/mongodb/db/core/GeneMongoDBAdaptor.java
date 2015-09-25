@@ -28,9 +28,7 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor {
 
@@ -127,34 +125,62 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     }
 
     @Override
-    public List<QueryResult> getStatsById(String id, QueryOptions options) {
+    public QueryResult getStatsById(String id, QueryOptions options) {
 
-        gene name
-        ensembl gene id
-        chr
-        start
-        end
-        sequence length
-        coding sequence length
-        num transcripts
-        breakdown num transcripts by biotype
-        num exons
-        num drug interactions
-        Clinical Variants {
-            #
-            Breakdown by clinical significance
-            Breakdown by SO
+        Map<String, Object> stats = new HashMap<>();
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId(id);
+
+        QueryBuilder geneBuilder = QueryBuilder.start("transcripts.xrefs.id").is(id);
+        long dbTimeStart = System.currentTimeMillis();
+        QueryResult geneQueryResult = executeQuery(id, geneBuilder.get(), new QueryOptions());
+        QueryResult clinicalQueryResult = clinicalDBAdaptor.getAllByGeneId(id, new QueryOptions());
+        long dbTimeEnd = System.currentTimeMillis();
+        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+
+        if(geneQueryResult.getNumResults()>0) {
+            queryResult.setNumResults(1);
+            stats = setCoreGeneStats(geneQueryResult, stats);
+            stats = setVariantStats(clinicalQueryResult, stats);
+            queryResult.setResult(Collections.singletonList(stats));
         }
 
-        List<DBObject> queries = new ArrayList<>(idList.size());
-        for (String id : idList) {
-            QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").is(id);
-            queries.add(builder.get());
-        }
+        return queryResult;
+//        gene name
+//        ensembl gene id
+//        chr
+//        start
+//        end
+//        sequence length
+//        num transcripts
+//        breakdown num transcripts by biotype
+//        num exons
+//        num drug interactions
+//        Clinical Variants {
+//            #
+//            Breakdown by clinical significance
+//            Breakdown by SO
+//        }
+
+
 
 //        options = addExcludeReturnFields("transcripts", options);
 //        return executeQueryList(idList, queries, options);
-        return executeQueryList2(idList, queries, options);
+
+    }
+
+    private Map<String, Object> setCoreGeneStats(QueryResult geneQueryResult, Map<String, Object> stats){
+
+        stats.put("name", ((BasicDBObject)geneQueryResult.getResult()).get("name"));
+        stats.put("id", ((BasicDBObject)geneQueryResult.getResult()).get("id"));
+        stats.put("chr", ((BasicDBObject)geneQueryResult.getResult()).get("chr"));
+        int start = (int)((BasicDBObject)geneQueryResult.getResult()).get("start");
+        stats.put("start", start);
+        int end = (int)((BasicDBObject)geneQueryResult.getResult()).get("end");
+        stats.put("start", end);
+        stats.put("length", end-start+1);
+
+        return stats;
     }
 
     @Override
