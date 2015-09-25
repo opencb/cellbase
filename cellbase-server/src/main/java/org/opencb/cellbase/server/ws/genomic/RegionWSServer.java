@@ -279,7 +279,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getClinicalByRegion(@PathParam("chrRegionId") String query,
                                         @DefaultValue("") @QueryParam("gene") String gene,
                                         @DefaultValue("") @QueryParam("id") String id,
-                                        @DefaultValue("") @QueryParam("phenotpe") String phenotpe) {
+                                        @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
@@ -293,8 +293,8 @@ public class RegionWSServer extends GenericRestWSServer {
                 if(id != null && !id.equals("")) {
                     queryOptions.add("id", Arrays.asList(id.split(",")));
                 }
-                if(phenotpe != null && !phenotpe.equals("")) {
-                    queryOptions.add("phenotpe", Arrays.asList(phenotpe.split(",")));
+                if(phenotype != null && !phenotype.equals("")) {
+                    queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
                 }
 //                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
 //                List<QueryResult> queryResultList = new ArrayList<>();

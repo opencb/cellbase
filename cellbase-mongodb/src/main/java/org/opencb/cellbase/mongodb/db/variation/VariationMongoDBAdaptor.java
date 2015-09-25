@@ -49,7 +49,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
         geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDataStore);
 
-        logger.info("VariationMongoDBAdaptor: in 'constructor'");
+        logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }
 
     @Override

@@ -27,11 +27,11 @@ import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.variant.annotation.CellBaseWSVariantAnnotator;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotatorTask;
-import org.opencb.cellbase.core.variant.annotation.VcfVariantAnnotator;
+import org.opencb.cellbase.core.db.DBAdaptorFactory;
+import org.opencb.cellbase.core.variant.annotation.*;
+import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.ParallelTaskRunner;
@@ -40,6 +40,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,6 +58,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private Path input;
     private Path output;
     private String url;
+    private boolean local;
     private int port;
     private String species;
     private int numThreads;
@@ -95,23 +97,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 getIndexes();
             }
 
-            String path = "/cellbase/webservices/rest/";
-            CellBaseClient cellBaseClient;
-            if (url.contains(":")) {
-                String[] hostAndPort = url.split(":");
-                url = hostAndPort[0];
-                port = Integer.parseInt(hostAndPort[1]);
-                cellBaseClient = new CellBaseClient(url, port, path,
-                        configuration.getVersion(), species);
-            } else {
-                cellBaseClient = new CellBaseClient(url, port, path,
-                        configuration.getVersion(), species);
-            }
-            logger.debug("URL set to: {}", url+":"+port+path);
-
             List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
-                List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
+                List<VariantAnnotator> variantAnnotatorList = createAnnotators();
+                //List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
                 variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
             }
 
@@ -152,15 +141,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             //}
     }
 
-    private List<VariantAnnotator> createAnnotators(CellBaseClient cellBaseClient) {
+    private List<VariantAnnotator> createAnnotators() {
         List<VariantAnnotator> variantAnnotatorList;
         variantAnnotatorList = new ArrayList<>();
 
         // CellBase annotator is always called
-        variantAnnotatorList.add(new CellBaseWSVariantAnnotator(cellBaseClient));
+        variantAnnotatorList.add(createCellBaseAnnotator());
 
         // Include custom annotators if required
-        if(customFiles!=null) {
+        if (customFiles != null) {
             for (int i = 0; i < customFiles.size(); i++) {
                 if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
                     variantAnnotatorList.add(new VcfVariantAnnotator(customFiles.get(i).toString(), dbIndexes.get(i),
@@ -172,18 +161,52 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorList;
     }
 
+    private VariantAnnotator createCellBaseAnnotator() {
+        if(local) {
+            try {
+                CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
+                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+                DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+                return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                String path = "/cellbase/webservices/rest/";
+                CellBaseClient cellBaseClient;
+                if (url.contains(":")) {
+                    String[] hostAndPort = url.split(":");
+                    url = hostAndPort[0];
+                    port = Integer.parseInt(hostAndPort[1]);
+                    cellBaseClient = new CellBaseClient(url, port, path, configuration.getVersion(), species);
+                } else {
+                    cellBaseClient = new CellBaseClient(url, port, path, configuration.getVersion(), species);
+                }
+                logger.debug("URL set to: {}", url + ":" + port + path);
+
+                return new CellBaseWSVariantAnnotator(cellBaseClient);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+
+    }
+
     private void getIndexes() {
         dbIndexes = new ArrayList<>(customFiles.size());
         dbOptions = new ArrayList<>(customFiles.size());
         dbLocations = new ArrayList<>(customFiles.size());
-        for(int i=0; i<customFiles.size(); i++) {
-            if(customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
+        for (int i=0; i<customFiles.size(); i++) {
+            if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
                 Object[] dbConnection = getDBConnection(customFiles.get(i).toString()+".idx");
                 RocksDB rocksDB = (RocksDB) dbConnection[0];
                 Options dbOption = (Options) dbConnection[1];
                 String dbLocation = (String) dbConnection[2];
                 boolean indexingNeeded = (boolean) dbConnection[3];
-                if(indexingNeeded) {
+                if (indexingNeeded) {
                     logger.info("Creating index DB at {} ", dbLocation);
                     indexCustomVcfFile(i, rocksDB);
                 } else {
@@ -232,10 +255,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
             String line;
             int lineCounter = 0;
-            while((line = reader.readLine())!=null && (line.trim().equals("") || line.startsWith("#"))) {
+            while ((line = reader.readLine())!=null && (line.trim().equals("") || line.startsWith("#"))) {
                 lineCounter++;
             }
-            while(line!=null) {
+            while (line != null) {
                 String[] fields = line.split("\t");
                 // Reference positions will not be indexed
                 if(!fields[4].equals(".")) {
@@ -255,7 +278,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 }
                 line = reader.readLine();
                 lineCounter++;
-                if(lineCounter%100000 == 0) {
+                if (lineCounter % 100000 == 0) {
                     logger.info("{} lines indexed", lineCounter);
                 }
             }
@@ -268,7 +291,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
         List<Map<String, Object>> infoAttributes = new ArrayList<>(numAlleles);
-        for(int i=0; i<numAlleles; i++) {
+        for (int i=0; i<numAlleles; i++) {
             infoAttributes.add(new HashMap<>());
         }
         for (String var : info.split(";")) {
@@ -344,17 +367,21 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             batchSize = 1;
             logger.warn("Incorrect size of batch size, it must be a positive value between 1-1000. This has been set to '{}'", batchSize);
         }
-        // Url
-        if (variantAnnotationCommandOptions.url!=null) {
-            url = variantAnnotationCommandOptions.url;
-        } else {
-            throw new ParameterException("Please check command line sintax. Provide a valid URL to access CellBase web services.");
-        }
-        // port
-        if (variantAnnotationCommandOptions.port > 0) {
-            port = variantAnnotationCommandOptions.port;
-        } else {
-            throw new ParameterException("Please check command line sintax. Provide a valid port to access CellBase web services.");
+        // Direct connection to local MongoDB
+        local = variantAnnotationCommandOptions.local;
+        if(!variantAnnotationCommandOptions.local) {
+            // Url
+            if (variantAnnotationCommandOptions.url != null) {
+                url = variantAnnotationCommandOptions.url;
+            } else {
+                throw new ParameterException("Please check command line sintax. Provide a valid URL to access CellBase web services.");
+            }
+            // port
+            if (variantAnnotationCommandOptions.port > 0) {
+                port = variantAnnotationCommandOptions.port;
+            } else {
+                throw new ParameterException("Please check command line sintax. Provide a valid port to access CellBase web services.");
+            }
         }
         // Species
         if (variantAnnotationCommandOptions.species!=null) {

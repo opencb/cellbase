@@ -56,6 +56,10 @@ public interface ProteinDBAdaptor extends DBAdaptor {
 
     QueryResult getFunctionPredictionByAaChange(String transcriptId, Integer aaPosition, String newAa, QueryOptions options);
 
+    QueryResult getVariantAnnotation(String ensemblTranscriptId, Integer position, String aaReference,
+                                            String aaAlternate, QueryOptions queryOptions);
+
+
 
 //	public List<String> getAllUniprotAccessions();
 //

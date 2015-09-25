@@ -6,6 +6,7 @@ import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -324,7 +325,10 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 }
                 int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                 consequenceType.setCdsPosition(cdsVariantStart);
-                consequenceType.setAaPosition(((cdsVariantStart - 1) / 3) + 1);
+                // First place where protein variant annotation is added to the Consequence type, must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
             if (variantStart >= transcript.getGenomicCodingStart()) {  // Variant start also within coding region
                 solveCodingExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaCodingStart, cdnaVariantStart,
@@ -594,7 +598,10 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 }
                 int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
                 consequenceType.setCdsPosition(cdsVariantStart);
-                consequenceType.setAaPosition(((cdsVariantStart - 1)/3)+1);
+                // First place where protein variant annotation is added to the Consequence type, must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1)/3)+1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
             if(variantEnd <= transcript.getGenomicCodingEnd()) {  // Variant end also within coding region
                 solveCodingExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaCodingStart,

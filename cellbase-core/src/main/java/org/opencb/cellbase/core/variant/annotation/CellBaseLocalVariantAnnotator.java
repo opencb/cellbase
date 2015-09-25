@@ -1,19 +1,3 @@
-/*
- * Copyright 2015 OpenCB
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +5,8 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.client.CellBaseClient;
+import org.opencb.cellbase.core.db.DBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
@@ -30,21 +16,18 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 
 /**
- * Created by fjlopez on 02/03/15.
+ * Created by fjlopez on 22/09/15.
  */
-public class CellBaseWSVariantAnnotator implements VariantAnnotator {
-
-    private CellBaseClient cellBaseClient;
+public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
+    private VariantAnnotationDBAdaptor variantAnnotationDBAdaptor;
     private List<VariantAnnotation> variantAnnotationList;
 
     private Logger logger;
 
-    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
-        this.cellBaseClient = cellBaseClient;
+    public CellBaseLocalVariantAnnotator(VariantAnnotationDBAdaptor variantAnnotationDBAdaptor) {
+        this.variantAnnotationDBAdaptor = variantAnnotationDBAdaptor;
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -60,17 +43,12 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
         List<GenomicVariant> batch = convertVariantsToGenomicVariants(variantList);
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", batch.size());
-        QueryResponse<QueryResult<VariantAnnotation>> response;
-        try {
-            response = cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
-                    CellBaseClient.SubCategory.variant, batch, new QueryOptions("post", true));
-        } catch (IOException e) {
-            return null;
-        }
+        List<QueryResult> queryResultList =
+                variantAnnotationDBAdaptor.getAnnotationByVariantList(batch, new QueryOptions());
 
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
-        for (QueryResult<VariantAnnotation> queryResult : response.getResponse()) {
+        for (QueryResult<VariantAnnotation> queryResult : queryResultList) {
             if (queryResult.getResult().size() > 0) {
                 variantAnnotationList.add(queryResult.getResult().get(0));
             } else {
@@ -85,7 +63,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         List<GenomicVariant> genomicVariants = new ArrayList<>(vcfBatch.size());
         for (Variant variant : vcfBatch) {
             GenomicVariant genomicVariant;
-            if ((genomicVariant = getGenomicVariant(variant)) != null) {
+            if((genomicVariant = getGenomicVariant(variant))!=null) {
                 genomicVariants.add(genomicVariant);
             }
         }
@@ -119,4 +97,5 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     public void setVariantAnnotationList(List<VariantAnnotation> variantAnnotationList) {
         this.variantAnnotationList = variantAnnotationList;
     }
+
 }

@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public class CliOptionsParser {
 
-    private final JCommander jcommander;
+    private final JCommander jCommander;
 
     private final GeneralOptions generalOptions;
     private final CommonCommandOptions commonCommandOptions;
@@ -43,8 +43,8 @@ public class CliOptionsParser {
     public CliOptionsParser() {
         generalOptions = new GeneralOptions();
 
-        jcommander = new JCommander(generalOptions);
-        jcommander.setProgramName("cellbase.sh");
+        jCommander = new JCommander(generalOptions);
+        jCommander.setProgramName("cellbase.sh");
 
         commonCommandOptions = new CommonCommandOptions();
 
@@ -55,27 +55,26 @@ public class CliOptionsParser {
         variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
         postLoadCommandOptions = new PostLoadCommandOptions();
 
-        jcommander.addCommand("download", downloadCommandOptions);
-        jcommander.addCommand("build", buildCommandOptions);
-        jcommander.addCommand("load", loadCommandOptions);
-        jcommander.addCommand("query", queryCommandOptions);
-        jcommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
-        jcommander.addCommand("post-load", postLoadCommandOptions);
-
+        jCommander.addCommand("download", downloadCommandOptions);
+        jCommander.addCommand("build", buildCommandOptions);
+        jCommander.addCommand("load", loadCommandOptions);
+        jCommander.addCommand("query", queryCommandOptions);
+        jCommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
+        jCommander.addCommand("post-load", postLoadCommandOptions);
     }
 
     public void parse(String[] args) throws ParameterException {
-        jcommander.parse(args);
+        jCommander.parse(args);
     }
 
     public String getCommand() {
-        return (jcommander.getParsedCommand() != null) ? jcommander.getParsedCommand(): "";
+        return (jCommander.getParsedCommand() != null) ? jCommander.getParsedCommand(): "";
     }
 
     public boolean isHelp() {
-        String parsedCommand = jcommander.getParsedCommand();
+        String parsedCommand = jCommander.getParsedCommand();
         if (parsedCommand != null) {
-            JCommander jCommander = jcommander.getCommands().get(parsedCommand);
+            JCommander jCommander = this.jCommander.getCommands().get(parsedCommand);
             List<Object> objects = jCommander.getObjects();
             if (!objects.isEmpty() && objects.get(0) instanceof CommonCommandOptions) {
                 return ((CommonCommandOptions) objects.get(0)).help;
@@ -144,7 +143,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, variation, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, variation, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -319,14 +318,14 @@ public class CliOptionsParser {
             System.err.println("Usage:   cellbase.sh " + parsedCommand + " [options]");
             System.err.println("");
             System.err.println("Options:");
-            printCommandUsage(jcommander.getCommands().get(parsedCommand));
+            printCommandUsage(jCommander.getCommands().get(parsedCommand));
             System.err.println("");
         }
     }
 
     private void printMainUsage() {
-        for (String s : jcommander.getCommands().keySet()) {
-            System.err.printf("%20s  %s\n", s, jcommander.getCommandDescription(s));
+        for (String s : jCommander.getCommands().keySet()) {
+            System.err.printf("%20s  %s\n", s, jCommander.getCommandDescription(s));
         }
     }
 
