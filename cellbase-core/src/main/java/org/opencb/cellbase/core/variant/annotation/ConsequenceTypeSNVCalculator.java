@@ -137,7 +137,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
         }
 
-        if(consequenceTypeList.size()==0 && isIntegernic) {
+//        if(consequenceTypeList.size()==0 && isIntegernic) {
+        if(isIntegernic) {
             consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
         }
 
