@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.glassfish.jersey.client.ClientConfig;
 
 
-import org.opencb.biodata.formats.protein.uniprot.v140jaxb.Protein;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureTraitType;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
@@ -144,7 +144,7 @@ public class CellBaseClient {
 
 
         subCategoryBeanMap = new HashMap<>();
-        subCategoryBeanMap.put(SubCategory.protein, Protein.class);
+        subCategoryBeanMap.put(SubCategory.protein, Entry.class);
         subCategoryBeanMap.put(SubCategory.chromosome, Chromosome.class);
         subCategoryBeanMap.put(SubCategory.exon, Exon.class);
         subCategoryBeanMap.put(SubCategory.transcript, Transcript.class);

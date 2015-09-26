@@ -19,7 +19,7 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.opencb.biodata.formats.protein.uniprot.v140jaxb.Protein;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -59,7 +59,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 	@Path("/model")
 	@ApiOperation(httpMethod = "GET", value = "Get the object data model")
 	public Response getModel() {
-		return createModelResponse(Protein.class);
+		return createModelResponse(Entry.class);
 	}
 
     @GET
