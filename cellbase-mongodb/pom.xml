@@ -6,12 +6,13 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>3.2-SNAPSHOT</version>
-        <relativePath>..</relativePath>
+        <version>4.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>cellbase-mongodb</artifactId>
     <version>${cellbase.version}</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>

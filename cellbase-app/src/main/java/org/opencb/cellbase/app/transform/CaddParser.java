@@ -16,12 +16,11 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.broad.tribble.readers.TabixReader;
-
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import htsjdk.tribble.readers.TabixReader;
 import org.opencb.cellbase.app.transform.formats.Cadd;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**

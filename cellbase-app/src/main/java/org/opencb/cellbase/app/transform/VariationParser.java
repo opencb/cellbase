@@ -17,24 +17,27 @@
 package org.opencb.cellbase.app.transform;
 
 import com.google.common.base.Stopwatch;
+import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.io.IOUtils;
-import org.broad.tribble.readers.TabixReader;
-import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.variation.PopulationFrequency;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.Xref;
-import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
+import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

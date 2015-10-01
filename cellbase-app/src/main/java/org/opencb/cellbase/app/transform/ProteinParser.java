@@ -16,8 +16,8 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.biodata.formats.protein.uniprot.UniprotParser;
-import org.opencb.biodata.formats.protein.uniprot.v201311jaxb.*;
+import org.opencb.biodata.formats.protein.uniprot.UniProtParser;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ public class ProteinParser extends CellBaseParser {
         }
 
         proteinMap = new HashMap<>(30000);
-        UniprotParser up = new UniprotParser();
+        UniProtParser up = new UniProtParser();
         try {
             File[] files = uniprotFilesDir.toFile().listFiles(new FilenameFilter() {
                 @Override
@@ -70,7 +70,7 @@ public class ProteinParser extends CellBaseParser {
             });
 
             for (File file : files) {
-                Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniprotParser.UNIPROT_CONTEXT_v201311);
+                Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT_v201504);
 
                 for (Entry entry : uniprot.getEntry()) {
                     String entryOrganism = null;

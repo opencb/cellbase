@@ -68,7 +68,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 }
             }
             mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
-            logger.info("MongoDBAdaptorFactory constructor, this should be only be printed once");
+            logger.debug("MongoDBAdaptorFactory constructor, this should be only be printed once");
         }
 
 //        logger = LoggerFactory.getLogger(this.getClass());
