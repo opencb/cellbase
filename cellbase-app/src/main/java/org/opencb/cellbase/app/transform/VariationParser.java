@@ -20,7 +20,8 @@ import com.google.common.base.Stopwatch;
 import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.variation.PopulationFrequency;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.biodata.models.variation.Xref;
@@ -121,7 +122,8 @@ public class VariationParser extends CellBaseParser {
             throw new IOException("variation.txt.gz whether does not exist, is not a directory or cannot be read");
         }
 
-        Variation variation;
+        //Variation variation;
+        Variant variation;
 
         // To speed up calculation a SQLite database is created with the IDs and file offsets,
         // file must be uncompressed for doing this.
@@ -360,24 +362,68 @@ public class VariationParser extends CellBaseParser {
         }
     }
 
-    private Variation buildVariation(String[] variationFields, String[] variationFeatureFields, String chromosome,
+    private Variant buildVariation(String[] variationFields, String[] variationFeatureFields, String chromosome,
                                      int start, int end, String id, String reference, String alternate,
                                      List<TranscriptVariation> transcriptVariation, List<Xref> xrefs,
                                      List<PopulationFrequency> populationFrequencies, String[] allelesArray,
                                      List<String> consequenceTypes, String displayConsequenceType)
     {
-        Variation variation;
-        variation = new Variation(id, chromosome, "SNV", start, end, variationFeatureFields[4],
-                reference, alternate, variationFeatureFields[6],
-                (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "",
-                displayConsequenceType,
-//							species, assembly, source, version,
-                consequenceTypes, transcriptVariation, null, null, populationFrequencies, xrefs, /*"featureId",*/
-                (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "",
-                (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "",
-                (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "",
-                (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
-        return variation;
+        Variant variant;
+        variant = new Variant(chromosome, start, end, reference, alternate);
+        List<String> ids = new LinkedList<>();
+        ids.add(id);
+        variant.setIds(ids);
+        variant.setType(VariantType.SNV);
+
+        List<String> hgvs = null; // rellenar una lista con todos los hgvs que vienen en transcript variation
+        Map<String, String> additionalAttributes = new HashMap<>();
+        String ancestralAllele = (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "";
+        additionalAttributes.put("Ensembl Ancestral Allele", ancestralAllele);
+        additionalAttributes.put("Ensembl Validation Status", (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "");
+        additionalAttributes.put("Ensembl Evidence", (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "" );
+        // Poner un String separado con comas con todos los conseq types
+        // quitar displayConsequenceTypes
+        List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
+
+        VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
+                xrefs, hgvs, conseqTypes, populationFrequencies, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
+                Collections.EMPTY_LIST, new VariantTraitAssociation(), additionalAttributes);
+        variant.setAnnotation(variantAnnotation);
+        // TODO: fields that are not in Variant
+        // variant.setStrand(variationFeatureFields[4]);
+//        variant.setMinorAllele((variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
+//        variant.setMinorAlleleFreq((variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
+//
+//        variation = new Variation(id, chromosome, "SNV", start, end, variationFeatureFields[4],
+//                reference, alternate, variationFeatureFields[6],
+//                (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "",
+//                displayConsequenceType,
+////							species, assembly, source, version,
+//                consequenceTypes, transcriptVariation, null, null, populationFrequencies, xrefs, /*"featureId",*/
+//                (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "",
+//                (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "",
+//                (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "",
+//                (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
+        return variant;
+    }
+
+    private List<ConsequenceType> getConsequenceTypes(List<TranscriptVariation> transcriptVariations) {
+        List<ConsequenceType>  consequenceTypes = new ArrayList<>();
+        for (TranscriptVariation transcriptVariation : transcriptVariations){
+            List<Score> substitionScores = getSubstitutionScores(transcriptVariation);
+            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(uniprotAccesion, uniprotName,
+                    position, reference, alternate, uniprotVariantId, functionalDescription, substitionScores, keywords, features);
+            ConsequenceType consequenceType = new ConsequenceType(geneName, ensemblGeneId, transcriptVariation.getTranscriptId(),
+                    strand, biotype, transcriptVariation.getCdnaStart(), transcriptVariation.getCdsStart(),
+                    transcriptVariation.getCodonAlleleString(),proteinVariantAnnotation, sequenceOntologyTerms);
+        }
+    }
+
+    private List<Score> getSubstitutionScores(TranscriptVariation transcriptVariation) {
+        List<Score> substitionScores = new ArrayList<>();
+        substitionScores.add(new Score((double)transcriptVariation.getPolyphenScore(), "Polyphen", ""));
+        substitionScores.add(new Score((double)transcriptVariation.getSiftScore(), "Sift", ""));
+        return substitionScores;
     }
 
     private String getDisplayConsequenceType(List<String> consequenceTypes) {
@@ -622,7 +668,7 @@ public class VariationParser extends CellBaseParser {
             Float referenceFrequency = Float.parseFloat(m.group(REFERENCE_FREQUENCY_GROUP));
             Float alternativeFrequency = Float.parseFloat(m.group(ALTERNATE_FREQUENCY_GROUP));
 
-            populationFrequency = new PopulationFrequency(study, populationName, populationName, referenceAllele, alternativeAllele, referenceFrequency, alternativeFrequency);
+            populationFrequency = new PopulationFrequency(study, populationName, populationName, referenceAllele, alternativeAllele, referenceFrequency, alternativeFrequency, null, null, null);
         }
 
         return populationFrequency;
@@ -648,7 +694,7 @@ public class VariationParser extends CellBaseParser {
         // if the variation has some superpopulation frequency, but not all, add the missed superpopulations with 1 as ref allele proportion
         if (!missedPopulations.isEmpty() && missedPopulations.size() != thousandGenomesPopulationsNumber) {
             for (String population : missedPopulations) {
-                frequencies.add(new PopulationFrequency(study, population, population, refAllele, altAllele, 1, 0));
+                frequencies.add(new PopulationFrequency(study, population, population, refAllele, altAllele, 1f, 0f, null, null, null));
             }
         }
 
