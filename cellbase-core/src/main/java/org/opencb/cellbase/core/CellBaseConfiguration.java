@@ -173,9 +173,11 @@ public class CellBaseConfiguration {
         private URLProperties interpro;
         private URLProperties conservation;
         private URLProperties clinvar;
+        private URLProperties clinvarEfoTerms;
         private URLProperties disgenet;
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
+
 
         public EnsemblProperties getEnsembl() {
             return ensembl;
@@ -207,6 +209,14 @@ public class CellBaseConfiguration {
 
         public void setClinvar(URLProperties clinvar) {
             this.clinvar = clinvar;
+        }
+
+        public URLProperties getClinvarEfoTerms() {
+            return clinvarEfoTerms;
+        }
+
+        public void setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
+            this.clinvarEfoTerms = clinvarEfoTerms;
         }
 
         public URLProperties getDisgenet() { return disgenet; }
@@ -288,6 +298,7 @@ public class CellBaseConfiguration {
         public void setMiRTarBase(URLProperties miRTarBase) {
             this.miRTarBase = miRTarBase;
         }
+
 
         public static class EnsemblProperties {
             private DatabaseProperties database;

@@ -51,47 +51,10 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             parseQueryParams();
-//            Boolean noFilter = true;
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-//            if(rcv != null && !rcv.equals("")) {
-//                queryOptions.add("rcv", Arrays.asList(rcv.split(",")));
-//                noFilter = false;
-//            }
-//            if(rs != null && !rs.equals("")) {
-//                queryOptions.add("rs", Arrays.asList(rs.split(",")));
-//                noFilter = false;
-//            }
-//            if(so != null && !so.equals("")) {
-//                queryOptions.add("so", Arrays.asList(so.split(",")));
-//                noFilter = false;
-//            }
-//            if(type != null && !type.equals("")) {
-//                queryOptions.add("type", Arrays.asList(type.split(",")));
-//                noFilter = false;
-//            }
-//            if(review != null && !review.equals("")) {
-//                queryOptions.add("review", Arrays.asList(review.split(",")));
-//                noFilter = false;
-//            }
-//            if(significance != null && !significance.equals("")) {
-//                queryOptions.add("significance", Arrays.asList(significance.split(",")));
-//                noFilter = false;
-//            }
-//            if(gene != null && !gene.equals("")) {
-//                queryOptions.add("gene", Arrays.asList(gene.split(",")));
-//                noFilter = false;
-//            }
-//            if(region != null && !region.equals("")) {
-//                queryOptions.add("region", Region.parseRegions(region));
-//                noFilter = false;
-//            }
-//            if(phenotype != null && !phenotype.equals("")) {
-//                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
-//                noFilter = false;
-//            }
-//            if(noFilter && ((queryOptions.get("limit") == null || queryOptions.getInt("limit") > 1000))) {
-            queryOptions.put("limit", 1000);
-//            }
+            if(!queryOptions.containsKey("limit") || ((int)queryOptions.get("limit"))>1000) {
+                queryOptions.put("limit", 1000);
+            }
 
             return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
