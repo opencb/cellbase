@@ -17,7 +17,8 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -40,7 +41,7 @@ import java.io.IOException;
 public class MutationWSServer  extends GenericRestWSServer {
 
     public MutationWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -48,13 +49,12 @@ public class MutationWSServer  extends GenericRestWSServer {
     @Path("/list")
     public Response getMutations(@DefaultValue("") @QueryParam("disease") String disease) {
         try {
-            checkParams();
+            parseQueryParams();
             MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             queryOptions.put("disease", Splitter.on(",").splitToList(disease));
             return createOkResponse(variationDBAdaptor.getAll(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -62,12 +62,11 @@ public class MutationWSServer  extends GenericRestWSServer {
     @Path("/diseases")
     public Response getMutationDiseases(@PathParam("mutationId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllDiseases(queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -75,12 +74,11 @@ public class MutationWSServer  extends GenericRestWSServer {
     @Path("/{mutationId}/info")
     public Response getByEnsemblId(@PathParam("mutationId") String query) {
         try {
-            checkParams();
+            parseQueryParams();
             MutationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByAccessions", e.toString());
+            return createErrorResponse(e);
         }
     }
 

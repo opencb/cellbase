@@ -39,7 +39,7 @@ class CosmicParserTest extends Specification {
         def serializer = Mock(CellBaseSerializer)
         serializedVariants = new ArrayList<Cosmic>()
         serializer.serialize(_) >> { Cosmic arg -> serializedVariants.add(arg) }
-        def cosmicFile = Paths.get(VariantEffectParserTest.class.getResource("/cosmicTest.csv").toURI())
+        def cosmicFile = Paths.get(CosmicParserTest.class.getResource("/cosmicTest.csv").toURI())
 
         cosmicParser = new CosmicParser(cosmicFile, serializer)
     }
@@ -59,16 +59,17 @@ class CosmicParserTest extends Specification {
         serializedVariants[variantNumber].end.equals(end)
         serializedVariants[variantNumber].reference.equals(ref)
         serializedVariants[variantNumber].alternate.equals(alt)
+        serializedVariants[variantNumber].source.equals(source)
 
         where:
-        variantNumber || chr  | start     | end       | ref      | alt
-        0             || "12" | 25398285  | 25398285  | "G"      | "T"
-        1             || "1"  | 215793922 | 215793922 | "A"      | "-"
-        2             || "4"  | 152069187 | 152069188 | "-"      | "A"
-        3             || "17" | 7578478   | 7578478   | "C"      | "T"
-        4             || "5"  | 35874605  | 35874607  | "CTC"    | "AAAAAG"
-        5             || "19" | 13054627  | 13054628  | "-"      | "TTGTC"
-        6             || "9"  | 5070038   | 5070043   | "GAAGAT" | "-"
+        variantNumber || chr  | start     | end       | ref      | alt      | source
+        0             || "12" | 25398285  | 25398285  | "G"      | "T"      | "cosmic"
+        1             || "1"  | 215793922 | 215793922 | "A"      | "-"      | "cosmic"
+        2             || "4"  | 152069187 | 152069188 | "-"      | "A"      | "cosmic"
+        3             || "17" | 7578478   | 7578478   | "C"      | "T"      | "cosmic"
+        4             || "5"  | 35874605  | 35874607  | "CTC"    | "AAAAAG" | "cosmic"
+        5             || "19" | 13054627  | 13054628  | "-"      | "TTGTC"  | "cosmic"
+        6             || "9"  | 5070038   | 5070043   | "GAAGAT" | "-"      | "cosmic"
     }
 
     @Unroll

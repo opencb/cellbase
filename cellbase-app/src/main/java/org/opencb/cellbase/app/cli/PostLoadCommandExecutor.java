@@ -20,21 +20,15 @@ import com.beust.jcommander.ParameterException;
 import org.opencb.biodata.formats.annotation.io.VepFormatReader;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
-import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.lib.DBAdaptorFactory;
-import org.opencb.cellbase.core.lib.api.variation.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
-import org.opencb.cellbase.core.variant_annotation.VariantAnnotator;
-import org.opencb.cellbase.core.variant_annotation.VariantAnnotatorRunner;
+import org.opencb.cellbase.core.db.DBAdaptorFactory;
+import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.datastore.core.QueryOptions;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by fjlopez on 14/04/15.
@@ -115,18 +109,18 @@ public class PostLoadCommandExecutor extends CommandExecutor{
 //                        configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
 //                configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
 
-        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-        try {
-            cellBaseConfiguration = CellBaseConfiguration
-                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+//        try {
+//            cellBaseConfiguration = CellBaseConfiguration
+//                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
-        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration.getDatabase().getUser());
-        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration.getDatabase().getHost());
-        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration.getDatabase().getPassword());
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getUser());
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getHost());
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getPassword());
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
 //        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(adaptorCellbaseConfiguration);
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", assembly);
 

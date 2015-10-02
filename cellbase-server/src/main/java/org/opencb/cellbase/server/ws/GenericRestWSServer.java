@@ -16,18 +16,21 @@
 
 package org.opencb.cellbase.server.ws;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
-import org.opencb.cellbase.core.common.Species;
-import org.opencb.cellbase.core.lib.DBAdaptorFactory;
-import org.opencb.cellbase.core.lib.api.core.ChromosomeDBAdaptor;
+import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.datastore.core.ObjectMap;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
@@ -46,49 +49,35 @@ import java.util.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
+//@Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
-    // Common application parameters
-//    @DefaultValue("")
-//    @PathParam("version")
-    @ApiParam(name = "version", value = "CellBase version. Use 'latest' for last version stable.",
-            allowableValues = "v3,latest", defaultValue = "v3")
+    @DefaultValue("")
+    @PathParam("version")
+    @ApiParam(name = "version", value = "Use 'latest' for last stable version", allowableValues = "v3,latest", defaultValue = "v3")
     protected String version;
 
     @DefaultValue("")
     @PathParam("species")
-    @ApiParam(name = "species", value = "Name of the species to query",
-            defaultValue = "hsapiens", allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla,pabelii," +
-            "mmulatta,sscrofa,cfamiliaris,ecaballus,ocuniculus,ggallus,btaurus,fcatus,cintestinalis,ttruncatus,lafricana,cjacchus," +
-            "nleucogenys,aplatyrhynchos,falbicollis,celegans,dmelanogaster,dsimulans,dyakuba,agambiae,adarlingi,nvectensis," +
-            "spurpuratus,bmori,aaegypti,apisum,scerevisiae,spombe,afumigatus,aniger,anidulans,aoryzae,foxysporum,pgraminis," +
-            "ptriticina,moryzae,umaydis,ssclerotiorum,cneoformans,ztritici,pfalciparum,lmajor,ddiscoideum,pinfestans,glamblia," +
-            "pultimum,alaibachii,athaliana,alyrata,bdistachyon,osativa,gmax,vvinifera,zmays,hvulgare,macuminata,sbicolor,sitalica," +
-            "taestivum,brapa,ptrichocarpa,slycopersicum,stuberosum,smoellendorffii,creinhardtii,cmerolae,ecolimg1655,spneumoniae70585," +
-            "sagalactiaenem316,saureusst398,saureusn315,smelilotiak83,sfrediingr234,sentericact18,sentericalt2,pluminescenstto1," +
-            "nmeningitidisz2491,mgenitaliumg37,mtuberculosisasm19595v2,mavium104,lmonocytogenesegde,lplantarumwcfs1,hinfluenzaekw20," +
-            "cglutamicumasm19633v1,cbotulinumhall,ctrachomatisduw3cx,blongumncc2705,bsubtilis168,blicheniformisasm1164v1," +
-            "abaumanniiaye,paeruginosapa7,paeruginosapa14,paeruginosampao1p1,paeruginosampao1p2,cpneumoniaecwl029,pacanthamoebaeuv7," +
-            "wchondrophila861044,cprotochlamydiauwe25,snegevensisz,csabeus,oaries,olatipes")
+    @ApiParam(name = "species", value = "Name of the species to query", defaultValue = "hsapiens",
+            allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla," +
+                    "mmulatta,sscrofa,cfamiliaris,ggallus,btaurus,cintestinalis,celegans,dmelanogaster,agambiae,pfalciparum," +
+                    "scerevisiae,lmajor,athaliana,osativa,gmax,vvinifera,zmays,slycopersicum,csabeus,oaries,olatipes,sbicolor,afumigatus")
     protected String species;
 
-    protected String assembly = null;
-    protected UriInfo uriInfo;
-    protected HttpServletRequest httpServletRequest;
+    @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g.: grch38")
+    @DefaultValue("")
+    @QueryParam("assembly")
+    protected String assembly;
 
-    protected QueryOptions queryOptions;
-
-    // file name without extension which server will give back when file format is !null
-    private String filename;
-
+    @ApiParam(name = "excluded fields", value = "Set which fields are excluded in the response, e.g.: transcripts.exons")
     @DefaultValue("")
     @QueryParam("exclude")
-    @ApiParam(name = "excluded fields", value = "Fields excluded in response. Whole JSON path e.g.: transcripts.id")
     protected String exclude;
 
     @DefaultValue("")
     @QueryParam("include")
-    @ApiParam(name = "included fields", value = "Only fields included in response. Whole JSON path e.g.: transcripts.id")
+    @ApiParam(name = "included fields", value = "Set which fields are included in the response, e.g.: transcripts.id")
     protected String include;
 
     @DefaultValue("-1")
@@ -112,12 +101,18 @@ public class GenericRestWSServer implements IWSServer {
     @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json", allowableValues = "json,pb (Not implemented yet)")
     protected String outputFormat;
 
+
+    protected QueryResponse queryResponse;
+    protected QueryOptions queryOptions;
+
+    protected UriInfo uriInfo;
+    protected HttpServletRequest httpServletRequest;
+
     protected static ObjectMapper jsonObjectMapper;
     protected static ObjectWriter jsonObjectWriter;
 
     protected long startTime;
     protected long endTime;
-    protected QueryResponse queryResponse;
 
     protected static Logger logger;
 
@@ -126,7 +121,7 @@ public class GenericRestWSServer implements IWSServer {
      * will check parameters so to avoid extra operations this config can load
      * versions and species
      */
-    protected static CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+    protected static CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
 
     /**
      * DBAdaptorFactory creation, this object can be initialize with an
@@ -135,19 +130,19 @@ public class GenericRestWSServer implements IWSServer {
      */
     protected static DBAdaptorFactory dbAdaptorFactory;
 
+    private static final int LIMIT_DEFAULT = 1000;
+    private static final int LIMIT_MAX = 5000;
+
     static {
-//        dbAdaptorFactory = new MongoDBAdaptorFactory(config);
-
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
-
         logger.info("Static block, creating MongoDBAdapatorFactory");
         try {
             if (System.getenv("CELLBASE_HOME") != null) {
-                logger.debug("Loading configuration from '{}'", System.getenv("CELLBASE_HOME")+"/configuration.json");
+                logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME")+"/configuration.json");
                 cellBaseConfiguration = CellBaseConfiguration
                         .load(new FileInputStream(new File(System.getenv("CELLBASE_HOME") + "/configuration.json")));
             } else {
-                logger.debug("Loading configuration from '{}'",
+                logger.info("Loading configuration from '{}'",
                         CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
                 cellBaseConfiguration = CellBaseConfiguration
                         .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
@@ -155,7 +150,6 @@ public class GenericRestWSServer implements IWSServer {
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
             dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -163,43 +157,48 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 
-    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
-        logger.debug("Executing GenericRestWSServer constructor");
 
+    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException {
+        this.version = version;
+        this.uriInfo = uriInfo;
+        this.httpServletRequest = hsr;
+
+        logger.debug("Executing GenericRestWSServer constructor with no Species");
+        init(false);
+    }
+
+    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException {
         this.version = version;
         this.species = species;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
 
-        init(version, species, uriInfo);
+        logger.debug("Executing GenericRestWSServer constructor");
+        init(true);
     }
 
-    protected void init(String version, String species, UriInfo uriInfo) throws VersionException, IOException {
 
+    protected void init(boolean checkSpecies) throws VersionException, SpeciesException {
         startTime = System.currentTimeMillis();
-        queryResponse = new QueryResponse();
 
-        // mediaType = MediaType.valueOf("text/plain");
+        queryResponse = new QueryResponse();
         queryOptions = new QueryOptions();
 
-        try {
-            checkParams();
-        } catch (SpeciesException e) {
-            e.printStackTrace();
-        }
+        checkPathParams(checkSpecies);
     }
 
-
-    @Override
-    public void checkParams() throws VersionException, SpeciesException {
+    private void checkPathParams(boolean checkSpecies) throws VersionException, SpeciesException {
         if (version == null) {
             throw new VersionException("Version not valid: '" + version + "'");
         }
-        if (species == null) {
+
+        if (checkSpecies && species == null) {
             throw new SpeciesException("Species not valid: '" + species + "'");
         }
 
@@ -216,19 +215,33 @@ public class GenericRestWSServer implements IWSServer {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new VersionException("Version not valid: '" + version + "'");
         }
+    }
 
-//        parseCommonQueryParameters(uriInfo.getQueryParameters());
+    @Override
+    public void parseQueryParams() {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
 
-        queryOptions.put("exclude", (exclude != null && !exclude.equals("")) ? new LinkedList<>(Splitter.on(",").splitToList(exclude)) : null);
-        queryOptions.put("include", (include != null && !include.equals("")) ? new LinkedList<>(Splitter.on(",").splitToList(include)) : null);
-        queryOptions.put("limit", (limit > 0) ? limit : -1);
+        if(exclude != null && !exclude.equals("")) {
+            queryOptions.put("exclude", new LinkedList<>(Splitter.on(",").splitToList(exclude)));
+        } else {
+            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
+                    : null);
+        }
+
+        if(include != null && !include.equals("")) {
+            queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
+        } else {
+            queryOptions.put("include", (multivaluedMap.get("include") != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get("include").get(0))
+                    : null);
+        }
+
+        queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX): LIMIT_DEFAULT);
         queryOptions.put("skip", (skip > 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);
-
-        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
-        filename = (multivaluedMap.get("filename") != null) ? multivaluedMap.get("filename").get(0) : "result";
+//        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
         // Now we add all the others QueryParams in the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
@@ -239,10 +252,6 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    @Override
-    public String stats() {
-        return null;
-    }
 
     @GET
     @Path("/help")
@@ -250,211 +259,76 @@ public class GenericRestWSServer implements IWSServer {
         return createOkResponse("No help available");
     }
 
-    /**
-     * Auxiliar methods
-     */
     @GET
-    @Path("/{species}")
-    public Response getCategories(@PathParam("species") String species) {
-        if (isSpecieAvailable(species)) {
-            return createOkResponse("feature\ngenomic\nnetwork\nregulatory");
+    public Response defaultMethod() {
+        switch (species) {
+            case "echo":
+                return createStringResponse("Status active");
         }
-        return getSpecies();
+        return createOkResponse("Not valid option");
     }
 
-    @GET
-    @Path("/{species}/{category}")
-    public Response getCategory(@PathParam("species") String species, @PathParam("category") String category) {
-        if (isSpecieAvailable(species)) {
-            if ("feature".equalsIgnoreCase(category)) {
-                return createOkResponse("exon\ngene\nkaryotype\nprotein\nsnp\ntranscript");
-            }
-            if ("genomic".equalsIgnoreCase(category)) {
-                return createOkResponse("position\nregion\nvariant");
-            }
-            if ("network".equalsIgnoreCase(category)) {
-                return createOkResponse("pathway");
-            }
-            if ("regulatory".equalsIgnoreCase(category)) {
-                return createOkResponse("mirna_gene\nmirna_mature\ntf");
-            }
-            return createOkResponse("feature\ngenomic\nnetwork\nregulatory");
-        } else {
-            return getSpecies();
+
+    protected Response createModelResponse(Class clazz) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+            mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
+            JsonSchema jsonSchema = visitor.finalSchema();
+
+            return createOkResponse(jsonSchema);
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/{species}/{category}/{subcategory}")
-    public Response getSubcategory(@PathParam("species") String species, @PathParam("category") String category,
-                                   @PathParam("subcategory") String subcategory) {
-        return getCategory(species, category);
-    }
+    protected Response createErrorResponse(Exception e) {
+        // First we print the exception in Server logs
+        e.printStackTrace();
 
-    @GET
-    @Path("/version")
-    public Response getVersion() {
-        StringBuilder versionMessage = new StringBuilder();
-        versionMessage.append("Homo sapiens").append("\t").append("Ensembl 64").append("\n");
-        versionMessage.append("Mus musculus").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Rattus norvegicus").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Drosophila melanogaster").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Canis familiaris").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("...").append("\n\n");
-        versionMessage
-                .append("The rest of nfo will be added soon, sorry for the inconveniences. You can find mor info at:")
-                .append("\n\n").append("http://docs.bioinfo.cipf.es/projects/variant/wiki/Databases");
-        return createOkResponse(versionMessage.toString(), MediaType.valueOf("text/plain"));
-    }
-
-    @GET
-    @Path("/species")
-    public Response getSpecies() {
-        List<Species> speciesList = getSpeciesList();
-        MediaType mediaType = MediaType.valueOf("application/javascript");
-        if (uriInfo.getQueryParameters().get("of") != null
-                && uriInfo.getQueryParameters().get("of").get(0).equalsIgnoreCase("json")) {
-            try {
-                return createOkResponse(jsonObjectWriter.writeValueAsString(speciesList), mediaType);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        } else {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (Species sp : speciesList) {
-                stringBuilder.append(sp.toString()).append("\n");
-            }
-            mediaType = MediaType.valueOf("text/plain");
-            return createOkResponse(stringBuilder.toString(), mediaType);
-        }
-    }
-
-    @GET
-    @Path("/{species}/i")
-    public Response getSpeciesInfo2(@PathParam("species") String species, @DefaultValue("json") @QueryParam("of") String of) {
-        ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(species, this.assembly);
-        return createOkResponse(chromosomeDBAdaptor.speciesInfoTmp(species, queryOptions));
-    }
-
-    @GET
-    @Path("/speciesinfo")
-    public Response getSpeciesInfo() {
-        List<String> speciesList = new ArrayList<>(3);
-        speciesList.add("Homo sapiens");
-        speciesList.add("Mus musculus");
-        speciesList.add("Rattus norvegicus");
-
-        List<QueryResult> queryResults = new ArrayList<>(speciesList.size());
-        for(String specie: speciesList) {
-            ChromosomeDBAdaptor chromosomeDBAdaptor = dbAdaptorFactory.getChromosomeDBAdaptor(specie, this.assembly);
-            queryResults.add(chromosomeDBAdaptor.speciesInfoTmp(specie, queryOptions));
-
-        }
-        return createOkResponse(queryResults);
-    }
-
-    @GET
-    @Path("/{species}/chromosomes")
-    public Response getChromosomes(@PathParam("species") String species) {
-        return null;
-//        // TODO uncomment
-//        return createOkResponse(config.getProperty("CELLBASE." + species.toUpperCase() + ".CHROMOSOMES"),
-//                MediaType.valueOf("text/plain"));
-    }
-
-    @GET
-    @Path("/echo/{msg}")
-    public Response echo(@PathParam("msg") String msg) {
-        logger.info(msg);
-        logger.warn(msg);
-        logger.debug(msg);
-        logger.error(msg);
-        return createStringResponse(msg);
-    }
-
-
-    @Deprecated
-    protected Response generateResponse(String queryString, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
-    }
-
-    @Deprecated
-    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
-    }
-
-
-    protected Response createErrorResponse(String method, String errorMessage) {
-        if (!errorMessage.contains("Species") && !errorMessage.contains("Version")) {
-            // StringBuilder message = new StringBuilder();
-            // message.append("URI: "+uriInfo.getAbsolutePath().toString()).append("\n");
-            // message.append("Method: "+httpServletRequest.getMethod()+" "+method).append("\n");
-            // message.append("Message: "+errorMessage).append("\n");
-            // message.append("Remote Addr: http://ipinfodb.com/ip_locator.php?ip="+httpServletRequest.getRemoteAddr()).append("\n");
-            // HttpUtils.send("correo.cipf.es", "fsalavert@cipf.es",
-            // "babelomics@cipf.es", "Infrared error notice",
-            // message.toString());
-        }
-        if (outputFormat.equalsIgnoreCase("json")) {
-            try {
-                return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("error", errorMessage)), MediaType.APPLICATION_JSON_TYPE));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        } else {
-            String error = "An error occurred: " + errorMessage;
-            return buildResponse(Response.ok(error, MediaType.valueOf("text/plain")));
-        }
-        return null;
-    }
-
-    protected Response createErrorResponse(Object o) {
-        String objMsg = o.toString();
-        if (objMsg.startsWith("ERROR:")) {
-            return buildResponse(Response.ok("" + o));
-        } else {
-            return buildResponse(Response.ok("ERROR: " + o));
-        }
-    }
-
-    protected Response createOkResponse(String message) {
-        return buildResponse(Response.ok(message));
-    }
-
-    protected Response createOkResponse(QueryResult queryResult) {
-        return createOkResponse(Arrays.asList(queryResult));
-    }
-
-    protected Response createOkResponse(List<QueryResult> queryResults) {
-        switch (outputFormat.toLowerCase()) {
-            case "json":
-                return createJsonResponse(queryResults);
-            case "xml":
-                return createOkResponse(queryResults, MediaType.APPLICATION_XML_TYPE);
-            default:
-                return buildResponse(Response.ok(queryResults));
-        }
-    }
-
-    protected Response createJsonResponse(List<QueryResult> obj) {
-        endTime = System.currentTimeMillis() - startTime;
-        queryResponse.setTime((int) endTime);
+        // Now we prepare the response to client
+        queryResponse = new QueryResponse();
+        queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         queryResponse.setQueryOptions(queryOptions);
-        queryResponse.setResponse(obj);
+        queryResponse.setError(e.toString());
 
-//        queryResponse.put("species", species);
-//        queryResponse.put("queryOptions", queryOptions);
-//        queryResponse.put("response", obj);
+        QueryResult<ObjectMap> result = new QueryResult();
+        result.setWarningMsg("Future errors will ONLY be shown in the QueryResponse body");
+        result.setErrorMsg("DEPRECATED: " + e.toString());
+        queryResponse.setResponse(Arrays.asList(result));
 
+        return Response
+                .fromResponse(createJsonResponse(queryResponse))
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
+    }
+
+    protected Response createErrorResponse(String method, String errorMessage) {
         try {
-            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            logger.error("Error parsing queryResponse object");
-            return null;
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)), MediaType.APPLICATION_JSON_TYPE));
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
+    }
+
+    protected Response createOkResponse(Object obj) {
+        queryResponse = new QueryResponse();
+        queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
+        queryResponse.setApiVersion(version);
+        queryResponse.setQueryOptions(queryOptions);
+
+        // Guarantee that the QueryResponse object contains a list of results
+        List list;
+        if (obj instanceof List) {
+            list = (List) obj;
+        } else {
+            list = new ArrayList(1);
+            list.add(obj);
+        }
+        queryResponse.setResponse(list);
+
+        return createJsonResponse(queryResponse);
     }
 
     protected Response createOkResponse(Object obj, MediaType mediaType) {
@@ -469,122 +343,105 @@ public class GenericRestWSServer implements IWSServer {
         return buildResponse(Response.ok(str));
     }
 
+    protected Response createJsonResponse(QueryResponse queryResponse) {
+        try {
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            logger.error("Error parsing queryResponse object");
+            return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
     private Response buildResponse(ResponseBuilder responseBuilder) {
-        return responseBuilder.header("Access-Control-Allow-Origin", "*").build();
+        return responseBuilder
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "x-requested-with, content-type")
+                .build();
     }
 
-    @GET
-    public Response getHelp() {
-        return getSpecies();
-    }
-
-    private List<Species> getSpeciesList() {
-        List<Species> speciesList = new ArrayList<>(11);
-        speciesList.add(new Species("hsa", "human", "Homo sapiens", "GRCh37.p7"));
-        speciesList.add(new Species("mmu", "mouse", "Mus musculus", "NCBIM37"));
-        speciesList.add(new Species("rno", "rat", "Rattus norvegicus", "RGSC 3.4"));
-        speciesList.add(new Species("dre", "zebrafish", "Danio rerio", "Zv9"));
-        speciesList.add(new Species("cel", "worm", "Caenorhabditis elegans", "WS230"));
-        speciesList.add(new Species("dme", "fruitfly", "Drosophila melanogaster", "BDGP 5.39"));
-        speciesList.add(new Species("sce", "yeast", "Saccharomyces cerevisiae", "EF 4"));
-        speciesList.add(new Species("cfa", "dog", "Canis familiaris", "CanFam 2.0"));
-        speciesList.add(new Species("ssc", "pig", "Sus scrofa", "Sscrofa10.2"));
-        speciesList.add(new Species("aga", "mosquito", "Anopheles gambiae", "AgamP3"));
-        speciesList.add(new Species("pfa", "malaria parasite", "Plasmodium falciparum", "3D7"));
-        speciesList.add(new Species("hsapiens", "", "", ""));
-        speciesList.add(new Species("mmusculus", "", "", ""));
-        speciesList.add(new Species("rnorvegicus", "", "", ""));
-        speciesList.add(new Species("ptroglodytes", "", "", ""));
-        speciesList.add(new Species("ggorilla", "", "", ""));
-        speciesList.add(new Species("pabelii", "", "", ""));
-        speciesList.add(new Species("mmulatta", "", "", ""));
-        speciesList.add(new Species("sscrofa", "", "", ""));
-        speciesList.add(new Species("cfamiliaris", "", "", ""));
-        speciesList.add(new Species("ecaballus", "", "", ""));
-        speciesList.add(new Species("ocuniculus", "", "", ""));
-        speciesList.add(new Species("ggallus", "", "", ""));
-        speciesList.add(new Species("btaurus", "", "", ""));
-        speciesList.add(new Species("fcatus", "", "", ""));
-        speciesList.add(new Species("drerio", "", "", ""));
-        speciesList.add(new Species("cintestinalis", "", "", ""));
-        speciesList.add(new Species("dmelanogaster", "", "", ""));
-        speciesList.add(new Species("dsimulans", "", "", ""));
-        speciesList.add(new Species("dyakuba", "", "", ""));
-        speciesList.add(new Species("agambiae", "", "", ""));
-        speciesList.add(new Species("celegans", "", "", ""));
-        speciesList.add(new Species("scerevisiae", "", "", ""));
-        speciesList.add(new Species("spombe", "", "", ""));
-        speciesList.add(new Species("afumigatus", "", "", ""));
-        speciesList.add(new Species("aniger", "", "", ""));
-        speciesList.add(new Species("anidulans", "", "", ""));
-        speciesList.add(new Species("aoryzae", "", "", ""));
-        speciesList.add(new Species("pfalciparum", "", "", ""));
-        speciesList.add(new Species("lmajor", "", "", ""));
-        speciesList.add(new Species("athaliana", "", "", ""));
-        speciesList.add(new Species("alyrata", "", "", ""));
-        speciesList.add(new Species("bdistachyon", "", "", ""));
-        speciesList.add(new Species("osativa", "", "", ""));
-        speciesList.add(new Species("gmax", "", "", ""));
-        speciesList.add(new Species("vvinifera", "", "", ""));
-        speciesList.add(new Species("zmays", "", "", ""));
 
 
-//        speciesList.add(new Species("hsapiens", "human", "Homo sapiens", "GRCh37.p13");
-//        speciesList.add(new Species("mmusculus", "mouse", "Mus musculus", "GRCm38.p2"));
-//        speciesList.add(new Species("rnorvegicus", "rat", "Rattus norvegicus", "Rnor_5.0"));
-//        speciesList.add(new Species("ptroglodytes", "chimp", "Pan troglodytes", "CHIMP2.1.4"));
-//        speciesList.add(new Species("ggorilla", "gorilla", "Gorilla gorilla", "gorGor3.1"));
-//        speciesList.add(new Species("pabelii", "orangutan", "Pongo abelii", "PPYG2"));
-//        speciesList.add(new Species("mmulatta", "macaque", "Macaca mulatta", "MMUL 1.0"));
-//        speciesList.add(new Species("sscrofa", "pig", "Sus scrofa", "Sscrofa10.2"));
-//        speciesList.add(new Species("cfamiliaris", "dog", "Canis familiaris", "CanFam 3.1"));
-//        speciesList.add(new Species("ecaballus", "horse", "Equus caballus", "Equ Cab 2"));
-//        speciesList.add(new Species("ocuniculus", "rabbit", "Oryctolagus cuniculus", "OryCun2.0"));
-//        speciesList.add(new Species("ggallus", "chicken", "Gallus gallus", "Galgal4"));
-//        speciesList.add(new Species("btaurus", "cow", "Bos taurus", "UMD3.1"));
-//        speciesList.add(new Species("fcatus", "cat", "Felis catus", "Felis_catus_6.2"));
-//        speciesList.add(new Species("drerio", "zebrafish", "Danio rerio", "Zv9"));
-//        speciesList.add(new Species("cintestinalis", "", "Ciona intestinalis", "KH"));
-//        speciesList.add(new Species("dmelanogaster", "fruitfly", "Drosophila melanogaster", "BDGP 5"));
-//        speciesList.add(new Species("dsimulans", "", "Drosophila simulans", "dsim_caf1"));
-//        speciesList.add(new Species("dyakuba", "", "Drosophila yakuba", "dyak_caf1"));
-//        speciesList.add(new Species("agambiae", "mosquito", "Anopheles gambiae", "AgamP4"));
-//        speciesList.add(new Species("celegans", "worm", "Caenorhabditis elegans", "WS235"));
-//        speciesList.add(new Species("scerevisiae", "yeast", "Saccharomyces cerevisiae", "R64-1-1"));
-//        speciesList.add(new Species("spombe", "", "Schizosaccharomyces pombe", "ASM294v2"));
-//        speciesList.add(new Species("afumigatus", "", "Aspergillus fumigatus", "TIGR"));
-//        speciesList.add(new Species("aniger", "", "Aspergillus niger", "DSM"));
-//        speciesList.add(new Species("anidulans", "", "Aspergillus nidulans", "ASM1142v1"));
-//        speciesList.add(new Species("aoryzae", "", "Aspergillus oryzae", "NITE"));
-//        speciesList.add(new Species("pfalciparum", "malaria parasite", "Plasmodium falciparum", "3D7"));
-//        speciesList.add(new Species("lmajor", "", "Plasmodium falciparum", "ASM276v1"));
-//        speciesList.add(new Species("athaliana", "", "Arabidopsis thaliana", "TAIR10"));
-//        speciesList.add(new Species("alyrata", "", "Arabidopsis lyrata", "v.1.0"));
-//        speciesList.add(new Species("bdistachyon", "", "Brachypodium distachyon", "v1.0"));
-//        speciesList.add(new Species("osativa", "", "Oryza sativa Indica", "ASM465v1"));
-//        speciesList.add(new Species("gmax", "", "Glycine max", "V1.0"));
-//        speciesList.add(new Species("vvinifera", "", "Vitis vinifera", "IGGP_12x"));
-//        speciesList.add(new Species("zmays", "", "Zea mays", "AGPv3"));
-
-
-        return speciesList;
-    }
 
     /**
      * TO DELETE
      */
     @Deprecated
+    protected Response generateResponse(String queryString, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is drepecated");
+    }
+
+    @Deprecated
+    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is drepecated");
+    }
+
+    @Deprecated
     private boolean isSpecieAvailable(String species) {
-        List<Species> speciesList = getSpeciesList();
+        List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
         for (int i = 0; i < speciesList.size(); i++) {
             // This only allows to show the information if species is in 3
             // letters format
-            if (species.equalsIgnoreCase(speciesList.get(i).getSpecies())) {
+            if (species.equalsIgnoreCase(speciesList.get(i).getId())) {
                 return true;
             }
         }
         return false;
     }
+
+    //    @Deprecated
+//    protected Response createJsonResponse(List<QueryResult> obj) {
+//        endTime = System.currentTimeMillis() - startTime;
+//        queryResponse.setTime((int) endTime);
+//        queryResponse.setApiVersion(version);
+//        queryResponse.setQueryOptions(queryOptions);
+//        queryResponse.setResponse(obj);
+//
+////        queryResponse.put("species", species);
+////        queryResponse.put("queryOptions", queryOptions);
+////        queryResponse.put("response", obj);
+//
+//        try {
+//            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//            logger.error("Error parsing queryResponse object");
+//            return null;
+//        }
+//    }
+
+
+//    @Deprecated
+//    protected Response createErrorResponse(Object o) {
+//        String objMsg = o.toString();
+//        if (objMsg.startsWith("ERROR:")) {
+//            return buildResponse(Response.ok("" + o));
+//        } else {
+//            return buildResponse(Response.ok("ERROR: " + o));
+//        }
+//    }
+
+//    @Deprecated
+//    protected Response createOkResponse(String message) {
+//        return buildResponse(Response.ok(message));
+//    }
+
+//    @Deprecated
+//    protected Response createOkResponse(QueryResult queryResult) {
+//        return createOkResponse(Arrays.asList(queryResult));
+//    }
+
+//    @Deprecated
+//    protected Response createOkResponse(List<QueryResult> queryResults) {
+//        switch (outputFormat.toLowerCase()) {
+//            case "json":
+//                return createJsonResponse(queryResults);
+//            case "xml":
+//                return createOkResponse(queryResults, MediaType.APPLICATION_XML_TYPE);
+//            default:
+//                return buildResponse(Response.ok(queryResults));
+//        }
+//    }
 
     //    protected Response createResponse(String response, MediaType mediaType) throws IOException {
 //        logger.debug("CellBase - CreateResponse, QueryParams: FileFormat => " + fileFormat + ", OutputFormat => " + outputFormat + ", Compress => " + outputCompress);

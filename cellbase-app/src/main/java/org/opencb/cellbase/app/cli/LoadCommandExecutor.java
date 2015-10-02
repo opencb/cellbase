@@ -132,12 +132,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                         }
                     } catch (IllegalAccessException | InstantiationException | InvocationTargetException
                             | ExecutionException | NoSuchMethodException | InterruptedException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (LoaderException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                                } catch (LoaderException e) {
+                                } catch (IOException e) {
+                                }
                 }
             }
         } else {

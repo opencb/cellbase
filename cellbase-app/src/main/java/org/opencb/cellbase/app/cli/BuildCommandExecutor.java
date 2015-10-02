@@ -41,6 +41,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     // TODO: these two constants should be defined in the 'download' module
     public static final String GWAS_INPUT_FILE_NAME = "gwas_catalog.tsv";
+    public static final String DISGENET_INPUT_FILE_NAME = "disgenet.tar.gz";
     public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
@@ -69,7 +70,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         if(buildCommandOptions.common != null) {
             common = Paths.get(buildCommandOptions.common);
         }else {
-            common = output.getParent().getParent().resolve("common");
+            common = input.getParent().getParent().resolve("common");
         }
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
@@ -108,7 +109,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if(buildCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{"genome_info", "genome", "gene", "variation", "regulatory_region",
+                    buildOptions = new String[]{"genome_info", "genome", "gene", "variation", "regulation",
                             "protein", "ppi", "conservation", "drug", "clinvar", "cosmic", "gwas"};
                 }else {
                     buildOptions = buildCommandOptions.data.split(",");
@@ -135,8 +136,8 @@ public class BuildCommandExecutor extends CommandExecutor {
 //                        case "variation-phen-annot":
 //                            parser = buildVariationPhenotypeAnnotation();
 //                            break;
-                        case "regulatory_region":
-                            parser = buildRegulatoryRegion();
+                        case "regulation":
+                            parser = buildRegulation();
                             break;
                         case "protein":
                             parser = buildProtein();
@@ -158,6 +159,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                             break;
                         case "gwas":
                             parser = buildGwas();
+                            break;
+                        case "disgenet":
+                            parser = buildDisgenet();
                             break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
@@ -240,7 +244,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
 
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, serializer);
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, serializer);
     }
 
 
@@ -260,7 +264,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 //    }
 
 
-    private CellBaseParser buildRegulatoryRegion() {
+    private CellBaseParser buildRegulation() {
         Path regulatoryRegionFilesDir = input.resolve("regulation");
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
@@ -341,7 +345,11 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     private CellBaseParser buildClinvar() {
-        Path clinvarFile = input.resolve("ClinVar.xml");
+        Path clinvarFile = input.resolve("ClinVar.xml.gz");
+        Path efosFilePath = input.resolve("ClinVar_Traits_EFO_Names.csv");
+        if (!efosFilePath.toFile().exists()) {
+            efosFilePath = null;
+        }
 
         String assembly = buildCommandOptions.assembly;
         checkMandatoryOption("assembly", assembly);
@@ -350,7 +358,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar");
-        return new ClinVarParser(clinvarFile, assembly, serializer);
+        return new ClinVarParser(clinvarFile, efosFilePath, assembly, serializer);
     }
 
     private CellBaseParser buildCosmic()  {
@@ -369,6 +377,14 @@ public class BuildCommandExecutor extends CommandExecutor {
         FileUtils.checkPath(dbsnpFile);
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gwas");
         return new GwasParser(gwasFile, dbsnpFile, serializer);
+    }
+
+    private CellBaseParser buildDisgenet() throws IOException {
+        Path inputDir = getInputDirFromCommandLine();
+        Path disgenetFile = inputDir.resolve("gene2disease/"+DISGENET_INPUT_FILE_NAME);
+        FileUtils.checkPath(disgenetFile);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "disgenet");
+        return new DisgenetParser(disgenetFile, serializer);
     }
 
 

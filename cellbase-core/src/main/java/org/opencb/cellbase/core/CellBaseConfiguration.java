@@ -173,7 +173,11 @@ public class CellBaseConfiguration {
         private URLProperties interpro;
         private URLProperties conservation;
         private URLProperties clinvar;
+        private URLProperties clinvarEfoTerms;
+        private URLProperties disgenet;
+        private URLProperties dgidb;
         private URLProperties gwasCatalog;
+
 
         public EnsemblProperties getEnsembl() {
             return ensembl;
@@ -206,6 +210,22 @@ public class CellBaseConfiguration {
         public void setClinvar(URLProperties clinvar) {
             this.clinvar = clinvar;
         }
+
+        public URLProperties getClinvarEfoTerms() {
+            return clinvarEfoTerms;
+        }
+
+        public void setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
+            this.clinvarEfoTerms = clinvarEfoTerms;
+        }
+
+        public URLProperties getDisgenet() { return disgenet; }
+
+        public void setDisgenet(URLProperties disgenet) { this.disgenet = disgenet; }
+
+        public URLProperties getDgidb() { return dgidb; }
+
+        public void setDgidb(URLProperties dgidb) { this.dgidb = dgidb; }
 
         public URLProperties getConservation() {
             return conservation;
@@ -278,6 +298,7 @@ public class CellBaseConfiguration {
         public void setMiRTarBase(URLProperties miRTarBase) {
             this.miRTarBase = miRTarBase;
         }
+
 
         public static class EnsemblProperties {
             private DatabaseProperties database;
@@ -375,6 +396,17 @@ public class CellBaseConfiguration {
             private String commonName;
             private List<Assembly> assemblies;
             private List<String> data;
+
+            @Override
+            public String toString() {
+                return "Species{" +
+                        "id='" + id + '\'' +
+                        ", scientificName='" + scientificName + '\'' +
+                        ", commonName='" + commonName + '\'' +
+                        ", assemblies=" + assemblies +
+                        ", data=" + data +
+                        '}';
+            }
 
             public String getId() {
                 return id;

@@ -20,7 +20,7 @@ import com.mongodb.*;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.lib.api.regulatory.TfbsDBAdaptor;
+import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
@@ -41,18 +41,10 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
 
     private static int regulatoryRegionChunkSize = MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE;
 
-    public TfbsMongoDBAdaptor(DB db) {
-        super(db);
-    }
-
-    public TfbsMongoDBAdaptor(DB db, String species, String version) {
-        super(db, species, version);
-        mongoDBCollection = db.getCollection("regulatory_region");
-    }
 
     public TfbsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection2 = mongoDataStore.getCollection("regulatory_region");
+        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
         logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
     }
@@ -66,6 +58,20 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
         options.put("featureType", "TF_binding_site_motif");
         return super.getAllByPositionList(positionList, options);
+    }
+
+    @Override
+    public QueryResult next(String id, QueryOptions options) {
+        QueryOptions _options = new QueryOptions();
+        _options.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, _options);
+        if(queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject)queryResult.getResult().get(0);
+            String chromosome = gene.get("chromosome").toString();
+            int start = Integer.parseInt(gene.get("start").toString());
+            return next(chromosome, start, options);
+        }
+        return null;
     }
 
     @Override
@@ -107,7 +113,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
             queries.add(builder.get());
         }
         options = addExcludeReturnFields("chunkIds", options);
-        return executeQueryList(idList, queries, options);
+        return executeQueryList2(idList, queries, options);
     }
 
     @Override
@@ -117,7 +123,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
 
     @Override
     public List<QueryResult> getAllByTargetGeneIdList(List<String> targetGeneIdList, QueryOptions options) {
-        DBCollection coreMongoDBCollection = db.getCollection("gene");
+//        DBCollection coreMongoDBCollection = db.getCollection("gene");
 
         List<DBObject[]> commandList = new ArrayList<>();
         for (String targetGeneId : targetGeneIdList) {
@@ -134,11 +140,12 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
             commandList.add(commands);
         }
 
-        List<QueryResult> queryResults = executeAggregationList(targetGeneIdList, commandList, options, coreMongoDBCollection);
-
+//        List<QueryResult> queryResults = executeAggregationList(targetGeneIdList, commandList, options, coreMongoDBCollection);
+        List<QueryResult> queryResults = new ArrayList<>();
         for (int i = 0; i < targetGeneIdList.size(); i++) {
             String targetGeneId = targetGeneIdList.get(0);
-            QueryResult queryResult = queryResults.get(0);
+//            QueryResult queryResult = queryResults.get(0);
+            QueryResult queryResult = new QueryResult();
             BasicDBList list = (BasicDBList) queryResult.getResult();
 
             for (int j = 0; j < list.size(); j++) {
@@ -182,7 +189,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     }
 
 //    @Override
-//    public QueryResult getAll(QueryOptions options) {
+//    public QueryResult getGenomeInfo(QueryOptions options) {
 //        return null;  //To change body of implemented methods use File | Settings | File Templates.
 //    }
 

@@ -16,9 +16,7 @@
 
 package org.opencb.cellbase.mongodb.db;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
@@ -28,11 +26,9 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceType;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.CellBaseConfiguration;
-import org.opencb.cellbase.core.common.core.CellbaseConfiguration;
-import org.opencb.cellbase.core.lib.DBAdaptorFactory;
-import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.db.DBAdaptorFactory;
+import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
@@ -53,30 +49,40 @@ public class VariantAnnotationMongoDBAdaptorTest {
     @Test
     public void testGetAnnotationByVariantList() throws Exception {
 
-//        CellbaseConfiguration config = new CellbaseConfiguration();
         CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
-//        config.addSpeciesAlias("hsapiens", "hsapiens");
+        try {
+            cellBaseConfiguration = CellBaseConfiguration
+                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 948813, "G", "C"), new QueryOptions());  // should return drug interactions
 
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("1", 948813, "G", "C"))  // Should return drug interactions
                 , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16050612, "C", "G"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("13", 45411941, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("2", 130498751, "A", "G"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("1", 167385325, "A", "-"))  // Should not return null
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("1", 220603289, "-", "GTGT"))  // Should not return null
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 16050612, "C", "G"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("13", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("21", 18992155, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("2", 130498751, "A", "G"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("19", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "T"))  // Should return any result
 //                , new QueryOptions());
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new GenomicVariant("22", 21982892, "C", "G"))  // Should return any result
@@ -254,6 +260,13 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        CellbaseConfiguration config = new CellbaseConfiguration();
         CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
+        try {
+            cellBaseConfiguration = CellBaseConfiguration
+                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 //        config.addSpeciesAlias("agambiae", "agambiae");
 //        config.addSpeciesAlias("hsapiens", "hsapiens");
 
@@ -267,7 +280,17 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         // Use ebi cellbase to test these
         // TODO: check differences against Web VEP
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16287365, "C", "T"), new QueryOptions());  // should
+//        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
+//        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 114340663, "GCTGGGCATCCT", "-"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("2", 114340663, "GCTGGGCATCCT", "ACTGGGCATCCT"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 220603289, "-", "GTGT"), new QueryOptions());  // should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 220603347, "CCTAGTA", "ACTACTA"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 16555369, "-", "TG"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 16555369, "T", "-"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 70008, "-", "TG"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("1", 167385325, "A", "-"), new QueryOptions());  // should
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("22", 16287365, "C", "T"), new QueryOptions());  // should
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("19", 45411941, "T", "C"), new QueryOptions());  // should
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("5", 150407694, "G", "A"), new QueryOptions());  // should
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new GenomicVariant("19", 20047783, "AAAAAA", "-"), new QueryOptions());  // should

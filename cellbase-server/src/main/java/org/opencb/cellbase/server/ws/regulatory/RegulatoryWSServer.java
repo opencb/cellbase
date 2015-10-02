@@ -16,7 +16,8 @@
 
 package org.opencb.cellbase.server.ws.regulatory;
 
-import com.wordnik.swagger.annotations.Api;
+import io.swagger.annotations.Api;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -32,7 +33,7 @@ import java.io.IOException;
 @Produces("text/plain")
 public class RegulatoryWSServer extends GenericRestWSServer {
 
-	public RegulatoryWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+	public RegulatoryWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
 		super(version, species, uriInfo, hsr);
 	}
 	

@@ -209,6 +209,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadClinical(sp, spShortName, assembly.getName(), spFolder);
                         }
                         break;
+                    case "gene2disease":
+                        if(speciesHasInfoToDownload(sp, "gene2disease")) {
+                            downloadGene2Disease(sp, spShortName, assembly.getName(), spFolder);
+                        }
+                        break;
                 }
             }
         }
@@ -272,9 +277,24 @@ public class DownloadCommandExecutor extends CommandExecutor {
         makeDir(geneFolder);
 
         downloadEnsemblData(sp, spShortName, geneFolder, host);
+        downloadDrugData(sp, speciesFolder);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas(speciesFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
+    }
+
+    private void downloadDrugData(Species species, Path speciesFolder)
+            throws IOException, InterruptedException {
+
+        if(species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading drug-gene data...");
+
+            Path geneDrugFolder = speciesFolder.resolve("gene/geneDrug");
+            makeDir(geneDrugFolder);
+            String url = configuration.getDownload().getDgidb().getHost();
+            downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
+
+        }
     }
 
     private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host) throws IOException, InterruptedException {
@@ -577,11 +597,27 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String url = configuration.getDownload().getClinvar().getHost();
             downloadFile(url, clinicalFolder.resolve("ClinVar.xml.gz").toString());
 
+            url = configuration.getDownload().getClinvarEfoTerms().getHost();
+            downloadFile(url, clinicalFolder.resolve("ClinVar_Traits_EFO_Names.csv").toString());
+
             url = configuration.getDownload().getGwasCatalog().getHost();
             downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
         }
     }
 
+    private void downloadGene2Disease(Species species, String shortName, String assembly, Path speciesFolder)
+            throws IOException, InterruptedException {
+
+        if(species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading gene to disease information ...");
+
+            Path gene2diseaseFolder = speciesFolder.resolve("gene2disease");
+            makeDir(gene2diseaseFolder);
+            String url = configuration.getDownload().getDisgenet().getHost();
+            downloadFile(url, gene2diseaseFolder.resolve("disgenet.tar.gz").toString());
+
+        }
+    }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");

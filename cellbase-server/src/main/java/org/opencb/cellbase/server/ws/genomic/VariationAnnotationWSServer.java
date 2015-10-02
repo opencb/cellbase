@@ -16,8 +16,10 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
+import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.lib.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
@@ -38,8 +40,15 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
     private String filename = "/home/imedina/variant_effect_chr1.json.gz";
 
 
-    public VariationAnnotationWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+    public VariationAnnotationWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+                                       @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
+    }
+
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(VariantAnnotation.class);
     }
 
     @GET

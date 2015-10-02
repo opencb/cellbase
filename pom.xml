@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>3.1.3</version>
+    <version>3.2.0</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -14,17 +14,22 @@
     <url>http://www.opencb.org/subprojects/cellbase</url>
 
     <modules>
-        <module>cellbase-core</module>
         <module>cellbase-app</module>
+        <module>cellbase-core</module>
         <module>cellbase-mongodb</module>
         <module>cellbase-server</module>
     </modules>
 
     <properties>
-        <cellbase.version>3.1.3</cellbase.version>
-        <biodata.version>0.4.2</biodata.version>
-        <datastore.version>0.3.2</datastore.version>
-        <compileSource>1.7</compileSource>
+        <cellbase.version>3.2.0</cellbase.version>
+        <biodata.version>0.5.0</biodata.version>
+        <datastore.version>0.4.0</datastore.version>
+        <java-common-libs.version>3.0.0</java-common-libs.version>
+
+        <jackson.version>2.5.4</jackson.version>
+        <jersey.version>2.19</jersey.version>
+
+        <compileSource>1.8</compileSource>
         <build.dir>build</build.dir>
     </properties>
 
@@ -61,11 +66,6 @@
             <id>mbleda</id>
             <name>Marta</name>
             <email>martableda@gmail.com</email>
-        </developer>
-        <developer>
-            <id>frasator</id>
-            <name>Francisco</name>
-            <email>frasator@gmail.com</email>
         </developer>
     </developers>
 
@@ -105,6 +105,11 @@
                 <artifactId>datastore-mongodb</artifactId>
                 <version>${datastore.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.opencb.commons</groupId>
+                <artifactId>commons-lib</artifactId>
+                <version>${java-common-libs.version}</version>
+            </dependency>
 
             <!-- General dependencies -->
             <dependency>
@@ -115,17 +120,22 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.10</version>
+                <version>1.7.12</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
-                <version>1.7.10</version>
+                <version>1.7.12</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.5.1</version>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jsonSchema</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xerial</groupId>
@@ -135,12 +145,17 @@
             <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet</artifactId>
-                <version>2.17</version>
+                <version>${jersey.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-client</artifactId>
-                <version>2.17</version>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.rocksdb</groupId>
+                <artifactId>rocksdbjni</artifactId>
+                <version>3.10.1</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
@@ -186,14 +201,6 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-resources-plugin</artifactId>-->
-                <!--<version>2.7</version>-->
-                <!--<configuration>-->
-                    <!--<encoding>UTF-8</encoding>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
             <plugin>
                 <groupId>org.codehaus.gmaven</groupId>
                 <artifactId>gmaven-plugin</artifactId>

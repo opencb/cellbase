@@ -68,8 +68,17 @@
 	"clinvar": {
 	  "host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-03.xml.gz"
 	},
+	"clinvarEfoTerms": {
+	  "host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/ClinVar_Traits_EFO_Names_260615.csv"
+	},
 	"gwasCatalog": {
 	  "host": "http://www.ebi.ac.uk/gwas/api/search/downloads/full"
+	},
+	"disgenet": {
+	  "host": "http://www.disgenet.org/ds/DisGeNET/results/all_gene_disease_associations.tar.gz"
+	},
+	"dgidb": {
+	  "host": "http://dgidb.genome.wustl.edu/downloads/interactions.tsv"
 	}
   },
   "species":{
@@ -94,7 +103,8 @@
 		  "regulation",
 		  "protein",
 		  "conservation",
-		  "clinical"
+		  "clinical",
+		  "gene2disease"
 		]
 	  },
 	  {

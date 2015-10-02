@@ -17,17 +17,20 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
+import org.opencb.biodata.formats.variant.clinvar.v19jaxb.*;
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureSetType;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.ReleaseType;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.SequenceLocationType;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Created by imedina on 26/09/14.
@@ -37,14 +40,20 @@ public class ClinVarParser extends CellBaseParser{
     private static final String ASSEMBLY_PREFIX = "GRCh";
     public static final String GRCH37_ASSEMBLY = "37";
     public static final String GRCH38_ASSEMBLY = "38";
+    private static final String PREFERRED_TYPE = "Preferred";
+    public static final String EFO_ID = "EFO id";
+    public static final String EFO_NAME = "EFO name";
+    public static final String EFO_URL = "EFO URL";
 
     private final String selectedAssembly;
 
     private Path clinvarXmlFile;
+    private Path efosFile;
 
-    public ClinVarParser(Path clinvarXmlFile, String assembly, CellBaseSerializer serializer) {
+    public ClinVarParser(Path clinvarXmlFile, Path efosFile, String assembly, CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXmlFile = clinvarXmlFile;
+        this.efosFile = efosFile;
         this.selectedAssembly = ASSEMBLY_PREFIX + assembly;
     }
 
@@ -54,26 +63,108 @@ public class ClinVarParser extends CellBaseParser{
             JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXmlFile);
             logger.info("Done");
 
+            Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
+
             long serializedClinvarObjects = 0,
-                    clinvarRecordsParsed = 0;
+                    clinvarRecordsParsed = 0,
+                    clinvarObjectsWithEfo = 0;
+
             logger.info("Serializing clinvar records that have Sequence Location for Assembly " + selectedAssembly + " ...");
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 ClinvarPublicSet clinvarPublicSet = buildClinvarPublicSet(publicSet);
                 if (clinvarPublicSet != null) {
+                    if (clinvarRecordHasAssociatedEfos(clinvarPublicSet, traitsToEfoTermsMap)) {
+                        clinvarObjectsWithEfo++;
+                    }
                     serializer.serialize(clinvarPublicSet);
                     serializedClinvarObjects++;
                 }
                 clinvarRecordsParsed++;
             }
             logger.info("Done");
-            this.printSummary(clinvarRecordsParsed, serializedClinvarObjects);
+            this.printSummary(clinvarRecordsParsed, serializedClinvarObjects, clinvarObjectsWithEfo);
+
 
         } catch (JAXBException e) {
             logger.error("Error unmarshalling clinvar Xml file "+ clinvarXmlFile + ": " + e.getMessage());
+        } catch (IOException e) {
+            logger.error("File not found: "+ clinvarXmlFile + ": " + e.getMessage());
         }
     }
 
-    private void printSummary(long clinvarRecordsParsed, long serializedClinvarObjects) {
+    private Map<String, EFO> loadEFOTerms() {
+        if (efosFile != null) {
+            logger.info("Loading EFO terms ...");
+            Map<String, EFO> efoTerms = new HashMap<>();
+            try (Stream<String> linesStream = Files.lines(efosFile)) {
+                linesStream.forEach(line -> addEfoTermToMap(line, efoTerms));
+                logger.info("Done");
+                return efoTerms;
+            } catch (IOException e) {
+                logger.error("Error loading EFO file: " + e.getMessage());
+                logger.error("EFO terms won't be added");
+            }
+        }else {
+            logger.warn("No EFO terms file present: EFO terms won't be added");
+        }
+        return null;
+    }
+
+    private void addEfoTermToMap(String line, Map<String, EFO> efoTerms) {
+        String[] columns = line.split("\t");
+        efoTerms.put(columns[0], new EFO(columns[2], columns[3], columns[1]));
+    }
+
+    private boolean clinvarRecordHasAssociatedEfos(ClinvarPublicSet clinvarPublicSet, Map<String, EFO> efoTerms) {
+        if (efosFile != null) {
+            boolean hasEfo = false;
+            List<TraitType> traits = clinvarPublicSet.getClinvarSet().getReferenceClinVarAssertion().getTraitSet().getTrait();
+            for (TraitType trait : traits) {
+                hasEfo = traitHasEfo(efoTerms, hasEfo, trait);
+            }
+            return hasEfo;
+        }
+        return false;
+    }
+
+    private boolean traitHasEfo(Map<String, EFO> efoTerms, boolean hasEfo, TraitType trait) {
+        List<SetElementSetType> traitNames = trait.getName();
+        String preferredTraitName = getPreferredTraitName(traitNames);
+        if (preferredTraitName != null) {
+            EFO efo = efoTerms.get(preferredTraitName);
+            if (efo != null) {
+                hasEfo = true;
+                addEfoToClinvarTraitNames(trait.getName(), efo);
+            }
+        }
+        return hasEfo;
+    }
+
+    private String getPreferredTraitName(List<SetElementSetType> traitNames) {
+        for (SetElementSetType name: traitNames) {
+            if (name.getElementValue().getType().equals(PREFERRED_TYPE)) {
+                return name.getElementValue().getValue();
+            }
+        }
+        return null;
+    }
+
+    private void addEfoToClinvarTraitNames(List<SetElementSetType> names, EFO efo) {
+        addClinvarTraitName(names, EFO_ID, efo.id);
+        addClinvarTraitName(names, EFO_NAME, efo.name);
+        addClinvarTraitName(names, EFO_URL, efo.url);
+    }
+
+    private void addClinvarTraitName(List<SetElementSetType> names, String type, String value){
+        SetElementSetType.ElementValue efoIdValue = new SetElementSetType.ElementValue();
+        efoIdValue.setType(type);
+        efoIdValue.setValue(value);
+        SetElementSetType efoElement = new SetElementSetType();
+        efoElement.setElementValue(efoIdValue);
+        names.add(efoElement);
+    }
+
+    private void printSummary(long clinvarRecordsParsed, long serializedClinvarObjects, long clinvarObjectsWithEfo) {
         NumberFormat formatter = NumberFormat.getInstance();
         logger.info("");
         logger.info("Summary");
@@ -82,6 +173,10 @@ public class ClinVarParser extends CellBaseParser{
         logger.info("Serialized " + formatter.format(serializedClinvarObjects) + " '" + ClinvarPublicSet.class.getName() + "' objects");
         if (clinvarRecordsParsed != serializedClinvarObjects) {
             logger.info(formatter.format(clinvarRecordsParsed - serializedClinvarObjects) + " clinvar records not serialized because don't have complete Sequence Location for assembly " + selectedAssembly);
+        }
+        if (efosFile != null) {
+            NumberFormat percentageFormatter = NumberFormat.getPercentInstance();
+            logger.info(formatter.format(clinvarObjectsWithEfo) + " clinvar records (" + percentageFormatter.format((double) clinvarObjectsWithEfo / serializedClinvarObjects) + " of serialized) have at least one associated EFO term");
         }
     }
 
@@ -120,7 +215,20 @@ public class ClinVarParser extends CellBaseParser{
                 location.getStop() != null;
     }
 
-    private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException {
+    private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException, IOException {
         return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v19);
+    }
+
+    class EFO {
+        private final String id;
+        private final String name;
+        private final String url;
+
+        public EFO(String id, String name, String URL ) {
+
+            this.id = id;
+            this.name = name;
+            url = URL;
+        }
     }
 }

@@ -17,7 +17,8 @@
 package org.opencb.cellbase.server.ws.network;
 
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.systems.ProteinProteinInteractionDBAdaptor;
+import org.opencb.biodata.models.protein.Interaction;
+import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -44,10 +45,15 @@ import java.util.List;
 public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
 
     public ProteinProteinInteractionWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Interaction.class);
+    }
 
     @GET
     @Path("/all")
@@ -57,7 +63,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                               @DefaultValue("") @QueryParam("status") String status,
                               @DefaultValue("") @QueryParam("detectionMethod") String detectionMethod) {
         try {
-            checkParams();
+            parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
             if(interactor != null && !interactor.equals("")) {
@@ -85,9 +91,8 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
 //            }
 
             return createOkResponse(ppiDBAdaptor.getAll(queryOptions));
-        } catch (VersionException | SpeciesException e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllPPI", e.toString());
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
 
     }
@@ -96,14 +101,13 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     @Path("/{interaction}/info")
     public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
         try {
-            checkParams();
+            parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-
             List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
+
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPPIByInteractionId", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -113,17 +117,13 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     public Response getInteractorsByInteractionId(@PathParam("interaction") String interaction,
                                                   @DefaultValue("interactorA,interactorB") @QueryParam("include") String include) {
         try {
-            checkParams();
+            parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-
-//            queryOptions.put("include", Splitter.on(",").splitToList(include));
-            queryOptions.put("include", include);
-
             List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
+
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPPIByInteractionId", e.toString());
+            return createErrorResponse(e);
         }
     }
 }

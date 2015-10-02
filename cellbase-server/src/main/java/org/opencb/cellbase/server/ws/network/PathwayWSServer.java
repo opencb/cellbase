@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.ws.network;
 
+import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -33,7 +34,8 @@ import java.io.IOException;
 @Produces("text/plain")
 public class PathwayWSServer extends GenericRestWSServer {
 
-	public PathwayWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+	public PathwayWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+						   @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
 		super(version, species, uriInfo, hsr);
 	}
 /*
@@ -41,7 +43,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/list")
 	public Response getAllPathways(@QueryParam("subpathways") String subpathways, @QueryParam("search") String search) {
 		try {
-			checkParams();
+			parseQueryParams();
 			boolean onlyTopLevel = false;
 			if (subpathways!=null) {
 				onlyTopLevel=!Boolean.parseBoolean(subpathways);
@@ -61,7 +63,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/info")
 	public Response getPathwayInfo(@PathParam("pathwayId") String query) {
 		try {
-			checkParams();
+			parseQueryParams();
 			StringBuilder sb = new StringBuilder();
 			PathwayDBAdaptor bioPaxDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 			Pathway pathway = bioPaxDBAdaptor.getPathway(query, "Reactome");
@@ -78,7 +80,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Produces("image/jpeg")
 	public Response getPathwayImage(@PathParam("pathwayId") String query) {
 		try {
-			checkParams();
+			parseQueryParams();
 			PathwayDBAdaptor bioPaxDBAdaptor = dbAdaptorFactory.getPathwayDBAdaptor(this.species, this.assembly);
 			Pathway pathway = bioPaxDBAdaptor.getPathway(query, "Reactome");
 			
@@ -135,7 +137,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/annotation")
 	public Response getPathwayAnnotation() {
 		try {
-			checkParams();
+			parseQueryParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return null;
 		} catch (Exception e) {
@@ -148,7 +150,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/element")
 	public Response getAllElements(@PathParam("pathwayId") String query) {
 		try {
-			checkParams();
+			parseQueryParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return generateResponse(query, adaptor.getAllByTfGeneNameList(StringUtils.toList(query, ","), null, Integer.MIN_VALUE, Integer.MIN_VALUE));
 		} catch (Exception e) {
@@ -162,7 +164,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/gene")
 	public Response getAllGenes(@PathParam("pathwayId") String query) {
 		try {
-			checkParams();
+			parseQueryParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return generateResponse(query, adaptor.getAllByTfGeneNameList(StringUtils.toList(query, ","), null, Integer.MIN_VALUE, Integer.MIN_VALUE));
 		} catch (Exception e) {
@@ -175,7 +177,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	@Path("/{pathwayId}/protein")
 	public Response getAllByTfbs(@PathParam("pathwayId") String query) {
 		try {
-			checkParams();
+			parseQueryParams();
 			TfbsDBAdaptor adaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
 			return generateResponse(query, adaptor.getAllByTfGeneNameList(StringUtils.toList(query, ","), null, Integer.MIN_VALUE, Integer.MIN_VALUE));
 		} catch (Exception e) {
@@ -249,7 +251,7 @@ public class PathwayWSServer extends GenericRestWSServer {
 	}
 	*/
 	@GET
-	public Response getHelp() {
+	public Response defaultMethod() {
 		return help();
 	}
 	
