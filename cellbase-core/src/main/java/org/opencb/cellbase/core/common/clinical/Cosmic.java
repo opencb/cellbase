@@ -21,22 +21,7 @@ package org.opencb.cellbase.core.common.clinical;
  * @author Luis Miguel Cruz.
  * @since October 08, 2014 
  */
-public class Cosmic {
-
-    /** Alternate Allele */
-    private String alternate;
-
-    /** Alternate Reference */
-    private String reference;
-
-    /** Chromosome */
-    private String chromosome;
-
-    /** Variant position start */
-    private int start;
-    
-    /** Variant position end */
-    private int end;
+public class Cosmic extends ClinicalVariant{
 
     /** geneName */
     private String geneName;
@@ -118,49 +103,11 @@ public class Cosmic {
 
     private Integer idStudy;
 
-    public Cosmic() {}
+    public Cosmic() {
+        super("cosmic");
+    }
 
     // ----------------------- GETTERS / SETTERS --------------------------------
-    
-    public String getAlternate() {
-        return alternate;
-    }
-
-    public void setAlternate(String alternate) {
-        this.alternate = alternate;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-
-    public void setReference(String reference) {
-        this.reference = reference;
-    }
-
-    public String getChromosome() {
-        return chromosome;
-    }
-
-    public void setChromosome(String chromosome) {
-        this.chromosome = chromosome;
-    }
-
-    public int getStart() {
-        return start;
-    }
-
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    public int getEnd() {
-        return end;
-    }
-
-    public void setEnd(int end) {
-        this.end = end;
-    }
 
     public String getGeneName() {
         return geneName;
