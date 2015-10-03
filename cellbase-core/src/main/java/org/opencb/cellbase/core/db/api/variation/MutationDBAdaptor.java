@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.db.api.variation;
 
-import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;

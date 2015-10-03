@@ -16,8 +16,11 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.*;
-import org.opencb.biodata.models.feature.Region;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
