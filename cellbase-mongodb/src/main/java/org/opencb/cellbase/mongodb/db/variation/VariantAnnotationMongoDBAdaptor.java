@@ -279,20 +279,19 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //                variantStart = variant.getPosition();
 //            }
 //            getAffectedGenesInfo(variant.getChromosome(), variantStart, variantEnd);
-        if(geneList==null) {
+        if (geneList == null) {
             getAffectedGenesInfo(variant);
         }
 
         List<GeneDrugInteraction> geneDrugInteractions = new ArrayList<>();
-        for(Gene gene : geneList) {
+        for (Gene gene : geneList) {
             if(gene.getDrugInteractions()!=null) {
-                logger.info("gene.getDrugInteractions().size() = {}",gene.getDrugInteractions().size());
+                logger.debug("gene.getDrugInteractions().size() = {}", gene.getDrugInteractions().size());
                 geneDrugInteractions.addAll(gene.getDrugInteractions());
             }
         }
 
         return geneDrugInteractions;
-
     }
 
     private List<ExpressionValue> getGeneExpressionValues(GenomicVariant variant) {

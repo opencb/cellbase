@@ -21,13 +21,22 @@ import java.util.List;
  * Created by fjlopez on 22/09/15.
  */
 public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
+
     private VariantAnnotationDBAdaptor variantAnnotationDBAdaptor;
     private List<VariantAnnotation> variantAnnotationList;
+
+    private QueryOptions queryOptions;
 
     private Logger logger;
 
     public CellBaseLocalVariantAnnotator(VariantAnnotationDBAdaptor variantAnnotationDBAdaptor) {
+        this(variantAnnotationDBAdaptor, new QueryOptions());
+    }
+
+    public CellBaseLocalVariantAnnotator(VariantAnnotationDBAdaptor variantAnnotationDBAdaptor, QueryOptions queryOptions) {
         this.variantAnnotationDBAdaptor = variantAnnotationDBAdaptor;
+        this.queryOptions = queryOptions;
+
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -44,8 +53,8 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         List<GenomicVariant> batch = convertVariantsToGenomicVariants(variantList);
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", batch.size());
         List<QueryResult> queryResultList =
-                variantAnnotationDBAdaptor.getAnnotationByVariantList(batch, new QueryOptions());
-
+                variantAnnotationDBAdaptor.getAnnotationByVariantList(batch, queryOptions);
+        System.out.println("batch: " + variantList.size());
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
         for (QueryResult<VariantAnnotation> queryResult : queryResultList) {
