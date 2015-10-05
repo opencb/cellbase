@@ -111,7 +111,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             ids.add(region.toString());
 
 
-            logger.debug(builder.get().toString());
+//            logger.debug(builder.get().toString());
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
@@ -211,7 +211,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             queries.add(builder.get());
             ids.add(region.toString());
 
-            logger.debug(builder.get().toString());
+//            logger.debug(builder.get().toString());
 
         }
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
