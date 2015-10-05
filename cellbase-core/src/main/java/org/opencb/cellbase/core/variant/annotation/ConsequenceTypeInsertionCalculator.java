@@ -323,7 +323,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     private void solveCodingExonVariantInNegativeTranscript(String transcriptSequence, int cdnaCodingStart,
                                                             int cdnaVariantStart, int cdnaVariantEnd) {
         if(cdnaVariantStart != -1) {  // Insertion
-            if(cdnaVariantStart<(cdnaCodingStart+2) && transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
+            if(cdnaVariantStart<(cdnaCodingStart+2) && !transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             }
             int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
@@ -580,7 +580,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     private void solveCodingExonVariantInPositiveTranscript(String transcriptSequence, int cdnaCodingStart,
                                                             int cdnaVariantStart) {
         if(cdnaVariantStart != -1) {  // Insertion. Be careful: insertion coordinates are special, alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
-            if(cdnaVariantStart<(cdnaCodingStart+2) && transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
+            if(cdnaVariantStart<(cdnaCodingStart+2) && !transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             }
             int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;

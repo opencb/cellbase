@@ -68,6 +68,9 @@
 	"clinvar": {
 	  "host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-03.xml.gz"
 	},
+	"clinvarEfoTerms": {
+	  "host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/ClinVar_Traits_EFO_Names_260615.csv"
+	},
 	"gwasCatalog": {
 	  "host": "http://www.ebi.ac.uk/gwas/api/search/downloads/full"
 	},
