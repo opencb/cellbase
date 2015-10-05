@@ -408,6 +408,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         for (int i = 0; i < variantList.size(); i++) {
             long start = System.currentTimeMillis();
 
+            // reset geneList for new variant
+            geneList = null;
+
             // TODO: start & end are both being set to variantList.get(i).getPosition(), modify this for indels
             VariantAnnotation variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(), variantList.get(i).getPosition(),
                     variantList.get(i).getPosition(), variantList.get(i).getReference(), variantList.get(i).getAlternative());

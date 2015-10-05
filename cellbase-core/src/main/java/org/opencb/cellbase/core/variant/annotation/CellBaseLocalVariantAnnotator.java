@@ -54,7 +54,7 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", batch.size());
         List<QueryResult> queryResultList =
                 variantAnnotationDBAdaptor.getAnnotationByVariantList(batch, queryOptions);
-        System.out.println("batch: " + variantList.size());
+//        System.out.println("batch: " + variantList.size());
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
         for (QueryResult<VariantAnnotation> queryResult : queryResultList) {
