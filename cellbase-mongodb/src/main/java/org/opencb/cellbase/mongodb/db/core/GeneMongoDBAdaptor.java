@@ -22,6 +22,7 @@ import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -33,6 +34,7 @@ import java.util.*;
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor {
 
     private int geneChunkSize = MongoDBCollectionConfiguration.GENE_CHUNK_SIZE;
+    private ClinicalDBAdaptor clinicalDBAdaptor;
 
 //    public GeneMongoDBAdaptor(DB db) {
 //        super(db);
@@ -53,6 +55,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");
     }
 
+
+    public ClinicalDBAdaptor getClinicalDBAdaptor() {
+        return clinicalDBAdaptor;
+    }
+
+    public void setClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor) {
+        this.clinicalDBAdaptor = clinicalDBAdaptor;
+    }
 
     @Override
     public QueryResult first() {
@@ -100,7 +110,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
-        return next(chromosome, position+1, options, mongoDBCollection);
+        return next(chromosome, position + 1, options, mongoDBCollection);
     }
 
 
@@ -134,7 +144,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         QueryBuilder geneBuilder = QueryBuilder.start("transcripts.xrefs.id").is(id);
         long dbTimeStart = System.currentTimeMillis();
         QueryResult geneQueryResult = executeQuery(id, geneBuilder.get(), new QueryOptions());
-        QueryResult clinicalQueryResult = clinicalDBAdaptor.getAllByGeneId(id, new QueryOptions());
+        QueryResult clinicalQueryResult = clinicalDBAdaptor.getByGeneId(id,
+                new QueryOptions("include", "annot.consequenceTypes.soTerms,clinvarSet.referenceClinVarAssertion.clinicalSignificance.description"));
         long dbTimeEnd = System.currentTimeMillis();
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
 
@@ -169,14 +180,29 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     }
 
-    private Map<String, Object> setCoreGeneStats(QueryResult geneQueryResult, Map<String, Object> stats){
+    private Map<String, Object> setVariantStats(QueryResult queryResult, Map<String, Object> stats) {
+        if(queryResult!=null && queryResult.getNumResults()>0) {
+            Map<String, Map> clinicalVariantStats = new HashMap<>();
+            Map<String, Map> clinicalSignificanceSummary = new HashMap<>();
+            Map<String, Map> soSummary = new HashMap<>();
+            for(Object result : queryResult.getResult()) {
+                // TODO count and set summaries
+            }
+            clinicalVariantStats.put("clinicalSignificanceSummary", clinicalSignificanceSummary);
+            clinicalVariantStats.put("soSummary", soSummary);
+            stats.put("clinicalVariantStats", clinicalVariantStats);
+        }
+        return stats;
+    }
 
-        stats.put("name", ((BasicDBObject)geneQueryResult.getResult()).get("name"));
-        stats.put("id", ((BasicDBObject)geneQueryResult.getResult()).get("id"));
-        stats.put("chr", ((BasicDBObject)geneQueryResult.getResult()).get("chr"));
-        int start = (int)((BasicDBObject)geneQueryResult.getResult()).get("start");
+    private Map<String, Object> setCoreGeneStats(QueryResult queryResult, Map<String, Object> stats){
+
+        stats.put("name", ((BasicDBObject)queryResult.getResult()).get("name"));
+        stats.put("id", ((BasicDBObject)queryResult.getResult()).get("id"));
+        stats.put("chr", ((BasicDBObject)queryResult.getResult()).get("chr"));
+        int start = (int)((BasicDBObject)queryResult.getResult()).get("start");
         stats.put("start", start);
-        int end = (int)((BasicDBObject)geneQueryResult.getResult()).get("end");
+        int end = (int)((BasicDBObject)queryResult.getResult()).get("end");
         stats.put("start", end);
         stats.put("length", end-start+1);
 
