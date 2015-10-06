@@ -74,9 +74,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private List<DBObject> geneInfoList;
 
     private List<Gene> geneList;
+    private ObjectMapper geneObjectMapper;
 
     public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
+
+        geneObjectMapper = new ObjectMapper();
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -137,9 +140,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     @Override
     public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
         long dbTimeStart = System.currentTimeMillis();
-        if (geneList == null) {
-            getAffectedGenesInfo(variant);
-        }
+//        if (geneList == null) {
+//            getAffectedGenes(variant);
+//        }
 
         List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
@@ -164,7 +167,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
     }
 
-//    private void getAffectedGenesInfo(String chromosome, Integer variantStart, Integer variantEnd) {
+//    private void getAffectedGenes(String chromosome, Integer variantStart, Integer variantEnd) {
 //        QueryOptions geneQueryOptions = new QueryOptions();
 //        geneQueryOptions.add("include", "name,id,expressionValues,drugInteractions,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
 //        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(chromosome, variantStart - 5000,
@@ -174,14 +177,13 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //    }
 
     private boolean nonSynonymous(ConsequenceType consequenceType) {
-        if(consequenceType.getCodon()==null) {
+        if (consequenceType.getCodon() == null) {
             return false;
         } else {
             String[] parts = consequenceType.getCodon().split("/");
             String ref = String.valueOf(parts[0]).toUpperCase();
             String alt = String.valueOf(parts[1]).toUpperCase();
-            return !VariantAnnotationUtils.isSynonymousCodon.get(ref).get(alt) &&
-                    !VariantAnnotationUtils.isStopCodon(ref);
+            return !VariantAnnotationUtils.isSynonymousCodon.get(ref).get(alt) && !VariantAnnotationUtils.isStopCodon(ref);
         }
     }
 
@@ -200,7 +202,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return null;
     }
 
-    private ConsequenceTypeCalculator getConsequenceTypeCalculator(GenomicVariant variant) {
+    private ConsequenceTypeCalculator getConsequenceTypeCalculator(GenomicVariant variant) throws UnsupportedURLVariantFormat {
         if (variant.getReference().equals("-")) {
             return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
         } else if (variant.getAlternative().equals("-")) {
@@ -232,21 +234,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return regionList;
     }
 
-    private void getAffectedGenesInfo(GenomicVariant variant) {
-        int variantStart = variant.getReference().equals("-")?variant.getPosition()-1:variant.getPosition();
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", "name,id,start,end,expressionValues,drugInteractions,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,mirna.matures.cdnaEnd");
-        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-                variantStart-5000, variant.getPosition() + variant.getReference().length()-1+5000), queryOptions);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        geneList = new ArrayList<>(queryResult.getNumResults());
-        for(Object object : queryResult.getResult()) {
-            Gene gene = objectMapper.convertValue(object, Gene.class);
-            geneList.add(gene);
-        }
-    }
-
     @Override
     public List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options) {
         List<QueryResult> queryResults = new ArrayList<>(variants.size());
@@ -268,6 +255,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return null;
     }
 
+    @Deprecated
     private List<GeneDrugInteraction> getGeneDrugInteractions(GenomicVariant variant) {
 //        if(geneInfoList==null) {
 //            int variantEnd = variant.getPosition() + variant.getReference().length() - 1;  //TODO: Check deletion input format to ensure that variantEnd is correctly calculated
@@ -278,10 +266,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //            } else {
 //                variantStart = variant.getPosition();
 //            }
-//            getAffectedGenesInfo(variant.getChromosome(), variantStart, variantEnd);
-        if (geneList == null) {
-            getAffectedGenesInfo(variant);
-        }
+//            getAffectedGenes(variant.getChromosome(), variantStart, variantEnd);
+//        if (geneList == null) {
+//            getAffectedGenes(variant);
+//        }
 
         List<GeneDrugInteraction> geneDrugInteractions = new ArrayList<>();
         for (Gene gene : geneList) {
@@ -294,6 +282,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return geneDrugInteractions;
     }
 
+    @Deprecated
     private List<ExpressionValue> getGeneExpressionValues(GenomicVariant variant) {
 //        if(geneInfoList==null) {
 //            int variantEnd = variant.getPosition() + variant.getReference().length() - 1;  //TODO: Check deletion input format to ensure that variantEnd is correctly calculated
@@ -304,10 +293,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //            } else {
 //                variantStart = variant.getPosition();
 //            }
-//            getAffectedGenesInfo(variant.getChromosome(), variantStart, variantEnd);
-        if (geneList == null) {
-            getAffectedGenesInfo(variant);
-        }
+//            getAffectedGenes(variant.getChromosome(), variantStart, variantEnd);
+//        if (geneList == null) {
+//            getAffectedGenes(variant);
+//        }
 
         List<ExpressionValue> expressionValues = new ArrayList<>();
         for (Gene gene : geneList) {
@@ -372,9 +361,24 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return queryResults;
     }
 
+    private List<Gene> getAffectedGenes(GenomicVariant variant, String includeFields) {
+        int variantStart = variant.getReference().equals("-") ? variant.getPosition() - 1 : variant.getPosition();
+        QueryOptions queryOptions = new QueryOptions("include", includeFields);
+        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+                variantStart - 5000, variant.getPosition() + variant.getReference().length() - 1 + 5000), queryOptions);
+
+        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
+        for (Object object : queryResult.getResult()) {
+            Gene gene = geneObjectMapper.convertValue(object, Gene.class);
+            geneList.add(gene);
+        }
+        return geneList;
+    }
+
     public List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions) {
 
-        // We process include and exclude to know which annotators to query. Include has preference over exclude.
+        // We process include and exclude query options to know which annotators to use.
+        // Include parameter has preference over exclude.
         Set<String> annotatorsSet;
         List<String> includeList = queryOptions.getAsStringList("include");
         if (includeList.size() > 0) {
@@ -385,6 +389,22 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             excludeList.forEach(annotatorsSet::remove);
         }
         logger.debug("Annotators to use: {}", annotatorsSet.toString());
+
+
+        // This field contains all the fields to be returned by overlapping genes
+        String geneIncludeFields = "name,id,start,end,transcripts.id,transcripts.start,transcripts.end,transcripts.strand," +
+                "transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart," +
+                "transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start," +
+                "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence," +
+                "mirna.matures.cdnaStart,mirna.matures.cdnaEnd";
+
+        if (annotatorsSet.contains("drugInteractions")) {
+            geneIncludeFields += ",drugInteractions";
+        }
+        if (annotatorsSet.contains("expression")) {
+            geneIncludeFields += ",expressionValues";
+        }
+
 
         // Object to be returned
         List<QueryResult> variantAnnotationResultList = new ArrayList<>(variantList.size());
@@ -408,8 +428,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         for (int i = 0; i < variantList.size(); i++) {
             long start = System.currentTimeMillis();
 
-            // reset geneList for new variant
-            geneList = null;
+            // Fetch overlapping genes for this variant
+            geneList = getAffectedGenes(variantList.get(i), geneIncludeFields);
 
             // TODO: start & end are both being set to variantList.get(i).getPosition(), modify this for indels
             VariantAnnotation variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(), variantList.get(i).getPosition(),
@@ -417,7 +437,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
             if (annotatorsSet.contains("consequenceType")) {
                 try {
-                    variantAnnotation.setConsequenceTypes((List<ConsequenceType>) getAllConsequenceTypesByVariant(variantList.get(i), new QueryOptions()).getResult());
+//                    variantAnnotation.setConsequenceTypes((List<ConsequenceType>) getAllConsequenceTypesByVariant(variantList.get(i), new QueryOptions()).getResult());
+                    List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variantList.get(i));
+                    ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variantList.get(i));
+                    List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variantList.get(i), geneList, regulatoryRegionList);
+                    for(ConsequenceType consequenceType : consequenceTypeList) {
+                        if (nonSynonymous(consequenceType)) {
+                            consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+                        }
+                    }
+                    variantAnnotation.setConsequenceTypes(consequenceTypeList);
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
                             variantList.get(i).toString());
@@ -425,11 +454,23 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
 
             if (annotatorsSet.contains("expression")) {
-                variantAnnotation.setExpressionValues(getGeneExpressionValues(variantList.get(i)));
+                variantAnnotation.setExpressionValues(new ArrayList<>());
+                for (Gene gene : geneList) {
+                    if (gene.getExpressionValues() != null) {
+                        variantAnnotation.getExpressionValues().addAll(gene.getExpressionValues());
+                    }
+                }
+//                variantAnnotation.setExpressionValues(getGeneExpressionValues(variantList.get(i)));
             }
 
             if (annotatorsSet.contains("drugInteraction")) {
-                variantAnnotation.setGeneDrugInteraction(getGeneDrugInteractions(variantList.get(i)));
+                variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
+                for (Gene gene : geneList) {
+                    if (gene.getDrugInteractions() != null) {
+                        variantAnnotation.getGeneDrugInteraction().addAll(gene.getDrugInteractions());
+                    }
+                }
+//                variantAnnotation.setGeneDrugInteraction(getGeneDrugInteractions(variantList.get(i)));
             }
 
             if (clinicalQueryResultList != null) {
