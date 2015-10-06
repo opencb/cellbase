@@ -421,6 +421,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
                             variantList.get(i).toString());
+                } catch (Exception e) {
+                    logger.error("Unhandled error when calculating consequence type for variant {}",
+                            variantList.get(i).toString());
+                    throw e;
                 }
             }
 
