@@ -16,8 +16,11 @@
 
 package org.opencb.cellbase.mongodb.db.regulatory;
 
-import com.mongodb.*;
-import org.opencb.biodata.models.feature.Region;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;

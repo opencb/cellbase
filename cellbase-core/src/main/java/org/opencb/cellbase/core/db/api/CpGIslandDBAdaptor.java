@@ -17,7 +17,7 @@
 package org.opencb.cellbase.core.db.api;
 
 import org.opencb.biodata.models.core.CpGIsland;
-import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 
 import java.util.List;

@@ -22,7 +22,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import htsjdk.tribble.readers.TabixReader;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.annotation.*;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.PopulationFrequency;
@@ -279,20 +279,19 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 //                variantStart = variant.getPosition();
 //            }
 //            getAffectedGenesInfo(variant.getChromosome(), variantStart, variantEnd);
-        if(geneList==null) {
+        if (geneList == null) {
             getAffectedGenesInfo(variant);
         }
 
         List<GeneDrugInteraction> geneDrugInteractions = new ArrayList<>();
-        for(Gene gene : geneList) {
+        for (Gene gene : geneList) {
             if(gene.getDrugInteractions()!=null) {
-                logger.info("gene.getDrugInteractions().size() = {}",gene.getDrugInteractions().size());
+                logger.debug("gene.getDrugInteractions().size() = {}", gene.getDrugInteractions().size());
                 geneDrugInteractions.addAll(gene.getDrugInteractions());
             }
         }
 
         return geneDrugInteractions;
-
     }
 
     private List<ExpressionValue> getGeneExpressionValues(GenomicVariant variant) {
@@ -409,6 +408,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         for (int i = 0; i < variantList.size(); i++) {
             long start = System.currentTimeMillis();
 
+            // reset geneList for new variant
+            geneList = null;
+
             // TODO: start & end are both being set to variantList.get(i).getPosition(), modify this for indels
             VariantAnnotation variantAnnotation = new VariantAnnotation(variantList.get(i).getChromosome(), variantList.get(i).getPosition(),
                     variantList.get(i).getPosition(), variantList.get(i).getReference(), variantList.get(i).getAlternative());
@@ -419,6 +421,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
                             variantList.get(i).toString());
+                } catch (Exception e) {
+                    logger.error("Unhandled error when calculating consequence type for variant {}",
+                            variantList.get(i).toString());
+                    throw e;
                 }
             }
 

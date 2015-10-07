@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.db;
 
-import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.DBAdaptor;
 import org.opencb.datastore.core.QueryOptions;

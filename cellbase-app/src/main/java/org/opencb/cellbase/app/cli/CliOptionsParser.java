@@ -260,6 +260,12 @@ public class CliOptionsParser {
         @Parameter(names = {"--remote-port"}, description = "The port where REST web services are listening", required = false, arity = 1)
         public int port = 80;
 
+        @Parameter(names = {"--include"}, description = "Comma separated list of annotators to be included", required = false)
+        public String include;
+
+        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotators to be excluded", required = false)
+        public String exclude;
+
         @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used for loading", required = false, arity = 1)
         public int numThreads = 4;
 
