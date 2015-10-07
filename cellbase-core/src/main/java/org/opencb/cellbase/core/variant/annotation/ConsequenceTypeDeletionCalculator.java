@@ -368,7 +368,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 solveStopCodonNegativeDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd);
             }
             if (cdnaVariantEnd >= (transcript.getCdnaCodingEnd() - finalNtPhase)) {
-                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
+                if (finalNtPhase != 2) {
+//                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
                 } else if(stopToSolve) {  // Only if stop codon annotation was not already solved in the if block above
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -643,7 +644,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 solveStopCodonPositiveDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd);
             }
             if (cdnaVariantEnd >= (transcript.getCdnaCodingEnd() - finalNtPhase)) {
-                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
+                if (finalNtPhase != 2) {
+//                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
                 } else if(stopToSolve) {  // Only if stop codon annotation was not already solved in the if block above
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
