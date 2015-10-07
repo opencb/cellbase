@@ -51,15 +51,22 @@ public abstract class ConsequenceTypeCalculator {
 
     protected void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
                                                          char[] modifiedCodonArray) {
-        if (VariantAnnotationUtils.isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-            if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
-                SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
-            }
-        } else {
-            if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
-                SoNames.add(VariantAnnotationUtils.STOP_LOST);
-            } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
-                SoNames.add(VariantAnnotationUtils.STOP_GAINED);
+
+        Map<String, Boolean> replacementMap = VariantAnnotationUtils.isSynonymousCodon.get(referenceCodon);
+        if(replacementMap!=null) {
+            Boolean isSynonymous = replacementMap.get(String.valueOf(modifiedCodonArray));
+            if (isSynonymous!=null) {
+                if (isSynonymous) {
+                    if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+                        SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
+                    }
+                } else {
+                    if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
+                        SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                    } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
+                        SoNames.add(VariantAnnotationUtils.STOP_GAINED);
+                    }
+                }
             }
         }
     }
