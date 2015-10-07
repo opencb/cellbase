@@ -22,13 +22,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.glassfish.jersey.client.ClientConfig;
-
-
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureTraitType;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.core.*;
 import org.opencb.cellbase.core.common.core.Xref;
@@ -364,17 +362,17 @@ public class CellBaseClient {
 //        return get(category, subCategory, ids, "peptide", queryOptions, (.class));
 //    }
 
-    public QueryResponse<QueryResult<GenomicVariantEffect>> getEffect(Category category, SubCategory subCategory, List<GenomicVariant> ids,
+    public QueryResponse<QueryResult<GenomicVariantEffect>> getEffect(Category category, SubCategory subCategory, List<Variant> ids,
                                                               QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.effect, queryOptions, (GenomicVariantEffect.class));
     }
 
-    public QueryResponse<QueryResult<ConsequenceType>> getConsequenceType(Category category, SubCategory subCategory, List<GenomicVariant> ids,
+    public QueryResponse<QueryResult<ConsequenceType>> getConsequenceType(Category category, SubCategory subCategory, List<Variant> ids,
                                                                           QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.consequenceType, queryOptions, (ConsequenceType.class));
     }
 
-    public QueryResponse<QueryResult<VariantAnnotation>> getFullAnnotation(Category category, SubCategory subCategory, List<GenomicVariant> ids,
+    public QueryResponse<QueryResult<VariantAnnotation>> getFullAnnotation(Category category, SubCategory subCategory, List<Variant> ids,
                                                                           QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.fullAnnotation, queryOptions, (VariantAnnotation.class));
     }

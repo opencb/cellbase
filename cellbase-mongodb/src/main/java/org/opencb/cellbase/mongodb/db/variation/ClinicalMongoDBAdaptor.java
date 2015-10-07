@@ -27,8 +27,8 @@ import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.*;
-import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -493,18 +493,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options) {
+    public QueryResult getAllByGenomicVariant(Variant variant, QueryOptions options) {
         return getAllByGenomicVariantList(Arrays.asList(variant), options).get(0);
     }
 
     @Override
-    public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options) {
+    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(variantList.size());
         List<QueryResult> queryResultList;
-        for (GenomicVariant genomicVariant : variantList){
+        for (Variant genomicVariant : variantList){
             QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
-                    and("start").is(genomicVariant.getPosition()).and("alternate").is(genomicVariant.getAlternative());
+                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
             if (genomicVariant.getReference() != null){
                 builder = builder.and("reference").is(genomicVariant.getReference());
             }

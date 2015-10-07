@@ -16,9 +16,8 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
-import io.swagger.annotations.ApiOperation;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -36,6 +35,7 @@ import java.util.List;
  * Created by imedina on 10/07/14.
  */
 @Path("/{version}/{species}/genomic/variant")
+@Deprecated
 public class VariationAnnotationWSServer extends GenericRestWSServer {
 
     private String filename = "/home/imedina/variant_effect_chr1.json.gz";
@@ -57,7 +57,7 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
     public Response getEffectByPositionByGet(@PathParam("variants") String variants,
                                              @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
 
-        List<GenomicVariant> genomicVariantList = GenomicVariant.parseVariants(variants);
+        List<Variant> genomicVariantList = Variant.parseVariants(variants);
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 
 //        TabixReader currentTabix = null;
@@ -97,7 +97,7 @@ public class VariationAnnotationWSServer extends GenericRestWSServer {
     public Response getAllConsequenceTypesByVariantList(@PathParam("variants") String variants,
                                              @DefaultValue("") @QueryParam("exclude") String excludeSOTerms) {
 
-        List<GenomicVariant> genomicVariantList = GenomicVariant.parseVariants(variants);
+        List<Variant> genomicVariantList = Variant.parseVariants(variants);
         VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 
 

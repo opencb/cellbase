@@ -3,9 +3,8 @@ package org.opencb.cellbase.core.variant.annotation;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +24,9 @@ public abstract class ConsequenceTypeCalculator {
     protected ConsequenceType consequenceType;
     protected Gene gene;
     protected Transcript transcript;
-    protected GenomicVariant variant;
+    protected Variant variant;
 
-    public List<ConsequenceType> run(GenomicVariant variant, List<Gene> geneList,
+    public List<ConsequenceType> run(Variant variant, List<Gene> geneList,
                                      List<RegulatoryRegion> regulatoryRegionList) { return null; }
 
     protected Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {

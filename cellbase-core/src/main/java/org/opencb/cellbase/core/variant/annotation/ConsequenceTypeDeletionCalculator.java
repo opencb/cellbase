@@ -2,17 +2,17 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by fjlopez on 05/08/15.
@@ -30,13 +30,13 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         this.genomeDBAdaptor = genomeDBAdaptor;
     }
 
-    public List<ConsequenceType> run(GenomicVariant inputVariant, List<Gene> geneList,
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
                                      List<RegulatoryRegion> regulatoryRegionList) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = variant.getPosition() + variant.getReference().length() - 1;
-        variantStart = variant.getPosition();
+        variantEnd = variant.getStart() + variant.getReference().length() - 1;
+        variantStart = variant.getStart();
         isBigDeletion = ((variantEnd - variantStart) > bigVariantSizeThreshold);
         boolean isIntegernic = true;
         for (Gene currentGene : geneList) {

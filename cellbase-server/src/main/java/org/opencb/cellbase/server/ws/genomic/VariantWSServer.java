@@ -19,7 +19,6 @@ package org.opencb.cellbase.server.ws.genomic;
 import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
@@ -192,10 +191,10 @@ public class VariantWSServer extends GenericRestWSServer {
             parseQueryParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(this.species, this.assembly);
             VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
+            List<Variant> variantList = Variant.parseVariants(variants);
             List<Position> positionList = new ArrayList<>(variantList.size());
-            for (GenomicVariant gv : variantList) {
-                positionList.add(new Position(gv.getChromosome(), gv.getPosition()));
+            for (Variant gv : variantList) {
+                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
             }
 //			return generateResponse(variants, "SNP_PHENOTYPE", snpDBAdaptor.getAllSnpPhenotypeAnnotationListByPositionList(positionList));
             return createOkResponse("Mongo TODO");
@@ -223,10 +222,10 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
-            List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
+            List<Variant> variantList = Variant.parseVariants(variants);
             List<Position> positionList = new ArrayList<Position>(variantList.size());
-            for (GenomicVariant gv : variantList) {
-                positionList.add(new Position(gv.getChromosome(), gv.getPosition()));
+            for (Variant gv : variantList) {
+                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
             }
             long t0 = System.currentTimeMillis();
             List<QueryResult> queryResults = mutationDBAdaptor.getAllByPositionList(positionList, queryOptions);
@@ -249,7 +248,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getAnnotationByVariantsGET(@PathParam("variants") String variants) {
         try {
             parseQueryParams();
-            List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
+            List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
             VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
@@ -274,7 +273,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getAnnotationByVariantsPOST(String variants) {
         try {
             parseQueryParams();
-            List<GenomicVariant> variantList = GenomicVariant.parseVariants(variants);
+            List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
             VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
