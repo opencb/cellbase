@@ -4,15 +4,14 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.ConsequenceType;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by fjlopez on 19/06/15.
@@ -35,15 +34,21 @@ public abstract class ConsequenceTypeCalculator {
 
     protected void solveRegulatoryRegions(List<RegulatoryRegion> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
         if(!regulatoryRegionList.isEmpty()) {
-            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.REGULATORY_REGION_VARIANT));
+            ConsequenceType consequenceType = new ConsequenceType();
+            SequenceOntologyTerm sequenceOntologyTerm = new SequenceOntologyTerm("", VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
+            consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
+            consequenceTypeList.add(consequenceType);
             boolean TFBSFound=false;
-            for(int i=0; (i<regulatoryRegionList.size() && !TFBSFound); i++) {
+            for (int i=0; (i<regulatoryRegionList.size() && !TFBSFound); i++) {
                 String regulatoryRegionType = regulatoryRegionList.get(i).getType();
                 TFBSFound = regulatoryRegionType!=null && (regulatoryRegionType.equals("TF_binding_site") ||
                         regulatoryRegionList.get(i).getType().equals("TF_binding_site_motif"));
             }
-            if(TFBSFound) {
-                consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT));
+            if (TFBSFound) {
+                consequenceType = new ConsequenceType();
+                sequenceOntologyTerm = new SequenceOntologyTerm("", VariantAnnotationUtils.TF_BINDING_SITE_VARIANT);
+                consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
+                consequenceTypeList.add(consequenceType);
             }
         }
     }
@@ -108,5 +113,14 @@ public abstract class ConsequenceTypeCalculator {
         SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
     }
 
+    protected List<SequenceOntologyTerm> getSequenceOntologyTerms(HashSet<String> SoNames) {
+        List<SequenceOntologyTerm> sequenceOntologyTerms = new ArrayList<>(SoNames.size());
+        Iterator<String> stringIterator = SoNames.iterator();
+        while (stringIterator.hasNext()) {
+            String name = stringIterator.next();
+            sequenceOntologyTerms.add(new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name));
+        }
+        return sequenceOntologyTerms;
+    }
 
 }

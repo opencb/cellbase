@@ -4,14 +4,15 @@ import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -73,7 +74,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                             case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
                             case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
                                 solveCodingPositiveTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                             /**
@@ -81,7 +83,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                              */
                             default:
                                 solveNonCodingPositiveTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                         }
@@ -89,7 +92,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
-                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
                         }
                     }
@@ -117,7 +121,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                             case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
                             case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
                                 solveCodingNegativeTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                             /**
@@ -125,7 +130,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                              */
                             default:
                                 solveNonCodingNegativeTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                         }
@@ -133,7 +139,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
-                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
                         }
                     }
@@ -143,7 +150,12 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
 //        if (consequenceTypeList.size() == 0 && isIntegernic) {
         if (isIntegernic) {
-            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
+//            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
+            HashSet<String> intergenicName = new HashSet<>();
+            intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);
+            ConsequenceType consequenceType = new ConsequenceType();
+            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(intergenicName));
+            consequenceTypeList.add(consequenceType);
         }
 
         solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
@@ -167,7 +179,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if(variantStart < exon.getEnd()) {
             if(variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCDnaPosition(cdnaVariantStart);
                 if(variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 } else{  // Only variant start within the exon  ---ES||||||||||||----
@@ -194,7 +206,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if(variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCDnaPosition(cdnaVariantStart);
                     if(variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||SE|||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                     }
@@ -227,7 +239,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if(variantStart < exon.getEnd()) {
             if(variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCDnaPosition(cdnaVariantStart);
                 if(variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 } else{  // Only variant start within the exon  ---ES||||||||||||----
@@ -255,7 +267,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if(variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCDnaPosition(cdnaVariantStart);
                     if(variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||SE|||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                     }
@@ -415,7 +427,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if(variantEnd > exon.getStart()) {
             if(variantStart <= exon.getEnd()) { // Variant start within the exon (this is a insertion, variantEnd=variantStart+1)
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCDnaPosition(cdnaVariantStart);
                 if(variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 } else{  // Only variant start within the exon  ---||||||||||||SE----
@@ -444,7 +456,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if(variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCDnaPosition(cdnaVariantStart);
                     if(variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     } else{  // Only variant start within the exon  ---||||||||||||SE----
@@ -482,7 +494,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if(variantEnd > exon.getStart()) {
             if(variantStart <= exon.getEnd()) { // Variant start within the exon (this is a insertion, variantEnd=variantStart+1)
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCDnaPosition(cdnaVariantStart);
                 if(variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 } else{  // Only variant start within the exon  ---||||||||||||SE----
@@ -512,7 +524,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if(variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCDnaPosition(cdnaVariantStart);
                     if(variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     } else{  // Only variant start within the exon  ---||||||||||||SE----

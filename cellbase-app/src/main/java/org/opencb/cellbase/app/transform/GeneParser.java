@@ -24,13 +24,17 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
-import org.opencb.biodata.models.variant.annotation.ExpressionValue;
-import org.opencb.biodata.models.variant.annotation.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.Expression;
+import org.opencb.biodata.models.variant.avro.ExpressionCall;
+import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -113,7 +117,7 @@ public class GeneParser extends CellBaseParser {
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
         Map<String, SortedSet<Gff2>> tfbsMap = getTfbsMap();
         Map<String, MiRNAGene> mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
-        Map<String, List<ExpressionValue>> geneExpressionMap = getGeneExpressionMap();
+        Map<String, List<Expression>> geneExpressionMap = getGeneExpressionMap();
         Map<String, List<GeneDrugInteraction>> geneDrugMap = getGeneDrugMap();
 
 
@@ -351,8 +355,8 @@ public class GeneParser extends CellBaseParser {
         return geneDrugMap;
     }
 
-    private Map<String, List<ExpressionValue>> getGeneExpressionMap() throws IOException {
-        Map<String,List<ExpressionValue>> geneExpressionMap = new HashMap<>();
+    private Map<String, List<Expression>> getGeneExpressionMap() throws IOException {
+        Map<String, List<Expression>> geneExpressionMap = new HashMap<>();
 
         BufferedReader br;
         if (geneExpressionFile.toFile().getName().endsWith(".gz")) {
@@ -372,15 +376,15 @@ public class GeneParser extends CellBaseParser {
         while ((line = br.readLine()) != null) {
             String[] parts = line.split("\t");
             if(species.getScientificName().equals(parts[2])) {
-                if(parts[7].equals("UP")) {
-                    addValueToMapElement(geneExpressionMap, parts[1], new ExpressionValue(parts[1], null, parts[3],
-                            parts[4], parts[5], parts[6], ExpressionValue.Expression.UP, Float.valueOf(parts[8])));
-                } else if (parts[7].equals("DOWN")) {
-                    addValueToMapElement(geneExpressionMap, parts[1], new ExpressionValue(parts[1], null, parts[3],
-                            parts[4], parts[5], parts[6], ExpressionValue.Expression.DOWN, Float.valueOf(parts[8])));
-                } else {
-                    logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
-                }
+//                if(parts[7].equals("UP")) {
+//                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
+//                            parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
+//                } else if (parts[7].equals("DOWN")) {
+//                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
+//                            parts[4], parts[5], parts[6], ExpressionCall.DOWN.name(), Float.valueOf(parts[8])));
+//                } else {
+//                    logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
+//                }
             }
             lineCounter++;
         }

@@ -20,10 +20,9 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.opencb.biodata.models.protein.ProteinFeature;
-import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variant.annotation.Score;
-import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.avro.ProteinFeature;
+import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -220,8 +219,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         proteinVariantAnnotation.setPosition(position);
         proteinVariantAnnotation.setReference(aaReference);
         proteinVariantAnnotation.setAlternate(aaAlternate);
-        proteinVariantAnnotation.setSubstitutionScores(getProteinSubstitutionScores(ensemblTranscriptId,
-                position, aaAlternate));
+        proteinVariantAnnotation.setSubstitutionScores(getProteinSubstitutionScores(ensemblTranscriptId, position, aaAlternate));
 
         QueryResult proteinVariantData = null;
         String shortAlternativeAa = aaShortName.get(aaAlternate);
@@ -321,10 +319,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                                                                BasicDBObject proteinVariantData) {
         proteinVariantAnnotation.setUniprotAccession((String) ((BasicDBList) proteinVariantData.get("_id")).get(0));
 
+        proteinVariantAnnotation.setKeywords(new ArrayList<>());
         for(Object keywordObject : ((BasicDBList) ((BasicDBList) proteinVariantData.get("keyword")).get(0))) {
-            proteinVariantAnnotation.addUniprotKeyword((String)((BasicDBObject) keywordObject).get("value"));
+//            proteinVariantAnnotation.addUniprotKeyword((String)((BasicDBObject) keywordObject).get("value"));
+            proteinVariantAnnotation.getKeywords().add((String) ((BasicDBObject) keywordObject).get("value"));
         }
 
+        proteinVariantAnnotation.setFeatures(new ArrayList<>());
         for(Object featureObject : (BasicDBList) proteinVariantData.get("feature")) {
             BasicDBObject featureDBObject = (BasicDBObject) featureObject;
             String type = (String) featureDBObject.get("type");
@@ -344,7 +345,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                 proteinFeature.setId((String) featureDBObject.get("id"));
                 proteinFeature.setType((String) featureDBObject.get("type"));
                 proteinFeature.setDescription((String) featureDBObject.get("description"));
-                proteinFeature.setRef((String) featureDBObject.get("ref"));
+//                proteinFeature.setRef((String) featureDBObject.get("ref"));
                 if(featureDBObject.get("location")!=null) {
                     if(((BasicDBObject) featureDBObject.get("location")).get("begin")!=null) {
                         proteinFeature.setStart((int) ((BasicDBObject) ((BasicDBObject) featureDBObject.get("location"))
@@ -361,7 +362,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                         proteinFeature.setEnd(proteinFeature.getStart());
                     }
                 }
-                proteinVariantAnnotation.addProteinFeature(proteinFeature);
+//                proteinVariantAnnotation.addProteinFeature(proteinFeature);
+                proteinVariantAnnotation.getFeatures().add(proteinFeature);
             }
 
         }
