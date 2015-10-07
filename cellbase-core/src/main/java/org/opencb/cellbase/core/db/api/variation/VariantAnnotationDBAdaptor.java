@@ -36,16 +36,18 @@ public interface VariantAnnotationDBAdaptor {
 
     QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options);
 
-//    QueryResult getAllConsequenceTypesByVariantOld(GenomicVariant variant, QueryOptions options);
-
     List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options);
 
-
-    QueryResult getAllEffectsByVariant(GenomicVariant variant, QueryOptions options);
-
-    List<QueryResult> getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options);
+    QueryResult getAnnotationByVariantList(GenomicVariant variant, QueryOptions queryOptions);
 
     List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions);
+
+
+    @Deprecated
+    QueryResult getAllEffectsByVariant(GenomicVariant variant, QueryOptions options);
+
+    @Deprecated
+    List<QueryResult> getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options);
 
     VariationDBAdaptor getVariationDBAdaptor();
 
