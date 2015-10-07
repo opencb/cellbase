@@ -19,7 +19,6 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.opencb.biodata.formats.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
@@ -35,11 +34,16 @@ import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.opencb.commons.utils.FileUtils;
+import org.opencb.datastore.core.QueryOptions;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -70,6 +74,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private List<String> customFileIds;
     private List<List<String>> customFileFields;
 
+    private QueryOptions queryOptions;
+
     private final int QUEUE_CAPACITY = 10;
     private final String TMP_DIR = "/tmp/";
 
@@ -78,6 +84,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 variantAnnotationCommandOptions.commonOptions.conf);
 
         this.variantAnnotationCommandOptions = variantAnnotationCommandOptions;
+        this.queryOptions = new QueryOptions();
 
         if(variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
@@ -105,8 +112,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-            DataReader dataReader = new VariantVcfReader(new VariantSource(input.toString(), "", "", ""),
-                    input.toString());
+            DataReader dataReader = new VariantVcfReader(new VariantSource(input.toString(), "", "", ""), input.toString());
 
             DataWriter dataWriter;
             if (output.toString().endsWith(".json")) {
@@ -162,12 +168,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private VariantAnnotator createCellBaseAnnotator() {
-        if(local) {
+        if (local) {
             try {
                 CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
                         .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
                 DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-                return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null));
+                return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null), queryOptions);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -341,18 +347,33 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         } else {
             throw new ParameterException("Please check command line syntax. Provide a valid input file name.");
         }
+
         // output file
         if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
-            Path outputDir = output.getParent();
-            if (!outputDir.toFile().exists()) {
-                throw new ParameterException("Output directory " + outputDir + " doesn't exist");
-            } else if (output.toFile().isDirectory()) {
-                throw new ParameterException("Output file cannot be a directory: " + output);
+//            Path outputDir = output.getParent();
+            try {
+                FileUtils.checkDirectory(output.getParent());
+            } catch (IOException e) {
+                throw new ParameterException(e);
             }
+//            if (!outputDir.toFile().exists()) {
+//                throw new ParameterException("Output directory " + outputDir + " doesn't exist");
+//            } else if (output.toFile().isDirectory()) {
+//                throw new ParameterException("Output file cannot be a directory: " + output);
+//            }
         } else {
             throw new ParameterException("Please check command line sintax. Provide a valid output file name.");
         }
+
+        if (variantAnnotationCommandOptions.include != null && !variantAnnotationCommandOptions.include.isEmpty()) {
+            queryOptions.add("include", variantAnnotationCommandOptions.include);
+        }
+
+        if (variantAnnotationCommandOptions.exclude != null && !variantAnnotationCommandOptions.exclude.isEmpty()) {
+            queryOptions.add("exclude", variantAnnotationCommandOptions.exclude);
+        }
+
         // Num threads
         if (variantAnnotationCommandOptions.numThreads > 1) {
             numThreads = variantAnnotationCommandOptions.numThreads;
@@ -360,6 +381,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             numThreads = 1;
             logger.warn("Incorrect number of numThreads, it must be a positive value. This has been reset to '{}'", numThreads);
         }
+
         // Batch size
         if (variantAnnotationCommandOptions.batchSize >= 1 && variantAnnotationCommandOptions.batchSize <= 2000) {
             batchSize = variantAnnotationCommandOptions.batchSize;
@@ -367,9 +389,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             batchSize = 1;
             logger.warn("Incorrect size of batch size, it must be a positive value between 1-1000. This has been set to '{}'", batchSize);
         }
+
         // Direct connection to local MongoDB
         local = variantAnnotationCommandOptions.local;
-        if(!variantAnnotationCommandOptions.local) {
+        if (!variantAnnotationCommandOptions.local) {
             // Url
             if (variantAnnotationCommandOptions.url != null) {
                 url = variantAnnotationCommandOptions.url;
@@ -383,12 +406,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Please check command line sintax. Provide a valid port to access CellBase web services.");
             }
         }
+
         // Species
-        if (variantAnnotationCommandOptions.species!=null) {
+        if (variantAnnotationCommandOptions.species != null) {
             species = variantAnnotationCommandOptions.species;
         } else {
-            throw new ParameterException("Please check command line sintax. Provide a valid species name to access CellBase web services.");
+            throw new ParameterException("Please check command line syntax. Provide a valid species name to access CellBase web services.");
         }
+
         // Custom files
         if(variantAnnotationCommandOptions.customFiles != null) {
             String[] customFileStrings = variantAnnotationCommandOptions.customFiles.split(",");

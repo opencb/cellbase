@@ -16,8 +16,11 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.*;
-import org.opencb.biodata.models.feature.Region;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.annotation.Score;
 import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
@@ -108,7 +111,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             ids.add(region.toString());
 
 
-            logger.debug(builder.get().toString());
+//            logger.debug(builder.get().toString());
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
@@ -208,7 +211,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             queries.add(builder.get());
             ids.add(region.toString());
 
-            logger.debug(builder.get().toString());
+//            logger.debug(builder.get().toString());
 
         }
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);

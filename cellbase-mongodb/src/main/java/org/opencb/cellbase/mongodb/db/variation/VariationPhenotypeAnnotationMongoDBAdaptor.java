@@ -18,7 +18,7 @@ package org.opencb.cellbase.mongodb.db.variation;
 
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;

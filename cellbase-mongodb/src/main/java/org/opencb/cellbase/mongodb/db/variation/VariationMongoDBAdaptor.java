@@ -16,8 +16,11 @@
 
 package org.opencb.cellbase.mongodb.db.variation;
 
-import com.mongodb.*;
-import org.opencb.biodata.models.feature.Region;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variation.GenomicVariant;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
@@ -27,7 +30,6 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.mongodb.MongoDBCollection;
 import org.opencb.datastore.mongodb.MongoDataStore;
-import org.opencb.datastore.mongodb.MongoDataStoreManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
