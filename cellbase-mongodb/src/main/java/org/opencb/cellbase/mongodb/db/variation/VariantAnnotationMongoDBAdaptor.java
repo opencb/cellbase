@@ -359,13 +359,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
         }
 
-        FutureClinicalAnnotator futureClinicalAnnotator = null;
-        Future<List<QueryResult>> clinicalFuture = null;
-        if (annotatorSet.contains("conservation")) {
-            futureClinicalAnnotator = new FutureClinicalAnnotator(variantList, queryOptions);
-            clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
-        }
-
         FutureConservationAnnotator futureConservationAnnotator = null;
         Future<List<QueryResult>> conservationFuture = null;
         if (annotatorSet.contains("conservation")) {
@@ -373,6 +366,12 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             conservationFuture = fixedThreadPool.submit(futureConservationAnnotator);
         }
 
+        FutureClinicalAnnotator futureClinicalAnnotator = null;
+        Future<List<QueryResult>> clinicalFuture = null;
+        if (annotatorSet.contains("clinical")) {
+            futureClinicalAnnotator = new FutureClinicalAnnotator(variantList, queryOptions);
+            clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
+        }
 
         /*
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
@@ -441,16 +440,16 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
         /*
          * Now, hopefully the other annotations have finished and we can store the results.
-         * Method 'processResult' has been implemented in the same class for sanity.
+         * Method 'processResults' has been implemented in the same class for sanity.
          */
         if (futureVariationAnnotator != null) {
             futureVariationAnnotator.processResults(variationFuture, variantAnnotationResultList, annotatorSet);
         }
-        if (futureClinicalAnnotator != null) {
-            futureClinicalAnnotator.processResults(clinicalFuture, variantAnnotationResultList);
-        }
         if (futureConservationAnnotator != null) {
             futureConservationAnnotator.processResults(conservationFuture, variantAnnotationResultList);
+        }
+        if (futureClinicalAnnotator != null) {
+            futureClinicalAnnotator.processResults(clinicalFuture, variantAnnotationResultList);
         }
         fixedThreadPool.shutdown();
 
