@@ -376,15 +376,15 @@ public class GeneParser extends CellBaseParser {
         while ((line = br.readLine()) != null) {
             String[] parts = line.split("\t");
             if(species.getScientificName().equals(parts[2])) {
-//                if(parts[7].equals("UP")) {
-//                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-//                            parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
-//                } else if (parts[7].equals("DOWN")) {
-//                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-//                            parts[4], parts[5], parts[6], ExpressionCall.DOWN.name(), Float.valueOf(parts[8])));
-//                } else {
-//                    logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
-//                }
+                if(parts[7].equals("UP")) {
+                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
+                            parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
+                } else if (parts[7].equals("DOWN")) {
+                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
+                            parts[4], parts[5], parts[6], ExpressionCall.DOWN, Float.valueOf(parts[8])));
+                } else {
+                    logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
+                }
             }
             lineCounter++;
         }

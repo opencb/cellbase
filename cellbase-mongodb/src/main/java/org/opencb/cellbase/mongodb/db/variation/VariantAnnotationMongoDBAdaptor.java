@@ -479,21 +479,21 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     for (int j = 0; j < freqsDBList.size(); j++) {
                                         freqDBObject = ((BasicDBObject) freqsDBList.get(j));
                                         if (freqDBObject != null) {
-//                                            if (freqDBObject.containsKey("study")) {
-//                                                ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0))
-//                                                        .getPopulationFrequencies().add(new PopulationFrequency(freqDBObject.get("study").toString(),
-//                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-//                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-//                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-//                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
-//                                            } else {
-//                                                ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0))
-//                                                        .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
-//                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-//                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-//                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-//                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString())));
-//                                            }
+                                            if (freqDBObject.containsKey("study")) {
+                                                ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0))
+                                                        .getPopulationFrequencies().add(new PopulationFrequency(freqDBObject.get("study").toString(),
+                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
+                                            } else {
+                                                ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0))
+                                                        .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
+                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
+                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
+                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
+                                            }
                                         }
                                     }
                                 }
