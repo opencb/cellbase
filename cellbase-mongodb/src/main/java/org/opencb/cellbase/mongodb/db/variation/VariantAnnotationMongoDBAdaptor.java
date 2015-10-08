@@ -476,6 +476,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                 BasicDBList freqsDBList = (BasicDBList) variationDBList.get(0).get("populationFrequencies");
                                 if (freqsDBList != null) {
                                     BasicDBObject freqDBObject;
+                                    ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0)).setPopulationFrequencies(new ArrayList<>());
                                     for (int j = 0; j < freqsDBList.size(); j++) {
                                         freqDBObject = ((BasicDBObject) freqsDBList.get(j));
                                         if (freqDBObject != null) {
