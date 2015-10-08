@@ -149,8 +149,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             }
         }
 
-//        if (consequenceTypeList.size() == 0 && isIntegernic) {
-        if (isIntegernic) {
+        if (consequenceTypeList.size() == 0 && isIntegernic) {
+//        if (isIntegernic) {
             consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
         }
 
