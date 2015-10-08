@@ -25,15 +25,16 @@ public abstract class ConsequenceTypeCalculator {
     protected Transcript transcript;
     protected Variant variant;
 
-    public List<ConsequenceType> run(Variant variant, List<Gene> geneList,
-                                     List<RegulatoryRegion> regulatoryRegionList) { return null; }
+    public List<ConsequenceType> run(Variant variant, List<Gene> geneList, List<RegulatoryRegion> regulatoryRegionList) {
+        return null;
+    }
 
     protected Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
         return (region2Start <= region1End && region2End >= region1Start);
     }
 
     protected void solveRegulatoryRegions(List<RegulatoryRegion> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
-        if(!regulatoryRegionList.isEmpty()) {
+        if(regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
             ConsequenceType consequenceType = new ConsequenceType();
             SequenceOntologyTerm sequenceOntologyTerm = new SequenceOntologyTerm("", VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
             consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));

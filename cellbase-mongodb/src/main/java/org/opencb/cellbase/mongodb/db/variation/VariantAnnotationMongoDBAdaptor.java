@@ -201,33 +201,57 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     @Override
-    public QueryResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions options) {
-        long dbTimeStart = System.currentTimeMillis();
+    public QueryResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions) {
 //        if (geneList == null) {
 //            getAffectedGenes(variant);
 //        }
+//        List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
+//        ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
+//
+//        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
+//
+//        for(ConsequenceType consequenceType : consequenceTypeList) {
+//            if(nonSynonymous(consequenceType)) {
+//                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+//            }
+//        }
+        long dbTimeStart = System.currentTimeMillis();
 
-        List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
-        ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
+        // We process include and exclude query options to know which annotators to use.
+        // Include parameter has preference over exclude.
+        Set<String> annotatorSet = getAnnotatorSet(queryOptions);
 
-        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
+        // This field contains all the fields to be returned by overlapping genes
+        String includeGeneFields = getIncludedGeneFields(annotatorSet);
+        List<Gene> geneList = getAffectedGenes(variant, includeGeneFields);
 
-        for(ConsequenceType consequenceType : consequenceTypeList) {
-            if(nonSynonymous(consequenceType)) {
-                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
-            }
-        }
+        // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
+        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true);
 
-        long dbTimeEnd = System.currentTimeMillis();
         QueryResult queryResult = new QueryResult();
         queryResult.setId(variant.toString());
-        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+        queryResult.setDbTime(Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue());
         queryResult.setNumResults(consequenceTypeList.size());
         queryResult.setNumTotalResults(consequenceTypeList.size());
         queryResult.setResult(consequenceTypeList);
 
         return queryResult;
 
+    }
+
+    private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList, boolean regulatoryAnnotation) {
+        List<RegulatoryRegion> regulatoryRegionList = null;
+        if (regulatoryAnnotation) {
+            regulatoryRegionList = getAffectedRegulatoryRegions(variant);
+        }
+        ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
+        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
+        for(ConsequenceType consequenceType : consequenceTypeList) {
+            if (nonSynonymous(consequenceType)) {
+                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+            }
+        }
+        return consequenceTypeList;
     }
 
     @Override
@@ -243,22 +267,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         }
         return queryResults;
     }
-
-
-    private List<Gene> getAffectedGenes(Variant variant, String includeFields) {
-        int variantStart = variant.getReference().equals("-") ? variant.getStart() - 1 : variant.getStart();
-        QueryOptions queryOptions = new QueryOptions("include", includeFields);
-        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
-
-        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
-        for (Object object : queryResult.getResult()) {
-            Gene gene = geneObjectMapper.convertValue(object, Gene.class);
-            geneList.add(gene);
-        }
-        return geneList;
-    }
-
 
     @Override
     public QueryResult getAnnotationByVariantList(Variant variant, QueryOptions queryOptions) {
@@ -328,14 +336,15 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
-                    List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variantList.get(i));
-                    ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variantList.get(i));
-                    List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variantList.get(i), geneList, regulatoryRegionList);
-                    for(ConsequenceType consequenceType : consequenceTypeList) {
-                        if (nonSynonymous(consequenceType)) {
-                            consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
-                        }
-                    }
+//                    List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variantList.get(i));
+//                    ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variantList.get(i));
+//                    List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variantList.get(i), geneList, regulatoryRegionList);
+//                    for(ConsequenceType consequenceType : consequenceTypeList) {
+//                        if (nonSynonymous(consequenceType)) {
+//                            consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+//                        }
+//                    }
+                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variantList.get(i), geneList, true);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
@@ -396,6 +405,20 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis() - globalStartTime, variantList.size());
         return variantAnnotationResultList;
+    }
+
+    private List<Gene> getAffectedGenes(Variant variant, String includeFields) {
+        int variantStart = variant.getReference().equals("-") ? variant.getStart() - 1 : variant.getStart();
+        QueryOptions queryOptions = new QueryOptions("include", includeFields);
+        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
+
+        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
+        for (Object object : queryResult.getResult()) {
+            Gene gene = geneObjectMapper.convertValue(object, Gene.class);
+            geneList.add(gene);
+        }
+        return geneList;
     }
 
     private Set<String> getAnnotatorSet(QueryOptions queryOptions) {
