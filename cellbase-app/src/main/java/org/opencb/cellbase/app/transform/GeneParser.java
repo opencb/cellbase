@@ -558,7 +558,7 @@ public class GeneParser extends CellBaseParser {
                 fields = line.split("\t", -1);
                 if (fields.length >= 4) {
                     if (!xrefMap.containsKey(fields[0])) {
-                        xrefMap.put(fields[0], new ArrayList<Xref>());
+                        xrefMap.put(fields[0], new ArrayList<>());
                     }
                     xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3]));
                 }

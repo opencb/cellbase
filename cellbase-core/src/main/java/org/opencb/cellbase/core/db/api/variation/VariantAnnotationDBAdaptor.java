@@ -37,26 +37,14 @@ public interface VariantAnnotationDBAdaptor {
 
     List<QueryResult> getAllConsequenceTypesByVariantList(List<Variant> variants, QueryOptions options);
 
-    QueryResult getAnnotationByVariantList(Variant variant, QueryOptions queryOptions);
+    QueryResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions);
 
     List<QueryResult> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions);
 
 
-    @Deprecated
-    QueryResult getAllEffectsByVariant(Variant variant, QueryOptions options);
-
-    @Deprecated
-    List<QueryResult> getAllEffectsByVariantList(List<Variant> variants, QueryOptions options);
-
-    VariationDBAdaptor getVariationDBAdaptor();
-
     void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor);
 
-    ClinicalDBAdaptor getVariantClinicalDBAdaptor();
-
     void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
-
-    ProteinDBAdaptor getProteinDBAdaptor();
 
     void setProteinDBAdaptor(ProteinDBAdaptor proteinFunctionPredictorDBAdaptor);
 
