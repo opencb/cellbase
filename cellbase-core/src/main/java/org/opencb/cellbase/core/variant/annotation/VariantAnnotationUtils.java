@@ -101,6 +101,7 @@ public class VariantAnnotationUtils {
     public static Map<Character, Character> complementaryNt = new HashMap<>();
     public static Map<Integer, String> siftDescriptions = new HashMap<>();
     public static Map<Integer, String> polyphenDescriptions = new HashMap<>();
+    public static Map<String, Integer> soSeverity = new HashMap<>();
 
     static {
 
@@ -225,6 +226,43 @@ public class VariantAnnotationUtils {
 
         siftDescriptions.put(0,"tolerated");
         siftDescriptions.put(1,"deleterious");
+
+        soSeverity.put("transcript_ablation", 36);
+        soSeverity.put("splice_acceptor_variant", 35);
+        soSeverity.put("splice_donor_variant", 34);
+        soSeverity.put("stop_gained", 33);
+        soSeverity.put("frameshift_variant", 32);
+        soSeverity.put("stop_lost", 31);
+        soSeverity.put("initiator_codon_variant", 30);
+        soSeverity.put("transcript_amplification", 29);
+        soSeverity.put("inframe_insertion", 28);
+        soSeverity.put("inframe_deletion", 27);
+        soSeverity.put("missense_variant", 26);
+        soSeverity.put("splice_region_variant", 25);
+        soSeverity.put("incomplete_terminal_codon_variant", 24);
+        soSeverity.put("stop_retained_variant", 23);
+        soSeverity.put("synonymous_variant", 22);
+        soSeverity.put("coding_sequence_variant", 21);
+        soSeverity.put("mature_miRNA_variant", 20);
+        soSeverity.put("5_prime_UTR_variant", 19);
+        soSeverity.put("3_prime_UTR_variant", 18);
+        soSeverity.put("non_coding_transcript_exon_variant", 17);
+        soSeverity.put("intron_variant", 16);
+        soSeverity.put("NMD_transcript_variant", 15);
+        soSeverity.put("non_coding_transcript_variant", 14);
+        soSeverity.put("2KB_upstream_gene_variant", 13);
+        soSeverity.put("upstream_gene_variant", 12);
+        soSeverity.put("2KB_downstream_gene_variant", 11);
+        soSeverity.put("downstream_gene_variant", 10);
+        soSeverity.put("TFBS_ablation", 9);
+        soSeverity.put("TFBS_amplification", 8);
+        soSeverity.put("TF_binding_site_variant", 7);
+        soSeverity.put("regulatory_region_ablation", 6);
+        soSeverity.put("regulatory_region_amplification", 5);
+        soSeverity.put("regulatory_region_variant", 4);
+        soSeverity.put("feature_elongation", 3);
+        soSeverity.put("feature_truncation", 2);
+        soSeverity.put("intergenic_variant", 1);
 
     }
 

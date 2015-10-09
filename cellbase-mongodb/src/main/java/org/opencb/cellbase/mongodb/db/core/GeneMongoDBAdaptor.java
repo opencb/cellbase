@@ -23,6 +23,7 @@ import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -201,29 +202,45 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         if((basicDBObject=(BasicDBObject)result.get("annot"))!=null) {
             BasicDBList basicDBList;
             if((basicDBList=(BasicDBList)basicDBObject.get("consequenceTypes"))!=null) {
-                for(Object consequenceTypeObject : basicDBList) {
-                    BasicDBList basicDBList1;
-                    if((basicDBList1=(BasicDBList)((BasicDBObject)consequenceTypeObject).get("soTerms"))!=null) {
-                        // TODO cambiar el for de abajo, coger solo el most severe
-                        for(Object soObject : basicDBList1) {
-                            BasicDBObject soDBObject = (BasicDBObject) soObject;
-                            String soAccesion = (String) soDBObject.get("soAccession");
-                            if (soSummary.containsKey(soAccesion)) {
-                                Integer currentCount = (Integer) soSummary.get(soAccesion).get("count");
-                                soSummary.get(soAccesion).put("count", currentCount + 1);
-                            } else {
-                                String soName = (String) soDBObject.get("soName");
-                                Map<String,Object> soSummaryMap = new HashMap<>(2);
-                                soSummaryMap.put("soName", soName);
-                                soSummaryMap.put("count",1);
-                                soSummary.put(soAccesion, soSummaryMap);
-                            }
-                        }
+                basicDBObject = getMostSevereSOTerm(basicDBList);
+                if(basicDBObject!=null) {
+                    String soAccesion = (String) basicDBObject.get("soAccession");
+                    if (soSummary.containsKey(soAccesion)) {
+                        Integer currentCount = (Integer) soSummary.get(soAccesion).get("count");
+                        soSummary.get(soAccesion).put("count", currentCount + 1);
+                    } else {
+                        String soName = (String) basicDBObject.get("soName");
+                        Map<String, Object> soSummaryMap = new HashMap<>(2);
+                        soSummaryMap.put("soName", soName);
+                        soSummaryMap.put("count", 1);
+                        soSummary.put(soAccesion, soSummaryMap);
                     }
                 }
             }
         }
         return soSummary;
+    }
+
+    private BasicDBObject getMostSevereSOTerm(BasicDBList consequenceTypeDBList) {
+        BasicDBObject mostSevereSODBObject=null;
+        Integer maxSeverity=0;
+        for(Object consequenceTypeObject : consequenceTypeDBList) {
+            BasicDBList soDBList;
+            if((soDBList=(BasicDBList)((BasicDBObject)consequenceTypeObject).get("soTerms"))!=null) {
+                for(Object soObject : soDBList) {
+                    BasicDBObject soDBObject = (BasicDBObject) soObject;
+                    String soName = (String) soDBObject.get("soName");
+                    if(VariantAnnotationUtils.soSeverity.containsKey(soName)) {
+                        Integer severity = VariantAnnotationUtils.soSeverity.get(soName);
+                        if(severity>maxSeverity) {
+                            maxSeverity = severity;
+                            mostSevereSODBObject = soDBObject;
+                        }
+                    }
+                }
+            }
+        }
+        return mostSevereSODBObject;
     }
 
     private Map<String, Integer> updateClinicalSignificanceSummary(BasicDBObject result,
