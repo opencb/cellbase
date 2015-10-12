@@ -36,7 +36,7 @@ public abstract class ConsequenceTypeCalculator {
     protected void solveRegulatoryRegions(List<RegulatoryRegion> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
         if(regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
             ConsequenceType consequenceType = new ConsequenceType();
-            SequenceOntologyTerm sequenceOntologyTerm = new SequenceOntologyTerm("", VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
+            SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
             consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
             consequenceTypeList.add(consequenceType);
             boolean TFBSFound=false;
@@ -47,7 +47,7 @@ public abstract class ConsequenceTypeCalculator {
             }
             if (TFBSFound) {
                 consequenceType = new ConsequenceType();
-                sequenceOntologyTerm = new SequenceOntologyTerm("", VariantAnnotationUtils.TF_BINDING_SITE_VARIANT);
+                sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT);
                 consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
                 consequenceTypeList.add(consequenceType);
             }
@@ -116,12 +116,14 @@ public abstract class ConsequenceTypeCalculator {
 
     protected List<SequenceOntologyTerm> getSequenceOntologyTerms(HashSet<String> SoNames) {
         List<SequenceOntologyTerm> sequenceOntologyTerms = new ArrayList<>(SoNames.size());
-        Iterator<String> stringIterator = SoNames.iterator();
-        while (stringIterator.hasNext()) {
-            String name = stringIterator.next();
-            sequenceOntologyTerms.add(new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name));
+        for (String name : SoNames) {
+            sequenceOntologyTerms.add(newSequenceOntologyTerm(name));
         }
         return sequenceOntologyTerms;
+    }
+
+    private SequenceOntologyTerm newSequenceOntologyTerm(String name) {
+        return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
 
 }
