@@ -326,9 +326,11 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if(cdnaVariantStart<(cdnaCodingStart+2) && !transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             }
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
-            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
-                    (transcript.getStart() == transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
+//            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
+            if ((cdnaVariantEnd >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                    (transcript.getStart() == transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                 SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
             }
             if(variant.getAlternative().length()%3 == 0) {
@@ -586,9 +588,11 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if(cdnaVariantStart<(cdnaCodingStart+2) && !transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             }
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
-            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
-                    (transcript.getEnd() == transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
+//            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
+            if ((cdnaVariantStart >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                    (transcript.getEnd() == transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                 SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
             }
             if(variant.getAlternative().length()%3 == 0) {
