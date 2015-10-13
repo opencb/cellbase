@@ -137,9 +137,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     @Override
     public QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options) {
         long dbTimeStart = System.currentTimeMillis();
-        if (geneList == null) {
-            getAffectedGenesInfo(variant);
-        }
+//        if (geneList == null) {
+        getAffectedGenesInfo(variant);
+//        }
 
         List<RegulatoryRegion> regulatoryRegionList = getAffectedRegulatoryRegions(variant);
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
