@@ -145,7 +145,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "cosmic":
             case "clinvar":
-            case "gwas":
+            case "gwas":        // TODO guardar el detalle de cual de estos tres se esta cargando
             case "clinical":
                 collectionName = "clinical";
                 break;
@@ -194,7 +194,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     List<DBObject> dbObjectsBatch = new ArrayList<>(batch.size());
                     for (String jsonLine : batch) {
                         DBObject dbObject = (DBObject) JSON.parse(jsonLine);
-                        addChunkId(dbObject);
+                        addChunkId(dbObject);           // TODO añadir un cammpo geneId cuando sea clinvar,cosmic o gwas
                         dbObjectsBatch.add(dbObject);
                     }
                     loadedObjects += load(dbObjectsBatch);
