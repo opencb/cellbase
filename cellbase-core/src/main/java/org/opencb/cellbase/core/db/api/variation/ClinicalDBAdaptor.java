@@ -48,6 +48,8 @@ public interface ClinicalDBAdaptor extends FeatureDBAdaptor {
 
     QueryResult getAllClinvar(QueryOptions options);
 
+    QueryResult getByGeneId(String geneId, QueryOptions queryOptions);
+
     QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions);
 
     List<QueryResult> getPhenotypeGeneRelations(QueryOptions queryOptions);
