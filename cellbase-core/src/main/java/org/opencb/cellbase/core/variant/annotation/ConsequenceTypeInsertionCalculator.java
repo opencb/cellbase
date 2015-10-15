@@ -149,8 +149,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             }
         }
 
-//        if (consequenceTypeList.size() == 0 && isIntegernic) {
-        if (isIntegernic) {
+        if (consequenceTypeList.size() == 0 && isIntegernic) {
+//        if (isIntegernic) {
             consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
         }
 
@@ -326,9 +326,11 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if(cdnaVariantStart<(cdnaCodingStart+2) && !transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             }
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
-            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
-                    (transcript.getStart() == transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
+//            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
+            if ((cdnaVariantEnd >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                    (transcript.getStart() == transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                 SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
             }
             if(variant.getAlternative().length()%3 == 0) {
@@ -347,41 +349,44 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                                                  Integer cdnaVariantEnd) {
         Integer variantPhaseShift = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
-        String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
-                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
-        String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(((transcriptSequence.length()-cdnaVariantEnd)>2)?(transcriptSequence.length()-cdnaVariantEnd-2):0,  // Be careful reaching the end of the transcript sequence
-                transcriptSequence.length() - cdnaVariantEnd + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
-        char[] referenceCodonArray = reverseCodon.toCharArray();
-        referenceCodonArray[0] = VariantAnnotationUtils.complementaryNt.get(referenceCodonArray[0]);
-        referenceCodonArray[1] = VariantAnnotationUtils.complementaryNt.get(referenceCodonArray[1]);
-        referenceCodonArray[2] = VariantAnnotationUtils.complementaryNt.get(referenceCodonArray[2]);
-        char[] modifiedCodonArray = referenceCodonArray.clone();
-        char[] altArray = (new StringBuilder(variant.getAlternative()).reverse().toString()).toCharArray();
-        int i=0;
-        int reverseTranscriptSequencePosition = 0;
-        int modifiedCodonPosition;
-        int modifiedCodonPositionStart=variantPhaseShift;
-        do {
-            for(modifiedCodonPosition=modifiedCodonPositionStart;
-                (modifiedCodonPosition<3 && i<variant.getAlternative().length()); modifiedCodonPosition++) {  // Paste alternative nt in the corresponding codon position
-                modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.complementaryNt.get(altArray[i]);
-                i++;
-            }
-            for(;modifiedCodonPosition<3;modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                if(reverseTranscriptSequencePosition>=reverseTranscriptSequence.length()) {
-                    int genomicCoordinate = transcript.getStart() - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
-                    modifiedCodonArray[modifiedCodonPosition] =
-                            VariantAnnotationUtils.complementaryNt.get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
-                            genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
-                } else {
-                    modifiedCodonArray[modifiedCodonPosition] =
-                            VariantAnnotationUtils.complementaryNt.get(reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
-                    reverseTranscriptSequencePosition++;
+        if(modifiedCodonStart>0 && (modifiedCodonStart+2)<=transcriptSequence.length()) {
+            String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
+                    transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+            String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(((transcriptSequence.length() - cdnaVariantEnd) > 2) ? (transcriptSequence.length() - cdnaVariantEnd - 2) : 0,  // Be careful reaching the end of the transcript sequence
+                    transcriptSequence.length() - cdnaVariantEnd + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+            char[] referenceCodonArray = reverseCodon.toCharArray();
+            referenceCodonArray[0] = VariantAnnotationUtils.complementaryNt.get(referenceCodonArray[0]);
+            referenceCodonArray[1] = VariantAnnotationUtils.complementaryNt.get(referenceCodonArray[1]);
+            referenceCodonArray[2] = VariantAnnotationUtils.complementaryNt.get(referenceCodonArray[2]);
+            char[] modifiedCodonArray = referenceCodonArray.clone();
+            char[] altArray = (new StringBuilder(variant.getAlternative()).reverse().toString()).toCharArray();
+            int i = 0;
+            int reverseTranscriptSequencePosition = 0;
+            int modifiedCodonPosition;
+            int modifiedCodonPositionStart = variantPhaseShift;
+            do {
+                for (modifiedCodonPosition = modifiedCodonPositionStart;
+                     (modifiedCodonPosition < 3 && i < variant.getAlternative().length()); modifiedCodonPosition++) {  // Paste alternative nt in the corresponding codon position
+                    modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.complementaryNt.get(altArray[i]);
+                    i++;
                 }
+                for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
+                    if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
+                        int genomicCoordinate = transcript.getStart() - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
+                        modifiedCodonArray[modifiedCodonPosition] =
+                                VariantAnnotationUtils.complementaryNt.get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
+                                        genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
+                    } else {
+                        modifiedCodonArray[modifiedCodonPosition] =
+                                VariantAnnotationUtils.complementaryNt.get(reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
+                        reverseTranscriptSequencePosition++;
+                    }
+                }
+                decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray), modifiedCodonArray);
+                modifiedCodonPositionStart = 0;  // Reset the position where the next modified codon must be started to be filled
             }
-            decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray), modifiedCodonArray);
-            modifiedCodonPositionStart = 0;  // Reset the position where the next modified codon must be started to be filled
-        } while(i<variant.getAlternative().length());  // All posible new codons generated by the inserted sequence must be checked
+            while (i < variant.getAlternative().length());  // All posible new codons generated by the inserted sequence must be checked
+        }
 
     }
 
@@ -583,9 +588,11 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if(cdnaVariantStart<(cdnaCodingStart+2) && !transcript.unconfirmedStart()) {  // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
                 SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             }
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
-            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
-                    (transcript.getEnd() == transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
+//            if ((cdnaVariantStart >= (transcriptSequence.length() - finalNtPhase)) &&
+            if ((cdnaVariantStart >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                    (transcript.getEnd() == transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                 SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
             }
             if(variant.getAlternative().length()%3 == 0) {
@@ -603,33 +610,36 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                                                  Integer cdnaVariantStart) {
         Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3; // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates: cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
         int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
-        String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
-        char[] modifiedCodonArray = referenceCodon.toCharArray();
-        int i=0;
-        int transcriptSequencePosition = cdnaVariantStart;  // indexing over transcriptSequence is 0 based, transcriptSequencePosition points to cdnaVariantEnd actually
-        int modifiedCodonPosition;
-        int modifiedCodonPositionStart = variantPhaseShift;
-        do {
-            for (modifiedCodonPosition = modifiedCodonPositionStart;
-                 (modifiedCodonPosition < 3 && i < variant.getAlternative().length()); modifiedCodonPosition++) {  // Paste alternative nt in the corresponding codon position
-                modifiedCodonArray[modifiedCodonPosition] = variant.getAlternative().toCharArray()[i];
-                i++;
-            }
-            for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                if(transcriptSequencePosition>=transcriptSequence.length()) {
-                    int genomicCoordinate = transcript.getEnd() +
-                            (transcriptSequencePosition - transcriptSequence.length()) + 1;
-                    modifiedCodonArray[modifiedCodonPosition] =
-                            ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
-                            genomicCoordinate, genomicCoordinate+1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
-                } else {
-                    modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
+        if(modifiedCodonStart>0 && (modifiedCodonStart+2)<=transcriptSequence.length()) {
+            String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
+            char[] modifiedCodonArray = referenceCodon.toCharArray();
+            int i = 0;
+            int transcriptSequencePosition = cdnaVariantStart;  // indexing over transcriptSequence is 0 based, transcriptSequencePosition points to cdnaVariantEnd actually
+            int modifiedCodonPosition;
+            int modifiedCodonPositionStart = variantPhaseShift;
+            do {
+                for (modifiedCodonPosition = modifiedCodonPositionStart;
+                     (modifiedCodonPosition < 3 && i < variant.getAlternative().length()); modifiedCodonPosition++) {  // Paste alternative nt in the corresponding codon position
+                    modifiedCodonArray[modifiedCodonPosition] = variant.getAlternative().toCharArray()[i];
+                    i++;
                 }
-                transcriptSequencePosition++;
+                for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
+                    if (transcriptSequencePosition >= transcriptSequence.length()) {
+                        int genomicCoordinate = transcript.getEnd() +
+                                (transcriptSequencePosition - transcriptSequence.length()) + 1;
+                        modifiedCodonArray[modifiedCodonPosition] =
+                                ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
+                                        genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
+                    } else {
+                        modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
+                    }
+                    transcriptSequencePosition++;
+                }
+                decideStopCodonModificationAnnotation(SoNames, referenceCodon, modifiedCodonArray);
+                modifiedCodonPositionStart = 0;  // Reset the position where the next modified codon must be started to be filled
             }
-            decideStopCodonModificationAnnotation(SoNames, referenceCodon, modifiedCodonArray);
-            modifiedCodonPositionStart = 0;  // Reset the position where the next modified codon must be started to be filled
-        } while(i<variant.getAlternative().length());  // All posible new codons generated by the inserted sequence must be checked
+            while (i < variant.getAlternative().length());  // All posible new codons generated by the inserted sequence must be checked
+        }
     }
 
     private void solveJunction(Integer spliceSite1, Integer spliceSite2, String leftSpliceSiteTag,

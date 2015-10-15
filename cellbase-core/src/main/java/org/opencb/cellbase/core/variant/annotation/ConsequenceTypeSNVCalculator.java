@@ -137,8 +137,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
         }
 
-//        if(consequenceTypeList.size()==0 && isIntegernic) {
-        if(isIntegernic) {
+        if(consequenceTypeList.size()==0 && isIntegernic) {
+//        if(isIntegernic) {
             consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
         }
 
@@ -263,10 +263,12 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
         Boolean codingAnnotationAdded = false;
         if(cdnaVariantPosition != -1) {
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
             if (!splicing) {
-                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
-                        (transcript.getStart()==transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
+                if ((cdnaVariantPosition >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                        (transcript.getStart()==transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
                 } else if (cdnaVariantPosition>(cdnaCodingStart+2) || cdnaCodingStart>0) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     Integer variantPhaseShift = (cdnaVariantPosition - cdnaCodingStart) % 3;
@@ -486,10 +488,12 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
         boolean codingAnnotationAdded = false;  // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
         if(cdnaVariantPosition != -1) {
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
             if (!splicing) {
-                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
-                        (transcript.getEnd()==transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
+                if ((cdnaVariantPosition >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                        (transcript.getEnd()==transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);               //  If not, avoid calculating reference/modified codon
                 } else if (cdnaVariantPosition>(cdnaCodingStart+2) || cdnaCodingStart>0) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     int variantPhaseShift = (cdnaVariantPosition - cdnaCodingStart) % 3;
