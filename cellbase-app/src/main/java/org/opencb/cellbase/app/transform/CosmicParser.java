@@ -131,16 +131,16 @@ public class CosmicParser extends CellBaseParser {
         cosmic.setID_tumour(fields[6]);
         cosmic.setPrimarySite(fields[7]);
         cosmic.setSiteSubtype(fields[8]);
-        cosmic.setPrimaryHistology(fields[9]);
-        cosmic.setHistologySubtype(fields[10]);
-        cosmic.setGenomeWideScreen(fields[11]);
-        cosmic.setMutationID(fields[12]);
-        cosmic.setMutationCDS(fields[13]);
-        cosmic.setMutationAA(fields[14]);
-        cosmic.setMutationDescription(fields[15]);
-        cosmic.setMutationZygosity(fields[16]);
-        cosmic.setMutationGRCh37GenomePosition(fields[17]);
-        cosmic.setMutationGRCh37Strand(fields[18]);
+        cosmic.setPrimaryHistology(fields[11]);
+        cosmic.setHistologySubtype(fields[12]);
+        cosmic.setGenomeWideScreen(fields[15]);
+        cosmic.setMutationID(fields[16]);
+        cosmic.setMutationCDS(fields[17]);
+        cosmic.setMutationAA(fields[18]);
+        cosmic.setMutationDescription(fields[19]);
+        cosmic.setMutationZygosity(fields[20]);
+        cosmic.setMutationGRCh37GenomePosition(fields[23]);
+        cosmic.setMutationGRCh37Strand(fields[24]); //TODO seguir arreglando a partir de aqui
         if(!fields[19].isEmpty() && fields[19].equalsIgnoreCase("y")){
             cosmic.setSnp(true);
         }

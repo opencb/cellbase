@@ -42,7 +42,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     // TODO: these two constants should be defined in the 'download' module
     public static final String GWAS_INPUT_FILE_NAME = "gwas_catalog.tsv";
     public static final String DISGENET_INPUT_FILE_NAME = "disgenet.tar.gz";
-    public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
+    public static final String DBSNP_INPUT_FILE_NAME = "00-All.vcf.gz";
+//    public static final String DBSNP_INPUT_FILE_NAME = "dbSnp142-00-All.vcf.gz";
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
 
