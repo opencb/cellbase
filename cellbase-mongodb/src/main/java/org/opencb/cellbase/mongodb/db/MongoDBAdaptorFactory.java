@@ -181,7 +181,9 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     @Override
     public GeneDBAdaptor getGeneDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
+        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
+        geneMongoDBAdaptor.setClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
+        return geneMongoDBAdaptor;
     }
 
 

@@ -259,7 +259,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence," +
                 "mirna.matures.cdnaStart,mirna.matures.cdnaEnd";
 
-        if (annotatorSet.contains("drugInteractions")) {
+        if (annotatorSet.contains("drugInteraction")) {
             includeGeneFields += ",drugInteractions";
         }
         if (annotatorSet.contains("expression")) {
