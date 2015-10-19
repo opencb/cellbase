@@ -239,8 +239,11 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-i", "--input-file"}, description = "Input file with the data file to be annotated", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input-file"}, description = "Input file with the data file to be annotated", required = false, arity = 1)
         public String input;
+
+        @Parameter(names = {"--variant"}, description = "A comma separated variant list in the format chr:pos:ref:alt, ie. 1:451941:A:T,19:45411941:T:C", required = false, arity = 1)
+        public String variant;
 
         @Parameter(names = {"-o", "--output-file"}, description = "Output file with the annotations", required = false, arity = 1)
         public String output;

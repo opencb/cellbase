@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.db.api.variation;
 
-import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -26,7 +26,6 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by imedina on 11/07/14.
@@ -34,28 +33,18 @@ import java.util.Map;
 public interface VariantAnnotationDBAdaptor {
 
 
-    QueryResult getAllConsequenceTypesByVariant(GenomicVariant variant, QueryOptions options);
+    QueryResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions options);
 
-//    QueryResult getAllConsequenceTypesByVariantOld(GenomicVariant variant, QueryOptions options);
+    List<QueryResult> getAllConsequenceTypesByVariantList(List<Variant> variants, QueryOptions options);
 
-    List<QueryResult> getAllConsequenceTypesByVariantList(List<GenomicVariant> variants, QueryOptions options);
+    QueryResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions);
 
+    List<QueryResult> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions);
 
-    QueryResult getAllEffectsByVariant(GenomicVariant variant, QueryOptions options);
-
-    List<QueryResult> getAllEffectsByVariantList(List<GenomicVariant> variants, QueryOptions options);
-
-    List<QueryResult> getAnnotationByVariantList(List<GenomicVariant> variantList, QueryOptions queryOptions);
-
-    VariationDBAdaptor getVariationDBAdaptor();
 
     void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor);
 
-    ClinicalDBAdaptor getVariantClinicalDBAdaptor();
-
     void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
-
-    ProteinDBAdaptor getProteinDBAdaptor();
 
     void setProteinDBAdaptor(ProteinDBAdaptor proteinFunctionPredictorDBAdaptor);
 

@@ -27,8 +27,8 @@ import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.variant.annotation.*;
-import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -461,18 +461,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options) {
+    public QueryResult getAllByGenomicVariant(Variant variant, QueryOptions options) {
         return getAllByGenomicVariantList(Arrays.asList(variant), options).get(0);
     }
 
     @Override
-    public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options) {
+    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(variantList.size());
         List<QueryResult> queryResultList;
-        for (GenomicVariant genomicVariant : variantList){
+        for (Variant genomicVariant : variantList){
             QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
-                    and("start").is(genomicVariant.getPosition()).and("alternate").is(genomicVariant.getAlternative());
+                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
             if (genomicVariant.getReference() != null){
                 builder = builder.and("reference").is(genomicVariant.getReference());
             }
@@ -487,7 +487,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
             List<Cosmic> cosmicList = new ArrayList<>();
             List<Gwas> gwasList = new ArrayList<>();
-            List<Clinvar> clinvarList = new ArrayList<>();
+            List<ClinVar> clinvarList = new ArrayList<>();
 
             for(Object clinicalObject: clinicalList) {
                 BasicDBObject clinical = (BasicDBObject) clinicalObject;
@@ -500,18 +500,33 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                     gwasList.add(gwas);
 
                 } else if (isClinvar(clinical)) {
-                    Clinvar clinvar = getClinvar(clinical);
+                    ClinVar clinvar = getClinvar(clinical);
+//                    if (clinvarList == null) {
+//                        clinvarList = new ArrayList<>();
+//                    }
                     clinvarList.add(clinvar);
                 }
             }
-            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(cosmicList, gwasList,
-                    clinvarList);
-            if(!(variantTraitAssociation.getCosmicList().isEmpty() && variantTraitAssociation.getGwasList().isEmpty() &&
-                    variantTraitAssociation.getClinvarList().isEmpty())) {
+//            Map<String, Object> clinicalData = new HashMap<>();
+//            if(cosmicList!=null && cosmicList.size()>0) {
+//                clinicalData.put("cosmic", cosmicList);
+//            }
+//            if(gwasList!=null && gwasList.size()>0) {
+//                clinicalData.put("gwas", gwasList);
+//            }
+//            if(clinvarList!=null && clinvarList.size()>0) {
+//                clinicalData.put("clinvar", clinvarList);
+//            }
+            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(clinvarList, gwasList, cosmicList);
+            if(!(variantTraitAssociation.getCosmic().isEmpty() && variantTraitAssociation.getGwas().isEmpty() &&
+                    variantTraitAssociation.getClinvar().isEmpty())) {
+
                 // FIXME quick solution to compile
                 //            queryResult.setResult(clinicalData);
                 queryResult.setResult(Collections.singletonList(variantTraitAssociation));
-                queryResult.setNumResults(variantTraitAssociation.size());
+                queryResult.setNumResults(variantTraitAssociation.getCosmic().size()
+                        + variantTraitAssociation.getGwas().size()
+                        + variantTraitAssociation.getClinvar().size());
             } else {
                 queryResult.setResult(null);
                 queryResult.setNumResults(0);
@@ -550,7 +565,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private Gwas getGwas(BasicDBObject clinical) {
         String snpIdCurrent = (String) clinical.get("snpIdCurrent");
-        Double riskAlleleFrequency =  (Double) clinical.get("riskAlleleFrequency");
+        Double riskAlleleFrequency =  clinical.getDouble("riskAlleleFrequency", 0.0d);
         String reportedGenes = (String) clinical.get("reportedGenes");
         List<BasicDBObject> studiesObj = (List<BasicDBObject>) clinical.get("studies");
         Set<String> traitsSet = new HashSet<>();
@@ -565,10 +580,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         List<String>  traits = new ArrayList<>();
         traits.addAll(traitsSet);
-        return new Gwas(snpIdCurrent,traits,riskAlleleFrequency,reportedGenes);
+        return new Gwas(snpIdCurrent, traits, riskAlleleFrequency, reportedGenes);
     }
 
-    private Clinvar getClinvar(BasicDBObject clinical) {
+    private ClinVar getClinvar(BasicDBObject clinical) {
         BasicDBObject clinvarSet = (BasicDBObject) clinical.get("clinvarSet");
         BasicDBObject referenceClinVarAssertion = (BasicDBObject) clinvarSet.get("referenceClinVarAssertion");
         BasicDBObject clinVarAccession = (BasicDBObject) referenceClinVarAssertion.get("clinVarAccession");
@@ -608,7 +623,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         List<String>  geneNameList = new ArrayList<>();
         geneNameList.addAll(geneNameSet);
-        return new Clinvar(acc,clinicalSignificanceName, traitNames, geneNameList, reviewStatus);
+        return new ClinVar(acc,clinicalSignificanceName, traitNames, geneNameList, reviewStatus);
     }
 
     public QueryResult getListClinvarAccessions(QueryOptions queryOptions) {

@@ -21,7 +21,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -224,9 +224,9 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         List<QueryResult> queryResults = new ArrayList<>();
         if(options.containsKey("variants")) {
             List<Object> variantList = options.getList("variants");
-            List<GenomicVariant> variants = new ArrayList<>(variantList.size());
+            List<Variant> variants = new ArrayList<>(variantList.size());
             for (int i = 0; i < variantList.size(); i++) {
-                GenomicVariant genomicVariant = (GenomicVariant) variantList.get(i);
+                Variant genomicVariant = (Variant) variantList.get(i);
                 variants.add(genomicVariant);
             }
         }
@@ -303,13 +303,16 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
-    public List<QueryResult> getIdByVariantList(List<GenomicVariant> variations, QueryOptions options){
+    public List<QueryResult> getIdByVariantList(List<Variant> variations, QueryOptions options){
         List<DBObject> queries = new ArrayList<>(variations.size());
         List<QueryResult> results;
 
-        for (GenomicVariant variation : variations) {
-            String chunkId = getChunkIdPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
-            QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+        for (Variant variation : variations) {
+            String chunkId = getChunkIdPrefix(variation.getChromosome(), variation.getStart(), variationChunkSize);
+            QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId)
+                    .and("chromosome").is(variation.getChromosome())
+                    .and("start").is(variation.getStart())
+                    .and("alternate").is(variation.getAlternate());
             if(variation.getReference() != null){
                 builder = builder.and("reference").is(variation.getReference());
             }
@@ -337,14 +340,17 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
-    public List<QueryResult> getAllByVariantList(List<GenomicVariant> variations, QueryOptions options){
+    public List<QueryResult> getAllByVariantList(List<Variant> variations, QueryOptions options){
         List<DBObject> queries = new ArrayList<>(variations.size());
         List<QueryResult> results;
 
-        for (GenomicVariant variation : variations) {
-            String chunkId = getChunkIdPrefix(variation.getChromosome(), variation.getPosition(), variationChunkSize);
+        for (Variant variation : variations) {
+            String chunkId = getChunkIdPrefix(variation.getChromosome(), variation.getStart(), variationChunkSize);
 
-            QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId).and("chromosome").is(variation.getChromosome()).and("start").is(variation.getPosition()).and("alternate").is(variation.getAlternative());
+            QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId)
+                    .and("chromosome").is(variation.getChromosome())
+                    .and("start").is(variation.getStart())
+                    .and("alternate").is(variation.getAlternate());
 
             if(variation.getReference() != null){
                 builder = builder.and("reference").is(variation.getReference());

@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.db.api;
 
-import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.Region;
 
 import java.util.List;
@@ -40,9 +40,9 @@ public interface GenomicRegionFeatureDBAdaptor {
 	
 	public List<String> getAllByRegionList(List<Region> regions, List<String> sources);
 
-	public List<String> getByVariants(List<GenomicVariant> variants, List<String> sources);
+	public List<String> getByVariants(List<Variant> variants, List<String> sources);
 
-	List<String> getByVariants(List<GenomicVariant> variants);
+	List<String> getByVariants(List<Variant> variants);
 	
 //	public List<FeatureMap> getFeatureMapsByRegion(Region region);
 

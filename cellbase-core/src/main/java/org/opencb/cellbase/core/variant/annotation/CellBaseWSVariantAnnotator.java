@@ -18,8 +18,7 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
@@ -28,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 
 /**
  * Created by fjlopez on 02/03/15.
@@ -57,13 +53,11 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     }
 
     public List<VariantAnnotation> run(List<Variant> variantList) {
-
-        List<GenomicVariant> batch = convertVariantsToGenomicVariants(variantList);
-        logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", batch.size());
+        logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
         QueryResponse<QueryResult<VariantAnnotation>> response;
         try {
             response = cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
-                    CellBaseClient.SubCategory.variant, batch, new QueryOptions("post", true));
+                    CellBaseClient.SubCategory.variant, variantList, new QueryOptions("post", true));
         } catch (IOException e) {
             return null;
         }
@@ -81,19 +75,8 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     }
 
 
-    private List<GenomicVariant> convertVariantsToGenomicVariants(List<Variant> vcfBatch) {
-        List<GenomicVariant> genomicVariants = new ArrayList<>(vcfBatch.size());
-        for (Variant variant : vcfBatch) {
-            GenomicVariant genomicVariant;
-            if ((genomicVariant = getGenomicVariant(variant)) != null) {
-                genomicVariants.add(genomicVariant);
-            }
-        }
-        return genomicVariants;
-    }
-
     // TODO: use a external class for this (this method could be added to GenomicVariant class)
-    private GenomicVariant getGenomicVariant(Variant variant) {
+    private Variant getGenomicVariant(Variant variant) {
         if(variant.getAlternate().equals(".")) {  // reference positions are not variants
             return null;
         } else {
@@ -101,18 +84,16 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
             if (variant.getAlternate().equals("<DEL>")) {  // large deletion
                 int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));  // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
                 ref = StringUtils.repeat("N", end - variant.getStart());
-                return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+                return new Variant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
                 // TODO: structural variants are not yet properly handled. Implement and remove this patch asap
             } else if(variant.getAlternate().startsWith("<") || (variant.getAlternate().length()>1 && variant.getReference().length()>1)) {
                 return null;
             } else {
                 ref = variant.getReference().equals("") ? "-" : variant.getReference();
-                return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+                return new Variant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
             }
-//            return new GenomicVariant(variant.getChromosome(), variant.getStart(),
-//                    ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
         }
     }
 
