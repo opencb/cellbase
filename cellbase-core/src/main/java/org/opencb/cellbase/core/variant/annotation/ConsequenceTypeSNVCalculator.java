@@ -25,11 +25,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        boolean isIntegernic = true;
+        boolean isIntergenic = true;
         for (Gene currentGene: geneList) {
             gene = currentGene;
             for(Transcript currentTranscript : gene.getTranscripts()) {
-                isIntegernic = isIntegernic && (variant.getStart() <currentTranscript.getStart() ||
+                isIntergenic = isIntergenic && (variant.getStart() <currentTranscript.getStart() ||
                         variant.getStart() >currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
@@ -140,8 +140,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
         }
 
-//        if(consequenceTypeList.size()==0 && isIntegernic) {
-        if(isIntegernic) {
+        if(consequenceTypeList.size()==0 && isIntergenic) {
+//        if(isIntegernic) {
 //            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
             HashSet<String> intergenicName = new HashSet<>();
             intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);

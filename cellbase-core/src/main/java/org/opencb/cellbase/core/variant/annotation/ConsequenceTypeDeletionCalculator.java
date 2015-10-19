@@ -39,11 +39,11 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         variantEnd = variant.getStart() + variant.getReference().length() - 1;
         variantStart = variant.getStart();
         isBigDeletion = ((variantEnd - variantStart) > bigVariantSizeThreshold);
-        boolean isIntegernic = true;
+        boolean isIntergenic = true;
         for (Gene currentGene : geneList) {
             gene = currentGene;
             for (Transcript currentTranscript : gene.getTranscripts()) {
-                isIntegernic = isIntegernic && (variantEnd < currentTranscript.getStart() ||
+                isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() ||
                         variantStart > currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
@@ -167,8 +167,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             }
         }
 
-//        if (consequenceTypeList.size() == 0 && isIntegernic) {
-        if (isIntegernic) {
+        if (consequenceTypeList.size() == 0 && isIntergenic) {
+//        if (isIntegernic) {
 //            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
             HashSet<String> intergenicName = new HashSet<>();
             intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);
