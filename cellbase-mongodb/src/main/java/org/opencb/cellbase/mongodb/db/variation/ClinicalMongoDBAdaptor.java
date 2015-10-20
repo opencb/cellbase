@@ -45,6 +45,8 @@ import java.util.regex.Pattern;
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor {
 
 
+    private static Set<String> formattingOptions = new HashSet<>(Arrays.asList({""}));
+    
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("clinical");
@@ -70,12 +72,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult getAll(QueryOptions options) {
         System.out.println("options = " + options.get("exclude"));
-        if(includeContains(options.getAsStringList("source"), "clinvar")) {
-            return getAllClinvar(options);
-        } else {
-            // TODO implement!
-            return new QueryResult();
+        QueryBuilder builder = QueryBuilder.start();
+        List<String> sourceContent = options.getAsStringList("source");
+        if(sourceContent==null || includeContains(sourceContent, "clinvar")) {
+            builder = addClinvarFilters(builder, options);
         }
+        if(sourceContent==null || includeContains(sourceContent, "cosmic")) {
+            // TODO implement!
+            builder.or(addGwasFilters(QueryBuilder.start(), options).get());
+        }
+        if(sourceContent==null || includeContains(sourceContent, "gwas")) {
+            // TODO implement!
+            builder.or(addCosmicFilters(QueryBuilder.start(), options).get());
+        }
+        return executeQuery("result", builder.get(), options);
     }
 
     @Override
@@ -101,13 +111,13 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return null;
     }
 
-    @Override
-    public QueryResult getAllClinvar(QueryOptions options) {
-        QueryBuilder builder = QueryBuilder.start();
-        builder = addClinvarFilters(builder, options);
-
-        return executeQuery("result", builder.get(), options);
-    }
+//    @Override
+//    public QueryResult getAllClinvar(QueryOptions options) {
+//        QueryBuilder builder = QueryBuilder.start();
+//        builder = addClinvarFilters(builder, options);
+//
+//        return executeQuery("result", builder.get(), options);
+//    }
 
     private QueryBuilder addClinvarFilters(QueryBuilder builder, QueryOptions options) {
         builder.and(new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1)));
