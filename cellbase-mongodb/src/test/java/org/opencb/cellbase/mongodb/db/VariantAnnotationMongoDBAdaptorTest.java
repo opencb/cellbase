@@ -19,7 +19,7 @@ package org.opencb.cellbase.mongodb.db;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
+import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.Variant;
