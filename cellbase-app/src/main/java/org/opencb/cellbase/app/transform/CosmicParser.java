@@ -155,7 +155,7 @@ public class CosmicParser extends CellBaseParser {
         if(!fields[33].isEmpty() && !fields[33].equals("NS")) {
             cosmic.setAge(Float.parseFloat(fields[33]));
         }
-        cosmic.setComments(fields[34]);
+//        cosmic.setComments(fields[34]);
         return cosmic;
     }
 

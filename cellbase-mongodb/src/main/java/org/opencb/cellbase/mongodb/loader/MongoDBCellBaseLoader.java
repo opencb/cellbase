@@ -153,10 +153,16 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "cosmic":
                 clinicalVariantSource = "cosmic";
+                collectionName = "clinical";
+                break;
             case "clinvar":
                 clinicalVariantSource = "clinvar";
+                collectionName = "clinical";
+                break;
             case "gwas":
                 clinicalVariantSource = "gwas";
+                collectionName = "clinical";
+                break;
             case "clinical":
                 collectionName = "clinical";
                 break;
