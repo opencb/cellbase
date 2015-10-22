@@ -269,7 +269,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     private List<Gene> getAffectedGenes(Variant variant, String includeFields) {
-        int variantStart = variant.getReference().equals("-") ? variant.getStart() - 1 : variant.getStart();
+        int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions("include", includeFields);
         QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
                 variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
@@ -309,10 +309,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
-        if (variant.getReference().equals("-")) {
+        if (variant.getReference().isEmpty()) {
             return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
         } else {
-            if (variant.getAlternate().equals("-")) {
+            if (variant.getAlternate().isEmpty()) {
                 return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
             } else {
                 if(variant.getReference().length() == 1 && variant.getAlternate().length() == 1) {
@@ -325,7 +325,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     }
 
     private List<RegulatoryRegion> getAffectedRegulatoryRegions(Variant variant) {
-        int variantStart = variant.getReference().equals("-") ? variant.getStart() - 1 : variant.getStart();
+        int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add("include", "chromosome,start,end");
         QueryResult queryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
