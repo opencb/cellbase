@@ -278,7 +278,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", "-"), new QueryOptions());  // should not return String Index Out of Bounds
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 38679764, "-", "GATCTGAGAAGNGGAANANAAGGG"), new QueryOptions());  // should not return NPE
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("20", 44485953, "-", "ATCT"), new QueryOptions());  // should return ENSG00000101473 ENST00000217455 -       initiator_codon_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("15", 78224189, "-", "C"), new QueryOptions());  // should
@@ -543,7 +543,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
         QueryResult queryResult = null;
         String pos;
         String ref;
+        String cellbaseRef;
         String alt;
+        String cellbaseAlt;
         String SoNameToTest;
 
         List<VcfRecord> vcfRecordList = vcfReader.read(1000);
@@ -555,7 +557,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
             // Short deletion
             if (vcfRecord.getReference().length() > 1) {
                 ref = vcfRecord.getReference().substring(1);
+                cellbaseRef = vcfRecord.getReference().substring(1);
                 alt = "-";
+                cellbaseAlt = "";
                 ensemblPos = vcfRecord.getPosition() + 1;
                 int end = getEndFromInfoField(vcfRecord);
                 if(end==-1) {
@@ -575,18 +579,24 @@ public class VariantAnnotationMongoDBAdaptorTest {
                     int end = getEndFromInfoField(vcfRecord);
                     pos = (vcfRecord.getPosition() + 1) + "-" + end;
                     ref = StringUtils.repeat("N", end - vcfRecord.getPosition());
+                    cellbaseRef = StringUtils.repeat("N", end - vcfRecord.getPosition());
                     alt = "-";
+                    cellbaseAlt = "";
                     // Short insertion
                 } else {
                     ensemblPos = vcfRecord.getPosition() + 1;
                     ref = "-";
+                    cellbaseRef = "";
                     alt = vcfRecord.getAlternate().substring(1);
+                    cellbaseAlt = vcfRecord.getAlternate().substring(1);
                     pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + 1);
                 }
                 // SNV
             } else {
                 ref = vcfRecord.getReference();
+                cellbaseRef = vcfRecord.getReference();
                 alt = vcfRecord.getAlternate();
+                cellbaseAlt = vcfRecord.getAlternate();
                 ensemblPos = vcfRecord.getPosition();
                 pos = Integer.toString(ensemblPos);
 //                isSnv = true;
@@ -595,9 +605,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //            if(isSnv) {
                 processedVariants++;
                 try {
-                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant(vcfRecord.getChromosome(), ensemblPos, ref, alt), new QueryOptions());
+                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt), new QueryOptions());
                 } catch (Exception e) {
-                    System.out.println("new Variant = " + new Variant(vcfRecord.getChromosome(), ensemblPos, ref, alt));
+                    System.out.println("new Variant = " + new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt));
                     e.printStackTrace();
                     System.exit(1);
                 }

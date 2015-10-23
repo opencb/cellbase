@@ -368,7 +368,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         return regionList;
     }
 
-
     /*
      * Future classes for Async annotations
      */
@@ -515,7 +514,6 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             }
         }
     }
-
 
     @Override
     public void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor) {
