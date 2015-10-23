@@ -45,8 +45,9 @@ import java.util.regex.Pattern;
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor {
 
 
-    private static Set<String> formattingOptions = new HashSet<>(Arrays.asList({""}));
-    
+    private static Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly","include","exclude",
+            "skip","limit","of","count","json"));
+
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("clinical");
@@ -73,19 +74,30 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult getAll(QueryOptions options) {
         System.out.println("options = " + options.get("exclude"));
         QueryBuilder builder = QueryBuilder.start();
-        List<String> sourceContent = options.getAsStringList("source");
-        if(sourceContent==null || includeContains(sourceContent, "clinvar")) {
-            builder = addClinvarFilters(builder, options);
-        }
-        if(sourceContent==null || includeContains(sourceContent, "cosmic")) {
-            // TODO implement!
-            builder.or(addGwasFilters(QueryBuilder.start(), options).get());
-        }
-        if(sourceContent==null || includeContains(sourceContent, "gwas")) {
-            // TODO implement!
-            builder.or(addCosmicFilters(QueryBuilder.start(), options).get());
+        if(filteringOptionsEnabled(options)) {
+            List<String> sourceContent = options.getAsStringList("source");
+            if (sourceContent == null || includeContains(sourceContent, "clinvar")) {
+                builder = addClinvarFilters(builder, options);
+            }
+            if (sourceContent == null || includeContains(sourceContent, "cosmic")) {
+                // TODO implement!
+                builder.or(addGwasFilters(QueryBuilder.start(), options).get());
+            }
+            if (sourceContent == null || includeContains(sourceContent, "gwas")) {
+                // TODO implement!
+                builder.or(addCosmicFilters(QueryBuilder.start(), options).get());
+            }
         }
         return executeQuery("result", builder.get(), options);
+    }
+
+    private boolean filteringOptionsEnabled(QueryOptions queryOptions) {
+        int i=0;
+        String[] keys = (String[]) queryOptions.keySet().toArray();
+        while((i<queryOptions.size()) && noFilteringQueryParameters.contains(keys[i])) {
+            i++;
+        }
+        return (i<queryOptions.size());
     }
 
     @Override
