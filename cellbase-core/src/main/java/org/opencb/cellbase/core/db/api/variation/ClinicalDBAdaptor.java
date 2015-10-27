@@ -45,7 +45,7 @@ public interface ClinicalDBAdaptor extends FeatureDBAdaptor {
 
 //    public QueryResult getChromosomeById(String id, QueryOptions options);
 
-    QueryResult getAllClinvar(QueryOptions options);
+//    QueryResult getAllClinvar(QueryOptions options);
 
     QueryResult getByGeneId(String geneId, QueryOptions queryOptions);
 
