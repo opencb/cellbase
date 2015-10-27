@@ -24,7 +24,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
-import org.opencb.biodata.models.variation.Xref;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -381,6 +380,8 @@ public class VariationParser extends CellBaseParser {
         additionalAttributes.put("Ensembl Ancestral Allele", ancestralAllele);
         additionalAttributes.put("Ensembl Validation Status", (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "");
         additionalAttributes.put("Ensembl Evidence", (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "" );
+        additionalAttributes.put("Minor Allele", (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
+        additionalAttributes.put("Minor Allele Freq", (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
         // Poner un String separado con comas con todos los conseq types
         // quitar displayConsequenceTypes
         List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
@@ -389,8 +390,9 @@ public class VariationParser extends CellBaseParser {
                 xrefs, hgvs, conseqTypes, populationFrequencies, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
                 Collections.EMPTY_LIST, new VariantTraitAssociation(), additionalAttributes);
         variant.setAnnotation(variantAnnotation);
+        variant.setStrand(variationFeatureFields[4]);
         // TODO: fields that are not in Variant
-        // variant.setStrand(variationFeatureFields[4]);
+
 //        variant.setMinorAllele((variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
 //        variant.setMinorAlleleFreq((variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
 //
@@ -411,8 +413,10 @@ public class VariationParser extends CellBaseParser {
         List<ConsequenceType>  consequenceTypes = new ArrayList<>();
         for (TranscriptVariation transcriptVariation : transcriptVariations){
             List<Score> substitionScores = getSubstitutionScores(transcriptVariation);
-            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(uniprotAccesion, uniprotName,
-                    position, reference, alternate, uniprotVariantId, functionalDescription, substitionScores, keywords, features);
+            String referenceCodon = transcriptVariation.getCodonAlleleString().split()
+            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, null, null, null, null,
+                    transcriptVariation.get, substitionScores, keywords, features);
+
             ConsequenceType consequenceType = new ConsequenceType(geneName, ensemblGeneId, transcriptVariation.getTranscriptId(),
                     strand, biotype, transcriptVariation.getCdnaStart(), transcriptVariation.getCdsStart(),
                     transcriptVariation.getCodonAlleleString(),proteinVariantAnnotation, sequenceOntologyTerms);
@@ -463,7 +467,7 @@ public class VariationParser extends CellBaseParser {
                 // TODO: use constans to identify the fields
                 if (sourceMap.get(variationSynonymFields[3]) != null) {
                     arr = sourceMap.get(variationSynonymFields[3]).split(",");
-                    xrefs.add(new Xref(variationSynonymFields[4], arr[0], arr[1]));
+                    xrefs.add(new Xref(variationSynonymFields[4], arr[0]));
                 }
             }
         }
@@ -682,12 +686,12 @@ public class VariationParser extends CellBaseParser {
         String refAllele = null;
         String altAllele = null;
         for (PopulationFrequency frequency : frequencies) {
-            if (frequency != null && frequency.getStudy()!= null && frequency.getStudy().equals(study)) {
-                if (frequency.getPop().equals(allPopulation)) {
+            if (frequency != null && frequency.getStudy() != null && frequency.getStudy().equals(study)) {
+                if (frequency.getPopulation().equals(allPopulation)) {
                     refAllele = frequency.getRefAllele();
                     altAllele = frequency.getAltAllele();
                 }
-                missedPopulations.remove(frequency.getPop());
+                missedPopulations.remove(frequency.getPopulation());
             }
         }
 
