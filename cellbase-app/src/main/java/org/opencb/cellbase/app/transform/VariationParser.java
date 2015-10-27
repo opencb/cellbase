@@ -61,6 +61,7 @@ public class VariationParser extends CellBaseParser {
     private static final String THOUSAND_GENOMES_PHASE_1_STUDY = "1000GENOMES_phase_1";
     private static final String THOUSAND_GENOMES_PHASE_3_STUDY = "1000GENOMES_phase_3";
     private static final String ESP_6500_STUDY = "ESP_6500";
+    private static final String EXAC_STUDY = "ExAC";
     private static final String THOUSAND_GENOMES_ALL_POPULATION = "ALL";
     private static final String THOUSAND_GENOMES_AMERICAN_POPULATION = "AMR";
     private static final String THOUSAND_GENOMES_ASIAN_POPULATION = "ASN";
@@ -70,6 +71,15 @@ public class VariationParser extends CellBaseParser {
     private static final String THOUSAND_GENOMES_SOUTHASIAN_POPULATION = "SAS";
     private static final String ESP_EUROPEAN_AMERICAN_POPULATION = "European_American";
     private static final String ESP_AFRICAN_AMERICAN_POPULATION = "African_American";
+    private static final String ESP_ALL_POPULATION = "All";
+    private static final String EXAC_AFRICAN_POPULATION = "AFR";
+    private static final String EXAC_LATINO_POPULATION = "AMR";
+    private static final String EXAC_EAST_ASIAN_POPULATION = "EAS";
+    private static final String EXAC_FINNISH_POPULATION = "FIN";
+    private static final String EXAC_NON_FINNISH_EUROPEAN_POPULATION = "NFE";
+    private static final String EXAC_SOUTH_ASIAN_POPULATION = "SAS";
+    private static final String EXAC_OTHER_POPULATION = "OTH";
+    private static final String EXAC_ALL_POPULATION = "ALL";
 
     private Path variationDirectoryPath;
 
@@ -588,10 +598,6 @@ public class VariationParser extends CellBaseParser {
                     study = THOUSAND_GENOMES_PHASE_3_STUDY;
                     populationName = THOUSAND_GENOMES_AMERICAN_POPULATION;
                     break;
-                case "1000G_PHASE_3_ASN_AF":
-                    study = THOUSAND_GENOMES_PHASE_3_STUDY;
-                    populationName = THOUSAND_GENOMES_ASIAN_POPULATION;
-                    break;
                 case "1000G_PHASE_3_AFR_AF":
                     study = THOUSAND_GENOMES_PHASE_3_STUDY;
                     populationName = THOUSAND_GENOMES_AFRICAN_POPULATION;
@@ -608,13 +614,49 @@ public class VariationParser extends CellBaseParser {
                     study = THOUSAND_GENOMES_PHASE_3_STUDY;
                     populationName = THOUSAND_GENOMES_SOUTHASIAN_POPULATION;
                     break;
-                case "ESP_EA_AF":
+                case "ESP_6500_EA_AF":
                     study = ESP_6500_STUDY;
                     populationName = ESP_EUROPEAN_AMERICAN_POPULATION;
                     break;
-                case "ESP_AA_AF":
+                case "ESP_6500_AA_AF":
                     study = ESP_6500_STUDY;
                     populationName = ESP_AFRICAN_AMERICAN_POPULATION;
+                    break;
+                case "ESP_6500_ALL_AF":
+                    study = ESP_6500_STUDY;
+                    populationName = ESP_ALL_POPULATION;
+                    break;
+                case "EXAC_AFR_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_AFRICAN_POPULATION;
+                    break;
+                case "EXAC_AMR_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_LATINO_POPULATION;
+                    break;
+                case "EXAC_EAS_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_EAST_ASIAN_POPULATION;
+                    break;
+                case "EXAC_FIN_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_FINNISH_POPULATION;
+                    break;
+                case "EXAC_NFE_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_NON_FINNISH_EUROPEAN_POPULATION;
+                    break;
+                case "EXAC_SAS_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_SOUTH_ASIAN_POPULATION;
+                    break;
+                case "EXAC_OTH_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_OTHER_POPULATION;
+                    break;
+                case "EXAC_ALL_AF":
+                    study = EXAC_STUDY;
+                    populationName = EXAC_ALL_POPULATION;
                     break;
                 default:
                     populationName = population;
