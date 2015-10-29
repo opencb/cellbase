@@ -64,6 +64,7 @@ public class ClinVarParser extends CellBaseParser{
             logger.info("Done");
 
             Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
+            Map<String, SequenceLocationType> rcvTo37SequenceLocation= loadSequenceLocation();  // TODO implement this method
 
             long serializedClinvarObjects = 0,
                     clinvarRecordsParsed = 0,
@@ -71,8 +72,15 @@ public class ClinVarParser extends CellBaseParser{
 
             logger.info("Serializing clinvar records that have Sequence Location for Assembly " + selectedAssembly + " ...");
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
-                ClinvarPublicSet clinvarPublicSet = buildClinvarPublicSet(publicSet);
-                if (clinvarPublicSet != null) {
+                SequenceLocationType sequenceLocation =
+                        rcvTo37SequenceLocation.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+                if (sequenceLocation != null) {
+                    ClinvarPublicSet clinvarPublicSet = new ClinvarPublicSet(sequenceLocation.getChr(),
+                            sequenceLocation.getStart().intValue(),
+                            sequenceLocation.getStop().intValue(),
+                            sequenceLocation.getReferenceAllele(),
+                            sequenceLocation.getAlternateAllele(),
+                            publicSet);
                     if (clinvarRecordHasAssociatedEfos(clinvarPublicSet, traitsToEfoTermsMap)) {
                         clinvarObjectsWithEfo++;
                     }
@@ -180,10 +188,11 @@ public class ClinVarParser extends CellBaseParser{
         }
     }
 
-    private ClinvarPublicSet buildClinvarPublicSet(PublicSetType publicSet) {
+    @Deprecated
+    private ClinvarPublicSet buildClinvarPublicSet(PublicSetType publicSet, SequenceLocationType sequenceLocation) {
         //Variant variant = obtainVariant(publicSet);
         ClinvarPublicSet clinvarPublicSet = null;
-        SequenceLocationType sequenceLocation = obtainAssembly37SequenceLocation(publicSet);
+//        SequenceLocationType sequenceLocation = obtainAssembly37SequenceLocation(publicSet);
         if (sequenceLocation != null) {
 
             clinvarPublicSet = new ClinvarPublicSet(sequenceLocation.getChr(),
@@ -196,6 +205,7 @@ public class ClinVarParser extends CellBaseParser{
         return clinvarPublicSet;
     }
 
+    @Deprecated
     private SequenceLocationType obtainAssembly37SequenceLocation(PublicSetType publicSet) {
         for (MeasureSetType.Measure measure : publicSet.getReferenceClinVarAssertion().getMeasureSet().getMeasure()) {
             for (SequenceLocationType location :  measure.getSequenceLocation()) {

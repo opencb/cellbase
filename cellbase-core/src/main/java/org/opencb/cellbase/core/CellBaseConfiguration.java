@@ -173,6 +173,7 @@ public class CellBaseConfiguration {
         private URLProperties interpro;
         private URLProperties conservation;
         private URLProperties clinvar;
+        private URLProperties clinvarSummary;
         private URLProperties clinvarEfoTerms;
         private URLProperties disgenet;
         private URLProperties dgidb;
@@ -210,6 +211,10 @@ public class CellBaseConfiguration {
         public void setClinvar(URLProperties clinvar) {
             this.clinvar = clinvar;
         }
+
+        public URLProperties getClinvarSummary() { return clinvarSummary; }
+
+        public void setClinvarSummary(URLProperties clinvarSummary) { this.clinvarSummary = clinvarSummary; }
 
         public URLProperties getClinvarEfoTerms() {
             return clinvarEfoTerms;
