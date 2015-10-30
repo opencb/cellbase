@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.serializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -73,6 +74,7 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
         if (!serializeEmptyValues) {
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         }
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 
