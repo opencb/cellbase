@@ -57,12 +57,11 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-            <resource>
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
+                <includes>
+                    <include>configuration.json</include>
+                </includes>
             </resource>
         </resources>
     </build>
