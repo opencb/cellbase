@@ -22,9 +22,14 @@ import org.junit.Test;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
+//import org.opencb.biodata.models.variant.Variant;
+//import org.opencb.biodata.models.variant.annotation.ConsequenceType;
+//import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
@@ -278,7 +283,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should not return String Index Out of Bounds
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 38679764, "-", "GATCTGAGAAGNGGAANANAAGGG"), new QueryOptions());  // should not return NPE
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("20", 44485953, "-", "ATCT"), new QueryOptions());  // should return ENSG00000101473 ENST00000217455 -       initiator_codon_variant
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("15", 78224189, "-", "C"), new QueryOptions());  // should
@@ -439,10 +445,11 @@ public class VariantAnnotationMongoDBAdaptorTest {
         /**
          * Calculates annotation for vcf file variants, loads vep annotations, compares batches and writes results
          */
-        String DIROUT = "/homes/fjlopez/tmp/";
+        String DIROUT = "/home/fjlopez/tmp/";
 //        String DIROUT = "/homes/fjlopez/tmp/";
         List<String> VCFS = new ArrayList<>();
 //        VCFS.add("/tmp/test.vcf");
+        VCFS.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
@@ -469,6 +476,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         List<String> VEPFILENAMES = new ArrayList<>();
 //        VEPFILENAMES.add("/tmp/test.txt");
+        VEPFILENAMES.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 //        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 //        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 //        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
@@ -615,13 +623,13 @@ public class VariantAnnotationMongoDBAdaptorTest {
                 int i;
                 List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
                 for (i = 0; i < consequenceTypeList.size(); i++) {
-                    for (ConsequenceType.ConsequenceTypeEntry soTerm : consequenceTypeList.get(i).getSoTerms()) {
-                        if (soTerm.getSoName().equals("2KB_upstream_gene_variant")) {
+                    for (SequenceOntologyTerm soTerm : consequenceTypeList.get(i).getSequenceOntologyTerms()) {
+                        if (soTerm.getName().equals("2KB_upstream_gene_variant")) {
                             SoNameToTest = "upstream_gene_variant";
-                        } else if (soTerm.getSoName().equals("2KB_downstream_gene_variant")) {
+                        } else if (soTerm.getName().equals("2KB_downstream_gene_variant")) {
                             SoNameToTest = "downstream_gene_variant";
                         } else {
-                            SoNameToTest = soTerm.getSoName();
+                            SoNameToTest = soTerm.getName();
                         }
                         uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
                                 consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
