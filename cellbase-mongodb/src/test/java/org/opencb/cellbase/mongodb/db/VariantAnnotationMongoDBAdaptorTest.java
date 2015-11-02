@@ -283,7 +283,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should not return String Index Out of Bounds
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 38679764, "-", "GATCTGAGAAGNGGAANANAAGGG"), new QueryOptions());  // should not return NPE
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("20", 44485953, "-", "ATCT"), new QueryOptions());  // should return ENSG00000101473 ENST00000217455 -       initiator_codon_variant
