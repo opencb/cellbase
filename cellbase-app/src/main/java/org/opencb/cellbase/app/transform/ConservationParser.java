@@ -28,7 +28,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
-public class ConservedRegionParser extends CellBaseParser {
+public class ConservationParser extends CellBaseParser {
 
 	private static int CHUNKSIZE = 2000;
 
@@ -42,12 +42,12 @@ public class ConservedRegionParser extends CellBaseParser {
     // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
-    public ConservedRegionParser(Path conservedRegionPath, int chunksize, CellBaseFileSerializer serializer) {
+    public ConservationParser(Path conservedRegionPath, int chunksize, CellBaseFileSerializer serializer) {
         super(serializer);
         fileSerializer = serializer;
         this.conservedRegionPath = conservedRegionPath;
         this.chunksize = chunksize;
-        logger = LoggerFactory.getLogger(ConservedRegionParser.class);
+        logger = LoggerFactory.getLogger(ConservationParser.class);
         outputFileNames = new HashMap<>();
     }
 

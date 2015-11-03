@@ -541,7 +541,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
         if(species.getScientificName().equals("Homo sapiens")) {
             makeDir(conservationFolder);
             makeDir(conservationFolder.resolve("phastCons"));
-            makeDir(conservationFolder.resolve("phyloP"));
+            makeDir(conservationFolder.resolve("phylop"));
+            makeDir(conservationFolder.resolve("gerp"));
 
             if(assembly.equalsIgnoreCase("GRCh37")) {
                 String url = configuration.getDownload().getConservation().getHost() + "/hg19";
@@ -552,7 +553,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i] + ".phastCons46way.primates.wigFix.gz").toString());
 
                     String phyloPUrl = url + "/phyloP46way/primates/chr"+chromosomes[i]+".phyloP46way.primate.wigFix.gz";
-                    downloadFile(phyloPUrl, conservationFolder.resolve("phyloP").resolve("chr" + chromosomes[i] + ".phyloP46way.primate.wigFix.gz").toString());
+                    downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosomes[i] + ".phyloP46way.primate.wigFix.gz").toString());
                 }
             }
             if(assembly.equalsIgnoreCase("GRCh38")) {
@@ -563,7 +564,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 downloadFile(phastConsUrl, outFile.toString());
 
                 String phyloPUrl = url + "/phyloP7way/hg38.phyloP7way.wigFix.gz";
-                outFile = conservationFolder.resolve("phyloP").resolve("hg38.phyloP7way.wigFix.gz");
+                outFile = conservationFolder.resolve("phylop").resolve("hg38.phyloP7way.wigFix.gz");
                 downloadFile(phyloPUrl, outFile.toString());
             }
         }
@@ -571,7 +572,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         if(species.getScientificName().equals("Mus musculus")) {
             makeDir(conservationFolder);
             makeDir(conservationFolder.resolve("phastCons"));
-            makeDir(conservationFolder.resolve("phyloP"));
+            makeDir(conservationFolder.resolve("phylop"));
 
             String url = configuration.getDownload().getConservation().getHost() + "/mm10";
             String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
@@ -581,7 +582,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i] + ".phastCons60way.wigFix.gz").toString());
 
                 String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr" + chromosomes[i] + ".phyloP60way.wigFix.gz";
-                downloadFile(phyloPUrl, conservationFolder.resolve("phyloP").resolve("chr" + chromosomes[i] + ".phyloP60way.wigFix.gz").toString());
+                downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosomes[i] + ".phyloP60way.wigFix.gz").toString());
             }
         }
     }
