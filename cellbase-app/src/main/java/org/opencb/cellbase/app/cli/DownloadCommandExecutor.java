@@ -545,6 +545,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
             makeDir(conservationFolder.resolve("gerp"));
 
             if(assembly.equalsIgnoreCase("GRCh37")) {
+                logger.debug("Downloading GERP++ ...");
+                downloadFile(configuration.getDownload().getGerp().getHost(), conservationFolder.resolve("gerp/hg19.GERP_scores.tar.gz").toAbsolutePath().toString());
+
                 String url = configuration.getDownload().getConservation().getHost() + "/hg19";
                 String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                         "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M"};
@@ -556,6 +559,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosomes[i] + ".phyloP46way.primate.wigFix.gz").toString());
                 }
             }
+
             if(assembly.equalsIgnoreCase("GRCh38")) {
                 String url = configuration.getDownload().getConservation().getHost() + "/hg38";
 
