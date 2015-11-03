@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
+import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.slf4j.Logger;
@@ -55,6 +56,12 @@ public class ConservationParser extends CellBaseParser {
     public void parse() throws IOException {
         if(conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory whether does not exist, is not a directory or cannot be read");
+        }
+
+        Path gerpFolderPath = conservedRegionPath.resolve("gerp");
+        if (gerpFolderPath.toFile().exists()) {
+            logger.debug("Parsing GERP data ...");
+            gerpParser(gerpFolderPath);
         }
 
         Map<String, Path> files = new HashMap<>();
@@ -149,6 +156,21 @@ public class ConservationParser extends CellBaseParser {
         conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
         fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
         br.close();
+    }
+
+    private void gerpParser(Path gerpFolderPath) throws IOException {
+        DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath);
+        for(Path path: pathDirectoryStream) {
+            List<ConservedRegionFeature> conservedRegionFeatures = new ArrayList<>(15000);
+//            String chromosome = path.getFileName().toString().split(".");
+//            BufferedReader bufferedReader = pathDirectoryStream. .........
+            // start = 1
+            // end = 1999
+            // while()
+                // read 2000 values
+            // conservedRegionFeatures.add(new ConservedRegionFeature)
+            // close();
+        }
     }
 
     private String getOutputFileName(String chromosome) {
