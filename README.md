@@ -96,9 +96,14 @@ Remember that **_develop_** branch dependencies are not ensured to be deployed a
 
     cellbase-app/build/
     ├── bin
+    ├── cellbase.war
+    ├── configuration.json
     ├── example
     ├── libs
+    ├── LICENSE
     ├── mongodb-scripts
+    └── README.md
+
 
 You can copy the content of the _build_ folder into any directory such as _/opt/cellbase_.
 
