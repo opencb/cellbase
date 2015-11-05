@@ -564,7 +564,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
         }
 
-        if(variant.getStart() ==spliceSite1 || variant.getStart() ==(spliceSite1+1)) {  // Variant donor/acceptor
+        if(variant.getStart().equals(spliceSite1) || variant.getStart().equals(spliceSite1+1)) {  // Variant donor/acceptor
             SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
             junctionSolution[0] = (variant.getStart() <=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
         } else {
@@ -578,7 +578,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
         }
 
-        if(variant.getStart() ==(spliceSite2-1) || variant.getStart() ==spliceSite2) {  // Variant donor/acceptor
+        if(variant.getStart().equals(spliceSite2-1) || variant.getStart().equals(spliceSite2)) {  // Variant donor/acceptor
             SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
             junctionSolution[0] = (variant.getStart() >=spliceSite1);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
         } else {

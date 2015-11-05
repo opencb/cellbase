@@ -194,14 +194,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private VariantAnnotator createCellBaseAnnotator() {
         if (local) {
-            try {
-                CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-                DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-                return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null), queryOptions);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+            return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null), queryOptions);
         } else {
             try {
                 String path = "/cellbase/webservices/rest/";
