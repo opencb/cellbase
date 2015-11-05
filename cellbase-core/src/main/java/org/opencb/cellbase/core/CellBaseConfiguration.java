@@ -172,6 +172,7 @@ public class CellBaseConfiguration {
         private URLProperties intact;
         private URLProperties interpro;
         private URLProperties conservation;
+        private URLProperties gerp;
         private URLProperties clinvar;
         private URLProperties clinvarEfoTerms;
         private URLProperties disgenet;
@@ -233,6 +234,14 @@ public class CellBaseConfiguration {
 
         public void setConservation(URLProperties conservation) {
             this.conservation = conservation;
+        }
+
+        public URLProperties getGerp() {
+            return gerp;
+        }
+
+        public void setGerp(URLProperties gerp) {
+            this.gerp = gerp;
         }
 
         public URLProperties getIntact() {

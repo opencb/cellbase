@@ -22,10 +22,6 @@ import org.junit.Test;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
-//import org.opencb.biodata.models.variant.Variant;
-//import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-//import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;

@@ -340,7 +340,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         int conservationChunkSize = 0;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
-        return new ConservedRegionParser(conservationFilesDir, conservationChunkSize, serializer);
+        return new ConservationParser(conservationFilesDir, conservationChunkSize, serializer);
     }
 
 
