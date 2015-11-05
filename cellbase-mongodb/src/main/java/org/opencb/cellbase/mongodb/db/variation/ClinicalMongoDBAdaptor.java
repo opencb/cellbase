@@ -18,6 +18,7 @@ package org.opencb.cellbase.mongodb.db.variation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -29,6 +30,8 @@ import com.mongodb.util.JSON;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.cellbase.core.common.variation.*;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -717,6 +720,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         ObjectWriter writer = jsonObjectMapper.writer();
 
         long start = System.nanoTime();
@@ -729,6 +733,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             try {
                 update = new BasicDBObject("$set", new BasicDBObject("annot",
                         JSON.parse(writer.writeValueAsString(variantAnnotation))));
+                update.put("$addToSet",
+                        new BasicDBObject("geneIds", new BasicDBObject("$each", getGeneIds(variantAnnotation))));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -738,6 +744,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
 
         return new QueryResult<>("", ((int) (System.nanoTime() - start)), 1, 1, "", "", new ArrayList());
+    }
+
+    private List<String> getGeneIds(VariantAnnotation variantAnnotation) {
+        Set<String> geneIdSet = new HashSet<>();
+        for(ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+            geneIdSet.add(consequenceType.getGeneName());
+            geneIdSet.add(consequenceType.getEnsemblGeneId());
+        }
+
+        return new ArrayList<>(geneIdSet);
     }
 
 //    private DBObject convertVariantAnnotation(VariantAnnotation variantAnnotation) {
