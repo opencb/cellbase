@@ -162,35 +162,32 @@ public class ConservationParser extends CellBaseParser {
     }
 
     private void gerpParser(Path gerpFolderPath) throws IOException {
-        DirectoryStream.Filter<Path> docFilter = entry -> {
-            String filename = entry.getFileName().toString();
-            return filename != null && filename.endsWith(".rates");
-        };
-        DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, docFilter );
-        for(Path path: pathDirectoryStream) {
+        DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
+        for (Path path: pathDirectoryStream) {
             logger.debug("Processing file {}", path.getFileName().toString());
-//            List<ConservedRegionFeature> conservedRegionFeatures = new ArrayList<>(15000);
             String[] chromosome = path.getFileName().toString().split("\\.");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
             String line;
             int start = 1;
             int end = 1999;
+            int counter = 1;
             String[] fields;
             List<Float> val = new ArrayList<>();
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
                 val.add(Float.valueOf(fields[1]));
-                if (start == end) {
+                counter++;
+                if (counter == CHUNKSIZE) {
                     ConservedRegionFeature conservedRegionFeature = new ConservedRegionFeature(chromosome[0], start, end, "gerp", val);
-//                    conservedRegionFeatures.add(new ConservedRegionFeature(chromosome[0], start, end, "gerp", val));
                     fileSerializer.serialize(conservedRegionFeature, getOutputFileName(chromosome[0]));
-//                    start = end + 1;
+
+                    start = end + 1;
                     end += CHUNKSIZE;
+
+                    counter = 0;
                     val.clear();
                 }
-                start++;
             }
-//            System.out.println(conservedRegionFeatures);
             bufferedReader.close();
         }
     }
