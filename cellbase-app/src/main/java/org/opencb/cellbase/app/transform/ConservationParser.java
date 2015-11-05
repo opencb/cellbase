@@ -16,9 +16,9 @@
 
 package org.opencb.cellbase.app.transform;
 
+import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
-import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,13 +26,15 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
 public class ConservationParser extends CellBaseParser {
 
-    private static int CHUNKSIZE = 2000;
+    private static int CHUNK_SIZE = 2000;
 
     private Logger logger;
     private Path conservedRegionPath;
@@ -44,11 +46,15 @@ public class ConservationParser extends CellBaseParser {
     // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
-    public ConservationParser(Path conservedRegionPath, int chunksize, CellBaseFileSerializer serializer) {
+    public ConservationParser(Path conservedRegionPath, CellBaseFileSerializer serializer) {
+        this(conservedRegionPath, CHUNK_SIZE, serializer);
+    }
+
+    public ConservationParser(Path conservedRegionPath, int chunkSize, CellBaseFileSerializer serializer) {
         super(serializer);
         fileSerializer = serializer;
         this.conservedRegionPath = conservedRegionPath;
-        this.chunksize = chunksize;
+        this.chunksize = chunkSize;
         logger = LoggerFactory.getLogger(ConservationParser.class);
         outputFileNames = new HashMap<>();
     }
@@ -105,7 +111,7 @@ public class ConservationParser extends CellBaseParser {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(inGzPath))));
 
-        String line = null;
+        String line;
         String chromosome = "";
         int start = 0, end=0;
         float value;
@@ -120,7 +126,7 @@ public class ConservationParser extends CellBaseParser {
                 //new group, save last
                 if(conservedRegion != null){
                     conservedRegion.setEnd(end);
-                    conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
+                    conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/ CHUNK_SIZE, values);
                     fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
                 }
 
@@ -140,9 +146,9 @@ public class ConservationParser extends CellBaseParser {
 
                 values = new ArrayList<>(2000);
             } else {
-                int startChunk = start/CHUNKSIZE;
+                int startChunk = start/ CHUNK_SIZE;
                 end++;
-                int endChunk = end/CHUNKSIZE;
+                int endChunk = end/ CHUNK_SIZE;
 
                 if(startChunk != endChunk) {
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end-1, conservedType, startChunk, values);
@@ -156,7 +162,7 @@ public class ConservationParser extends CellBaseParser {
             }
         }
         //write last
-        conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/CHUNKSIZE, values);
+        conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/ CHUNK_SIZE, values);
         fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
         br.close();
     }
@@ -177,12 +183,12 @@ public class ConservationParser extends CellBaseParser {
                 fields = line.split("\t");
                 val.add(Float.valueOf(fields[1]));
                 counter++;
-                if (counter == CHUNKSIZE) {
+                if (counter == chunksize) {
                     ConservedRegionFeature conservedRegionFeature = new ConservedRegionFeature(chromosome[0], start, end, "gerp", val);
                     fileSerializer.serialize(conservedRegionFeature, getOutputFileName(chromosome[0]));
 
                     start = end + 1;
-                    end += CHUNKSIZE;
+                    end += chunksize;
 
                     counter = 0;
                     val.clear();
