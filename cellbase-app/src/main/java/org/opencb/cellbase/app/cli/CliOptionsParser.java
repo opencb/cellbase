@@ -17,10 +17,11 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.commons.utils.CommandLineUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 03/02/15.
@@ -327,7 +328,7 @@ public class CliOptionsParser {
             System.err.println("Usage:   cellbase.sh " + parsedCommand + " [options]");
             System.err.println("");
             System.err.println("Options:");
-            printCommandUsage(jCommander.getCommands().get(parsedCommand));
+            CommandLineUtils.printCommandUsage(jCommander.getCommands().get(parsedCommand));
             System.err.println("");
         }
     }
@@ -335,32 +336,6 @@ public class CliOptionsParser {
     private void printMainUsage() {
         for (String s : jCommander.getCommands().keySet()) {
             System.err.printf("%20s  %s\n", s, jCommander.getCommandDescription(s));
-        }
-    }
-
-    private void printCommandUsage(JCommander commander) {
-        for (ParameterDescription parameterDescription : commander.getParameters()) {
-            String type = "";
-            if (parameterDescription.getParameterized().getParameter() != null && parameterDescription.getParameterized().getParameter().arity() > 0) {
-                type = parameterDescription.getParameterized().getGenericType().getTypeName().replace("java.lang.", "").toUpperCase();
-            }
-            if(!parameterDescription.isHelp()) {
-                System.err.printf("%5s %-20s %-10s %s [%s]\n",
-                        (parameterDescription.getParameterized().getParameter() != null
-                                && parameterDescription.getParameterized().getParameter().required()) ? "*": "",
-                        parameterDescription.getNames(),
-                        type,
-                        parameterDescription.getDescription(),
-                        parameterDescription.getDefault());
-            } else {
-                // This prints 'help' usage with no default [false] value
-                System.err.printf("%5s %-20s %-10s %s\n",
-                        (parameterDescription.getParameterized().getParameter() != null
-                                && parameterDescription.getParameterized().getParameter().required()) ? "*": "",
-                        parameterDescription.getNames(),
-                        type,
-                        parameterDescription.getDescription());
-            }
         }
     }
 
