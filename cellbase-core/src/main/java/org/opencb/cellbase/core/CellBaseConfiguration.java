@@ -178,6 +178,7 @@ public class CellBaseConfiguration {
         private URLProperties disgenet;
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
+        private URLProperties dbsnp;
 
 
         public EnsemblProperties getEnsembl() {
@@ -283,6 +284,10 @@ public class CellBaseConfiguration {
         public void setGwasCatalog(URLProperties gwasCatalog) {
             this.gwasCatalog = gwasCatalog;
         }
+
+        public URLProperties getDbsnp() { return dbsnp; }
+
+        public void setDbsnp(URLProperties dbsnp) { this.dbsnp = dbsnp; }
 
         public URLProperties getMirbase() {
             return mirbase;

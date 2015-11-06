@@ -607,6 +607,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             url = configuration.getDownload().getGwasCatalog().getHost();
             downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
+
+            url = configuration.getDownload().getDbsnp().getHost();
+            downloadFile(url, clinicalFolder.resolve("All.vcf.gz").toString());
+
+            url = url+".tbi";
+            downloadFile(url, clinicalFolder.resolve("All.vcf.gz.tbi").toString());
         }
     }
 

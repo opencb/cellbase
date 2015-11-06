@@ -101,25 +101,25 @@ public class CosmicParser extends CellBaseParser {
         // 6 ID tumour
         // 7 Primary site
         // 8 Site subtype
-        // 9 Primary histology
-        // 10 Histology subtype
-        // 11 Genome-wide screen
-        // 12 Mutation ID
-        // 13 Mutation CDS
-        // 14 Mutation AA
-        // 15 Mutation Description
-        // 16 Mutation zygosity
-        // 17 Mutation GRCh37 genome position
-        // 18 Mutation GRCh37 strand
-        // 19 Snp
-        // 20 FATHMM Prediction
-        // 21 Mutation somatic status
-        // 22 PubMed PMID
-        // 23 ID STUDY
-        // 24 Sample source
-        // 25 Tumour origin
-        // 26 Age
-        // 27 Comments
+        // 11 Primary histology
+        // 12 Histology subtype
+        // 15 Genome-wide screen
+        // 16 Mutation ID
+        // 17 Mutation CDS
+        // 18 Mutation AA
+        // 19 Mutation Description
+        // 29 Mutation zygosity
+        // 23 Mutation GRCh37 genome position
+        // 24 Mutation GRCh37 strand
+        // 25 Snp
+        // 26 FATHMM Prediction
+        // 28 Mutation somatic status
+        // 29 PubMed PMID
+        // 30 ID STUDY
+        // 31 Sample source
+        // 32 Tumour origin
+        // 33 Age
+        // 34 Comments
         String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
         Cosmic cosmic = new Cosmic();
         cosmic.setGeneName(fields[0]);
@@ -131,31 +131,31 @@ public class CosmicParser extends CellBaseParser {
         cosmic.setID_tumour(fields[6]);
         cosmic.setPrimarySite(fields[7]);
         cosmic.setSiteSubtype(fields[8]);
-        cosmic.setPrimaryHistology(fields[9]);
-        cosmic.setHistologySubtype(fields[10]);
-        cosmic.setGenomeWideScreen(fields[11]);
-        cosmic.setMutationID(fields[12]);
-        cosmic.setMutationCDS(fields[13]);
-        cosmic.setMutationAA(fields[14]);
-        cosmic.setMutationDescription(fields[15]);
-        cosmic.setMutationZygosity(fields[16]);
-        cosmic.setMutationGRCh37GenomePosition(fields[17]);
-        cosmic.setMutationGRCh37Strand(fields[18]);
-        if(!fields[19].isEmpty() && fields[19].equalsIgnoreCase("y")){
+        cosmic.setPrimaryHistology(fields[11]);
+        cosmic.setHistologySubtype(fields[12]);
+        cosmic.setGenomeWideScreen(fields[15]);
+        cosmic.setMutationID(fields[16]);
+        cosmic.setMutationCDS(fields[17]);
+        cosmic.setMutationAA(fields[18]);
+        cosmic.setMutationDescription(fields[19]);
+        cosmic.setMutationZygosity(fields[20]);
+        cosmic.setMutationGRCh37GenomePosition(fields[23]);
+        cosmic.setMutationGRCh37Strand(fields[24]);
+        if(!fields[25].isEmpty() && fields[25].equalsIgnoreCase("y")){
             cosmic.setSnp(true);
         }
-        cosmic.setFathmmPrediction(fields[20]);
-        cosmic.setMutationSomaticStatus(fields[21]);
-        cosmic.setPubmedPMID(fields[22]);
-        if (!fields[23].isEmpty() && !fields[23].equals("NS")) {
-            cosmic.setIdStudy(Integer.parseInt(fields[23]));
+        cosmic.setFathmmPrediction(fields[26]);
+        cosmic.setMutationSomaticStatus(fields[28]);
+        cosmic.setPubmedPMID(fields[29]);
+        if (!fields[30].isEmpty() && !fields[30].equals("NS")) {
+            cosmic.setIdStudy(Integer.parseInt(fields[30]));
         }
-        cosmic.setSampleSource(fields[24]);
-        cosmic.setTumourOrigin(fields[25]);
-        if(!fields[26].isEmpty() && !fields[26].equals("NS")) {
-            cosmic.setAge(Float.parseFloat(fields[26]));
+        cosmic.setSampleSource(fields[31]);
+        cosmic.setTumourOrigin(fields[32]);
+        if(!fields[33].isEmpty() && !fields[33].equals("NS")) {
+            cosmic.setAge(Float.parseFloat(fields[33]));
         }
-        cosmic.setComments(fields[27]);
+//        cosmic.setComments(fields[34]);
         return cosmic;
     }
 

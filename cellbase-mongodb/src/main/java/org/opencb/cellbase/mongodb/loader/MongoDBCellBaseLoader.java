@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.mongodb.loader;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BulkWriteResult;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -38,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -52,6 +55,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private Path indexScriptFolder;
     private int[] chunkSizes;
+    private String clinicalVariantSource;
+
+    private static final String CLINVARVARIANTSOURCE = "clinvar";
+    private static final String COSMICVARIANTSOURCE = "cosmic";
+    private static final String GWASVARIANTSOURCE = "gwas";
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
         this(queue, data, database, null);
@@ -144,8 +152,17 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 collectionName = "conservation";
                 break;
             case "cosmic":
+                clinicalVariantSource = "cosmic";
+                collectionName = "clinical";
+                break;
             case "clinvar":
+                clinicalVariantSource = "clinvar";
+                collectionName = "clinical";
+                break;
             case "gwas":
+                clinicalVariantSource = "gwas";
+                collectionName = "clinical";
+                break;
             case "clinical":
                 collectionName = "clinical";
                 break;
@@ -195,6 +212,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     for (String jsonLine : batch) {
                         DBObject dbObject = (DBObject) JSON.parse(jsonLine);
                         addChunkId(dbObject);
+                        addGeneId(dbObject);
                         dbObjectsBatch.add(dbObject);
                     }
                     loadedObjects += load(dbObjectsBatch);
@@ -207,6 +225,63 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
         logger.debug("'load' finished. " + loadedObjects + " records loaded");
         return loadedObjects;
+    }
+
+    private void addGeneId(DBObject dbObject) {
+//        if (clinicalVariantSource != null) {
+        String geneId;
+        switch (clinicalVariantSource) {
+            case CLINVARVARIANTSOURCE:
+                List<String> geneIdList;
+                geneIdList = getClinvarGeneIds(dbObject);
+                if(geneIdList!=null) {
+                    dbObject.put("geneIds", geneIdList);
+                }
+                break;
+            case COSMICVARIANTSOURCE:
+                geneId = (String) dbObject.get("geneName");
+                if(geneId!=null) {
+                    dbObject.put("geneIds", Collections.singletonList(geneId));
+                }
+                break;
+            case GWASVARIANTSOURCE:
+                geneId = (String) dbObject.get("reportedGenes");
+                if(geneId!=null) {
+                    dbObject.put("geneIds", geneId);
+                }
+        }
+//        }
+    }
+
+    private List<String> getClinvarGeneIds(DBObject dbObject) {
+        List<String> geneIdList = new ArrayList<>();
+        BasicDBList basicDBList = (BasicDBList)((BasicDBObject)((BasicDBObject)((BasicDBObject) dbObject.get("clinvarSet")).get("referenceClinVarAssertion")).get("measureSet")).get("measure");
+        for(Object object : basicDBList) {
+            BasicDBObject basicDBObject = (BasicDBObject) object;
+            BasicDBList measureRelationshipDBList=(BasicDBList)basicDBObject.get("measureRelationship");
+            if(measureRelationshipDBList!=null) {
+                for(Object measureRelationShipObject : measureRelationshipDBList) {
+                    BasicDBList symbolDBList = (BasicDBList)((BasicDBObject)measureRelationShipObject).get("symbol");
+                    if(symbolDBList!=null) {
+                        for(Object symbolObject : symbolDBList) {
+                            BasicDBObject elementValueDBObject = (BasicDBObject)((BasicDBObject) symbolObject).get("elementValue");
+                            if(elementValueDBObject!=null) {
+                                String geneId = (String)elementValueDBObject.get("value");
+                                if(geneId!=null) {
+                                    geneIdList.add(geneId);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        if(geneIdList.size()>0) {
+            return geneIdList;
+        } else {
+            return null;
+        }
     }
 
     @Override
