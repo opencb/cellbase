@@ -198,7 +198,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        System.out.println("geneList = " + geneList);
         if (geneList != null && geneList.size() > 0) {
             logger.info("gene filter activated, gene list: " + geneList.toString());
-            builder = builder.and(new BasicDBObject("geneIds", new BasicDBObject("$in", geneList)));
+            builder = builder.and(new BasicDBObject("_geneIds", new BasicDBObject("$in", geneList)));
         }
         return builder;
     }
@@ -734,7 +734,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 update = new BasicDBObject("$set", new BasicDBObject("annot",
                         JSON.parse(writer.writeValueAsString(variantAnnotation))));
                 update.put("$addToSet",
-                        new BasicDBObject("geneIds", new BasicDBObject("$each", getGeneIds(variantAnnotation))));
+                        new BasicDBObject("_geneIds", new BasicDBObject("$each", getGeneIds(variantAnnotation))));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }

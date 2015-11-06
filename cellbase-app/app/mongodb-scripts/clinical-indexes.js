@@ -21,7 +21,7 @@ db.getCollection('clinical').ensureIndex({'clinvarSet.referenceClinVarAssertion.
 db.getCollection('clinical').ensureIndex({'clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value': 'text'})
 db.getCollection('clinical').ensureIndex({'clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id': 1})
 db.getCollection('clinical').ensureIndex({'clinvarSet.referenceClinVarAssertion.measureSet.measure.type': 1})
-db.getCollection('clinical').ensureIndex({'geneIds': 1})
+db.getCollection('clinical').ensureIndex({'_geneIds': 1})
 //db.getCollection('clinical').ensureIndex({'annot.consequenceTypes.soTerms.soName': 1})
 db.getCollection('clinical').ensureIndex({'clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus': 1})
 db.getCollection('clinical').ensureIndex({'clinvarSet.referenceClinVarAssertion.clinicalSignificance.description': 1})
