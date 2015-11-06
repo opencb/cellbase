@@ -17,10 +17,12 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.cellbase.app.transform.utils.FileUtils;
+import org.opencb.cellbase.core.common.GenomicPositionScore;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,16 +59,44 @@ public class CaddScoreParser extends CellBaseParser {
 
         BufferedReader bufferedReader = FileUtils.newBufferedReader(caddFilePath);
 
-        List<Double> values = new ArrayList<>(CHUNK_SIZE);
+        List<Long> values = new ArrayList<>(CHUNK_SIZE);
+
+        int start = 1;
+        int end = 1999;
+        int counter = 1;
         String line;
         String[] fields;
-        while((line = bufferedReader.readLine()) != null) {
+        short v1;
+        long l = 0;
+        int linecount = 1;
+        int pos = 0;
+        while ((line = bufferedReader.readLine()) != null) {
             fields = line.split("\t");
 
-            // every 3 values ==>  1 Double  (shift bits)
-//            new GenomicPositionScore();
-        }
+            if (linecount <= 3) {
+                float a = Float.parseFloat(fields[4]);
+                v1 = (short) (a * 10000);
+                l |= (v1 << 16 * pos);
+                pos++;
+            } else {
+                linecount = 0;
+                pos = 0;
+                values.add(l);
+                l = 0;
+            }
 
-        bufferedReader.close();
+            counter++;
+            if (counter == CHUNK_SIZE) {
+                GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "Cadd", values);
+                serializer.serialize(genomicPositionScore);
+                start = end + 1;
+                end += CHUNK_SIZE;
+
+                counter = 0;
+                values.clear();
+
+            }
+            bufferedReader.close();
+        }
     }
 }
