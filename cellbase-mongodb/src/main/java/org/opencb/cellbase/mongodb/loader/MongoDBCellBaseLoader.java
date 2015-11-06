@@ -236,19 +236,19 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     List<String> geneIdList;
                     geneIdList = getClinvarGeneIds(dbObject);
                     if (geneIdList != null) {
-                        dbObject.put("geneIds", geneIdList);
+                        dbObject.put("_geneIds", geneIdList);
                     }
                     break;
                 case COSMICVARIANTSOURCE:
                     geneId = (String) dbObject.get("geneName");
                     if (geneId != null) {
-                        dbObject.put("geneIds", Collections.singletonList(geneId));
+                        dbObject.put("_geneIds", Collections.singletonList(geneId));
                     }
                     break;
                 case GWASVARIANTSOURCE:
                     geneId = (String) dbObject.get("reportedGenes");
                     if (geneId != null) {
-                        dbObject.put("geneIds", geneId);
+                        dbObject.put("_geneIds", geneId);
                     }
             }
         }
