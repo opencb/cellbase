@@ -178,7 +178,7 @@ public class ConservationParser extends CellBaseParser {
             int end = 1999;
             int counter = 1;
             String[] fields;
-            List<Float> val = new ArrayList<>();
+            List<Float> val = new ArrayList<>(chunksize);
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
                 val.add(Float.valueOf(fields[1]));

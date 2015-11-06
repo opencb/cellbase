@@ -214,6 +214,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadGene2Disease(sp, spShortName, assembly.getName(), spFolder);
                         }
                         break;
+                    case "cadd":
+                        if(speciesHasInfoToDownload(sp, "cadd")) {
+                            downloadCadScores(sp, spFolder);
+                        }
+                        break;
+                    default:
+                        System.out.println("This data parameter is not allowed");
+                        break;
                 }
             }
         }
@@ -629,6 +637,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         }
     }
+
+    private void downloadCadScores(Species species, Path speciesFolder)
+            throws IOException, InterruptedException {
+
+        if(species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading CADD scores information ...");
+
+            Path caddScoresFolder = speciesFolder.resolve("cadd");
+            makeDir(caddScoresFolder);
+            String url = configuration.getDownload().getCadd().getHost();
+            downloadFile(url, caddScoresFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
+        }
+    }
+
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
