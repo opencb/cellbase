@@ -27,9 +27,12 @@ public class GenomicPositionScore {
     private int start;
     private int end;
     private String source;
-    private List<Double> values;
+    /**
+        This value can code for 3 float numbers like in CADD scores, for this Long looks better than Double
+     */
+    private List<Long> values;
 
-    public GenomicPositionScore(String chromosome, int start, int end, String type, List<Double> values) {
+    public GenomicPositionScore(String chromosome, int start, int end, String type, List<Long> values) {
         this.chromosome = chromosome;
         this.start = start;
         this.end = end;
@@ -81,11 +84,11 @@ public class GenomicPositionScore {
         this.source = source;
     }
 
-    public List<Double> getValues() {
+    public List<Long> getValues() {
         return values;
     }
 
-    public void setValues(List<Double> values) {
+    public void setValues(List<Long> values) {
         this.values = values;
     }
 
