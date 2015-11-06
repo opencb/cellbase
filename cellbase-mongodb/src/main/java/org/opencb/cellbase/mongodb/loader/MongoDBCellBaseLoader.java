@@ -230,25 +230,27 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private void addGeneId(DBObject dbObject) {
 //        if (clinicalVariantSource != null) {
         String geneId;
-        switch (clinicalVariantSource) {
-            case CLINVARVARIANTSOURCE:
-                List<String> geneIdList;
-                geneIdList = getClinvarGeneIds(dbObject);
-                if(geneIdList!=null) {
-                    dbObject.put("geneIds", geneIdList);
-                }
-                break;
-            case COSMICVARIANTSOURCE:
-                geneId = (String) dbObject.get("geneName");
-                if(geneId!=null) {
-                    dbObject.put("geneIds", Collections.singletonList(geneId));
-                }
-                break;
-            case GWASVARIANTSOURCE:
-                geneId = (String) dbObject.get("reportedGenes");
-                if(geneId!=null) {
-                    dbObject.put("geneIds", geneId);
-                }
+        if(clinicalVariantSource!=null) {
+            switch (clinicalVariantSource) {
+                case CLINVARVARIANTSOURCE:
+                    List<String> geneIdList;
+                    geneIdList = getClinvarGeneIds(dbObject);
+                    if (geneIdList != null) {
+                        dbObject.put("geneIds", geneIdList);
+                    }
+                    break;
+                case COSMICVARIANTSOURCE:
+                    geneId = (String) dbObject.get("geneName");
+                    if (geneId != null) {
+                        dbObject.put("geneIds", Collections.singletonList(geneId));
+                    }
+                    break;
+                case GWASVARIANTSOURCE:
+                    geneId = (String) dbObject.get("reportedGenes");
+                    if (geneId != null) {
+                        dbObject.put("geneIds", geneId);
+                    }
+            }
         }
 //        }
     }
