@@ -70,17 +70,15 @@ public class CaddScoreParser extends CellBaseParser {
         long l = 0;
         int linecount = 1;
         int pos = 0;
-        while((line = bufferedReader.readLine()) != null) {
-                fields = line.split("\t");
+        while ((line = bufferedReader.readLine()) != null) {
+            fields = line.split("\t");
 
-            if ( linecount <= 3 ) {
+            if (linecount <= 3) {
                 float a = Float.parseFloat(fields[4]);
                 v1 = (short) (a * 10000);
                 l |= (v1 << 16 * pos);
-                pos ++;
-            }
-            else
-            {
+                pos++;
+            } else {
                 linecount = 0;
                 pos = 0;
                 values.add(l);
@@ -88,7 +86,7 @@ public class CaddScoreParser extends CellBaseParser {
             }
 
             counter++;
-            if (counter == CHUNK_SIZE ) {
+            if (counter == CHUNK_SIZE) {
                 GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "Cadd", values);
                 serializer.serialize(genomicPositionScore);
                 start = end + 1;
@@ -98,6 +96,7 @@ public class CaddScoreParser extends CellBaseParser {
                 values.clear();
 
             }
-        bufferedReader.close();
+            bufferedReader.close();
+        }
     }
 }
