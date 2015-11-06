@@ -179,6 +179,7 @@ public class CellBaseConfiguration {
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
         private URLProperties dbsnp;
+        private URLProperties cadd;
 
 
         public EnsemblProperties getEnsembl() {
@@ -313,6 +314,13 @@ public class CellBaseConfiguration {
             this.miRTarBase = miRTarBase;
         }
 
+        public URLProperties getCadd() {
+            return cadd;
+        }
+
+        public void setCadd(URLProperties cadd) {
+            this.cadd = cadd;
+        }
 
         public static class EnsemblProperties {
             private DatabaseProperties database;

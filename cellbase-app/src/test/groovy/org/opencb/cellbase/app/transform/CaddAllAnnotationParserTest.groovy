@@ -26,7 +26,7 @@ import java.nio.file.Paths
 /**
  * Created by parce on 10/21/14.
  */
-class CaddParserTest extends Specification {
+class CaddAllAnnotationParserTest extends Specification {
 
     def caddParserChr1
     def caddParserChrX
@@ -39,9 +39,9 @@ class CaddParserTest extends Specification {
         serializedVariants = new ArrayList<Cadd>()
         serializer.serialize(_) >> { Cadd arg -> serializedVariants.add(arg) }
 
-        def caddFile = Paths.get(CaddParserTest.class.getResource("/caddTest.tsv.gz").toURI())
-        caddParserChr1 = new CaddParser(caddFile, "1", serializer)
-        caddParserChrX  = new CaddParser(caddFile, "X", serializer)
+        def caddFile = Paths.get(CaddAllAnnotationParserTest.class.getResource("/caddTest.tsv.gz").toURI())
+        caddParserChr1 = new CaddAllAnnotationParser(caddFile, "1", serializer)
+        caddParserChrX  = new CaddAllAnnotationParser(caddFile, "X", serializer)
     }
 
     def "Parse"() {
