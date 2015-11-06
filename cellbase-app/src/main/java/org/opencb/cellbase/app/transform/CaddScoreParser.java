@@ -22,10 +22,11 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 06/11/15.
@@ -35,6 +36,7 @@ public class CaddScoreParser extends CellBaseParser {
     private Path caddFilePath;
 
     private static int CHUNK_SIZE = 2000;
+    private static final int DECIMAL_RESOLUTION = 10000;
 
     public CaddScoreParser(Path caddFilePath, CellBaseSerializer serializer) {
         super(serializer);
@@ -66,37 +68,47 @@ public class CaddScoreParser extends CellBaseParser {
         int counter = 1;
         String line;
         String[] fields;
-        short v1;
+        short v;
         long l = 0;
-        int linecount = 1;
-        int pos = 0;
+        int lineCount = 1;
+        String[] nucleotides = new String[]{"A", "C", "G", "T"};
+        Map<String, Float> mapValues = new HashMap<>();
         while ((line = bufferedReader.readLine()) != null) {
-            fields = line.split("\t");
+            if (line.startsWith("#")) {
+                continue;
+            }
 
-            if (linecount <= 3) {
-                float a = Float.parseFloat(fields[4]);
-                v1 = (short) (a * 10000);
-                l |= (v1 << 16 * pos);
-                pos++;
-            } else {
-                linecount = 0;
-                pos = 0;
+            fields = line.split("\t");
+            mapValues.put(fields[3], Float.valueOf(fields[4]));
+//                float a = Float.parseFloat(fields[4]);
+//                v1 = (short) (a * DECIMAL_RESOLUTION);
+//                l |= (v1 << 16 * pos);
+//                pos++;
+            if (lineCount++ == 3) {
+                for (String nucleotide : nucleotides) {
+                    float a = mapValues.getOrDefault(nucleotide, -2f);
+                    v = (short) (a * DECIMAL_RESOLUTION);
+                    l = (l << 16) | v;
+                }
+
+                lineCount = 0;
                 values.add(l);
                 l = 0;
+                mapValues.clear();
             }
 
             counter++;
             if (counter == CHUNK_SIZE) {
-                GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "Cadd", values);
+                System.out.println(values);
+                GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd", values);
                 serializer.serialize(genomicPositionScore);
                 start = end + 1;
                 end += CHUNK_SIZE;
 
                 counter = 0;
                 values.clear();
-
             }
-            bufferedReader.close();
         }
+        bufferedReader.close();
     }
 }
