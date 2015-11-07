@@ -32,12 +32,36 @@ public class CaddScoreParserTest {
 
     @Test
     public void testParse() throws Exception {
-        CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "cadd.json");
+        CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "cadd");
 
         Path inputPath = Paths.get(getClass().getResource("/cadd_example.txt.gz").toURI());
         CaddScoreParser caddScoreParser = new CaddScoreParser(inputPath, cellBaseSerializer);
         caddScoreParser.parse();
 
+        long l1 = 3763369539475633456L;
+        long l2 = 2440691865951630640L;
+        float DECIMAL_RESOLUTION = 10000f;
 
+
+        float a = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
+        float c = ((short) (l1 >> 32) - 10000) / DECIMAL_RESOLUTION;
+        float g = ((short) (l1 >> 16) - 10000) / DECIMAL_RESOLUTION;
+        float t = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
+
+        assertEquals("Error getting A score value from CADD", 0.337f, a, DECIMAL_RESOLUTION);
+        assertEquals("Error getting C score value from CADD", 0.1432f, c, DECIMAL_RESOLUTION);
+        assertEquals("Error getting G score value from CADD", 0.2024f, g, DECIMAL_RESOLUTION);
+        assertEquals("Error getting T score value from CADD", 2f, t, DECIMAL_RESOLUTION);
+
+
+        a = ((short) (l2 >> 48) - 10000) / DECIMAL_RESOLUTION;
+        c = ((short) (l2 >> 32) - 10000) / DECIMAL_RESOLUTION;
+        g = ((short) (l2 >> 16) - 10000) / DECIMAL_RESOLUTION;
+        t = ((short) (l2 >> 0) - 10000) / DECIMAL_RESOLUTION;
+
+        assertEquals("Error getting A score value from CADD", -0.1328f, a, DECIMAL_RESOLUTION);
+        assertEquals("Error getting C score value from CADD", -0.4797f, c, DECIMAL_RESOLUTION);
+        assertEquals("Error getting G score value from CADD", -0.2772f, g, DECIMAL_RESOLUTION);
+        assertEquals("Error getting T score value from CADD", 2f, t, DECIMAL_RESOLUTION);
     }
 }
