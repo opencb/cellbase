@@ -23,6 +23,7 @@ import java.util.List;
  * @author lcruz
  * @since 31/10/2014
  */
+@Deprecated
 public class ConservedRegionFeature {
     private String chromosome;
     private int start;

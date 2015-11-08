@@ -34,6 +34,7 @@ import java.util.zip.GZIPInputStream;
  * @author lcruz
  * @since 03/11/2014
  */
+@Deprecated
 public class WigParser extends CellBaseParser{
     private final Path wigsFolder;
     private int chunkSize;
