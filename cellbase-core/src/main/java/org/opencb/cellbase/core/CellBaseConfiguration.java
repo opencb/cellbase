@@ -175,6 +175,7 @@ public class CellBaseConfiguration {
         private URLProperties gerp;
         private URLProperties clinvar;
         private URLProperties clinvarEfoTerms;
+        private URLProperties hpo;
         private URLProperties disgenet;
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
@@ -222,13 +223,29 @@ public class CellBaseConfiguration {
             this.clinvarEfoTerms = clinvarEfoTerms;
         }
 
-        public URLProperties getDisgenet() { return disgenet; }
+        public URLProperties getHpo() {
+            return hpo;
+        }
 
-        public void setDisgenet(URLProperties disgenet) { this.disgenet = disgenet; }
+        public void setHpo(URLProperties hpo) {
+            this.hpo = hpo;
+        }
 
-        public URLProperties getDgidb() { return dgidb; }
+        public URLProperties getDisgenet() {
+            return disgenet;
+        }
 
-        public void setDgidb(URLProperties dgidb) { this.dgidb = dgidb; }
+        public void setDisgenet(URLProperties disgenet) {
+            this.disgenet = disgenet;
+        }
+
+        public URLProperties getDgidb() {
+            return dgidb;
+        }
+
+        public void setDgidb(URLProperties dgidb) {
+            this.dgidb = dgidb;
+        }
 
         public URLProperties getConservation() {
             return conservation;

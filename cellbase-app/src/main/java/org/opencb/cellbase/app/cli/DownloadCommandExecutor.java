@@ -211,7 +211,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                     case "gene2disease":
                         if(speciesHasInfoToDownload(sp, "gene2disease")) {
-                            downloadGene2Disease(sp, spShortName, assembly.getName(), spFolder);
+                            downloadGene2Disease(sp, spFolder);
                         }
                         break;
                     case "cadd":
@@ -624,7 +624,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadGene2Disease(Species species, String shortName, String assembly, Path speciesFolder)
+    private void downloadGene2Disease(Species species, Path speciesFolder)
             throws IOException, InterruptedException {
 
         if(species.getScientificName().equals("Homo sapiens")) {
@@ -632,9 +632,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             Path gene2diseaseFolder = speciesFolder.resolve("gene2disease");
             makeDir(gene2diseaseFolder);
-            String url = configuration.getDownload().getDisgenet().getHost();
-            downloadFile(url, gene2diseaseFolder.resolve("disgenet.tar.gz").toString());
 
+            String url = configuration.getDownload().getDisgenet().getHost();
+            downloadFile(url, gene2diseaseFolder.resolve("all_gene_disease_associations.txt.gz").toString());
+
+            url = configuration.getDownload().getHpo().getHost();
+            downloadFile(url, gene2diseaseFolder.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").toString());
         }
     }
 

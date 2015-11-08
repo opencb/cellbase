@@ -23,6 +23,7 @@ import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -339,7 +340,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CellBaseParser buildConservation() {
         Path conservationFilesDir = input.resolve("conservation");
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
-        int conservationChunkSize = 0;
+        int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
         return new ConservationParser(conservationFilesDir, conservationChunkSize, serializer);
     }

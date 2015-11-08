@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
+import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.ConservedRegionChunk;
 import org.opencb.cellbase.core.common.ConservedRegionFeature;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -30,7 +31,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 public class ConservationParser extends CellBaseParser {
 
@@ -38,7 +38,7 @@ public class ConservationParser extends CellBaseParser {
 
     private Logger logger;
     private Path conservedRegionPath;
-    private int chunksize;
+    private int chunkSize;
 
     private CellBaseFileSerializer fileSerializer;
     private Map<String, String> outputFileNames;
@@ -54,7 +54,7 @@ public class ConservationParser extends CellBaseParser {
         super(serializer);
         fileSerializer = serializer;
         this.conservedRegionPath = conservedRegionPath;
-        this.chunksize = chunkSize;
+        this.chunkSize = chunkSize;
         logger = LoggerFactory.getLogger(ConservationParser.class);
         outputFileNames = new HashMap<>();
     }
@@ -62,24 +62,30 @@ public class ConservationParser extends CellBaseParser {
     @Override
     public void parse() throws IOException {
         System.out.println("conservedRegionPath = " + conservedRegionPath.toString());
-        if(conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
+        if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory whether does not exist, is not a directory or cannot be read");
         }
 
+        /*
+         * GERP is stored in a particular format
+         */
         Path gerpFolderPath = conservedRegionPath.resolve("gerp");
         if (gerpFolderPath.toFile().exists()) {
             logger.debug("Parsing GERP data ...");
             gerpParser(gerpFolderPath);
-            return;
         }
 
+
+        /*
+         * UCSC phastCons and phylop are stored in the same format. They are processed together.
+         */
         Map<String, Path> files = new HashMap<>();
         String chromosome;
         Set<String> chromosomes = new HashSet<>();
 
         // Reading all files in phastCons folder
         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"));
-        for(Path path: directoryStream) {
+        for (Path path: directoryStream) {
             chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
             chromosomes.add(chromosome);
             files.put(chromosome+"phastCons", path);
@@ -87,29 +93,64 @@ public class ConservationParser extends CellBaseParser {
 
         // Reading all files in phylop folder
         directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phylop"));
-        for(Path path: directoryStream) {
+        for (Path path: directoryStream) {
             chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
             chromosomes.add(chromosome);
             files.put(chromosome+"phylop", path);
         }
 
-        /**
+        /*
          * Now we can iterate over all the chromosomes found and process the files
          */
-        logger.debug("Chromosomes found {}", chromosomes.toString());
+        logger.debug("Chromosomes found '{}'", chromosomes.toString());
         for(String chr : chromosomes){
-            logger.debug("Processing chromosome {}, file {}", chr, files.get(chr+"phastCons"));
-            processFile(files.get(chr+"phastCons"), "phastCons");
+            logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr+"phastCons"));
+            processWigFixFile(files.get(chr+"phastCons"), "phastCons");
 
-            logger.debug("Processing chromosome {}, file {}", chr, files.get(chr+"phylop"));
-            processFile(files.get(chr+"phylop"), "phylop");
+            logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr+"phylop"));
+            processWigFixFile(files.get(chr+"phylop"), "phylop");
         }
     }
 
 
-    private void processFile(Path inGzPath, String conservedType) throws IOException {
+    private void gerpParser(Path gerpFolderPath) throws IOException {
+        DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
+        for (Path path: pathDirectoryStream) {
+            logger.debug("Processing file '{}'", path.getFileName().toString());
+            String[] chromosome = path.getFileName().toString().split("\\.");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
+            String line;
+            int start = 1;
+            int end = 1999;
+            int counter = 1;
+            String[] fields;
+            List<Float> val = new ArrayList<>(chunkSize);
+            while ((line = bufferedReader.readLine()) != null) {
+                fields = line.split("\t");
+                val.add(Float.valueOf(fields[1]));
+                counter++;
+                if (counter == chunkSize) {
+                    ConservedRegionFeature conservedRegionFeature = new ConservedRegionFeature(chromosome[0], start, end, "gerp", val);
+                    fileSerializer.serialize(conservedRegionFeature, getOutputFileName(chromosome[0]));
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(inGzPath))));
+                    start = end + 1;
+                    end += chunkSize;
+
+                    counter = 0;
+                    val.clear();
+                }
+            }
+
+            // we need to serialize the last chunk that might be incomplete
+            ConservedRegionFeature conservedRegionFeature = new ConservedRegionFeature(chromosome[0], start, start + val.size(), "gerp", val);
+            fileSerializer.serialize(conservedRegionFeature, getOutputFileName(chromosome[0]));
+
+            bufferedReader.close();
+        }
+    }
+
+    private void processWigFixFile(Path inGzPath, String conservedType) throws IOException {
+        BufferedReader bufferedReader = FileUtils.newBufferedReader(inGzPath);
 
         String line;
         String chromosome = "";
@@ -118,15 +159,14 @@ public class ConservationParser extends CellBaseParser {
         Map<String, String> attributes = new HashMap<>();
 //        ConservedRegion conservedRegion =  null;
         List<Float> values = new ArrayList<>();
-
         ConservedRegionChunk conservedRegion =  null;
 
-        while ((line = br.readLine()) != null) {
+        while ((line = bufferedReader.readLine()) != null) {
             if (line.startsWith("fixedStep")) {
                 //new group, save last
                 if(conservedRegion != null){
                     conservedRegion.setEnd(end);
-                    conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/ CHUNK_SIZE, values);
+                    conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start / CHUNK_SIZE, values);
                     fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
                 }
 
@@ -146,9 +186,9 @@ public class ConservationParser extends CellBaseParser {
 
                 values = new ArrayList<>(2000);
             } else {
-                int startChunk = start/ CHUNK_SIZE;
+                int startChunk = start / CHUNK_SIZE;
                 end++;
-                int endChunk = end/ CHUNK_SIZE;
+                int endChunk = end / CHUNK_SIZE;
 
                 if(startChunk != endChunk) {
                     conservedRegion = new ConservedRegionChunk(chromosome, start, end-1, conservedType, startChunk, values);
@@ -162,40 +202,9 @@ public class ConservationParser extends CellBaseParser {
             }
         }
         //write last
-        conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start/ CHUNK_SIZE, values);
+        conservedRegion = new ConservedRegionChunk(chromosome, start, end, conservedType, start / CHUNK_SIZE, values);
         fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
-        br.close();
-    }
-
-    private void gerpParser(Path gerpFolderPath) throws IOException {
-        DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
-        for (Path path: pathDirectoryStream) {
-            logger.debug("Processing file {}", path.getFileName().toString());
-            String[] chromosome = path.getFileName().toString().split("\\.");
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
-            String line;
-            int start = 1;
-            int end = 1999;
-            int counter = 1;
-            String[] fields;
-            List<Float> val = new ArrayList<>(chunksize);
-            while ((line = bufferedReader.readLine()) != null) {
-                fields = line.split("\t");
-                val.add(Float.valueOf(fields[1]));
-                counter++;
-                if (counter == chunksize) {
-                    ConservedRegionFeature conservedRegionFeature = new ConservedRegionFeature(chromosome[0], start, end, "gerp", val);
-                    fileSerializer.serialize(conservedRegionFeature, getOutputFileName(chromosome[0]));
-
-                    start = end + 1;
-                    end += chunksize;
-
-                    counter = 0;
-                    val.clear();
-                }
-            }
-            bufferedReader.close();
-        }
+        bufferedReader.close();
     }
 
     private String getOutputFileName(String chromosome) {
