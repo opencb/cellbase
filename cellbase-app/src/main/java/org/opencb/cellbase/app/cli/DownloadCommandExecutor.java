@@ -216,7 +216,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                     case "cadd":
                         if(speciesHasInfoToDownload(sp, "cadd")) {
-                            downloadCadScores(sp, spFolder);
+                            downloadCadScores(sp, assembly.getName(), spFolder);
                         }
                         break;
                     default:
@@ -638,10 +638,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadCadScores(Species species, Path speciesFolder)
+    private void downloadCadScores(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
 
-        if(species.getScientificName().equals("Homo sapiens")) {
+        if (species.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
             logger.info("Downloading CADD scores information ...");
 
             Path caddScoresFolder = speciesFolder.resolve("cadd");
