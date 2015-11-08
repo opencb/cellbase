@@ -81,7 +81,7 @@ public class LoadRunner {
         try {
 
             if (filePath == null || !Files.exists(filePath) || Files.isDirectory(filePath)) {
-                throw new IOException("File '" + filePath.toString() + "' does not exist or is a directory");
+                throw new IOException("File '" + filePath + "' does not exist or is a directory");
             }
 
             // One CellBaseLoader is created for each thread in 'numThreads' variable

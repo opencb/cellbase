@@ -111,13 +111,13 @@
 				"data":[
 					"genome",
 					"gene",
+					"gene_disease_annotation",
 					"variation",
+					"variation_functional_score",
 					"regulation",
 					"protein",
 					"conservation",
-					"clinical",
-					"gene2disease",
-					"cadd"
+					"clinical"
 				]
 			},
 			{

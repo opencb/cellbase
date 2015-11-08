@@ -19,17 +19,13 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
-import org.sqlite.SQLiteConnection;
+import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Created by imedina on 03/02/15.
@@ -184,9 +180,19 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case "gene":
                         downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         break;
+                    case "gene_disease_association":
+                        if(speciesHasInfoToDownload(sp, "gene_disease_association")) {
+                            downloadGeneDiseaseAssociation(sp, spFolder);
+                        }
+                        break;
                     case "variation":
                         if(speciesHasInfoToDownload(sp, "variation")) {
-                            downloadVariation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
+                            downloadVariation(sp, spShortName, spFolder, ensemblHostUrl);
+                        }
+                        break;
+                    case "variation_functional_score":
+                        if(speciesHasInfoToDownload(sp, "variation_functional_score")) {
+                            downloadCaddScores(sp, assembly.getName(), spFolder);
                         }
                         break;
                     case "regulation":
@@ -206,17 +212,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                     case "clinical":
                         if(speciesHasInfoToDownload(sp, "clinical")) {
-                            downloadClinical(sp, spShortName, assembly.getName(), spFolder);
-                        }
-                        break;
-                    case "gene2disease":
-                        if(speciesHasInfoToDownload(sp, "gene2disease")) {
-                            downloadGene2Disease(sp, spFolder);
-                        }
-                        break;
-                    case "cadd":
-                        if(speciesHasInfoToDownload(sp, "cadd")) {
-                            downloadCadScores(sp, assembly.getName(), spFolder);
+                            downloadClinical(sp, spFolder);
                         }
                         break;
                     default:
@@ -263,11 +259,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
          * Reference genome sequences are downloaded from Ensembl
          */
         String url = host + "/" + ensemblRelease;
-        if(sp.getScientificName().equals("Homo sapiens")) {
+        if (sp.getScientificName().equals("Homo sapiens")) {
             // New Homo sapiens assemblies contain too many ALT regions,
             // so we download 'primary_assembly' file
             url = url + "/fasta/" + shortName + "/dna/*.dna.primary_assembly.fa.gz";
-        }else {
+        } else {
             if (!configuration.getSpecies().getVertebrates().contains(sp)) {
                 url = host + "/" + ensemblRelease + "/" + getPhylo(sp);
             }
@@ -287,14 +283,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadEnsemblData(sp, spShortName, geneFolder, host);
         downloadDrugData(sp, speciesFolder);
         downloadGeneUniprotXref(sp, geneFolder);
-        downloadGeneExpressionAtlas(speciesFolder);
+        downloadGeneExpressionAtlas();
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
     private void downloadDrugData(Species species, Path speciesFolder)
             throws IOException, InterruptedException {
 
-        if(species.getScientificName().equals("Homo sapiens")) {
+        if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
 
             Path geneDrugFolder = speciesFolder.resolve("gene/geneDrug");
@@ -338,7 +334,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
+    private void downloadGeneExpressionAtlas() throws IOException, InterruptedException {
         logger.info("Downloading gene expression atlas ...");
 //        Path expression = geneFolder.getParent().resolve("common").resolve("expression");
         Path expression = common.resolve("expression");
@@ -386,7 +382,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
 
-    private void downloadVariation(Species sp, String shortName, String assembly, Path spFolder, String host)
+    private void downloadVariation(Species sp, String shortName, Path spFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading variation information ...");
         Path variationFolder = spFolder.resolve("variation");
@@ -461,8 +457,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
      * @throws IOException
      * @throws InterruptedException
      */
-    private void downloadProtein()
-            throws IOException, InterruptedException {
+    private void downloadProtein() throws IOException, InterruptedException {
         logger.info("Downloading protein information ...");
         Path proteinFolder = common.resolve("protein");
 
@@ -485,13 +480,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
-        BufferedReader br;
-        if(uniprotFilePath.toString().endsWith(".gz")) {
-            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(uniprotFilePath.toFile()))));
-        }else {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(uniprotFilePath.toFile())));
-        }
-
+        BufferedReader br = FileUtils.newBufferedReader(uniprotFilePath);
         PrintWriter pw = null;
         StringBuilder header = new StringBuilder();
         boolean beforeEntry = true;
@@ -589,7 +578,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String url = configuration.getDownload().getConservation().getHost() + "/mm10";
             String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                     "15", "16", "17", "18", "19", "X", "Y", "M"};
-            for(int i = 0; i < chromosomes.length; i++) {
+            for (int i = 0; i < chromosomes.length; i++) {
                 String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr" + chromosomes[i] + ".phastCons60way.wigFix.gz";
                 downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i] + ".phastCons60way.wigFix.gz").toString());
 
@@ -599,7 +588,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadClinical(Species species, String shortName, String assembly, Path speciesFolder)
+    private void downloadClinical(Species species, Path speciesFolder)
             throws IOException, InterruptedException {
 
         if(species.getScientificName().equals("Homo sapiens")) {
@@ -624,33 +613,33 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadGene2Disease(Species species, Path speciesFolder)
-            throws IOException, InterruptedException {
-
+    private void downloadGeneDiseaseAssociation(Species species, Path speciesFolder) throws IOException, InterruptedException {
         if(species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gene to disease information ...");
 
-            Path gene2diseaseFolder = speciesFolder.resolve("gene2disease");
+            Path gene2diseaseFolder = speciesFolder.resolve("gene_disease_association");
             makeDir(gene2diseaseFolder);
 
+            // Downloads DisGeNET
             String url = configuration.getDownload().getDisgenet().getHost();
             downloadFile(url, gene2diseaseFolder.resolve("all_gene_disease_associations.txt.gz").toString());
 
+            // Downloads HPO
             url = configuration.getDownload().getHpo().getHost();
             downloadFile(url, gene2diseaseFolder.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").toString());
         }
     }
 
-    private void downloadCadScores(Species species, String assembly, Path speciesFolder)
-            throws IOException, InterruptedException {
-
+    private void downloadCaddScores(Species species, String assembly, Path speciesFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
             logger.info("Downloading CADD scores information ...");
 
-            Path caddScoresFolder = speciesFolder.resolve("cadd");
-            makeDir(caddScoresFolder);
+            Path variationFunctionalScoreFolder = speciesFolder.resolve("variation_functional_score");
+            makeDir(variationFunctionalScoreFolder);
+
+            // Downloads CADD scores
             String url = configuration.getDownload().getCadd().getHost();
-            downloadFile(url, caddScoresFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
+            downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
         }
     }
 

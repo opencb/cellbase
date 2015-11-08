@@ -91,7 +91,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddressList);
 
         MongoDBConfiguration mongoDBConfiguration;
-        if(cellBaseConfiguration != null
+        if (cellBaseConfiguration != null
                 && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null
                 && !cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase").isEmpty()) {
             mongoDBConfiguration = MongoDBConfiguration.builder()
@@ -100,7 +100,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase")).build();
             logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
                     cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
-        }else {
+        } else {
             mongoDBConfiguration = MongoDBConfiguration.builder()
                     .add("username", cellBaseConfiguration.getDatabase().getUser())
                     .add("password", cellBaseConfiguration.getDatabase().getPassword()).build();
@@ -230,7 +230,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private void addGeneId(DBObject dbObject) {
 //        if (clinicalVariantSource != null) {
         String geneId;
-        if(clinicalVariantSource!=null) {
+        if (clinicalVariantSource != null) {
             switch (clinicalVariantSource) {
                 case CLINVARVARIANTSOURCE:
                     List<String> geneIdList;
@@ -261,15 +261,15 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         for(Object object : basicDBList) {
             BasicDBObject basicDBObject = (BasicDBObject) object;
             BasicDBList measureRelationshipDBList=(BasicDBList)basicDBObject.get("measureRelationship");
-            if(measureRelationshipDBList!=null) {
-                for(Object measureRelationShipObject : measureRelationshipDBList) {
-                    BasicDBList symbolDBList = (BasicDBList)((BasicDBObject)measureRelationShipObject).get("symbol");
-                    if(symbolDBList!=null) {
-                        for(Object symbolObject : symbolDBList) {
-                            BasicDBObject elementValueDBObject = (BasicDBObject)((BasicDBObject) symbolObject).get("elementValue");
-                            if(elementValueDBObject!=null) {
-                                String geneId = (String)elementValueDBObject.get("value");
-                                if(geneId!=null) {
+            if (measureRelationshipDBList != null) {
+                for (Object measureRelationShipObject : measureRelationshipDBList) {
+                    BasicDBList symbolDBList = (BasicDBList) ((BasicDBObject) measureRelationShipObject).get("symbol");
+                    if (symbolDBList != null) {
+                        for (Object symbolObject : symbolDBList) {
+                            BasicDBObject elementValueDBObject = (BasicDBObject) ((BasicDBObject) symbolObject).get("elementValue");
+                            if (elementValueDBObject != null) {
+                                String geneId = (String) elementValueDBObject.get("value");
+                                if (geneId != null) {
                                     geneIdList.add(geneId);
                                 }
                             }

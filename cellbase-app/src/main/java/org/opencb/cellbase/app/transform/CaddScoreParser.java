@@ -16,14 +16,13 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.GenomicPositionScore;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
