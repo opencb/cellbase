@@ -35,8 +35,8 @@ public class CaddScoreParser extends CellBaseParser {
 
     private Path caddFilePath;
 
-    private static int CHUNK_SIZE = 2000;
-    private static final int DECIMAL_RESOLUTION = 10000;
+    private static int CHUNK_SIZE = 1000;
+    private static final int DECIMAL_RESOLUTION = 1000;
 
     public CaddScoreParser(Path caddFilePath, CellBaseSerializer serializer) {
         super(serializer);
@@ -60,52 +60,79 @@ public class CaddScoreParser extends CellBaseParser {
         FileUtils.checkPath(caddFilePath);
 
         BufferedReader bufferedReader = FileUtils.newBufferedReader(caddFilePath);
-        List<Long> values = new ArrayList<>(CHUNK_SIZE);
+        List<Long> rawValues = new ArrayList<>(CHUNK_SIZE);
+        List<Long> scaledValues = new ArrayList<>(CHUNK_SIZE);
 
         int start = 1;
-        int end = 1999;
+//        int end = 1999;
+        int end = CHUNK_SIZE - 1;
         String line;
-        String[] fields;
+        String[] fields = new String[0];
         short v;
-        long l = 0;
         int lineCount = 0;
         int counter = 1;
+
         String[] nucleotides = new String[]{"A", "C", "G", "T"};
-        Map<String, Float> mapValues = new HashMap<>();
+        long rawLongValue = 0;
+        long scaledLongValue = 0;
+        Map<String, Float> rawScoreValuesMap = new HashMap<>();
+        Map<String, Float> scaledScoreValuesMap = new HashMap<>();
         while ((line = bufferedReader.readLine()) != null) {
             if (!line.startsWith("#")) {
                 fields = line.split("\t");
-                mapValues.put(fields[3], Float.valueOf(fields[4]));
+
+                rawScoreValuesMap.put(fields[3], Float.valueOf(fields[4]));
+                scaledScoreValuesMap.put(fields[3], Float.valueOf(fields[5]));
 
                 if (++lineCount == 3) {
                     for (String nucleotide : nucleotides) {
-                        float a = mapValues.getOrDefault(nucleotide, 2f) + 1.0f;
+                        // raw CADD score values can be negative, we add 10 to make positive
+                        float a = rawScoreValuesMap.getOrDefault(nucleotide, 10f) + 10.0f;
                         v = (short) (a * DECIMAL_RESOLUTION);
-//                        System.out.println(v);
-                        l = (l << 16) | v;
-//                        System.out.println(Long.toBinaryString(l));
+                        rawLongValue = (rawLongValue << 16) | v;
+
+                        // scaled CADD scores are always positive
+                        a = scaledScoreValuesMap.getOrDefault(nucleotide, 0f);
+                        v = (short) (a * DECIMAL_RESOLUTION);
+                        scaledLongValue = (scaledLongValue << 16) | v;
                     }
 
-                    values.add(l);
-                    counter++;
+                    rawValues.add(rawLongValue);
+                    scaledValues.add(scaledLongValue);
 
-                    l = 0;
+                    counter++;
+                    rawLongValue = 0;
                     lineCount = 0;
-                    mapValues.clear();
+                    rawScoreValuesMap.clear();
+                    scaledScoreValuesMap.clear();
                 }
 
                 if (counter == CHUNK_SIZE) {
-                    GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd", values);
+                    // both raw and scaled are serialized
+                    GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd_raw", rawValues);
                     serializer.serialize(genomicPositionScore);
+
+                    genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd_scaled", scaledValues);
+                    serializer.serialize(genomicPositionScore);
+
                     start = end + 1;
                     end += CHUNK_SIZE;
 
                     counter = 0;
-                    values.clear();
+                    rawValues.clear();
+                    scaledValues.clear();
                 }
             }
         }
-        bufferedReader.close();
+
+        // Last chunks can be incomplete for both raw and scaled are serialized
+        GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, start + rawValues.size() - 1, "cadd_raw", rawValues);
+        serializer.serialize(genomicPositionScore);
+
+        genomicPositionScore = new GenomicPositionScore(fields[0], start, start + scaledValues.size() - 1, "cadd_scaled", scaledValues);
+        serializer.serialize(genomicPositionScore);
+
         serializer.close();
+        bufferedReader.close();
     }
 }

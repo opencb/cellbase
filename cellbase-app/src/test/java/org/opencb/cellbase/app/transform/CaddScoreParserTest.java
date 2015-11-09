@@ -38,20 +38,27 @@ public class CaddScoreParserTest {
         CaddScoreParser caddScoreParser = new CaddScoreParser(inputPath, cellBaseSerializer);
         caddScoreParser.parse();
 
-        long l1 = 3763369539475633456L;
-        long l2 = 2440691865951630640L;
-        float DECIMAL_RESOLUTION = 10000f;
+        // Next values are taken from the generated file at /tmp
+        // They correspond to first and last scores in the file
+        // Both raw and scaled scores ar tested
+        long l1 = 2909650398779952672L;
+        long l2 = 2777354483929861664L;
+        long l3 = 1701815202902769664L;
+        long l4 = 421650576018505728L;
+
+        float DECIMAL_RESOLUTION = 1000f;
 
 
+        // raw CADD scores tests
         float a = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
         float c = ((short) (l1 >> 32) - 10000) / DECIMAL_RESOLUTION;
         float g = ((short) (l1 >> 16) - 10000) / DECIMAL_RESOLUTION;
         float t = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
 
-        assertEquals("Error getting A score value from CADD", 0.337f, a, DECIMAL_RESOLUTION);
-        assertEquals("Error getting C score value from CADD", 0.1432f, c, DECIMAL_RESOLUTION);
-        assertEquals("Error getting G score value from CADD", 0.2024f, g, DECIMAL_RESOLUTION);
-        assertEquals("Error getting T score value from CADD", 2f, t, DECIMAL_RESOLUTION);
+        assertEquals("Error getting A score value from raw CADD", 0.337f, a, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting C score value from raw CADD", 0.1432f, c, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting G score value from raw CADD", 0.2024f, g, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting T score value from raw CADD", 10f, t, 1 / DECIMAL_RESOLUTION);
 
 
         a = ((short) (l2 >> 48) - 10000) / DECIMAL_RESOLUTION;
@@ -59,9 +66,31 @@ public class CaddScoreParserTest {
         g = ((short) (l2 >> 16) - 10000) / DECIMAL_RESOLUTION;
         t = ((short) (l2 >> 0) - 10000) / DECIMAL_RESOLUTION;
 
-        assertEquals("Error getting A score value from CADD", -0.1328f, a, DECIMAL_RESOLUTION);
-        assertEquals("Error getting C score value from CADD", -0.4797f, c, DECIMAL_RESOLUTION);
-        assertEquals("Error getting G score value from CADD", -0.2772f, g, DECIMAL_RESOLUTION);
-        assertEquals("Error getting T score value from CADD", 2f, t, DECIMAL_RESOLUTION);
+        assertEquals("Error getting A score value from raw CADD", -0.1328f, a, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting C score value from raw CADD", -0.4797f, c, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting G score value from raw CADD", -0.2772f, g, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting T score value from raw CADD", 10f, t, 1 / DECIMAL_RESOLUTION);
+
+
+        // scaled CADD scores tests
+        a = ((short) (l3 >> 48)) / DECIMAL_RESOLUTION;
+        c = ((short) (l3 >> 32)) / DECIMAL_RESOLUTION;
+        g = ((short) (l3 >> 16)) / DECIMAL_RESOLUTION;
+        t = ((short) (l3 >> 0)) / DECIMAL_RESOLUTION;
+
+        assertEquals("Error getting A score value from scaled CADD", 6.046f, a, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting C score value from scaled CADD", 4.073f, c, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting G score value from scaled CADD", 4.705f, g, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting T score value from scaled CADD", 0f, t, 1 / DECIMAL_RESOLUTION);
+
+        a = ((short) (l4 >> 48)) / DECIMAL_RESOLUTION;
+        c = ((short) (l4 >> 32)) / DECIMAL_RESOLUTION;
+        g = ((short) (l4 >> 16)) / DECIMAL_RESOLUTION;
+        t = ((short) (l4 >> 0)) / DECIMAL_RESOLUTION;
+
+        assertEquals("Error getting A score value from scaled CADD", 1.498f, a, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting C score value from scaled CADD", 0.247f, c, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting G score value from scaled CADD", 0.748f, g, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting T score value from scaled CADD", 0f, t, 1 / DECIMAL_RESOLUTION);
     }
 }
