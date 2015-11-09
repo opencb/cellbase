@@ -116,7 +116,7 @@ public class ConservationParser extends CellBaseParser {
         DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
         for (Path path: pathDirectoryStream) {
             logger.debug("Processing file '{}'", path.getFileName().toString());
-            String[] chromosome = path.getFileName().toString().split("\\.");
+            String[] chromosome = path.getFileName().toString().replaceFirst("chr", "").split("\\.");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
             String line;
             int start = 1;
@@ -141,7 +141,7 @@ public class ConservationParser extends CellBaseParser {
             }
 
             // we need to serialize the last chunk that might be incomplete
-            ConservationScoreRegion conservationScoreRegion = new ConservationScoreRegion(chromosome[0], start, start + val.size(), "gerp", val);
+            ConservationScoreRegion conservationScoreRegion = new ConservationScoreRegion(chromosome[0], start, start + val.size() - 1, "gerp", val);
             fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome[0]));
 
             bufferedReader.close();
