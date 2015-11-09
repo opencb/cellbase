@@ -18,15 +18,20 @@ package org.opencb.cellbase.mongodb.db.variation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
-import org.opencb.biodata.models.feature.Region;
-import org.opencb.biodata.models.variant.annotation.*;
-import org.opencb.biodata.models.variation.GenomicVariant;
-
+import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.cellbase.core.common.variation.*;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -42,6 +47,9 @@ import java.util.regex.Pattern;
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor {
 
+
+    private static Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly","include","exclude",
+            "skip","limit","of","count","json"));
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -68,12 +76,79 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult getAll(QueryOptions options) {
         System.out.println("options = " + options.get("exclude"));
-        if(includeContains(options.getAsStringList("source"), "clinvar")) {
-            return getAllClinvar(options);
+        QueryBuilder builder = QueryBuilder.start();
+        if(filteringOptionsEnabled(options)) {
+            List<String> sourceContent = options.getAsStringList("source");
+            if (sourceContent == null || includeContains(sourceContent, "clinvar")) {
+                builder = addClinvarFilters(builder, options);
+            }
+            if (sourceContent == null || includeContains(sourceContent, "cosmic")) {
+                builder.or(addGwasFilters(QueryBuilder.start(), options).get());
+            }
+            if (sourceContent == null || includeContains(sourceContent, "gwas")) {
+                builder.or(addCosmicFilters(QueryBuilder.start(), options).get());
+            }
+        }
+        return executeQuery("result", builder.get(), options);
+    }
+
+    private QueryBuilder addCosmicFilters(QueryBuilder builder, QueryOptions options) {
+        // TODO add more filtering options
+        builder.and(new BasicDBObject("source", "cosmic"));
+//        builder = addClinvarRcvFilter(builder, options.getAsStringList("rcv"));
+//        builder = addClinvarRsFilter(builder, options.getAsStringList("rs"));
+        builder = addSoTermFilter(builder, options.getAsStringList("so"));
+//        builder = addClinvarTypeFilter(builder, options.getAsStringList("type"));
+//        builder = addClinvarReviewFilter(builder, options.getAsStringList("review"));
+//        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
+        builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
+        builder = addGeneFilter(builder, options.getAsStringList("gene"));
+//        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+
+        return builder;
+    }
+
+    private QueryBuilder addGwasFilters(QueryBuilder builder, QueryOptions options) {
+        // TODO add more filtering options
+        builder.and(new BasicDBObject("source", "gwas"));
+//        builder = addClinvarRcvFilter(builder, options.getAsStringList("rcv"));
+//        builder = addClinvarRsFilter(builder, options.getAsStringList("rs"));
+        builder = addSoTermFilter(builder, options.getAsStringList("so"));
+//        builder = addClinvarTypeFilter(builder, options.getAsStringList("type"));
+//        builder = addClinvarReviewFilter(builder, options.getAsStringList("review"));
+//        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
+        builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
+        builder = addGeneFilter(builder, options.getAsStringList("gene"));
+//        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+
+        return builder;
+    }
+
+    private boolean filteringOptionsEnabled(QueryOptions queryOptions) {
+        int i=0;
+        Object[] keys = queryOptions.keySet().toArray();
+        while((i<queryOptions.size()) && noFilteringQueryParameters.contains((String) keys[i])) {
+            i++;
+        }
+        return (i<queryOptions.size());
+    }
+
+    @Override
+    public QueryResult getByGeneId(String geneId, QueryOptions queryOptions) {
+        if(includeContains(queryOptions.getAsStringList("source"), "clinvar")) {
+            return getClinvarByGeneId(geneId, queryOptions);
         } else {
             // TODO implement!
             return new QueryResult();
         }
+    }
+
+    public QueryResult getClinvarByGeneId(String geneId, QueryOptions queryOptions) {
+        QueryBuilder builder = QueryBuilder.start();
+        builder = addGeneFilter(builder, Collections.singletonList(geneId));
+        builder = addClinvarFilters(builder, queryOptions);
+
+        return executeQuery("result", builder.get(), queryOptions);
     }
 
     @Override
@@ -81,63 +156,32 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return null;
     }
 
-    @Override
-    public QueryResult getAllClinvar(QueryOptions options) {
-//        options.addToListOption("include", "clinvarSet");
-//        options.addToListOption("include", "chromosome");
-//        options.addToListOption("include", "start");
-//        options.addToListOption("include", "end");
-//        options.addToListOption("include", "reference");
-//        options.addToListOption("include", "alternate");
-//        options.addToListOption("include", "annot");
-        QueryBuilder builder = QueryBuilder.start();
-
-        builder = addClinvarFilters(builder, options);
-
-//        List<DBObject> pipeline = new ArrayList<>();
-//        pipeline = addClinvarAggregationFilters(pipeline, options);
-//        DBObject fields = new BasicDBObject();
-//        fields.put("clinvarSet", 1);
-//        fields.put("chromosome", 1);
-//        fields.put("start", 1);
-//        fields.put("end", 1);
-//        fields.put("reference", 1);
-//        fields.put("alternate", 1);
-//        fields.put("annot", 1);
-//        pipeline.add(new BasicDBObject("$project", fields));
-
-
-
-//        return executeAggregation2("", pipeline, options);
-        return executeQuery("result", builder.get(), options);
-//        return prepareClinvarQueryResultList(Collections.singletonList(executeQuery("result", builder.get(), options))).get(0);
-    }
-
+//    @Override
+//    public QueryResult getAllClinvar(QueryOptions options) {
+//        QueryBuilder builder = QueryBuilder.start();
+//        builder = addClinvarFilters(builder, options);
+//
+//        return executeQuery("result", builder.get(), options);
+//    }
 
     private QueryBuilder addClinvarFilters(QueryBuilder builder, QueryOptions options) {
-        List<DBObject> filterSteps = new ArrayList<>();
-        builder.and(new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1)));
-        builder = addClinvarRcvFilter(builder, options);
-        builder = addClinvarRsFilter(builder, options);
-        builder = addClinvarSoTermFilter(builder, options);
-        builder = addClinvarTypeFilter(builder, options);
-        builder = addClinvarReviewFilter(builder, options);
-        builder = addClinvarClinicalSignificanceFilter(builder, options);
-        builder = addClinvarRegionFilter(builder, options);
-        builder = addClinvarGeneFilter(builder, options);
-        builder = addClinvarPhenotypeFilter(builder, options);
-//
-//        // Filtering steps repeated twice to avoid undwind over all clinical records
-//        pipeline.addAll(filterSteps);
-////        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
-////        pipeline.addAll(filterSteps);
-//        pipeline.add(new BasicDBObject("$limit", 100));
+//        builder.and(new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1)));
+        builder.and(new BasicDBObject("source", "clinvar"));
+        builder = addClinvarRcvFilter(builder, options.getAsStringList("rcv"));
+        builder = addClinvarRsFilter(builder, options.getAsStringList("rs"));
+        builder = addSoTermFilter(builder, options.getAsStringList("so"));
+        builder = addClinvarTypeFilter(builder, options.getAsStringList("type"));
+        builder = addClinvarReviewFilter(builder, options.getAsStringList("review"));
+        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
+        builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
+        builder = addGeneFilter(builder, options.getAsStringList("gene"));
+        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
 
         return builder;
     }
 
-    private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> phenotypeList = options.getAsStringList("phenotype", "\\|");
+    private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
+//        List<String> phenotypeList = options.getAsStringList("phenotype", "\\|");
         if (phenotypeList != null && phenotypeList.size() > 0) {
             logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
 
@@ -148,20 +192,19 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return builder;
     }
 
-    private QueryBuilder addClinvarGeneFilter(QueryBuilder builder, QueryOptions options) {
+    private QueryBuilder addGeneFilter(QueryBuilder builder, List<String> geneList) {
 //        List<String> geneList = (List<String>) options.get("gene");
-        List<String> geneList = options.getAsStringList("gene");
-        System.out.println("geneList = " + geneList);
+//        List<String> geneList = options.getAsStringList("gene");
+//        System.out.println("geneList = " + geneList);
         if (geneList != null && geneList.size() > 0) {
             logger.info("gene filter activated, gene list: " + geneList.toString());
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
-                    new BasicDBObject("$in", geneList)));
+            builder = builder.and(new BasicDBObject("_geneIds", new BasicDBObject("$in", geneList)));
         }
         return builder;
     }
 
-    private QueryBuilder addClinvarRegionFilter(QueryBuilder builder, QueryOptions options) {
-        List<Region> regionList = Region.parseRegions((String) options.get("region"));
+    private QueryBuilder addRegionFilter(QueryBuilder builder, List<Region> regionList) {
+//        List<Region> regionList = Region.parseRegions((String) options.get("region"));
 //        List<Region> regionList = (List<Region>) options.get("region");
         if (regionList != null && regionList.size() > 0) {
             logger.info("region filter activated, region list: " + regionList.toString());
@@ -184,9 +227,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return new BasicDBObject("$or", orDBList);
     }
 
-
-    private QueryBuilder addClinvarClinicalSignificanceFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> clinicalSignificanceList = (List<String>) options.getAsStringList("significance");
+    private QueryBuilder addClinvarClinicalSignificanceFilter(QueryBuilder builder, List<String> clinicalSignificanceList) {
+//        List<String> clinicalSignificanceList = (List<String>) options.getAsStringList("significance");
 //        List<String> clinicalSignificanceList = (List<String>) options.get("significance");
         if (clinicalSignificanceList != null && clinicalSignificanceList.size() > 0) {
             for(int i=0; i<clinicalSignificanceList.size(); i++) {
@@ -199,8 +241,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return builder;
     }
 
-    private QueryBuilder addClinvarReviewFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> reviewStatusList = (List<String>) options.getAsStringList("review");
+    private QueryBuilder addClinvarReviewFilter(QueryBuilder builder, List<String> reviewStatusList) {
+//        List<String> reviewStatusList = (List<String>) options.getAsStringList("review");
 //        List<String> reviewStatusList = (List<String>) options.get("review");
         if (reviewStatusList != null && reviewStatusList.size() > 0) {
             for(int i=0; i<reviewStatusList.size(); i++) {
@@ -213,9 +255,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return builder;
     }
 
-
-    private QueryBuilder addClinvarTypeFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> typeList = (List<String>) options.getAsStringList("type");
+    private QueryBuilder addClinvarTypeFilter(QueryBuilder builder, List<String> typeList) {
+//        List<String> typeList = (List<String>) options.getAsStringList("type");
 //        List<String> typeList = (List<String>) options.get("type");
         if (typeList != null && typeList.size() > 0) {
             for(int i=0; i<typeList.size(); i++) {
@@ -228,8 +269,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return builder;
     }
 
-    private QueryBuilder addClinvarSoTermFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> soList = (List<String>) options.getAsStringList("so");
+    private QueryBuilder addSoTermFilter(QueryBuilder builder, List<String> soList) {
+//        List<String> soList = (List<String>) options.getAsStringList("so");
 //        List<String> soList = (List<String>) options.get("so");
         if (soList != null && soList.size() > 0) {
             logger.info("So filter activated, SO list: " + soList.toString());
@@ -238,8 +279,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return builder;
     }
 
-    private QueryBuilder addClinvarRsFilter(QueryBuilder builder, QueryOptions options) {
-        List<String> rsStringList = options.getAsStringList("rs");
+    private QueryBuilder addClinvarRsFilter(QueryBuilder builder, List<String> rsStringList) {
+//        List<String> rsStringList = options.getAsStringList("rs");
 //        List<String> rsStringList = (List<String>) options.get("rs");
         if (rsStringList != null && rsStringList.size() > 0) {
             logger.info("rs filter activated, res list: "+rsStringList.toString());
@@ -255,9 +296,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return builder;
     }
 
-    private QueryBuilder addClinvarRcvFilter(QueryBuilder builder, QueryOptions options) {
+    private QueryBuilder addClinvarRcvFilter(QueryBuilder builder, List<String> rcvList) {
 //        List<String> rcvList = (List<String>) options.get("rcv");
-        List<String> rcvList = (List<String>) options.getAsStringList("rcv");
+//        List<String> rcvList = (List<String>) options.getAsStringList("rcv");
         if (rcvList != null && rcvList.size() > 0) {
             logger.info("rcv filter activated, rcv list: "+rcvList.toString());
             builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
@@ -266,147 +307,147 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return builder;
     }
 
-    @Deprecated
-    private List<DBObject> addClinvarAggregationFilters(List<DBObject> pipeline, QueryOptions options) {
-        List<DBObject> filterSteps = new ArrayList<>();
-        filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1))));
-        filterSteps = addClinvarRcvAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarRsAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarSoTermAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarTypeAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarReviewAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarClinicalSignificanceAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarRegionAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarGeneAggregationFilter(filterSteps, options);
-        filterSteps = addClinvarPhenotypeAggregationFilter(filterSteps, options);
-
-        // Filtering steps repeated twice to avoid undwind over all clinical records
-        pipeline.addAll(filterSteps);
-//        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
+//    @Deprecated
+//    private List<DBObject> addClinvarAggregationFilters(List<DBObject> pipeline, QueryOptions options) {
+//        List<DBObject> filterSteps = new ArrayList<>();
+//        filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1))));
+//        filterSteps = addClinvarRcvAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarRsAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarSoTermAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarTypeAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarReviewAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarClinicalSignificanceAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarRegionAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarGeneAggregationFilter(filterSteps, options);
+//        filterSteps = addClinvarPhenotypeAggregationFilter(filterSteps, options);
+//
+//        // Filtering steps repeated twice to avoid undwind over all clinical records
 //        pipeline.addAll(filterSteps);
-        pipeline.add(new BasicDBObject("$limit", 100));
-
-        return pipeline;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarRcvAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> rcvList = (List<String>) options.get("rcv");
-        if (rcvList != null && rcvList.size() > 0) {
-            logger.info("rcv filter activated, rcv list: "+rcvList.toString());
-            filterSteps.add(new BasicDBObject("$match",
-//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-                            new BasicDBObject("$in", rcvList))));
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarRsAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-//        List<String> rsStringList = options.getAsStringList("rs");
-        List<String> rsStringList = (List<String>) options.get("rs");
-        if (rsStringList != null && rsStringList.size() > 0) {
-            logger.info("rs filter activated, res list: "+rsStringList.toString());
-            List<String> rsList = new ArrayList<>(rsStringList.size());
-            for(String rsString : rsStringList) {
-                rsList.add(rsString.substring(2));
-            }
-            filterSteps.add(new BasicDBObject("$match",
-//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
-                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
-                            new BasicDBObject("$in", rsList))));
-            filterSteps.add(new BasicDBObject("$match",
-//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
-                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
-                            "rs")));
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarSoTermAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> soList = (List<String>) options.get("so");
-        if (soList != null && soList.size() > 0) {
-            logger.info("So filter activated, SO list: " + soList.toString());
-            filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("annot.consequenceTypes.soTerms.soName", new BasicDBObject("$in", soList))));
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarTypeAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> typeList = (List<String>) options.get("type");
-        if (typeList != null && typeList.size() > 0) {
-            for(int i=0; i<typeList.size(); i++) {
-                typeList.set(i, typeList.get(i).replace("_"," "));
-            }
-            logger.info("Type filter activated, type list: " + typeList.toString());
-            filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.type", new BasicDBObject("$in", typeList))));
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarReviewAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> reviewStatusList = (List<String>) options.get("review");
-        if (reviewStatusList != null && reviewStatusList.size() > 0) {
-            for(int i=0; i<reviewStatusList.size(); i++) {
-                reviewStatusList.set(i, reviewStatusList.get(i).toUpperCase());
-            }
-            logger.info("Review staus filter activated, review status list: " + reviewStatusList.toString());
-            filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
-                            new BasicDBObject("$in", reviewStatusList))));
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarClinicalSignificanceAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> clinicalSignificanceList = (List<String>) options.get("significance");
-        if (clinicalSignificanceList != null && clinicalSignificanceList.size() > 0) {
-            for(int i=0; i<clinicalSignificanceList.size(); i++) {
-                clinicalSignificanceList.set(i, clinicalSignificanceList.get(i).replace("_"," "));
-            }
-            logger.info("Clinical significance filter activated, clinical significance list: " + clinicalSignificanceList.toString());
-            filterSteps.add(new BasicDBObject("$match",
-                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.description",
-                            new BasicDBObject("$in", clinicalSignificanceList))));
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarGeneAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> geneList = (List<String>) options.get("gene");
-//        List<String> geneList = options.getAsStringList("gene", null);
-        if (geneList != null && geneList.size() > 0) {
-            logger.info("gene filter activated, gene list: " + geneList.toString());
-            filterSteps.add(new BasicDBObject("$match",
-//                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
-                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
-                            new BasicDBObject("$in", geneList))));
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private List<DBObject> addClinvarPhenotypeAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<String> phenotypeList = (List<String>) options.getAsStringList("phenotype");
-        if (phenotypeList != null && phenotypeList.size() > 0) {
-            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
-
-//            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
-            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
-                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList)))));
-
-        }
-        return filterSteps;
-    }
-
+////        pipeline.add(new BasicDBObject("$unwind", "$clinvarList"));
+////        pipeline.addAll(filterSteps);
+//        pipeline.add(new BasicDBObject("$limit", 100));
+//
+//        return pipeline;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarRcvAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<String> rcvList = (List<String>) options.get("rcv");
+//        if (rcvList != null && rcvList.size() > 0) {
+//            logger.info("rcv filter activated, rcv list: "+rcvList.toString());
+//            filterSteps.add(new BasicDBObject("$match",
+////                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+//                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+//                            new BasicDBObject("$in", rcvList))));
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarRsAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+////        List<String> rsStringList = options.getAsStringList("rs");
+//        List<String> rsStringList = (List<String>) options.get("rs");
+//        if (rsStringList != null && rsStringList.size() > 0) {
+//            logger.info("rs filter activated, res list: "+rsStringList.toString());
+//            List<String> rsList = new ArrayList<>(rsStringList.size());
+//            for(String rsString : rsStringList) {
+//                rsList.add(rsString.substring(2));
+//            }
+//            filterSteps.add(new BasicDBObject("$match",
+////                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+//                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+//                            new BasicDBObject("$in", rsList))));
+//            filterSteps.add(new BasicDBObject("$match",
+////                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
+//                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
+//                            "rs")));
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarSoTermAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<String> soList = (List<String>) options.get("so");
+//        if (soList != null && soList.size() > 0) {
+//            logger.info("So filter activated, SO list: " + soList.toString());
+//            filterSteps.add(new BasicDBObject("$match",
+//                    new BasicDBObject("annot.consequenceTypes.soTerms.soName", new BasicDBObject("$in", soList))));
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarTypeAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<String> typeList = (List<String>) options.get("type");
+//        if (typeList != null && typeList.size() > 0) {
+//            for(int i=0; i<typeList.size(); i++) {
+//                typeList.set(i, typeList.get(i).replace("_"," "));
+//            }
+//            logger.info("Type filter activated, type list: " + typeList.toString());
+//            filterSteps.add(new BasicDBObject("$match",
+//                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.type", new BasicDBObject("$in", typeList))));
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarReviewAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<String> reviewStatusList = (List<String>) options.get("review");
+//        if (reviewStatusList != null && reviewStatusList.size() > 0) {
+//            for(int i=0; i<reviewStatusList.size(); i++) {
+//                reviewStatusList.set(i, reviewStatusList.get(i).toUpperCase());
+//            }
+//            logger.info("Review staus filter activated, review status list: " + reviewStatusList.toString());
+//            filterSteps.add(new BasicDBObject("$match",
+//                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
+//                            new BasicDBObject("$in", reviewStatusList))));
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarClinicalSignificanceAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<String> clinicalSignificanceList = (List<String>) options.get("significance");
+//        if (clinicalSignificanceList != null && clinicalSignificanceList.size() > 0) {
+//            for(int i=0; i<clinicalSignificanceList.size(); i++) {
+//                clinicalSignificanceList.set(i, clinicalSignificanceList.get(i).replace("_"," "));
+//            }
+//            logger.info("Clinical significance filter activated, clinical significance list: " + clinicalSignificanceList.toString());
+//            filterSteps.add(new BasicDBObject("$match",
+//                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.description",
+//                            new BasicDBObject("$in", clinicalSignificanceList))));
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarGeneAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<String> geneList = (List<String>) options.get("gene");
+////        List<String> geneList = options.getAsStringList("gene", null);
+//        if (geneList != null && geneList.size() > 0) {
+//            logger.info("gene filter activated, gene list: " + geneList.toString());
+//            filterSteps.add(new BasicDBObject("$match",
+////                    new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
+//                    new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value",
+//                            new BasicDBObject("$in", geneList))));
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarPhenotypeAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<String> phenotypeList = (List<String>) options.getAsStringList("phenotype");
+//        if (phenotypeList != null && phenotypeList.size() > 0) {
+//            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
+//
+////            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarList.clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
+//            filterSteps.add(new BasicDBObject("$match", new BasicDBObject("clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
+//                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList)))));
+//
+//        }
+//        return filterSteps;
+//    }
+//
     private List<Pattern> getClinvarPhenotypeRegex(List<String> phenotypeList) {
         List<Pattern> patternList = new ArrayList<>(phenotypeList.size());
         for(String keyword : phenotypeList) {
@@ -415,32 +456,31 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         return patternList;
     }
-
-    @Deprecated
-    private List<DBObject> addClinvarRegionAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
-        List<Region> regionList = (List<Region>) options.get("region");
-        if (regionList != null && regionList.size() > 0) {
-            logger.info("region filter activated, region list: " + regionList.toString());
-            filterSteps.add(getClinvarRegionAggregationFilterDBObject(regionList));
-
-        }
-        return filterSteps;
-    }
-
-    @Deprecated
-    private DBObject getClinvarRegionAggregationFilterDBObject(List<Region> regionList) {
-        BasicDBList orDBList = new BasicDBList();
-        for(Region region : regionList) {
-            BasicDBList andDBList = new BasicDBList();
-            andDBList.add(new BasicDBObject("chromosome", region.getChromosome()));
-            andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", region.getStart())));
-            andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", region.getEnd())));
-            orDBList.add(new BasicDBObject("$and",andDBList));
-        }
-
-        return new BasicDBObject("$match", new BasicDBObject("$or", orDBList));
-    }
-
+//
+//    @Deprecated
+//    private List<DBObject> addClinvarRegionAggregationFilter(List<DBObject> filterSteps, QueryOptions options) {
+//        List<Region> regionList = (List<Region>) options.get("region");
+//        if (regionList != null && regionList.size() > 0) {
+//            logger.info("region filter activated, region list: " + regionList.toString());
+//            filterSteps.add(getClinvarRegionAggregationFilterDBObject(regionList));
+//
+//        }
+//        return filterSteps;
+//    }
+//
+//    @Deprecated
+//    private DBObject getClinvarRegionAggregationFilterDBObject(List<Region> regionList) {
+//        BasicDBList orDBList = new BasicDBList();
+//        for(Region region : regionList) {
+//            BasicDBList andDBList = new BasicDBList();
+//            andDBList.add(new BasicDBObject("chromosome", region.getChromosome()));
+//            andDBList.add(new BasicDBObject("end", new BasicDBObject("$gte", region.getStart())));
+//            andDBList.add(new BasicDBObject("start", new BasicDBObject("$lte", region.getEnd())));
+//            orDBList.add(new BasicDBObject("$and",andDBList));
+//        }
+//
+//        return new BasicDBObject("$match", new BasicDBObject("$or", orDBList));
+//    }
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
@@ -457,21 +497,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
         return executeQueryList2(ids, queries, options);
     }
-
-//    @Override
-//    public QueryResult getChromosomeById(String id, QueryOptions options) {
-//        return getAllByChromosomeIdList(Arrays.asList(id), options).get(0);
-//    }
-
-//    @Override
-//    public List<QueryResult> getAllByChromosomeIdList(List<String> idList, QueryOptions options) {
-////        if(includeContains((List<String>) options.get("include"), "clinvar")) {
-////            return getAllClinvarByIdList(idList, options);
-////        } else {
-//            // TODO implement!
-//            return new ArrayList<>();
-////        }
-//    }
 
     private Boolean includeContains(List<String> includeContent, String feature) {
         if(includeContent!=null) {
@@ -491,18 +516,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options) {
+    public QueryResult getAllByGenomicVariant(Variant variant, QueryOptions options) {
         return getAllByGenomicVariantList(Arrays.asList(variant), options).get(0);
     }
 
     @Override
-    public List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options) {
+    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(variantList.size());
         List<QueryResult> queryResultList;
-        for (GenomicVariant genomicVariant : variantList){
+        for (Variant genomicVariant : variantList){
             QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
-                    and("start").is(genomicVariant.getPosition()).and("alternate").is(genomicVariant.getAlternative());
+                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
             if (genomicVariant.getReference() != null){
                 builder = builder.and("reference").is(genomicVariant.getReference());
             }
@@ -517,26 +542,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
             List<Cosmic> cosmicList = new ArrayList<>();
             List<Gwas> gwasList = new ArrayList<>();
-            List<Clinvar> clinvarList = new ArrayList<>();
+            List<ClinVar> clinvarList = new ArrayList<>();
 
             for(Object clinicalObject: clinicalList) {
                 BasicDBObject clinical = (BasicDBObject) clinicalObject;
 
                 if (isCosmic(clinical)) {
                     Cosmic cosmic = getCosmic(clinical);
-//                    if (cosmicList == null) {
-//                        cosmicList = new ArrayList<>();
-//                    }
                     cosmicList.add(cosmic);
                 } else if (isGwas(clinical)) {
                     Gwas gwas = getGwas(clinical);
-//                    if (gwasList == null) {
-//                        gwasList = new ArrayList<>();
-//                    }
                     gwasList.add(gwas);
 
                 } else if (isClinvar(clinical)) {
-                    Clinvar clinvar = getClinvar(clinical);
+                    ClinVar clinvar = getClinvar(clinical);
 //                    if (clinvarList == null) {
 //                        clinvarList = new ArrayList<>();
 //                    }
@@ -553,14 +572,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //            if(clinvarList!=null && clinvarList.size()>0) {
 //                clinicalData.put("clinvar", clinvarList);
 //            }
-            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(cosmicList, gwasList,
-                    clinvarList);
-            if(!(variantTraitAssociation.getCosmicList().isEmpty() && variantTraitAssociation.getGwasList().isEmpty() &&
-                    variantTraitAssociation.getClinvarList().isEmpty())) {
+            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(clinvarList, gwasList, cosmicList);
+            if(!(variantTraitAssociation.getCosmic().isEmpty() && variantTraitAssociation.getGwas().isEmpty() &&
+                    variantTraitAssociation.getClinvar().isEmpty())) {
+
                 // FIXME quick solution to compile
                 //            queryResult.setResult(clinicalData);
                 queryResult.setResult(Collections.singletonList(variantTraitAssociation));
-                queryResult.setNumResults(variantTraitAssociation.size());
+                queryResult.setNumResults(variantTraitAssociation.getCosmic().size()
+                        + variantTraitAssociation.getGwas().size()
+                        + variantTraitAssociation.getClinvar().size());
             } else {
                 queryResult.setResult(null);
                 queryResult.setNumResults(0);
@@ -599,7 +620,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private Gwas getGwas(BasicDBObject clinical) {
         String snpIdCurrent = (String) clinical.get("snpIdCurrent");
-        Double riskAlleleFrequency =  (Double) clinical.get("riskAlleleFrequency");
+        Double riskAlleleFrequency =  clinical.getDouble("riskAlleleFrequency", 0.0d);
         String reportedGenes = (String) clinical.get("reportedGenes");
         List<BasicDBObject> studiesObj = (List<BasicDBObject>) clinical.get("studies");
         Set<String> traitsSet = new HashSet<>();
@@ -614,10 +635,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         List<String>  traits = new ArrayList<>();
         traits.addAll(traitsSet);
-        return new Gwas(snpIdCurrent,traits,riskAlleleFrequency,reportedGenes);
+        return new Gwas(snpIdCurrent, traits, riskAlleleFrequency, reportedGenes);
     }
 
-    private Clinvar getClinvar(BasicDBObject clinical) {
+    private ClinVar getClinvar(BasicDBObject clinical) {
         BasicDBObject clinvarSet = (BasicDBObject) clinical.get("clinvarSet");
         BasicDBObject referenceClinVarAssertion = (BasicDBObject) clinvarSet.get("referenceClinVarAssertion");
         BasicDBObject clinVarAccession = (BasicDBObject) referenceClinVarAssertion.get("clinVarAccession");
@@ -657,7 +678,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         List<String>  geneNameList = new ArrayList<>();
         geneNameList.addAll(geneNameSet);
-        return new Clinvar(acc,clinicalSignificanceName, traitNames, geneNameList, reviewStatus);
+        return new ClinVar(acc,clinicalSignificanceName, traitNames, geneNameList, reviewStatus);
     }
 
     public QueryResult getListClinvarAccessions(QueryOptions queryOptions) {
@@ -699,6 +720,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         ObjectWriter writer = jsonObjectMapper.writer();
 
         long start = System.nanoTime();
@@ -711,6 +733,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             try {
                 update = new BasicDBObject("$set", new BasicDBObject("annot",
                         JSON.parse(writer.writeValueAsString(variantAnnotation))));
+                update.put("$addToSet",
+                        new BasicDBObject("_geneIds", new BasicDBObject("$each", getGeneIds(variantAnnotation))));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -720,6 +744,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
 
         return new QueryResult<>("", ((int) (System.nanoTime() - start)), 1, 1, "", "", new ArrayList());
+    }
+
+    private List<String> getGeneIds(VariantAnnotation variantAnnotation) {
+        Set<String> geneIdSet = new HashSet<>();
+        for(ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+            geneIdSet.add(consequenceType.getGeneName());
+            geneIdSet.add(consequenceType.getEnsemblGeneId());
+        }
+
+        return new ArrayList<>(geneIdSet);
     }
 
 //    private DBObject convertVariantAnnotation(VariantAnnotation variantAnnotation) {

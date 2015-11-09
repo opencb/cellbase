@@ -17,15 +17,13 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
-import org.opencb.biodata.formats.annotation.io.VepFormatReader;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.datastore.core.QueryOptions;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;

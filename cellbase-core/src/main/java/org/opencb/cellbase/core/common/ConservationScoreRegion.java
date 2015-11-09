@@ -18,19 +18,19 @@ package org.opencb.cellbase.core.common;
 
 import java.util.List;
 
-public class ConservedRegionFeature {
+public class ConservationScoreRegion {
 
     private String chromosome;
     private int start;
     private int end;
-    private String type;
+    private String source;
     private List<Float> values;
 
-    public ConservedRegionFeature(String chromosome, int start, int end, String type, List<Float> values) {
+    public ConservationScoreRegion(String chromosome, int start, int end, String source, List<Float> values) {
         this.chromosome = chromosome;
         this.start = start;
         this.end = end;
-        this.type = type;
+        this.source = source;
         this.values = values;
     }
 
@@ -58,12 +58,12 @@ public class ConservedRegionFeature {
         this.end = end;
     }
 
-    public String getType() {
-        return type;
+    public String getSource() {
+        return source;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setSource(String type) {
+        this.source = type;
     }
 
     public List<Float> getValues() {

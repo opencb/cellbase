@@ -18,6 +18,7 @@ package org.opencb.cellbase.core.common.variation;
 
 import java.util.Map;
 
+@Deprecated
 public class Phenotype {
 
 	private String name;

@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
+import com.mongodb.BasicDBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -87,9 +88,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/stats")
     @Override
-    public Response stats() {
-        return super.stats();
-    }
+    public Response stats() { return super.stats(); }
 
     @GET
     @Path("/all")
@@ -129,6 +128,20 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<QueryResult> genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(geneId), queryOptions);
             return createOkResponse(genes);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{geneId}/stats")
+    @ApiOperation(httpMethod = "GET", value = "Get summary stats about the specified gene(s)", response = BasicDBObject.class)
+    public Response getStatsByEnsemblId(@PathParam("geneId") String geneId) {
+        try {
+            parseQueryParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+            QueryResult stats = geneDBAdaptor.getStatsById(geneId, queryOptions);
+            return createOkResponse(stats);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

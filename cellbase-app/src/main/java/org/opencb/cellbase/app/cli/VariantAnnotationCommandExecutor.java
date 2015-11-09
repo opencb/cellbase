@@ -17,24 +17,29 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.opencb.biodata.formats.annotation.io.JsonAnnotationWriter;
-import org.opencb.biodata.formats.annotation.io.VepFormatWriter;
+import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
+import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
+import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.*;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.opencb.commons.utils.FileUtils;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -70,6 +75,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private List<String> customFileIds;
     private List<List<String>> customFileFields;
 
+    private QueryOptions queryOptions;
+
     private final int QUEUE_CAPACITY = 10;
     private final String TMP_DIR = "/tmp/";
 
@@ -78,6 +85,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 variantAnnotationCommandOptions.commonOptions.conf);
 
         this.variantAnnotationCommandOptions = variantAnnotationCommandOptions;
+        this.queryOptions = new QueryOptions();
 
         if(variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
@@ -90,11 +98,35 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     @Override
     public void execute() {
-        checkParameters();
 
         try {
+            checkParameters();
             if (customFiles != null) {
                 getIndexes();
+            }
+
+            if (variantAnnotationCommandOptions.variant != null && !variantAnnotationCommandOptions.variant.isEmpty()) {
+                List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
+                if (local) {
+                    DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+                    VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(variantAnnotationCommandOptions.species);
+                    List<QueryResult> annotationByVariantList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variants, queryOptions);
+
+                    ObjectMapper jsonObjectMapper = new ObjectMapper();
+                    jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                    jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+                    ObjectWriter objectWriter = jsonObjectMapper.writer();
+
+                    Path outPath = Paths.get(variantAnnotationCommandOptions.output);
+                    FileUtils.checkDirectory(outPath.getParent());
+                    BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(outPath);
+                    for (QueryResult queryResult : annotationByVariantList) {
+                        bufferedWriter.write(objectWriter.writeValueAsString(queryResult.getResult()));
+                        bufferedWriter.newLine();
+                    }
+                    bufferedWriter.close();
+                }
+                return;
             }
 
             List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
@@ -105,8 +137,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-            DataReader dataReader = new VariantVcfReader(new VariantSource(input.toString(), "", "", ""),
-                    input.toString());
+            DataReader dataReader = new VariantVcfReader(new VariantSource(input.toString(), "", "", ""), input.toString());
 
             DataWriter dataWriter;
             if (output.toString().endsWith(".json")) {
@@ -131,14 +162,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private void closeIndexes() {
         //try {
-            for (int i = 0; i < dbIndexes.size(); i++) {
-                dbIndexes.get(i).close();
-                dbOptions.get(i).dispose();
-                //FileUtils.deleteDirectory(new File(dbLocations.get(i)));
-            }
+        for (int i = 0; i < dbIndexes.size(); i++) {
+            dbIndexes.get(i).close();
+            dbOptions.get(i).dispose();
+            //FileUtils.deleteDirectory(new File(dbLocations.get(i)));
+        }
         //} catch (IOException e) {
-            //    e.printStackTrace();
-            //}
+        //    e.printStackTrace();
+        //}
     }
 
     private List<VariantAnnotator> createAnnotators() {
@@ -162,15 +193,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private VariantAnnotator createCellBaseAnnotator() {
-        if(local) {
-            try {
-                CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-                DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-                return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (local) {
+            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+            return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null), queryOptions);
         } else {
             try {
                 String path = "/cellbase/webservices/rest/";
@@ -269,7 +294,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         if(fields[3].length()>1  || alternates[i].length()>1) {
                             db.put((fields[0] + "_" + (Integer.valueOf(fields[1])+1) + "_" + fields[3].substring(1) + "_" + alternates[i].substring(1)).getBytes(),
                                     jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
-                        // SNV
+                            // SNV
                         } else {
                             db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alternates[i]).getBytes(),
                                     jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
@@ -333,26 +358,38 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void checkParameters() {
+    private void checkParameters() throws IOException {
         // input file
         if (variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
-            fileExists(input);
-        } else {
-            throw new ParameterException("Please check command line syntax. Provide a valid input file name.");
+            FileUtils.checkFile(input);
         }
         // output file
         if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
-            Path outputDir = output.getParent();
-            if (!outputDir.toFile().exists()) {
-                throw new ParameterException("Output directory " + outputDir + " doesn't exist");
-            } else if (output.toFile().isDirectory()) {
-                throw new ParameterException("Output file cannot be a directory: " + output);
+//            Path outputDir = output.getParent();
+            try {
+                FileUtils.checkDirectory(output.getParent());
+            } catch (IOException e) {
+                throw new ParameterException(e);
             }
+//            if (!outputDir.toFile().exists()) {
+//                throw new ParameterException("Output directory " + outputDir + " doesn't exist");
+//            } else if (output.toFile().isDirectory()) {
+//                throw new ParameterException("Output file cannot be a directory: " + output);
+//            }
         } else {
             throw new ParameterException("Please check command line sintax. Provide a valid output file name.");
         }
+
+        if (variantAnnotationCommandOptions.include != null && !variantAnnotationCommandOptions.include.isEmpty()) {
+            queryOptions.add("include", variantAnnotationCommandOptions.include);
+        }
+
+        if (variantAnnotationCommandOptions.exclude != null && !variantAnnotationCommandOptions.exclude.isEmpty()) {
+            queryOptions.add("exclude", variantAnnotationCommandOptions.exclude);
+        }
+
         // Num threads
         if (variantAnnotationCommandOptions.numThreads > 1) {
             numThreads = variantAnnotationCommandOptions.numThreads;
@@ -360,6 +397,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             numThreads = 1;
             logger.warn("Incorrect number of numThreads, it must be a positive value. This has been reset to '{}'", numThreads);
         }
+
         // Batch size
         if (variantAnnotationCommandOptions.batchSize >= 1 && variantAnnotationCommandOptions.batchSize <= 2000) {
             batchSize = variantAnnotationCommandOptions.batchSize;
@@ -367,9 +405,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             batchSize = 1;
             logger.warn("Incorrect size of batch size, it must be a positive value between 1-1000. This has been set to '{}'", batchSize);
         }
+
         // Direct connection to local MongoDB
         local = variantAnnotationCommandOptions.local;
-        if(!variantAnnotationCommandOptions.local) {
+        if (!variantAnnotationCommandOptions.local) {
             // Url
             if (variantAnnotationCommandOptions.url != null) {
                 url = variantAnnotationCommandOptions.url;
@@ -383,19 +422,21 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Please check command line sintax. Provide a valid port to access CellBase web services.");
             }
         }
+
         // Species
-        if (variantAnnotationCommandOptions.species!=null) {
+        if (variantAnnotationCommandOptions.species != null) {
             species = variantAnnotationCommandOptions.species;
         } else {
-            throw new ParameterException("Please check command line sintax. Provide a valid species name to access CellBase web services.");
+            throw new ParameterException("Please check command line syntax. Provide a valid species name to access CellBase web services.");
         }
+
         // Custom files
         if(variantAnnotationCommandOptions.customFiles != null) {
             String[] customFileStrings = variantAnnotationCommandOptions.customFiles.split(",");
             customFiles = new ArrayList<>(customFileStrings.length);
             for(String customFile : customFileStrings) {
                 Path customFilePath = Paths.get(customFile);
-                fileExists(customFilePath);
+                FileUtils.checkFile(customFilePath);
                 if(!(customFilePath.toString().endsWith(".vcf") || customFilePath.toString().endsWith(".vcf.gz"))) {
                     throw new ParameterException("Only VCF format is currently accepted for custom annotation files.");
                 }
@@ -421,13 +462,4 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
         }
     }
-
-    private void fileExists(Path filePath) {
-        if (!Files.exists(filePath)) {
-            throw new ParameterException("File " + filePath + " doesn't exist");
-        } else if (Files.isDirectory(filePath)) {
-            throw new ParameterException("File cannot be a directory: " + filePath);
-        }
-    }
-
 }

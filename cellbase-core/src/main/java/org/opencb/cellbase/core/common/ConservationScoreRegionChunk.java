@@ -18,11 +18,12 @@ package org.opencb.cellbase.core.common;
 
 import java.util.List;
 
-public class ConservedRegionChunk extends ConservedRegionFeature {
+@Deprecated
+public class ConservationScoreRegionChunk extends ConservationScoreRegion {
 
     private int chunkId;
 
-    public ConservedRegionChunk(String chromosome, int start, int end, String type, int chunkId, List<Float> values) {
+    public ConservationScoreRegionChunk(String chromosome, int start, int end, String type, int chunkId, List<Float> values) {
         super(chromosome, start, end, type, values);
         this.chunkId = chunkId;
     }

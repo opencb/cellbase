@@ -4,13 +4,12 @@ import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variant.annotation.Score;
-import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
 
 import java.util.*;
 
@@ -22,17 +21,16 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     public ConsequenceTypeSNVCalculator() {
     }
 
-    public List<ConsequenceType> run(GenomicVariant inputVariant, List<Gene> geneList,
-                                 List<RegulatoryRegion> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryRegion> regulatoryRegionList) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        boolean isIntegernic = true;
-        for(Gene currentGene: geneList) {
+        boolean isIntergenic = true;
+        for (Gene currentGene: geneList) {
             gene = currentGene;
             for(Transcript currentTranscript : gene.getTranscripts()) {
-                isIntegernic = isIntegernic && (variant.getPosition()<currentTranscript.getStart() ||
-                        variant.getPosition()>currentTranscript.getEnd());
+                isIntergenic = isIntergenic && (variant.getStart() <currentTranscript.getStart() ||
+                        variant.getStart() >currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
                 consequenceType.setGeneName(gene.getName());
@@ -44,8 +42,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
                 if(transcript.getStrand().equals("+")) {
                     // Check variant overlaps transcript start/end coordinates
-                    if(variant.getPosition()>=transcript.getStart() &&
-                            variant.getPosition()<=transcript.getEnd()) {
+                    if(variant.getStart() >=transcript.getStart() && variant.getStart() <=transcript.getEnd()) {
                         switch (transcript.getBiotype()) {
                             /**
                              * Coding biotypes
@@ -67,7 +64,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
                             case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
                                 solveCodingPositiveTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                             /**
@@ -75,7 +73,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                              */
                             default:
                                 solveNonCodingPositiveTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                         }
@@ -83,15 +82,16 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
-                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
                         }
                     }
 
                 } else {
                     // Check overlaps transcript start/end coordinates
-                    if(variant.getPosition()>=transcript.getStart() &&
-                            variant.getPosition()<=transcript.getEnd()) {
+                    if(variant.getStart() >=transcript.getStart() &&
+                            variant.getStart() <=transcript.getEnd()) {
                         switch (transcript.getBiotype()) {
                             /**
                              * Coding biotypes
@@ -113,7 +113,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
                             case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
                                 solveCodingNegativeTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                             /**
@@ -121,7 +122,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                              */
                             default:
                                 solveNonCodingNegativeTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                         }
@@ -129,7 +131,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
-                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
                         }
                     }
@@ -137,9 +140,14 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             }
         }
 
-//        if(consequenceTypeList.size()==0 && isIntegernic) {
-        if(isIntegernic) {
-            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
+        if(consequenceTypeList.size()==0 && isIntergenic) {
+//        if(isIntegernic) {
+//            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
+            HashSet<String> intergenicName = new HashSet<>();
+            intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);
+            ConsequenceType consequenceType = new ConsequenceType();
+            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(intergenicName));
+            consequenceTypeList.add(consequenceType);
         }
 
         solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
@@ -157,9 +165,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         int cdnaVariantPosition = -1;
         boolean[] junctionSolution = {false, false};
 
-        if(variant.getPosition()<=exon.getEnd() && variant.getPosition()>=exon.getStart()) {  // Variant within the exon
-            cdnaVariantPosition = cdnaExonEnd - (variant.getPosition() - exon.getStart());
-            consequenceType.setcDnaPosition(cdnaVariantPosition);
+        if(variant.getStart() <=exon.getEnd() && variant.getStart() >=exon.getStart()) {  // Variant within the exon
+            cdnaVariantPosition = cdnaExonEnd - (variant.getStart()  - exon.getStart());
+            consequenceType.setCdnaPosition(cdnaVariantPosition);
         }
 
         int exonCounter = 1;
@@ -170,11 +178,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             solveJunction(exon.getEnd()+1, prevSpliceSite, VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_DONOR_VARIANT, junctionSolution);
 
-            if(variant.getPosition() <= exon.getEnd()) {
+            if(variant.getStart()  <= exon.getEnd()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if(variant.getPosition() >= exon.getStart()) {  // Variant end within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (variant.getPosition() - exon.getStart());
-                    consequenceType.setcDnaPosition(cdnaVariantPosition);
+                if(variant.getStart()  >= exon.getStart()) {  // Variant end within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (variant.getStart()  - exon.getStart());
+                    consequenceType.setCdnaPosition(cdnaVariantPosition);
                 }
             } else {
                     variantAhead = false;
@@ -198,9 +206,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if(transcript.getGenomicCodingEnd()>=exon.getStart()) {
             firstCdsPhase = exon.getPhase();
         }
-        if(variant.getPosition()<=exon.getEnd() && variant.getPosition()>=exon.getStart()) {  // Variant within the exon
-            cdnaVariantPosition = cdnaExonEnd - (variant.getPosition() - exon.getStart());
-            consequenceType.setcDnaPosition(cdnaVariantPosition);
+        if(variant.getStart() <=exon.getEnd() && variant.getStart() >=exon.getStart()) {  // Variant within the exon
+            cdnaVariantPosition = cdnaExonEnd - (variant.getStart()  - exon.getStart());
+            consequenceType.setCdnaPosition(cdnaVariantPosition);
         }
 
         int exonCounter = 1;
@@ -215,11 +223,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     VariantAnnotationUtils.SPLICE_DONOR_VARIANT, junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
-            if(variant.getPosition() <= exon.getEnd()) {
+            if(variant.getStart()  <= exon.getEnd()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if(variant.getPosition() >= exon.getStart()) {  // Variant end within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (variant.getPosition() - exon.getStart());
-                    consequenceType.setcDnaPosition(cdnaVariantPosition);
+                if(variant.getStart()  >= exon.getStart()) {  // Variant end within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (variant.getStart()  - exon.getStart());
+                    consequenceType.setCdnaPosition(cdnaVariantPosition);
                 }
             } else {
                     variantAhead = false;
@@ -234,10 +242,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantPosition, int firstCdsPhase) {
-        if(variant.getPosition() > transcript.getGenomicCodingEnd() &&
+        if(variant.getStart()  > transcript.getGenomicCodingEnd() &&
             (transcript.getEnd()>transcript.getGenomicCodingEnd() || transcript.unconfirmedStart())) {// Check transcript has 3 UTR
                 SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
-        } else if(variant.getPosition()>=transcript.getGenomicCodingStart()) {
+        } else if(variant.getStart() >=transcript.getGenomicCodingStart()) {
             int cdnaCodingStart = transcript.getCdnaCodingStart();  // Need to define a local cdnaCodingStart because may modified in two lines below
             if(cdnaVariantPosition!=-1) {  // cdnaVariantStart may be null if variantEnd falls in an intron
                 if(transcript.unconfirmedStart()) {
@@ -263,10 +271,12 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
         Boolean codingAnnotationAdded = false;
         if(cdnaVariantPosition != -1) {
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
             if (!splicing) {
-                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
-                        (transcript.getStart()==transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
+                if ((cdnaVariantPosition >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                        (transcript.getStart()==transcript.getGenomicCodingStart()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);                                       // If that is the case and variant ocurs in the last complete/incomplete codon, no coding prediction is needed
                 } else if (cdnaVariantPosition>(cdnaCodingStart+2) || cdnaCodingStart>0) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     Integer variantPhaseShift = (cdnaVariantPosition - cdnaCodingStart) % 3;
@@ -278,7 +288,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     referenceCodon[1] = VariantAnnotationUtils.complementaryNt.get(referenceCodon[1]);
                     referenceCodon[2] = VariantAnnotationUtils.complementaryNt.get(referenceCodon[2]);
                     char[] modifiedCodonArray = referenceCodon.clone();
-                    modifiedCodonArray[variantPhaseShift] = VariantAnnotationUtils.complementaryNt.get(variant.getAlternative().toCharArray()[0]);
+                    modifiedCodonArray[variantPhaseShift] = VariantAnnotationUtils.complementaryNt.get(variant.getAlternate().toCharArray()[0]);
                     codingAnnotationAdded = true;
                     String referenceA = VariantAnnotationUtils.codonToA.get(String.valueOf(referenceCodon));
                     String alternativeA = VariantAnnotationUtils.codonToA.get(String.valueOf(modifiedCodonArray));
@@ -322,18 +332,18 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveTranscriptFlankingRegions(String leftRegionTag, String rightRegionTag) {
         // Variant within -5kb region
-        if(variant.getPosition()>(transcript.getStart()-5001) && variant.getPosition()<transcript.getStart()) {
+        if(variant.getStart() >(transcript.getStart()-5001) && variant.getStart() <transcript.getStart()) {
             // Variant within -2kb region
-            if(variant.getPosition()>(transcript.getStart()-2001)) {
+            if(variant.getStart() >(transcript.getStart()-2001)) {
                 SoNames.add("2KB_" + leftRegionTag);
             } else {
                 SoNames.add(leftRegionTag);
             }
         }
         // Variant within +5kb region
-        if(variant.getPosition()>transcript.getEnd() && variant.getPosition()<(transcript.getEnd()+5001)) {
+        if(variant.getStart() >transcript.getEnd() && variant.getStart() <(transcript.getEnd()+5001)) {
             // Variant within +2kb region
-            if(variant.getPosition()<(transcript.getEnd()+2001)) {
+            if(variant.getStart() <(transcript.getEnd()+2001)) {
                 SoNames.add("2KB_" + rightRegionTag);
             } else {
                 SoNames.add(rightRegionTag);
@@ -350,10 +360,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         junctionSolution[0] = false;
         junctionSolution[1] = false;
 
-        if(variant.getPosition() >= exon.getStart()) {
-            if(variant.getPosition() <= exon.getEnd()) {  // Variant start within the exon
-                cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getPosition());
-                consequenceType.setcDnaPosition(cdnaVariantPosition);
+        if(variant.getStart()  >= exon.getStart()) {
+            if(variant.getStart()  <= exon.getEnd()) {  // Variant start within the exon
+                cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart() );
+                consequenceType.setCdnaPosition(cdnaVariantPosition);
             }
         }
 
@@ -364,11 +374,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             solveJunction(prevSpliceSite, exon.getStart()-1, VariantAnnotationUtils.SPLICE_DONOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT, junctionSolution);
 
-            if(variant.getPosition() >= exon.getStart()) {
+            if(variant.getStart()  >= exon.getStart()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if(variant.getPosition() <= exon.getEnd()) {  // Variant within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getPosition());
-                    consequenceType.setcDnaPosition(cdnaVariantPosition);
+                if(variant.getStart()  <= exon.getEnd()) {  // Variant within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart() );
+                    consequenceType.setCdnaPosition(cdnaVariantPosition);
                 }
             } else {
                 variantAhead = false;
@@ -419,9 +429,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if(transcript.getGenomicCodingStart()<=exon.getEnd()) {
             firstCdsPhase = exon.getPhase();
         }
-        if(variant.getPosition()>=exon.getStart()  && variant.getPosition()<=exon.getEnd()) {  // Variant start within the exon
-            cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getPosition());
-            consequenceType.setcDnaPosition(cdnaVariantPosition);
+        if(variant.getStart() >=exon.getStart()  && variant.getStart() <=exon.getEnd()) {  // Variant start within the exon
+            cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart() );
+            consequenceType.setCdnaPosition(cdnaVariantPosition);
         }
 
         int exonCounter = 1;
@@ -436,11 +446,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT, junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
-            if(variant.getPosition() >= exon.getStart()) {
+            if(variant.getStart()  >= exon.getStart()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if(variant.getPosition() <= exon.getEnd()) {  // Variant within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getPosition());
-                    consequenceType.setcDnaPosition(cdnaVariantPosition);
+                if(variant.getStart()  <= exon.getEnd()) {  // Variant within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart() );
+                    consequenceType.setCdnaPosition(cdnaVariantPosition);
                 }
             } else {
                 variantAhead = false;
@@ -456,10 +466,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantPosition, int firstCdsPhase) {
-        if(variant.getPosition()<transcript.getGenomicCodingStart() &&
+        if(variant.getStart() <transcript.getGenomicCodingStart() &&
                 (transcript.getStart()<transcript.getGenomicCodingStart() || transcript.unconfirmedStart())) {// Check transcript has 5 UTR
             SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
-        } else if(variant.getPosition()<=transcript.getGenomicCodingEnd()) {  // Variant start within coding region
+        } else if(variant.getStart() <=transcript.getGenomicCodingEnd()) {  // Variant start within coding region
             int cdnaCodingStart = transcript.getCdnaCodingStart();  // Need to define a local cdnaCodingStart because may modified in two lines below
             if(cdnaVariantPosition!=-1) {  // cdnaVariantStart may be -1 if variantStart falls in an intron
                 if(transcript.unconfirmedStart()) {
@@ -486,17 +496,19 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
         boolean codingAnnotationAdded = false;  // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
         if(cdnaVariantPosition != -1) {
-            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
+            int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
             if (!splicing) {
-                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
-                        (transcript.getEnd()==transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
+                if ((cdnaVariantPosition >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
+//                        (transcript.getEnd()==transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {  //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);               //  If not, avoid calculating reference/modified codon
                 } else if (cdnaVariantPosition>(cdnaCodingStart+2) || cdnaCodingStart>0) {  // cdnaCodingStart<1 if cds_start_NF and phase!=0
                     int variantPhaseShift = (cdnaVariantPosition - cdnaCodingStart) % 3;
                     int modifiedCodonStart = cdnaVariantPosition - variantPhaseShift;
                     String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);  // -1 and +2 because of base 0 String indexing
                     char[] modifiedCodonArray = referenceCodon.toCharArray();
-                    modifiedCodonArray[variantPhaseShift] = variant.getAlternative().toCharArray()[0];
+                    modifiedCodonArray[variantPhaseShift] = variant.getAlternate().toCharArray()[0];
                     String referenceA = VariantAnnotationUtils.codonToA.get(referenceCodon);
                     String alternativeA = VariantAnnotationUtils.codonToA.get(String.valueOf(modifiedCodonArray));
                     codingAnnotationAdded = true;
@@ -543,38 +555,38 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         junctionSolution[0] = false;  // Is splicing variant in non-coding region
         junctionSolution[1] = false;  // Variant is intronic and both ends fall within the intron
 
-        if(variant.getPosition()>(spliceSite1+1) && variant.getPosition()<(spliceSite2-1)) {  // Variant overlaps the rest of intronic region (splice region within the intron and/or rest of intron)
+        if(variant.getStart() >(spliceSite1+1) && variant.getStart() <(spliceSite2-1)) {  // Variant overlaps the rest of intronic region (splice region within the intron and/or rest of intron)
             SoNames.add(VariantAnnotationUtils.INTRON_VARIANT);
             junctionSolution[1] = true;  // variant falls within the intron
         } else {
-            if(variant.getPosition()>=spliceSite1 && variant.getPosition()<=spliceSite2) {
+            if(variant.getStart() >=spliceSite1 && variant.getStart() <=spliceSite2) {
                 junctionSolution[1] = true;  // variant falls within the intron
             }
         }
 
-        if(variant.getPosition()==spliceSite1 || variant.getPosition()==(spliceSite1+1)) {  // Variant donor/acceptor
+        if(variant.getStart().equals(spliceSite1) || variant.getStart().equals(spliceSite1+1)) {  // Variant donor/acceptor
             SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-            junctionSolution[0] = (variant.getPosition()<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+            junctionSolution[0] = (variant.getStart() <=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
         } else {
-            if(variant.getPosition()>(spliceSite1+1) && variant.getPosition()<(spliceSite1+8)) {
+            if(variant.getStart() >(spliceSite1+1) && variant.getStart() <(spliceSite1+8)) {
                 SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
-                junctionSolution[0] = (variant.getPosition()<=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+                junctionSolution[0] = (variant.getStart() <=spliceSite2);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
             } else {
-                if(variant.getPosition()>(spliceSite1-4) && variant.getPosition()<spliceSite1) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
+                if(variant.getStart() >(spliceSite1-4) && variant.getStart() <spliceSite1) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
                     SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 }
             }
         }
 
-        if(variant.getPosition()==(spliceSite2-1) || variant.getPosition()==spliceSite2) {  // Variant donor/acceptor
+        if(variant.getStart().equals(spliceSite2-1) || variant.getStart().equals(spliceSite2)) {  // Variant donor/acceptor
             SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
-            junctionSolution[0] = (variant.getPosition()>=spliceSite1);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+            junctionSolution[0] = (variant.getStart() >=spliceSite1);  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
         } else {
-            if(variant.getPosition()<(spliceSite2-1) && variant.getPosition()>(spliceSite2-8)) {
+            if(variant.getStart() <(spliceSite2-1) && variant.getStart() >(spliceSite2-8)) {
                 SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
-                junctionSolution[0] = (spliceSite1<=variant.getPosition());  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+                junctionSolution[0] = (spliceSite1<=variant.getStart() );  //  BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
             } else {
-                if(variant.getPosition()<(spliceSite2+4) && variant.getPosition()>spliceSite2) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
+                if(variant.getStart() <(spliceSite2+4) && variant.getStart() >spliceSite2) {  // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
                     SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 }
             }

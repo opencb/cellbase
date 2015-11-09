@@ -2,7 +2,7 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -62,13 +62,15 @@ public class VcfVariantAnnotator implements VariantAnnotator {
     }
 
     private void fillVariantAnnotationList(List<Variant> variantList) {
-        for(int i=0; i<variantList.size(); i++) {
+        for (int i = 0; i < variantList.size(); i++) {
             VariantAnnotation variantAnnotation = new VariantAnnotation();
             Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
-            if(customAnnotation!=null && ((Map) customAnnotation.get(fileId)).size()>0) {
-                variantAnnotation.setAdditionalAttributes(customAnnotation);
+            Map<String, String> auxMap = new HashMap<>();
+            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
+            if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
+                variantAnnotation.setAdditionalAttributes(auxMap);
             }
             variantAnnotationList.add(variantAnnotation);
         }
@@ -81,18 +83,23 @@ public class VcfVariantAnnotator implements VariantAnnotator {
      *                    SAME order: variantAnnotation at position i must correspond to variant i
      */
     private void udpateVariantAnnotationList(List<Variant> variantList) {
-        for(int i=0; i<variantList.size(); i++) {
+        for (int i = 0; i < variantList.size(); i++) {
+
             Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
+            Map<String, String> auxMap = new HashMap<>();
+            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
-            if(customAnnotation!=null && ((Map) customAnnotation.get(fileId)).size()>0) {
-                Map<String,Object> additionalAttributes;
-                if((additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes()) == null) {
+            if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
+                Map<String, String> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
+                if (additionalAttributes == null) {
                     // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
                     // at position i must correspond to variant i
-                    variantAnnotationList.get(i).setAdditionalAttributes(customAnnotation);
+//                    variantAnnotationList.get(i).setAdditionalAttributes(customAnnotation);
+                    variantAnnotationList.get(i).setAdditionalAttributes(auxMap);
                 } else {
-                    additionalAttributes.putAll(customAnnotation);
+//                    additionalAttributes.putAll(customAnnotation);
+                    additionalAttributes.putAll(auxMap);
                     // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
                     // at position i must correspond to variant i
                     variantAnnotationList.get(i).setAdditionalAttributes(additionalAttributes);

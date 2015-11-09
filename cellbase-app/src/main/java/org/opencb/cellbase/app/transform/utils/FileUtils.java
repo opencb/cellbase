@@ -30,6 +30,7 @@ import java.util.zip.GZIPOutputStream;
  * Time: 1:06 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class FileUtils {
 
 

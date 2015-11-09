@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.common.core;
 
+@Deprecated
 public class DBName {
 
 	private String dbNameShort;

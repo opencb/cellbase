@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Deprecated
 public class Transcript implements Serializable {
 
 	/**

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.common.variation;
 
+@Deprecated
 public class GenomicVariantEffect {
 
 	private String chromosome;

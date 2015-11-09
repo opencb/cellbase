@@ -29,7 +29,6 @@
         <jackson.version>2.5.4</jackson.version>
         <jersey.version>2.19</jersey.version>
         <compileSource>1.8</compileSource>
-        <build.dir>build</build.dir>
     </properties>
 
     <scm>
@@ -76,6 +75,17 @@
         </mailingList>
     </mailingLists>
 
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    
     <dependencyManagement>
         <dependencies>
             <!-- Intra-module dependencies -->

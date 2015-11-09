@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.common.variation;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class Variation {
 
 	// private String _id;

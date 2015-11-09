@@ -27,6 +27,7 @@ import java.util.zip.GZIPOutputStream;
  * Time: 2:10 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class StringUtils {
 
     public static byte[] gzip(String text) throws IOException {

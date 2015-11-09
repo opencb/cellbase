@@ -2,17 +2,18 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.biodata.models.variation.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Created by fjlopez on 05/08/15.
@@ -30,19 +31,19 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         this.genomeDBAdaptor = genomeDBAdaptor;
     }
 
-    public List<ConsequenceType> run(GenomicVariant inputVariant, List<Gene> geneList,
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
                                      List<RegulatoryRegion> regulatoryRegionList) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = variant.getPosition() + variant.getReference().length() - 1;
-        variantStart = variant.getPosition();
+        variantEnd = variant.getStart() + variant.getReference().length() - 1;
+        variantStart = variant.getStart();
         isBigDeletion = ((variantEnd - variantStart) > bigVariantSizeThreshold);
-        boolean isIntegernic = true;
+        boolean isIntergenic = true;
         for (Gene currentGene : geneList) {
             gene = currentGene;
             for (Transcript currentTranscript : gene.getTranscripts()) {
-                isIntegernic = isIntegernic && (variantEnd < currentTranscript.getStart() ||
+                isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() ||
                         variantStart > currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
@@ -56,7 +57,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 if (transcript.getStrand().equals("+")) {
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {  // Deletion - whole transcript removed
                         SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
-                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                         consequenceTypeList.add(consequenceType);
                     } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
                         if (isBigDeletion) {  // Big deletion
@@ -83,7 +85,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                             case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
                             case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
                                 solveCodingPositiveTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                             /**
@@ -91,7 +94,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                              */
                             default:
                                 solveNonCodingPositiveTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                         }
@@ -99,14 +103,16 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
-                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
                         }
                     }
                 } else {
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {  // Deletion - whole transcript removed
                         SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
-                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                         consequenceTypeList.add(consequenceType);
                     } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
                         if (isBigDeletion) {  // Big deletion
@@ -133,7 +139,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                             case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
                             case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
                                 solveCodingNegativeTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                             /**
@@ -141,7 +148,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                              */
                             default:
                                 solveNonCodingNegativeTranscript();
-                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
                                 break;
                         }
@@ -149,7 +157,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
-                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
                         }
                     }
@@ -158,9 +167,14 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             }
         }
 
-//        if (consequenceTypeList.size() == 0 && isIntegernic) {
-        if (isIntegernic) {
-            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
+        if (consequenceTypeList.size() == 0 && isIntergenic) {
+//        if (isIntegernic) {
+//            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
+            HashSet<String> intergenicName = new HashSet<>();
+            intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);
+            ConsequenceType consequenceType = new ConsequenceType();
+            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(intergenicName));
+            consequenceTypeList.add(consequenceType);
         }
 
         solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
@@ -185,7 +199,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         if (variantEnd <= exon.getEnd()) {
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCdnaPosition(cdnaVariantStart);
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 }
@@ -210,7 +224,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCdnaPosition(cdnaVariantStart);
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                     }
@@ -247,7 +261,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         if (variantEnd <= exon.getEnd()) {
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCdnaPosition(cdnaVariantStart);
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 }
@@ -273,7 +287,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCdnaPosition(cdnaVariantStart);
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                     }
@@ -368,7 +382,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 solveStopCodonNegativeDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd);
             }
             if (cdnaVariantEnd >= (transcript.getCdnaCodingEnd() - finalNtPhase)) {
-                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
+                if (finalNtPhase != 2) {
+//                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
                 } else if(stopToSolve) {  // Only if stop codon annotation was not already solved in the if block above
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -386,37 +401,39 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
         int modifiedCodon2Start = cdnaVariantEnd - variantPhaseShift2;
-        String reverseCodon1 = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodon1Start - 2,
-                transcriptSequence.length() - modifiedCodon1Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
-        String reverseCodon2 = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodon2Start - 2,
-                transcriptSequence.length() - modifiedCodon2Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
-        String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(((transcriptSequence.length()-cdnaVariantEnd)>2)?(transcriptSequence.length()-cdnaVariantEnd-3):0,  // Be careful reaching the end of the transcript sequence
-                transcriptSequence.length() - cdnaVariantEnd)).reverse().toString(); // Rigth limit of the substring -2 because substring does not include that position
-        char[] referenceCodon1Array = reverseCodon1.toCharArray();
-        referenceCodon1Array[0] = VariantAnnotationUtils.complementaryNt.get(referenceCodon1Array[0]);
-        referenceCodon1Array[1] = VariantAnnotationUtils.complementaryNt.get(referenceCodon1Array[1]);
-        referenceCodon1Array[2] = VariantAnnotationUtils.complementaryNt.get(referenceCodon1Array[2]);
-        char[] referenceCodon2Array = reverseCodon2.toCharArray();
-        referenceCodon2Array[0] = VariantAnnotationUtils.complementaryNt.get(referenceCodon2Array[0]);
-        referenceCodon2Array[1] = VariantAnnotationUtils.complementaryNt.get(referenceCodon2Array[1]);
-        referenceCodon2Array[2] = VariantAnnotationUtils.complementaryNt.get(referenceCodon2Array[2]);
-        char[] modifiedCodonArray = referenceCodon1Array.clone();
+        if(modifiedCodon1Start>0 && (modifiedCodon2Start+2)<=transcriptSequence.length()) {
+            String reverseCodon1 = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodon1Start - 2,
+                    transcriptSequence.length() - modifiedCodon1Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+            String reverseCodon2 = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodon2Start - 2,
+                    transcriptSequence.length() - modifiedCodon2Start + 1)).reverse().toString(); // Rigth limit of the substring sums +1 because substring does not include that position
+            String reverseTranscriptSequence = new StringBuilder(transcriptSequence.substring(((transcriptSequence.length() - cdnaVariantEnd) > 2) ? (transcriptSequence.length() - cdnaVariantEnd - 3) : 0,  // Be careful reaching the end of the transcript sequence
+                    transcriptSequence.length() - cdnaVariantEnd)).reverse().toString(); // Rigth limit of the substring -2 because substring does not include that position
+            char[] referenceCodon1Array = reverseCodon1.toCharArray();
+            referenceCodon1Array[0] = VariantAnnotationUtils.complementaryNt.get(referenceCodon1Array[0]);
+            referenceCodon1Array[1] = VariantAnnotationUtils.complementaryNt.get(referenceCodon1Array[1]);
+            referenceCodon1Array[2] = VariantAnnotationUtils.complementaryNt.get(referenceCodon1Array[2]);
+            char[] referenceCodon2Array = reverseCodon2.toCharArray();
+            referenceCodon2Array[0] = VariantAnnotationUtils.complementaryNt.get(referenceCodon2Array[0]);
+            referenceCodon2Array[1] = VariantAnnotationUtils.complementaryNt.get(referenceCodon2Array[1]);
+            referenceCodon2Array[2] = VariantAnnotationUtils.complementaryNt.get(referenceCodon2Array[2]);
+            char[] modifiedCodonArray = referenceCodon1Array.clone();
 
-        int i=0;
-        int codonPosition;
-        for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
-            if(i>=reverseTranscriptSequence.length()) {
-                int genomicCoordinate = transcript.getStart()-(i-reverseTranscriptSequence.length()+1);
-                modifiedCodonArray[codonPosition] = VariantAnnotationUtils.complementaryNt.get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
-                        genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
-            } else {
-                modifiedCodonArray[codonPosition] = VariantAnnotationUtils.complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
+            int i = 0;
+            int codonPosition;
+            for (codonPosition = variantPhaseShift1; codonPosition < 3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
+                if (i >= reverseTranscriptSequence.length()) {
+                    int genomicCoordinate = transcript.getStart() - (i - reverseTranscriptSequence.length() + 1);
+                    modifiedCodonArray[codonPosition] = VariantAnnotationUtils.complementaryNt.get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
+                            genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
+                } else {
+                    modifiedCodonArray[codonPosition] = VariantAnnotationUtils.complementaryNt.get(reverseTranscriptSequence.charAt(i));  // Paste reference nts after deletion in the corresponding codon position
+                }
+                i++;
             }
-            i++;
-        }
 
-        decideStopCodonModificationAnnotation(SoNames, VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon2Array)) ? String.valueOf(referenceCodon2Array) : String.valueOf(referenceCodon1Array),
-                modifiedCodonArray);
+            decideStopCodonModificationAnnotation(SoNames, VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon2Array)) ? String.valueOf(referenceCodon2Array) : String.valueOf(referenceCodon1Array),
+                    modifiedCodonArray);
+        }
     }
 
     private void solveTranscriptFlankingRegions(String leftRegionTag, String rightRegionTag) {
@@ -457,7 +474,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         if (variantStart >= exon.getStart()) {
             if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCdnaPosition(cdnaVariantStart);
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 }
@@ -484,7 +501,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCdnaPosition(cdnaVariantStart);
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     }
@@ -525,7 +542,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         if (variantStart >= exon.getStart()) {
             if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                consequenceType.setcDnaPosition(cdnaVariantStart);
+                consequenceType.setCdnaPosition(cdnaVariantStart);
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 }
@@ -551,7 +568,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
-                    consequenceType.setcDnaPosition(cdnaVariantStart);
+                    consequenceType.setCdnaPosition(cdnaVariantStart);
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     }
@@ -641,7 +658,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 solveStopCodonPositiveDeletion(transcriptSequence, cdnaCodingStart, cdnaVariantStart, cdnaVariantEnd);
             }
             if (cdnaVariantEnd >= (transcript.getCdnaCodingEnd() - finalNtPhase)) {
-                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
+                if (finalNtPhase != 2) {
+//                if (transcript.unconfirmedEnd() && (finalNtPhase != 2)) {
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
                 } else if(stopToSolve) {  // Only if stop codon annotation was not already solved in the if block above
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -659,22 +677,24 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
         int modifiedCodon2Start = cdnaVariantEnd - variantPhaseShift2;
-        String referenceCodon1 = transcriptSequence.substring(modifiedCodon1Start - 1, modifiedCodon1Start + 2);  // -1 and +2 because of base 0 String indexing
-        String referenceCodon2 = transcriptSequence.substring(modifiedCodon2Start - 1, modifiedCodon2Start + 2);  // -1 and +2 because of base 0 String indexing
-        char[] modifiedCodonArray = referenceCodon1.toCharArray();
-        int i=cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
-        int codonPosition;
-        for(codonPosition=variantPhaseShift1; codonPosition<3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
-            if(i>=transcriptSequence.length()) {
-                int genomicCoordinate = transcript.getEnd()+(i-transcriptSequence.length())+1;
-                modifiedCodonArray[codonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
-                        genomicCoordinate, genomicCoordinate+1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
-            } else {
-                modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
+        if(modifiedCodon1Start>0 && (modifiedCodon2Start+2)<=transcriptSequence.length()) {
+            String referenceCodon1 = transcriptSequence.substring(modifiedCodon1Start - 1, modifiedCodon1Start + 2);  // -1 and +2 because of base 0 String indexing
+            String referenceCodon2 = transcriptSequence.substring(modifiedCodon2Start - 1, modifiedCodon2Start + 2);  // -1 and +2 because of base 0 String indexing
+            char[] modifiedCodonArray = referenceCodon1.toCharArray();
+            int i = cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
+            int codonPosition;
+            for (codonPosition = variantPhaseShift1; codonPosition < 3; codonPosition++) { // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd are within coding sequence (both of them within an exon).
+                if (i >= transcriptSequence.length()) {
+                    int genomicCoordinate = transcript.getEnd() + (i - transcriptSequence.length()) + 1;
+                    modifiedCodonArray[codonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
+                            genomicCoordinate, genomicCoordinate + 1, new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
+                } else {
+                    modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);  // Paste reference nts after deletion in the corresponding codon position
+                }
+                i++;
             }
-            i++;
+            decideStopCodonModificationAnnotation(SoNames, VariantAnnotationUtils.isStopCodon(referenceCodon2) ? referenceCodon2 : referenceCodon1, modifiedCodonArray);
         }
-        decideStopCodonModificationAnnotation(SoNames, VariantAnnotationUtils.isStopCodon(referenceCodon2) ? referenceCodon2 : referenceCodon1, modifiedCodonArray);
     }
 
     private void solveJunction(Integer spliceSite1, Integer spliceSite2, String leftSpliceSiteTag,

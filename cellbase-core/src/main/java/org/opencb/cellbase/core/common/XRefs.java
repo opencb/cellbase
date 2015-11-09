@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.common;
 
 import java.util.*;
 
+@Deprecated
 public class XRefs {
 	
 	private String id;

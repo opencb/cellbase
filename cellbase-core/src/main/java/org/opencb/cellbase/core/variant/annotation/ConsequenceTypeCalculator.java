@@ -3,17 +3,15 @@ package org.opencb.cellbase.core.variant.annotation;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.feature.Region;
-import org.opencb.biodata.models.variant.annotation.ConsequenceType;
-import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by fjlopez on 19/06/15.
@@ -25,41 +23,55 @@ public abstract class ConsequenceTypeCalculator {
     protected ConsequenceType consequenceType;
     protected Gene gene;
     protected Transcript transcript;
-    protected GenomicVariant variant;
+    protected Variant variant;
 
-    public List<ConsequenceType> run(GenomicVariant variant, List<Gene> geneList,
-                                     List<RegulatoryRegion> regulatoryRegionList) { return null; }
+    public List<ConsequenceType> run(Variant variant, List<Gene> geneList, List<RegulatoryRegion> regulatoryRegionList) {
+        return null;
+    }
 
     protected Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
         return (region2Start <= region1End && region2End >= region1Start);
     }
 
     protected void solveRegulatoryRegions(List<RegulatoryRegion> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
-        if(!regulatoryRegionList.isEmpty()) {
-            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.REGULATORY_REGION_VARIANT));
+        if(regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
+            ConsequenceType consequenceType = new ConsequenceType();
+            SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
+            consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
+            consequenceTypeList.add(consequenceType);
             boolean TFBSFound=false;
-            for(int i=0; (i<regulatoryRegionList.size() && !TFBSFound); i++) {
+            for (int i=0; (i<regulatoryRegionList.size() && !TFBSFound); i++) {
                 String regulatoryRegionType = regulatoryRegionList.get(i).getType();
                 TFBSFound = regulatoryRegionType!=null && (regulatoryRegionType.equals("TF_binding_site") ||
                         regulatoryRegionList.get(i).getType().equals("TF_binding_site_motif"));
             }
-            if(TFBSFound) {
-                consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT));
+            if (TFBSFound) {
+                consequenceType = new ConsequenceType();
+                sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT);
+                consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
+                consequenceTypeList.add(consequenceType);
             }
         }
     }
 
     protected void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
                                                          char[] modifiedCodonArray) {
-        if (VariantAnnotationUtils.isSynonymousCodon.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-            if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
-                SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
-            }
-        } else {
-            if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
-                SoNames.add(VariantAnnotationUtils.STOP_LOST);
-            } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
-                SoNames.add(VariantAnnotationUtils.STOP_GAINED);
+
+        Map<String, Boolean> replacementMap = VariantAnnotationUtils.isSynonymousCodon.get(referenceCodon);
+        if(replacementMap!=null) {
+            Boolean isSynonymous = replacementMap.get(String.valueOf(modifiedCodonArray));
+            if (isSynonymous!=null) {
+                if (isSynonymous) {
+                    if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+                        SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
+                    }
+                } else {
+                    if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
+                        SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                    } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
+                        SoNames.add(VariantAnnotationUtils.STOP_GAINED);
+                    }
+                }
             }
         }
     }
@@ -102,5 +114,16 @@ public abstract class ConsequenceTypeCalculator {
         SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
     }
 
+    protected List<SequenceOntologyTerm> getSequenceOntologyTerms(HashSet<String> SoNames) {
+        List<SequenceOntologyTerm> sequenceOntologyTerms = new ArrayList<>(SoNames.size());
+        for (String name : SoNames) {
+            sequenceOntologyTerms.add(newSequenceOntologyTerm(name));
+        }
+        return sequenceOntologyTerms;
+    }
+
+    private SequenceOntologyTerm newSequenceOntologyTerm(String name) {
+        return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
+    }
 
 }

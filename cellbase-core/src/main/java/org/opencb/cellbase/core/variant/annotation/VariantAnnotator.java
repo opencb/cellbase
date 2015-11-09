@@ -1,7 +1,7 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 
 import java.util.List;
 

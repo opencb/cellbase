@@ -82,15 +82,14 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if (loadCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{"genome", "gene", "variation", "regulatory_region", "protein", "ppi",
-                            "protein_functional_prediction", "conservation", "clinical"};
+                    buildOptions = new String[]{"genome", "gene", "gene_disease_association", "variation", "variation_functional_score",
+                            "regulatory_region", "protein", "ppi", "protein_functional_prediction", "conservation", "clinical"};
                 } else {
                     buildOptions = loadCommandOptions.data.split(",");
                 }
 
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
-
                     try {
                         switch (buildOption) {
                             case "genome":
@@ -102,8 +101,12 @@ public class LoadCommandExecutor extends CommandExecutor {
                                 loadRunner.load(input.resolve("gene.json.gz"), "gene");
                                 loadRunner.index("gene");
                                 break;
+                            case "gene_disease_association":
+                                break;
                             case "variation":
                                 loadVariationData();
+                                break;
+                            case "variation_functional_score":
                                 break;
                             case "regulatory_region":
                                 loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
@@ -129,12 +132,14 @@ public class LoadCommandExecutor extends CommandExecutor {
                                 loadRunner.load(input.resolve("gwas.json.gz"), "gwas");
                                 loadRunner.index("clinical");
                                 break;
+                            default:
+                                logger.warn("We should ot reach this point");
+                                break;
                         }
-                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException
-                            | ExecutionException | NoSuchMethodException | InterruptedException | ClassNotFoundException e) {
-                                } catch (LoaderException e) {
-                                } catch (IOException e) {
-                                }
+                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ExecutionException
+                            | NoSuchMethodException | InterruptedException | ClassNotFoundException | LoaderException | IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } else {
@@ -181,11 +186,8 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.getFileName().toString().startsWith("conservation_");
-            }
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+            return entry.getFileName().toString().startsWith("conservation_");
         });
         for (Path entry: stream) {
             logger.info("Loading file '{}'", entry.toString());

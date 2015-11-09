@@ -19,7 +19,7 @@ package org.opencb.cellbase.core.common;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Deprecated
 public class Region {
 
     private String chromosome;

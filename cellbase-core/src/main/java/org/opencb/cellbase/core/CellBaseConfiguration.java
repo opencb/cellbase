@@ -172,10 +172,16 @@ public class CellBaseConfiguration {
         private URLProperties intact;
         private URLProperties interpro;
         private URLProperties conservation;
+        private URLProperties gerp;
         private URLProperties clinvar;
+        private URLProperties clinvarEfoTerms;
+        private URLProperties hpo;
         private URLProperties disgenet;
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
+        private URLProperties dbsnp;
+        private URLProperties cadd;
+
 
         public EnsemblProperties getEnsembl() {
             return ensembl;
@@ -209,13 +215,37 @@ public class CellBaseConfiguration {
             this.clinvar = clinvar;
         }
 
-        public URLProperties getDisgenet() { return disgenet; }
+        public URLProperties getClinvarEfoTerms() {
+            return clinvarEfoTerms;
+        }
 
-        public void setDisgenet(URLProperties disgenet) { this.disgenet = disgenet; }
+        public void setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
+            this.clinvarEfoTerms = clinvarEfoTerms;
+        }
 
-        public URLProperties getDgidb() { return dgidb; }
+        public URLProperties getHpo() {
+            return hpo;
+        }
 
-        public void setDgidb(URLProperties dgidb) { this.dgidb = dgidb; }
+        public void setHpo(URLProperties hpo) {
+            this.hpo = hpo;
+        }
+
+        public URLProperties getDisgenet() {
+            return disgenet;
+        }
+
+        public void setDisgenet(URLProperties disgenet) {
+            this.disgenet = disgenet;
+        }
+
+        public URLProperties getDgidb() {
+            return dgidb;
+        }
+
+        public void setDgidb(URLProperties dgidb) {
+            this.dgidb = dgidb;
+        }
 
         public URLProperties getConservation() {
             return conservation;
@@ -223,6 +253,14 @@ public class CellBaseConfiguration {
 
         public void setConservation(URLProperties conservation) {
             this.conservation = conservation;
+        }
+
+        public URLProperties getGerp() {
+            return gerp;
+        }
+
+        public void setGerp(URLProperties gerp) {
+            this.gerp = gerp;
         }
 
         public URLProperties getIntact() {
@@ -265,6 +303,10 @@ public class CellBaseConfiguration {
             this.gwasCatalog = gwasCatalog;
         }
 
+        public URLProperties getDbsnp() { return dbsnp; }
+
+        public void setDbsnp(URLProperties dbsnp) { this.dbsnp = dbsnp; }
+
         public URLProperties getMirbase() {
             return mirbase;
         }
@@ -287,6 +329,14 @@ public class CellBaseConfiguration {
 
         public void setMiRTarBase(URLProperties miRTarBase) {
             this.miRTarBase = miRTarBase;
+        }
+
+        public URLProperties getCadd() {
+            return cadd;
+        }
+
+        public void setCadd(URLProperties cadd) {
+            this.cadd = cadd;
         }
 
         public static class EnsemblProperties {

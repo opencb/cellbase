@@ -18,6 +18,7 @@ package org.opencb.cellbase.core.common.core;
 
 import java.io.Serializable;
 
+@Deprecated
 public class Exon implements Serializable{
 
 	/**
