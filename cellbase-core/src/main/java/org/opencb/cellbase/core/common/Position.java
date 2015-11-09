@@ -19,7 +19,6 @@ package org.opencb.cellbase.core.common;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Position {
 
 	private String chromosome;

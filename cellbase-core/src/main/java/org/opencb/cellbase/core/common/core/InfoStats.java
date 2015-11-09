@@ -18,6 +18,7 @@ package org.opencb.cellbase.core.common.core;
 
 import java.util.List;
 
+@Deprecated
 public class InfoStats {
 	private String species;
 	private List<Chromosome> chromosomes;

@@ -18,6 +18,7 @@ package org.opencb.cellbase.core.common.variation;
 
 import java.util.List;
 
+@Deprecated
 public class TranscriptVariation {
 	
 	private String transcriptId;

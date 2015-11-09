@@ -27,6 +27,7 @@ public class GenomicPositionScore {
     private int start;
     private int end;
     private String source;
+
     /**
         This value can code for 3 float numbers like in CADD scores, for this Long looks better than Double
      */

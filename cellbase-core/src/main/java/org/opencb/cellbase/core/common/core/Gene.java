@@ -19,7 +19,7 @@ package org.opencb.cellbase.core.common.core;
 import java.io.Serializable;
 import java.util.List;
 
-
+@Deprecated
 public class Gene implements Serializable {
 	/**
 	 * 

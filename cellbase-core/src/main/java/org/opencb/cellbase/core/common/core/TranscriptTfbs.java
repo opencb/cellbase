@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.common.core;
 
 public class TranscriptTfbs {
+
 	private String tfName;
 	private String pwm;
 	private String chromosome;

@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.core.common.core;
 
-
 public class Cytoband {
 
 	private String name;

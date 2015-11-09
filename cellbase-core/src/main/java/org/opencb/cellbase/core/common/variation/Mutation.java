@@ -23,6 +23,7 @@ package org.opencb.cellbase.core.common.variation;
  * Time: 7:37 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class Mutation {
 
     private String id;

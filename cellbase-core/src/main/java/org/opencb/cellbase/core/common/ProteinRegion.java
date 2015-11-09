@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.common;
 
+@Deprecated
 public class ProteinRegion {
 
 	private String uniprotId;
