@@ -3,17 +3,16 @@ package org.opencb.cellbase.app.transform;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.tools.tar.TarInputStream;
 import org.opencb.cellbase.core.common.genedisease.Disease;
 import org.opencb.cellbase.core.common.genedisease.Disgenet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Class for parsing Disgenet files as the one that can be downloaded from
@@ -43,14 +42,17 @@ public class DisgenetParser extends CellBaseParser {
             // Disgenet file is usually downloaded as a .tar.gz file
             if (disgenetFilePath.toFile().getName().endsWith("tar.gz")) {
                 TarArchiveInputStream tarInput = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(disgenetFilePath.toFile())));
-                TarArchiveEntry currentEntry = tarInput.getNextTarEntry();
-                BufferedReader br = null;
+//                TarArchiveEntry currentEntry = tarInput.getNextTarEntry();
+//                BufferedReader br = null;
                 reader = new BufferedReader(new InputStreamReader(tarInput)); // Read directly from tarInput
-            } else if (disgenetFilePath.toFile().getName().endsWith(".gz")) {
-                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(disgenetFilePath.toFile()))));
             } else {
-                reader = Files.newBufferedReader(disgenetFilePath, Charset.defaultCharset());
+                reader = FileUtils.newBufferedReader(disgenetFilePath);
             }
+//            if (disgenetFilePath.toFile().getName().endsWith("txt.gz")) {
+//                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(disgenetFilePath.toFile()))));
+//            } else {
+//                reader = Files.newBufferedReader(disgenetFilePath, Charset.defaultCharset());
+//            }
 
             logger.info("Parsing Disgenet file " + disgenetFilePath + " ...");
             // first line is the header -> ignore it

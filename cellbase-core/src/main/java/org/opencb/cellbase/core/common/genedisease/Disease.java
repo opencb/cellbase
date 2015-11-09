@@ -8,6 +8,7 @@ import java.util.Set;
  * Created by fjlopez on 20/05/15.
  */
 public class Disease {
+
     private String diseaseId;
     private String diseaseName;
     private Float score;

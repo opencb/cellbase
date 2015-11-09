@@ -111,7 +111,7 @@
 				"data":[
 					"genome",
 					"gene",
-					"gene_disease_annotation",
+					"gene_disease_association",
 					"variation",
 					"variation_functional_score",
 					"regulation",
