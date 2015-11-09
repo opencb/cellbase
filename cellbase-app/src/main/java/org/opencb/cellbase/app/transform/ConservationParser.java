@@ -83,7 +83,7 @@ public class ConservationParser extends CellBaseParser {
         Set<String> chromosomes = new HashSet<>();
 
         // Reading all files in phastCons folder
-        DirectoryStream<Path> directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"));
+        DirectoryStream<Path> directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"), "*.wigFix.gz");
         for (Path path: directoryStream) {
             chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
             chromosomes.add(chromosome);
@@ -91,7 +91,7 @@ public class ConservationParser extends CellBaseParser {
         }
 
         // Reading all files in phylop folder
-        directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phylop"));
+        directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phylop"), "*.wigFix.gz");
         for (Path path: directoryStream) {
             chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
             chromosomes.add(chromosome);
