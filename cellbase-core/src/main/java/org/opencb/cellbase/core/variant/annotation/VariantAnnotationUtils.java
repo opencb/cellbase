@@ -1,5 +1,9 @@
 package org.opencb.cellbase.core.variant.annotation;
 
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
+import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -271,6 +275,18 @@ public class VariantAnnotationUtils {
             return true;
         }
         return false;
+    }
+
+    public static List<SequenceOntologyTerm> getSequenceOntologyTerms(Iterable<String> SoNames) throws SOTermNotAvailableException{
+        List<SequenceOntologyTerm> sequenceOntologyTerms = new ArrayList<>();
+        for (String name : SoNames) {
+            sequenceOntologyTerms.add(newSequenceOntologyTerm(name));
+        }
+        return sequenceOntologyTerms;
+    }
+
+    public static SequenceOntologyTerm newSequenceOntologyTerm(String name) throws SOTermNotAvailableException{
+        return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
 
 }

@@ -21,6 +21,7 @@ import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 import org.opencb.biodata.models.variation.Variation;
@@ -41,6 +42,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils.getSequenceOntologyTerms;
 
 public class VariationParser extends CellBaseParser {
 
@@ -423,14 +426,23 @@ public class VariationParser extends CellBaseParser {
         List<ConsequenceType>  consequenceTypes = new ArrayList<>();
         for (TranscriptVariation transcriptVariation : transcriptVariations){
             List<Score> substitionScores = getSubstitutionScores(transcriptVariation);
-            String referenceCodon = transcriptVariation.getCodonAlleleString().split()
-            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, null, null, null, null,
-                    transcriptVariation.get, substitionScores, keywords, features);
+            String[] peptideAlleles = transcriptVariation.getPeptideAlleleString().split("/");
+            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, null,
+                    peptideAlleles[0], peptideAlleles[1], null, null, substitionScores, null , null);
 
-            ConsequenceType consequenceType = new ConsequenceType(geneName, ensemblGeneId, transcriptVariation.getTranscriptId(),
-                    strand, biotype, transcriptVariation.getCdnaStart(), transcriptVariation.getCdsStart(),
-                    transcriptVariation.getCodonAlleleString(),proteinVariantAnnotation, sequenceOntologyTerms);
+            List<SequenceOntologyTerm> soTerms = null;
+            try {
+                soTerms = getSequenceOntologyTerms(transcriptVariation.getConsequenceTypes());
+            } catch (SOTermNotAvailableException e) {
+                logger.warn(e.getMessage());
+            }
+
+            consequenceTypes.add(new ConsequenceType(null, null, transcriptVariation.getTranscriptId(), null, null,
+                    transcriptVariation.getCdnaStart(), transcriptVariation.getCdsStart(),
+                    transcriptVariation.getCodonAlleleString(), proteinVariantAnnotation, soTerms));
+
         }
+        return consequenceTypes;
     }
 
     private List<Score> getSubstitutionScores(TranscriptVariation transcriptVariation) {

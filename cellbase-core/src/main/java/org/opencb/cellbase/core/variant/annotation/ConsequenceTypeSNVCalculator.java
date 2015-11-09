@@ -5,13 +5,13 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
-import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 
 import java.util.*;
+
+import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils.getSequenceOntologyTerms;
 
 /**
  * Created by fjlopez on 22/06/15.
