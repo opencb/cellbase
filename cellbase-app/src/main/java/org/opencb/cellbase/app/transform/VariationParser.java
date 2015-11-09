@@ -426,9 +426,22 @@ public class VariationParser extends CellBaseParser {
         List<ConsequenceType>  consequenceTypes = new ArrayList<>();
         for (TranscriptVariation transcriptVariation : transcriptVariations){
             List<Score> substitionScores = getSubstitutionScores(transcriptVariation);
-            String[] peptideAlleles = transcriptVariation.getPeptideAlleleString().split("/");
+
+            // get peptide reference and alternate
+            String peptideReference = null,
+                    peptideAlternate = null;
+            if (!transcriptVariation.getPeptideAlleleString().equals("\\N")){
+                String[] peptideAlleles = transcriptVariation.getPeptideAlleleString().split("/");
+                peptideReference = peptideAlleles[0];
+                if (peptideAlleles.length == 1) {
+                    peptideAlternate = peptideAlleles[0];
+                }else {
+                    peptideAlternate = peptideAlleles[1];
+                }
+            }
+
             ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, null,
-                    peptideAlleles[0], peptideAlleles[1], null, null, substitionScores, null , null);
+                    peptideReference, peptideAlternate, null, null, substitionScores, null , null);
 
             List<SequenceOntologyTerm> soTerms = null;
             try {
