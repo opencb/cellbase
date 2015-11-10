@@ -77,6 +77,11 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult getAll(QueryOptions options) {
         System.out.println("options = " + options.get("exclude"));
         QueryBuilder builder = QueryBuilder.start();
+        builder = addFilters(options, builder);
+        return executeQuery("result", builder.get(), options);
+    }
+
+    private QueryBuilder addFilters(QueryOptions options, QueryBuilder builder) {
         if(filteringOptionsEnabled(options)) {
             List<String> sourceContent = options.getAsStringList("source");
             if (sourceContent == null || includeContains(sourceContent, "clinvar")) {
@@ -89,7 +94,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 builder.or(addCosmicFilters(QueryBuilder.start(), options).get());
             }
         }
-        return executeQuery("result", builder.get(), options);
+        return builder;
     }
 
     private QueryBuilder addCosmicFilters(QueryBuilder builder, QueryOptions options) {
@@ -103,8 +108,27 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
         builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
         builder = addGeneFilter(builder, options.getAsStringList("gene"));
-//        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+        builder = addCosmicPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
 
+        return builder;
+    }
+
+    private QueryBuilder addCosmicPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
+        if (phenotypeList != null && phenotypeList.size() > 0) {
+            BasicDBList orDBList = new BasicDBList();
+            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
+            List<pattern> phenotypeRegexList = getClinvarPhenotypeRegex(phenotypeList)
+            orDBList.add(new BasicDBObject("primarySite",
+                    new BasicDBObject("$in", phenotypeRegexList)));
+            orDBList.add(new BasicDBObject("siteSubtype",
+                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+            orDBList.add(new BasicDBObject("primaryHistology",
+                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+            orDBList.add(new BasicDBObject("histologySubtype",
+                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+            builder = builder.and();
+
+        }
         return builder;
     }
 
@@ -119,7 +143,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
         builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
         builder = addGeneFilter(builder, options.getAsStringList("gene"));
-//        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+        builder = addGwasPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
 
         return builder;
     }
@@ -134,22 +158,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult getByGeneId(String geneId, QueryOptions queryOptions) {
-        if(includeContains(queryOptions.getAsStringList("source"), "clinvar")) {
-            return getClinvarByGeneId(geneId, queryOptions);
-        } else {
-            // TODO implement!
-            return new QueryResult();
-        }
-    }
-
-    public QueryResult getClinvarByGeneId(String geneId, QueryOptions queryOptions) {
+    public QueryResult getByGeneId(String geneId, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start();
         builder = addGeneFilter(builder, Collections.singletonList(geneId));
-        builder = addClinvarFilters(builder, queryOptions);
-
-        return executeQuery("result", builder.get(), queryOptions);
+        builder = addFilters(options, builder);
+        return executeQuery("result", builder.get(), options);
     }
+
+//    public QueryResult getClinvarByGeneId(String geneId, QueryOptions queryOptions) {
+//        QueryBuilder builder = QueryBuilder.start();
+//          builder = addGeneFilter(builder, Collections.singletonList(geneId));
+//        builder = addClinvarFilters(builder, queryOptions);
+
+//        return executeQuery("result", builder.get(), queryOptions);
+//    }
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
