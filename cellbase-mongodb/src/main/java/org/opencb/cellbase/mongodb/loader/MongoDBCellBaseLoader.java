@@ -136,6 +136,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "variation":
                 collectionName = "variation";
                 break;
+            case "cadd":
+                collectionName = "variation_functional_score";
+                break;
             case "regulatory_region":
                 collectionName = "regulatory_region";
                 break;
@@ -186,6 +189,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE,
                             10 * MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE};
                     break;
+                case "variation_functional_score":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE};
+                    break;
                 case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
                     break;
@@ -200,7 +206,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     @Override
     public Integer call() {
-        Integer loadedObjects = 0;
+        int numLoadedObjects = 0;
         boolean finished = false;
         while (!finished) {
             try {
@@ -215,7 +221,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         addGeneId(dbObject);
                         dbObjectsBatch.add(dbObject);
                     }
-                    loadedObjects += load(dbObjectsBatch);
+                    numLoadedObjects += load(dbObjectsBatch);
                 }
             } catch (InterruptedException e) {
                 logger.error("Loader thread interrupted: " + e.getMessage());
@@ -223,8 +229,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 logger.error("Error Loading batch: " + e.getMessage());
             }
         }
-        logger.debug("'load' finished. " + loadedObjects + " records loaded");
-        return loadedObjects;
+        logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
+        return numLoadedObjects;
     }
 
     private void addGeneId(DBObject dbObject) {
@@ -351,6 +357,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "variation":
                 indexFileName = "variation-indexes.js";
+                break;
+            case "variation_functional_score":
+                indexFileName = "variation_functional_score-indexes.js";
                 break;
             case "regulatory_region":
                 indexFileName = "regulatory_region-indexes.js";
