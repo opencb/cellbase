@@ -37,10 +37,13 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     private CellBaseClient cellBaseClient;
     private List<VariantAnnotation> variantAnnotationList;
 
+    private QueryOptions queryOptions;
+
     private Logger logger;
 
-    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
+    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient, QueryOptions queryOptions) {
         this.cellBaseClient = cellBaseClient;
+        this.queryOptions = queryOptions;
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -55,9 +58,11 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     public List<VariantAnnotation> run(List<Variant> variantList) {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
         QueryResponse<QueryResult<VariantAnnotation>> response;
+        queryOptions.put("post", true);
         try {
             response = cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
-                    CellBaseClient.SubCategory.variant, variantList, new QueryOptions("post", true));
+                    CellBaseClient.SubCategory.variant, variantList, queryOptions);
+//                    CellBaseClient.SubCategory.variant, variantList, new QueryOptions("post", true));
         } catch (IOException e) {
             return null;
         }

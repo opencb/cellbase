@@ -331,27 +331,33 @@ public class GeneParser extends CellBaseParser {
 
     private Map<String, List<GeneDrugInteraction>> getGeneDrugMap() throws IOException {
         Map<String,List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
-        BufferedReader br;
-        if (geneDrugFile.toFile().getName().endsWith(".gz")) {
-            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(geneDrugFile.toFile()))));
+        if (geneDrugFile != null && Files.exists(geneDrugFile)) {
+            BufferedReader br;
+            if (geneDrugFile.toFile().getName().endsWith(".gz")) {
+                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(geneDrugFile.toFile()))));
+            } else {
+                br = Files.newBufferedReader(geneDrugFile, Charset.defaultCharset());
+            }
+
+            logger.info("Loading gene-drug data form {}", geneDrugFile);
+            // Skip header
+            br.readLine();
+
+            int lineCounter = 1;
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\t");
+                addValueToMapElement(geneDrugMap, parts[0], new GeneDrugInteraction(parts[0], parts[4], "dgidb", parts[2],
+                        parts[3]));
+                lineCounter++;
+            }
+
+            br.close();
         } else {
-            br = Files.newBufferedReader(geneDrugFile, Charset.defaultCharset());
+            logger.warn("Gene drug file " + geneDrugFile + " not found");
+            logger.warn("Ignoring "+ geneDrugFile);
         }
 
-        logger.info("Loading gene-drug data form {}", geneDrugFile);
-        // Skip header
-        br.readLine();
-
-        int lineCounter = 1;
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] parts = line.split("\t");
-            addValueToMapElement(geneDrugMap, parts[0], new GeneDrugInteraction(parts[0], parts[4], "dgidb", parts[2],
-                    parts[3]));
-            lineCounter++;
-        }
-
-        br.close();
         return geneDrugMap;
     }
 
