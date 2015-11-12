@@ -24,7 +24,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variation.TranscriptVariation;
-import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -440,7 +439,7 @@ public class VariationParser extends CellBaseParser {
                 }
             }
 
-            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, null,
+            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, 0,
                     peptideReference, peptideAlternate, null, null, substitionScores, null , null);
 
             List<SequenceOntologyTerm> soTerms = null;
