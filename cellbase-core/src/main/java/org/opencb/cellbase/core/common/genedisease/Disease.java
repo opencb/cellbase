@@ -9,37 +9,64 @@ import java.util.Set;
  */
 public class Disease {
 
-    private String diseaseId;
-    private String diseaseName;
+    private String id;
+    private String name;
+    private String hpo;
     private Float score;
     private Integer numberOfPubmeds;
     private List<String> associationTypes;
     private Set<String> sources;
+    private String source;
 
-    public Disease(String diseaseId, String diseaseName, Float score, Integer numberOfPubmeds, String associationType, Set<String> sources) {
-        this.diseaseId = diseaseId;
-        this.diseaseName = diseaseName;
+    public Disease(String id, String name, String hpo, Float score, Integer numberOfPubmeds, String associationType, Set<String> sources, String source) {
+        this.id = id;
+        this.hpo = hpo;
+        this.name = name;
         this.score = score;
         this.numberOfPubmeds = numberOfPubmeds;
         this.associationTypes = new ArrayList<>();
         this.associationTypes.add(associationType);
         this.sources = sources;
+        this.source = source;
     }
 
-    public String getDiseaseId() {
-        return diseaseId;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Disease{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", hpo='").append(hpo).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", score=").append(score);
+        sb.append(", numberOfPubmeds=").append(numberOfPubmeds);
+        sb.append(", associationTypes=").append(associationTypes);
+        sb.append(", sources=").append(sources);
+        sb.append(", source='").append(source).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 
-    public void setDiseaseId(String diseaseId) {
-        this.diseaseId = diseaseId;
+    public String getId() {
+        return id;
     }
 
-    public String getDiseaseName() {
-        return diseaseName;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setDiseaseName(String diseaseName) {
-        this.diseaseName = diseaseName;
+    public String getHpo() {
+        return hpo;
+    }
+
+    public void setHpo(String hpo) {
+        this.hpo = hpo;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Float getScore() {
@@ -72,5 +99,13 @@ public class Disease {
 
     public void setSources(Set<String> sources) {
         sources = sources;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

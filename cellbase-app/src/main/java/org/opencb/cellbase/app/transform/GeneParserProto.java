@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
+import com.google.protobuf.util.JsonFormat;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
@@ -36,10 +37,7 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -150,6 +148,7 @@ public class GeneParserProto extends CellBaseParser {
         logger.info("Parsing gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
         Gtf gtf;
+        PrintWriter pw = new PrintWriter(new File("/tmp/aaa.json"));
         while ((gtf = gtfReader.read()) != null) {
 
             if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript") || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
@@ -169,7 +168,11 @@ public class GeneParserProto extends CellBaseParser {
 //                    serializer.serialize(gene);
                     gene = geneBuilder.build();
 
-                    serializer.serialize(gene);
+                    JsonFormat.Printer jsonPrinter = JsonFormat.printer();
+                    System.out.println(jsonPrinter.print(gene));
+//                    jsonPrinter.appendTo(gene, pw);
+
+//                    serializer.serialize(gene);
                     logger.info("Serialized {}", geneBuilder.getId());
 //                    System.out.println("gene = " + gene.toString());
                 }
@@ -469,6 +472,7 @@ public class GeneParserProto extends CellBaseParser {
             }
         }
 
+        pw.close();
         // last gene must be serialized
         serializer.serialize(gene);
 
