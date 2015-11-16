@@ -238,6 +238,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
+        return getVariantFunctionalScoreDBAdaptor(species, null);
+    }
+
+    @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
+
+    @Override
     public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
         return getVariantAnnotationDBAdaptor(species, null);
     }

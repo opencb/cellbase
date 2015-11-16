@@ -19,12 +19,12 @@ package org.opencb.cellbase.app.transform;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.models.core.Disease;
 import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -236,8 +236,8 @@ public class GeneParserUtils {
     }
 
 
-    public static Map<String, List<Disease>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath) throws IOException {
-        Map<String, List<Disease>> geneDiseaseAssociationMap = new HashMap<>(50000);
+    public static Map<String, List<GeneTraitAssociation>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath) throws IOException {
+        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
 
         String[] fields;
         String line;
@@ -247,7 +247,7 @@ public class GeneParserUtils {
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
-                Disease disease = new Disease(fields[0], fields[4], fields[3], 0f, 0, "", new HashSet<>(), "hpo");
+                GeneTraitAssociation disease = new GeneTraitAssociation(fields[0], fields[4], fields[3], 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
                 addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
             }
             bufferedReader.close();
@@ -259,7 +259,7 @@ public class GeneParserUtils {
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
-                Disease disease = new Disease(fields[3], fields[4], "", Float.parseFloat(fields[5]), Integer.parseInt(fields[6]), fields[7], new HashSet<>(Arrays.asList(fields[8].split(", "))), "disgenet");
+                GeneTraitAssociation disease = new GeneTraitAssociation(fields[3], fields[4], "", Float.parseFloat(fields[5]), Integer.parseInt(fields[6]), Arrays.asList(fields[7]), Arrays.asList(fields[8].split(", ")), "disgenet");
                 addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
             }
             bufferedReader.close();
