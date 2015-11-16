@@ -87,10 +87,10 @@ public class VcfVariantAnnotator implements VariantAnnotator {
 
             Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
             Map<String, String> auxMap = new HashMap<>();
-            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
             if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
+                customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
                 Map<String, String> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
                 if (additionalAttributes == null) {
                     // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
