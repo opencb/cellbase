@@ -78,7 +78,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          Database name has the following pattern in lower case and with no '.' in the name:
          cellbase_speciesId_assembly_cellbaseVersion
          Example:
-         cellbase_hsapiens_grch37_v3
+            cellbase_hsapiens_grch37_v3
          **/
         // We need to look for the species object in the configuration
         CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);

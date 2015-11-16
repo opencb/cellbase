@@ -26,7 +26,6 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.cellbase.core.CellBaseConfiguration;
-import org.opencb.cellbase.core.common.genedisease.Disease;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -122,7 +121,7 @@ public class GeneParser extends CellBaseParser {
         // Gene annotation data
         Map<String, List<Expression>> geneExpressionMap = GeneParserUtils.getGeneExpressionMap(species.getScientificName(), geneExpressionFile);
         Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
-        Map<String, List<Disease>> geneDiseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
+        Map<String, List<Disease>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
 
 
         // Preparing the fasta file for fast accessing
@@ -151,17 +150,23 @@ public class GeneParser extends CellBaseParser {
             String transcriptId = gtf.getAttributes().get("transcript_id");
 
             if (newGene(gene, geneId)) {
+                System.out.println("geneId = " + geneId);
                 // If new geneId is different from the current then we must serialize before data new gene
                 if (gene != null) {
                     serializer.serialize(gene);
                 }
 
-                GeneAnnotation geneAnnotation = new GeneAnnotation();
+                GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
+                        diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")), geneDrugMap.get(gtf.getAttributes().get("gene_name")));
 
+//                gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
+//                        "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
+//                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(),
+//                        mirnaGeneMap.get(geneId), geneExpressionMap.get(geneId), geneDrugMap.get(gtf.getAttributes().get("gene_name")));
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
-                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(),
-                        mirnaGeneMap.get(geneId), geneExpressionMap.get(geneId), geneDrugMap.get(gtf.getAttributes().get("gene_name")));
+                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<>(),
+                        mirnaGeneMap.get(geneId), geneAnnotation);
                 // Do not change order!! size()-1 is the index of the gene ID
             }
 

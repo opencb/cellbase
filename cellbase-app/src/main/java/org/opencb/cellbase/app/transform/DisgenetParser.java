@@ -2,7 +2,7 @@ package org.opencb.cellbase.app.transform;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.opencb.cellbase.core.common.genedisease.Disease;
+import org.opencb.biodata.models.core.Disease;
 import org.opencb.cellbase.core.common.genedisease.Disgenet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
