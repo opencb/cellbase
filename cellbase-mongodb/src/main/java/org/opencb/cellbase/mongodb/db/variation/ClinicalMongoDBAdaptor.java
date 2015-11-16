@@ -117,16 +117,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (phenotypeList != null && phenotypeList.size() > 0) {
             BasicDBList orDBList = new BasicDBList();
             logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
-            List<pattern> phenotypeRegexList = getClinvarPhenotypeRegex(phenotypeList)
+            List<Pattern> phenotypeRegexList = getClinvarPhenotypeRegex(phenotypeList);
             orDBList.add(new BasicDBObject("primarySite",
                     new BasicDBObject("$in", phenotypeRegexList)));
             orDBList.add(new BasicDBObject("siteSubtype",
-                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+                    new BasicDBObject("$in", phenotypeRegexList)));
             orDBList.add(new BasicDBObject("primaryHistology",
-                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+                    new BasicDBObject("$in", phenotypeRegexList)));
             orDBList.add(new BasicDBObject("histologySubtype",
-                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
-            builder = builder.and();
+                    new BasicDBObject("$in", phenotypeRegexList)));
+            builder = builder.and(orDBList);
 
         }
         return builder;
@@ -145,6 +145,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         builder = addGeneFilter(builder, options.getAsStringList("gene"));
         builder = addGwasPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
 
+        return builder;
+    }
+
+    private QueryBuilder addGwasPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
+        if (phenotypeList != null && phenotypeList.size() > 0) {
+            logger.info("phenotype filter activated, phenotype list: " + phenotypeList.toString());
+
+            builder = builder.and(new BasicDBObject("studies.traits.diseaseTrait",
+                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+        }
         return builder;
     }
 

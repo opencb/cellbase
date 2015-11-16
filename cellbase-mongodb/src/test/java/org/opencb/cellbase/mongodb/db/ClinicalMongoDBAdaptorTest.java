@@ -19,14 +19,16 @@ package org.opencb.cellbase.mongodb.db;
 import org.junit.Test;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.mongodb.GenericMongoDBAdaptorTest;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import java.io.IOException;
 import java.util.List;
 
-public class ClinicalMongoDBAdaptorTest {
+public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testGetAllByRegionList() throws Exception {
@@ -145,4 +147,14 @@ public class ClinicalMongoDBAdaptorTest {
         a=1;
 
     }
+
+    @Test
+    public void testGetByGeneId() throws Exception {
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+        QueryOptions queryOptions = new QueryOptions();
+//        QueryOptions queryOptions = new QueryOptions("phenotype", "carcinoma");
+        queryOptions.add("limit",3);
+        QueryResult queryResult = clinicalDBAdaptor.getByGeneId("BRCA2", queryOptions);
+    }
+
 }
