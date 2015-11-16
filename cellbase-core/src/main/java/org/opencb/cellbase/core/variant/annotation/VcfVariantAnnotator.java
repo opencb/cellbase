@@ -67,10 +67,11 @@ public class VcfVariantAnnotator implements VariantAnnotator {
             Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
-            Map<String, String> auxMap = new HashMap<>();
-            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
+//            Map<String, String> auxMap = new HashMap<>();
+//            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
             if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
-                variantAnnotation.setAdditionalAttributes(auxMap);
+                variantAnnotation.setAdditionalAttributes(customAnnotation);
+                //variantAnnotation.setAdditionalAttributes(auxMap);
             }
             variantAnnotationList.add(variantAnnotation);
         }
@@ -86,20 +87,22 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         for (int i = 0; i < variantList.size(); i++) {
 
             Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
-            Map<String, String> auxMap = new HashMap<>();
+            Map<String, Object> auxMap = new HashMap<>();
+//            Map<String, String> auxMap = new HashMap<>();
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
             if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
-                customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
-                Map<String, String> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
+//                customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
+                Map<String, Object> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
+//                Map<String, String> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
                 if (additionalAttributes == null) {
                     // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
                     // at position i must correspond to variant i
-//                    variantAnnotationList.get(i).setAdditionalAttributes(customAnnotation);
-                    variantAnnotationList.get(i).setAdditionalAttributes(auxMap);
+                    variantAnnotationList.get(i).setAdditionalAttributes(customAnnotation);
+//                    variantAnnotationList.get(i).setAdditionalAttributes(auxMap);
                 } else {
-//                    additionalAttributes.putAll(customAnnotation);
-                    additionalAttributes.putAll(auxMap);
+                    additionalAttributes.putAll(customAnnotation);
+//                    additionalAttributes.putAll(auxMap);
                     // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
                     // at position i must correspond to variant i
                     variantAnnotationList.get(i).setAdditionalAttributes(additionalAttributes);
