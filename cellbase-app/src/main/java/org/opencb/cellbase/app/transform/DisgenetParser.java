@@ -1,6 +1,5 @@
 package org.opencb.cellbase.app.transform;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.opencb.cellbase.core.common.genedisease.Disease;
@@ -9,8 +8,6 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -130,7 +127,7 @@ public class DisgenetParser extends CellBaseParser {
                                                String geneName, String diseaseId, String diseaseName, Float score,
                                                Integer numberOfPubmeds, String associationType, Set<String> sources) {
         Disease diseaseToAddToNewGene =
-                new Disease(diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
+                new Disease(diseaseId, diseaseName, "", score, numberOfPubmeds, associationType, sources, "disgenet");
         List<Disease> diseases = new ArrayList<>();
         diseases.add(diseaseToAddToNewGene);
         Disgenet disGeNet = new Disgenet(geneName, geneSymbol, diseases);
@@ -141,7 +138,7 @@ public class DisgenetParser extends CellBaseParser {
         Disgenet disGeNetRecord = disGeNetMap.get(geneId);
         Boolean disease_found = false;
         for (int i = 0; i < disGeNetRecord.getDiseases().size(); i++){
-            if (disGeNetRecord.getDiseases().get(i).getDiseaseId().equals(diseaseId)){
+            if (disGeNetRecord.getDiseases().get(i).getId().equals(diseaseId)){
                 disGeNetRecord.getDiseases().get(i).getAssociationTypes().add(associationType);
                 disGeNetRecord.getDiseases().get(i).getSources().addAll(sources);
                 disease_found = true;
@@ -149,7 +146,7 @@ public class DisgenetParser extends CellBaseParser {
         }
         if (!disease_found) {
             Disease diseaseToAddToExitsGene =
-                    new Disease(diseaseId, diseaseName, score, numberOfPubmeds, associationType, sources);
+                    new Disease(diseaseId, diseaseName, "", score, numberOfPubmeds, associationType, sources, "disgenet");
             disGeNetRecord.getDiseases().add(diseaseToAddToExitsGene);
         }
     }

@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2015 OpenCB
  *
@@ -14,20 +15,6 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.common;
-
-import org.opencb.cellbase.core.common.genedisease.Disease;
-
-import java.util.List;
-
-/**
- * Created by imedina on 09/11/15.
- */
-public class GeneDiseaseAnnotation {
-
-    private String geneName;
-    private String geneSymbol;
-
-    private List<Disease> diseases;
-
-}
+db.getCollection('variation_functional_score').ensureIndex({'_chunkIds': 1})
+db.getCollection('variation_functional_score').ensureIndex({'chromosome': 1, "start": 1, "end": 1})
+db.getCollection('variation_functional_score').ensureIndex({'source': 1})
