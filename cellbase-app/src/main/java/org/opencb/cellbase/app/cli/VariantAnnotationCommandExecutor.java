@@ -210,7 +210,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 }
                 logger.debug("URL set to: {}", url + ":" + port + path);
 
-                return new CellBaseWSVariantAnnotator(cellBaseClient);
+                return new CellBaseWSVariantAnnotator(cellBaseClient, queryOptions);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }

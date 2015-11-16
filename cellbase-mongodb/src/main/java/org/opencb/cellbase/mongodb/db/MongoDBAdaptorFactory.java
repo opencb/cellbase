@@ -78,7 +78,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          Database name has the following pattern in lower case and with no '.' in the name:
          cellbase_speciesId_assembly_cellbaseVersion
          Example:
-         cellbase_hsapiens_grch37_v3
+            cellbase_hsapiens_grch37_v3
          **/
         // We need to look for the species object in the configuration
         CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);
@@ -234,6 +234,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     public VariationDBAdaptor getVariationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new VariationMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
+
+    @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
+        return getVariantFunctionalScoreDBAdaptor(species, null);
+    }
+
+    @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
 

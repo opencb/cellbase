@@ -107,6 +107,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                                 loadVariationData();
                                 break;
                             case "variation_functional_score":
+                                loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
+                                loadRunner.index("variation_functional_score");
                                 break;
                             case "regulatory_region":
                                 loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");

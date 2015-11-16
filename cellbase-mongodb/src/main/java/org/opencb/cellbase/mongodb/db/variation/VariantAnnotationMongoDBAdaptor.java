@@ -187,11 +187,23 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 }
             }
 
+            /*
+             * Gene Annotation
+             */
             if (annotatorSet.contains("expression")) {
                 variantAnnotation.setExpression(new ArrayList<>());
                 for (Gene gene : geneList) {
-                    if (gene.getExpressionValues() != null) {
-                        variantAnnotation.getExpression().addAll(gene.getExpressionValues());
+                    if (gene.getAnnotation().getExpression() != null) {
+                        variantAnnotation.getExpression().addAll(gene.getAnnotation().getExpression());
+                    }
+                }
+            }
+
+            if (annotatorSet.contains("geneDisease")) {
+                variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
+                for (Gene gene : geneList) {
+                    if (gene.getAnnotation().getDiseases() != null) {
+                        variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
                     }
                 }
             }
@@ -199,8 +211,8 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             if (annotatorSet.contains("drugInteraction")) {
                 variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
                 for (Gene gene : geneList) {
-                    if (gene.getDrugInteractions() != null) {
-                        variantAnnotation.getGeneDrugInteraction().addAll(gene.getDrugInteractions());
+                    if (gene.getAnnotation().getDrugs() != null) {
+                        variantAnnotation.getGeneDrugInteraction().addAll(gene.getAnnotation().getDrugs());
                     }
                 }
             }
@@ -245,7 +257,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             annotatorSet = new HashSet<>(includeList);
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation",
-                    "consequenceType", "expression", "drugInteraction", "populationFrequencies"));
+                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -259,11 +271,14 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence," +
                 "mirna.matures.cdnaStart,mirna.matures.cdnaEnd";
 
-        if (annotatorSet.contains("drugInteraction")) {
-            includeGeneFields += ",drugInteractions";
-        }
         if (annotatorSet.contains("expression")) {
-            includeGeneFields += ",expressionValues";
+            includeGeneFields += ",annotation.expression";
+        }
+        if (annotatorSet.contains("geneDisease")) {
+            includeGeneFields += ",annotation.diseases";
+        }
+        if (annotatorSet.contains("drugInteraction")) {
+            includeGeneFields += ",annotation.drugs";
         }
         return includeGeneFields;
     }
@@ -410,7 +425,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                                     ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0)).setPopulationFrequencies(new ArrayList<>());
                                     for (int j = 0; j < freqsDBList.size(); j++) {
                                         freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                                        if (freqDBObject != null) {
+                                        if (freqDBObject != null && freqDBObject.get("refAllele") != null) {
                                             if (freqDBObject.containsKey("study")) {
                                                 ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0))
                                                         .getPopulationFrequencies().add(new PopulationFrequency(freqDBObject.get("study").toString(),
