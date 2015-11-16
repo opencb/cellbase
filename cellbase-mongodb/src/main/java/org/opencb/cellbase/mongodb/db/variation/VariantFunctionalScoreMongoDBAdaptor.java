@@ -49,39 +49,72 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
     @Override
     public QueryResult getByVariant(String chromosome, int position, String reference, String alternate, QueryOptions queryOptions) {
         String chunkId = getChunkIdPrefix(chromosome, position, MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
-        QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId)
-                .and("chromosome").is(chromosome)
-                .and("start").is(position)
-                .and("alternate").is(alternate);
-
+        QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId);
+//                .and("chromosome").is(chromosome)
+//                .and("start").is(position);
+        System.out.println(chunkId);
         QueryResult result = executeQuery(chromosome + "_" + position + "_" + reference + "_" + alternate,
                 builder.get(), queryOptions, mongoDBCollection);
 
-        int offset = position % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE;
+        System.out.println("result = " + result);
+
+        int offset = (position % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE) - 1;
         List<Score> scores = new ArrayList<>();
         for (Object object : result.getResult()) {
             System.out.println("object = " + object);
             BasicDBObject dbObject = (BasicDBObject) object;
             BasicDBList basicDBList = (BasicDBList) dbObject.get("values");
             Long l1 = (Long) basicDBList.get(offset);
-            float value = 0f;
-            switch (alternate.toLowerCase()) {
-                case "a":
-                    value = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
-                    break;
-                case "c":
-                    value = ((short) (l1 >> 32) - 10000) / DECIMAL_RESOLUTION;
-                    break;
-                case "g":
-                    value = ((short) (l1 >> 16) - 10000) / DECIMAL_RESOLUTION;
-                    break;
-                case "t":
-                    value = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
-                    break;
-                default:
-                    break;
+            System.out.println("l1 = " + l1);
+            if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
+                float value = 0f;
+                switch (alternate.toLowerCase()) {
+                    case "a":
+                        value = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    case "c":
+                        value = ((short) (l1 >> 32) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    case "g":
+                        value = ((short) (l1 >> 16) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    case "t":
+                        value = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    default:
+                        break;
+                }
+                scores.add(Score.newBuilder()
+                        .setScore(value)
+                        .setSource(dbObject.getString("source"))
+                        .setDescription("")
+                        .build());
             }
-            scores.add(Score.newBuilder().setScore(value).setSource(dbObject.getString("source")).build());
+
+            if (dbObject.getString("source").equalsIgnoreCase("cadd_scaled")) {
+                float value = 0f;
+                switch (alternate.toLowerCase()) {
+                    case "a":
+                        value = ((short) (l1 >> 48)) / DECIMAL_RESOLUTION;
+                        break;
+                    case "c":
+                        value = ((short) (l1 >> 32)) / DECIMAL_RESOLUTION;
+                        break;
+                    case "g":
+                        value = ((short) (l1 >> 16)) / DECIMAL_RESOLUTION;
+                        break;
+                    case "t":
+                        value = ((short) (l1 >> 0)) / DECIMAL_RESOLUTION;
+                        break;
+                    default:
+                        break;
+                }
+                scores.add(Score.newBuilder()
+                        .setScore(value)
+                        .setSource(dbObject.getString("source"))
+                        .setDescription("")
+                        .build());
+            }
         }
 
         result.setResult(scores);
