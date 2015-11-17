@@ -52,20 +52,20 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
         QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId);
 //                .and("chromosome").is(chromosome)
 //                .and("start").is(position);
-        System.out.println(chunkId);
+//        System.out.println(chunkId);
         QueryResult result = executeQuery(chromosome + "_" + position + "_" + reference + "_" + alternate,
                 builder.get(), queryOptions, mongoDBCollection);
 
-        System.out.println("result = " + result);
+//        System.out.println("result = " + result);
 
         int offset = (position % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE) - 1;
         List<Score> scores = new ArrayList<>();
         for (Object object : result.getResult()) {
-            System.out.println("object = " + object);
+//            System.out.println("object = " + object);
             BasicDBObject dbObject = (BasicDBObject) object;
             BasicDBList basicDBList = (BasicDBList) dbObject.get("values");
             Long l1 = (Long) basicDBList.get(offset);
-            System.out.println("l1 = " + l1);
+//            System.out.println("l1 = " + l1);
             if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
                 float value = 0f;
                 switch (alternate.toLowerCase()) {
@@ -87,7 +87,8 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
                 scores.add(Score.newBuilder()
                         .setScore(value)
                         .setSource(dbObject.getString("source"))
-                        .setDescription("")
+                        .setDescription(null)
+//                        .setDescription("")
                         .build());
             }
 
@@ -112,7 +113,8 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
                 scores.add(Score.newBuilder()
                         .setScore(value)
                         .setSource(dbObject.getString("source"))
-                        .setDescription("")
+                        .setDescription(null)
+//                        .setDescription("")
                         .build());
             }
         }
@@ -124,12 +126,18 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
 
     @Override
     public QueryResult getByVariant(Variant variant, QueryOptions queryOptions) {
-        return null;
+        return getByVariant(variant.getChromosome(), variant.getStart(), variant.getReference(),
+                variant.getAlternate(), queryOptions);
     }
 
     @Override
     public List<QueryResult> getAllByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
-        return null;
+        List<QueryResult> queryResultList = new ArrayList<>(variantList.size());
+        for(Variant variant : variantList) {
+            queryResultList.add(getByVariant(variant.getChromosome(), variant.getStart(), variant.getReference(),
+                    variant.getAlternate(), queryOptions));
+        }
+        return queryResultList;
     }
 
 }

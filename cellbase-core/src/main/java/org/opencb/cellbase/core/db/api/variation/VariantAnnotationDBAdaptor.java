@@ -41,7 +41,6 @@ public interface VariantAnnotationDBAdaptor {
 
     List<QueryResult> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions);
 
-
     void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor);
 
     void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
@@ -49,6 +48,8 @@ public interface VariantAnnotationDBAdaptor {
     void setProteinDBAdaptor(ProteinDBAdaptor proteinFunctionPredictorDBAdaptor);
 
     void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor);
+
+    void setVariantFunctionalScoreDBAdaptor(VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor);
 
     void setGenomeDBAdaptor(GenomeDBAdaptor genomeDBAdaptor);
 
