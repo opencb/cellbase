@@ -200,10 +200,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
              * Gene Annotation
              */
             if (annotatorSet.contains("expression")) {
-                variantAnnotation.setExpression(new ArrayList<>());
+                variantAnnotation.setGeneExpression(new ArrayList<>());
                 for (Gene gene : geneList) {
                     if (gene.getAnnotation().getExpression() != null) {
-                        variantAnnotation.getExpression().addAll(gene.getAnnotation().getExpression());
+                        variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
                     }
                 }
             }
@@ -533,7 +533,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
                 if (variantFunctionalScoreQueryResults != null) {
                     for (int i = 0; i < variantAnnotationResultList.size(); i++) {
                         ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0))
-                                .setVariantFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
+                                .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {
