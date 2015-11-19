@@ -212,7 +212,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     for (String jsonLine : batch) {
                         DBObject dbObject = (DBObject) JSON.parse(jsonLine);
                         addChunkId(dbObject);
-                        addGeneId(dbObject);
+                        addClinicalPrivateFields(dbObject);
                         dbObjectsBatch.add(dbObject);
                     }
                     loadedObjects += load(dbObjectsBatch);
@@ -227,32 +227,92 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         return loadedObjects;
     }
 
-    private void addGeneId(DBObject dbObject) {
-//        if (clinicalVariantSource != null) {
-        String geneId;
+    private void addClinicalPrivateFields(DBObject dbObject) {
         if (clinicalVariantSource != null) {
+            List<String> geneIdList = null;
+            List<String> phenotypeList = null;
             switch (clinicalVariantSource) {
                 case CLINVARVARIANTSOURCE:
-                    List<String> geneIdList;
                     geneIdList = getClinvarGeneIds(dbObject);
-                    if (geneIdList != null) {
-                        dbObject.put("_geneIds", geneIdList);
-                    }
+                    phenotypeList = getClinvarPhenotypes(dbObject);
                     break;
                 case COSMICVARIANTSOURCE:
-                    geneId = (String) dbObject.get("geneName");
-                    if (geneId != null) {
-                        dbObject.put("_geneIds", Collections.singletonList(geneId));
-                    }
+                    geneIdList = dbObject.get("geneName")!=null?Collections.singletonList((String) dbObject.get("geneName")):null;
+                    phenotypeList = getCosmicPhenotypes(dbObject);
                     break;
                 case GWASVARIANTSOURCE:
-                    geneId = (String) dbObject.get("reportedGenes");
-                    if (geneId != null) {
-                        dbObject.put("_geneIds", geneId);
-                    }
+                    geneIdList = dbObject.get("reportedGenes")!=null?Collections.singletonList((String) dbObject.get("reportedGenes")):null;
+                    phenotypeList = getGwasPhenotypes(dbObject);
+            }
+            if (geneIdList != null) {
+                dbObject.put("_geneIds", geneIdList);
+            }
+            if(phenotypeList!=null) {
+                dbObject.put("_phenotypes", phenotypeList);
             }
         }
-//        }
+    }
+
+    private List<String> getGwasPhenotypes(DBObject dbObject) {
+        List<String> phenotypeList = new ArrayList<>();
+        BasicDBList studiesDBList = ((BasicDBList) dbObject.get("studies"));
+        for(Object studyObject : studiesDBList) {
+            BasicDBObject studyDBObject = (BasicDBObject) studyObject;
+            BasicDBList traitsDBList=(BasicDBList)studyDBObject.get("traits");
+            if (traitsDBList != null) {
+                for(Object traitObject : traitsDBList) {
+                    BasicDBObject traitDBObject = (BasicDBObject) traitObject;
+                    if(traitDBObject.get("diseaseTrait")!=null) {
+                        phenotypeList.add((String) traitDBObject.get("diseaseTrait"));
+                    }
+                }
+            }
+        }
+
+        return phenotypeList;
+    }
+
+    private List<String> getCosmicPhenotypes(DBObject dbObject) {
+        List<String> phenotypeList = new ArrayList<>(4);
+        addIfNotEmpty((String) dbObject.get("primarySite"), phenotypeList);
+        addIfNotEmpty((String) dbObject.get("histologySubtype"), phenotypeList);
+        addIfNotEmpty((String) dbObject.get("primaryHistology"), phenotypeList);
+        addIfNotEmpty((String) dbObject.get("siteSubtype"), phenotypeList);
+
+        return phenotypeList;
+
+    }
+
+    private void addIfNotEmpty(String element, List<String> stringList) {
+        if(element!=null && !element.isEmpty()) {
+            stringList.add(element);
+        }
+    }
+
+    private List<String> getClinvarPhenotypes(DBObject dbObject) {
+        List<String> phenotypeList = new ArrayList<>();
+        BasicDBList basicDBList = (BasicDBList)((BasicDBObject)((BasicDBObject)((BasicDBObject) dbObject.get("clinvarSet")).get("referenceClinVarAssertion")).get("traitSet")).get("trait");
+        for(Object object : basicDBList) {
+            BasicDBObject basicDBObject = (BasicDBObject) object;
+            BasicDBList nameDBList=(BasicDBList)basicDBObject.get("name");
+            if (nameDBList != null) {
+                for (Object nameObject : nameDBList) {
+                    BasicDBObject elementValueDBObject = (BasicDBObject) ((BasicDBObject) nameObject).get("elementValue");
+                    if (elementValueDBObject != null) {
+                        String phenotype = (String) elementValueDBObject.get("value");
+                        if (phenotype != null) {
+                            phenotypeList.add(phenotype);
+                        }
+                    }
+                }
+
+            }
+        }
+        if(phenotypeList.size()>0) {
+            return phenotypeList;
+        } else {
+            return null;
+        }
     }
 
     private List<String> getClinvarGeneIds(DBObject dbObject) {

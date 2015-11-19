@@ -108,29 +108,30 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
         builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
         builder = addGeneFilter(builder, options.getAsStringList("gene"));
-        builder = addCosmicPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+        builder = addPhenotypeFilter(builder, options.getString("phenotype"));
+//        builder = addCosmicPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
 
         return builder;
     }
 
-    private QueryBuilder addCosmicPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
-        if (phenotypeList != null && phenotypeList.size() > 0) {
-            BasicDBList orDBList = new BasicDBList();
-            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
-            List<Pattern> phenotypeRegexList = getClinvarPhenotypeRegex(phenotypeList);
-            orDBList.add(new BasicDBObject("primarySite",
-                    new BasicDBObject("$in", phenotypeRegexList)));
-            orDBList.add(new BasicDBObject("siteSubtype",
-                    new BasicDBObject("$in", phenotypeRegexList)));
-            orDBList.add(new BasicDBObject("primaryHistology",
-                    new BasicDBObject("$in", phenotypeRegexList)));
-            orDBList.add(new BasicDBObject("histologySubtype",
-                    new BasicDBObject("$in", phenotypeRegexList)));
-            builder = builder.and(orDBList);
-
-        }
-        return builder;
-    }
+//    private QueryBuilder addCosmicPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
+//        if (phenotypeList != null && phenotypeList.size() > 0) {
+//            BasicDBList orDBList = new BasicDBList();
+//            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
+//            List<Pattern> phenotypeRegexList = getClinvarPhenotypeRegex(phenotypeList);
+//            orDBList.add(new BasicDBObject("primarySite",
+//                    new BasicDBObject("$in", phenotypeRegexList)));
+//            orDBList.add(new BasicDBObject("siteSubtype",
+//                    new BasicDBObject("$in", phenotypeRegexList)));
+//            orDBList.add(new BasicDBObject("primaryHistology",
+//                    new BasicDBObject("$in", phenotypeRegexList)));
+//            orDBList.add(new BasicDBObject("histologySubtype",
+//                    new BasicDBObject("$in", phenotypeRegexList)));
+//            builder = builder.and(orDBList);
+//
+//        }
+//        return builder;
+//    }
 
     private QueryBuilder addGwasFilters(QueryBuilder builder, QueryOptions options) {
         // TODO add more filtering options
@@ -143,20 +144,21 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
         builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
         builder = addGeneFilter(builder, options.getAsStringList("gene"));
-        builder = addGwasPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+        builder = addPhenotypeFilter(builder, options.getString("phenotype"));
+//        builder = addGwasPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
 
         return builder;
     }
 
-    private QueryBuilder addGwasPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
-        if (phenotypeList != null && phenotypeList.size() > 0) {
-            logger.info("phenotype filter activated, phenotype list: " + phenotypeList.toString());
-
-            builder = builder.and(new BasicDBObject("studies.traits.diseaseTrait",
-                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
-        }
-        return builder;
-    }
+//    private QueryBuilder addGwasPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
+//        if (phenotypeList != null && phenotypeList.size() > 0) {
+//            logger.info("phenotype filter activated, phenotype list: " + phenotypeList.toString());
+//
+//            builder = builder.and(new BasicDBObject("studies.traits.diseaseTrait",
+//                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+//        }
+//        return builder;
+//    }
 
     private boolean filteringOptionsEnabled(QueryOptions queryOptions) {
         int i=0;
@@ -207,30 +209,38 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
         builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
         builder = addGeneFilter(builder, options.getAsStringList("gene"));
-        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+        builder = addPhenotypeFilter(builder, options.getString("phenotype"));
+//        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
 
         return builder;
     }
 
-    private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
-//        List<String> phenotypeList = options.getAsStringList("phenotype", "\\|");
-        if (phenotypeList != null && phenotypeList.size() > 0) {
-            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
+//    private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
+////        List<String> phenotypeList = options.getAsStringList("phenotype", "\\|");
+//        if (phenotypeList != null && phenotypeList.size() > 0) {
+//            logger.info("phenotype filter activated, phenotype list: "+phenotypeList.toString());
+//
+//            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
+//                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
+//
+//        }
+//        return builder;
+//    }
 
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value",
-                    new BasicDBObject("$in", getClinvarPhenotypeRegex(phenotypeList))));
-
+    private QueryBuilder addGeneFilter(QueryBuilder builder, List<String> geneList) {
+        if (geneList != null && geneList.size() > 0) {
+            logger.info("gene filter activated, gene list: " + geneList.toString());
+            builder = builder.and(new BasicDBObject("_geneIds", new BasicDBObject("$in", geneList)));
         }
         return builder;
     }
 
-    private QueryBuilder addGeneFilter(QueryBuilder builder, List<String> geneList) {
-//        List<String> geneList = (List<String>) options.get("gene");
-//        List<String> geneList = options.getAsStringList("gene");
-//        System.out.println("geneList = " + geneList);
-        if (geneList != null && geneList.size() > 0) {
-            logger.info("gene filter activated, gene list: " + geneList.toString());
-            builder = builder.and(new BasicDBObject("_geneIds", new BasicDBObject("$in", geneList)));
+    private QueryBuilder addPhenotypeFilter(QueryBuilder builder, String phenotype) {
+        if (phenotype != null && !phenotype.isEmpty()) {
+            logger.info("phenotype filter activated, phenotype: {} ", phenotype);
+            BasicDBObject searchBasicDBObject = new BasicDBObject("$search", phenotype);
+            searchBasicDBObject.put("$language", "en");
+            builder = builder.and(new BasicDBObject("_phenotypes", new BasicDBObject("$text", searchBasicDBObject)));
         }
         return builder;
     }
