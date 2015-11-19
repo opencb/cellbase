@@ -129,7 +129,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 return;
             }
 
-            List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+            List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
                 List<VariantAnnotator> variantAnnotatorList = createAnnotators();
                 //List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
@@ -146,7 +146,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 dataWriter = new VepFormatWriter(output.toString());
             }
 
-            ParallelTaskRunner<Variant, VariantAnnotation> runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+            ParallelTaskRunner<Variant, Variant> runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
             runner.run();
 
             if (customFiles != null) {
