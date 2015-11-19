@@ -20,10 +20,8 @@ import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.*;
+import org.opencb.cellbase.mongodb.db.variation.VariantFunctionalScoreMongoDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -255,6 +253,27 @@ public class VariantWSServer extends GenericRestWSServer {
             List<QueryResult> clinicalQueryResultList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
             return createOkResponse(clinicalQueryResultList);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{variants}/cadd")
+    public Response getCaddScoreByVariant(@PathParam("variants") String variants) {
+        try {
+            parseQueryParams();
+            List<Variant> variantList = Variant.parseVariants(variants);
+            logger.debug("queryOptions: " + queryOptions);
+
+//            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+//            List<QueryResult> clinicalQueryResultList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+
+            VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(this.species, this.assembly);
+            Variant variant = variantList.get(0);
+            QueryResult byVariant = variantFunctionalScoreDBAdaptor.getByVariant(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(), queryOptions);
+
+            return createOkResponse(byVariant);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

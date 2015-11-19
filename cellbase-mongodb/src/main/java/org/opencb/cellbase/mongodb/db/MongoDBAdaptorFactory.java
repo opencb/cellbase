@@ -78,7 +78,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          Database name has the following pattern in lower case and with no '.' in the name:
          cellbase_speciesId_assembly_cellbaseVersion
          Example:
-         cellbase_hsapiens_grch37_v3
+            cellbase_hsapiens_grch37_v3
          **/
         // We need to look for the species object in the configuration
         CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);
@@ -238,6 +238,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
+        return getVariantFunctionalScoreDBAdaptor(species, null);
+    }
+
+    @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
+
+    @Override
     public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
         return getVariantAnnotationDBAdaptor(species, null);
     }
@@ -253,6 +265,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setProteinDBAdaptor(getProteinDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setConservedRegionDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setVariantFunctionalScoreDBAdaptor(getVariantFunctionalScoreDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setGenomeDBAdaptor(getGenomeDBAdaptor(species, assembly));
 
         return variantAnnotationDBAdaptor;
@@ -329,7 +342,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new PathwayMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 
 
     @Override
