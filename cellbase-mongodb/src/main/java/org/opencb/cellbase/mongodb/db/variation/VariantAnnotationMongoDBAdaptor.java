@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariantFunctionalScoreDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.*;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -54,6 +55,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     private ClinicalDBAdaptor clinicalDBAdaptor;
     private ProteinDBAdaptor proteinDBAdaptor;
     private ConservedRegionDBAdaptor conservedRegionDBAdaptor;
+    private VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor;
     private GenomeDBAdaptor genomeDBAdaptor;
 
     private ObjectMapper geneObjectMapper;
@@ -149,6 +151,13 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
             conservationFuture = fixedThreadPool.submit(futureConservationAnnotator);
         }
 
+        FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
+        Future<List<QueryResult>> variantFunctionalScoreFuture = null;
+        if (annotatorSet.contains("functionalScore")) {
+            futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(variantList, queryOptions);
+            variantFunctionalScoreFuture = fixedThreadPool.submit(futureVariantFunctionalScoreAnnotator);
+        }
+
         FutureClinicalAnnotator futureClinicalAnnotator = null;
         Future<List<QueryResult>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
@@ -191,10 +200,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
              * Gene Annotation
              */
             if (annotatorSet.contains("expression")) {
-                variantAnnotation.setExpression(new ArrayList<>());
+                variantAnnotation.setGeneExpression(new ArrayList<>());
                 for (Gene gene : geneList) {
                     if (gene.getAnnotation().getExpression() != null) {
-                        variantAnnotation.getExpression().addAll(gene.getAnnotation().getExpression());
+                        variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
                     }
                 }
             }
@@ -240,6 +249,9 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         if (futureConservationAnnotator != null) {
             futureConservationAnnotator.processResults(conservationFuture, variantAnnotationResultList);
         }
+        if (futureVariantFunctionalScoreAnnotator != null) {
+            futureVariantFunctionalScoreAnnotator.processResults(variantFunctionalScoreFuture, variantAnnotationResultList);
+        }
         if (futureClinicalAnnotator != null) {
             futureClinicalAnnotator.processResults(clinicalFuture, variantAnnotationResultList);
         }
@@ -256,7 +268,7 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
         if (includeList.size() > 0) {
             annotatorSet = new HashSet<>(includeList);
         } else {
-            annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation",
+            annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
                     "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
@@ -491,6 +503,46 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
 
     }
 
+    class FutureVariantFunctionalScoreAnnotator implements Callable<List<QueryResult>> {
+        private List<Variant> variantList;
+
+        private QueryOptions queryOptions;
+
+        public FutureVariantFunctionalScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+            this.variantList = variantList;
+            this.queryOptions = queryOptions;
+        }
+
+        @Override
+        public List<QueryResult> call() throws Exception {
+            long startTime = System.currentTimeMillis();
+            List<QueryResult> variantFunctionalScoreQueryResultList =
+                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
+            logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
+                    System.currentTimeMillis() - startTime, variantList.size());
+            return variantFunctionalScoreQueryResultList;
+        }
+        public void processResults(Future<List<QueryResult>> variantFunctionalScoreFuture,
+                                   List<QueryResult> variantAnnotationResultList) {
+            try {
+                while (!variantFunctionalScoreFuture.isDone()) {
+                    Thread.sleep(1);
+                }
+
+                List<QueryResult> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
+                if (variantFunctionalScoreQueryResults != null) {
+                    for (int i = 0; i < variantAnnotationResultList.size(); i++) {
+                        ((VariantAnnotation)variantAnnotationResultList.get(i).getResult().get(0))
+                                .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
+                    }
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     class FutureClinicalAnnotator implements Callable<List<QueryResult>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
@@ -548,6 +600,10 @@ public class  VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements 
     @Override
     public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor) {
         this.conservedRegionDBAdaptor = conservedRegionDBAdaptor;
+    }
+
+    public void setVariantFunctionalScoreDBAdaptor(VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor) {
+        this.variantFunctionalScoreDBAdaptor = variantFunctionalScoreDBAdaptor;
     }
 
     @Override

@@ -99,7 +99,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();
-        queryOptions.addToListOption("include", "clinvar");
+//        queryOptions.addToListOption("source", "clinvar");
 //        queryOptions.add("phenotype", "ALZHEIMER DISEASE 2, DUE TO APOE4 ISOFORM");
 //        queryOptions.addToListOption("phenotype", "ALZHEIMER");
         queryOptions.addToListOption("phenotype", "alzheimer");
@@ -113,7 +113,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions.addToListOption("so", "missense_variant");
 //        queryOptions.addToListOption("rs", "rs429358");
 //        queryOptions.addToListOption("rcv", "RCV000019455");
-        queryOptions.add("limit", 100);
+        queryOptions.add("limit", 3);
 
 //        ((List<String>) queryOptions.get("include")).remove(0);
 

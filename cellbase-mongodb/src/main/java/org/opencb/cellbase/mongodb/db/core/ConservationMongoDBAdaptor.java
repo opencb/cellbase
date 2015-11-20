@@ -129,16 +129,16 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
             for (int j = 0; j < list.size(); j++) {
                 BasicDBObject chunk = (BasicDBObject) list.get(j);
-                String type = chunk.getString("type");
+                String source = chunk.getString("source");
                 List<Float> valuesList;
-                if (!typeMap.containsKey(type)) {
+                if (!typeMap.containsKey(source)) {
                     valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
                     for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
                         valuesList.add(null);
                     }
-                    typeMap.put(type, valuesList);
+                    typeMap.put(source, valuesList);
                 } else {
-                    valuesList = typeMap.get(type);
+                    valuesList = typeMap.get(source);
                 }
 
                 BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
@@ -233,16 +233,16 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 BasicDBObject chunk = list.get(j);
 
                 if (!chunk.isEmpty()) {
-                    String type = chunk.getString("type");
+                    String source = chunk.getString("source");
                     List<Float> valuesList;
-                    if (!typeMap.containsKey(type)) {
+                    if (!typeMap.containsKey(source)) {
                         valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
                         for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
                             valuesList.add(null);
                         }
-                        typeMap.put(type, valuesList);
+                        typeMap.put(source, valuesList);
                     } else {
-                        valuesList = typeMap.get(type);
+                        valuesList = typeMap.get(source);
                     }
 
                     BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
