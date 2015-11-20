@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.db;
 
 import org.junit.Test;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -99,12 +100,14 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();
-//        queryOptions.addToListOption("source", "clinvar");
+//        queryOptions.add("source", "gwas");
 //        queryOptions.add("phenotype", "ALZHEIMER DISEASE 2, DUE TO APOE4 ISOFORM");
 //        queryOptions.addToListOption("phenotype", "ALZHEIMER");
         queryOptions.addToListOption("phenotype", "alzheimer");
+//        queryOptions.addToListOption("phenotype", "retinitis");
 //        queryOptions.addToListOption("phenotype", "diabetes");
 //        queryOptions.addToListOption("region", new Region("3", 550000, 1166666));
+//        queryOptions.add("region", "5:13759611-13799611");
 //        queryOptions.addToListOption("region", new Region("1", 550000, 1166666));
 //        queryOptions.addToListOption("gene", "APOE");
 //        queryOptions.addToListOption("significance", "Likely_pathogenic");
@@ -113,7 +116,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions.addToListOption("so", "missense_variant");
 //        queryOptions.addToListOption("rs", "rs429358");
 //        queryOptions.addToListOption("rcv", "RCV000019455");
-        queryOptions.add("limit", 3);
+        queryOptions.add("limit", 30);
 
 //        ((List<String>) queryOptions.get("include")).remove(0);
 

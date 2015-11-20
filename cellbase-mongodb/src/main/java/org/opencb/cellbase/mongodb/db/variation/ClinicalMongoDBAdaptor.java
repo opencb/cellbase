@@ -31,7 +31,6 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.cellbase.core.common.variation.*;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -77,51 +76,67 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult getAll(QueryOptions options) {
         System.out.println("options = " + options.get("exclude"));
         QueryBuilder builder = QueryBuilder.start();
-        builder = addFilters(options, builder);
-        return executeQuery("result", builder.get(), options);
+        return executeQuery("result", getFilters(options), options);
     }
 
-    private QueryBuilder addFilters(QueryOptions options, QueryBuilder builder) {
+    private BasicDBObject getFilters(QueryOptions options) {
+        BasicDBObject filtersDBObject = new BasicDBObject();
         if(filteringOptionsEnabled(options)) {
-            builder = addCommonFilters(builder, options);
-            QueryBuilder sourceSpecificBuilder = null;
+            BasicDBObject commonFiltersDBObject = getCommonFilters(options);
+            BasicDBList sourceSpecificFilterList = new BasicDBList();
             List<String> sourceContent = options.getAsStringList("source");
             if (sourceContent == null || sourceContent.isEmpty() || includeContains(sourceContent, "clinvar")) {
-                sourceSpecificBuilder = addClinvarFilters(QueryBuilder.start(), options);
+                sourceSpecificFilterList.add(getClinvarFilters(options));
             }
             if (sourceContent == null || sourceContent.isEmpty() || includeContains(sourceContent, "cosmic")) {
-                sourceSpecificBuilder.or(addGwasFilters(QueryBuilder.start(), options).get());
+                sourceSpecificFilterList.add(getCosmicFilters(options));
             }
             if (sourceContent == null || sourceContent.isEmpty() || includeContains(sourceContent, "gwas")) {
-                sourceSpecificBuilder.or(addCosmicFilters(QueryBuilder.start(), options).get());
+                sourceSpecificFilterList.add(getGwasFilters(options));
             }
-            if(sourceSpecificBuilder!=null) {
-                builder.and(sourceSpecificBuilder.get());
+            if(sourceSpecificFilterList.size()>0 && commonFiltersDBObject != null) {
+                BasicDBList filtersDBList = new BasicDBList();
+                filtersDBList.add(commonFiltersDBObject);
+                filtersDBList.add(new BasicDBObject("$or", sourceSpecificFilterList));
+                filtersDBObject.put("$and", filtersDBList);
+            } else if(commonFiltersDBObject != null){
+                filtersDBObject = commonFiltersDBObject;
+            } else if(sourceSpecificFilterList.size()>0) {
+                filtersDBObject = new BasicDBObject("$or", sourceSpecificFilterList);
             }
         }
-        return builder;
+        return filtersDBObject;
     }
 
-    private QueryBuilder addCommonFilters(QueryBuilder builder, QueryOptions options) {
-        builder = addSoTermFilter(builder, options.getAsStringList("so"));
-        builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
-        builder = addGeneFilter(builder, options.getAsStringList("gene"));
-        builder = addPhenotypeFilter(builder, options.getString("phenotype"));
+    private BasicDBObject getCommonFilters(QueryOptions options) {
+        BasicDBList filterList = new BasicDBList();
+        addIfNotNull(filterList, getSoTermFilter(options.getAsStringList("so")));
+        addIfNotNull(filterList, getRegionFilter(Region.parseRegions((String) options.get("region"))));
+        addIfNotNull(filterList, getGeneFilter(options.getAsStringList("gene")));
+        addIfNotNull(filterList, getPhenotypeFilter(options.getString("phenotype")));
 
-        return builder;
+        if(filterList.size()>0) {
+            return new BasicDBObject("$and", filterList);
+        } else {
+            return null;
+        }
     }
 
-    private QueryBuilder addCosmicFilters(QueryBuilder builder, QueryOptions options) {
+    private void addIfNotNull(BasicDBList basicDBList, BasicDBObject basicDBObject) {
+        if(basicDBObject!=null) {
+            basicDBList.add(basicDBObject);
+        }
+    }
+
+    private BasicDBObject getCosmicFilters(QueryOptions options) {
         // TODO add more filtering options
-        builder.and(new BasicDBObject("source", "cosmic"));
+        return new BasicDBObject("source", "cosmic");
 //        builder = addClinvarRcvFilter(builder, options.getAsStringList("rcv"));
 //        builder = addClinvarRsFilter(builder, options.getAsStringList("rs"));
 //        builder = addClinvarTypeFilter(builder, options.getAsStringList("type"));
 //        builder = addClinvarReviewFilter(builder, options.getAsStringList("review"));
 //        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
 //        builder = addCosmicPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
-
-        return builder;
     }
 
 //    private QueryBuilder addCosmicPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
@@ -143,9 +158,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        return builder;
 //    }
 
-    private QueryBuilder addGwasFilters(QueryBuilder builder, QueryOptions options) {
+    private BasicDBObject getGwasFilters(QueryOptions options) {
         // TODO add more filtering options
-        builder.and(new BasicDBObject("source", "gwas"));
+        return new BasicDBObject("source", "gwas");
 //        builder = addClinvarRcvFilter(builder, options.getAsStringList("rcv"));
 //        builder = addClinvarRsFilter(builder, options.getAsStringList("rs"));
 //        builder = addSoTermFilter(builder, options.getAsStringList("so"));
@@ -156,8 +171,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        builder = addGeneFilter(builder, options.getAsStringList("gene"));
 //        builder = addPhenotypeFilter(builder, options.getString("phenotype"));
 //        builder = addGwasPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
-
-        return builder;
     }
 
 //    private QueryBuilder addGwasPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
@@ -181,10 +194,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult getByGeneId(String geneId, QueryOptions options) {
-        QueryBuilder builder = QueryBuilder.start();
-        builder = addGeneFilter(builder, Collections.singletonList(geneId));
-        builder = addFilters(options, builder);
-        return executeQuery("result", builder.get(), options);
+        options.add("gene", geneId);
+//        builder = addGeneFilter(builder, Collections.singletonList(geneId));
+        return executeQuery("result", getFilters(options), options);
     }
 
 //    public QueryResult getClinvarByGeneId(String geneId, QueryOptions queryOptions) {
@@ -208,21 +220,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        return executeQuery("result", builder.get(), options);
 //    }
 
-    private QueryBuilder addClinvarFilters(QueryBuilder builder, QueryOptions options) {
-//        builder.and(new BasicDBObject("clinvarSet", new BasicDBObject("$exists", 1)));
-        builder.and(new BasicDBObject("source", "clinvar"));
-        builder = addClinvarRcvFilter(builder, options.getAsStringList("rcv"));
-        builder = addClinvarRsFilter(builder, options.getAsStringList("rs"));
-//        builder = addSoTermFilter(builder, options.getAsStringList("so"));
-        builder = addClinvarTypeFilter(builder, options.getAsStringList("type"));
-        builder = addClinvarReviewFilter(builder, options.getAsStringList("review"));
-        builder = addClinvarClinicalSignificanceFilter(builder, options.getAsStringList("significance"));
-//        builder = addRegionFilter(builder, Region.parseRegions((String) options.get("region")));
-//        builder = addGeneFilter(builder, options.getAsStringList("gene"));
-//        builder = addPhenotypeFilter(builder, options.getString("phenotype"));
-//        builder = addClinvarPhenotypeFilter(builder, options.getAsStringList("phenotype", "\\|"));
+    private BasicDBObject getClinvarFilters(QueryOptions options) {
+        BasicDBList filterList = new BasicDBList();
+        filterList.add(new BasicDBObject("source", "clinvar"));
+        addIfNotNull(filterList, getClinvarRcvFilter(options.getAsStringList("rcv")));
+        addIfNotNull(filterList, getClinvarRsFilter(options.getAsStringList("rs")));
+        addIfNotNull(filterList, getClinvarTypeFilter(options.getAsStringList("type")));
+        addIfNotNull(filterList, getClinvarReviewFilter(options.getAsStringList("review")));
+        addIfNotNull(filterList, getClinvarClinicalSignificanceFilter(options.getAsStringList("significance")));
 
-        return builder;
+        return new BasicDBObject("$and", filterList);
     }
 
 //    private QueryBuilder addClinvarPhenotypeFilter(QueryBuilder builder, List<String> phenotypeList) {
@@ -237,36 +244,37 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        return builder;
 //    }
 
-    private QueryBuilder addGeneFilter(QueryBuilder builder, List<String> geneList) {
+    private BasicDBObject getGeneFilter(List<String> geneList) {
         if (geneList != null && geneList.size() > 0) {
             logger.info("gene filter activated, gene list: " + geneList.toString());
-            builder = builder.and(new BasicDBObject("_geneIds", new BasicDBObject("$in", geneList)));
+            return new BasicDBObject("_geneIds", new BasicDBObject("$in", geneList));
         }
-        return builder;
+        return null;
     }
 
-    private QueryBuilder addPhenotypeFilter(QueryBuilder builder, String phenotype) {
+    private BasicDBObject getPhenotypeFilter(String phenotype) {
         if (phenotype != null && !phenotype.isEmpty()) {
             logger.info("phenotype filter activated, phenotype: {} ", phenotype);
-            BasicDBObject searchBasicDBObject = new BasicDBObject("$search", phenotype);
-            searchBasicDBObject.put("$language", "en");
-            builder = builder.and(new BasicDBObject("_phenotypes", new BasicDBObject("$text", searchBasicDBObject)));
+            BasicDBObject basicDBObject = new BasicDBObject("$text", new BasicDBObject("$search", phenotype));
+//            basicDBObject.put("search", phenotype);
+//                    new BasicDBObject("$search", phenotype);
+//            searchBasicDBObject.put("$language", "en");
+//            builder = builder.and(new BasicDBObject("_phenotypes", new BasicDBObject("$text", searchBasicDBObject)));
+            return basicDBObject;
         }
-        return builder;
+        return null;
     }
 
-    private QueryBuilder addRegionFilter(QueryBuilder builder, List<Region> regionList) {
-//        List<Region> regionList = Region.parseRegions((String) options.get("region"));
-//        List<Region> regionList = (List<Region>) options.get("region");
+    private BasicDBObject getRegionFilter(List<Region> regionList) {
         if (regionList != null && regionList.size() > 0) {
             logger.info("region filter activated, region list: " + regionList.toString());
-            builder = builder.and(getClinvarRegionFilterDBObject(regionList));
+            return getClinvarRegionFilterDBObject(regionList);
 
         }
-        return builder;
+        return null;
     }
 
-    private DBObject getClinvarRegionFilterDBObject(List<Region> regionList) {
+    private BasicDBObject getClinvarRegionFilterDBObject(List<Region> regionList) {
         BasicDBList orDBList = new BasicDBList();
         for(Region region : regionList) {
             BasicDBList andDBList = new BasicDBList();
@@ -279,21 +287,21 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return new BasicDBObject("$or", orDBList);
     }
 
-    private QueryBuilder addClinvarClinicalSignificanceFilter(QueryBuilder builder, List<String> clinicalSignificanceList) {
+    private BasicDBObject getClinvarClinicalSignificanceFilter(List<String> clinicalSignificanceList) {
 //        List<String> clinicalSignificanceList = (List<String>) options.getAsStringList("significance");
 //        List<String> clinicalSignificanceList = (List<String>) options.get("significance");
         if (clinicalSignificanceList != null && clinicalSignificanceList.size() > 0) {
             for(int i=0; i<clinicalSignificanceList.size(); i++) {
-                clinicalSignificanceList.set(i, clinicalSignificanceList.get(i).replace("_"," "));
+                clinicalSignificanceList.set(i, clinicalSignificanceList.get(i).replace("_", " "));
             }
             logger.info("Clinical significance filter activated, clinical significance list: " + clinicalSignificanceList.toString());
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.description",
-                    new BasicDBObject("$in", clinicalSignificanceList)));
+            return new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.description",
+                    new BasicDBObject("$in", clinicalSignificanceList));
         }
-        return builder;
+        return null;
     }
 
-    private QueryBuilder addClinvarReviewFilter(QueryBuilder builder, List<String> reviewStatusList) {
+    private BasicDBObject getClinvarReviewFilter(List<String> reviewStatusList) {
 //        List<String> reviewStatusList = (List<String>) options.getAsStringList("review");
 //        List<String> reviewStatusList = (List<String>) options.get("review");
         if (reviewStatusList != null && reviewStatusList.size() > 0) {
@@ -301,13 +309,13 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 reviewStatusList.set(i, reviewStatusList.get(i).toUpperCase());
             }
             logger.info("Review staus filter activated, review status list: " + reviewStatusList.toString());
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
-                    new BasicDBObject("$in", reviewStatusList)));
+            return new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
+                    new BasicDBObject("$in", reviewStatusList));
         }
-        return builder;
+        return null;
     }
 
-    private QueryBuilder addClinvarTypeFilter(QueryBuilder builder, List<String> typeList) {
+    private BasicDBObject getClinvarTypeFilter(List<String> typeList) {
 //        List<String> typeList = (List<String>) options.getAsStringList("type");
 //        List<String> typeList = (List<String>) options.get("type");
         if (typeList != null && typeList.size() > 0) {
@@ -315,23 +323,23 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 typeList.set(i, typeList.get(i).replace("_"," "));
             }
             logger.info("Type filter activated, type list: " + typeList.toString());
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.type",
-                    new BasicDBObject("$in", typeList)));
+            return new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.type",
+                    new BasicDBObject("$in", typeList));
         }
-        return builder;
+        return null;
     }
 
-    private QueryBuilder addSoTermFilter(QueryBuilder builder, List<String> soList) {
+    private BasicDBObject getSoTermFilter(List<String> soList) {
 //        List<String> soList = (List<String>) options.getAsStringList("so");
 //        List<String> soList = (List<String>) options.get("so");
         if (soList != null && soList.size() > 0) {
             logger.info("So filter activated, SO list: " + soList.toString());
-            builder = builder.and(new BasicDBObject("annot.consequenceTypes.soTerms.soName", new BasicDBObject("$in", soList)));
+            return new BasicDBObject("annot.consequenceTypes.soTerms.soName", new BasicDBObject("$in", soList));
         }
-        return builder;
+        return null;
     }
 
-    private QueryBuilder addClinvarRsFilter(QueryBuilder builder, List<String> rsStringList) {
+    private BasicDBObject getClinvarRsFilter(List<String> rsStringList) {
 //        List<String> rsStringList = options.getAsStringList("rs");
 //        List<String> rsStringList = (List<String>) options.get("rs");
         if (rsStringList != null && rsStringList.size() > 0) {
@@ -340,23 +348,25 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             for(String rsString : rsStringList) {
                 rsList.add(rsString.substring(2));
             }
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+            BasicDBList filterList = new BasicDBList();
+            filterList.add(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
                     new BasicDBObject("$in", rsList)));
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
+            filterList.add(new BasicDBObject("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type",
                     "rs"));
+            return new BasicDBObject("$and", filterList);
         }
-        return builder;
+        return null;
     }
 
-    private QueryBuilder addClinvarRcvFilter(QueryBuilder builder, List<String> rcvList) {
+    private BasicDBObject getClinvarRcvFilter(List<String> rcvList) {
 //        List<String> rcvList = (List<String>) options.get("rcv");
 //        List<String> rcvList = (List<String>) options.getAsStringList("rcv");
         if (rcvList != null && rcvList.size() > 0) {
             logger.info("rcv filter activated, rcv list: "+rcvList.toString());
-            builder = builder.and(new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-                    new BasicDBObject("$in", rcvList)));
+            return new BasicDBObject("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+                    new BasicDBObject("$in", rcvList));
         }
-        return builder;
+        return null;
     }
 
 //    @Deprecated
