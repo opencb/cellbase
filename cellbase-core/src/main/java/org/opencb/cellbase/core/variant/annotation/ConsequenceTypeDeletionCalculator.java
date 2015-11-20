@@ -12,6 +12,7 @@ import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -52,6 +53,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 consequenceType.setEnsemblTranscriptId(transcript.getId());
                 consequenceType.setStrand(transcript.getStrand());
                 consequenceType.setBiotype(transcript.getBiotype());
+                consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags()!=null?new ArrayList<>(transcript.getAnnotationFlags()):null);
                 SoNames.clear();
 
                 if (transcript.getStrand().equals("+")) {
