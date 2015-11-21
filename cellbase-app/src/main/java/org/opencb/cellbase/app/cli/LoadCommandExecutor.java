@@ -129,10 +129,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                 loadConservation();
                                 break;
                             case "clinical":
-                                loadRunner.load(input.resolve("clinvar.json.gz"), "clinvar");
-                                loadRunner.load(input.resolve("cosmic.json.gz"), "cosmic");
-                                loadRunner.load(input.resolve("gwas.json.gz"), "gwas");
-                                loadRunner.index("clinical");
+                                loadClinical();
                                 break;
                             default:
                                 logger.warn("We should ot reach this point");
@@ -171,12 +168,10 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.getFileName().toString().startsWith("variation_chr");
-            }
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+            return entry.getFileName().toString().startsWith("variation_chr");
         });
+
         for (Path entry: stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "variation");
@@ -191,6 +186,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
             return entry.getFileName().toString().startsWith("conservation_");
         });
+
         for (Path entry: stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "conservation");
@@ -202,17 +198,37 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.getFileName().toString().startsWith("prot_func_pred_");
-            }
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+            return entry.getFileName().toString().startsWith("prot_func_pred_");
         });
+
         for (Path entry: stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
         }
         loadRunner.index("protein_functional_prediction");
+    }
+
+    private void loadClinical() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
+            ClassNotFoundException, LoaderException {
+
+        Path clinvarPath = input.resolve("clinvar.json.gz");
+        if (Files.exists(clinvarPath)) {
+            loadRunner.load(clinvarPath, "clinvar");
+        }
+
+        Path cosmicPath = input.resolve("cosmic.json.gz");
+        if (Files.exists(cosmicPath)) {
+            loadRunner.load(cosmicPath, "cosmic");
+        }
+
+        Path gwasPath = input.resolve("gwas.json.gz");
+        if (Files.exists(gwasPath)) {
+            loadRunner.load(gwasPath, "gwas");
+        }
+
+        loadRunner.index("clinical");
     }
 
 }
