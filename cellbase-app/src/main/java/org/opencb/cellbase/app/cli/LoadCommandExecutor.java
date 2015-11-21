@@ -25,6 +25,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -209,24 +212,26 @@ public class LoadCommandExecutor extends CommandExecutor {
         loadRunner.index("protein_functional_prediction");
     }
 
-    private void loadClinical() throws NoSuchMethodException, InterruptedException, ExecutionException,
-            InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
-            ClassNotFoundException, LoaderException {
+    private void loadClinical() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
+            LoaderException, InvocationTargetException, ClassNotFoundException {
 
-        Path clinvarPath = input.resolve("clinvar.json.gz");
-        if (Files.exists(clinvarPath)) {
-            loadRunner.load(clinvarPath, "clinvar");
-        }
+        Map<String, String> files = new LinkedHashMap<>();
+        files.put("clinvar", "clinvar.json.gz");
+        files.put("cosmic", "cosmic.json.gz");
+        files.put("gwas", "gwas.json.gz");
 
-        Path cosmicPath = input.resolve("cosmic.json.gz");
-        if (Files.exists(cosmicPath)) {
-            loadRunner.load(cosmicPath, "cosmic");
-        }
-
-        Path gwasPath = input.resolve("gwas.json.gz");
-        if (Files.exists(gwasPath)) {
-            loadRunner.load(gwasPath, "gwas");
-        }
+        files.keySet().forEach(entry -> {
+            Path path = input.resolve(files.get(entry));
+            if (Files.exists(path)) {
+                try {
+                    logger.debug("Loading '{}' ...", entry);
+                    loadRunner.load(path, entry);
+                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                        | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                    logger.error(e.toString());
+                }
+            }
+        });
 
         loadRunner.index("clinical");
     }
