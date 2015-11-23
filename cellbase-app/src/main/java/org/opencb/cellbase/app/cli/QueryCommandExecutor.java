@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 
 /**
  * Created by imedina on 20/02/15.
+ *
  * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
 public class QueryCommandExecutor extends CommandExecutor {
@@ -75,7 +76,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() {
-        if(queryCommandOptions.annotate) {
+        if (queryCommandOptions.annotate) {
             // input file
             if (queryCommandOptions.inputFile != null) {
                 inputFile = Paths.get(queryCommandOptions.inputFile);
@@ -85,7 +86,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     throw new ParameterException("Input file cannot be a directory: " + inputFile);
                 }
             } else {
-                throw  new ParameterException("Please check command line sintax. Provide a valid input file name.");
+                throw new ParameterException("Please check command line sintax. Provide a valid input file name.");
             }
             // output file
             if (queryCommandOptions.outputFile != null) {
@@ -97,7 +98,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     throw new ParameterException("Output file cannot be a directory: " + outputFile);
                 }
             } else {
-                throw  new ParameterException("Please check command line sintax. Provide a valid output file name.");
+                throw new ParameterException("Please check command line sintax. Provide a valid output file name.");
             }
         }
     }

@@ -48,7 +48,7 @@ public abstract class DBAdaptorFactory {
 
     protected CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
         CellBaseConfiguration.SpeciesProperties.Species species = null;
-        for (CellBaseConfiguration.SpeciesProperties.Species sp: cellBaseConfiguration.getAllSpecies()) {
+        for (CellBaseConfiguration.SpeciesProperties.Species sp : cellBaseConfiguration.getAllSpecies()) {
             if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
                 species = sp;
                 break;
@@ -63,7 +63,7 @@ public abstract class DBAdaptorFactory {
             assembly = species.getAssemblies().get(0).getName();
         } else {
             for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
-                if(assemblyName.equalsIgnoreCase(assembly1.getName())) {
+                if (assemblyName.equalsIgnoreCase(assembly1.getName())) {
                     assembly = assembly1.getName();
                 }
             }
@@ -71,23 +71,21 @@ public abstract class DBAdaptorFactory {
         return assembly;
     }
 
-//	protected String getSpeciesVersionPrefix(String species, String version) {
-//		String speciesPrefix = null;
-//		if(species != null && !species.equals("")) {
-//			// coding an alias to application code species
-//			species = speciesAlias.get(species);
-//			// if 'version' parameter has not been provided the default version is selected
-//			if(version == null || version.trim().equals("")) {
-//				version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
-////				logger.debug("HibernateDBAdaptorFactory in createSessionFactory(): 'version' parameter is null or empty, it's been set to: '"+version+"'");
-//			}
-//
-//			// setting database configuration for the 'species.version'
-//			speciesPrefix = species.toUpperCase() + "." + version.toUpperCase();
-//		}
-//
-//		return speciesPrefix;
-//	}
+// protected String getSpeciesVersionPrefix(String species, String version) {
+// String speciesPrefix = null;
+// if(species != null && !species.equals("")) {
+// // coding an alias to application code species
+// species = speciesAlias.get(species);
+// // if 'version' parameter has not been provided the default version is selected
+// if(version == null || version.trim().equals("")) {
+// version = applicationProperties.getProperty(species+".DEFAULT.VERSION").toUpperCase();
+// logger.debug("HibernateDBAdaptorFactory: 'version' parameter is null or empty, it's been set to: '"+version+"'");
+// }
+// // setting database configuration for the 'species.version'
+// speciesPrefix = species.toUpperCase() + "." + version.toUpperCase();
+// }
+// return speciesPrefix;
+// }
 
     public abstract void setConfiguration(CellBaseConfiguration cellBaseConfiguration);
 
@@ -113,6 +111,7 @@ public abstract class DBAdaptorFactory {
 
     @Deprecated
     public abstract ExonDBAdaptor getExonDBAdaptor(String species);
+
     @Deprecated
     public abstract ExonDBAdaptor getExonDBAdaptor(String species, String assembly);
 

@@ -75,20 +75,19 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
 //            commands[0] = match;
             commands[1] = unwind;
-        }else {
+        } else {
             commands[0] = unwind;
         }
 
-        //		options = addExcludeReturnFields("transcripts", options);
         return executeAggregation2("result", Arrays.asList(commands), options);
     }
 
     public QueryResult next(String id, QueryOptions options) {
-        QueryOptions _options = new QueryOptions();
-        _options.put("include", Arrays.asList("chromosome", "start"));
-        QueryResult queryResult = getById(id, _options);
-        if(queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject)queryResult.getResult().get(0);
+        QueryOptions options1 = new QueryOptions();
+        options1.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getById(id, options1);
+        if (queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -109,7 +108,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-//        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.id": "ENST00000343281"}})
+//        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"},
+// {$match: {"transcripts.id": "ENST00000343281"}})
 
         List<List<DBObject>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
@@ -133,7 +133,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options) {
-//        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.id": "ENST00000343281"}})
+//        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"},
+// {$match: {"transcripts.id": "ENST00000343281"}})
 
         List<List<DBObject>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
@@ -191,7 +192,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
 
         List<DBObject[]> commandsList = new ArrayList<>(regions.size());
-        for(Region region: regions) {
+        for (Region region : regions) {
             DBObject geneMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.chromosome", region.getChromosome()));
             DBObject regionMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.start", region.getStart()));
             DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
@@ -213,7 +214,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //            QueryBuilder builder = null;
 //            // If regions is 1 position then query can be optimize using chunks
 //            if (region.getStart() == region.getEnd()) {
-//                builder = QueryBuilder.start("chunkIds").is(region.getSequenceName() + "_" + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CHUNK_SIZE", "4000")))).and("end")
+//                builder = QueryBuilder.start("chunkIds").is(region.getSequenceName() + "_"
+// + (region.getStart() / Integer.parseInt(applicationProperties.getProperty("CHUNK_SIZE", "4000")))).and("end")
 //                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
 //            } else {
 //                builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end")
@@ -281,60 +283,5 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList) {
         return null;
     }
-
-//	private List<List<Transcript>> executeQuery(DBObject query) {
-//		List<List<Transcript>> result = null;
-//
-//		BasicDBObject returnFields = new BasicDBObject("transcripts", 1);
-//		DBCursor cursor = mongoDBCollection.find(query, returnFields);
-//
-//		try {
-//			if (cursor != null) {
-//				result = new ArrayList<List<Transcript>>();
-////				Gson jsonObjectMapper = new Gson();
-//				Gene gene = null;
-//				while (cursor.hasNext()) {
-////					gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
-//					result.add(gene.getTranscripts());
-////					BasicDBList b = new BasicDBList();
-////					b.addAll((BasicDBList)cursor.next().get("transcripts"));
-////					trans = (Transcript) jsonObjectMapper.fromJson(cursor.next().get("transcripts").toString(), Transcript.class);
-//				}
-//			}
-//		} finally {
-//			cursor.close();
-//		}
-//
-//		return result;
-//	}
-
-
-//	@Override
-//	public List<List<Transcript>> getAllByName(String name, List<String> exclude) {
-//		BasicDBObject query = new BasicDBObject("transcripts.xrefs.id", name.toUpperCase());
-//        List<List<Transcript>> result = new ArrayList<List<Transcript>>();
-//        List<List<Transcript>> transcriptsList = executeQuery(query);
-//
-//        boolean found = false;
-//		for (List<Transcript> transcripts : transcriptsList) {
-//
-//            found = false;
-//            for (Transcript transcript : transcripts) {
-//                for (Xref xref : transcript.getXrefs()) {
-//                    if (xref.getId().equals(name.toUpperCase())) {
-//                        result.add(transcripts);
-//                        found = true;
-//                        break;
-//                    }
-//                }
-//                if(found){
-//                    break;
-//                }
-//            }
-//
-//
-//		}
-//		return result;
-//	}
 
 }

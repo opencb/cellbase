@@ -23,6 +23,7 @@ import org.opencb.datastore.core.QueryResult;
 import java.util.List;
 
 
+@Deprecated
 public interface ExonDBAdaptor extends FeatureDBAdaptor {
 
 
@@ -35,13 +36,12 @@ public interface ExonDBAdaptor extends FeatureDBAdaptor {
 
     QueryResult getAllByGeneId(String geneId);
 
-	List<QueryResult> getAllByGeneIdList(List<String> geneIdList);
+    List<QueryResult> getAllByGeneIdList(List<String> geneIdList);
 
 
     QueryResult getAllByTranscriptId(String transcriptId);
 
-	List<QueryResult> getAllByTranscriptIdList(List<String> transcriptIdList);
-
+    List<QueryResult> getAllByTranscriptIdList(List<String> transcriptIdList);
 
 
 }

@@ -40,31 +40,32 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     private MongoDBCollection proteinFunctionalPredictionCollection;
 
-    private static Map<String,String> aaShortName = new HashMap<>();
+    private static Map<String, String> aaShortName = new HashMap<>();
 
-    private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2; // Just two prediction methods are currently returned: SIFT and POLYPHEN
+    // Just two prediction methods are currently returned: SIFT and POLYPHEN
+    private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2;
 
     static {
-        aaShortName.put("ALA","A");
-        aaShortName.put("ARG","R");
-        aaShortName.put("ASN","N");
-        aaShortName.put("ASP","D");
-        aaShortName.put("CYS","C");
-        aaShortName.put("GLN","Q");
-        aaShortName.put("GLU","E");
-        aaShortName.put("GLY","G");
-        aaShortName.put("HIS","H");
-        aaShortName.put("ILE","I");
-        aaShortName.put("LEU","L");
-        aaShortName.put("LYS","K");
-        aaShortName.put("MET","M");
-        aaShortName.put("PHE","F");
-        aaShortName.put("PRO","P");
-        aaShortName.put("SER","S");
-        aaShortName.put("THR","T");
-        aaShortName.put("TRP","W");
-        aaShortName.put("TYR","Y");
-        aaShortName.put("VAL","V");
+        aaShortName.put("ALA", "A");
+        aaShortName.put("ARG", "R");
+        aaShortName.put("ASN", "N");
+        aaShortName.put("ASP", "D");
+        aaShortName.put("CYS", "C");
+        aaShortName.put("GLN", "Q");
+        aaShortName.put("GLU", "E");
+        aaShortName.put("GLY", "G");
+        aaShortName.put("HIS", "H");
+        aaShortName.put("ILE", "I");
+        aaShortName.put("LEU", "L");
+        aaShortName.put("LYS", "K");
+        aaShortName.put("MET", "M");
+        aaShortName.put("PHE", "F");
+        aaShortName.put("PRO", "P");
+        aaShortName.put("SER", "S");
+        aaShortName.put("THR", "T");
+        aaShortName.put("TRP", "W");
+        aaShortName.put("TYR", "Y");
+        aaShortName.put("VAL", "V");
     }
 
 
@@ -155,11 +156,11 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     public List<QueryResult> getAllFunctionPredictionByEnsemblTranscriptIdList(List<String> transcriptIdList, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>(transcriptIdList.size());
 
-        if(options.containsKey("aaPosition")) {
-            if(options.containsKey("aaChange")) {
-                addIncludeReturnFields("aaPositions."+options.getString("aaPosition")+"."+options.getString("aaChange"), options);
-            }else {
-                addIncludeReturnFields("aaPositions."+options.getString("aaPosition"), options);
+        if (options.containsKey("aaPosition")) {
+            if (options.containsKey("aaChange")) {
+                addIncludeReturnFields("aaPositions." + options.getString("aaPosition") + "." + options.getString("aaChange"), options);
+            } else {
+                addIncludeReturnFields("aaPositions." + options.getString("aaPosition"), options);
             }
         }
 
@@ -180,24 +181,26 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
         QueryResult proteinSubstitionScoresQueryResult = new QueryResult();
         proteinSubstitionScoresQueryResult.setDbTime(allChangesQueryResult.getDbTime());
-        proteinSubstitionScoresQueryResult.setId(transcriptId+"-"+aaPosition+"-"+newAa);
+        proteinSubstitionScoresQueryResult.setId(transcriptId + "-" + aaPosition + "-" + newAa);
 
-        String currentAaShortName;
-        Map aaPositions;
-        if(allChangesQueryResult.getNumResults()>0 && (currentAaShortName = aaShortName.get(newAa))!=null &&
-                (aaPositions = ((HashMap) ((BasicDBObject) allChangesQueryResult.getResult().get(0)).get("aaPositions")))!=null) {
-            DBObject positionDBObject;
-            if((positionDBObject = (BasicDBObject) aaPositions.get(Integer.toString(aaPosition)))!=null) {
-                Object aaObject;
-                if((aaObject = positionDBObject.get(currentAaShortName))!=null) {
+        String currentAaShortName = aaShortName.get(newAa);
+        Map aaPositions = ((HashMap) ((BasicDBObject) allChangesQueryResult.getResult().get(0)).get("aaPositions"));
+        if (allChangesQueryResult.getNumResults() > 0 && currentAaShortName != null && aaPositions != null) {
+            DBObject positionDBObject = (BasicDBObject) aaPositions.get(Integer.toString(aaPosition));
+            if (positionDBObject != null) {
+                Object aaObject = positionDBObject.get(currentAaShortName);
+                if (aaObject != null) {
                     proteinSubstitionScoresQueryResult.setNumResults(1);
                     proteinSubstitionScoresQueryResult.setResult(Arrays.asList(aaObject));
                 } else {
-                    proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted AA "+currentAaShortName+". Available AA changes for transcript "+transcriptId+", position "+aaPosition+": "+positionDBObject.keySet().toString());
+                    proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted AA " + currentAaShortName
+                            + ". Available AA changes for transcript " + transcriptId + ", position " + aaPosition
+                            + ": " + positionDBObject.keySet().toString());
                     return proteinSubstitionScoresQueryResult;
                 }
             } else {
-                proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted position "+Integer.toString(aaPosition)+". Available positions for transcript "+transcriptId+": "+aaPositions.keySet().toString());
+                proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted position " + Integer.toString(aaPosition)
+                        + ". Available positions for transcript " + transcriptId + ": " + aaPositions.keySet().toString());
                 return proteinSubstitionScoresQueryResult;
             }
         } else {
@@ -212,7 +215,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                                             String aaAlternate, QueryOptions queryOptions) {
 
         QueryResult queryResult = new QueryResult();
-        queryResult.setId(ensemblTranscriptId+"/"+position+"/"+aaAlternate);
+        queryResult.setId(ensemblTranscriptId + "/" + position + "/" + aaAlternate);
         long dbTimeStart = System.currentTimeMillis();
 
         ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
@@ -223,7 +226,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
         QueryResult proteinVariantData = null;
         String shortAlternativeAa = aaShortName.get(aaAlternate);
-        if(shortAlternativeAa!=null) {
+        if (shortAlternativeAa != null) {
             List<DBObject> pipeline = new ArrayList<>();
 
 //            BasicDBList andDBList1 = new BasicDBList();
@@ -262,7 +265,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
             groupFields.put("keyword", new BasicDBObject("$addToSet", "$keyword"));
             groupFields.put("feature", new BasicDBObject("$addToSet", "$feature"));
             pipeline.add(new BasicDBObject("$group", groupFields));
-
 
 
             //TODO:terminar el pipeline de agregacion
@@ -320,13 +322,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         proteinVariantAnnotation.setUniprotAccession((String) ((BasicDBList) proteinVariantData.get("_id")).get(0));
 
         proteinVariantAnnotation.setKeywords(new ArrayList<>());
-        for(Object keywordObject : ((BasicDBList) ((BasicDBList) proteinVariantData.get("keyword")).get(0))) {
+        for (Object keywordObject : ((BasicDBList) ((BasicDBList) proteinVariantData.get("keyword")).get(0))) {
 //            proteinVariantAnnotation.addUniprotKeyword((String)((BasicDBObject) keywordObject).get("value"));
             proteinVariantAnnotation.getKeywords().add((String) ((BasicDBObject) keywordObject).get("value"));
         }
 
         proteinVariantAnnotation.setFeatures(new ArrayList<>());
-        for(Object featureObject : (BasicDBList) proteinVariantData.get("feature")) {
+        for (Object featureObject : (BasicDBList) proteinVariantData.get("feature")) {
             BasicDBObject featureDBObject = (BasicDBObject) featureObject;
             String type = (String) featureDBObject.get("type");
 
@@ -336,27 +338,27 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //                    ((int)((BasicDBObject)((BasicDBObject) featureDBObject.get("location")).get("position"))
 //                            .get("position"))==proteinVariantAnnotation.getPosition()) {
             // Current feature corresponds to current variant
-            if(variationDBList!=null && variationDBList.contains(shortAlternativeAa)) {
+            if (variationDBList != null && variationDBList.contains(shortAlternativeAa)) {
                 proteinVariantAnnotation.setUniprotVariantId((String) featureDBObject.get("id"));
                 proteinVariantAnnotation.setFunctionalDescription((String) featureDBObject.get("description"));
-            // Not a protein variant, another type of feature e.g. protein domain
+                // Not a protein variant, another type of feature e.g. protein domain
             } else {
                 ProteinFeature proteinFeature = new ProteinFeature();
                 proteinFeature.setId((String) featureDBObject.get("id"));
                 proteinFeature.setType((String) featureDBObject.get("type"));
                 proteinFeature.setDescription((String) featureDBObject.get("description"));
 //                proteinFeature.setRef((String) featureDBObject.get("ref"));
-                if(featureDBObject.get("location")!=null) {
-                    if(((BasicDBObject) featureDBObject.get("location")).get("begin")!=null) {
+                if (featureDBObject.get("location") != null) {
+                    if (((BasicDBObject) featureDBObject.get("location")).get("begin") != null) {
                         proteinFeature.setStart((int) ((BasicDBObject) ((BasicDBObject) featureDBObject.get("location"))
                                 .get("begin")).get("position"));
-                        if(((BasicDBObject) featureDBObject.get("location")).get("end")!=null) {
+                        if (((BasicDBObject) featureDBObject.get("location")).get("end") != null) {
                             proteinFeature.setEnd((int) ((BasicDBObject) ((BasicDBObject) featureDBObject.get("location"))
                                     .get("end")).get("position"));
                         } else {
                             proteinFeature.setEnd(proteinFeature.getStart());
                         }
-                    } else if(((BasicDBObject) featureDBObject.get("location")).get("position")!=null) {
+                    } else if (((BasicDBObject) featureDBObject.get("location")).get("position") != null) {
                         proteinFeature.setStart((int) ((BasicDBObject) ((BasicDBObject) featureDBObject.get("location"))
                                 .get("position")).get("position"));
                         proteinFeature.setEnd(proteinFeature.getStart());
@@ -365,27 +367,25 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //                proteinVariantAnnotation.addProteinFeature(proteinFeature);
                 proteinVariantAnnotation.getFeatures().add(proteinFeature);
             }
-
         }
 
         return proteinVariantAnnotation;
-
     }
 
-    private List<Score> getProteinSubstitutionScores(String ensemblTranscriptId, int AaPosition, String alternativeAa) {
+    private List<Score> getProteinSubstitutionScores(String ensemblTranscriptId, int aaPosition, String alternativeAa) {
         QueryResult proteinSubstitutionScoresQueryResult = getFunctionPredictionByAaChange(ensemblTranscriptId,
-                AaPosition, alternativeAa, new QueryOptions());
+                aaPosition, alternativeAa, new QueryOptions());
         List<Score> scoreList = null;
         if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
             scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
             DBObject proteinSubstitutionScores = (DBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
             if (proteinSubstitutionScores.get("ss") != null) {
                 scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-                        "sift", VariantAnnotationUtils.siftDescriptions.get(proteinSubstitutionScores.get("se"))));
+                        "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(proteinSubstitutionScores.get("se"))));
             }
             if (proteinSubstitutionScores.get("ps") != null) {
                 scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-                        "polyphen", VariantAnnotationUtils.polyphenDescriptions.get(proteinSubstitutionScores.get("pe"))));
+                        "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(proteinSubstitutionScores.get("pe"))));
             }
         }
         return scoreList;

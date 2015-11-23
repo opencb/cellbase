@@ -23,7 +23,8 @@ import java.io.IOException;
  */
 public interface CellBaseSerializer {
 
-    public void serialize(Object object);
+    void serialize(Object object);
 
-    public void close() throws IOException;
+    void close() throws IOException;
+
 }

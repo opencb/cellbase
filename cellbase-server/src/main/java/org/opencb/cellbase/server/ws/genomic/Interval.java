@@ -18,13 +18,38 @@ package org.opencb.cellbase.server.ws.genomic;
 
 @Deprecated
 public class Interval {
-	public int start;
-	public int end;
-	public float value;
-	
-	public Interval(int start, int end, float value) {
-		this.start = start;
-		this.end = end;
-		this.value = value;
-	}
+
+    private int start;
+    private int end;
+    private float value;
+
+    public Interval(int start, int end, float value) {
+        this.start = start;
+        this.end = end;
+        this.value = value;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public void setEnd(int end) {
+        this.end = end;
+    }
+
+    public float getValue() {
+        return value;
+    }
+
+    public void setValue(float value) {
+        this.value = value;
+    }
 }

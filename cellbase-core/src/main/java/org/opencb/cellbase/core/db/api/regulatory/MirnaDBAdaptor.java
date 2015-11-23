@@ -28,76 +28,71 @@ import java.util.List;
 
 public interface MirnaDBAdaptor {
 
-	
-	public List<MirnaGene> getMiRnaGeneByName(String geneName);
-	
-	public List<List<MirnaGene>> getAllMiRnaGenesByNameList(List<String> geneNames);
-	
-	public List<MirnaGene> getAllMiRnaGenesByMiRnaMature(String miRnaMatureName);
-	
-	public List<List<MirnaGene>> getAllMiRnaGenesByMiRnaMatureList(List<String> miRnaMatureNameList);
-	
-	public List<MirnaGene> getAllMiRnaGenesByDisease(String disease);
-	
-	public List<List<MirnaGene>> getAllMiRnaGenesByDiseaseList(List<String> diseaseList);
-	
-	public List<MirnaGene> getAllMiRnaGenesByGeneName(String geneName);
-	
-	public List<List<MirnaGene>> getAllMiRnaGenesByGeneNameList(List<String> geneNames);
-	
-	
 
-	public List<MirnaMature> getMiRnaMatureByName(String miRnaMatureName);
-	
-	public List<List<MirnaMature>> getAllMiRnaMaturesByNameList(List<String> miRnaMatureNameList);
-	
-	public List<MirnaMature> getAllMiRnaMaturesByMiRnaGene(String miRnaGeneName);
-	
-	public List<List<MirnaMature>> getAllMiRnaMaturesByMiRnaGeneList(List<String> miRnaGeneNameList);
-	
-	public List<MirnaMature> getAllMiRnaMaturesByGeneName(String geneName);
-	
-	public List<List<MirnaMature>> getAllMiRnaMaturesByGeneNameList(List<String> geneNames);
+    List<MirnaGene> getMiRnaGeneByName(String geneName);
 
-	
-	
-	public List<MirnaTarget> getAllMiRnaTargetsByMiRnaMature(String id, List<String> source);
+    List<List<MirnaGene>> getAllMiRnaGenesByNameList(List<String> geneNames);
 
-	public List<List<MirnaTarget>> getAllMiRnaTargetsByMiRnaMatureList(List<String> ids, List<String> source);
-	
-	public List<MirnaTarget> getAllMiRnaTargetsByMiRnaGene(String geneName, List<String> source);
-	
-	public List<List<MirnaTarget>> getAllMiRnaTargetsByMiRnaGeneList(List<String> geneNames, List<String> sources);
-	
-	public List<MirnaTarget> getAllMiRnaTargetsByGeneName(String geneName);
-	
-	public List<List<MirnaTarget>> getAllMiRnaTargetsByGeneNameList(List<String> geneNames);
-	
-	public List<MirnaTarget> getAllMiRnaTargetsByPosition(String chromosome, int start);
-	
-	public List<MirnaTarget> getAllMiRnaTargetsByRegion(String chromosome, int start, int end);
-	
-	public List<MirnaTarget> getAllMiRnaTargetsByRegion(Region region);
+    List<MirnaGene> getAllMiRnaGenesByMiRnaMature(String miRnaMatureName);
 
-	public List<List<MirnaTarget>> getAllMiRnaTargetsByRegionList(List<Region> regionList);
+    List<List<MirnaGene>> getAllMiRnaGenesByMiRnaMatureList(List<String> miRnaMatureNameList);
 
-	public List<IntervalFeatureFrequency> getAllMirnaTargetsIntervalFrequencies(Region region, int interval);
-	
-	
-	
-	public List<MirnaDisease> getAllMiRnaDiseasesByMiRnaGene(String mirbaseId);
+    List<MirnaGene> getAllMiRnaGenesByDisease(String disease);
 
-	public List<List<MirnaDisease>> getAllMiRnaDiseasesByMiRnaGeneList(List<String> mirbaseId);
-	
-	public List<MirnaDisease> getAllMiRnaDiseasesByMiRnaMature(String mirbaseId);
+    List<List<MirnaGene>> getAllMiRnaGenesByDiseaseList(List<String> diseaseList);
 
-	public List<List<MirnaDisease>> getAllMiRnaDiseasesByMiRnaMatureList(List<String> mirbaseId);
+    List<MirnaGene> getAllMiRnaGenesByGeneName(String geneName);
 
-	
-	
-	public List<Object> getAllAnnotation();
+    List<List<MirnaGene>> getAllMiRnaGenesByGeneNameList(List<String> geneNames);
 
-	public List<Object> getAllAnnotationBySourceList(List<String> sourceList);
 
+    List<MirnaMature> getMiRnaMatureByName(String miRnaMatureName);
+
+    List<List<MirnaMature>> getAllMiRnaMaturesByNameList(List<String> miRnaMatureNameList);
+
+    List<MirnaMature> getAllMiRnaMaturesByMiRnaGene(String miRnaGeneName);
+
+    List<List<MirnaMature>> getAllMiRnaMaturesByMiRnaGeneList(List<String> miRnaGeneNameList);
+
+    List<MirnaMature> getAllMiRnaMaturesByGeneName(String geneName);
+
+    List<List<MirnaMature>> getAllMiRnaMaturesByGeneNameList(List<String> geneNames);
+
+
+    List<MirnaTarget> getAllMiRnaTargetsByMiRnaMature(String id, List<String> source);
+
+    List<List<MirnaTarget>> getAllMiRnaTargetsByMiRnaMatureList(List<String> ids, List<String> source);
+
+    List<MirnaTarget> getAllMiRnaTargetsByMiRnaGene(String geneName, List<String> source);
+
+    List<List<MirnaTarget>> getAllMiRnaTargetsByMiRnaGeneList(List<String> geneNames, List<String> sources);
+
+    List<MirnaTarget> getAllMiRnaTargetsByGeneName(String geneName);
+
+    List<List<MirnaTarget>> getAllMiRnaTargetsByGeneNameList(List<String> geneNames);
+
+    List<MirnaTarget> getAllMiRnaTargetsByPosition(String chromosome, int start);
+
+    List<MirnaTarget> getAllMiRnaTargetsByRegion(String chromosome, int start, int end);
+
+    List<MirnaTarget> getAllMiRnaTargetsByRegion(Region region);
+
+    List<List<MirnaTarget>> getAllMiRnaTargetsByRegionList(List<Region> regionList);
+
+    List<IntervalFeatureFrequency> getAllMirnaTargetsIntervalFrequencies(Region region, int interval);
+
+
+    List<MirnaDisease> getAllMiRnaDiseasesByMiRnaGene(String mirbaseId);
+
+    List<List<MirnaDisease>> getAllMiRnaDiseasesByMiRnaGeneList(List<String> mirbaseId);
+
+    List<MirnaDisease> getAllMiRnaDiseasesByMiRnaMature(String mirbaseId);
+
+    List<List<MirnaDisease>> getAllMiRnaDiseasesByMiRnaMatureList(List<String> mirbaseId);
+
+
+    List<Object> getAllAnnotation();
+
+    List<Object> getAllAnnotationBySourceList(List<String> sourceList);
 
 }

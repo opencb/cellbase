@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.app.transform.utils;
 
+import org.opencb.commons.utils.FileUtils;
+
 import java.io.*;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -41,14 +43,14 @@ public class GenomeSequenceUtils {
         String chromosome = "";
         StringBuilder sequenceStringBuilder = new StringBuilder(100000);
 
-        while((line = br.readLine()) != null) {
+        while ((line = br.readLine()) != null) {
             if (!line.startsWith(">")) {
                 sequenceStringBuilder.append(line);
             } else {
                 // new chromosome found
                 if (sequenceStringBuilder.length() > 0) {
                     // we have read whole chromosome sequence, it's time to store it
-                    if(!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
+                    if (!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
                         genomeSequenceMap.put(chromosome, sequenceStringBuilder.toString());
                     }
                 }
@@ -72,15 +74,15 @@ public class GenomeSequenceUtils {
         String chromosome = "";
         StringBuilder sequenceStringBuilder = new StringBuilder();
 
-        while((line = br.readLine()) != null) {
+        while ((line = br.readLine()) != null) {
             if (!line.startsWith(">")) {
                 sequenceStringBuilder.append(line);
             } else {
                 // new chromosome found
                 if (sequenceStringBuilder.length() > 0) {
                     // we have read whole chromosome sequence, it's time to store it
-                    if(!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
-                        System.out.println("Loading chrom: "+chromosome);
+                    if (!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
+                        System.out.println("Loading chrom: " + chromosome);
                         genomeSequenceMap.put(chromosome, StringUtils.gzip(sequenceStringBuilder.toString()));
                     }
                 }
@@ -101,16 +103,16 @@ public class GenomeSequenceUtils {
         StringBuilder stringBuilder = new StringBuilder(100000);
         String line = "";
         boolean found = false;
-        while((line = br.readLine()) != null) {
-            if(found) {
-                if(!line.startsWith(">")) {
+        while ((line = br.readLine()) != null) {
+            if (found) {
+                if (!line.startsWith(">")) {
                     stringBuilder.append(line);
-                }else {
+                } else {
                     break;
                 }
             }
             // chromosomes names look like: >
-            if(line.startsWith(">"+chromosome+" ")) {
+            if (line.startsWith(">" + chromosome + " ")) {
                 found = true;
             }
         }
@@ -123,28 +125,27 @@ public class GenomeSequenceUtils {
 
         File[] files = genomeSequenceDir.toFile().listFiles();
         File file = null;
-        for(File f: files) {
-            if(f.getName().endsWith("_"+chrom+".fa.gz") || f.getName().endsWith("."+chrom+".fa.gz")) {
+        for (File f : files) {
+            if (f.getName().endsWith("_" + chrom + ".fa.gz") || f.getName().endsWith("." + chrom + ".fa.gz")) {
                 System.out.println(f.getAbsolutePath());
                 file = f;
                 break;
             }
         }
         StringBuilder sb = new StringBuilder(100000);
-        if(file != null) {
-            //		BufferedReader br = Files.newBufferedReader(files[0].toPath(), Charset.defaultCharset());
+        if (file != null) {
             BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(file))));
-            String line = "";
+            String line;
             boolean found = false;
-            while((line = br.readLine()) != null) {
-                if(found) {
-                    if(!line.startsWith(">")) {
+            while ((line = br.readLine()) != null) {
+                if (found) {
+                    if (!line.startsWith(">")) {
                         sb.append(line);
-                    }else {
+                    } else {
                         break;
                     }
                 }
-                if(line.startsWith(">")) {
+                if (line.startsWith(">")) {
                     found = true;
                 }
             }

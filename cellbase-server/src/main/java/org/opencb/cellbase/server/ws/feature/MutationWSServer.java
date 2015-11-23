@@ -39,10 +39,11 @@ import java.io.IOException;
 @Path("/{version}/{species}/feature/mutation")
 @Produces("application/json")
 @Deprecated
-public class MutationWSServer  extends GenericRestWSServer {
+public class MutationWSServer extends GenericRestWSServer {
 
     public MutationWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 

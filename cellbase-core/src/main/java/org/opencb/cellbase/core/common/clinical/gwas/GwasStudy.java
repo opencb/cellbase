@@ -20,9 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
-* Created by parce on 5/12/14.
-*/
+ * Created by parce on 5/12/14.
+ */
 public class GwasStudy {
+
     private String pubmedId;
     private String firstAuthor;
     private String date;
@@ -34,9 +35,11 @@ public class GwasStudy {
     private String platform;
     private List<GwasTrait> traits;
 
-    public GwasStudy() {}
+    public GwasStudy() {
+    }
 
-    public GwasStudy(String pubmedId, String firstAuthor, String date, String journal, String link, String study, String initialSampleSize, String replicationSampleSize, String platform) {
+    public GwasStudy(String pubmedId, String firstAuthor, String date, String journal, String link, String study,
+                     String initialSampleSize, String replicationSampleSize, String platform) {
         this.pubmedId = pubmedId;
         this.firstAuthor = firstAuthor;
         this.date = date;
@@ -148,7 +151,7 @@ public class GwasStudy {
     public boolean equals(Object study) {
         boolean equals = false;
         if (study instanceof GwasStudy) {
-             equals = this.pubmedId.equals(((GwasStudy)study).getPubmedId());
+            equals = this.pubmedId.equals(((GwasStudy) study).getPubmedId());
         }
         return equals;
     }
@@ -157,4 +160,5 @@ public class GwasStudy {
     public int hashCode() {
         return this.pubmedId.hashCode();
     }
+
 }

@@ -26,7 +26,7 @@ import java.nio.file.Path;
 /**
  * @author Antonio Rueda
  * @author Luis Miguel Cruz.
- * @since October 08, 2014 
+ * @since October 08, 2014
  */
 public class CaddAllAnnotationParser extends CellBaseParser {
 
@@ -34,18 +34,19 @@ public class CaddAllAnnotationParser extends CellBaseParser {
     private final Path caddFilePath;
     private final String chrName;
 
-    public CaddAllAnnotationParser(Path caddFilePath, String chrName, CellBaseSerializer serializer){
-    	super(serializer);
+    public CaddAllAnnotationParser(Path caddFilePath, String chrName, CellBaseSerializer serializer) {
+        super(serializer);
         this.caddFilePath = caddFilePath;
         this.chrName = chrName;
     }
 
-    public void parse(){
+    public void parse() {
         try {
             TabixReader inputReader = new TabixReader(caddFilePath.toString());
             TabixReader.Iterator caddIterator = inputReader.query(chrName);
             Cadd caddVariant = null;
-            for (String line; (line = caddIterator.next()) != null;) {
+            String line;
+            while ((line = caddIterator.next()) != null) {
                 String[] fields = line.split("\t");
                 String chr = fields[0];
                 String ref = fields[2];
@@ -72,15 +73,14 @@ public class CaddAllAnnotationParser extends CellBaseParser {
     }
 
     private boolean sameVariant(Cadd caddVariant, String chr, int pos, String ref, String alt) {
-        return caddVariant != null &&
-                (caddVariant.getChromosome().equals(chr) && caddVariant.getStart() == pos &&
-                        caddVariant.getReference().equals(ref) && caddVariant.getAlternate().equals(alt));
+        return caddVariant != null && (caddVariant.getChromosome().equals(chr) && caddVariant.getStart() == pos
+                && caddVariant.getReference().equals(ref) && caddVariant.getAlternate().equals(alt));
     }
-    
-    private Cadd createCaddVariant(String[] fields){
-    	String ref = fields[2], alt = fields[4], chr = fields[0];
+
+    private Cadd createCaddVariant(String[] fields) {
+        String ref = fields[2], alt = fields[4], chr = fields[0];
         int pos = Integer.parseInt(fields[1]);
-    	
+
         Float encExp = stringToFloat(fields[29]);
         Float encH3K27Ac = stringToFloat(fields[30]);
         Float encH3K4Me1 = stringToFloat(fields[31]);
@@ -88,7 +88,7 @@ public class CaddAllAnnotationParser extends CellBaseParser {
         Float encNucleo = stringToFloat(fields[33]);
 
         Integer encOCC = null;
-        if (!fields[34].equals("NA")){
+        if (!fields[34].equals("NA")) {
             encOCC = Integer.parseInt(fields[34]);
         }
 
@@ -112,14 +112,14 @@ public class CaddAllAnnotationParser extends CellBaseParser {
                 encOCDNaseSig, encOCFaireSig, encOCpolIISig,
                 encOCctcfSig, encOCmycSig);
 
-    	caddVariant.addCaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
-    	return caddVariant;
+        caddVariant.addCaddValues(Float.parseFloat(fields[88]), Float.parseFloat(fields[89]), fields[68]);
+        return caddVariant;
     }
-    
-    private Float stringToFloat(String floatName){
-        if (floatName.equals("NA")){
+
+    private Float stringToFloat(String floatName) {
+        if (floatName.equals("NA")) {
             return null;
-        } else{
+        } else {
             return Float.valueOf(floatName);
         }
     }

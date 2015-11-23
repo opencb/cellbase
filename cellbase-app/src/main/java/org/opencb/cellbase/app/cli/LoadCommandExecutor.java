@@ -25,7 +25,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -50,20 +49,20 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         this.loadCommandOptions = loadCommandOptions;
 
-        if(loadCommandOptions.input != null) {
+        if (loadCommandOptions.input != null) {
             input = Paths.get(loadCommandOptions.input);
         }
-        if(loadCommandOptions.database != null) {
+        if (loadCommandOptions.database != null) {
             database = loadCommandOptions.database;
         }
-        if(loadCommandOptions.loader != null) {
+        if (loadCommandOptions.loader != null) {
             loader = loadCommandOptions.loader;
         }
     }
 
 
     /**
-     * Parse specific 'data' command options
+     * Parse specific 'data' command options.
      */
     public void execute() {
 
@@ -73,11 +72,13 @@ public class LoadCommandExecutor extends CommandExecutor {
             if (loadCommandOptions.data != null) {
 
                 if (loadCommandOptions.loaderParams.containsKey("mongodb-index-folder")) {
-                    configuration.getDatabase().getOptions().put("mongodb-index-folder", loadCommandOptions.loaderParams.get("mongodb-index-folder"));
+                    configuration.getDatabase().getOptions().put("mongodb-index-folder",
+                            loadCommandOptions.loaderParams.get("mongodb-index-folder"));
                 }
                 // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
                 if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
-                    configuration.getDatabase().getOptions().put("authenticationDatabase", loadCommandOptions.loaderParams.get("authenticationDatabase"));
+                    configuration.getDatabase().getOptions().put("authenticationDatabase",
+                            loadCommandOptions.loaderParams.get("authenticationDatabase"));
                 }
 
 //                loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
@@ -86,7 +87,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 String[] buildOptions;
                 if (loadCommandOptions.data.equals("all")) {
                     buildOptions = new String[]{"genome", "gene", "gene_disease_association", "variation", "variation_functional_score",
-                            "regulatory_region", "protein", "ppi", "protein_functional_prediction", "conservation", "clinical"};
+                            "regulatory_region", "protein", "ppi", "protein_functional_prediction", "conservation", "clinical", };
                 } else {
                     buildOptions = loadCommandOptions.data.split(",");
                 }
@@ -152,7 +153,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private void checkParameters() {
         if (loadCommandOptions.numThreads > 1) {
             numThreads = loadCommandOptions.numThreads;
-        }else {
+        } else {
             numThreads = 1;
             logger.warn("Incorrect number of numThreads, it must be a positive value. This has been set to '{}'", numThreads);
         }
@@ -175,7 +176,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             return entry.getFileName().toString().startsWith("variation_chr");
         });
 
-        for (Path entry: stream) {
+        for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "variation");
         }
@@ -190,7 +191,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             return entry.getFileName().toString().startsWith("conservation_");
         });
 
-        for (Path entry: stream) {
+        for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "conservation");
         }
@@ -205,7 +206,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             return entry.getFileName().toString().startsWith("prot_func_pred_");
         });
 
-        for (Path entry: stream) {
+        for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
         }

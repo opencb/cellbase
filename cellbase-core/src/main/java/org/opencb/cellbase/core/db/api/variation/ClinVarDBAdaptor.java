@@ -29,24 +29,24 @@ import java.util.List;
 @Deprecated
 public interface ClinVarDBAdaptor {
 
-    public QueryResult getById(String id, QueryOptions options);
+    QueryResult getById(String id, QueryOptions options);
 
-    public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
-
-
-    public QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
-
-    public QueryResult getAllByPosition(Position position, QueryOptions options);
-
-    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
+    List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
-    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+    QueryResult getAllByPosition(String chromosome, int position, QueryOptions options);
 
-    public QueryResult getAllByRegion(Region region, QueryOptions options);
+    QueryResult getAllByPosition(Position position, QueryOptions options);
 
-    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+    List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
 
-    public QueryResult getListAccessions(QueryOptions queryOptions);
+
+    QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options);
+
+    QueryResult getAllByRegion(Region region, QueryOptions options);
+
+    List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
+
+    QueryResult getListAccessions(QueryOptions queryOptions);
 
 }

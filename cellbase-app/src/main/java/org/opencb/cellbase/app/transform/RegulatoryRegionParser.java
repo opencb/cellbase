@@ -16,30 +16,26 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 /**
- * User: fsalavert
+ * User: fsalavert.
  * Date: 4/10/13
  * Time: 10:14 AM
  */
-
 public class RegulatoryRegionParser extends CellBaseParser {
 
-    static int CHUNK_SIZE = 2000;
+    private static final int CHUNK_SIZE = 2000;
     private Path regulatoryRegionPath;
 
     public RegulatoryRegionParser(Path regulatoryRegionFilesDir, CellBaseSerializer serializer) {
@@ -49,38 +45,38 @@ public class RegulatoryRegionParser extends CellBaseParser {
 
     }
 
-    public void createSQLiteRegulatoryFiles(Path regulatoryRegionPath) throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
-        List<String> GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "group");
-        List<String> GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT", "TEXT");
+    public void createSQLiteRegulatoryFiles(Path regulatoryRegionPath)
+            throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
+        List<String> gffColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "group");
+        List<String> gffColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT", "TEXT");
 
         //        Path regulatoryRegionPath = regulationDir.toPath();
 
         Path filePath;
 
         filePath = regulatoryRegionPath.resolve("AnnotatedFeatures.gff.gz");
-        createSQLiteRegulatoryFiles(filePath, "annotated_features", GFFColumnNames, GFFColumnTypes);
+        createSQLiteRegulatoryFiles(filePath, "annotated_features", gffColumnNames, gffColumnTypes);
 
 
         filePath = regulatoryRegionPath.resolve("MotifFeatures.gff.gz");
-        createSQLiteRegulatoryFiles(filePath, "motif_features", GFFColumnNames, GFFColumnTypes);
+        createSQLiteRegulatoryFiles(filePath, "motif_features", gffColumnNames, gffColumnTypes);
 
 
         filePath = regulatoryRegionPath.resolve("RegulatoryFeatures_MultiCell.gff.gz");
-        createSQLiteRegulatoryFiles(filePath, "regulatory_features_multicell", GFFColumnNames, GFFColumnTypes);
+        createSQLiteRegulatoryFiles(filePath, "regulatory_features_multicell", gffColumnNames, gffColumnTypes);
 
-
-//		GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame");
-//		GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT");
+//  GFFColumnNames = Arrays.asList("seqname", "source", "feature", "start", "end", "score", "strand", "frame");
+//  GFFColumnTypes = Arrays.asList("TEXT", "TEXT", "TEXT", "INT", "INT", "TEXT", "TEXT", "TEXT");
         filePath = regulatoryRegionPath.resolve("mirna_uniq.gff.gz");
         if (Files.exists(filePath)) {
-            createSQLiteRegulatoryFiles(filePath, "mirna_uniq", GFFColumnNames, GFFColumnTypes);
+            createSQLiteRegulatoryFiles(filePath, "mirna_uniq", gffColumnNames, gffColumnTypes);
         }
 
     }
 
     @Override
     public void parse() throws SQLException, IOException, ClassNotFoundException, NoSuchMethodException {
-        if(regulatoryRegionPath == null || !Files.exists(regulatoryRegionPath) || !Files.isDirectory(regulatoryRegionPath)) {
+        if (regulatoryRegionPath == null || !Files.exists(regulatoryRegionPath) || !Files.isDirectory(regulatoryRegionPath)) {
             throw new IOException("Regulation directory whether does not exist, is not a directory or cannot be read");
         }
 
@@ -102,13 +98,6 @@ public class RegulatoryRegionParser extends CellBaseParser {
             tableNames.add("mirna_uniq");
         }
 
-        // Ouput JSON file
-        //		Path outJsonPath = regulatoryRegionPath.resolve("regulatory_region.json");
-//        if (Files.exists(outputRegulatoryRegionJsonPath)) {
-//            Files.delete(outputRegulatoryRegionJsonPath);
-//        }
-//        BufferedWriter bw = Files.newBufferedWriter(outputRegulatoryRegionJsonPath, Charset.defaultCharset(), StandardOpenOption.CREATE);
-
         // Fetching and joining all chromosomes found in the different databases
         Set<String> setChr = new HashSet<>();
         setChr.addAll(getChromosomesList(annotatedFilePath, "annotated_features"));
@@ -117,33 +106,14 @@ public class RegulatoryRegionParser extends CellBaseParser {
         if (Files.exists(mirnaFilePath)) {
             setChr.addAll(getChromosomesList(mirnaFilePath, "mirna_uniq"));
         }
+
         List<String> chromosomes = new ArrayList<>(setChr);
-//        chromosomes.addAll(setChr);
-
-        //		Collections.sort(chromosomes, new Comparator<String>() {
-        //			@Override
-        //			public int compare(String o1, String o2) {
-        //				if (o1.equals("X")) o1 = "23";
-        //				if (o2.equals("X")) o2 = "23";
-        //				if (o1.equals("Y")) o1 = "24";
-        //				if (o2.equals("Y")) o2 = "24";
-        //				return Integer.parseInt(o1) - Integer.parseInt(o2);
-        //			}
-        //		});
-//		List<GenericFeature> annotatedGenericFeatures = new ArrayList<>();
-//		List<GenericFeature> regulatoryGenericFeatures = new ArrayList<>();
-//		List<GenericFeature> mirnaGenericFeatures = new ArrayList<>();
-//		Map<Integer, GenericFeatureChunk> genericFeatureChunks = null;
-
         List<GenericFeature> genericFeatures;
         HashSet<Integer> chunksHash;
         for (String chromosome : chromosomes) {
-
             for (int i = 0; i < tableNames.size(); i++) {
-//				genericFeatureChunks = new HashMap<>();
                 chunksHash = new HashSet<>();
                 genericFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
-                int c = 0;
                 for (GenericFeature genericFeature : genericFeatures) {
                     int firstChunkId = getChunkId(genericFeature.getStart(), CHUNK_SIZE);
                     int lastChunkId = getChunkId(genericFeature.getEnd(), CHUNK_SIZE);
@@ -161,83 +131,19 @@ public class RegulatoryRegionParser extends CellBaseParser {
                     genericFeature.setChunkIds(chunkIds);
 
                     // remove 'chr' prefix
-                    if (genericFeature.getChromosome() != null) {
+//                    if (genericFeature.getChromosome() != null) {
 //                        genericFeature.setSequenceName(genericFeature.getSequenceName().replace("chr", ""));
-                    }
+//                    }
                     serializer.serialize(genericFeature);
                 }
-}
-
-			/*Annotated feature*/
-//			genericFeatureChunks = new HashMap<>();
-//			annotatedGenericFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(annotatedFilePath, "annotated_features", chromosome);
-//			for(GenericFeature genericFeature :annotatedGenericFeatures){
-//				int firstChunkId =  getChunkId(genericFeature.getStart(), chunksize);
-//				int lastChunkId  = getChunkId(genericFeature.getEnd(), chunksize);
-//
-//				for(int i=firstChunkId; i<=lastChunkId; i++){
-//					if(genericFeatureChunks.get(i)==null){
-//						int chunkStart = getChunkStart(i, chunksize);
-//						int chunkEnd = getChunkEnd(i, chunksize);
-//						genericFeatureChunks.put(i,new GenericFeatureChunk(chromosome,i,chunkStart,chunkEnd,new ArrayList<GenericFeature>()));
-//					}
-//					genericFeatureChunks.get(i).getFeatures().add(genericFeature);
-//				}
-//			}
-//			for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-//				bw.write(gson.toJson(gson.toJson(result.getValue())) + "\n");
-//			}
-//			/*********/
-//
-//			/*Regulatory feature*/
-//			genericFeatureChunks = new HashMap<>();
-//			regulatoryGenericFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(regulatoryFilePath, "regulatory_features_multicell", chromosome);
-//			for(GenericFeature genericFeature :regulatoryGenericFeatures){
-//				int firstChunkId =  getChunkId(genericFeature.getStart());
-//				int lastChunkId  = getChunkId(genericFeature.getEnd());
-//
-//				for(int i=firstChunkId; i<=lastChunkId; i++){
-//					if(genericFeatureChunks.get(i)==null){
-//						int chunkStart = getChunkStart(i);
-//						int chunkEnd = getChunkEnd(i);
-//						genericFeatureChunks.put(i,new GenericFeatureChunk(chromosome,i,chunkStart,chunkEnd,new ArrayList<GenericFeature>()));
-//					}
-//					genericFeatureChunks.get(i).getFeatures().add(genericFeature);
-//				}
-//			}
-//			for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-//				bw.write(gson.toJson(gson.toJson(result.getValue())) + "\n");
-//			}
-//			/*********/
-//
-//			/*Mirna feature*/
-//			genericFeatureChunks = new HashMap<>();
-//			mirnaGenericFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(mirnaFilePath, "mirna_uniq", chromosome);
-//			for(GenericFeature genericFeature :mirnaGenericFeatures){
-//				int firstChunkId =  getChunkId(genericFeature.getStart());
-//				int lastChunkId  = getChunkId(genericFeature.getEnd());
-//
-//				for(int i=firstChunkId; i<=lastChunkId; i++){
-//					if(genericFeatureChunks.get(i)==null){
-//						int chunkStart = getChunkStart(i);
-//						int chunkEnd = getChunkEnd(i);
-//						genericFeatureChunks.put(i,new GenericFeatureChunk(chromosome,i,chunkStart,chunkEnd,new ArrayList<GenericFeature>()));
-//					}
-//					genericFeatureChunks.get(i).getFeatures().add(genericFeature);
-//				}
-//			}
-//			for (Map.Entry<Integer, GenericFeatureChunk> result : genericFeatureChunks.entrySet()) {
-//				bw.write(gson.toJson(gson.toJson(result.getValue())) + "\n");
-//			}
-            /*********/
-
+            }
         }
-//        bw.close();
     }
 
 
-    public void createSQLiteRegulatoryFiles(Path filePath, String tableName, List<String> columnNames, List<String> columnTypes) throws ClassNotFoundException, IOException, SQLException {
-        int LIMITROWS = 100000;
+    public void createSQLiteRegulatoryFiles(Path filePath, String tableName, List<String> columnNames, List<String> columnTypes)
+            throws ClassNotFoundException, IOException, SQLException {
+        int limitRows = 100000;
         int batchCount = 0;
 
         if (!Files.exists(filePath)) {
@@ -253,7 +159,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
 
         Class.forName("org.sqlite.JDBC");
         Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
-        conn.setAutoCommit(false);//Set false to perform commits manually and increase performance on insertion
+        conn.setAutoCommit(false); //Set false to perform commits manually and increase performance on insertion
 
         //Create table query
         Statement createTables = conn.createStatement();
@@ -293,7 +199,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
             batchCount++;
 
             //commit batch
-            if (batchCount % LIMITROWS == 0 && batchCount != 0) {
+            if (batchCount % limitRows == 0 && batchCount != 0) {
                 ps.executeBatch();
                 conn.commit();
             }
@@ -391,6 +297,8 @@ public class RegulatoryRegionParser extends CellBaseParser {
                 break;
             case "mirna_uniq":
                 genericFeature = getMirnaFeature(rs);
+                break;
+            default:
                 break;
         }
         return genericFeature;
@@ -505,6 +413,8 @@ public class RegulatoryRegionParser extends CellBaseParser {
             case "mirna_uniq":
                 fields = getMirnaFeaturesFields(line);
                 break;
+            default:
+                break;
         }
         return fields;
     }
@@ -534,7 +444,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
         String raw;
         String type;
         if (types.size() == fields.size()) {
-            for (int i = 0; i < fields.size(); i++) {//columnNames and columnTypes must have same size
+            for (int i = 0; i < fields.size(); i++) { //columnNames and columnTypes must have same size
                 int sqliteIndex = i + 1;
                 raw = fields.get(i);
                 type = types.get(i);

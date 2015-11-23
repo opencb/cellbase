@@ -65,11 +65,11 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
 
     @Override
     public QueryResult next(String id, QueryOptions options) {
-        QueryOptions _options = new QueryOptions();
-        _options.put("include", Arrays.asList("chromosome", "start"));
-        QueryResult queryResult = getAllById(id, _options);
-        if(queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject)queryResult.getResult().get(0);
+        QueryOptions options1 = new QueryOptions();
+        options1.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, options1);
+        if (queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -104,7 +104,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
         return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
-    /**
+    /*
      * PARTICULAR METHODS FOR TFBS CLASS
      */
     @Override

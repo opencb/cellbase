@@ -20,8 +20,6 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.opencb.biodata.models.core.DBName;
-import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -100,36 +98,6 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
     }
 
 
-//	@Override
-//	public List<Xref> getByDBName(String id, List<String> dbnames) {
-//
-//		QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").is(id.toUpperCase());
-//		List<Xref> xrefQuery = new ArrayList<>();//;executeQuery(builder.get());
-//		logger.info("->>>>>>>>>>>>>>>>"+xrefQuery.size());
-//		if(dbnames == null) {
-//			dbnames = Collections.emptyList();
-//		}
-//		Set<String> dbnameSet = new HashSet<String>(dbnames);
-//
-//		List<Xref> xrefReturnList = new ArrayList<Xref>(xrefQuery.size());
-//		for(Xref xref: xrefQuery) {
-//			if(dbnameSet.size() == 0 || dbnameSet.contains(xref.getDbName())) {
-//				logger.info("->>>>>>>>>>>>>>>>"+xref.getId());
-//				xrefReturnList.add(xref);
-//			}
-//		}
-//		return xrefReturnList;
-//	}
-//
-//	@Override
-//	public List<List<Xref>> getAllByDBNameList(List<String> ids, List<String> dbnames) {
-//		List<List<Xref>> xrefs = new ArrayList<List<Xref>>(ids.size());
-//		for (String id : ids) {
-//			xrefs.add(getByDBName(id, dbnames));
-//		}
-//		return xrefs;
-//	}
-
     @Override
     public QueryResult getByDBName(String id, QueryOptions options) {
         return getAllByDBNameList(Arrays.asList(id), options).get(0);
@@ -148,7 +116,9 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 //{$project:{"_id":0,"id":"$_id.id","dbNameShort":"$_id.dbNameShort","description":"$_id.description"}})
 
 // Biotype if gene given: db.core.find({"transcripts.xrefs.id": "BRCA2"}, {"biotype":1})
-// Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}}, {$project:{"transcripts.biotype":1}})
+// Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}},
+// {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}},
+// {$project:{"transcripts.biotype":1}})
         List<List<DBObject>> commandsList = new ArrayList<>(ids.size());
         for (String id : ids) {
             List<DBObject> commands = new ArrayList<>(ids.size());
@@ -167,7 +137,8 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
             if (list != null && list.size() > 0) {
                 BasicDBList dbnameDBList = new BasicDBList();
                 dbnameDBList.addAll(list);
-                DBObject dbnameMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.dbName", new BasicDBObject("$in", dbnameDBList)));
+                DBObject dbnameMatch = new BasicDBObject("$match",
+                        new BasicDBObject("transcripts.xrefs.dbName", new BasicDBObject("$in", dbnameDBList)));
                 commands.add(dbnameMatch);
             }
 
@@ -195,32 +166,5 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
         }
         return executeAggregationList2(ids, commandsList, options);
     }
-
-    //	private List<Xref> executeQuery(DBObject query) {
-//		List<Xref> result = null;
-//		Set<Xref> xrefSet = new LinkedHashSet<Xref>();
-//
-//		BasicDBObject returnFields = new BasicDBObject("transcripts", 1);
-//		DBCursor cursor = mongoDBCollection.find(query, returnFields);
-//
-//		try {
-//			if (cursor != null) {
-////				Gson jsonObjectMapper = new Gson();
-//				Gene gene;
-//				while (cursor.hasNext()) {
-////					gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
-//					gene = (Gene) jsonObjectMapper.writeValueAsBytes(cursor.next().toString(), Gene.class);
-//					for (Transcript transcript : gene.getTranscripts()) {
-//						xrefSet.addAll(transcript.getXrefs());
-//					}
-//				}
-//			}
-//			result = new ArrayList<Xref>(xrefSet);
-//		} finally {
-//			cursor.close();
-//		}
-//
-//		return result;
-//	}
 
 }

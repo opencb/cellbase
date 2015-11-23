@@ -26,6 +26,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class Drug {
+
     private String id;
     private String name;
     private String type;

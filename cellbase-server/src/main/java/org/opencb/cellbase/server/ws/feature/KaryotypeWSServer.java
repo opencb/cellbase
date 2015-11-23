@@ -19,8 +19,8 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import org.opencb.cellbase.core.db.api.CytobandDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
-import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.cellbase.server.ws.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -36,57 +36,54 @@ import java.io.IOException;
 @Path("/{version}/{species}/feature/karyotype")
 @Produces("text/plain")
 public class KaryotypeWSServer extends GenericRestWSServer {
-	
-	
-	public KaryotypeWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-							 @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
-		super(version, species, uriInfo, hsr);
-	}
 
-	@GET
-	@Path("/{chromosomeName}/cytoband")
-	public Response getByChromosomeName(@PathParam("chromosomeName") String chromosome) {
-		try {
-			parseQueryParams();
-			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
-			return generateResponse(chromosome, dbAdaptor.getAllByChromosomeList(Splitter.on(",").splitToList(chromosome)));
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getByChromosomeName", e.toString());
-		}
-	}
-	
-	@GET
-	@Path("/chromosome")
-	public Response getChromosomes() {
-		try {
-			parseQueryParams();
-			CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
-			return generateResponse("", dbAdaptor.getAllChromosomeNames());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return createErrorResponse("getChromosomes", e.toString());
-		}
-	}
 
-	@GET
-	@Path("/{chromosomeName}/chromosome")
-	public Response getChromosomes(@PathParam("chromosomeName") String query) {
-		return getChromosomes();
-//		try {
-//			return getChromosomes();
-//		} catch (Exception e) {
-//			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
-//		}
-	}
-	
-	@GET
-	public Response defaultMethod() {
-		return help();
-	}
-	@GET
-	@Path("/help")
-	public Response help() {
-		return createOkResponse("Usage:");
-	}
+    public KaryotypeWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+                             @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+        super(version, species, uriInfo, hsr);
+    }
+
+    @GET
+    @Path("/{chromosomeName}/cytoband")
+    public Response getByChromosomeName(@PathParam("chromosomeName") String chromosome) {
+        try {
+            parseQueryParams();
+            CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
+            return generateResponse(chromosome, dbAdaptor.getAllByChromosomeList(Splitter.on(",").splitToList(chromosome)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getByChromosomeName", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/chromosome")
+    public Response getChromosomes() {
+        try {
+            parseQueryParams();
+            CytobandDBAdaptor dbAdaptor = dbAdaptorFactory.getCytobandDBAdaptor(this.species, this.assembly);
+            return generateResponse("", dbAdaptor.getAllChromosomeNames());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return createErrorResponse("getChromosomes", e.toString());
+        }
+    }
+
+    @GET
+    @Path("/{chromosomeName}/chromosome")
+    public Response getChromosomes(@PathParam("chromosomeName") String query) {
+        return getChromosomes();
+    }
+
+    @GET
+    public Response defaultMethod() {
+        return help();
+    }
+
+    @GET
+    @Path("/help")
+    public Response help() {
+        return createOkResponse("Usage:");
+    }
+
 }
