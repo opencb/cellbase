@@ -34,12 +34,6 @@ public interface TranscriptDBAdaptor extends FeatureDBAdaptor {
     List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
-    /**
-     * This method search the given 'id' in the XRefs array
-     * @param id Any possible XRef id
-     * @param options
-     * @return Any gene found having that Xref id
-     */
     QueryResult getAllByXref(String id, QueryOptions options);
 
     List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options);

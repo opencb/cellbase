@@ -33,12 +33,10 @@ public class PhenotypeWSServer extends GenericRestWSServer {
 
 
     public PhenotypeWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                          @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
-//        this.exclude = Arrays.asList(exclude.trim().split(","));
     }
-
-
 
 
 }

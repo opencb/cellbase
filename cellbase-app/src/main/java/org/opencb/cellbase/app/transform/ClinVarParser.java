@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 /**
  * Created by imedina on 26/09/14.
  */
-public class ClinVarParser extends CellBaseParser{
+public class ClinVarParser extends CellBaseParser {
 
     private static final String ASSEMBLY_PREFIX = "GRCh";
     public static final String GRCH37_ASSEMBLY = "37";
@@ -86,9 +86,9 @@ public class ClinVarParser extends CellBaseParser{
 
 
         } catch (JAXBException e) {
-            logger.error("Error unmarshalling clinvar Xml file "+ clinvarXmlFile + ": " + e.getMessage());
+            logger.error("Error unmarshalling clinvar Xml file " + clinvarXmlFile + ": " + e.getMessage());
         } catch (IOException e) {
-            logger.error("File not found: "+ clinvarXmlFile + ": " + e.getMessage());
+            logger.error("File not found: " + clinvarXmlFile + ": " + e.getMessage());
         }
     }
 
@@ -104,7 +104,7 @@ public class ClinVarParser extends CellBaseParser{
                 logger.error("Error loading EFO file: " + e.getMessage());
                 logger.error("EFO terms won't be added");
             }
-        }else {
+        } else {
             logger.warn("No EFO terms file present: EFO terms won't be added");
         }
         return null;
@@ -141,7 +141,7 @@ public class ClinVarParser extends CellBaseParser{
     }
 
     private String getPreferredTraitName(List<SetElementSetType> traitNames) {
-        for (SetElementSetType name: traitNames) {
+        for (SetElementSetType name : traitNames) {
             if (name.getElementValue().getType().equals(PREFERRED_TYPE)) {
                 return name.getElementValue().getValue();
             }
@@ -155,7 +155,7 @@ public class ClinVarParser extends CellBaseParser{
         addClinvarTraitName(names, EFO_URL, efo.url);
     }
 
-    private void addClinvarTraitName(List<SetElementSetType> names, String type, String value){
+    private void addClinvarTraitName(List<SetElementSetType> names, String type, String value) {
         SetElementSetType.ElementValue efoIdValue = new SetElementSetType.ElementValue();
         efoIdValue.setType(type);
         efoIdValue.setValue(value);
@@ -172,11 +172,14 @@ public class ClinVarParser extends CellBaseParser{
         logger.info("Processed " + formatter.format(clinvarRecordsParsed) + " clinvar records");
         logger.info("Serialized " + formatter.format(serializedClinvarObjects) + " '" + ClinvarPublicSet.class.getName() + "' objects");
         if (clinvarRecordsParsed != serializedClinvarObjects) {
-            logger.info(formatter.format(clinvarRecordsParsed - serializedClinvarObjects) + " clinvar records not serialized because don't have complete Sequence Location for assembly " + selectedAssembly);
+            logger.info(formatter.format(clinvarRecordsParsed - serializedClinvarObjects)
+                    + " clinvar records not serialized because don't have complete Sequence Location for assembly " + selectedAssembly);
         }
         if (efosFile != null) {
             NumberFormat percentageFormatter = NumberFormat.getPercentInstance();
-            logger.info(formatter.format(clinvarObjectsWithEfo) + " clinvar records (" + percentageFormatter.format((double) clinvarObjectsWithEfo / serializedClinvarObjects) + " of serialized) have at least one associated EFO term");
+            logger.info(formatter.format(clinvarObjectsWithEfo) + " clinvar records ("
+                    + percentageFormatter.format((double) clinvarObjectsWithEfo / serializedClinvarObjects)
+                    + " of serialized) have at least one associated EFO term");
         }
     }
 
@@ -198,7 +201,7 @@ public class ClinVarParser extends CellBaseParser{
 
     private SequenceLocationType obtainAssembly37SequenceLocation(PublicSetType publicSet) {
         for (MeasureSetType.Measure measure : publicSet.getReferenceClinVarAssertion().getMeasureSet().getMeasure()) {
-            for (SequenceLocationType location :  measure.getSequenceLocation()) {
+            for (SequenceLocationType location : measure.getSequenceLocation()) {
                 if (validLocation(location)) {
                     return location;
                 }
@@ -208,11 +211,8 @@ public class ClinVarParser extends CellBaseParser{
     }
 
     private boolean validLocation(SequenceLocationType location) {
-        return location.getAssembly().startsWith(selectedAssembly) &&
-                location.getReferenceAllele() != null && 
-                location.getAlternateAllele() != null &&
-                location.getStart() != null &&
-                location.getStop() != null;
+        return location.getAssembly().startsWith(selectedAssembly) && location.getReferenceAllele() != null
+                && location.getAlternateAllele() != null && location.getStart() != null && location.getStop() != null;
     }
 
     private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException, IOException {
@@ -224,11 +224,10 @@ public class ClinVarParser extends CellBaseParser{
         private final String name;
         private final String url;
 
-        public EFO(String id, String name, String URL ) {
-
+        public EFO(String id, String name, String url) {
             this.id = id;
             this.name = name;
-            url = URL;
+            this.url = url;
         }
     }
 }

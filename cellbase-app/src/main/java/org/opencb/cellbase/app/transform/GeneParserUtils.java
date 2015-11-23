@@ -96,8 +96,8 @@ public class GeneParserUtils {
                 mirnaMatures = fields[6].split(",");
                 for (String s : mirnaMatures) {
                     mirnaMaturesFields = s.split("\\|");
-                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2])+1;
-                    int cdnaEnd = cdnaStart+mirnaMaturesFields[2].length()-1;
+                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2]) + 1;
+                    int cdnaEnd = cdnaStart + mirnaMaturesFields[2].length() - 1;
                     // Save directly into MiRNAGene object.
                     miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2], cdnaStart, cdnaEnd);
                 }
@@ -142,7 +142,7 @@ public class GeneParserUtils {
                 fields = line.split("\t", -1);
                 if (fields.length >= 19 && fields[19].startsWith("ENST")) {
                     String[] transcripts = fields[19].split("; ");
-                    for(String transcript: transcripts) {
+                    for (String transcript : transcripts) {
                         if (!xrefMap.containsKey(transcript)) {
                             xrefMap.put(transcript, new ArrayList<Xref>());
                         }
@@ -180,7 +180,7 @@ public class GeneParserUtils {
             br.close();
         } else {
             logger.warn("Gene drug file " + geneDrugFile + " not found");
-            logger.warn("Ignoring "+ geneDrugFile);
+            logger.warn("Ignoring " + geneDrugFile);
         }
 
         return geneDrugMap;
@@ -196,14 +196,18 @@ public class GeneParserUtils {
             // Skip header. Column name line does not start with # so the last line read by this while will be this one
             int lineCounter = 0;
             String line;
-            while (((line = br.readLine()) != null) && (line.startsWith("#"))) {
-                lineCounter++;
+            while (((line = br.readLine()) != null)) {  //  && (line.startsWith("#"))
+                if (line.startsWith("#")) {
+                    lineCounter++;
+                } else {
+                    break;
+                }
             }
 
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
-                if(species.equals(parts[2])) {
-                    if(parts[7].equals("UP")) {
+                if (species.equals(parts[2])) {
+                    if (parts[7].equals("UP")) {
                         addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
                                 parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
                     } else if (parts[7].equals("DOWN")) {
@@ -224,7 +228,7 @@ public class GeneParserUtils {
         return geneExpressionMap;
     }
 
-    private static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value){
+    private static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {
         if (map.containsKey(key)) {
             map.get(key).add(value);
         } else {
@@ -236,7 +240,8 @@ public class GeneParserUtils {
     }
 
 
-    public static Map<String, List<GeneTraitAssociation>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath) throws IOException {
+    public static Map<String, List<GeneTraitAssociation>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath)
+            throws IOException {
         Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
 
         String[] fields;
@@ -247,7 +252,8 @@ public class GeneParserUtils {
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
-                GeneTraitAssociation disease = new GeneTraitAssociation(fields[0], fields[4], fields[3], 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
+                GeneTraitAssociation disease =
+                        new GeneTraitAssociation(fields[0], fields[4], fields[3], 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
                 addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
             }
             bufferedReader.close();
@@ -259,7 +265,8 @@ public class GeneParserUtils {
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
-                GeneTraitAssociation disease = new GeneTraitAssociation(fields[3], fields[4], "", Float.parseFloat(fields[5]), Integer.parseInt(fields[6]), Arrays.asList(fields[7]), Arrays.asList(fields[8].split(", ")), "disgenet");
+                GeneTraitAssociation disease = new GeneTraitAssociation(fields[3], fields[4], "", Float.parseFloat(fields[5]),
+                        Integer.parseInt(fields[6]), Arrays.asList(fields[7]), Arrays.asList(fields[8].split(", ")), "disgenet");
                 addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
             }
             bufferedReader.close();
@@ -267,6 +274,5 @@ public class GeneParserUtils {
 
         return geneDiseaseAssociationMap;
     }
-
 
 }

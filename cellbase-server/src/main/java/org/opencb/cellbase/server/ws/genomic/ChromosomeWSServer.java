@@ -47,7 +47,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
 
     public ChromosomeWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                              @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                              @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -128,6 +129,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     public Response defaultMethod() {
         return help();
     }
+
     @GET
     @Path("/help")
     public Response help() {

@@ -40,7 +40,6 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
     }
 
 
-
     @Override
     public QueryResult first() {
         return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
@@ -64,11 +63,11 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
     @Override
     public QueryResult next(String id, QueryOptions options) {
-        QueryOptions _options = new QueryOptions();
-        _options.put("include", Arrays.asList("chromosome", "start"));
-        QueryResult queryResult = getById(id, _options);
-        if(queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject)queryResult.getResult().get(0);
+        QueryOptions options1 = new QueryOptions();
+        options1.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getById(id, options1);
+        if (queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -78,7 +77,7 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
-        return next(chromosome, position+1, options, mongoDBCollection);
+        return next(chromosome, position + 1, options, mongoDBCollection);
     }
 
     @Override

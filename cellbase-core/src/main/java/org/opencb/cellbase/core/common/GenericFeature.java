@@ -16,13 +16,11 @@
 
 package org.opencb.cellbase.core.common;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * User: fsalavert
+ * User: fsalavert.
  * Date: 4/10/13
  * Time: 12:09 PM
  */

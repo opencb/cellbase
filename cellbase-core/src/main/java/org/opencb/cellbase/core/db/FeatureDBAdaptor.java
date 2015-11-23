@@ -18,12 +18,9 @@ package org.opencb.cellbase.core.db;
 
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.db.DBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;

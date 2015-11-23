@@ -19,82 +19,130 @@ package org.opencb.cellbase.core.common.clinical;
 /**
  * @author by antonior on 5/22/14.
  * @author Luis Miguel Cruz.
- * @since October 08, 2014 
+ * @since October 08, 2014
  */
-public class Cosmic extends ClinicalVariant{
+public class Cosmic extends ClinicalVariant {
 
-    /** geneName */
+    /**
+     * geneName.
+     */
     private String geneName;
 
-    /** Mutation GRCh37 strand */
+    /**
+     * Mutation GRCh37 strand.
+     */
     private String mutationGRCh37Strand;
 
-    /** Primary site */
+    /**
+     * Primary site.
+     */
     private String primarySite;
 
-    /** Mutation zygosity */
+    /**
+     * Mutation zygosity.
+     */
     private String mutationZygosity;
 
-    /** Mutation AA */
+    /**
+     * Mutation AA.
+     */
     private String mutationAA;
 
-    /** Tumour origin */
+    /**
+     * Tumour origin.
+     */
     private String tumourOrigin;
 
-    /** Histology subtype */
+    /**
+     * Histology subtype.
+     */
     private String histologySubtype;
 
-    /** Accession Number */
+    /**
+     * Accession Number.
+     */
     private String accessionNumber;
 
-    /** Mutation ID */
+    /**
+     * Mutation ID.
+     */
     private String mutationID;
 
-    /** Mutation CDS */
+    /**
+     * Mutation CDS.
+     */
     private String mutationCDS;
 
-    /** Sample name */
+    /**
+     * Sample name..
+     */
     private String sampleName;
 
-    /** Primary histology */
+    /**
+     * Primary histology.
+     */
     private String primaryHistology;
 
-    /** Mutation GRCh37 genome position */
+    /**
+     * Mutation GRCh37 genome position.
+     */
     private String mutationGRCh37GenomePosition;
 
-    /** Mutation Description */
+    /**
+     * Mutation Description.
+     */
     private String mutationDescription;
 
-    /** Genome-wide screen */
+    /**
+     * Genome-wide screen.
+     */
     private String genomeWideScreen;
 
-    /** ID_tumour */
-    private String ID_tumour;
+    /**
+     * idTumour.
+     */
+    private String idTumour;
 
-    /** idSample */
+    /**
+     * idSample.
+     */
     private String idSample;
 
-    /** Mutation somatic status */
+    /**
+     * Mutation somatic status.
+     */
     private String mutationSomaticStatus;
 
-    /** Site subtype */
+    /**
+     * Site subtype.
+     */
     private String siteSubtype;
 
-    /** Gene CDS length */
+    /**
+     * Gene CDS length.
+     */
     private int geneCDSLength;
 
-    /** HGNC ID */
+    /**
+     * HGNC ID.
+     */
     private String hgncId;
 
-    /** Pubmed PMID */
+    /**
+     * Pubmed PMID.
+     */
     private String pubmedPMID;
 
     private String sampleSource;
 
-    /** Age (may be null) */
+    /**
+     * Age (may be null).
+     */
     private Float age;
 
-    /** Comments */
+    /**
+     * Comments.
+     */
     private String comments;
 
     private boolean snp;
@@ -229,12 +277,12 @@ public class Cosmic extends ClinicalVariant{
         this.genomeWideScreen = genomeWideScreen;
     }
 
-    public String getID_tumour() {
-        return ID_tumour;
+    public String getIdTumour() {
+        return idTumour;
     }
 
-    public void setID_tumour(String ID_tumour) {
-        this.ID_tumour = ID_tumour;
+    public void setIdTumour(String idTumour) {
+        this.idTumour = idTumour;
     }
 
     public String getIdSample() {
@@ -332,4 +380,5 @@ public class Cosmic extends ClinicalVariant{
     public void setSampleSource(String sampleSource) {
         this.sampleSource = sampleSource;
     }
+
 }

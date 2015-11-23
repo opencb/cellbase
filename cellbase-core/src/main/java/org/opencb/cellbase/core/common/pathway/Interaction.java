@@ -20,12 +20,21 @@ import java.util.List;
 import java.util.Map;
 
 public class Interaction {
-	String id, name, type;
-	Map<String, List<Object>> params;
-	
-	public Interaction(String id, String type, Map<String, List<Object>> params) {
-		this.name = id;
-		this.type = type;
-		this.params = params;
-	}
+
+    private String id, name, type;
+    private Map<String, List<Object>> params;
+
+    public Interaction(String id, String type, Map<String, List<Object>> params) {
+        this.name = id;
+        this.type = type;
+        this.params = params;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

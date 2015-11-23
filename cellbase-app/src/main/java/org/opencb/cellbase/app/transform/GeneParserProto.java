@@ -53,7 +53,7 @@ public class GeneParserProto extends CellBaseParser {
 
     private Path gtfFile;
     private Path proteinFastaFile;
-    private Path cDnaFastaFile ;
+    private Path cDnaFastaFile;
     private Path geneDescriptionFile;
     private Path xrefsFile;
     private Path uniprotIdMappingFile;
@@ -69,7 +69,7 @@ public class GeneParserProto extends CellBaseParser {
     private PreparedStatement sqlQuery;
 
     private int CHUNK_SIZE = 2000;
-    private String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
+    private String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
     private Set<String> indexedSequences;
 
 
@@ -151,7 +151,8 @@ public class GeneParserProto extends CellBaseParser {
         PrintWriter pw = new PrintWriter(new File("/tmp/aaa.json"));
         while ((gtf = gtfReader.read()) != null) {
 
-            if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript") || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
+            if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript") || gtf.getFeature().equals("UTR")
+                    || gtf.getFeature().equals("Selenocysteine")) {
                 continue;
             }
 
@@ -220,7 +221,9 @@ public class GeneParserProto extends CellBaseParser {
                 transcriptBuilder = Transcript.newBuilder()
                         .setId(transcriptId)
                         .setName(gtfAttributes.get("transcript_name"))
-                        .setBiotype((gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource())
+                        .setBiotype((gtfAttributes.get("transcript_biotype") != null)
+                                ? gtfAttributes.get("transcript_biotype")
+                                : gtf.getSource())
                         .setStatus("KNOWN")
                         .setChromosome(transcriptChrosome)
                         .setStart(gtf.getStart())
@@ -238,7 +241,7 @@ public class GeneParserProto extends CellBaseParser {
                         .addAllTfbs(transcriptTfbses);
 //                        .build();
                 String tags;
-                if ((tags = gtf.getAttributes().get("tag"))!=null) {
+                if ((tags = gtf.getAttributes().get("tag")) != null) {
 //                    transcript.setAnnotationFlags(new HashSet<>(Arrays.asList(tags.split(","))));
 //                    transcriptBuilder.setAnnotationFlags(new HashSet<>(Arrays.asList(tags.split(","))));
                 }
@@ -342,8 +345,10 @@ public class GeneParserProto extends CellBaseParser {
                         exonBuilder.setCdnaCodingStart(gtf.getStart() - exonBuilder.getStart() + cdna);
                         exonBuilder.setCdnaCodingEnd(gtf.getEnd() - exonBuilder.getStart() + cdna);
 
-//                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-                        transcriptBuilder.setCdnaCodingEnd(gtf.getEnd() - exonBuilder.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        // Set cdnaCodingEnd to prevent those cases without stop_codon
+//                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                        // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        transcriptBuilder.setCdnaCodingEnd(gtf.getEnd() - exonBuilder.getStart() + cdna);
 
 //                        exon.setCdsStart(cds);
 //                        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
@@ -353,7 +358,7 @@ public class GeneParserProto extends CellBaseParser {
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
 //                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-                        transcriptBuilder.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        transcriptBuilder.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
 //                        exon.setPhase(Integer.valueOf(gtf.getFrame()));
                         exonBuilder.setPhase(Integer.valueOf(gtf.getFrame()));
@@ -384,12 +389,18 @@ public class GeneParserProto extends CellBaseParser {
                         exonBuilder.setGenomicCodingEnd(gtf.getEnd());
 
                         // cDNA coordinates
-//                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
-//                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        exonBuilder.setCdnaCodingStart(exonBuilder.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
-                        exonBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
-//                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-                        transcriptBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        // cdnaCodingStart points to the same base position than genomicCodingEnd
+//                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+//                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        // cdnaCodingStart points to the same base position than genomicCodingEnd
+                        exonBuilder.setCdnaCodingStart(exonBuilder.getEnd() - gtf.getEnd() + cdna);
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        exonBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);
+                        // Set cdnaCodingEnd to prevent those cases without stop_codon
+//                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        transcriptBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);
 
 //                        exon.setCdsStart(cds);
 //                        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
@@ -399,7 +410,7 @@ public class GeneParserProto extends CellBaseParser {
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
 //                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-                        transcriptBuilder.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        transcriptBuilder.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
 //                        exon.setPhase(Integer.valueOf(gtf.getFrame()));
                         exonBuilder.setPhase(Integer.valueOf(gtf.getFrame()));
@@ -417,8 +428,10 @@ public class GeneParserProto extends CellBaseParser {
                         // only first time
 //                        if (transcript.getCdnaCodingStart() == 0) {
                         if (transcriptBuilder.getCdnaCodingStart() == 0) {
-//                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
-                            transcriptBuilder.setCdnaCodingStart(exonBuilder.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
+                            // cdnaCodingStart points to the same base position than genomicCodingEnd
+//                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+                            // cdnaCodingStart points to the same base position than genomicCodingEnd
+                            transcriptBuilder.setCdnaCodingStart(exonBuilder.getEnd() - gtf.getEnd() + cdna);
                         }
                     }
 
@@ -432,7 +445,8 @@ public class GeneParserProto extends CellBaseParser {
                 }
 
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
-//                    setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here, no need to set it at the beginning of next feature
+//                    setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
+// no need to set it at the beginning of next feature
                     if (exonBuilder.getStrand().equals("+")) {
                         // we need to increment 3 nts, the stop_codon length.
 //                        exon.setGenomicCodingEnd(gtf.getEnd());
@@ -449,24 +463,28 @@ public class GeneParserProto extends CellBaseParser {
 //                        transcript.setCdsLength(cds-1);
                         transcriptBuilder.setGenomicCodingEnd(gtf.getEnd());
                         transcriptBuilder.setCdnaCodingEnd(gtf.getEnd() - exonBuilder.getStart() + cdna);
-                        transcriptBuilder.setCdsLength(cds-1);
+                        transcriptBuilder.setCdsLength(cds - 1);
                     } else {
                         // we need to increment 3 nts, the stop_codon length.
 //                        exon.setGenomicCodingStart(gtf.getStart());
-//                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+//                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
 //                        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         exonBuilder.setGenomicCodingStart(gtf.getStart());
-                        exonBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        exonBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);
                         exonBuilder.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
                         // If stop_codon appears, overwrite values
 //                        transcript.setGenomicCodingStart(gtf.getStart());
-//                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+//                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
 //                        transcript.setCdsLength(cds-1);
                         transcriptBuilder.setGenomicCodingStart(gtf.getStart());
-                        transcriptBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        transcriptBuilder.setCdsLength(cds-1);
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        transcriptBuilder.setCdnaCodingEnd(exonBuilder.getEnd() - gtf.getStart() + cdna);
+                        transcriptBuilder.setCdsLength(cds - 1);
                     }
                 }
             }
@@ -488,7 +506,7 @@ public class GeneParserProto extends CellBaseParser {
     }
 
     private Map<String, List<GeneDrugInteraction>> getGeneDrugMap() throws IOException {
-        Map<String,List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
+        Map<String, List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
         BufferedReader br;
         if (geneDrugFile.toFile().getName().endsWith(".gz")) {
             br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(geneDrugFile.toFile()))));
@@ -533,8 +551,8 @@ public class GeneParserProto extends CellBaseParser {
 
         while ((line = br.readLine()) != null) {
             String[] parts = line.split("\t");
-            if(species.getScientificName().equals(parts[2])) {
-                if(parts[7].equals("UP")) {
+            if (species.getScientificName().equals(parts[2])) {
+                if (parts[7].equals("UP")) {
                     addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
                             parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
                 } else if (parts[7].equals("DOWN")) {
@@ -550,8 +568,8 @@ public class GeneParserProto extends CellBaseParser {
         return geneExpressionMap;
     }
 
-    private <T> void addValueToMapElement (Map<String, List<T>> map, String key, T value){
-        if(map.containsKey(key)) {
+    private <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {
+        if (map.containsKey(key)) {
             map.get(key).add(value);
         } else {
             List<T> expressionValueList = new ArrayList<>();
@@ -591,8 +609,12 @@ public class GeneParserProto extends CellBaseParser {
 //            transcriptTfbses = new ArrayList<>();
 //        }
         String[] tfbsNameFields = tfbs.getAttribute().split("=")[1].split(":");
-//        transcriptTfbses.add(new TranscriptTfbs(tfbsNameFields[0], tfbsNameFields[1], chromosome, tfbs.getStart(), tfbs.getEnd(), tfbs.getStrand(), getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript), Float.parseFloat(tfbs.getScore())));
-//        TranscriptTfbs transcriptTfbs = new TranscriptTfbs(tfbsNameFields[0], tfbsNameFields[1], chromosome, tfbs.getStart(), tfbs.getEnd(), tfbs.getStrand(), getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript), Float.parseFloat(tfbs.getScore()));
+//        transcriptTfbses.add(new TranscriptTfbs(tfbsNameFields[0], tfbsNameFields[1], chromosome, tfbs.getStart(), tfbs.getEnd(),
+// tfbs.getStrand(), getRelativeTranscriptTfbsStart(tfbs, transcript),
+// getRelativeTranscriptTfbsEnd(tfbs, transcript), Float.parseFloat(tfbs.getScore())));
+//        TranscriptTfbs transcriptTfbs = new TranscriptTfbs(tfbsNameFields[0], tfbsNameFields[1], chromosome, tfbs.getStart(),
+// tfbs.getEnd(), tfbs.getStrand(), getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript),
+// Float.parseFloat(tfbs.getScore()));
         TranscriptTfbs transcriptTfbs = TranscriptTfbs.newBuilder()
                 .setTfName(tfbsNameFields[0])
                 .setPwm(tfbsNameFields[1])
@@ -635,10 +657,10 @@ public class GeneParserProto extends CellBaseParser {
             } else {
                 relativeEnd = tfbs.getEnd() - transcript.getStart() + 1;
             }
-        }else {
+        } else {
             if (tfbs.getStart() > transcript.getEnd()) {
                 relativeEnd = transcript.getEnd() - tfbs.getStart();
-            }else {
+            } else {
                 relativeEnd = transcript.getEnd() - tfbs.getStart() + 1;
             }
         }
@@ -657,7 +679,7 @@ public class GeneParserProto extends CellBaseParser {
                 }
                 motifsFeatureReader.close();
             }
-        }catch (IOException | NoSuchMethodException | FileFormatException e) {
+        } catch (IOException | NoSuchMethodException | FileFormatException e) {
             logger.error("Error loading TFBS file: " + e.getMessage());
             logger.error("transcript TFBS objects will not be serialized");
             tfbsMap.clear();
@@ -688,12 +710,11 @@ public class GeneParserProto extends CellBaseParser {
     private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's cDNA sequences...");
         Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
-        if(cDnaFastaFile != null && Files.exists(cDnaFastaFile) &&
-                !Files.isDirectory(cDnaFastaFile)) {
+        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)) {
             FastaReader fastaReader = new FastaReader(cDnaFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
-            for(Fasta fasta : fastaList) {
+            for (Fasta fasta : fastaList) {
                 cDnaSequencesMap.put(fasta.getId(), fasta);
             }
         } else {
@@ -706,12 +727,11 @@ public class GeneParserProto extends CellBaseParser {
     private Map<String, Fasta> getProteinSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's protein sequences...");
         Map<String, Fasta> proteinSequencesMap = new HashMap<>();
-        if(proteinFastaFile != null && Files.exists(proteinFastaFile) &&
-                !Files.isDirectory(proteinFastaFile)) {
+        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)) {
             FastaReader fastaReader = new FastaReader(proteinFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
-            for(Fasta fasta : fastaList) {
+            for (Fasta fasta : fastaList) {
                 proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0], fasta);
             }
         } else {
@@ -756,7 +776,7 @@ public class GeneParserProto extends CellBaseParser {
                 if (fields.length >= 19 && fields[19].startsWith("ENST")) {
 //                    System.out.println(Arrays.toString(fields[19].split("; ")));
                     String[] transcripts = fields[19].split("; ");
-                    for(String transcript: transcripts) {
+                    for (String transcript : transcripts) {
                         if (!xrefMap.containsKey(transcript)) {
                             xrefMap.put(transcript, new ArrayList<Xref>());
                         }
@@ -814,7 +834,8 @@ public class GeneParserProto extends CellBaseParser {
 //                if (!tfbsMap.containsKey(fields[0])) {
 //                    tfbsMap.put(fields[0], new ArrayList<TranscriptTfbs>());
 //                }
-//                tfbsMap.get(fields[0]).add(new TranscriptTfbs(fields[1], fields[2], fields[3], Integer.parseInt(fields[4]), Integer.parseInt(fields[5]), fields[6], Integer.parseInt(fields[7]), Integer.parseInt(fields[8]), Float.parseFloat(fields[9])));
+//                tfbsMap.get(fields[0]).add(new TranscriptTfbs(fields[1], fields[2], fields[3], Integer.parseInt(fields[4]),
+// Integer.parseInt(fields[5]), fields[6], Integer.parseInt(fields[7]), Integer.parseInt(fields[8]), Float.parseFloat(fields[9])));
 //            }
 //        }
 //        return tfbsMap;
@@ -828,11 +849,12 @@ public class GeneParserProto extends CellBaseParser {
         logger.info("Connecting to reference genome sequence database ...");
         Class.forName("org.sqlite.JDBC");
         sqlConn = DriverManager.getConnection("jdbc:sqlite:" + genomeSequenceFilePath.getParent().toString() + "/reference_genome.db");
-        if(!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db")) ||
-                Files.size(genomeSequenceFilePath.getParent().resolve("reference_genome.db")) == 0) {
+        if (!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db"))
+                || Files.size(genomeSequenceFilePath.getParent().resolve("reference_genome.db")) == 0) {
             logger.info("Genome sequence database doesn't exists and will be created");
             Statement createTable = sqlConn.createStatement();
-            createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
+            createTable.executeUpdate("CREATE TABLE if not exists "
+                    + "genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
             indexReferenceGenomeFasta(genomeSequenceFilePath);
         }
         indexedSequences = getIndexedSequences();
@@ -864,7 +886,8 @@ public class GeneParserProto extends CellBaseParser {
         String sequenceName = "";
         boolean haplotypeSequenceType = false;
 
-        PreparedStatement sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence, sequenceName) values (?, ?, ?, ?, ?)");
+        PreparedStatement sqlInsert = sqlConn
+                .prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence, sequenceName) values (?, ?, ?, ?, ?)");
         StringBuilder sequenceStringBuilder = new StringBuilder();
         String line;
         while ((line = bufferedReader.readLine()) != null) {
@@ -892,17 +915,18 @@ public class GeneParserProto extends CellBaseParser {
         stm.executeUpdate("CREATE INDEX chunkId_idx on genome_sequence(chunkId)");
     }
 
-    private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert, StringBuilder sequenceStringBuilder) throws SQLException {
+    private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert,
+                                      StringBuilder sequenceStringBuilder) throws SQLException {
         int chunk = 0;
         int start = 1;
         int end = CHUNK_SIZE - 1;
         // if the sequence read is not HAP then we stored in sqlite
-        if(!haplotypeSequenceType && !sequenceName.contains("PATCH")) {
+        if (!haplotypeSequenceType && !sequenceName.contains("PATCH")) {
             logger.info("Indexing genome sequence {} ...", sequenceName);
             sqlInsert.setString(5, sequenceName);
             //chromosome sequence length could shorter than CHUNK_SIZE
             if (sequenceStringBuilder.length() < CHUNK_SIZE) {
-                sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                sqlInsert.setString(1, sequenceName + "_" + chunk + "_" + chunkIdSuffix);
                 sqlInsert.setInt(2, start);
                 sqlInsert.setInt(3, sequenceStringBuilder.length() - 1);
                 sqlInsert.setString(4, sequenceStringBuilder.toString());
@@ -919,11 +943,12 @@ public class GeneParserProto extends CellBaseParser {
                     }
 
                     // chunkId is common for all the options
-                    sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                    sqlInsert.setString(1, sequenceName + "_" + chunk + "_" + chunkIdSuffix);
                     if (start == 1) {   // First chunk of the chromosome
                         // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
 //                                        chunkSequence = sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1);
-//                                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+//                                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"
+//                                          +chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
                         sqlInsert.setInt(2, start);
                         sqlInsert.setInt(3, end);
                         sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1));
@@ -957,10 +982,10 @@ public class GeneParserProto extends CellBaseParser {
         }
     }
 
-    private String getExonSequence(String sequenceName, int start, int end){
+    private String getExonSequence(String sequenceName, int start, int end) {
         String subStr = "";
         if (indexedSequences.contains(sequenceName)) {
-            try{
+            try {
                 StringBuilder stringBuilder = new StringBuilder();
                 ResultSet rs;
                 int regionChunkStart = getChunk(start);
@@ -1046,8 +1071,8 @@ public class GeneParserProto extends CellBaseParser {
                 List<MiRNAGene.MiRNAMature> miRNAMatures = new ArrayList<>();
                 for (String s : mirnaMatures) {
                     mirnaMaturesFields = s.split("\\|");
-                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2])+1;
-                    int cdnaEnd = cdnaStart+mirnaMaturesFields[2].length()-1;
+                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2]) + 1;
+                    int cdnaEnd = cdnaStart + mirnaMaturesFields[2].length() - 1;
                     // Save directly into MiRNAGene object.
 //                    miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2], cdnaStart, cdnaEnd);
                     MiRNAGene.MiRNAMature miRNAMature = MiRNAGene.MiRNAMature.newBuilder()

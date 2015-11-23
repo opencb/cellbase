@@ -25,18 +25,18 @@ import java.util.List;
 
 
 public interface StructuralVariationDBAdaptor extends DBAdaptor {
-	
-	
-	List<StructuralVariation> getAllByRegion(Region region);
-	
-	List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList);
-	
-	
-	List< StructuralVariation> getAllByRegion(Region region, int minLength, int maxLength);
-	
-	List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList, int minLength, int maxLength);
-	
-	
-	List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
-	
+
+
+    List<StructuralVariation> getAllByRegion(Region region);
+
+    List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList);
+
+
+    List<StructuralVariation> getAllByRegion(Region region, int minLength, int maxLength);
+
+    List<List<StructuralVariation>> getAllByRegionList(List<Region> regionList, int minLength, int maxLength);
+
+
+    List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
+
 }

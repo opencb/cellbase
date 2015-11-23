@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.server;
 
-import io.swagger.jaxrs.config.BeanConfig;
 import org.glassfish.jersey.server.ResourceConfig;
 
 /**

@@ -35,5 +35,4 @@ public interface VariantFunctionalScoreDBAdaptor {
 
     List<QueryResult> getAllByVariantList(List<Variant> variantList, QueryOptions queryOptions);
 
-
 }

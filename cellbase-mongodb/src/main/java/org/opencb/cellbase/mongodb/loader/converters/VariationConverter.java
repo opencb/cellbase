@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * Created by imedina on 31/08/14.
  */
+@Deprecated
 public class VariationConverter extends MongoDBTypeConverter<Variation, DBObject> {
 
     private int chunkSize;
@@ -55,9 +56,9 @@ public class VariationConverter extends MongoDBTypeConverter<Variation, DBObject
             int chunkStart = (variation.getStart()) / chunkSize;
             int chunkEnd = (variation.getEnd()) / chunkSize;
 
-            List<String> chunkIdsList = new ArrayList<>(chunkEnd-chunkStart+1);
-            for(int i=chunkStart; i<=chunkEnd; i++) {
-                chunkIdsList.add(variation.getChromosome()+"_"+i+"_"+chunkIdSuffix);
+            List<String> chunkIdsList = new ArrayList<>(chunkEnd - chunkStart + 1);
+            for (int i = chunkStart; i <= chunkEnd; i++) {
+                chunkIdsList.add(variation.getChromosome() + "_" + i + "_" + chunkIdSuffix);
             }
 
             document.put("chunkIds", chunkIdsList);

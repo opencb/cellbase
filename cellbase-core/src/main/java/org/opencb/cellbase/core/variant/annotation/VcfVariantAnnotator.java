@@ -9,7 +9,10 @@ import org.rocksdb.RocksDBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by fjlopez on 28/04/15.
@@ -50,10 +53,10 @@ public class VcfVariantAnnotator implements VariantAnnotator {
      */
     @Override
     public List<VariantAnnotation> run(List<Variant> variantList) {
-        if(variantAnnotationList==null) {
+        if (variantAnnotationList == null) {
             variantAnnotationList = new ArrayList<>(variantList.size());
         }
-        if(!variantAnnotationList.isEmpty()) {
+        if (!variantAnnotationList.isEmpty()) {
             udpateVariantAnnotationList(variantList);
         } else {
             fillVariantAnnotationList(variantList);
@@ -111,16 +114,16 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         }
     }
 
-    private Map<String,Object> getCustomAnnotation(Variant variant) {
+    private Map<String, Object> getCustomAnnotation(Variant variant) {
         try {
             byte[] dbContent = dbIndex.get((variant.getChromosome() + "_" + variant.getStart() + "_"
                     + variant.getReference() + "_" + variant.getAlternate()).getBytes());
-            if(dbContent==null) {
+            if (dbContent == null) {
                 return null;
             } else {
                 ObjectMapper mapper = new ObjectMapper();
-                Map<String,Object> infoAttributes = mapper.readValue(dbContent, Map.class);
-                Map<String,Object> customAnnotation = new HashMap<>(1);
+                Map<String, Object> infoAttributes = mapper.readValue(dbContent, Map.class);
+                Map<String, Object> customAnnotation = new HashMap<>(1);
                 customAnnotation.put(fileId, infoAttributes);
 
                 return customAnnotation;

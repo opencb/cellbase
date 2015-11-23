@@ -85,7 +85,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             }
 
             // Max region size is 10000bp
-            if(region.getEnd() - region.getStart() > 10000) {
+            if (region.getEnd() - region.getStart() > 10000) {
                 region.setEnd(region.getStart() + 10000);
             }
 
@@ -144,7 +144,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
 
                 int pos = 0;
-                if( region.getStart() > chunk.getInt("start")){
+                if (region.getStart() > chunk.getInt("start")) {
                     pos = region.getStart() - chunk.getInt("start");
                 }
 
@@ -162,7 +162,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             BasicDBList resultList = new BasicDBList();
             ConservationScoreRegion conservedRegionChunk;
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(), region.getEnd(), elem.getKey(), elem.getValue());
+                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(),
+                        region.getEnd(), elem.getKey(), elem.getValue());
                 resultList.add(conservedRegionChunk);
             }
             queryResult.setResult(resultList);
@@ -193,7 +194,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             QueryBuilder builder;
             int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
             int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
-            if(regionChunkStart == regionChunkEnd) {
+            if (regionChunkStart == regionChunkEnd) {
                 builder = QueryBuilder.start("_chunkIds")
                         .is(getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
             } else {
@@ -262,13 +263,13 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
             BasicDBList resultList = new BasicDBList();
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                for(Float value : elem.getValue()) {
-                    if(value!=null) {
+                for (Float value : elem.getValue()) {
+                    if (value != null) {
                         resultList.add(new Score(new Double(value), elem.getKey()));
                     }
                 }
             }
-            if(!resultList.isEmpty()) {
+            if (!resultList.isEmpty()) {
                 queryResult.setResult(resultList);
             } else {
                 queryResult.setResult(null);

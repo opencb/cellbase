@@ -70,7 +70,7 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
     }
 
     private void init() {
-         ObjectMapper jsonObjectMapper = new ObjectMapper();
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
         if (!serializeEmptyValues) {
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         }
@@ -80,9 +80,10 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
 
     public void serialize(Object elem, String filename) {
         try {
-            if(bufferedWriters.get(filename) == null) {
+            if (bufferedWriters.get(filename) == null) {
                 Path outputFilePath = outdir.resolve(filename + ".json.gz");
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outputFilePath))));
+                BufferedWriter bw = new BufferedWriter(
+                        new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outputFilePath))));
                 bufferedWriters.put(filename, bw);
             }
             bufferedWriters.get(filename).write(jsonObjectWriter.writeValueAsString(elem));

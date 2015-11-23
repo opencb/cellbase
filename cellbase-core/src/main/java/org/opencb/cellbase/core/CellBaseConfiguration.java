@@ -303,9 +303,13 @@ public class CellBaseConfiguration {
             this.gwasCatalog = gwasCatalog;
         }
 
-        public URLProperties getDbsnp() { return dbsnp; }
+        public URLProperties getDbsnp() {
+            return dbsnp;
+        }
 
-        public void setDbsnp(URLProperties dbsnp) { this.dbsnp = dbsnp; }
+        public void setDbsnp(URLProperties dbsnp) {
+            this.dbsnp = dbsnp;
+        }
 
         public URLProperties getMirbase() {
             return mirbase;
@@ -430,21 +434,24 @@ public class CellBaseConfiguration {
         }
 
         public static class Species {
+
             private String id;
             private String scientificName;
             private String commonName;
             private List<Assembly> assemblies;
             private List<String> data;
 
+
             @Override
             public String toString() {
-                return "Species{" +
-                        "id='" + id + '\'' +
-                        ", scientificName='" + scientificName + '\'' +
-                        ", commonName='" + commonName + '\'' +
-                        ", assemblies=" + assemblies +
-                        ", data=" + data +
-                        '}';
+                final StringBuilder sb = new StringBuilder("Species{");
+                sb.append("id='").append(id).append('\'');
+                sb.append(", scientificName='").append(scientificName).append('\'');
+                sb.append(", commonName='").append(commonName).append('\'');
+                sb.append(", assemblies=").append(assemblies);
+                sb.append(", data=").append(data);
+                sb.append('}');
+                return sb.toString();
             }
 
             public String getId() {

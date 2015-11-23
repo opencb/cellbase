@@ -98,7 +98,8 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Va
 //        List<Future<Integer>> futureAnnotatedVariants = startAnnotators(annotatorExecutorService, variantAnnotatorList);
 //
 //        ExecutorService writerExecutorService = Executors.newSingleThreadExecutor();
-//        VariantAnnotationWriterThread variantAnnotationWriterThread = new VariantAnnotationWriterThread(outputFile, variantAnnotationQueue);
+//        VariantAnnotationWriterThread variantAnnotationWriterThread =
+// new VariantAnnotationWriterThread(outputFile, variantAnnotationQueue);
 //        Future<Integer> futureWrittenVariants = writerExecutorService.submit(variantAnnotationWriterThread);
 //
 //        /*
@@ -129,7 +130,8 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Va
 //        return variantAnnotatorList;
 //    }
 //
-//    private List<Future<Integer>> startAnnotators(ExecutorService executorService, List<CellbaseWSVariantAnnotator> variantAnnotatorList) {
+//    private List<Future<Integer>> startAnnotators(ExecutorService executorService,
+// List<CellbaseWSVariantAnnotator> variantAnnotatorList) {
 //        List<Future<Integer>> futures = new ArrayList<>(numThreads);
 //        for (int i = 0; i < variantAnnotatorList.size(); i++) {
 //            futures.add(executorService.submit(variantAnnotatorList.get(i)));
