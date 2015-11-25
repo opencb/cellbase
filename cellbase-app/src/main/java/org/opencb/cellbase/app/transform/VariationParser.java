@@ -101,6 +101,10 @@ public class VariationParser extends CellBaseParser {
     private int[] variationIdColumnIndexInVariationRelatedFile;
     private BufferedReader[] variationRelatedFileReader;
 
+    private Pattern cnvPattern;
+    private static final String SEQUENCE_GROUP = "seq";
+    private static final String COUNT_GROUP = "count";
+
     private Pattern populationFrequnciesPattern;
     private static final String POPULATION_ID_GROUP = "popId";
     private static final String REFERENCE_FREQUENCY_GROUP = "ref";
@@ -116,6 +120,7 @@ public class VariationParser extends CellBaseParser {
         super(serializer);
         fileSerializer = serializer;
         this.variationDirectoryPath = variationDirectoryPath;
+        cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))+");
         populationFrequnciesPattern = Pattern.compile("(?<" + POPULATION_ID_GROUP + ">\\w+):(?<" + REFERENCE_FREQUENCY_GROUP + ">\\d+.\\d+),(?<" + ALTERNATE_FREQUENCY_GROUP + ">\\d+.\\d+)");
         thousandGenomesPhase1MissedPopulations = new HashSet<>();
         thousandGenomesPhase3MissedPopulations = new HashSet<>();
@@ -156,7 +161,7 @@ public class VariationParser extends CellBaseParser {
         Stopwatch globalStartwatch = Stopwatch.createStarted();
         Stopwatch batchWatch = Stopwatch.createStarted();
         logger.info("Parsing variation file " + variationDirectoryPath.resolve(PREPROCESSED_VARIATION_FILENAME) + " ...");
-        long countprocess = 0;
+        long countprocess = 0, incorrectEndVariants = 0, incorrectAllelesVariants = 0;
         String line;
         while ((line = bufferedReaderVariation.readLine()) != null) {
             String[] variationFields = line.split("\t");
@@ -173,30 +178,46 @@ public class VariationParser extends CellBaseParser {
                 try {
                     // Preparing the variation alleles
                     String[] allelesArray = getAllelesArray(variationFeatureFields);
+                    if (allelesArray == null) {
+                        logger.debug("Incorrect allele string: {}", variationFeatureFields[6]);
+                        incorrectAllelesVariants++;
+                    }else {
+                        // For code sanity save chromosome, start, end and id
+                        String chromosome = seqRegionMap.get(variationFeatureFields[1]);
 
-                    // For code sanity save chromosome, start, end and id
-                    String chromosome = seqRegionMap.get(variationFeatureFields[1]);
+                        if (!chromosome.contains("PATCH") && !chromosome.contains("HSCHR") && !chromosome.contains("contig")) {
+                            int start = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[2]) : 0;
+                            int end = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[3]) : 0;
+                            String id = (variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "";
+                            String reference = (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "";
+                            List<String> alternates = getAlternates(allelesArray);
 
-                    if (!chromosome.contains("PATCH") && !chromosome.contains("HSCHR") && !chromosome.contains("contig")) {
-                        int start = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[2]) : 0;
-                        int end = (variationFeatureFields != null) ? Integer.valueOf(variationFeatureFields[3]) : 0;
-                        String id = (variationFields[2] != null && !variationFields[2].equals("\\N")) ? variationFields[2] : "";
-                        String reference = (allelesArray[0] != null && !allelesArray[0].equals("\\N")) ? allelesArray[0] : "";
-                        String alternate = (allelesArray[1] != null && !allelesArray[1].equals("\\N")) ? allelesArray[1] : "";
+                            List<String> ids = new LinkedList<>();
+                            ids.add(id);
 
-                        // Preparing frequencies
-                        //List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(variationId, allelesArray);
-                        List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(chromosome, start, end, id, reference, alternate);
+                            List<String> hgvs = getHgvs(transcriptVariation);
+                            Map<String, String> additionalAttributes = getAdditionalAttributes(variationFields, variationFeatureFields);
 
-                        // TODO: check that variationFeatureFields is always different to null and intergenic-variant is never used
-                        //List<String> consequenceTypes = (variationFeatureFields != null) ? Arrays.asList(variationFeatureFields[12].split(",")) : Arrays.asList("intergenic_variant");
-                        List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));
-                        String displayConsequenceType = getDisplayConsequenceType(consequenceTypes);
+                            List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
+                            String strand = variationFeatureFields[4];
 
-
-                        // we have all the necessary to construct the 'variation' object
-                        variation = buildVariation(variationFields, variationFeatureFields, chromosome, start, end, id, reference, alternate, transcriptVariation, xrefs, populationFrequencies, allelesArray, consequenceTypes, displayConsequenceType);
-                        fileSerializer.serialize(variation, getOutputFileName(chromosome));
+                            // create a variation object for each alternative
+                            for (String alternate : alternates) {
+                                VariantType type = getVariantType(reference, alternate);
+                                if (type == null) {
+                                    logger.warn("Unrecognized variant type (won't be parsed): {}:{}-{} {}/{}", chromosome, start, end, reference, alternate);
+                                } else if (incorrectStartAndEnd(start, end, reference)) {
+                                    logger.debug("Incorrect variant start-end pair:  {}:{}-{} {}/{}", chromosome, start, end, reference, alternate);
+                                    incorrectEndVariants++;
+                                } else {
+                                    List<PopulationFrequency> populationFrequencies = getPopulationFrequencies(chromosome, start, reference, alternate);
+                                    // build and serialize variant
+                                    variation = buildVariant(chromosome, start, end, reference, alternate, type, ids, hgvs,
+                                            additionalAttributes, conseqTypes, id, xrefs, populationFrequencies, strand);
+                                    fileSerializer.serialize(variation, getOutputFileName(chromosome));
+                                }
+                            }
+                        }
                     }
 
                     if (++countprocess % 100000 == 0 && countprocess != 0) {
@@ -214,14 +235,16 @@ public class VariationParser extends CellBaseParser {
                 }
             }
             // TODO: just for testing, remove
-            //if (countprocess % 100000 == 0) {
-            //    break;
-            //}
+            if (countprocess % 1000000 == 0) {
+                break;
+            }
         }
 
         logger.info("Variation parsing finished");
-        logger.info("Variants processed: " + countprocess);
-        logger.debug("Elapsed time parsing: " + globalStartwatch);
+        logger.info("Variants processed: {}", countprocess);
+        logger.info("Variants not parsed due to incorrect start-end: {}", incorrectEndVariants);
+        logger.info("Variants not parsed due to incorrect alleles: {}", incorrectAllelesVariants);
+        logger.debug("Elapsed time parsing: {}", globalStartwatch);
 
         gzipVariationFiles(variationDirectoryPath);
 
@@ -231,7 +254,6 @@ public class VariationParser extends CellBaseParser {
             e.printStackTrace();
         }
     }
-
 
     private void preprocessInputFiles() throws IOException, InterruptedException {
         preprocessVariationFile();
@@ -253,6 +275,7 @@ public class VariationParser extends CellBaseParser {
             sortFileByNumericColumn(unsortedFile, sortedFile, columnToSortByIndex);
         }
     }
+
 
     private void sortFileByNumericColumn(Path inputFile, Path outputFile, int columnIndex) throws InterruptedException, IOException {
         this.logger.info("Sorting file " + inputFile + " into " + outputFile + " ...");
@@ -328,8 +351,6 @@ public class VariationParser extends CellBaseParser {
             bw.write(line + "\t" + variationId + "\n");
         }
 
-
-
         br.close();
         bw.close();
 
@@ -374,19 +395,19 @@ public class VariationParser extends CellBaseParser {
     }
 
     private Variant buildVariation(String[] variationFields, String[] variationFeatureFields, String chromosome,
-                                     int start, int end, String id, String reference, String alternate,
+                                     int start, int end, String id, String reference, String alternate, VariantType type,
                                      List<TranscriptVariation> transcriptVariation, List<Xref> xrefs,
                                      List<PopulationFrequency> populationFrequencies, String[] allelesArray,
-                                     List<String> consequenceTypes, String displayConsequenceType)
+                                     List<String> consequenceTypes) throws IllegalArgumentException
     {
         Variant variant;
         variant = new Variant(chromosome, start, end, reference, alternate);
         List<String> ids = new LinkedList<>();
         ids.add(id);
         variant.setIds(ids);
-        variant.setType(VariantType.SNV);
+        variant.setType(type);
 
-        List<String> hgvs = null; // rellenar una lista con todos los hgvs que vienen en transcript variation
+        List<String> hgvs = null; // TODO: rellenar una lista con todos los hgvs que vienen en transcript variation
         Map<String, String> additionalAttributes = new HashMap<>();
         String ancestralAllele = (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "";
         additionalAttributes.put("Ensembl Ancestral Allele", ancestralAllele);
@@ -394,8 +415,8 @@ public class VariationParser extends CellBaseParser {
         additionalAttributes.put("Ensembl Evidence", (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "" );
         additionalAttributes.put("Minor Allele", (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
         additionalAttributes.put("Minor Allele Freq", (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
-        // Poner un String separado con comas con todos los conseq types
-        // quitar displayConsequenceTypes
+        // TODO: Poner un String separado con comas con todos los conseq types
+
         List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
 
         VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
@@ -403,22 +424,96 @@ public class VariationParser extends CellBaseParser {
                 Collections.EMPTY_LIST, new VariantTraitAssociation(), additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(variationFeatureFields[4]);
-        // TODO: fields that are not in Variant
 
-//        variant.setMinorAllele((variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
-//        variant.setMinorAlleleFreq((variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
-//
-//        variation = new Variation(id, chromosome, "SNV", start, end, variationFeatureFields[4],
-//                reference, alternate, variationFeatureFields[6],
-//                (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "",
-//                displayConsequenceType,
-////							species, assembly, source, version,
-//                consequenceTypes, transcriptVariation, null, null, populationFrequencies, xrefs, /*"featureId",*/
-//                (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "",
-//                (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "",
-//                (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "",
-//                (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
         return variant;
+    }
+
+    public Variant buildVariant(String chromosome, int start, int end, String reference, String alternate, VariantType type,
+                                List<String> ids, List<String> hgvs, Map<String, String> additionalAttributes,
+                                List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
+                                List<PopulationFrequency> populationFrequencies, String strand)
+    {
+        Variant variant = new Variant(chromosome, start, end, reference, alternate);
+        variant.setIds(ids);
+        variant.setType(type);
+        VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
+                xrefs, hgvs, conseqTypes, populationFrequencies, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
+                Collections.EMPTY_LIST, new VariantTraitAssociation(), additionalAttributes);
+        variant.setAnnotation(variantAnnotation);
+        variant.setStrand(strand);
+
+        return variant;
+    }
+
+    private VariantType getVariantType(String reference, String alternate) {
+        if (reference.length() != alternate.length()) {
+            return VariantType.INDEL;
+        }else {
+            if (reference.equals('-') || alternate.equals('-')) {
+                return VariantType.INDEL;
+            }else if (reference.contains("(") || alternate.contains("(")) {
+                return checkSnv(reference, alternate);
+            }else {
+                return VariantType.SNV;
+            }
+        }
+    }
+
+    private VariantType checkSnv(String reference, String alternate) {
+        Matcher referenceMatcher = cnvPattern.matcher(reference);
+        Matcher alternateMatcher = cnvPattern.matcher(alternate);
+        logger.debug("Checking CNV variant {}/{}", reference, alternate);
+        if (referenceMatcher.matches() && alternateMatcher.matches()) {
+            if (referenceMatcher.group(SEQUENCE_GROUP).equals(alternateMatcher.group(SEQUENCE_GROUP)) &&
+                    !referenceMatcher.group(COUNT_GROUP).equals(alternateMatcher.group(COUNT_GROUP)))
+            {
+                return VariantType.CNV;
+            }
+        }else if (referenceMatcher.matches()) {
+            if (referenceMatcher.group(SEQUENCE_GROUP).equals(alternate)) {
+                return VariantType.CNV;
+            }
+        }else if (alternateMatcher.matches()) {
+            if (alternateMatcher.group(SEQUENCE_GROUP).equals(reference)) {
+                return VariantType.CNV;
+            }
+        }
+        return null;
+    }
+
+    private boolean incorrectStartAndEnd(int start, int end, String reference) {
+        if (end < start) {
+            if (!reference.equals("") && !reference.equals("-")) {
+                return true;
+            }else {
+                // TODO: aqui falta algo
+            }
+        }
+        return false;
+    }
+
+    private List<String> getAlternates(String[] allelesArray) {
+        List<String> alternates = new ArrayList<>(allelesArray.length - 1);
+        for (int i = 1; i < allelesArray.length; i++) {
+            alternates.add((allelesArray[i] != null && !allelesArray[i].equals("\\N")) ? allelesArray[i] : "");
+        }
+        return alternates;
+    }
+
+    private List<String> getHgvs(List<TranscriptVariation> transcriptVariations) {
+        List<String> hgvs = new ArrayList<>();
+        for (TranscriptVariation transcriptVariation : transcriptVariations) {
+            if (transcriptVariation.getHgvsGenomic() != null){
+                hgvs.add(transcriptVariation.getHgvsGenomic());
+            }
+            if (transcriptVariation.getHgvsTranscript() != null){
+                hgvs.add(transcriptVariation.getHgvsTranscript());
+            }
+            if (transcriptVariation.getHgvsProtein() != null){
+                hgvs.add(transcriptVariation.getHgvsProtein());
+            }
+        }
+        return hgvs;
     }
 
     private List<ConsequenceType> getConsequenceTypes(List<TranscriptVariation> transcriptVariations) {
@@ -459,37 +554,31 @@ public class VariationParser extends CellBaseParser {
 
     private List<Score> getSubstitutionScores(TranscriptVariation transcriptVariation) {
         List<Score> substitionScores = new ArrayList<>();
-        substitionScores.add(new Score((double)transcriptVariation.getPolyphenScore(), "Polyphen", ""));
-        substitionScores.add(new Score((double)transcriptVariation.getSiftScore(), "Sift", ""));
+        substitionScores.add(new Score((double) transcriptVariation.getPolyphenScore(), "Polyphen", ""));
+        substitionScores.add(new Score((double) transcriptVariation.getSiftScore(), "Sift", ""));
         return substitionScores;
     }
 
-    private String getDisplayConsequenceType(List<String> consequenceTypes) {
-        String displayConsequenceType = null;
-        if (consequenceTypes.size() == 1) {
-            displayConsequenceType = consequenceTypes.get(0);
-        } else {
-            for (String cons : consequenceTypes) {
-                if (!cons.equals("intergenic_variant")) {
-                    displayConsequenceType = cons;
-                    break;
-                }
-            }
-        }
-        return displayConsequenceType;
-    }
-
     private String[] getAllelesArray(String[] variationFeatureFields) {
-        String[] allelesArray;
+        String[] allelesArray = null;
         if (variationFeatureFields != null && variationFeatureFields[6] != null) {
             allelesArray = variationFeatureFields[6].split("/");
-            if (allelesArray.length == 1) {    // In some cases no '/' exists, ie. in 'HGMD_MUTATION'
-                allelesArray = new String[]{"", ""};
+            if (allelesArray.length == 1) {
+                allelesArray = null;
             }
-        } else {
-            allelesArray = new String[]{"", ""};
         }
         return allelesArray;
+    }
+
+    private Map<String, String> getAdditionalAttributes(String[] variationFields, String[] variationFeatureFields) {
+        Map<String, String> additionalAttributes = new HashMap<>();
+        String ancestralAllele = (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "";
+        additionalAttributes.put("Ensembl Ancestral Allele", ancestralAllele);
+        additionalAttributes.put("Ensembl Validation Status", (variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "");
+        additionalAttributes.put("Ensembl Evidence", (variationFeatureFields[20] != null && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
+        additionalAttributes.put("Minor Allele", (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
+        additionalAttributes.put("Minor Allele Freq", (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
+        return additionalAttributes;
     }
 
     private List<Xref> getXrefs(Map<String, String> sourceMap, int variationId) throws IOException, SQLException {
@@ -579,9 +668,9 @@ public class VariationParser extends CellBaseParser {
         return endOfFileOfVariationRelatedFiles[fileId];
     }
 
-    private List<PopulationFrequency> getPopulationFrequencies(String chromosome, int start, int end, String id, String referenceAllele, String alternativeAllele) throws IOException {
+    private List<PopulationFrequency> getPopulationFrequencies(String chromosome, int start, String referenceAllele, String alternativeAllele) throws IOException {
         List<PopulationFrequency> populationFrequencies;
-        String variationFrequenciesString = getVariationFrequenciesString(chromosome, start, end, id);
+        String variationFrequenciesString = getVariationFrequenciesString(chromosome, start, referenceAllele, alternativeAllele);
         if (variationFrequenciesString != null) {
             populationFrequencies = parseVariationFrequenciesString(variationFrequenciesString, referenceAllele, alternativeAllele);
         } else{
@@ -590,22 +679,23 @@ public class VariationParser extends CellBaseParser {
         return populationFrequencies;
     }
 
-    private String getVariationFrequenciesString(String chromosome, int start, int end, String id) throws IOException {
+    private String getVariationFrequenciesString(String chromosome, int start, String reference, String alternate) throws IOException {
         try {
             if(frequenciesTabixReader != null) {
-                TabixReader.Iterator frequenciesFileIterator = frequenciesTabixReader.query(chromosome + ":" + start + "-" + end);
+                TabixReader.Iterator frequenciesFileIterator = frequenciesTabixReader.query(chromosome, start, start);
                 if (frequenciesFileIterator != null) {
                     String variationFrequenciesLine = frequenciesFileIterator.next();
                     while (variationFrequenciesLine != null) {
                         String[] variationFrequenciesFields = variationFrequenciesLine.split("\t");
-                        if (variationFrequenciesFields[3].equals(id)) {
-                            return variationFrequenciesFields[4];
+                        if (Integer.valueOf(variationFrequenciesFields[1]) == start && variationFrequenciesFields[3].equals(reference) && variationFrequenciesFields[4].equals(alternate)) {
+                            return variationFrequenciesFields[6];
                         }
                         variationFrequenciesLine = frequenciesFileIterator.next();
                     }
                 }
             }
         } catch (Exception e) {
+            logger.error("Error getting variation {}:{} {}/{} frequencies: {}", chromosome, start, reference, alternate, e.getMessage());
         }
         return null;
     }
