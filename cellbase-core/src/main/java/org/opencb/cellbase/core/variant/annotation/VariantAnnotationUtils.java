@@ -106,6 +106,7 @@ public class VariantAnnotationUtils {
     public static Map<Integer, String> siftDescriptions = new HashMap<>();
     public static Map<Integer, String> polyphenDescriptions = new HashMap<>();
     public static Map<String, Integer> soSeverity = new HashMap<>();
+    private static Map<String, String> soNamesCorrections = new HashMap<>();
 
     static {
 
@@ -268,6 +269,8 @@ public class VariantAnnotationUtils {
         soSeverity.put("feature_truncation", 2);
         soSeverity.put("intergenic_variant", 1);
 
+        soNamesCorrections.put("nc_transcript_variant", "non_coding_transcript_variant");
+        soNamesCorrections.put("non_coding_exon_variant", "non_coding_transcript_exon_variant");
     }
 
     public static Boolean isStopCodon(String codon) {
@@ -280,9 +283,15 @@ public class VariantAnnotationUtils {
     public static List<SequenceOntologyTerm> getSequenceOntologyTerms(Iterable<String> SoNames) throws SOTermNotAvailableException{
         List<SequenceOntologyTerm> sequenceOntologyTerms = new ArrayList<>();
         for (String name : SoNames) {
+            name = fixSONameIfNeeded(name);
             sequenceOntologyTerms.add(newSequenceOntologyTerm(name));
         }
         return sequenceOntologyTerms;
+    }
+
+    private static String fixSONameIfNeeded(String name) {
+        String fixedName = soNamesCorrections.get(name);
+        return fixedName == null ? name : fixedName;
     }
 
     public static SequenceOntologyTerm newSequenceOntologyTerm(String name) throws SOTermNotAvailableException{
