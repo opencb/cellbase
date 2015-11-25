@@ -16,15 +16,16 @@
 
 package org.opencb.cellbase.mongodb.db.variation;
 
-import com.mongodb.DBObject;
+
 import com.mongodb.QueryBuilder;
+import org.bson.Document;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,10 +53,10 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("id").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
         return executeQueryList2(idList, queries, options);
@@ -71,21 +72,21 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
     @Override
     public QueryResult getAllByPhenotype(String phenotype, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
-        return executeQuery(phenotype, builder.get(), options);
+        return executeQuery(phenotype, new Document(builder.get().toMap()), options);
     }
 
     @Override
     public QueryResult getAllByGene(String gene, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start("associatedGenes").is(gene);
-        return executeQuery(gene, builder.get(), options);
+        return executeQuery(gene, new Document(builder.get().toMap()), options);
     }
 
     @Override
     public List<QueryResult> getAllByGeneList(List<String> geneList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(geneList.size());
+        List<Document> queries = new ArrayList<>(geneList.size());
         for (String id : geneList) {
             QueryBuilder builder = QueryBuilder.start("associatedGenes").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
         return executeQueryList2(geneList, queries, options);
     }
@@ -94,15 +95,15 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
     @Override
     public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options) {
         QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
-        return executeQuery(phenotype, builder.get(), options);
+        return executeQuery(phenotype, new Document(builder.get().toMap()), options);
     }
 
     @Override
     public List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(phenotypeList.size());
+        List<Document> queries = new ArrayList<>(phenotypeList.size());
         for (String id : phenotypeList) {
             QueryBuilder builder = QueryBuilder.start("phenotype").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
         return executeQueryList2(phenotypeList, queries, options);
     }
@@ -140,13 +141,13 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
 
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
-            QueryBuilder builder = QueryBuilder.start("chromosome") .is(region.getChromosome())
+            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome())
                     .and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
         }
 

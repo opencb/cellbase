@@ -17,8 +17,8 @@
 package org.opencb.cellbase.mongodb.db.core;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
@@ -26,10 +26,10 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDBCollection;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
@@ -108,10 +108,10 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(idList.size());
+        List<Document> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("name").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
 //        options = addExcludeReturnFields("transcripts", options);
@@ -136,10 +136,10 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(idList.size());
+        List<Document> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("dbReference.id").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
 //        options = addExcludeReturnFields("transcripts", options);
@@ -154,7 +154,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public List<QueryResult> getAllFunctionPredictionByEnsemblTranscriptIdList(List<String> transcriptIdList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(transcriptIdList.size());
+        List<Document> queries = new ArrayList<>(transcriptIdList.size());
 
         if (options.containsKey("aaPosition")) {
             if (options.containsKey("aaChange")) {
@@ -167,7 +167,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
         for (String id : transcriptIdList) {
             QueryBuilder builder = QueryBuilder.start("transcriptId").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
 //        options = addExcludeReturnFields("transcripts", options);
@@ -177,16 +177,17 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     public QueryResult getFunctionPredictionByAaChange(String transcriptId, Integer aaPosition, String newAa, QueryOptions queryOptions) {
 
         QueryBuilder builder = QueryBuilder.start("transcriptId").is(transcriptId);
-        QueryResult allChangesQueryResult = executeQuery(transcriptId, builder.get(), queryOptions, proteinFunctionalPredictionCollection);
+        QueryResult allChangesQueryResult = executeQuery(transcriptId,
+                new Document(builder.get().toMap()), queryOptions, proteinFunctionalPredictionCollection);
 
         QueryResult proteinSubstitionScoresQueryResult = new QueryResult();
         proteinSubstitionScoresQueryResult.setDbTime(allChangesQueryResult.getDbTime());
         proteinSubstitionScoresQueryResult.setId(transcriptId + "-" + aaPosition + "-" + newAa);
 
         String currentAaShortName = aaShortName.get(newAa);
-        Map aaPositions = ((HashMap) ((BasicDBObject) allChangesQueryResult.getResult().get(0)).get("aaPositions"));
+        Map aaPositions = ((HashMap) ((Document) allChangesQueryResult.getResult().get(0)).get("aaPositions"));
         if (allChangesQueryResult.getNumResults() > 0 && currentAaShortName != null && aaPositions != null) {
-            DBObject positionDBObject = (BasicDBObject) aaPositions.get(Integer.toString(aaPosition));
+            Document positionDBObject = (Document) aaPositions.get(Integer.toString(aaPosition));
             if (positionDBObject != null) {
                 Object aaObject = positionDBObject.get(currentAaShortName);
                 if (aaObject != null) {
@@ -227,44 +228,44 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         QueryResult proteinVariantData = null;
         String shortAlternativeAa = aaShortName.get(aaAlternate);
         if (shortAlternativeAa != null) {
-            List<DBObject> pipeline = new ArrayList<>();
+            List<Document> pipeline = new ArrayList<>();
 
 //            BasicDBList andDBList1 = new BasicDBList();
-//            andDBList1.add(new BasicDBObject("dbReference.id", ensemblTranscriptId));
-//            andDBList1.add(new BasicDBObject("feature.location.position.position", position));
-//            andDBList1.add(new BasicDBObject("feature.variation", shortAlternativeAa));
-//            pipeline.add(new BasicDBObject("$match", new BasicDBObject("$and", andDBList1)));
+//            andDBList1.add(new Document("dbReference.id", ensemblTranscriptId));
+//            andDBList1.add(new Document("feature.location.position.position", position));
+//            andDBList1.add(new Document("feature.variation", shortAlternativeAa));
+//            pipeline.add(new Document("$match", new Document("$and", andDBList1)));
 
-            pipeline.add(new BasicDBObject("$match", new BasicDBObject("dbReference.id", ensemblTranscriptId)));
+            pipeline.add(new Document("$match", new Document("dbReference.id", ensemblTranscriptId)));
 
-            BasicDBObject projection = new BasicDBObject();
+            Document projection = new Document();
             projection.put("accession", 1);
             projection.put("keyword", 1);
             projection.put("feature", 1);
-            pipeline.add(new BasicDBObject("$project", projection));
+            pipeline.add(new Document("$project", projection));
 
-            pipeline.add(new BasicDBObject("$unwind", "$feature"));
+            pipeline.add(new Document("$unwind", "$feature"));
 
             BasicDBList andDBList2 = new BasicDBList();
-            andDBList2.add(new BasicDBObject("feature.location.position.position", position));
-            andDBList2.add(new BasicDBObject("feature.variation", shortAlternativeAa));
-            BasicDBObject firstOr = new BasicDBObject("$and", andDBList2);
+            andDBList2.add(new Document("feature.location.position.position", position));
+            andDBList2.add(new Document("feature.variation", shortAlternativeAa));
+            Document firstOr = new Document("$and", andDBList2);
             BasicDBList andDBList3 = new BasicDBList();
-            andDBList3.add(new BasicDBObject("feature.location.end.position", new BasicDBObject("$gte", position)));
-            andDBList3.add(new BasicDBObject("feature.location.begin.position", new BasicDBObject("$lte", position)));
-            BasicDBObject secondOr = new BasicDBObject();
+            andDBList3.add(new Document("feature.location.end.position", new Document("$gte", position)));
+            andDBList3.add(new Document("feature.location.begin.position", new Document("$lte", position)));
+            Document secondOr = new Document();
             secondOr.put("$and", andDBList3);
             BasicDBList orList = new BasicDBList();
             orList.add(firstOr);
             orList.add(secondOr);
-            pipeline.add(new BasicDBObject("$match", new BasicDBObject("$or", orList)));
-//            pipeline.add(new BasicDBObject("$match", firstOr));
+            pipeline.add(new Document("$match", new Document("$or", orList)));
+//            pipeline.add(new Document("$match", firstOr));
 //
-            DBObject groupFields = new BasicDBObject();
+            Document groupFields = new Document();
             groupFields.put("_id", "$accession");
-            groupFields.put("keyword", new BasicDBObject("$addToSet", "$keyword"));
-            groupFields.put("feature", new BasicDBObject("$addToSet", "$feature"));
-            pipeline.add(new BasicDBObject("$group", groupFields));
+            groupFields.put("keyword", new Document("$addToSet", "$keyword"));
+            groupFields.put("feature", new Document("$addToSet", "$feature"));
+            pipeline.add(new Document("$group", groupFields));
 
 
             //TODO:terminar el pipeline de agregacion
@@ -272,36 +273,36 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //                    .and("feature.location.position.position").is(position)
 //                    .and("feature.variation").is(shortAlternativeAa);
 //
-//            BasicDBObject firstOr = new BasicDBObject();
+//            Document firstOr = new Document();
 //            firstOr.put("location.position.position", position);
 //            firstOr.put("variation", shortAlternativeAa);
 //
 //            BasicDBList andList = new BasicDBList();
-//            andList.add(new BasicDBObject("location.end.position", new BasicDBObject("$gte", position)));
-//            andList.add(new BasicDBObject("location.begin.position", new BasicDBObject("$lte", position)));
-//            BasicDBObject secondOr = new BasicDBObject();
+//            andList.add(new Document("location.end.position", new Document("$gte", position)));
+//            andList.add(new Document("location.begin.position", new Document("$lte", position)));
+//            Document secondOr = new Document();
 //            secondOr.put("$and", andList);
 //
 //            BasicDBList orList = new BasicDBList();
 //            orList.add(firstOr);
 //            orList.add(secondOr);
 //
-//            BasicDBObject elemMatch = new BasicDBObject();
-//            elemMatch.put("$elemMatch", new BasicDBObject("$or", orList));
+//            Document elemMatch = new Document();
+//            elemMatch.put("$elemMatch", new Document("$or", orList));
 //
-//            BasicDBObject projection = new BasicDBObject();
+//            Document projection = new Document();
 //            projection.put("feature", elemMatch);
 //
 //            QueryOptions localQueryOptions = new QueryOptions();
 //            localQueryOptions.put("elemMatch",projection);
 //            localQueryOptions.put("include","accession,keyword,feature");
 //            proteinVariantData = executeQuery(ensemblTranscriptId + "_" + String.valueOf(position) + "_"
-//                            + aaAlternate, builder.get(), localQueryOptions);
+//                            + aaAlternate, new Document(builder.get().toMap()), localQueryOptions);
             proteinVariantData = executeAggregation2(ensemblTranscriptId + "_" + String.valueOf(position) + "_"
                     + aaAlternate, pipeline, new QueryOptions());
             if (proteinVariantData.getNumResults() > 0) {
                 proteinVariantAnnotation = processProteinVariantData(proteinVariantAnnotation, shortAlternativeAa,
-                        (BasicDBObject) proteinVariantData.getResult().get(0));
+                        (Document) proteinVariantData.getResult().get(0));
             }
         }
 
@@ -318,24 +319,24 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     private ProteinVariantAnnotation processProteinVariantData(ProteinVariantAnnotation proteinVariantAnnotation,
                                                                String shortAlternativeAa,
-                                                               BasicDBObject proteinVariantData) {
+                                                               Document proteinVariantData) {
         proteinVariantAnnotation.setUniprotAccession((String) ((BasicDBList) proteinVariantData.get("_id")).get(0));
 
         proteinVariantAnnotation.setKeywords(new ArrayList<>());
         for (Object keywordObject : ((BasicDBList) ((BasicDBList) proteinVariantData.get("keyword")).get(0))) {
-//            proteinVariantAnnotation.addUniprotKeyword((String)((BasicDBObject) keywordObject).get("value"));
-            proteinVariantAnnotation.getKeywords().add((String) ((BasicDBObject) keywordObject).get("value"));
+//            proteinVariantAnnotation.addUniprotKeyword((String)((Document) keywordObject).get("value"));
+            proteinVariantAnnotation.getKeywords().add((String) ((Document) keywordObject).get("value"));
         }
 
         proteinVariantAnnotation.setFeatures(new ArrayList<>());
         for (Object featureObject : (BasicDBList) proteinVariantData.get("feature")) {
-            BasicDBObject featureDBObject = (BasicDBObject) featureObject;
+            Document featureDBObject = (Document) featureObject;
             String type = (String) featureDBObject.get("type");
 
             BasicDBList variationDBList = (BasicDBList) featureDBObject.get("variation");
             //Check and process protein variants within the "feature" list
 //            if(type!=null && type.equals("sequence variant") &&
-//                    ((int)((BasicDBObject)((BasicDBObject) featureDBObject.get("location")).get("position"))
+//                    ((int)((Document)((Document) featureDBObject.get("location")).get("position"))
 //                            .get("position"))==proteinVariantAnnotation.getPosition()) {
             // Current feature corresponds to current variant
             if (variationDBList != null && variationDBList.contains(shortAlternativeAa)) {
@@ -349,17 +350,17 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                 proteinFeature.setDescription((String) featureDBObject.get("description"));
 //                proteinFeature.setRef((String) featureDBObject.get("ref"));
                 if (featureDBObject.get("location") != null) {
-                    if (((BasicDBObject) featureDBObject.get("location")).get("begin") != null) {
-                        proteinFeature.setStart((int) ((BasicDBObject) ((BasicDBObject) featureDBObject.get("location"))
+                    if (((Document) featureDBObject.get("location")).get("begin") != null) {
+                        proteinFeature.setStart((int) ((Document) ((Document) featureDBObject.get("location"))
                                 .get("begin")).get("position"));
-                        if (((BasicDBObject) featureDBObject.get("location")).get("end") != null) {
-                            proteinFeature.setEnd((int) ((BasicDBObject) ((BasicDBObject) featureDBObject.get("location"))
+                        if (((Document) featureDBObject.get("location")).get("end") != null) {
+                            proteinFeature.setEnd((int) ((Document) ((Document) featureDBObject.get("location"))
                                     .get("end")).get("position"));
                         } else {
                             proteinFeature.setEnd(proteinFeature.getStart());
                         }
-                    } else if (((BasicDBObject) featureDBObject.get("location")).get("position") != null) {
-                        proteinFeature.setStart((int) ((BasicDBObject) ((BasicDBObject) featureDBObject.get("location"))
+                    } else if (((Document) featureDBObject.get("location")).get("position") != null) {
+                        proteinFeature.setStart((int) ((Document) ((Document) featureDBObject.get("location"))
                                 .get("position")).get("position"));
                         proteinFeature.setEnd(proteinFeature.getStart());
                     }
@@ -378,7 +379,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         List<Score> scoreList = null;
         if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
             scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
-            DBObject proteinSubstitutionScores = (DBObject) proteinSubstitutionScoresQueryResult.getResult().get(0);
+            Document proteinSubstitutionScores = (Document) proteinSubstitutionScoresQueryResult.getResult().get(0);
             if (proteinSubstitutionScores.get("ss") != null) {
                 scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
                         "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(proteinSubstitutionScores.get("se"))));

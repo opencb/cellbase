@@ -17,9 +17,10 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import com.mongodb.DBObject;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
@@ -27,7 +28,7 @@ import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -69,7 +70,7 @@ public class IdWSServer extends GenericRestWSServer {
             List<QueryResult> dbNameList = xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
                 for (Object o : dbNameList.get(i).getResult()) {
-                    if (((DBObject) o).get("id").equals(list.get(i))) {
+                    if (((Document) o).get("id").equals(list.get(i))) {
                         List<Object> objectList = new ArrayList<>(1);
                         objectList.add(o);
                         dbNameList.get(i).setResult(objectList);

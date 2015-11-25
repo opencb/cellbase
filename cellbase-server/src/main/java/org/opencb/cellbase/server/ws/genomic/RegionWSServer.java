@@ -35,7 +35,7 @@ import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -293,7 +293,7 @@ public class RegionWSServer extends GenericRestWSServer {
 //                    queryResult.setDbTime(clinicalQueryResult.getDbTime());
 //                    BasicDBList basicDBList = new BasicDBList();
 //                    int numResults = 0;
-//                    for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinicalQueryResult.getResult()) {
+//                    for (Document clinicalRecord : (List<Document>) clinicalQueryResult.getResult()) {
 //                        if(clinicalRecord.containsKey("clinvarList")) {
 //                            basicDBList.add(clinicalRecord);
 //                            numResults += 1;

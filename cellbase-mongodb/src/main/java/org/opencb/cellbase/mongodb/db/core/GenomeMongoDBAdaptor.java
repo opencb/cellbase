@@ -16,18 +16,18 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDBCollection;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +55,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
 //        String[] speciesArray = applicationProperties.getProperty("SPECIES").split(",");
 
-//        List<DBObject> queries = new ArrayList<>(1);
+//        List<Document> queries = new ArrayList<>(1);
 //        for (String id : idList) {
         QueryBuilder builder = QueryBuilder.start("species").is(id);
 
@@ -63,13 +63,13 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 //        }
 
 //        options = addExcludeReturnFields("transcripts", options);
-        return executeQuery(id, builder.get(), options);
+        return executeQuery(id, new Document(builder.get().toMap()), options);
 
     }
 
     @Override
     public QueryResult getGenomeInfo(QueryOptions options) {
-        return executeQuery(species, new BasicDBObject(), options);
+        return executeQuery(species, new Document(), options);
     }
 
 
@@ -81,7 +81,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     @Override
     public List<QueryResult> getAllByChromosomeIdList(List<String> idList, QueryOptions options) {
         List<QueryResult> qrList = new ArrayList<>(idList.size());
-//        List<DBObject[]> commandList = new ArrayList<>();
+//        List<Document[]> commandList = new ArrayList<>();
         if (options == null) {
             options = new QueryOptions("include", Arrays.asList("chromosomes.$"));
         } else {
@@ -89,12 +89,12 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             options.addToListOption("include", "chromosomes.$");
         }
         for (String id : idList) {
-            DBObject dbObject = new BasicDBObject("chromosomes", new BasicDBObject("$elemMatch", new BasicDBObject("name", id)));
+            Document dbObject = new Document("chromosomes", new Document("$elemMatch", new Document("name", id)));
             QueryResult queryResult = executeQuery(id, dbObject, options);
             qrList.add(queryResult);
-//            DBObject[] commands = new DBObject[3];
-//            DBObject match = new BasicDBObject("$match", new BasicDBObject("chromosomes.name", id));
-//            DBObject unwind = new BasicDBObject("$unwind", "$chromosomes");
+//            Document[] commands = new Document[3];
+//            Document match = new Document("$match", new Document("chromosomes.name", id));
+//            Document unwind = new Document("$unwind", "$chromosomes");
 //            commands[0] = match;
 //            commands[1] = unwind;
 //            commands[2] = match;
@@ -117,7 +117,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         String chunkIdSuffix = this.chunkSize / 1000 + "k";
         /****/
 
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
         List<String> chunkIds;
         List<Integer> integerChunkIds;
@@ -143,10 +143,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 //            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosome()).and("_chunkIds").in(chunkIds);
             QueryBuilder builder = QueryBuilder.start("_chunkIds").in(chunkIds);
             /****/
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
 
-            logger.info(builder.get().toString());
+            logger.info(new Document(builder.get().toMap()).toString());
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options, genomeSequenceCollection);
@@ -157,7 +157,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             List list = queryResult.getResult();
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < list.size(); j++) {
-                BasicDBObject chunk = (BasicDBObject) list.get(j);
+                Document chunk = (Document) list.get(j);
                 sb.append(chunk.get("sequence"));
             }
 
@@ -175,13 +175,13 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                     subStr = sb.toString().substring(startStr - 1, endStr - 1);
                 }
             }
-            logger.info("((BasicDBObject)list.get(0)).getString(\"sequenceType\") = {}",
-                    ((BasicDBObject) list.get(0)).getString("sequenceType"));
-            logger.info("((BasicDBObject)list.get(0)).getString(\"assembly\") = {}", ((BasicDBObject) list.get(0)).getString("assembly"));
+            logger.info("((Document)list.get(0)).getString(\"sequenceType\") = {}",
+                    ((Document) list.get(0)).getString("sequenceType"));
+            logger.info("((Document)list.get(0)).getString(\"assembly\") = {}", ((Document) list.get(0)).getString("assembly"));
             GenomeSequenceFeature genomeSequenceFeature =
                     new GenomeSequenceFeature(region.getChromosome(), region.getStart(), region.getEnd(), 1,
-                            ((BasicDBObject) list.get(0)).getString("sequenceType"),
-                            ((BasicDBObject) list.get(0)).getString("assembly"), subStr);
+                            ((Document) list.get(0)).getString("sequenceType"),
+                            ((Document) list.get(0)).getString("assembly"), subStr);
 
             queryResult.setResult(Arrays.asList(genomeSequenceFeature));
         }

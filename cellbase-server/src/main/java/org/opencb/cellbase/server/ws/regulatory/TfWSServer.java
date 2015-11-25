@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;

@@ -17,7 +17,7 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import com.mongodb.BasicDBObject;
+import org.bson.Document;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -33,8 +33,8 @@ import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryResponse;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -137,7 +137,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/stats")
-    @ApiOperation(httpMethod = "GET", value = "Get summary stats about the specified gene(s)", response = BasicDBObject.class)
+    @ApiOperation(httpMethod = "GET", value = "Get summary stats about the specified gene(s)", response = Document.class)
     public Response getStatsByEnsemblId(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
