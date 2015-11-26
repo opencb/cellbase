@@ -22,10 +22,13 @@ import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.CpGIsland;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variation.StructuralVariation;
+import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.db.api.CpGIslandDBAdaptor;
 import org.opencb.cellbase.core.db.api.CytobandDBAdaptor;
 import org.opencb.cellbase.core.db.api.core.*;
+import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
@@ -35,6 +38,7 @@ import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -506,6 +510,18 @@ public class RegionWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    @GET
+    @Path("/{chrRegionId}/conservation2")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores")
+    public Response conservation2(@DefaultValue("") @QueryParam("region") String region) {
+        org.opencb.cellbase.core.api.ConservedRegionDBAdaptor conservedRegionDBAdaptor =
+                dbAdaptorFactory2.getConservedRegionDBAdaptor(this.species, this.assembly);
+
+        Query query = new Query();
+        query.append(org.opencb.cellbase.core.api.ConservedRegionDBAdaptor.QueryParams.REGION.key(), region);
+        return createOkResponse(conservedRegionDBAdaptor.nativeGet(query, queryOptions));
     }
 
 
