@@ -97,6 +97,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
         Query query = new Query();
         query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.REGION.key(), region);
+//        query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
         query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
         query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.XREFS.key(), xrefs);
 

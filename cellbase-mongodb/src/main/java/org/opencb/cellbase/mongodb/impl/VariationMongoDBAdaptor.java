@@ -19,8 +19,8 @@ package org.opencb.cellbase.mongodb.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.biodata.models.variation.Variation;
+import org.opencb.cellbase.core.api.VariationDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -32,19 +32,19 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Created by imedina on 25/11/15.
+ * Created by imedina on 26/11/15.
  */
-public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<Gene> {
+public class VariationMongoDBAdaptor extends MongoDBAdaptor implements VariationDBAdaptor<Variation> {
 
-    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection("variation");
 
-        logger.debug("GeneMongoDBAdaptor: in 'constructor'");
+        logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
-    public QueryResult<Gene> next(Query query, QueryOptions options) {
+    public QueryResult<Variation> next(Query query, QueryOptions options) {
         return null;
     }
 
@@ -70,11 +70,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult stats() {
-        return null;
-    }
-
-    @Override
     public QueryResult stats(Query query) {
         return null;
     }
@@ -85,29 +80,22 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult<Gene> get(Query query, QueryOptions options) {
-
+    public QueryResult<Variation> get(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public List<QueryResult<Gene>> get(List<Query> queries, QueryOptions options) {
+    public List<QueryResult<Variation>> get(List<Query> queries, QueryOptions options) {
         return null;
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
-    }
-
-    @Override
-    public List<QueryResult> nativeGet(List<Query> queries, QueryOptions options) {
         return null;
     }
 
     @Override
-    public Iterator<Gene> iterator() {
+    public Iterator<Variation> iterator() {
         return null;
     }
 
@@ -117,7 +105,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public Iterator<Gene> iterator(Query query, QueryOptions options) {
+    public Iterator<Variation> iterator(Query query, QueryOptions options) {
         return null;
     }
 
@@ -154,13 +142,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
-        createOrQuery(query, QueryParams.ID.key(), "id", andBsonList);
-        createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(query, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
-        createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+        createRegionQuery(query, VariationMongoDBAdaptor.QueryParams.REGION.key(), andBsonList);
+        createOrQuery(query, VariationMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, VariationMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
-        System.out.println("andBsonList: " + andBsonList.size());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

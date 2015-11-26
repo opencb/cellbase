@@ -166,11 +166,11 @@ public abstract class DBAdaptorFactory {
 ////
 ////    public abstract RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species, String assembly);
 //
-//
-//    public abstract VariationDBAdaptor getVariationDBAdaptor(String species);
-//
-//    public abstract VariationDBAdaptor getVariationDBAdaptor(String species, String assembly);
-//
+
+    public abstract VariationDBAdaptor getVariationDBAdaptor(String species);
+
+    public abstract VariationDBAdaptor getVariationDBAdaptor(String species, String assembly);
+
 //
 //    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
 //
