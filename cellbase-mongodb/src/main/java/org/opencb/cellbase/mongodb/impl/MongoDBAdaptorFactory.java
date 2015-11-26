@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.api.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
@@ -149,17 +150,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //        return new GenomeMongoDBAdaptor(species, assembly, mongoDatastore);
 //    }
 //
-//
-//    @Override
-//    public ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species) {
-//        return getConservedRegionDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
+
+    @Override
+    public ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species) {
+        return getConservedRegionDBAdaptor(species, null);
+    }
+
+    @Override
+    public ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
 
 
     @Override
