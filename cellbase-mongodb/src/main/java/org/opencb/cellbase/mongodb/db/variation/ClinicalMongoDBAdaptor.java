@@ -27,6 +27,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
@@ -673,7 +674,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private QueryResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
 
-        List<Document> pipeline = new ArrayList<>();
+        List<Bson> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
                 new Document("$exists", 1))));
 //        pipeline.add(new Document("$match", new Document("clinvarSet", new Document("$exists", 1))));
@@ -700,7 +701,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private QueryResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
 
-        List<Document> pipeline = new ArrayList<>();
+        List<Bson> pipeline = new ArrayList<>();
         // Select only GWAS documents
         pipeline.add(new Document("$match", new Document("snpIdCurrent", new Document("$exists", 1))));
         pipeline.add(new Document("$unwind", "$studies"));

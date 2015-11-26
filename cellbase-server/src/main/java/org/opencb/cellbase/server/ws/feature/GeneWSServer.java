@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
 
@@ -86,6 +87,24 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/count2")
+    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
+    public Response count2(@DefaultValue("") @QueryParam("region") String region,
+                           @DefaultValue("") @QueryParam("biotype") String biotype,
+                           @DefaultValue("") @QueryParam("xrefs") String xrefs) {
+//        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+        org.opencb.cellbase.core.api.GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+
+        Query query = new Query();
+        query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.REGION.key(), region);
+        query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
+        query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.XREFS.key(), xrefs);
+
+        return createOkResponse(geneDBAdaptor.count(query));
+    }
+
+
+    @GET
     @Path("/stats")
     @Override
     public Response stats() {
@@ -133,6 +152,19 @@ public class GeneWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    @GET
+    @Path("/{geneId}/info2")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class)
+    public Response getByEnsemblId2(@PathParam("geneId") String geneId) {
+        parseQueryParams();
+        org.opencb.cellbase.core.api.GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+
+        Query query = new Query();
+        query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.ID.key(), geneId);
+
+        return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
     }
 
     @GET

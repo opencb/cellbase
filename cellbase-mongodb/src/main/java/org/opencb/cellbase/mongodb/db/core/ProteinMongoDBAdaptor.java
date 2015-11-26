@@ -20,6 +20,7 @@ import com.mongodb.BasicDBList;
 import org.bson.Document;
 
 import com.mongodb.QueryBuilder;
+import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -228,7 +229,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         QueryResult proteinVariantData = null;
         String shortAlternativeAa = aaShortName.get(aaAlternate);
         if (shortAlternativeAa != null) {
-            List<Document> pipeline = new ArrayList<>();
+            List<Bson> pipeline = new ArrayList<>();
 
 //            BasicDBList andDBList1 = new BasicDBList();
 //            andDBList1.add(new Document("dbReference.id", ensemblTranscriptId));

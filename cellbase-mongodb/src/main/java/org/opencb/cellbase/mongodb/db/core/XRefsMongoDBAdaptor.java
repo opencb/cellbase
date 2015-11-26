@@ -19,6 +19,7 @@ package org.opencb.cellbase.mongodb.db.core;
 import com.mongodb.BasicDBList;
 import com.mongodb.QueryBuilder;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -118,9 +119,9 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 // Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}},
 // {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}},
 // {$project:{"transcripts.biotype":1}})
-        List<List<Document>> commandsList = new ArrayList<>(ids.size());
+        List<List<Bson>> commandsList = new ArrayList<>(ids.size());
         for (String id : ids) {
-            List<Document> commands = new ArrayList<>(ids.size());
+            List<Bson> commands = new ArrayList<>(ids.size());
 
             Document match = new Document("$match", new Document("transcripts.xrefs.id", id));
             Document unwind = new Document("$unwind", "$transcripts");

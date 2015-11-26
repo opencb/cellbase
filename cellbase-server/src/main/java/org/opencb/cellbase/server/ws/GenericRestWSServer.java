@@ -130,6 +130,7 @@ public class GenericRestWSServer implements IWSServer {
      * factory for creating adaptors like GeneDBAdaptor
      */
     protected static DBAdaptorFactory dbAdaptorFactory;
+    protected static org.opencb.cellbase.core.api.DBAdaptorFactory dbAdaptorFactory2;
 
     private static final int LIMIT_DEFAULT = 1000;
     private static final int LIMIT_MAX = 5000;
@@ -151,6 +152,7 @@ public class GenericRestWSServer implements IWSServer {
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
             dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+            dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

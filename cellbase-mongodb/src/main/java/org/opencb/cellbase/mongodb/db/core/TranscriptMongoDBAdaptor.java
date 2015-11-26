@@ -19,6 +19,7 @@ package org.opencb.cellbase.mongodb.db.core;
 import org.bson.Document;
 
 import com.mongodb.QueryBuilder;
+import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.common.Position;
@@ -111,9 +112,9 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"},
 // {$match: {"transcripts.id": "ENST00000343281"}})
 
-        List<List<Document>> commandsList = new ArrayList<>(idList.size());
+        List<List<Bson>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
-            List<Document> commandList = new ArrayList<>(3);
+            List<Bson> commandList = new ArrayList<>(3);
             Document match = new Document("$match", new Document("transcripts.id", id));
             Document unwind = new Document("$unwind", "$transcripts");
 //            Document project = new Document("$project", new Document("transcripts", 1));
@@ -136,10 +137,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"},
 // {$match: {"transcripts.id": "ENST00000343281"}})
 
-        List<List<Document>> commandsList = new ArrayList<>(idList.size());
+        List<List<Bson>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
 //            Document[] commands = new Document[3];
-            List<Document> commandList = new ArrayList<>(3);
+            List<Bson> commandList = new ArrayList<>(3);
             Document match = new Document("$match", new Document("transcripts.xrefs.id", id));
             Document unwind = new Document("$unwind", "$transcripts");
 //            commands[0] = match;

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.mongodb.db;
+package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -64,6 +66,39 @@ public class MongoDBAdaptor {
                 this.assembly = "default";
             }
         }
+    }
+
+    protected void createRegionQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            List<Region> regions = Region.parseRegions(query.getString(queryParam));
+            if (regions != null && regions.size() > 0) {
+                List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                for (Region region : regions) {
+                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                    Bson start = Filters.lte("start", region.getEnd());
+                    Bson end = Filters.gte("end", region.getStart());
+                    orRegionBsonList.add(Filters.and(chromosome, start, end));
+                }
+                andBsonList.add(Filters.or(orRegionBsonList));
+            }
+        }
+    }
+
+    protected void createOrQuery(Query query, String queryParam, String mongodbField, List<Bson> andBsonList) {
+//        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            List<String> queryList = query.getAsStringList(queryParam);
+            if (queryList != null && !queryList.isEmpty()) {
+                if (queryList.size() == 1) {
+                    andBsonList.add(Filters.eq(mongodbField, queryList.get(0)));
+                } else {
+                    List<Bson> orBsonList = new ArrayList<>(queryList.size());
+                    for (String queryItem : queryList) {
+                        orBsonList.add(Filters.eq(mongodbField, queryItem));
+                    }
+                    andBsonList.add(Filters.or(orBsonList));
+                }
+            }
+//        }
     }
 
     protected QueryResult executeDistinct(Object id, String fields, Document query) {
