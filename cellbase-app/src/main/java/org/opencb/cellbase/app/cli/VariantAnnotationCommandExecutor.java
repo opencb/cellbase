@@ -147,7 +147,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 dataWriter = new VepFormatWriter(output.toString());
             }
 
-            ParallelTaskRunner<Variant, VariantAnnotation> runner =
+            ParallelTaskRunner<Variant, Variant> runner =
                     new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
 
             runner.run();
