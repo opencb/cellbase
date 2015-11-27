@@ -85,7 +85,7 @@ public class MongoDBAdaptor {
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongodbField, List<Bson> andBsonList) {
-//        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<String> queryList = query.getAsStringList(queryParam);
             if (queryList != null && !queryList.isEmpty()) {
                 if (queryList.size() == 1) {
@@ -99,6 +99,7 @@ public class MongoDBAdaptor {
                 }
             }
 //        }
+        }
     }
 
     protected QueryResult executeDistinct(Object id, String fields, Document query) {

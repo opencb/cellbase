@@ -60,7 +60,7 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     @Override
     Iterator<T> iterator();
 
-    Iterator nativeIiterator();
+    Iterator nativeIterator();
 
     Iterator<T> iterator(Query query, QueryOptions options);
 

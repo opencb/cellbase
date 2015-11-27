@@ -5,11 +5,16 @@ import org.opencb.commons.datastore.core.QueryParam;
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by swaathi on 26/11/15.
+ * Created by swaathi on 27/11/15.
  */
-public interface ConservedRegionDBAdaptor extends CellBaseDBAdaptor {
+public interface TranscriptDBAdaptor<Gene> extends FeatureDBAdaptor<Gene> {
+
     enum QueryParams implements QueryParam {
-        REGION("region", TEXT_ARRAY, "");
+        ID("transcripts.id", TEXT_ARRAY, ""),
+        NAME("transcripts.name", TEXT_ARRAY, ""),
+        REGION("region", TEXT_ARRAY, ""),
+        BIOTYPE("transcripts.biotype", TEXT_ARRAY, ""),
+        XREFS("xrefs", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -38,3 +43,5 @@ public interface ConservedRegionDBAdaptor extends CellBaseDBAdaptor {
         }
     }
 }
+
+

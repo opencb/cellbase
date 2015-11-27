@@ -3,7 +3,7 @@ package org.opencb.cellbase.mongodb.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.cellbase.core.api.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.core.api.ConservationDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 /**
  * Created by swaathi on 26/11/15.
  */
-public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
+public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("conservation");
@@ -87,7 +87,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
-    public Iterator nativeIiterator() {
+    public Iterator nativeIterator() {
         return null;
     }
 
@@ -123,7 +123,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, ConservedRegionDBAdaptor.QueryParams.REGION.key(), andBsonList);
+        createRegionQuery(query, ConservationDBAdaptor.QueryParams.REGION.key(), andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
