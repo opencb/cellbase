@@ -84,20 +84,35 @@ public class MongoDBAdaptor {
         }
     }
 
+    protected void createRegionQuery(Query query, String queryParam, int chunkSize, List<Bson> andBsonList) {
+        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            List<Region> regions = Region.parseRegions(query.getString(queryParam));
+            if (regions != null && regions.size() > 0) {
+                List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                for (Region region : regions) {
+                    Bson chunk = Filters.eq("_chunkIds", getChunkId(region.getStart(), chunkSize));
+                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                    Bson start = Filters.lte("start", region.getEnd());
+                    Bson end = Filters.gte("end", region.getStart());
+                    orRegionBsonList.add(Filters.and(chromosome, start, end));
+                }
+                andBsonList.add(Filters.or(orRegionBsonList));
+            }
+        }
+    }
+
     protected void createOrQuery(Query query, String queryParam, String mongodbField, List<Bson> andBsonList) {
         if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<String> queryList = query.getAsStringList(queryParam);
-//            if (queryList != null && !queryList.isEmpty()) {
-                if (queryList.size() == 1) {
-                    andBsonList.add(Filters.eq(mongodbField, queryList.get(0)));
-                } else {
-                    List<Bson> orBsonList = new ArrayList<>(queryList.size());
-                    for (String queryItem : queryList) {
-                        orBsonList.add(Filters.eq(mongodbField, queryItem));
-                    }
-                    andBsonList.add(Filters.or(orBsonList));
+            if (queryList.size() == 1) {
+                andBsonList.add(Filters.eq(mongodbField, queryList.get(0)));
+            } else {
+                List<Bson> orBsonList = new ArrayList<>(queryList.size());
+                for (String queryItem : queryList) {
+                    orBsonList.add(Filters.eq(mongodbField, queryItem));
                 }
-//            }
+                andBsonList.add(Filters.or(orBsonList));
+            }
         }
     }
 

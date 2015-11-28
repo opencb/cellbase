@@ -106,7 +106,7 @@ public class CliOptionsParser {
         @Parameter(names = {"-v", "--verbose"}, description = "[Deprecated] Set the level of the logging", required = false, arity = 1)
         public boolean verbose;
 
-        @Parameter(names = {"-C", "--conf"}, description = "CellBase configuration.json file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.json for an example", required = false, arity = 1)
+        @Parameter(names = {"-C", "--config"}, description = "CellBase configuration.json file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.json for an example", required = false, arity = 1)
         public String conf;
 
     }
@@ -200,31 +200,43 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
         public String assembly = "GRCh37";
 
-        @Parameter(names = {"--type"}, description = "", required = false, arity = 1)
+        @Parameter(names = {"-t", "--type"}, description = "", required = true, arity = 1)
         public String category;
 
         @Parameter(names = {"--id"}, description = "", required = false, arity = 1)
         public String id;
 
-        @Parameter(names = {"--resource"}, description = "", required = false, arity = 1)
+        @Parameter(names = {"-r", "--resource"}, description = "", required = true, arity = 1)
         public String resource;
 
-        @Parameter(names = {"-o", "--output-file"}, description = "", required = false, arity = 1)
-        public String outputFile;
+        @DynamicParameter(names = {"-O", "--options"}, description = "Filter options in the form of -Oa=b, eg. -Obiotype=protein_coding,pseudogene -Oregion=3:44444-55555", required = false)
+        public Map<String, String> options = new HashMap<>();
 
-        @Deprecated
-        @Parameter(names = {"--variant-annot"}, description = "[DEPRECATED]", required = false)
-        public boolean annotate;
+        // QueryOptions parameters
+        @Parameter(names = {"-i", "--include"}, description = "Comma separated list of fields to be included, eg. chromsome,start,end", required = false)
+        public String include;
 
-        @Deprecated
-        @Parameter(names = {"-i", "--input-file"}, description = "[DEPRECATED]", required = false, arity = 1)
-        public String inputFile;
+        @Parameter(names = {"-e", "--exclude"}, description = "Comma separated list of fields to be excluded, eg. chromsome,start,end", required = false)
+        public String exclude;
+
+        @Parameter(names = {"--skip"}, description = "Skip the number of records specified", required = false)
+        public int skip;
+
+        @Parameter(names = {"--limit"}, description = "Return the number of records specified", required = false)
+        public int limit;
+
+        @Parameter(names = {"-c", "--count"}, description = "Comma separated list of annotators to be excluded", required = false, arity = 0)
+        public boolean count;
+
+
+        @Parameter(names = {"-o", "--output-file"}, description = "Write result into the file path", required = false, arity = 1)
+        public String output;
 
         @Deprecated
         @Parameter(names = {"--host-url"}, description = "[DEPRECATED]", required = false, arity = 1)

@@ -7,7 +7,8 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by swaathi on 26/11/15.
  */
-public interface ConservedRegionDBAdaptor extends CellBaseDBAdaptor {
+public interface ConservationDBAdaptor extends CellBaseDBAdaptor {
+
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, "");
 

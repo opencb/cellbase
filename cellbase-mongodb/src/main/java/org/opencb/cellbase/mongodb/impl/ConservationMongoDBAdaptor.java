@@ -3,7 +3,7 @@ package org.opencb.cellbase.mongodb.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.cellbase.core.api.ConservedRegionDBAdaptor;
+import org.opencb.cellbase.core.api.ConservationDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -17,7 +17,8 @@ import java.util.function.Consumer;
 /**
  * Created by swaathi on 26/11/15.
  */
-public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservedRegionDBAdaptor {
+public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
+
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("conservation");
@@ -31,22 +32,12 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
-    public QueryResult<Long> count() {
-        return null;
-    }
-
-    @Override
     public QueryResult<Long> count(Query query) {
         return null;
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
-    }
-
-    @Override
-    public QueryResult stats() {
         return null;
     }
 
@@ -74,11 +65,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.find(bson, options);
-    }
-
-    @Override
-    public List<QueryResult> nativeGet(List list, QueryOptions options) {
-        return null;
     }
 
     @Override
@@ -123,7 +109,9 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, ConservedRegionDBAdaptor.QueryParams.REGION.key(), andBsonList);
+
+        createRegionQuery(query, ConservationDBAdaptor.QueryParams.REGION.key(), andBsonList);
+
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

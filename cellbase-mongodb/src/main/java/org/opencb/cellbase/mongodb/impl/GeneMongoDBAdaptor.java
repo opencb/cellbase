@@ -70,11 +70,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult stats() {
-        return null;
-    }
-
-    @Override
     public QueryResult stats(Query query) {
         return null;
     }
@@ -99,11 +94,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.find(bson, options);
-    }
-
-    @Override
-    public List<QueryResult> nativeGet(List<Query> queries, QueryOptions options) {
-        return null;
     }
 
     @Override
@@ -160,7 +150,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         createOrQuery(query, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
-        System.out.println("andBsonList: " + andBsonList.size());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

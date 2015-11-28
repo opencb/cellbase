@@ -515,13 +515,13 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{chrRegionId}/conservation2")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores")
-    public Response conservation2(@DefaultValue("") @QueryParam("region") String region) {
-        org.opencb.cellbase.core.api.ConservedRegionDBAdaptor conservedRegionDBAdaptor =
+    public Response conservation2(@PathParam("chrRegionId") String region) {
+        ConservationDBAdaptor conservationDBAdaptor =
                 dbAdaptorFactory2.getConservedRegionDBAdaptor(this.species, this.assembly);
 
         Query query = new Query();
-        query.append(org.opencb.cellbase.core.api.ConservedRegionDBAdaptor.QueryParams.REGION.key(), region);
-        return createOkResponse(conservedRegionDBAdaptor.nativeGet(query, queryOptions));
+        query.append(ConservationDBAdaptor.QueryParams.REGION.key(), region);
+        return createOkResponse(conservationDBAdaptor.nativeGet(query, queryOptions));
     }
 
 

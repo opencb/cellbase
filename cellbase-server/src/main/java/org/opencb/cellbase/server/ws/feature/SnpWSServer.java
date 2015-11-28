@@ -73,7 +73,7 @@ public class SnpWSServer extends GenericRestWSServer {
                 dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
         Query query = new Query();
         query.append(org.opencb.cellbase.core.api.VariationDBAdaptor.QueryParams.REGION.key(), region);
-        return createOkResponse(variationDBAdaptor1.count());
+        return createOkResponse(variationDBAdaptor1.count(query));
     }
 
     @GET
