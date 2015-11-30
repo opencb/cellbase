@@ -28,6 +28,7 @@ public interface VariationDBAdaptor<Variation> extends FeatureDBAdaptor<Variatio
     enum QueryParams implements QueryParam {
         ID("id", TEXT_ARRAY, ""),
         REGION("region", TEXT_ARRAY, ""),
+        GENE("gene", TEXT_ARRAY, ""),
         CONSEQUENCE_TYPE("consequenceType", TEXT_ARRAY, ""),
         TRANSCRIPT_CONSEQUENCE_TYPE("transcripts.consequenceType", TEXT_ARRAY, ""),
         XREFS("xrefs", TEXT_ARRAY, "");

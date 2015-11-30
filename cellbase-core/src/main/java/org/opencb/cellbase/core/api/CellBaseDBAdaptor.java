@@ -55,7 +55,14 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     QueryResult<T> get(Query query, QueryOptions options);
 
-    List<QueryResult<T>> get(List<Query> queries, QueryOptions options);
+    default List<QueryResult<T>> get(List<Query> queries, QueryOptions options) {
+        Objects.requireNonNull(queries);
+        List<QueryResult<T>> queryResults = new ArrayList<>(queries.size());
+        for (Query query : queries) {
+            queryResults.add(get(query, options));
+        }
+        return queryResults;
+    }
 
     QueryResult nativeGet(Query query, QueryOptions options);
 
@@ -71,9 +78,13 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
 
     @Override
-    Iterator<T> iterator();
+    default Iterator<T> iterator() {
+        return iterator(new Query(), new QueryOptions());
+    }
 
-    Iterator nativeIiterator();
+    default Iterator nativeIiterator() {
+        return nativeIterator(new Query(), new QueryOptions());
+    }
 
     Iterator<T> iterator(Query query, QueryOptions options);
 
