@@ -177,15 +177,11 @@ public abstract class DBAdaptorFactory {
 //    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
 //
 //
-<<<<<<< HEAD
+
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species);
 
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly);
-=======
-    public abstract ConservationDBAdaptor getConservedRegionDBAdaptor(String species);
 
-    public abstract ConservationDBAdaptor getConservedRegionDBAdaptor(String species, String assembly);
->>>>>>> c0e10ac80e8d8eab76d06141a8316a71ab50c560
 
 //
 //    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species);
