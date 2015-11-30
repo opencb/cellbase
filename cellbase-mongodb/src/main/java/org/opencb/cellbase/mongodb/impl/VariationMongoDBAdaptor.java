@@ -100,7 +100,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
-    public Iterator nativeIiterator() {
+    public Iterator nativeIterator() {
         return null;
     }
 

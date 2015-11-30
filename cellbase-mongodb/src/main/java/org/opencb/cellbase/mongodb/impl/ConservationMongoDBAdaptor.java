@@ -18,10 +18,6 @@ import java.util.function.Consumer;
  * Created by swaathi on 26/11/15.
  */
 public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
-<<<<<<< HEAD
-=======
-
->>>>>>> c0e10ac80e8d8eab76d06141a8316a71ab50c560
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("conservation");
@@ -112,13 +108,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-<<<<<<< HEAD
         createRegionQuery(query, ConservationDBAdaptor.QueryParams.REGION.key(), andBsonList);
-=======
-
         createRegionQuery(query, ConservationDBAdaptor.QueryParams.REGION.key(), andBsonList);
-
->>>>>>> c0e10ac80e8d8eab76d06141a8316a71ab50c560
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

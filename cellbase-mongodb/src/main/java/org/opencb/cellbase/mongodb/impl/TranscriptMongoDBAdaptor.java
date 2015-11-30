@@ -27,11 +27,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult<Long> count() {
-        return mongoDBCollection.count();
-    }
-
-    @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
 
@@ -40,11 +35,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
-    }
-
-    @Override
-    public QueryResult stats() {
         return null;
     }
 
@@ -72,11 +62,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.find(bson, options);
-    }
-
-    @Override
-    public List<QueryResult> nativeGet(List list, QueryOptions options) {
-        return null;
     }
 
     @Override
