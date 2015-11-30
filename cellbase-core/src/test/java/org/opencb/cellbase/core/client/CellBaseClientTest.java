@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
@@ -32,6 +33,7 @@ import org.opencb.datastore.core.QueryResult;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class CellBaseClientTest extends TestCase {
 
@@ -41,6 +43,15 @@ public class CellBaseClientTest extends TestCase {
         CellBaseClient cellBaseClient = new CellBaseClient("wwwdev.ebi.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
         QueryResponse<QueryResult<Gene>> gene =
                 cellBaseClient.getGene(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.region, Arrays.asList(new Region("3", 1000, 200000)), null);
+    }
+
+    @Test
+    public void testGetSequence() throws URISyntaxException, IOException {
+        //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/region/3:1000-200000/gene?of=json
+        CellBaseClient cellBaseClient = new CellBaseClient("bioinfo.hpc.cam.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
+        QueryResponse<QueryResult<GenomeSequenceFeature>> sequence =
+                cellBaseClient.getSequence(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.region, Collections.singletonList(new Region("20", 60522, 60622)), null);
+        assertEquals(sequence.getResponse().get(0).getResult().get(0).getSequence(), "TCCCCCCTGGCACAAATGGTGCTGGACCACGAGGGGCCAGAGAACAAAGCCTTGGGCGTGGTCCCAACTCCCAAATGTTTGAACACACAAGTTGGAATATT");
     }
 
     @Test
