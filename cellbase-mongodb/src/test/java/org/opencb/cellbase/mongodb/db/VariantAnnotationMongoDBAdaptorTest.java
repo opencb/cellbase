@@ -90,12 +90,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16123409, "-", "A"))
 //                , new QueryOptions());
 
-        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
-        vepFormatWriter.open();
-        vepFormatWriter.pre();
-        vepFormatWriter.write(variantAnnotationList);
-        vepFormatWriter.post();
-        vepFormatWriter.close();
+//        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
+//        vepFormatWriter.open();
+//        vepFormatWriter.pre();
+//        vepFormatWriter.write(variantAnnotationList);
+//        vepFormatWriter.post();
+//        vepFormatWriter.close();
 
 
 

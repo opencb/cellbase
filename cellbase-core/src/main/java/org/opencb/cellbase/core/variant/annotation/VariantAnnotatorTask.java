@@ -17,10 +17,8 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.commons.run.ParallelTaskRunner;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

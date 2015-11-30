@@ -35,7 +35,6 @@ import java.util.List;
 public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
     private CellBaseClient cellBaseClient;
-    private List<VariantAnnotation> variantAnnotationList;
 
     private QueryOptions queryOptions;
 
@@ -55,7 +54,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         return false;
     }
 
-    public List<VariantAnnotation> run(List<Variant> variantList) {
+    public void run(List<Variant> variantList) {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
         QueryResponse<QueryResult<VariantAnnotation>> response;
         queryOptions.put("post", true);
@@ -64,19 +63,20 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
                     CellBaseClient.SubCategory.variant, variantList, queryOptions);
 //                    CellBaseClient.SubCategory.variant, variantList, new QueryOptions("post", true));
         } catch (IOException e) {
-            return null;
+            e.printStackTrace();
+            return;
         }
 
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
-        for (QueryResult<VariantAnnotation> queryResult : response.getResponse()) {
-            if (queryResult.getResult().size() > 0) {
-                variantAnnotationList.add(queryResult.getResult().get(0));
+        List<QueryResult<VariantAnnotation>> queryResultList = response.getResponse();
+        for (int i = 0; i < queryResultList.size(); i++) {
+            if (queryResultList.get(i).getResult().size() > 0) {
+                variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
             } else {
-                logger.warn("Emtpy result for '{}'", queryResult.getId());
+                logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
             }
         }
-        return variantAnnotationList;
     }
 
 
@@ -105,7 +105,4 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         }
     }
 
-    public void setVariantAnnotationList(List<VariantAnnotation> variantAnnotationList) {
-        this.variantAnnotationList = variantAnnotationList;
-    }
 }
