@@ -3,6 +3,7 @@ package org.opencb.cellbase.mongodb.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -17,19 +18,18 @@ import java.util.function.Consumer;
 /**
  * Created by swaathi on 27/11/15.
  */
-public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor {
+public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor<Transcript> {
 
     public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
-        logger.info("TranscriptMongoDBAdaptor: in 'constructor'");
+        logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
-
         return mongoDBCollection.count(document);
     }
 
@@ -81,7 +81,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
@@ -126,8 +127,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(), andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "transcripts.id", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "transcripts.name", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
         createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
         createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 

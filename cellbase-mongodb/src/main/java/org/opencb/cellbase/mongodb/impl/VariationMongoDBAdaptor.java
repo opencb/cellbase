@@ -29,6 +29,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -85,11 +86,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
-    public List<QueryResult<Variation>> get(List<Query> queries, QueryOptions options) {
-        return null;
-    }
-
-    @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         return null;
     }
@@ -111,7 +107,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
@@ -121,7 +118,11 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
-
+        Objects.requireNonNull(action);
+        Iterator iterator = nativeIterator(query, options);
+        while (iterator.hasNext()) {
+            action.accept(iterator.next());
+        }
     }
 
     @Override
@@ -144,6 +145,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
         createRegionQuery(query, VariationMongoDBAdaptor.QueryParams.REGION.key(), andBsonList);
         createOrQuery(query, VariationMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, VariationMongoDBAdaptor.QueryParams.GENE.key(), "transcriptVariations.transcriptId", andBsonList);
+        createOrQuery(query, VariationMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(), "consequenceTypes", andBsonList);
         createOrQuery(query, VariationMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
         if (andBsonList.size() > 0) {

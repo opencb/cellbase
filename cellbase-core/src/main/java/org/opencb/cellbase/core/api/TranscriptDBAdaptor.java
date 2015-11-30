@@ -7,13 +7,13 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by swaathi on 27/11/15.
  */
-public interface TranscriptDBAdaptor<Gene> extends FeatureDBAdaptor<Gene> {
+public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transcript> {
 
     enum QueryParams implements QueryParam {
-        ID("transcripts.id", TEXT_ARRAY, ""),
-        NAME("transcripts.name", TEXT_ARRAY, ""),
+        ID("id", TEXT_ARRAY, ""),
+        NAME("name", TEXT_ARRAY, ""),
         REGION("region", TEXT_ARRAY, ""),
-        BIOTYPE("transcripts.biotype", TEXT_ARRAY, ""),
+        BIOTYPE("biotype", TEXT_ARRAY, ""),
         XREFS("xrefs", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {

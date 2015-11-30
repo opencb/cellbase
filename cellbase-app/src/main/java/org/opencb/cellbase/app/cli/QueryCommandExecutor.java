@@ -16,12 +16,17 @@
 
 package org.opencb.cellbase.app.cli;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.VariationDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.nio.file.Path;
+import java.util.Iterator;
 
 /**
  * Created by imedina on 20/02/15.
@@ -34,6 +39,7 @@ public class QueryCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.QueryCommandOptions queryCommandOptions;
 
+    private ObjectMapper objectMapper;
     private Path outputFile;
 
     public QueryCommandExecutor(CliOptionsParser.QueryCommandOptions queryCommandOptions) {
@@ -48,23 +54,35 @@ public class QueryCommandExecutor extends CommandExecutor {
     public void execute() {
         dbAdaptorFactory = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(configuration);
 
-        switch (queryCommandOptions.category) {
-            case "gene":
-                executeGeneQuery();
-                break;
-            case "region":
-                break;
-            default:
-                break;
+        Query query = createQuery();
+        QueryOptions queryOptions = createQueryOptions();
+
+        objectMapper = new ObjectMapper();
+
+        try {
+            switch (queryCommandOptions.category) {
+                case "gene":
+                    executeGeneQuery(query, queryOptions);
+                    break;
+                case "variation":
+                    executeVariationQuery(query, queryOptions);
+                    break;
+                case "region":
+                    break;
+                case "transcript":
+                    executeTranscriptQuery(query, queryOptions);
+                    break;
+                default:
+                    break;
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
     }
 
 
-    private void executeGeneQuery() {
+    private void executeGeneQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
-
-        Query query = createQuery();
-        QueryOptions queryOptions = createQueryOptions();
 
         switch (queryCommandOptions.resource) {
             case "count":
@@ -72,7 +90,62 @@ public class QueryCommandExecutor extends CommandExecutor {
                 break;
             case "info":
                 query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                System.out.println(geneDBAdaptor.nativeGet(query, queryOptions));
+                Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
+                while (iterator.hasNext()) {
+                    Object next = iterator.next();
+                    System.out.println(objectMapper.writeValueAsString(next));
+                }
+                break;
+            case "variation":
+                VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+                query.append(VariationDBAdaptor.QueryParams.GENE.key(), queryCommandOptions.id);
+                variationDBAdaptor.forEach(query, entry -> {
+                    try {
+                        System.out.println(objectMapper.writeValueAsString(entry));
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                }, queryOptions);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void executeVariationQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
+        VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+
+        switch (queryCommandOptions.resource) {
+            case "count":
+                System.out.println(variationDBAdaptor.count(query).getResult().get(0));
+                break;
+            case "info":
+                query.append(VariationDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                Iterator iterator = variationDBAdaptor.nativeIterator(query, queryOptions);
+                while (iterator.hasNext()) {
+                    Object next = iterator.next();
+                    System.out.println(objectMapper.writeValueAsString(next));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void executeTranscriptQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
+
+        switch (queryCommandOptions.resource) {
+            case "count":
+                System.out.println(transcriptDBAdaptor.count(query).getResult().get(0));
+                break;
+            case "info":
+                query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
+                while (iterator.hasNext()) {
+                    Object next = iterator.next();
+                    System.out.println(objectMapper.writeValueAsString(next));
+                }
                 break;
             default:
                 break;
@@ -90,7 +163,11 @@ public class QueryCommandExecutor extends CommandExecutor {
     private QueryOptions createQueryOptions() {
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.append("include", queryCommandOptions.include);
-        queryOptions.append("exclude", queryCommandOptions.exclude);
+        if (queryCommandOptions.exclude != null && !queryCommandOptions.exclude.isEmpty()) {
+            queryOptions.append("exclude", queryCommandOptions.exclude + ",_id,_chunkIds");
+        } else {
+            queryOptions.append("exclude", "_id,_chunkIds");
+        }
         queryOptions.append("skip", queryCommandOptions.skip);
         queryOptions.append("limit", queryCommandOptions.limit);
 //        queryOptions.append("count", queryCommandOptions.count);
