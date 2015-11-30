@@ -20,8 +20,10 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -29,7 +31,9 @@ import java.util.function.Consumer;
  */
 public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
-    QueryResult<Long> count();
+    default QueryResult<Long> count() {
+        return count(new Query());
+    }
 
     QueryResult<Long> count(Query query);
 
@@ -37,7 +41,9 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     QueryResult distinct(Query query, String field);
 
 
-    QueryResult stats();
+    default QueryResult stats() {
+        return stats(new Query());
+    }
 
     QueryResult stats(Query query);
 
@@ -53,7 +59,14 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     QueryResult nativeGet(Query query, QueryOptions options);
 
-    List<QueryResult> nativeGet(List<Query> queries, QueryOptions options);
+    default List<QueryResult> nativeGet(List<Query> queries, QueryOptions options) {
+        Objects.requireNonNull(queries);
+        List<QueryResult> queryResults = new ArrayList<>(queries.size());
+        for (Query query : queries) {
+            queryResults.add(nativeGet(query, options));
+        }
+        return queryResults;
+    }
 
 
 

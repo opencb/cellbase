@@ -20,7 +20,11 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.ConservationDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
+<<<<<<< HEAD
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
+=======
+import org.opencb.cellbase.core.api.VariationDBAdaptor;
+>>>>>>> c0e10ac80e8d8eab76d06141a8316a71ab50c560
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -153,12 +157,21 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //
 
     @Override
+<<<<<<< HEAD
     public ConservationDBAdaptor getConservationDBAdaptor(String species) {
         return getConservationDBAdaptor(species, null);
     }
 
     @Override
     public ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly) {
+=======
+    public ConservationDBAdaptor getConservedRegionDBAdaptor(String species) {
+        return getConservedRegionDBAdaptor(species, null);
+    }
+
+    @Override
+    public ConservationDBAdaptor getConservedRegionDBAdaptor(String species, String assembly) {
+>>>>>>> c0e10ac80e8d8eab76d06141a8316a71ab50c560
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
@@ -201,17 +214,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //        return new XRefsMongoDBAdaptor(species, assembly, mongoDatastore);
 //    }
 //
-//
-//    @Override
-//    public VariationDBAdaptor getVariationDBAdaptor(String species) {
-//        return getVariationDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariationDBAdaptor getVariationDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new VariationMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
+
+    @Override
+    public VariationDBAdaptor getVariationDBAdaptor(String species) {
+        return getVariationDBAdaptor(species, null);
+    }
+
+    @Override
+    public VariationDBAdaptor getVariationDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new VariationMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
 //
 //
 //    @Override
