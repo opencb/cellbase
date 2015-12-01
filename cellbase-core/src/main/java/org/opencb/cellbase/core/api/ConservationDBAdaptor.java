@@ -7,7 +7,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by swaathi on 26/11/15.
  */
-public interface ConservationDBAdaptor extends CellBaseDBAdaptor {
+public interface ConservationDBAdaptor<ConservationScoreRegion> extends CellBaseDBAdaptor<ConservationScoreRegion> {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, "");
@@ -38,4 +38,5 @@ public interface ConservationDBAdaptor extends CellBaseDBAdaptor {
             return null;
         }
     }
+
 }

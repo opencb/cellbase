@@ -21,26 +21,12 @@ import org.opencb.commons.datastore.core.QueryParam;
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by imedina on 25/11/15.
+ * Created by imedina on 01/12/15.
  */
-public interface GeneDBAdaptor<Gene> extends FeatureDBAdaptor<Gene> {
+public interface VariantFunctionalScore<GenomicPositionScore> extends CellBaseDBAdaptor<GenomicPositionScore> {
 
     enum QueryParams implements QueryParam {
-        ID("id", TEXT_ARRAY, ""),
-        NAME("name", TEXT_ARRAY, ""),
-        REGION("region", TEXT_ARRAY, ""),
-        BIOTYPE("biotype", TEXT_ARRAY, ""),
-        XREFS("transcripts.xrefs", TEXT_ARRAY, ""),
-        TRANSCRIPT_ID("transcripts.id", TEXT_ARRAY, ""),
-        TRANSCRIPT_NAME("transcripts.name", TEXT_ARRAY, ""),
-        TFBS_NAME("transcripts.tfbs.name", TEXT_ARRAY, ""),
-        TRANSCRIPT_BIOTYPE("transcripts.biotype", TEXT_ARRAY, ""),
-        ANNOTATION_DISEASE_ID("annotation.diseases.id", TEXT_ARRAY, ""),
-        ANNOTATION_DISEASE_NAME("annotation.diseases.name", TEXT_ARRAY, ""),
-        ANNOTATION_EXPRESSION_GENE("annotation.expression.name", TEXT_ARRAY, ""),
-        ANNOTATION_EXPRESSION_TISSUE("annotation.expression.tissue", TEXT_ARRAY, ""),
-        ANNOTATION_DRUGS_NAME("annotation.drugs.name", TEXT_ARRAY, ""),
-        ANNOTATION_DRUGS_GENE("annotation.drugs.gene", TEXT_ARRAY, "");
+        REGION("region", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -52,19 +38,20 @@ public interface GeneDBAdaptor<Gene> extends FeatureDBAdaptor<Gene> {
         private Type type;
         private String description;
 
+
         @Override
         public String key() {
-            return key;
+            return null;
         }
 
         @Override
         public String description() {
-            return description;
+            return null;
         }
 
         @Override
         public Type type() {
-            return type;
+            return null;
         }
     }
 

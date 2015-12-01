@@ -20,26 +20,11 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
-import java.util.List;
-
 /**
- * Created by imedina on 25/11/15.
+ * Created by imedina on 30/11/15.
  */
-public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
+public interface VariantAnnotationDBAdaptor<VariantAnnotation> extends CellBaseDBAdaptor<VariantAnnotation> {
 
-
-    QueryResult<T> next(Query query, QueryOptions options);
-
-    QueryResult nativeNext(Query query, QueryOptions options);
-
-
-    QueryResult rank(Query query, String field, int numResults, boolean asc);
-
-    QueryResult groupBy(Query query, String field, QueryOptions options);
-
-    QueryResult groupBy(Query query, List<String> fields, QueryOptions options);
-
-
-    QueryResult getIntervalFrequencies(Query query, QueryOptions options);
+    QueryResult<VariantAnnotation> getConsequenceTypes(Query query, QueryOptions options);
 
 }

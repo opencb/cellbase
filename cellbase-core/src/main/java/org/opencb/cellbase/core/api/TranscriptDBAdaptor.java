@@ -21,17 +21,17 @@ import org.opencb.commons.datastore.core.QueryParam;
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by imedina on 26/11/15.
+ * Created by imedina on 30/11/15.
  */
-public interface VariationDBAdaptor<Variation> extends FeatureDBAdaptor<Variation> {
+public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transcript> {
 
     enum QueryParams implements QueryParam {
         ID("id", TEXT_ARRAY, ""),
+        NAME("name", TEXT_ARRAY, ""),
         REGION("region", TEXT_ARRAY, ""),
-        GENE("gene", TEXT_ARRAY, ""),
-        CONSEQUENCE_TYPE("consequenceType", TEXT_ARRAY, ""),
-        TRANSCRIPT_CONSEQUENCE_TYPE("transcripts.consequenceType", TEXT_ARRAY, ""),
-        XREFS("xrefs", TEXT_ARRAY, "");
+        BIOTYPE("biotype", TEXT_ARRAY, ""),
+        TFBS_NAME("transcripts.tfbs.name", TEXT_ARRAY, ""),
+        XREFS("transcripts.xrefs", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -58,4 +58,5 @@ public interface VariationDBAdaptor<Variation> extends FeatureDBAdaptor<Variatio
             return type;
         }
     }
+
 }

@@ -69,10 +69,10 @@ public class SnpWSServer extends GenericRestWSServer {
     @Path("/count")
     public Response count(@DefaultValue("") @QueryParam("region") String region) {
 //        VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-        org.opencb.cellbase.core.api.VariationDBAdaptor variationDBAdaptor1 =
+        org.opencb.cellbase.core.api.VariantDBAdaptor variationDBAdaptor1 =
                 dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
         Query query = new Query();
-        query.append(org.opencb.cellbase.core.api.VariationDBAdaptor.QueryParams.REGION.key(), region);
+        query.append(org.opencb.cellbase.core.api.VariantDBAdaptor.QueryParams.REGION.key(), region);
         return createOkResponse(variationDBAdaptor1.count(query));
     }
 
