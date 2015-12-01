@@ -16,6 +16,9 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.commons.datastore.core.Query;
@@ -23,8 +26,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +34,8 @@ import java.util.function.Consumer;
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
 
+    private static Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly", "include", "exclude",
+            "skip", "limit", "of", "count", "json"));
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -97,7 +101,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.find(bson, options);
     }
 
     @Override
@@ -119,4 +124,78 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
 
     }
+
+    private Bson parseQuery(Query query) {
+        Bson filtersBson = null;
+
+        if (filteringOptionsEnabled(query)) {
+            Bson commonFiltersBson = getCommonFilters(query);
+            List<Bson> sourceSpecificFilterList = new ArrayList<>();
+            List<String> sourceContent = query.getAsStringList("source");
+            if (sourceContent == null || sourceContent.isEmpty() || sourceContains(sourceContent, "clinvar")) {
+                sourceSpecificFilterList.add(getClinvarFilters(query));
+            }
+            if (sourceContent == null || sourceContent.isEmpty() || sourceContains(sourceContent, "cosmic")) {
+                sourceSpecificFilterList.add(getCosmicFilters(query));
+            }
+            if (sourceContent == null || sourceContent.isEmpty() || sourceContains(sourceContent, "gwas")) {
+                sourceSpecificFilterList.add(getGwasFilters(query));
+            }
+            if (sourceSpecificFilterList.size() > 0 && commonFiltersBson != null) {
+                List<Bson> filtersBsonList = new ArrayList<>();
+                filtersBsonList.add(commonFiltersBson);
+                filtersBsonList.add(Filters.or(sourceSpecificFilterList));
+                filtersBson = Filters.and(filtersBsonList);
+            } else if (commonFiltersBson != null) {
+                filtersBson = commonFiltersBson;
+            } else if (sourceSpecificFilterList.size() > 0) {
+                filtersBson = Filters.or(sourceSpecificFilterList);
+            }
+        }
+
+        if (filtersBson != null) {
+            return filtersBson;
+        } else {
+            return new Document();
+        }
+
+    }
+
+    private Bson getGwasFilters(Query query) {
+        return null;
+    }
+
+    private Bson getCosmicFilters(Query query) {
+        return null;
+    }
+
+    private Bson getClinvarFilters(Query query) {
+        return null;
+    }
+
+    private Bson getCommonFilters(Query query) {
+        return null;
+    }
+
+    private Boolean sourceContains(List<String> includeContent, String feature) {
+        if (includeContent != null) {
+            int i = 0;
+            while (i < includeContent.size() && !includeContent.get(i).equals(feature)) {
+                i++;
+            }
+            return i < includeContent.size();
+        } else {
+            return false;
+        }
+    }
+
+    private boolean filteringOptionsEnabled(Query query) {
+        int i = 0;
+        Object[] keys = query.keySet().toArray();
+        while ((i < query.size()) && noFilteringQueryParameters.contains(keys[i])) {
+            i++;
+        }
+        return (i < query.size());
+    }
+
 }
