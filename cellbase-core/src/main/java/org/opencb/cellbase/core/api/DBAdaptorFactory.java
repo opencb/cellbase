@@ -79,17 +79,15 @@ public abstract class DBAdaptorFactory {
 
     public abstract GeneDBAdaptor getGeneDBAdaptor(String species, String assembly);
 
-//
+
+    public abstract VariantDBAdaptor getVariationDBAdaptor(String species);
+
+    public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
+
+
 //    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species);
 //
 //    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
-//
-//
-//    @Deprecated
-//    public abstract ExonDBAdaptor getExonDBAdaptor(String species);
-//
-//    @Deprecated
-//    public abstract ExonDBAdaptor getExonDBAdaptor(String species, String assembly);
 //
 //
 //    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
@@ -102,14 +100,9 @@ public abstract class DBAdaptorFactory {
 //    public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
 //
 //
-//    public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species);
+//    public abstract XRefDBAdaptor getXRefDBAdaptor(String species);
 //
-//    public abstract CytobandDBAdaptor getCytobandDBAdaptor(String species, String assembly);
-//
-//
-//    public abstract XRefsDBAdaptor getXRefDBAdaptor(String species);
-//
-//    public abstract XRefsDBAdaptor getXRefDBAdaptor(String species, String assembly);
+//    public abstract XRefDBAdaptor getXRefDBAdaptor(String species, String assembly);
 //
 //
 //    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species);
@@ -127,11 +120,6 @@ public abstract class DBAdaptorFactory {
 //    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species, String assembly);
 //
 //
-//    public abstract MutationDBAdaptor getMutationDBAdaptor(String species);
-//
-//    public abstract MutationDBAdaptor getMutationDBAdaptor(String species, String assembly);
-//
-//
 //    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species);
 //
 //    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly);
@@ -140,16 +128,6 @@ public abstract class DBAdaptorFactory {
 //    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
 //
 //    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
-//
-//
-//    public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species);
-//
-//    public abstract CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species, String assembly);
-//
-//
-//    public abstract StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species);
-//
-//    public abstract StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species, String assembly);
 //
 //
 //    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species);
@@ -162,16 +140,6 @@ public abstract class DBAdaptorFactory {
 //    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
 //
 //
-////    public abstract RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species);
-////
-////    public abstract RegulatoryRegionDBAdaptor getRegulationDBAdaptor(String species, String assembly);
-//
-
-    public abstract VariantDBAdaptor getVariationDBAdaptor(String species);
-
-    public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
-
-//
 //    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
 //
 //    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
@@ -181,8 +149,4 @@ public abstract class DBAdaptorFactory {
 
     public abstract ConservationDBAdaptor getConservedRegionDBAdaptor(String species, String assembly);
 
-//
-//    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species);
-//
-//    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species, String assembly);
 }
