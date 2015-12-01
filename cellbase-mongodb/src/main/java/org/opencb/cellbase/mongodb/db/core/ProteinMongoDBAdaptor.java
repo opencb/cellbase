@@ -17,9 +17,8 @@
 package org.opencb.cellbase.mongodb.db.core;
 
 import com.mongodb.BasicDBList;
-import org.bson.Document;
-
 import com.mongodb.QueryBuilder;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;

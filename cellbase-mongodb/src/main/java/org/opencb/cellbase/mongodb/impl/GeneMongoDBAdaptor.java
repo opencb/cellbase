@@ -31,8 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
-
 /**
  * Created by imedina on 25/11/15.
  */
