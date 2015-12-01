@@ -127,10 +127,11 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(), andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "transcripts.id", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "transcripts.name", andBsonList);
         createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
         createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

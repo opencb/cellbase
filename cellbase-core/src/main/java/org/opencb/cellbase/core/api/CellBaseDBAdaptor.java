@@ -87,13 +87,9 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
         return iterator(new Query(), new QueryOptions());
     }
 
-
-    Iterator nativeIterator();
-
-    default Iterator nativeIiterator() {
+    default Iterator nativeIterator() {
         return nativeIterator(new Query(), new QueryOptions());
     }
-
 
     Iterator<T> iterator(Query query, QueryOptions options);
 
