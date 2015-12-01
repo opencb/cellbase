@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.api.VariationDBAdaptor;
+import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -97,9 +97,9 @@ public class QueryCommandExecutor extends CommandExecutor {
                 }
                 break;
             case "variation":
-                VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
-                query.append(VariationDBAdaptor.QueryParams.GENE.key(), queryCommandOptions.id);
-                variationDBAdaptor.forEach(query, entry -> {
+                VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+                query.append(VariantDBAdaptor.QueryParams.GENE.key(), queryCommandOptions.id);
+                variantDBAdaptor.forEach(query, entry -> {
                     try {
                         System.out.println(objectMapper.writeValueAsString(entry));
                     } catch (JsonProcessingException e) {
@@ -113,15 +113,15 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeVariationQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
-        VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+        VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
 
         switch (queryCommandOptions.resource) {
             case "count":
-                System.out.println(variationDBAdaptor.count(query).getResult().get(0));
+                System.out.println(variantDBAdaptor.count(query).getResult().get(0));
                 break;
             case "info":
-                query.append(VariationDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                Iterator iterator = variationDBAdaptor.nativeIterator(query, queryOptions);
+                query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
                 while (iterator.hasNext()) {
                     Object next = iterator.next();
                     System.out.println(objectMapper.writeValueAsString(next));

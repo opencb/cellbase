@@ -31,12 +31,17 @@ import java.util.function.Consumer;
  */
 public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
+
     default QueryResult<Long> count() {
         return count(new Query());
     }
 
     QueryResult<Long> count(Query query);
 
+
+    default QueryResult distinct(String field) {
+        return distinct(new Query(), field);
+    }
 
     QueryResult distinct(Query query, String field);
 
@@ -102,15 +107,5 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     void forEach(Consumer action);
 
     void forEach(Query query, Consumer<? super Object> action, QueryOptions options);
-
-
-    /*
-     Aggregation queries over a specific query
-     */
-    QueryResult rank(Query query, String field, int numResults, boolean asc);
-
-    QueryResult groupBy(Query query, String field, QueryOptions options);
-
-    QueryResult groupBy(Query query, List<String> fields, QueryOptions options);
 
 }

@@ -42,11 +42,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
-    public QueryResult groupBy(Query query, List fields, QueryOptions options) {
-        return null;
-    }
-
-    @Override
     public QueryResult<Long> count(Query query) {
         return null;
     }
@@ -111,16 +106,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     @Override
     public void forEach(Query query, Consumer action, QueryOptions options) {
 
-    }
-
-    @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
-
-    @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        return null;
     }
 
     private Bson parseQuery(Query query) {

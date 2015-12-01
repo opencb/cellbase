@@ -16,22 +16,22 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.core.QueryResult;
+
+import java.util.Map;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by imedina on 26/11/15.
+ * Created by imedina on 30/11/15.
  */
-public interface VariationDBAdaptor<Variation> extends FeatureDBAdaptor<Variation> {
+public interface GenomeDBAdaptor {
 
     enum QueryParams implements QueryParam {
-        ID("id", TEXT_ARRAY, ""),
-        REGION("region", TEXT_ARRAY, ""),
-        GENE("gene", TEXT_ARRAY, ""),
-        CONSEQUENCE_TYPE("consequenceType", TEXT_ARRAY, ""),
-        TRANSCRIPT_CONSEQUENCE_TYPE("transcripts.consequenceType", TEXT_ARRAY, ""),
-        XREFS("xrefs", TEXT_ARRAY, "");
+        REGION("region", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -58,4 +58,9 @@ public interface VariationDBAdaptor<Variation> extends FeatureDBAdaptor<Variatio
             return type;
         }
     }
+
+    QueryResult<Map<String, Object>> getGenomeInfo(Query query, QueryOptions queryOptions);
+
+    QueryResult<String> getGenomicSequence(Query query, QueryOptions queryOptions);
+
 }

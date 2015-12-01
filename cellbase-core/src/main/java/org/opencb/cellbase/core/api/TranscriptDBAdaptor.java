@@ -1,3 +1,4 @@
+
 package org.opencb.cellbase.core.api;
 
 import org.opencb.commons.datastore.core.QueryParam;
@@ -5,7 +6,7 @@ import org.opencb.commons.datastore.core.QueryParam;
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by swaathi on 27/11/15.
+ * Created by imedina on 30/11/15.
  */
 public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transcript> {
 
@@ -14,7 +15,9 @@ public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transc
         NAME("name", TEXT_ARRAY, ""),
         REGION("region", TEXT_ARRAY, ""),
         BIOTYPE("biotype", TEXT_ARRAY, ""),
-        XREFS("xrefs", TEXT_ARRAY, "");
+        TFBS_NAME("transcripts.tfbs.name", TEXT_ARRAY, ""),
+        XREFS("transcripts.xrefs", TEXT_ARRAY, "");
+
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -29,19 +32,17 @@ public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transc
 
         @Override
         public String key() {
-            return null;
+            return key;
         }
 
         @Override
         public String description() {
-            return null;
+            return description;
         }
 
         @Override
         public Type type() {
-            return null;
+            return type;
         }
     }
 }
-
-
