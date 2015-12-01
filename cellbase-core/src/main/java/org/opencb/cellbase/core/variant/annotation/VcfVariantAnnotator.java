@@ -9,7 +9,10 @@ import org.rocksdb.RocksDBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by fjlopez on 28/04/15.
@@ -50,10 +53,10 @@ public class VcfVariantAnnotator implements VariantAnnotator {
      */
     @Override
     public List<VariantAnnotation> run(List<Variant> variantList) {
-        if(variantAnnotationList==null) {
+        if (variantAnnotationList == null) {
             variantAnnotationList = new ArrayList<>(variantList.size());
         }
-        if(!variantAnnotationList.isEmpty()) {
+        if (!variantAnnotationList.isEmpty()) {
             udpateVariantAnnotationList(variantList);
         } else {
             fillVariantAnnotationList(variantList);
@@ -67,10 +70,11 @@ public class VcfVariantAnnotator implements VariantAnnotator {
             Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
-            Map<String, String> auxMap = new HashMap<>();
-            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
+//            Map<String, String> auxMap = new HashMap<>();
+//            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
             if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
-                variantAnnotation.setAdditionalAttributes(auxMap);
+                variantAnnotation.setAdditionalAttributes(customAnnotation);
+                //variantAnnotation.setAdditionalAttributes(auxMap);
             }
             variantAnnotationList.add(variantAnnotation);
         }
@@ -86,20 +90,22 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         for (int i = 0; i < variantList.size(); i++) {
 
             Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
-            Map<String, String> auxMap = new HashMap<>();
-            customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
+            Map<String, Object> auxMap = new HashMap<>();
+//            Map<String, String> auxMap = new HashMap<>();
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
             if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
-                Map<String, String> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
+//                customAnnotation.forEach((k, v) -> auxMap.put(k, v.toString()));
+                Map<String, Object> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
+//                Map<String, String> additionalAttributes = variantAnnotationList.get(i).getAdditionalAttributes();
                 if (additionalAttributes == null) {
                     // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
                     // at position i must correspond to variant i
-//                    variantAnnotationList.get(i).setAdditionalAttributes(customAnnotation);
-                    variantAnnotationList.get(i).setAdditionalAttributes(auxMap);
+                    variantAnnotationList.get(i).setAdditionalAttributes(customAnnotation);
+//                    variantAnnotationList.get(i).setAdditionalAttributes(auxMap);
                 } else {
-//                    additionalAttributes.putAll(customAnnotation);
-                    additionalAttributes.putAll(auxMap);
+                    additionalAttributes.putAll(customAnnotation);
+//                    additionalAttributes.putAll(auxMap);
                     // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
                     // at position i must correspond to variant i
                     variantAnnotationList.get(i).setAdditionalAttributes(additionalAttributes);
@@ -108,16 +114,16 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         }
     }
 
-    private Map<String,Object> getCustomAnnotation(Variant variant) {
+    private Map<String, Object> getCustomAnnotation(Variant variant) {
         try {
             byte[] dbContent = dbIndex.get((variant.getChromosome() + "_" + variant.getStart() + "_"
                     + variant.getReference() + "_" + variant.getAlternate()).getBytes());
-            if(dbContent==null) {
+            if (dbContent == null) {
                 return null;
             } else {
                 ObjectMapper mapper = new ObjectMapper();
-                Map<String,Object> infoAttributes = mapper.readValue(dbContent, Map.class);
-                Map<String,Object> customAnnotation = new HashMap<>(1);
+                Map<String, Object> infoAttributes = mapper.readValue(dbContent, Map.class);
+                Map<String, Object> customAnnotation = new HashMap<>(1);
                 customAnnotation.put(fileId, infoAttributes);
 
                 return customAnnotation;

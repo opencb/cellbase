@@ -37,10 +37,13 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     private CellBaseClient cellBaseClient;
     private List<VariantAnnotation> variantAnnotationList;
 
+    private QueryOptions queryOptions;
+
     private Logger logger;
 
-    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
+    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient, QueryOptions queryOptions) {
         this.cellBaseClient = cellBaseClient;
+        this.queryOptions = queryOptions;
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -55,9 +58,11 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     public List<VariantAnnotation> run(List<Variant> variantList) {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
         QueryResponse<QueryResult<VariantAnnotation>> response;
+        queryOptions.put("post", true);
         try {
             response = cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
-                    CellBaseClient.SubCategory.variant, variantList, new QueryOptions("post", true));
+                    CellBaseClient.SubCategory.variant, variantList, queryOptions);
+//                    CellBaseClient.SubCategory.variant, variantList, new QueryOptions("post", true));
         } catch (IOException e) {
             return null;
         }
@@ -77,17 +82,20 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
     // TODO: use a external class for this (this method could be added to GenomicVariant class)
     private Variant getGenomicVariant(Variant variant) {
-        if(variant.getAlternate().equals(".")) {  // reference positions are not variants
+        if (variant.getAlternate().equals(".")) {  // reference positions are not variants
             return null;
         } else {
             String ref;
-            if (variant.getAlternate().equals("<DEL>")) {  // large deletion
-                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));  // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
+            // large deletion
+            if (variant.getAlternate().equals("<DEL>")) {
+                // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
+                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));
                 ref = StringUtils.repeat("N", end - variant.getStart());
                 return new Variant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
                 // TODO: structural variants are not yet properly handled. Implement and remove this patch asap
-            } else if(variant.getAlternate().startsWith("<") || (variant.getAlternate().length()>1 && variant.getReference().length()>1)) {
+            } else if (variant.getAlternate().startsWith("<")
+                    || (variant.getAlternate().length() > 1 && variant.getReference().length() > 1)) {
                 return null;
             } else {
                 ref = variant.getReference().equals("") ? "-" : variant.getReference();

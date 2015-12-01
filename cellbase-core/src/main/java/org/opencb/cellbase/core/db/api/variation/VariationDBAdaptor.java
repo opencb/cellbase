@@ -28,7 +28,7 @@ import java.util.List;
 
 public interface VariationDBAdaptor extends FeatureDBAdaptor {
 
-    List<String> consequenceTypes = Arrays.asList(
+    List<String> CONSEQUENCE_TYPES = Arrays.asList(
             "transcript_ablation",
             "splice_acceptor_variant",
             "splice_donor_variant",
@@ -83,7 +83,6 @@ public interface VariationDBAdaptor extends FeatureDBAdaptor {
     List<QueryResult> getAllByTranscriptIdList(List<String> idList, QueryOptions options);
 
 
-
     QueryResult getAllPhenotypes(QueryOptions options);
 
     List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options);
@@ -96,11 +95,8 @@ public interface VariationDBAdaptor extends FeatureDBAdaptor {
 
     List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
 
-    ////	public List<SnpPopulationFrequency> getAllSnpPopulationFrequency(String name);
-////
-////	public List<List<SnpPopulationFrequency>> getAllSnpPopulationFrequencyList(List<String> nameList);
-////
-
+    // public List<SnpPopulationFrequency> getAllSnpPopulationFrequency(String name);
+    // public List<List<SnpPopulationFrequency>> getAllSnpPopulationFrequencyList(List<String> nameList);
 
     QueryResult getAllIntervalFrequencies(Region region, QueryOptions options);
 

@@ -50,7 +50,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     @Deprecated
-    public QueryResult speciesInfoTmp(String id, QueryOptions options){
+    public QueryResult speciesInfoTmp(String id, QueryOptions options) {
         // reading application.properties file
 
 //        String[] speciesArray = applicationProperties.getProperty("SPECIES").split(",");
@@ -82,9 +82,9 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     public List<QueryResult> getAllByChromosomeIdList(List<String> idList, QueryOptions options) {
         List<QueryResult> qrList = new ArrayList<>(idList.size());
 //        List<DBObject[]> commandList = new ArrayList<>();
-        if(options == null) {
+        if (options == null) {
             options = new QueryOptions("include", Arrays.asList("chromosomes.$"));
-        }else {
+        } else {
 //            options = new QueryOptions("include", Arrays.asList("chromosomes.$"));
             options.addToListOption("include", "chromosomes.$");
         }
@@ -175,10 +175,13 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                     subStr = sb.toString().substring(startStr - 1, endStr - 1);
                 }
             }
-            logger.info("((BasicDBObject)list.get(0)).getString(\"sequenceType\") = {}",((BasicDBObject)list.get(0)).getString("sequenceType"));
-            logger.info("((BasicDBObject)list.get(0)).getString(\"assembly\") = {}", ((BasicDBObject)list.get(0)).getString("assembly"));
-            GenomeSequenceFeature genomeSequenceFeature = new GenomeSequenceFeature(region.getChromosome(), region.getStart(), region.getEnd(), 1, ((BasicDBObject)list.get(0)).getString("sequenceType"), ((BasicDBObject)list.get(0)).getString("assembly"), subStr);
-//            GenomeSequenceChunk genomeSequenceChunk = new GenomeSequenceChunk(region.getSequenceName(), region.getStart(), region.getEnd(), subStr);
+            logger.info("((BasicDBObject)list.get(0)).getString(\"sequenceType\") = {}",
+                    ((BasicDBObject) list.get(0)).getString("sequenceType"));
+            logger.info("((BasicDBObject)list.get(0)).getString(\"assembly\") = {}", ((BasicDBObject) list.get(0)).getString("assembly"));
+            GenomeSequenceFeature genomeSequenceFeature =
+                    new GenomeSequenceFeature(region.getChromosome(), region.getStart(), region.getEnd(), 1,
+                            ((BasicDBObject) list.get(0)).getString("sequenceType"),
+                            ((BasicDBObject) list.get(0)).getString("assembly"), subStr);
 
             queryResult.setResult(Arrays.asList(genomeSequenceFeature));
         }
@@ -224,57 +227,5 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         sequence = sequence.replace("4", "C");
         return sequence;
     }
-
-//	public Chromosome getChromosomeById(String name) {
-//		for (Chromosome chromosome : executeQuery()) {
-//			if (chromosome.getName().equals(name)) {
-//				return chromosome;
-//			}
-//		}
-//		return null;
-//	}
-//
-//	public List<Chromosome> getAllByChromosomeIdList(List<String> nameList) {
-//		List<Chromosome> foundList = new ArrayList<Chromosome>(nameList.size());
-//
-//		for (Chromosome chromosome : executeQuery()) {
-//			if (nameList.contains(chromosome.getName())) {
-//				foundList.add(chromosome);
-//			}
-//		}
-//		return foundList;
-//	}
-//
-//	public List<Cytoband> getCytobandByName(String name) {
-//		for (Chromosome chromosome : executeQuery()) {
-//			if (chromosome.getName().equals(name)) {
-//				return chromosome.getCytobands();
-//			}
-//		}
-//		return null;
-//	}
-//
-//	public List<List<Cytoband>> getCytobandByNameList(List<String> nameList) {
-//		List<List<Cytoband>> foundLists = new ArrayList<List<Cytoband>>(nameList.size());
-//
-//		for (Chromosome chromosome : executeQuery()) {
-//			if (nameList.contains(chromosome.getName())) {
-//				foundLists.add(chromosome.getCytobands());
-//			}
-//		}
-//		return foundLists;
-//	}
-//
-//	public List<Chromosome> getGenomeInfo() {
-//		return executeQuery();
-//	}
-//
-//	public List<String> getChromosomeNames() {
-//		List<String> names = new ArrayList<String>();
-//		for (Chromosome chromosome : executeQuery()) {
-//			names.add(chromosome.getName());
-//		}
-//		return names;
-//	}
 
 }

@@ -85,7 +85,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             }
 
             // Max region size is 10000bp
-            if(region.getEnd() - region.getStart() > 10000) {
+            if (region.getEnd() - region.getStart() > 10000) {
                 region.setEnd(region.getStart() + 10000);
             }
 
@@ -129,22 +129,22 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
             for (int j = 0; j < list.size(); j++) {
                 BasicDBObject chunk = (BasicDBObject) list.get(j);
-                String type = chunk.getString("type");
+                String source = chunk.getString("source");
                 List<Float> valuesList;
-                if (!typeMap.containsKey(type)) {
+                if (!typeMap.containsKey(source)) {
                     valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
                     for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
                         valuesList.add(null);
                     }
-                    typeMap.put(type, valuesList);
+                    typeMap.put(source, valuesList);
                 } else {
-                    valuesList = typeMap.get(type);
+                    valuesList = typeMap.get(source);
                 }
 
                 BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
 
                 int pos = 0;
-                if( region.getStart() > chunk.getInt("start")){
+                if (region.getStart() > chunk.getInt("start")) {
                     pos = region.getStart() - chunk.getInt("start");
                 }
 
@@ -162,7 +162,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             BasicDBList resultList = new BasicDBList();
             ConservationScoreRegion conservedRegionChunk;
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(), region.getEnd(), elem.getKey(), elem.getValue());
+                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(),
+                        region.getEnd(), elem.getKey(), elem.getValue());
                 resultList.add(conservedRegionChunk);
             }
             queryResult.setResult(resultList);
@@ -193,7 +194,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             QueryBuilder builder;
             int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
             int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
-            if(regionChunkStart == regionChunkEnd) {
+            if (regionChunkStart == regionChunkEnd) {
                 builder = QueryBuilder.start("_chunkIds")
                         .is(getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
             } else {
@@ -233,16 +234,16 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 BasicDBObject chunk = list.get(j);
 
                 if (!chunk.isEmpty()) {
-                    String type = chunk.getString("type");
+                    String source = chunk.getString("source");
                     List<Float> valuesList;
-                    if (!typeMap.containsKey(type)) {
+                    if (!typeMap.containsKey(source)) {
                         valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
                         for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
                             valuesList.add(null);
                         }
-                        typeMap.put(type, valuesList);
+                        typeMap.put(source, valuesList);
                     } else {
-                        valuesList = typeMap.get(type);
+                        valuesList = typeMap.get(source);
                     }
 
                     BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
@@ -262,13 +263,13 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
             BasicDBList resultList = new BasicDBList();
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                for(Float value : elem.getValue()) {
-                    if(value!=null) {
+                for (Float value : elem.getValue()) {
+                    if (value != null) {
                         resultList.add(new Score(new Double(value), elem.getKey()));
                     }
                 }
             }
-            if(!resultList.isEmpty()) {
+            if (!resultList.isEmpty()) {
                 queryResult.setResult(resultList);
             } else {
                 queryResult.setResult(null);

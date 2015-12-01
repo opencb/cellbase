@@ -45,7 +45,8 @@ import java.util.List;
 public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
 
     public ProteinProteinInteractionWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -64,25 +65,26 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                               @DefaultValue("") @QueryParam("detectionMethod") String detectionMethod) {
         try {
             parseQueryParams();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
 
-            if(interactor != null && !interactor.equals("")) {
+            if (interactor != null && !interactor.equals("")) {
                 queryOptions.put("interactor", Splitter.on(",").splitToList(interactor));
             }
 
-            if(type != null && !type.equals("")) {
+            if (type != null && !type.equals("")) {
                 queryOptions.put("type", Splitter.on(",").splitToList(type));
             }
 
-            if(database != null && !database.equals("")) {
+            if (database != null && !database.equals("")) {
                 queryOptions.put("database", Splitter.on(",").splitToList(database));
             }
 
-            if(detectionMethod != null && !detectionMethod.equals("")) {
+            if (detectionMethod != null && !detectionMethod.equals("")) {
                 queryOptions.put("detectionMethod", Splitter.on(",").splitToList(detectionMethod));
             }
 
-            if(status != null && !status.equals("")) {
+            if (status != null && !status.equals("")) {
                 queryOptions.put("status", Splitter.on(",").splitToList(status));
             }
 
@@ -94,7 +96,6 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-
     }
 
     @GET
@@ -102,7 +103,8 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
         try {
             parseQueryParams();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
 
             return createOkResponse(queryResults);
@@ -118,7 +120,8 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                                                   @DefaultValue("interactorA,interactorB") @QueryParam("include") String include) {
         try {
             parseQueryParams();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
 
             return createOkResponse(queryResults);

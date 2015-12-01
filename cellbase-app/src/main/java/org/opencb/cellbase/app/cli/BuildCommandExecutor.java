@@ -82,20 +82,20 @@ public class BuildCommandExecutor extends CommandExecutor {
 
 
     /**
-     * Parse specific 'build' command options
+     * Parse specific 'build' command options.
      */
     public void execute() {
         try {
             checkParameters();
 
             // Output directory need to be created if it not exists
-            if(!Files.exists(output)) {
+            if (!Files.exists(output)) {
                 Files.createDirectories(output);
             }
 
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
-            for (CellBaseConfiguration.SpeciesProperties.Species sp: configuration.getAllSpecies()) {
+            for (CellBaseConfiguration.SpeciesProperties.Species sp : configuration.getAllSpecies()) {
                 if (buildCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getId())) {
@@ -113,7 +113,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 String[] buildOptions;
                 if (buildCommandOptions.data.equals("all")) {
                     buildOptions = new String[]{"genome_info", "genome", "gene", "disgenet", "hpo", "variation", "cadd", "regulation",
-                            "protein", "ppi", "conservation", "drug", "clinvar", "cosmic", "gwas"};
+                            "protein", "ppi", "conservation", "drug", "clinvar", "cosmic", "gwas", };
                 } else {
                     buildOptions = buildCommandOptions.data.split(",");
                 }
@@ -205,7 +205,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private void buildGenomeInfo() {
         /**
          * To get some extra info about the genome such as chromosome length or cytobands
-         * we execute the following script
+         * we execute the following script.
          */
         try {
             String outputFileName = output.resolve("genome_info.json").toAbsolutePath().toString();
@@ -245,6 +245,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
         return new GeneParser(geneFolderPath, genomeFastaFilePath, species, serializer);
+//        return new GeneParserProto(geneFolderPath, genomeFastaFilePath, species, serializer);
     }
 
 
@@ -270,11 +271,13 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CellBaseParser buildProtein() {
         Path proteinFolder = common.resolve("protein");
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein");
-        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
+        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"), common.resolve("protein").resolve("protein2ipr.dat.gz"),
+                species.getScientificName(), serializer);
 
     }
 
-    private void getProteinFunctionPredictionMatrices(CellBaseConfiguration.SpeciesProperties.Species sp, Path geneFolder) throws IOException, InterruptedException {
+    private void getProteinFunctionPredictionMatrices(CellBaseConfiguration.SpeciesProperties.Species sp, Path geneFolder)
+            throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
 
         // run protein_function_prediction_matrices.pl
@@ -295,7 +298,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private CellBaseParser getInteractionParser()  {
+    private CellBaseParser getInteractionParser() {
         Path psimiTabFile = common.resolve("protein").resolve("intact.txt");
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein_protein_interaction");
         return new InteractionParser(psimiTabFile, species.getScientificName(), serializer);
@@ -328,14 +331,15 @@ public class BuildCommandExecutor extends CommandExecutor {
         String assembly = buildCommandOptions.assembly;
         checkMandatoryOption("assembly", assembly);
         if (!assembly.equals(ClinVarParser.GRCH37_ASSEMBLY) && !assembly.equals(ClinVarParser.GRCH38_ASSEMBLY)) {
-            throw new ParameterException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY + ", " + ClinVarParser.GRCH38_ASSEMBLY);
+            throw new ParameterException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY
+                    + ", " + ClinVarParser.GRCH38_ASSEMBLY);
         }
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar");
         return new ClinVarParser(clinvarFile, efosFilePath, assembly, serializer);
     }
 
-    private CellBaseParser buildCosmic()  {
+    private CellBaseParser buildCosmic() {
         Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
@@ -369,7 +373,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new DisgenetParser(hpoFilePath, serializer);
     }
 
-    private Path getInputDirFromCommandLine(){
+    private Path getInputDirFromCommandLine() {
         File inputDirectory = new File(input.toString());
         if (inputDirectory.exists()) {
             if (inputDirectory.isDirectory()) {
@@ -388,7 +392,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             DirectoryStream<Path> stream = Files.newDirectoryStream(input.resolve("genome"), entry -> {
                 return entry.toString().endsWith(".fa.gz");
             });
-            for (Path entry: stream) {
+            for (Path entry : stream) {
                 fastaFile = entry;
             }
         } catch (IOException e) {
@@ -397,7 +401,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return fastaFile;
     }
 
-    private void checkMandatoryOption(String option, String value){
+    private void checkMandatoryOption(String option, String value) {
         if (value == null) {
             throw new ParameterException("'" + option + "' option is mandatory for '" + buildCommandOptions.data + "' builder");
         }

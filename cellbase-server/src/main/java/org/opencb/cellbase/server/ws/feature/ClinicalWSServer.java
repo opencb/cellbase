@@ -25,7 +25,10 @@ import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -41,7 +44,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
 
     public ClinicalWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -52,7 +56,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            if(!queryOptions.containsKey("limit") || ((int)queryOptions.get("limit"))>1000) {
+            if (!queryOptions.containsKey("limit") || ((int) queryOptions.get("limit")) > 1000) {
                 queryOptions.put("limit", 1000);
             }
 

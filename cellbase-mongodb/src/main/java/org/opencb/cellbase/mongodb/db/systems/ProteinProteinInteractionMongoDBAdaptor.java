@@ -16,7 +16,10 @@
 
 package org.opencb.cellbase.mongodb.db.systems;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.QueryBuilder;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
@@ -34,7 +37,7 @@ import java.util.List;
  * Time: 4:57 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor implements ProteinProteinInteractionDBAdaptor {
+public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor implements ProteinProteinInteractionDBAdaptor {
 
 
     public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
@@ -138,9 +141,7 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
 //        }
 
 
-
         System.out.println(builder.get().toString());
-        //		options = addExcludeReturnFields("transcripts", options);
         return executeQuery("result", builder.get(), options);
     }
 
@@ -168,7 +169,7 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
     @Override
     public List<QueryResult> getAllByInteractorIdList(List<String> idList, QueryOptions options) {
         List<QueryResult> resultList = new ArrayList<>(idList.size());
-        for(String id: idList) {
+        for (String id : idList) {
             options.put("interactor", Arrays.asList(id));
             resultList.add(getAll(options));
         }

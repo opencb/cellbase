@@ -101,8 +101,13 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
         for (Region region : regions) {
 
             // If regions is 1 position then query can be optimize using chunks
-            QueryBuilder builder = QueryBuilder.start("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.chr").is(region.getChromosome()).and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.stop")
-                    .greaterThanEquals(region.getStart()).and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.start").lessThanEquals(region.getEnd());
+            QueryBuilder builder = QueryBuilder
+                    .start("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.chr")
+                    .is(region.getChromosome())
+                    .and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.stop")
+                    .greaterThanEquals(region.getStart())
+                    .and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.start")
+                    .lessThanEquals(region.getEnd());
             System.out.println(builder.get().toString());
             queries.add(builder.get());
             ids.add(region.toString());
@@ -119,7 +124,7 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
         BasicDBObject accInfo;
         QueryResult listAccessionsToReturn = new QueryResult();
 
-        for(Object accInfoObject: accInfoList) {
+        for (Object accInfoObject : accInfoList) {
             accInfo = (BasicDBObject) accInfoObject;
             accInfo = (BasicDBObject) accInfo.get("referenceClinVarAssertion");
             accInfo = (BasicDBObject) accInfo.get("clinVarAccession");

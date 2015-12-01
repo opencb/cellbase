@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * Created by imedina on 06/07/14.
  */
+@Deprecated
 public class GeneConverter extends MongoDBTypeConverter<Gene, DBObject> {
 
     private int chunkSize;
@@ -55,9 +56,9 @@ public class GeneConverter extends MongoDBTypeConverter<Gene, DBObject> {
             int chunkStart = (gene.getStart() - 5000) / chunkSize;
             int chunkEnd = (gene.getEnd() + 5000) / chunkSize;
 
-            List<String> chunkIdsList = new ArrayList<>(chunkEnd-chunkStart+1);
-            for(int i=chunkStart; i<=chunkEnd; i++) {
-                chunkIdsList.add(gene.getChromosome()+"_"+i+"_"+chunkIdSuffix);
+            List<String> chunkIdsList = new ArrayList<>(chunkEnd - chunkStart + 1);
+            for (int i = chunkStart; i <= chunkEnd; i++) {
+                chunkIdsList.add(gene.getChromosome() + "_" + i + "_" + chunkIdSuffix);
             }
 
             document.put("chunkIds", chunkIdsList);

@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2015 OpenCB
  *
@@ -14,35 +15,6 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.common.core;
-
-@Deprecated
-public class DBName {
-
-	private String dbNameShort;
-	private String dbName;
-	
-	public DBName(String dbNameShort, String dbName) {
-		this.setDbNameShort(dbNameShort);
-		this.setDbName(dbName);
-	}
-
-	public String getDbNameShort() {
-		return dbNameShort;
-	}
-
-	public void setDbNameShort(String dbNameShort) {
-		this.dbNameShort = dbNameShort;
-	}
-
-	public String getDbName() {
-		return dbName;
-	}
-
-	public void setDbName(String dbName) {
-		this.dbName = dbName;
-	}
-	
-	
-	
-}
+db.getCollection('variation_functional_score').ensureIndex({'_chunkIds': 1})
+db.getCollection('variation_functional_score').ensureIndex({'chromosome': 1, "start": 1, "end": 1})
+db.getCollection('variation_functional_score').ensureIndex({'source': 1})

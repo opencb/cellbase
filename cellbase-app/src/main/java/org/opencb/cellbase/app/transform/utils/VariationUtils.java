@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.app.transform.utils;
 
+import org.opencb.commons.utils.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +35,7 @@ public class VariationUtils {
         Map<String, String> seqRegion = new HashMap<>();
         try {
             File seqRegionFile = variationDirectoryPath.resolve("seq_region.txt.gz").toFile();
-            if(seqRegionFile.exists()) {
+            if (seqRegionFile.exists()) {
                 BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
                 String readLine;
                 while ((readLine = br.readLine()) != null) {
@@ -52,7 +54,7 @@ public class VariationUtils {
         Map<String, String> seqRegion = new HashMap<>();
         try {
             File seqRegionFile = variationDirectoryPath.resolve("phenotype.txt.gz").toFile();
-            if(seqRegionFile.exists()) {
+            if (seqRegionFile.exists()) {
                 BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
                 String readLine;
                 while ((readLine = br.readLine()) != null) {
@@ -71,7 +73,7 @@ public class VariationUtils {
         Map<String, String> sourceMap = new HashMap<>();
         try {
             File sourceFile = variationDirectoryPath.resolve("source.txt.gz").toFile();
-            if(sourceFile.exists()) {
+            if (sourceFile.exists()) {
                 BufferedReader br = FileUtils.newBufferedReader(sourceFile.toPath(), Charset.defaultCharset());
                 String readLine;
                 while ((readLine = br.readLine()) != null) {
@@ -94,7 +96,7 @@ public class VariationUtils {
         Map<String, String> seqRegion = new HashMap<>();
         try {
             File seqRegionFile = variationDirectoryPath.resolve("study.txt.gz").toFile();
-            if(seqRegionFile.exists()) {
+            if (seqRegionFile.exists()) {
                 BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
                 String readLine;
                 while ((readLine = br.readLine()) != null) {
@@ -113,7 +115,7 @@ public class VariationUtils {
         Map<String, String> seqRegion = new HashMap<>();
         try {
             File seqRegionFile = variationDirectoryPath.resolve("attrib_type.txt.gz").toFile();
-            if(seqRegionFile.exists()) {
+            if (seqRegionFile.exists()) {
                 BufferedReader br = FileUtils.newBufferedReader(seqRegionFile.toPath());
                 String readLine;
                 while ((readLine = br.readLine()) != null) {

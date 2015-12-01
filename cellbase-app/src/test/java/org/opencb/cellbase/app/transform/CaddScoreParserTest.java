@@ -56,8 +56,8 @@ public class CaddScoreParserTest {
         float t = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
 
         assertEquals("Error getting A score value from raw CADD", 0.337f, a, 1 / DECIMAL_RESOLUTION);
-        assertEquals("Error getting C score value from raw CADD", 0.1432f, c, 1 / DECIMAL_RESOLUTION);
-        assertEquals("Error getting G score value from raw CADD", 0.2024f, g, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting C score value from raw CADD", 0.143f, c, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting G score value from raw CADD", 0.202f, g, 1 / DECIMAL_RESOLUTION);
         assertEquals("Error getting T score value from raw CADD", 10f, t, 1 / DECIMAL_RESOLUTION);
 
 
@@ -66,7 +66,7 @@ public class CaddScoreParserTest {
         g = ((short) (l2 >> 16) - 10000) / DECIMAL_RESOLUTION;
         t = ((short) (l2 >> 0) - 10000) / DECIMAL_RESOLUTION;
 
-        assertEquals("Error getting A score value from raw CADD", -0.1328f, a, 1 / DECIMAL_RESOLUTION);
+        assertEquals("Error getting A score value from raw CADD", -0.133f, a, 1 / DECIMAL_RESOLUTION);
         assertEquals("Error getting C score value from raw CADD", -0.4797f, c, 1 / DECIMAL_RESOLUTION);
         assertEquals("Error getting G score value from raw CADD", -0.2772f, g, 1 / DECIMAL_RESOLUTION);
         assertEquals("Error getting T score value from raw CADD", 10f, t, 1 / DECIMAL_RESOLUTION);

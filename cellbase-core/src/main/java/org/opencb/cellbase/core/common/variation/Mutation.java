@@ -60,7 +60,11 @@ public class Mutation {
 
     }
 
-    public Mutation(String id, String chromosome, int start, int end, String strand, String protein, int proteinStart, int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName, String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity, String status, String pubmed, String tumourOrigin, String description, String source) {
+    public Mutation(String id, String chromosome, int start, int end, String strand, String protein, int proteinStart,
+                    int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName,
+                    String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology,
+                    String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity,
+                    String status, String pubmed, String tumourOrigin, String description, String source) {
         this.id = id;
         this.chromosome = chromosome;
         this.start = start;

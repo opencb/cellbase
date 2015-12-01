@@ -1,6 +1,6 @@
 {
-	"version": "v3",
-	"apiVersion": "v3.1",
+	"version": "v4",
+	"apiVersion": "v4.0",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"database": {
 		"host": "${CELLBASE.DB.HOST}",
@@ -100,11 +100,11 @@
 				"scientificName":"Homo sapiens",
 				"assemblies":[
 					{
-						"ensemblVersion":"75_37",
+						"ensemblVersion":"82_37",
 						"name":"GRCh37"
 					},
 					{
-						"ensemblVersion":"79_38",
+						"ensemblVersion":"82_38",
 						"name":"GRCh38"
 					}
 				],
@@ -125,7 +125,7 @@
 				"scientificName":"Mus musculus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_38",
+						"ensemblVersion":"82_38",
 						"name":"GRCm38"
 					}
 				],
@@ -143,8 +143,8 @@
 				"scientificName":"Danio rerio",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_9",
-						"name":"Zv9"
+						"ensemblVersion":"82_10",
+						"name":"GRCz10"
 					}
 				],
 				"data":[
@@ -159,8 +159,8 @@
 				"scientificName":"Rattus norvegicus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_5",
-						"name":"Rnor_5.0"
+						"ensemblVersion":"82_6",
+						"name":"Rnor_6.0"
 					}
 				],
 				"data":[
@@ -175,7 +175,7 @@
 				"scientificName":"Pan troglodytes",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_214",
+						"ensemblVersion":"82_214",
 						"name":"CHIMP2.1.4"
 					}
 				],
@@ -190,7 +190,7 @@
 				"scientificName":"Gorilla gorilla",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_31",
+						"ensemblVersion":"82_31",
 						"name":"gorGor3.1"
 					}
 				],
@@ -205,7 +205,7 @@
 				"scientificName":"Pongo abelii",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_1",
+						"ensemblVersion":"82_1",
 						"name":"PPYG2"
 					}
 				],
@@ -220,8 +220,8 @@
 				"scientificName":"Macaca mulatta",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_10",
-						"name":"MMUL_1.0"
+						"ensemblVersion":"82_10",
+						"name":"MMUL_1"
 					}
 				],
 				"data":[
@@ -235,7 +235,7 @@
 				"scientificName":"Chlorocebus sabaeus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_1",
+						"ensemblVersion":"82_1",
 						"name":"ChlSab1.1"
 					}
 				],
@@ -250,7 +250,7 @@
 				"scientificName":"Sus scrofa",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_102",
+						"ensemblVersion":"82_102",
 						"name":"Sscrofa10.2"
 					}
 				],
@@ -266,7 +266,7 @@
 				"scientificName":"Canis familiaris",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_31",
+						"ensemblVersion":"82_31",
 						"name":"CanFam3.1"
 					}
 				],
@@ -281,7 +281,7 @@
 				"scientificName":"Equus caballus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_2",
+						"ensemblVersion":"82_2",
 						"name":"EquCab2"
 					}
 				],
@@ -296,8 +296,8 @@
 				"scientificName":"Oryctolagus cuniculus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_2",
-						"name":"oryCun2.0"
+						"ensemblVersion":"82_2",
+						"name":"OryCun2.0"
 					}
 				],
 				"data":[
@@ -311,7 +311,7 @@
 				"scientificName":"Gallus gallus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_4",
+						"ensemblVersion":"82_4",
 						"name":"Galgal4"
 					}
 				],
@@ -326,7 +326,7 @@
 				"scientificName":"Bos taurus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_31",
+						"ensemblVersion":"82_31",
 						"name":"UMD3.1"
 					}
 				],
@@ -341,7 +341,7 @@
 				"scientificName":"Felis catus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_62",
+						"ensemblVersion":"82_62",
 						"name":"Felis_catus_6.2"
 					}
 				],
@@ -356,7 +356,7 @@
 				"scientificName":"Ciona intestinalis",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_3",
+						"ensemblVersion":"82_3",
 						"name":"KH"
 					}
 				],
@@ -371,7 +371,7 @@
 				"scientificName":"Ovis aries",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_31",
+						"ensemblVersion":"82_31",
 						"name":"Oar_v3.1"
 					}
 				],
@@ -386,7 +386,7 @@
 				"scientificName":"Oryzias latipes",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_1",
+						"ensemblVersion":"82_1",
 						"name":"HdrR"
 					}
 				],
@@ -401,7 +401,7 @@
 				"scientificName":"Tursiops truncatus",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_1",
+						"ensemblVersion":"82_1",
 						"name":"turTru1"
 					}
 				],
@@ -416,38 +416,8 @@
 				"scientificName":"Loxodonta africana",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_3",
+						"ensemblVersion":"82_3",
 						"name":"Loxafr3.0"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"cjacchus",
-				"scientificName":"Callithrix jacchus",
-				"assemblies":[
-					{
-						"ensemblVersion":"79_321",
-						"name":"C_jacchus3.2.1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"nleucogenys",
-				"scientificName":"Nomascus leucogenys",
-				"assemblies":[
-					{
-						"ensemblVersion":"79_1",
-						"name":"Nleu1.0"
 					}
 				],
 				"data":[
@@ -461,23 +431,8 @@
 				"scientificName":"Anas platyrhynchos",
 				"assemblies":[
 					{
-						"ensemblVersion":"79_1",
+						"ensemblVersion":"82_1",
 						"name":"BGI_duck_1.0"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"falbicollis",
-				"scientificName":"Ficedula albicollis",
-				"assemblies":[
-					{
-						"ensemblVersion":"79_1",
-						"name":"FicAlb_1.4"
 					}
 				],
 				"data":[
@@ -493,7 +448,7 @@
 				"scientificName":"Caenorhabditis elegans",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_245",
+						"ensemblVersion":"29_82_245",
 						"name":"WBcel235"
 					}
 				],
@@ -509,7 +464,7 @@
 				"scientificName":"Drosophila melanogaster",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_6",
+						"ensemblVersion":"29_82_6",
 						"name":"BDGP6"
 					}
 				],
@@ -525,23 +480,8 @@
 				"scientificName":"Drosophila simulans",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_1",
-						"name":"WUGSC1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"dyakuba",
-				"scientificName":"Drosophila yakuba",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"dyak_r1.3"
+						"ensemblVersion":"29_82_1",
+						"name":"GCA_000259055.1"
 					}
 				],
 				"data":[
@@ -555,7 +495,7 @@
 				"scientificName":"Anopheles gambiae",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_4",
+						"ensemblVersion":"29_82_4",
 						"name":"AgamP4"
 					}
 				],
@@ -567,87 +507,12 @@
 				]
 			},
 			{
-				"id":"adarlingi",
-				"scientificName":"Anopheles darlingi",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_3",
-						"name":"AdarC1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"nvectensis",
-				"scientificName":"Nematostella vectensis",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"ASM20922v1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"spurpuratus",
-				"scientificName":"Strongylocentrotus purpuratus",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_3",
-						"name":"GCA_000002235.2"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
 				"id":"bmori",
 				"scientificName":"Bombyx mori",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_1",
-						"name":"Bmor1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"aaegypti",
-				"scientificName":"Aedes aegypti",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_3",
-						"name":"AaegL3"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"apisum",
-				"scientificName":"Acyrthosiphon pisum",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_2",
-						"name":"GCA_000142985.2"
+						"ensemblVersion":"29_82_1",
+						"name":"GCA_000151625.1"
 					}
 				],
 				"data":[
@@ -663,8 +528,8 @@
 				"scientificName":"Saccharomyces cerevisiae",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_4",
-						"name":"R64_1_1"
+						"ensemblVersion":"29_82_4",
+						"name":"R64-1-1"
 					}
 				],
 				"data":[
@@ -679,7 +544,7 @@
 				"scientificName":"Schizosaccharomyces pombe",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_2",
+						"ensemblVersion":"29_82_2",
 						"name":"ASM294v2"
 					}
 				],
@@ -694,7 +559,7 @@
 				"scientificName":"Aspergillus fumigatus",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_2",
+						"ensemblVersion":"29_82_2",
 						"name":"CADRE"
 					}
 				],
@@ -709,7 +574,7 @@
 				"scientificName":"Aspergillus niger",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_1",
+						"ensemblVersion":"29_82_1",
 						"name":"CADRE"
 					}
 				],
@@ -724,68 +589,8 @@
 				"scientificName":"Aspergillus nidulans",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_6",
+						"ensemblVersion":"29_82_6",
 						"name":"ASM1142v1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"aoryzae",
-				"scientificName":"Aspergillus oryzae",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_2",
-						"name":"CADRE2"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"foxysporum",
-				"scientificName":"Fusarium oxysporum",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_2",
-						"name":"FO2"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"pgraminis",
-				"scientificName":"Puccinia graminis",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"ASM14992v1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"ptriticina",
-				"scientificName":"Puccinia triticina",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"ASM15152v1"
 					}
 				],
 				"data":[
@@ -799,68 +604,8 @@
 				"scientificName":"Magnaporthe oryzae",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_8",
+						"ensemblVersion":"29_82_8",
 						"name":"MG8"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"umaydis",
-				"scientificName":"Ustilago maydis",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"UM1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"ssclerotiorum",
-				"scientificName":"Sclerotinia sclerotiorum",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"ASM14694v1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"cneoformans",
-				"scientificName":"Cryptococcus neoformans",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"GCA_000091045.1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"ztritici",
-				"scientificName":"Zymoseptoria tritici",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_2",
-						"name":"MG2"
 					}
 				],
 				"data":[
@@ -876,7 +621,7 @@
 				"scientificName":"Plasmodium falciparum",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_3",
+						"ensemblVersion":"29_82_3",
 						"name":"ASM276v1"
 					}
 				],
@@ -892,7 +637,7 @@
 				"scientificName":"Leishmania major",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_2",
+						"ensemblVersion":"29_82_2",
 						"name":"ASM272v2"
 					}
 				],
@@ -907,7 +652,7 @@
 				"scientificName":"Dictyostelium discoideum",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_1",
+						"ensemblVersion":"29_82_1",
 						"name":"dictybase.01"
 					}
 				],
@@ -922,7 +667,7 @@
 				"scientificName":"Giardia lamblia",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_1",
+						"ensemblVersion":"29_82_1",
 						"name":"GCA_000002435.1"
 					}
 				],
@@ -937,23 +682,8 @@
 				"scientificName":"Pythium ultimum",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_1",
+						"ensemblVersion":"29_82_1",
 						"name":"pug"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"alaibachii",
-				"scientificName":"Albugo laibachii",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"ENA1"
 					}
 				],
 				"data":[
@@ -969,7 +699,7 @@
 				"scientificName":"Arabidopsis thaliana",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_10",
+						"ensemblVersion":"29_82_10",
 						"name":"TAIR10"
 					}
 				],
@@ -985,23 +715,8 @@
 				"scientificName":"Arabidopsis lyrata",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_10",
+						"ensemblVersion":"29_82_10",
 						"name":"v.1.0"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"bdistachyon",
-				"scientificName":"Brachypodium distachyon",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_12",
-						"name":"v1.0"
 					}
 				],
 				"data":[
@@ -1015,7 +730,7 @@
 				"scientificName":"Oryza sativa",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_7",
+						"ensemblVersion":"29_82_7",
 						"name":"IRGSP-1.0"
 					}
 				],
@@ -1030,7 +745,7 @@
 				"scientificName":"Glycine max",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_1",
+						"ensemblVersion":"29_82_1",
 						"name":"V1.0"
 					}
 				],
@@ -1045,7 +760,7 @@
 				"scientificName":"Vitis vinifera",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_3",
+						"ensemblVersion":"29_82_3",
 						"name":"IGGP_12x"
 					}
 				],
@@ -1060,7 +775,7 @@
 				"scientificName":"Zea mays",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_6",
+						"ensemblVersion":"29_82_6",
 						"name":"AGPv3"
 					}
 				],
@@ -1075,23 +790,8 @@
 				"scientificName":"Hordeum vulgare",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_2",
-						"name":"030312v2"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"macuminata",
-				"scientificName":"Musa acuminata",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"MA1"
+						"ensemblVersion":"29_82_2",
+						"name":"082214v1"
 					}
 				],
 				"data":[
@@ -1105,68 +805,8 @@
 				"scientificName":"Sorghum bicolor",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_14",
+						"ensemblVersion":"29_82_14",
 						"name":"Sorbi1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"sitalica",
-				"scientificName":"Setaria italica",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_21",
-						"name":"JGIv2.0"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"taestivum",
-				"scientificName":"Triticum aestivum",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_2",
-						"name":"IWGSC2"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"brapa",
-				"scientificName":"Brassica rapa",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"IVFCAASv1"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"ptrichocarpa",
-				"scientificName":"Populus trichocarpa",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_20",
-						"name":"JGI2.0"
 					}
 				],
 				"data":[
@@ -1180,8 +820,8 @@
 				"scientificName":"Solanum lycopersicum",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_240",
-						"name":"SL2.40"
+						"ensemblVersion":"29_82_250",
+						"name":"GCA_000188115.2"
 					}
 				],
 				"data":[
@@ -1195,53 +835,8 @@
 				"scientificName":"Solanum tuberosum",
 				"assemblies":[
 					{
-						"ensemblVersion":"26_79_4",
+						"ensemblVersion":"29_82_4",
 						"name":"3.0"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"smoellendorffii",
-				"scientificName":"Selaginella moellendorffii",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"v1.0"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"creinhardtii",
-				"scientificName":"Chlamydomonas reinhardtii",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"v3.0"
-					}
-				],
-				"data":[
-					"genome",
-					"gene",
-					"variation"
-				]
-			},
-			{
-				"id":"cmerolae",
-				"scientificName":"Cyanidioschyzon merolae",
-				"assemblies":[
-					{
-						"ensemblVersion":"26_79_1",
-						"name":"ASM9120v1"
 					}
 				],
 				"data":[

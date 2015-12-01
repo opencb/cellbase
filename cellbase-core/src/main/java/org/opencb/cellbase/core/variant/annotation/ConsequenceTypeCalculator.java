@@ -36,18 +36,18 @@ public abstract class ConsequenceTypeCalculator {
     }
 
     protected void solveRegulatoryRegions(List<RegulatoryRegion> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
-        if(regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
+        if (regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
             ConsequenceType consequenceType = new ConsequenceType();
             SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
             consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
             consequenceTypeList.add(consequenceType);
-            boolean TFBSFound=false;
-            for (int i=0; (i<regulatoryRegionList.size() && !TFBSFound); i++) {
+            boolean tfbsFound = false;
+            for (int i = 0; (i < regulatoryRegionList.size() && !tfbsFound); i++) {
                 String regulatoryRegionType = regulatoryRegionList.get(i).getType();
-                TFBSFound = regulatoryRegionType!=null && (regulatoryRegionType.equals("TF_binding_site") ||
-                        regulatoryRegionList.get(i).getType().equals("TF_binding_site_motif"));
+                tfbsFound = regulatoryRegionType != null && (regulatoryRegionType.equals("TF_binding_site")
+                        || regulatoryRegionList.get(i).getType().equals("TF_binding_site_motif"));
             }
-            if (TFBSFound) {
+            if (tfbsFound) {
                 consequenceType = new ConsequenceType();
                 sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT);
                 consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
@@ -56,22 +56,21 @@ public abstract class ConsequenceTypeCalculator {
         }
     }
 
-    protected void decideStopCodonModificationAnnotation(Set<String> SoNames, String referenceCodon,
-                                                         char[] modifiedCodonArray) {
+    protected void decideStopCodonModificationAnnotation(Set<String> soNames, String referenceCodon, char[] modifiedCodonArray) {
 
-        Map<String, Boolean> replacementMap = VariantAnnotationUtils.isSynonymousCodon.get(referenceCodon);
-        if(replacementMap!=null) {
+        Map<String, Boolean> replacementMap = VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(referenceCodon);
+        if (replacementMap != null) {
             Boolean isSynonymous = replacementMap.get(String.valueOf(modifiedCodonArray));
-            if (isSynonymous!=null) {
+            if (isSynonymous != null) {
                 if (isSynonymous) {
                     if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
-                        SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
+                        soNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
                     }
                 } else {
                     if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
-                        SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                        soNames.add(VariantAnnotationUtils.STOP_LOST);
                     } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
-                        SoNames.add(VariantAnnotationUtils.STOP_GAINED);
+                        soNames.add(VariantAnnotationUtils.STOP_GAINED);
                     }
                 }
             }
@@ -80,12 +79,12 @@ public abstract class ConsequenceTypeCalculator {
 
     protected void solveMiRNA(int cdnaVariantStart, int cdnaVariantEnd, boolean isIntronicVariant) {
         if (transcript.getBiotype().equals(VariantAnnotationUtils.MIRNA)) {  // miRNA with miRBase data
-            if(gene.getMirna()!=null) {
+            if (gene.getMirna() != null) {
                 if (cdnaVariantStart == -1) {  // Probably deletion starting before the miRNA location
                     cdnaVariantStart = 1;       // Truncate to the first transcript position to avoid null exception
                 }
                 if (cdnaVariantEnd == -1) {    // Probably deletion ending after the miRNA location
-                    cdnaVariantEnd = gene.getMirna().getSequence().length();  // Truncate to the last transcript position to avoid null exception
+                    cdnaVariantEnd = gene.getMirna().getSequence().length();  // Truncate to the last transcript position to avoid NPE
                 }
                 List<MiRNAGene.MiRNAMature> miRNAMatureList = gene.getMirna().getMatures();
                 int i = 0;
@@ -116,4 +115,15 @@ public abstract class ConsequenceTypeCalculator {
         SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
     }
 
+    protected List<SequenceOntologyTerm> getSequenceOntologyTerms(HashSet<String> soNames) {
+        List<SequenceOntologyTerm> sequenceOntologyTerms = new ArrayList<>(soNames.size());
+        for (String name : soNames) {
+            sequenceOntologyTerms.add(newSequenceOntologyTerm(name));
+        }
+        return sequenceOntologyTerms;
+    }
+
+    private SequenceOntologyTerm newSequenceOntologyTerm(String name) {
+        return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
+    }
 }

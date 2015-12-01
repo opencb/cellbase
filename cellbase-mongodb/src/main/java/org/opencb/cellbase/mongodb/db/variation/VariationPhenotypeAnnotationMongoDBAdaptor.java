@@ -144,7 +144,8 @@ public class VariationPhenotypeAnnotationMongoDBAdaptor extends MongoDBAdaptor i
 
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
+            QueryBuilder builder = QueryBuilder.start("chromosome") .is(region.getChromosome())
+                    .and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
             queries.add(builder.get());
             ids.add(region.toString());
         }

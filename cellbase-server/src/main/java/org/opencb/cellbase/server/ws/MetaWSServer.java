@@ -59,7 +59,7 @@ public class MetaWSServer extends GenericRestWSServer {
         return getAllSpecies();
     }
 
-    /**
+    /*
      * Auxiliar methods
      */
     @GET

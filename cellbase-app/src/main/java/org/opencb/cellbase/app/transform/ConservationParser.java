@@ -16,9 +16,9 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.core.common.ConservationScoreRegion;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ import java.util.*;
 
 public class ConservationParser extends CellBaseParser {
 
-    private static int CHUNK_SIZE = 2000;
+    private static final int CHUNK_SIZE = 2000;
 
     private Logger logger;
     private Path conservedRegionPath;
@@ -42,7 +42,9 @@ public class ConservationParser extends CellBaseParser {
     private CellBaseFileSerializer fileSerializer;
     private Map<String, String> outputFileNames;
     // Download data:
-    // for i in `seq 1 22`; do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz; done
+    // for i in `seq 1 22`;
+    // do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz;
+    // done
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
     public ConservationParser(Path conservedRegionPath, CellBaseFileSerializer serializer) {
@@ -84,37 +86,37 @@ public class ConservationParser extends CellBaseParser {
 
         // Reading all files in phastCons folder
         DirectoryStream<Path> directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"), "*.wigFix.gz");
-        for (Path path: directoryStream) {
+        for (Path path : directoryStream) {
             chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
             chromosomes.add(chromosome);
-            files.put(chromosome+"phastCons", path);
+            files.put(chromosome + "phastCons", path);
         }
 
         // Reading all files in phylop folder
         directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phylop"), "*.wigFix.gz");
-        for (Path path: directoryStream) {
+        for (Path path : directoryStream) {
             chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
             chromosomes.add(chromosome);
-            files.put(chromosome+"phylop", path);
+            files.put(chromosome + "phylop", path);
         }
 
         /*
          * Now we can iterate over all the chromosomes found and process the files
          */
         logger.debug("Chromosomes found '{}'", chromosomes.toString());
-        for(String chr : chromosomes){
-            logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr+"phastCons"));
-            processWigFixFile(files.get(chr+"phastCons"), "phastCons");
+        for (String chr : chromosomes) {
+            logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr + "phastCons"));
+            processWigFixFile(files.get(chr + "phastCons"), "phastCons");
 
-            logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr+"phylop"));
-            processWigFixFile(files.get(chr+"phylop"), "phylop");
+            logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr + "phylop"));
+            processWigFixFile(files.get(chr + "phylop"), "phylop");
         }
     }
 
 
     private void gerpParser(Path gerpFolderPath) throws IOException {
         DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
-        for (Path path: pathDirectoryStream) {
+        for (Path path : pathDirectoryStream) {
             logger.debug("Processing file '{}'", path.getFileName().toString());
             String[] chromosome = path.getFileName().toString().replaceFirst("chr", "").split("\\.");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
@@ -141,7 +143,8 @@ public class ConservationParser extends CellBaseParser {
             }
 
             // we need to serialize the last chunk that might be incomplete
-            ConservationScoreRegion conservationScoreRegion = new ConservationScoreRegion(chromosome[0], start, start + val.size() - 1, "gerp", val);
+            ConservationScoreRegion conservationScoreRegion =
+                    new ConservationScoreRegion(chromosome[0], start, start + val.size() - 1, "gerp", val);
             fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome[0]));
 
             bufferedReader.close();
@@ -153,17 +156,17 @@ public class ConservationParser extends CellBaseParser {
 
         String line;
         String chromosome = "";
-        int start = 0, end=0;
+        int start = 0, end = 0;
         float value;
         Map<String, String> attributes = new HashMap<>();
 //        ConservedRegion conservedRegion =  null;
         List<Float> values = new ArrayList<>();
-        ConservationScoreRegion conservedRegion =  null;
+        ConservationScoreRegion conservedRegion = null;
 
         while ((line = bufferedReader.readLine()) != null) {
             if (line.startsWith("fixedStep")) {
                 //new group, save last
-                if(conservedRegion != null){
+                if (conservedRegion != null) {
                     conservedRegion.setEnd(end);
                     conservedRegion = new ConservationScoreRegion(chromosome, start, end, conservationSource, values);
                     fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
@@ -189,8 +192,8 @@ public class ConservationParser extends CellBaseParser {
                 end++;
                 int endChunk = end / CHUNK_SIZE;
 
-                if(startChunk != endChunk) {
-                    conservedRegion = new ConservationScoreRegion(chromosome, start, end-1, conservationSource, values);
+                if (startChunk != endChunk) {
+                    conservedRegion = new ConservationScoreRegion(chromosome, start, end - 1, conservationSource, values);
                     fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
                     values.clear();
                     start = end;

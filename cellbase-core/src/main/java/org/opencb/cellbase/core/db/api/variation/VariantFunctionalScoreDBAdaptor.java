@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.common;
+package org.opencb.cellbase.core.db.api.variation;
+
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
-@Deprecated
-public class ConservationScoreRegionChunk extends ConservationScoreRegion {
+/**
+ * Created by imedina on 16/11/15.
+ */
+public interface VariantFunctionalScoreDBAdaptor {
 
-    private int chunkId;
 
-    public ConservationScoreRegionChunk(String chromosome, int start, int end, String type, int chunkId, List<Float> values) {
-        super(chromosome, start, end, type, values);
-        this.chunkId = chunkId;
-    }
+    QueryResult getByVariant(String chromosome, int position, String reference, String alternate, QueryOptions queryOptions);
 
-    public int getChunkId() {
-        return chunkId;
-    }
 
-    public void setChunkId(int chunkId) {
-        this.chunkId = chunkId;
-    }
+    QueryResult getByVariant(Variant variant, QueryOptions queryOptions);
+
+    List<QueryResult> getAllByVariantList(List<Variant> variantList, QueryOptions queryOptions);
+
 }

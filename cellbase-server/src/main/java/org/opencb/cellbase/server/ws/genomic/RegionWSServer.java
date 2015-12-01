@@ -54,7 +54,8 @@ public class RegionWSServer extends GenericRestWSServer {
 //    private List<String> exclude = new ArrayList<>();
 
     public RegionWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                          @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                          @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
 //        this.exclude = Arrays.asList(exclude.trim().split(","));
     }
@@ -103,11 +104,7 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     private boolean hasHistogramQueryParam() {
-        if (getHistogramParameter().toLowerCase().equals("true")) {
-            return true;
-        } else {
-            return false;
-        }
+        return Boolean.parseBoolean(getHistogramParameter());
     }
 
     @POST
@@ -145,7 +142,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 QueryResult res = geneDBAdaptor.getIntervalFrequencies(regions.get(0), queryOptions);
                 return createOkResponse(res);
             } else {
-                if(biotype != null && !biotype.equals("")) {
+                if (biotype != null && !biotype.equals("")) {
                     queryOptions.put("biotype", Splitter.on(",").splitToList(biotype));
                 }
 //                System.out.println("queryOptions = " + queryOptions.get("exclude"));
@@ -161,7 +158,8 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{chrRegionId}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the transcripts objects")
-    public Response getTranscriptByRegion(@PathParam("chrRegionId") String chregionId, @DefaultValue("") @QueryParam("biotype") String biotype) {
+    public Response getTranscriptByRegion(@PathParam("chrRegionId") String chregionId,
+                                          @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
@@ -214,10 +212,10 @@ public class RegionWSServer extends GenericRestWSServer {
                 queryOptions.put("interval", getHistogramIntervalSize());
                 return createOkResponse(variationDBAdaptor.getAllIntervalFrequencies(regions, queryOptions));
             } else {
-                if(!consequenceTypes.equals("")) {
+                if (!consequenceTypes.equals("")) {
                     queryOptions.put("consequence_type", consequenceTypes);
                 }
-                if(!phenotype.equals("")) {
+                if (!phenotype.equals("")) {
                     queryOptions.put("phenotype", phenotype);
                 }
                 return createOkResponse(variationDBAdaptor.getAllByRegionList(regions, queryOptions));
@@ -235,20 +233,13 @@ public class RegionWSServer extends GenericRestWSServer {
             parseQueryParams();
             MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(query);
-
             if (hasHistogramQueryParam()) {
-//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getIntervalFrequencies(
-//						regions.get(0), getHistogramIntervalSize());
                 QueryResult queryResult = mutationDBAdaptor.getIntervalFrequencies(regions.get(0), queryOptions);
-//				return generateResponse(query, intervalList);
                 return createOkResponse(queryResult);
             } else {
-//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllSequencesByRegionList(regions);
                 List<QueryResult> queryResults = mutationDBAdaptor.getAllByRegionList(regions, queryOptions);
-//				return this.generateResponse(query, "MUTATION", mutationList);
                 return createOkResponse(queryResults);
             }
-
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -285,13 +276,13 @@ public class RegionWSServer extends GenericRestWSServer {
             if (hasHistogramQueryParam()) {
                 return null;
             } else {
-                if(gene != null && !gene.equals("")) {
+                if (gene != null && !gene.equals("")) {
                     queryOptions.add("gene", Arrays.asList(gene.split(",")));
                 }
-                if(id != null && !id.equals("")) {
+                if (id != null && !id.equals("")) {
                     queryOptions.add("id", Arrays.asList(id.split(",")));
                 }
-                if(phenotype != null && !phenotype.equals("")) {
+                if (phenotype != null && !phenotype.equals("")) {
                     queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
                 }
 //                List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(regions, queryOptions);
@@ -331,21 +322,15 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
-//				List<IntervalFeatureFrequency> intervalList = mutationDBAdaptor.getIntervalFrequencies(
-//						regions.get(0), getHistogramIntervalSize());
                 QueryResult queryResult = variationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
-//				return generateResponse(query, intervalList);
                 return createOkResponse(queryResult);
             } else {
                 if (source != null && !source.equals("")) {
                     queryOptions.put("source", Splitter.on(",").splitToList(source));
                 }
-//				List<List<MutationPhenotypeAnnotation>> mutationList = mutationDBAdaptor.getAllSequencesByRegionList(regions);
                 List<QueryResult> queryResults = variationDBAdaptor.getAllPhenotypeByRegion(regions, queryOptions);
-//				return this.generateResponse(query, "MUTATION", mutationList);
                 return createOkResponse(queryResults);
             }
-
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -354,7 +339,8 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{chrRegionId}/structural_variation")
     public Response getStructuralVariationByRegion(@PathParam("chrRegionId") String query,
-                                                   @QueryParam("min_length") Integer minLength, @QueryParam("max_length") Integer maxLength) {
+                                                   @QueryParam("min_length") Integer minLength,
+                                                   @QueryParam("max_length") Integer maxLength) {
         try {
             parseQueryParams();
             StructuralVariationDBAdaptor structuralVariationDBAdaptor = dbAdaptorFactory
@@ -409,7 +395,8 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regions = Region.parseRegions(query);
 
             if (hasHistogramQueryParam()) {
-                List<IntervalFeatureFrequency> intervalList = tfbsDBAdaptor.getAllTfIntervalFrequencies(regions.get(0),	getHistogramIntervalSize());
+                List<IntervalFeatureFrequency> intervalList = tfbsDBAdaptor.getAllTfIntervalFrequencies(regions.get(0),
+                        getHistogramIntervalSize());
                 return generateResponse(query, intervalList);
             } else {
                 return createOkResponse(tfbsDBAdaptor.getAllByRegionList(regions, queryOptions));
@@ -427,52 +414,16 @@ public class RegionWSServer extends GenericRestWSServer {
                                   @DefaultValue("") @QueryParam("class") String featureClass) {
         try {
             parseQueryParams();
-            RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.assembly);
+            RegulatoryRegionDBAdaptor regRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.assembly);
             List<Region> regions = Region.parseRegions(chregionId);
             queryOptions.put("featureType", (!featureType.equals("")) ? Splitter.on(",").splitToList(featureType) : null);
-            queryOptions.put("featureClass",(!featureClass.equals("")) ? Splitter.on(",").splitToList(featureClass) : null);
+            queryOptions.put("featureClass", (!featureClass.equals("")) ? Splitter.on(",").splitToList(featureClass) : null);
 //            logger.info(regions.get(0).toString());
-            return createOkResponse(regulatoryRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
+            return createOkResponse(regRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
-
-//    @GET
-//    @Path("/{chrRegionId}/regulatory")
-//    public Response getRegulatoryByRegion(@PathParam("chrRegionId") String chregionId,
-//                                          @DefaultValue("") @QueryParam("type") String type) {
-//        try {
-//            parseQueryParams();
-//            RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(this.species, this.assembly);
-//            /**
-//             * type ["open chromatin", "Polymerase", "HISTONE",
-//             * "Transcription Factor"]
-//             **/
-//            List<Region> regions = Region.parseRegions(chregionId);
-//
-////			if (hasHistogramQueryParam()) {
-////				// return generateResponse(chregionId,
-////				// getHistogramByFeatures(results));
-////				return generateResponse(chregionId,
-////						regulatoryRegionDBAdaptor.getAllRegulatoryRegionIntervalFrequencies(regions.get(0),
-////								getHistogramIntervalSize(), type));
-////			} else {
-////				List<List<RegulatoryRegion>> results;
-////				if (type.equals("")) {
-////					results = regulatoryRegionDBAdaptor.getAllSequencesByRegionList(regions);
-////				} else {
-////					results = regulatoryRegionDBAdaptor.getAllSequencesByRegionList(regions, Arrays.asList(type.split(",")));
-////				}
-////				return generateResponse(chregionId, "REGULATORY_REGION", results);
-////			}
-////            return generateResponse(chregionId, regulatoryRegionDBAdaptor.getByRegionList(regions, Arrays.asList(type.split(","))));
-//            return Response.ok().build();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getRegulatoryByRegion", e.toString());
-//        }
-//    }
 
 //    @GET
 //    @Path("/{chrRegionId}/mirna_target")
@@ -528,7 +479,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             List<Region> regions = Region.parseRegions(query);
-            ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species,	this.assembly);
+            ConservedRegionDBAdaptor conservedRegionDBAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(this.species, this.assembly);
             return createOkResponse(conservedRegionDBAdaptor.getAllByRegionList(regions, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -571,9 +522,11 @@ public class RegionWSServer extends GenericRestWSServer {
         sb.append("Chr. region format: chr:start-end (i.e.: 7:245000-501560)\n\n\n");
         sb.append("Resources:\n");
         sb.append("- gene: This resource obtain the genes belonging to one of the regions specified.\n");
-        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, source, description.\n\n");
+        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, "
+                + "source, description.\n\n");
         sb.append("- transcript: This resource obtain the transcripts belonging to one of the regions specified.\n");
-        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, coding region start, coding region end, cdna coding start, cdna coding end, description.\n\n");
+        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, "
+                + "coding region start, coding region end, cdna coding start, cdna coding end, description.\n\n");
         sb.append("- snp: To obtain the SNPs belonging to one of the regions specified write snp\n");
         sb.append(" Output columns: rsID, chromosome, position, Ensembl consequence type, SO consequence type, sequence.\n\n");
         sb.append("- sequence: To obtain the genomic sequence of one region write sequence as resource\n\n");

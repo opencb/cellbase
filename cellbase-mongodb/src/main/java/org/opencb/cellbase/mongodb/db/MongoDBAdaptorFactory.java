@@ -28,10 +28,10 @@ import org.opencb.cellbase.core.db.api.systems.PathwayDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.*;
 import org.opencb.cellbase.mongodb.db.core.*;
-import org.opencb.cellbase.mongodb.db.systems.PathwayMongoDBAdaptor;
-import org.opencb.cellbase.mongodb.db.systems.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.regulatory.RegulatoryRegionMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.regulatory.TfbsMongoDBAdaptor;
+import org.opencb.cellbase.mongodb.db.systems.PathwayMongoDBAdaptor;
+import org.opencb.cellbase.mongodb.db.systems.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.variation.*;
 import org.opencb.datastore.core.config.DataStoreServerAddress;
 import org.opencb.datastore.mongodb.MongoDBConfiguration;
@@ -49,19 +49,19 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     private MongoDataStoreManager mongoDataStoreManager;
 //    private static Map<String, MongoDataStore> mongoDatastoreFactory;
 
-    public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration){
+    public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
         super(cellBaseConfiguration);
 
         init();
     }
 
     private void init() {
-        if(mongoDataStoreManager == null) {
+        if (mongoDataStoreManager == null) {
             String[] hosts = cellBaseConfiguration.getDatabase().getHost().split(",");
             List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
             for (String host : hosts) {
                 String[] hostPort = host.split(":");
-                if(hostPort.length == 1) {
+                if (hostPort.length == 1) {
                     dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], 27017));
                 } else {
                     dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], Integer.parseInt(hostPort[1])));
@@ -73,6 +73,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 //        logger = LoggerFactory.getLogger(this.getClass());
     }
+
     private MongoDataStore createMongoDBDatastore(String species, String assembly) {
         /**
          Database name has the following pattern in lower case and with no '.' in the name:
@@ -82,27 +83,29 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          **/
         // We need to look for the species object in the configuration
         CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);
-        if(speciesObject != null) {
+        if (speciesObject != null) {
             species = speciesObject.getId();
             assembly = getAssembly(speciesObject, assembly).toLowerCase();
 
             if (species != null && !species.isEmpty() && assembly != null && !assembly.isEmpty()) {
 
                 // Database name is built following the above pattern
-                String database = "cellbase" + "_" + species + "_" + assembly.replaceAll("\\.", "").replaceAll("-", "").replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
+                String database = "cellbase" + "_" + species + "_" + assembly.replaceAll("\\.", "").replaceAll("-", "")
+                        .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
                 logger.debug("Database for the species is '{}'", database);
 
                 MongoDBConfiguration mongoDBConfiguration;
                 // For authenticated databases
-                if(!cellBaseConfiguration.getDatabase().getUser().isEmpty()
+                if (!cellBaseConfiguration.getDatabase().getUser().isEmpty()
                         && !cellBaseConfiguration.getDatabase().getPassword().isEmpty()) {
                     // MongoDB could authenticate against different databases
-                    if(cellBaseConfiguration.getDatabase().getOptions().containsKey("authenticationDatabase")) {
+                    if (cellBaseConfiguration.getDatabase().getOptions().containsKey("authenticationDatabase")) {
                         mongoDBConfiguration = MongoDBConfiguration.builder()
                                 .add("username", cellBaseConfiguration.getDatabase().getUser())
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
                                 .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"))
-                                .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"))
+                                .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions()
+                                        .get("authenticationDatabase"))
                                 .build();
                     } else {
                         mongoDBConfiguration = MongoDBConfiguration.builder()
@@ -238,6 +241,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
+        return getVariantFunctionalScoreDBAdaptor(species, null);
+    }
+
+    @Override
+    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
+
+    @Override
     public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
         return getVariantAnnotationDBAdaptor(species, null);
     }
@@ -253,6 +268,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setProteinDBAdaptor(getProteinDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setConservedRegionDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
+        variantAnnotationDBAdaptor.setVariantFunctionalScoreDBAdaptor(getVariantFunctionalScoreDBAdaptor(species, assembly));
         variantAnnotationDBAdaptor.setGenomeDBAdaptor(getGenomeDBAdaptor(species, assembly));
 
         return variantAnnotationDBAdaptor;
@@ -329,7 +345,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new PathwayMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 
 
     @Override

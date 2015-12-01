@@ -28,7 +28,6 @@ import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
@@ -44,14 +43,14 @@ import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by fjlopez on 18/03/15.
@@ -87,11 +86,11 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         this.variantAnnotationCommandOptions = variantAnnotationCommandOptions;
         this.queryOptions = new QueryOptions();
 
-        if(variantAnnotationCommandOptions.input != null) {
+        if (variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
         }
 
-        if(variantAnnotationCommandOptions.output != null) {
+        if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
         }
     }
@@ -109,8 +108,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
                 if (local) {
                     DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
-                    VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(variantAnnotationCommandOptions.species);
-                    List<QueryResult> annotationByVariantList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variants, queryOptions);
+                    VariantAnnotationDBAdaptor variantAnnotationDBAdaptor =
+                            dbAdaptorFactory.getVariantAnnotationDBAdaptor(variantAnnotationCommandOptions.species);
+                    List<QueryResult> annotationByVariantList =
+                            variantAnnotationDBAdaptor.getAnnotationByVariantList(variants, queryOptions);
 
                     ObjectMapper jsonObjectMapper = new ObjectMapper();
                     jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -146,7 +147,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 dataWriter = new VepFormatWriter(output.toString());
             }
 
-            ParallelTaskRunner<Variant, VariantAnnotation> runner = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+            ParallelTaskRunner<Variant, VariantAnnotation> runner =
+                    new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
             runner.run();
 
             if (customFiles != null) {
@@ -210,7 +212,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 }
                 logger.debug("URL set to: {}", url + ":" + port + path);
 
-                return new CellBaseWSVariantAnnotator(cellBaseClient);
+                return new CellBaseWSVariantAnnotator(cellBaseClient, queryOptions);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
@@ -224,9 +226,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         dbIndexes = new ArrayList<>(customFiles.size());
         dbOptions = new ArrayList<>(customFiles.size());
         dbLocations = new ArrayList<>(customFiles.size());
-        for (int i=0; i<customFiles.size(); i++) {
+        for (int i = 0; i < customFiles.size(); i++) {
             if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
-                Object[] dbConnection = getDBConnection(customFiles.get(i).toString()+".idx");
+                Object[] dbConnection = getDBConnection(customFiles.get(i).toString() + ".idx");
                 RocksDB rocksDB = (RocksDB) dbConnection[0];
                 Options dbOption = (Options) dbConnection[1];
                 String dbLocation = (String) dbConnection[2];
@@ -263,7 +265,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             System.exit(1);
         }
 
-        return new Object[] {db,options,dbLocation,indexingNeeded};
+        return new Object[]{db, options, dbLocation, indexingNeeded};
 
     }
 
@@ -271,28 +273,28 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
 
-        BufferedReader reader;
         try {
-            if (customFiles.get(customFileNumber).toFile().getName().endsWith(".gz")) {
-                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(customFiles.get(customFileNumber).toFile()))));
-            } else {
-                reader = Files.newBufferedReader(customFiles.get(customFileNumber), Charset.defaultCharset());
-            }
+            BufferedReader reader = FileUtils.newBufferedReader(customFiles.get(customFileNumber));
             String line;
             int lineCounter = 0;
-            while ((line = reader.readLine())!=null && (line.trim().equals("") || line.startsWith("#"))) {
-                lineCounter++;
+            while ((line = reader.readLine()) != null) {   // && (line.trim().equals("") || line.startsWith("#"))
+                if (line.trim().equals("") || line.startsWith("#")) {
+                    lineCounter++;
+                } else {
+                    break;
+                }
             }
             while (line != null) {
                 String[] fields = line.split("\t");
                 // Reference positions will not be indexed
-                if(!fields[4].equals(".")) {
+                if (!fields[4].equals(".")) {
                     String[] alternates = line.split("\t")[4].split(",");
-                    List<Map<String,Object>> parsedInfo = parseInfoAttributes(fields[7], alternates.length, customFileNumber);
-                    for (int i=0; i<alternates.length; i++) {
+                    List<Map<String, Object>> parsedInfo = parseInfoAttributes(fields[7], alternates.length, customFileNumber);
+                    for (int i = 0; i < alternates.length; i++) {
                         // INDEL
-                        if(fields[3].length()>1  || alternates[i].length()>1) {
-                            db.put((fields[0] + "_" + (Integer.valueOf(fields[1])+1) + "_" + fields[3].substring(1) + "_" + alternates[i].substring(1)).getBytes(),
+                        if (fields[3].length() > 1 || alternates[i].length() > 1) {
+                            db.put((fields[0] + "_" + (Integer.valueOf(fields[1]) + 1) + "_" + fields[3].substring(1) + "_"
+                                    + alternates[i].substring(1)).getBytes(),
                                     jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
                             // SNV
                         } else {
@@ -316,7 +318,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
         List<Map<String, Object>> infoAttributes = new ArrayList<>(numAlleles);
-        for (int i=0; i<numAlleles; i++) {
+        for (int i = 0; i < numAlleles; i++) {
             infoAttributes.add(new HashMap<>());
         }
         for (String var : info.split(";")) {
@@ -327,12 +329,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 // numAlleles and values.length may be different. For example, in the Exac vcf AN presents just one
                 // value even if there are multiple alleles or, for example, for the AC_Het provide counts for all posible
                 // heterozigous genotypes. In those cases, the hole string is pasted to all alleles
-                if(values.length==numAlleles) {
+                if (values.length == numAlleles) {
                     for (int i = 0; i < numAlleles; i++) {
                         infoAttributes.get(i).put(splits[0], getValueFromString(values[i]));
                     }
                 } else {
-                    for (int i=0; i<numAlleles; i++) {
+                    for (int i = 0; i < numAlleles; i++) {
                         infoAttributes.get(i).put(splits[0], getValueFromString(splits[1]));
                     }
                 }
@@ -431,33 +433,37 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         // Custom files
-        if(variantAnnotationCommandOptions.customFiles != null) {
+        if (variantAnnotationCommandOptions.customFiles != null) {
             String[] customFileStrings = variantAnnotationCommandOptions.customFiles.split(",");
             customFiles = new ArrayList<>(customFileStrings.length);
-            for(String customFile : customFileStrings) {
+            for (String customFile : customFileStrings) {
                 Path customFilePath = Paths.get(customFile);
                 FileUtils.checkFile(customFilePath);
-                if(!(customFilePath.toString().endsWith(".vcf") || customFilePath.toString().endsWith(".vcf.gz"))) {
+                if (!(customFilePath.toString().endsWith(".vcf") || customFilePath.toString().endsWith(".vcf.gz"))) {
                     throw new ParameterException("Only VCF format is currently accepted for custom annotation files.");
                 }
                 customFiles.add(customFilePath);
             }
-            if(variantAnnotationCommandOptions.customFileIds == null) {
-                throw new ParameterException("Parameter --custom-file-ids missing. Please, provide one short id for each custom file in a comma separated list (no spaces in betwen).");
+            if (variantAnnotationCommandOptions.customFileIds == null) {
+                throw new ParameterException("Parameter --custom-file-ids missing. Please, provide one short id for each custom file in "
+                        + "a comma separated list (no spaces in betwen).");
             }
             customFileIds = Arrays.asList(variantAnnotationCommandOptions.customFileIds.split(","));
-            if(customFileIds.size()!=customFiles.size()) {
-                throw new ParameterException("Different number of custom files and custom file ids. Please, provide one short id for each custom file in a comma separated list (no spaces in betwen).");
+            if (customFileIds.size() != customFiles.size()) {
+                throw new ParameterException("Different number of custom files and custom file ids. Please, "
+                        + "provide one short id for each custom file in a comma separated list (no spaces in between).");
             }
-            if(variantAnnotationCommandOptions.customFileFields == null) {
-                throw new ParameterException("Parameter --custom-file-fields missing. Please, provide one list of fields for each custom file in a colon separated list (no spaces in betwen).");
+            if (variantAnnotationCommandOptions.customFileFields == null) {
+                throw new ParameterException("Parameter --custom-file-fields missing. Please, provide one list of fields for each "
+                        + "custom file in a colon separated list (no spaces in betwen).");
             }
             String[] customFileFieldStrings = variantAnnotationCommandOptions.customFileFields.split(":");
-            if(customFileFieldStrings.length!=customFiles.size()) {
-                throw new ParameterException("Different number of custom files and lists of custom file fields. Please, provide one list of fields for each custom file in a colon separated list (no spaces in betwen).");
+            if (customFileFieldStrings.length != customFiles.size()) {
+                throw new ParameterException("Different number of custom files and lists of custom file fields. "
+                        + "Please, provide one list of fields for each custom file in a colon separated list (no spaces in betwen).");
             }
             customFileFields = new ArrayList<>(customFileStrings.length);
-            for(String fieldString : customFileFieldStrings) {
+            for (String fieldString : customFileFieldStrings) {
                 customFileFields.add(Arrays.asList(fieldString.split(",")));
             }
         }
