@@ -18,6 +18,10 @@ package org.opencb.cellbase.mongodb.impl;
 
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.api.ConservationDBAdaptor;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
