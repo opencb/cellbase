@@ -33,11 +33,11 @@ public interface GeneDBAdaptor<Gene> extends FeatureDBAdaptor<Gene> {
         XREFS("transcripts.xrefs", TEXT_ARRAY, ""),
         TRANSCRIPT_ID("transcripts.id", TEXT_ARRAY, ""),
         TRANSCRIPT_NAME("transcripts.name", TEXT_ARRAY, ""),
-        TFBS_NAME("transcripts.tfbs.name", TEXT_ARRAY, ""),
         TRANSCRIPT_BIOTYPE("transcripts.biotype", TEXT_ARRAY, ""),
+        TFBS_NAME("transcripts.tfbs.name", TEXT_ARRAY, ""),
         ANNOTATION_DISEASE_ID("annotation.diseases.id", TEXT_ARRAY, ""),
         ANNOTATION_DISEASE_NAME("annotation.diseases.name", TEXT_ARRAY, ""),
-        ANNOTATION_EXPRESSION_GENE("annotation.expression.name", TEXT_ARRAY, ""),
+        ANNOTATION_EXPRESSION_GENE("annotation.expression.gene", TEXT_ARRAY, ""),
         ANNOTATION_EXPRESSION_TISSUE("annotation.expression.tissue", TEXT_ARRAY, ""),
         ANNOTATION_DRUGS_NAME("annotation.drugs.name", TEXT_ARRAY, ""),
         ANNOTATION_DRUGS_GENE("annotation.drugs.gene", TEXT_ARRAY, "");

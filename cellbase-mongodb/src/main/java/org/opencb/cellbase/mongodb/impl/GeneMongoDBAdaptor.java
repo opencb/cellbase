@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
+
 /**
  * Created by imedina on 25/11/15.
  */
@@ -130,10 +132,23 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         List<Bson> andBsonList = new ArrayList<>();
 
         createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
+
         createOrQuery(query, QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
         createOrQuery(query, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+
+        createOrQuery(query, QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
+        createOrQuery(query, QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
+        createOrQuery(query, QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
+
+        createOrQuery(query, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.gene", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "annotation.expression.tissue", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.name", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.gene", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
