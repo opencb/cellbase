@@ -16,7 +16,10 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
@@ -26,10 +29,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -47,6 +47,44 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public QueryResult<Map<String, Object>> getSubstitutionScores(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult<Entry> next(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult nativeNext(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+        Bson match = Aggregates.match(parseQuery(query));
+        Bson project = Aggregates.project(Projections.include(field, "name"));
+        Bson group;
+        if (options.getBoolean("count", false)) {
+            group = Aggregates.group("$" + field, Accumulators.sum("count", 1));
+        } else {
+            group = Aggregates.group("$" + field, Accumulators.addToSet("protein", "$name"));
+        }
+        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
         return null;
     }
 

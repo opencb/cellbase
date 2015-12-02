@@ -140,21 +140,25 @@ public class QueryCommandExecutor extends CommandExecutor {
 
     private void executeProteinQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
-
-        switch (queryCommandOptions.resource) {
-            case "count":
-                System.out.println(proteinDBAdaptor.count(query).getResult().get(0));
-                break;
-            case "info":
-                query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-                Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    System.out.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
+            QueryResult queryResult = proteinDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
+            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(queryResult));
+        } else {
+            switch (queryCommandOptions.resource) {
+                case "count":
+                    System.out.println(proteinDBAdaptor.count(query).getResult().get(0));
+                    break;
+                case "info":
+                    query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        System.out.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
