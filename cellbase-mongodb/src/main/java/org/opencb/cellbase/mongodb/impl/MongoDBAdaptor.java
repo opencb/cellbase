@@ -72,14 +72,25 @@ public class MongoDBAdaptor {
         if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
             if (regions != null && regions.size() > 0) {
-                List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                for (Region region : regions) {
-                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
-                    Bson start = Filters.lte("start", region.getEnd());
-                    Bson end = Filters.gte("end", region.getStart());
-                    orRegionBsonList.add(Filters.and(chromosome, start, end));
+                // if there is only one region we add the AND filter directly to the andBsonList passed
+                if (regions.size() == 1) {
+                    Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
+                    Bson start = Filters.lte("start", regions.get(0).getEnd());
+                    Bson end = Filters.gte("end", regions.get(0).getStart());
+                    andBsonList.add(Filters.and(chromosome, start, end));
+                } else {
+                    // when multiple regions then we create and OR list before add it to andBsonList
+                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                    for (Region region : regions) {
+                        Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                        Bson start = Filters.lte("start", region.getEnd());
+                        Bson end = Filters.gte("end", region.getStart());
+                        orRegionBsonList.add(Filters.and(chromosome, start, end));
+                    }
+                    andBsonList.add(Filters.or(orRegionBsonList));
                 }
-                andBsonList.add(Filters.or(orRegionBsonList));
+            } else {
+                logger.warn("Region query no created, region object is null or empty.");
             }
         }
     }
@@ -101,20 +112,19 @@ public class MongoDBAdaptor {
         }
     }
 
-    protected void createOrQuery(Query query, String queryParam, String mongodbField, List<Bson> andBsonList) {
+    protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
         if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
                 List<String> queryList = query.getAsStringList(queryParam);
                 if (queryList.size() == 1) {
-                    andBsonList.add(Filters.eq(mongodbField, queryList.get(0)));
+                    andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
                 } else {
                     List<Bson> orBsonList = new ArrayList<>(queryList.size());
                     for (String queryItem : queryList) {
-                        orBsonList.add(Filters.eq(mongodbField, queryItem));
+                        orBsonList.add(Filters.eq(mongoDbField, queryItem));
                     }
                     andBsonList.add(Filters.or(orBsonList));
                 }
-//
             }
         }
     }

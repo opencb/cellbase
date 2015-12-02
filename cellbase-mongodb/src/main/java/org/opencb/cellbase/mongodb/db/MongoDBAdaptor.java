@@ -178,9 +178,23 @@ public class MongoDBAdaptor {
         return queryResults;
     }
 
+
     protected String getChunkIdPrefix(String chromosome, int position, int chunkSize) {
         return chromosome + "_" + position / chunkSize + "_" + chunkSize / 1000 + "k";
     }
+
+    protected int getChunkId(int position, int chunkSize) {
+        return position / chunkSize;
+    }
+
+    private int getChunkStart(int position, int chunkSize) {
+        return (position == 0) ? 1 : position * chunkSize;
+    }
+
+    private int getChunkEnd(int position, int chunkSize) {
+        return (position * chunkSize) + chunkSize - 1;
+    }
+
 
     public QueryResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
         QueryBuilder builder;
@@ -261,83 +275,6 @@ public class MongoDBAdaptor {
         }
         return returnFields;
     }
-
-//    @Deprecated
-//    protected BasicDBList executeFind(Document query, Document returnFields, QueryOptions options) {
-//        return executeFind(query, returnFields, options, mongoDBCollection);
-//    }
-//
-//    @Deprecated
-//    protected BasicDBList executeFind(Document query, Document returnFields, QueryOptions options, DBCollection dbCollection) {
-//        BasicDBList list = new BasicDBList();
-//
-//        if (options.getBoolean("count")) {
-//            Long count = dbCollection.count(query);
-//            list.add(new Document("count", count));
-//        }else {
-//            DBCursor cursor = dbCollection.find(query, returnFields);
-//
-//            int limit = options.getInt("limit", 0);
-//            if (limit > 0) {
-//                cursor.limit(limit);
-//            }
-//            int skip = options.getInt("skip", 0);
-//            if (skip > 0) {
-//                cursor.skip(skip);
-//            }
-//
-//            Document sort = (Document) options.get("sort");
-//            if (sort != null) {
-//                cursor.sort(sort);
-//            }
-//            try {
-//                if (cursor != null) {
-//                    while (cursor.hasNext()) {
-//                        list.add(cursor.next());
-//                    }
-//                }
-//            } finally {
-//                if (cursor != null) {
-//                    cursor.close();
-//                }
-//            }
-//        }
-//        return list;
-//    }
-
-//    @Deprecated
-//    protected QueryResult executeDistinct(Object id, String key) {
-//        return executeDistinct(id, key, mongoDBCollection);
-//    }
-//
-//    @Deprecated
-//    protected QueryResult executeDistinct(Object id, String key, DBCollection dbCollection) {
-//        QueryResult queryResult = new QueryResult();
-//        long dbTimeStart = System.currentTimeMillis();
-//        List<String> diseases = dbCollection.distinct(key);
-//        long dbTimeEnd = System.currentTimeMillis();
-//        queryResult.setId(id.toString());
-////        queryResult.setDbTime(dbTimeEnd - dbTimeStart);
-//        queryResult.setResult(diseases);
-//        queryResult.setNumResults(diseases.size());
-//
-//        return queryResult;
-//    }
-
-//    @Deprecated
-//    protected QueryResult executeQuery(Object id, Document query, QueryOptions options) {
-//        return executeQuery(id, query, options, mongoDBCollection);
-//    }
-
-//    @Deprecated
-//    protected QueryResult executeQuery(Object id, Document query, QueryOptions options, DBCollection dbCollection) {
-//        return executeQueryList(Arrays.asList(id), Arrays.asList(query), options, dbCollection).get(0);
-//    }
-//
-//    @Deprecated
-//    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<Document> queries, QueryOptions options) {
-//        return executeQueryList(ids, queries, options, mongoDBCollection);
-//    }
 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         List<QueryResult> queryResult = new ArrayList<>(regions.size());
@@ -496,17 +433,6 @@ public class MongoDBAdaptor {
     }
 
 
-    protected int getChunkId(int position, int chunksize) {
-        return position / chunksize;
-    }
-
-    private int getChunkStart(int id, int chunksize) {
-        return (id == 0) ? 1 : id * chunksize;
-    }
-
-    private int getChunkEnd(int id, int chunksize) {
-        return (id * chunksize) + chunksize - 1;
-    }
 
 
     /*
