@@ -212,8 +212,11 @@ public class CliOptionsParser {
         @Parameter(names = {"--id"}, description = "", required = false, arity = 1)
         public String id;
 
-        @Parameter(names = {"-r", "--resource"}, description = "", required = true, arity = 1)
+        @Parameter(names = {"-r", "--resource"}, description = "", required = false, arity = 1)
         public String resource;
+
+        @Parameter(names = {"--group-by"}, description = "", required = false, arity = 1)
+        public String groupBy;
 
         @DynamicParameter(names = {"-O", "--options"}, description = "Filter options in the form of -Oa=b, eg. -Obiotype=protein_coding,pseudogene -Oregion=3:44444-55555", required = false)
         public Map<String, String> options = new HashMap<>();
