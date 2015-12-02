@@ -17,10 +17,11 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.ConservationDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -153,16 +154,15 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //
 
     @Override
-    public ConservationDBAdaptor getConservedRegionDBAdaptor(String species) {
-        return getConservedRegionDBAdaptor(species, null);
+    public ConservationDBAdaptor getConservationDBAdaptor(String species) {
+        return getConservationDBAdaptor(species, null);
     }
 
     @Override
-    public ConservationDBAdaptor getConservedRegionDBAdaptor(String species, String assembly) {
+    public ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 
     @Override
     public GeneDBAdaptor getGeneDBAdaptor(String species) {
@@ -178,17 +178,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
 
-//    @Override
-//    public TranscriptDBAdaptor getTranscriptDBAdaptor(String species) {
-//        return getTranscriptDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new TranscriptMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-//
+    @Override
+    public TranscriptDBAdaptor getTranscriptDBAdaptor(String species) {
+        return getTranscriptDBAdaptor(species, null);
+    }
+
+    @Override
+    public TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new TranscriptMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
 //
 //    @Override
 //    public XRefsDBAdaptor getXRefDBAdaptor(String species) {
@@ -249,28 +249,28 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //    }
 //
 //
-//    @Override
-//    public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
-//        return getClinicalDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-//
-//
-//    @Override
-//    public ProteinDBAdaptor getProteinDBAdaptor(String species) {
-//        return getProteinDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
+    @Override
+    public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
+        return getClinicalDBAdaptor(species, null);
+    }
+
+    @Override
+    public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
+
+    @Override
+    public ProteinDBAdaptor getProteinDBAdaptor(String species) {
+        return getProteinDBAdaptor(species, null);
+    }
+
+    @Override
+    public ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
 //
 //
 //    @Override

@@ -80,14 +80,15 @@ public abstract class DBAdaptorFactory {
     public abstract GeneDBAdaptor getGeneDBAdaptor(String species, String assembly);
 
 
+    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species);
+
+    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
+
+
     public abstract VariantDBAdaptor getVariationDBAdaptor(String species);
 
     public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
 
-
-//    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species);
-//
-//    public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
 //
 //
 //    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
@@ -95,9 +96,9 @@ public abstract class DBAdaptorFactory {
 //    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
 //
 //
-//    public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
-//
-//    public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
+    public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
+
+    public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
 //
 //
 //    public abstract XRefDBAdaptor getXRefDBAdaptor(String species);
@@ -125,9 +126,9 @@ public abstract class DBAdaptorFactory {
 //    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly);
 //
 //
-//    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
-//
-//    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
+    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
+
+    public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
 //
 //
 //    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species);
@@ -145,8 +146,10 @@ public abstract class DBAdaptorFactory {
 //    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
 //
 //
-    public abstract ConservationDBAdaptor getConservedRegionDBAdaptor(String species);
 
-    public abstract ConservationDBAdaptor getConservedRegionDBAdaptor(String species, String assembly);
+    public abstract ConservationDBAdaptor getConservationDBAdaptor(String species);
+
+    public abstract ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly);
+
 
 }
