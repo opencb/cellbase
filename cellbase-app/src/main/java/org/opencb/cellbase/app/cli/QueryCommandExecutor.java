@@ -91,7 +91,7 @@ public class QueryCommandExecutor extends CommandExecutor {
         } else {
             switch (queryCommandOptions.resource) {
                 case "count":
-                    System.out.println(geneDBAdaptor.count(query).getResult().get(0));
+                    System.out.println(geneDBAdaptor.count(query));
                     break;
                 case "info":
                     query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
