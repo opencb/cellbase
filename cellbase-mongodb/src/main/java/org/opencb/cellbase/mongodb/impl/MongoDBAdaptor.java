@@ -72,49 +72,85 @@ public class MongoDBAdaptor {
         if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
             if (regions != null && regions.size() > 0) {
-                List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                for (Region region : regions) {
-                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
-                    Bson start = Filters.lte("start", region.getEnd());
-                    Bson end = Filters.gte("end", region.getStart());
-                    orRegionBsonList.add(Filters.and(chromosome, start, end));
+                // if there is only one region we add the AND filter directly to the andBsonList passed
+                if (regions.size() == 1) {
+                    Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
+                    Bson start = Filters.lte("start", regions.get(0).getEnd());
+                    Bson end = Filters.gte("end", regions.get(0).getStart());
+                    andBsonList.add(Filters.and(chromosome, start, end));
+                } else {
+                    // when multiple regions then we create and OR list before add it to andBsonList
+                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                    for (Region region : regions) {
+                        Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                        Bson start = Filters.lte("start", region.getEnd());
+                        Bson end = Filters.gte("end", region.getStart());
+                        orRegionBsonList.add(Filters.and(chromosome, start, end));
+                    }
+                    andBsonList.add(Filters.or(orRegionBsonList));
                 }
-                andBsonList.add(Filters.or(orRegionBsonList));
+            } else {
+                logger.warn("Region query no created, region object is null or empty.");
             }
         }
     }
 
     protected void createRegionQuery(Query query, String queryParam, int chunkSize, List<Bson> andBsonList) {
+        if (chunkSize <= 0) {
+            // if chunkSize is not valid we call to the default method
+            createRegionQuery(query, queryParam, andBsonList);
+        }
+
         if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
             if (regions != null && regions.size() > 0) {
-                List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                for (Region region : regions) {
-                    Bson chunk = Filters.eq("_chunkIds", getChunkId(region.getStart(), chunkSize));
-                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
-                    Bson start = Filters.lte("start", region.getEnd());
-                    Bson end = Filters.gte("end", region.getStart());
-                    orRegionBsonList.add(Filters.and(chromosome, start, end));
+                if (regions.size() == 1) {
+                    Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
+                    andBsonList.add(chunkQuery);
+                } else {
+                    // if multiple regions we add them first to a OR list
+                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                    for (Region region : regions) {
+                        Bson chunkQuery = createChunkQuery(region, chunkSize);
+                        orRegionBsonList.add(chunkQuery);
+                    }
+                    andBsonList.add(Filters.or(orRegionBsonList));
                 }
-                andBsonList.add(Filters.or(orRegionBsonList));
             }
         }
     }
 
-    protected void createOrQuery(Query query, String queryParam, String mongodbField, List<Bson> andBsonList) {
+    private Bson createChunkQuery(Region region, int chunkSize) {
+        int startChunkId = getChunkId(region.getStart(), chunkSize);
+        int endChunkId = getChunkId(region.getEnd(), chunkSize);
+        // We only use chunks if region queried belongs to a single chunk
+        if (startChunkId == endChunkId) {
+            logger.info("Querying by chunkId, {}, {}", startChunkId, endChunkId);
+            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
+            Bson start = Filters.lte("start", region.getEnd());
+            Bson end = Filters.gte("end", region.getStart());
+            return Filters.and(chunk, start, end);
+        } else {
+            Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+            Bson start = Filters.lte("start", region.getEnd());
+            Bson end = Filters.gte("end", region.getStart());
+            return Filters.and(chromosome, start, end);
+        }
+    }
+
+    protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
         if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
                 List<String> queryList = query.getAsStringList(queryParam);
                 if (queryList.size() == 1) {
-                    andBsonList.add(Filters.eq(mongodbField, queryList.get(0)));
+                    andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
                 } else {
                     List<Bson> orBsonList = new ArrayList<>(queryList.size());
                     for (String queryItem : queryList) {
-                        orBsonList.add(Filters.eq(mongodbField, queryItem));
+                        orBsonList.add(Filters.eq(mongoDbField, queryItem));
                     }
                     andBsonList.add(Filters.or(orBsonList));
                 }
-//
             }
         }
     }
@@ -234,6 +270,19 @@ public class MongoDBAdaptor {
     protected String getChunkIdPrefix(String chromosome, int position, int chunkSize) {
         return chromosome + "_" + position / chunkSize + "_" + chunkSize / 1000 + "k";
     }
+
+    protected int getChunkId(int position, int chunkSize) {
+        return position / chunkSize;
+    }
+
+    private int getChunkStart(int id, int chunkSize) {
+        return (id == 0) ? 1 : id * chunkSize;
+    }
+
+    private int getChunkEnd(int id, int chunkSize) {
+        return (id * chunkSize) + chunkSize - 1;
+    }
+
 
     public QueryResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
         QueryBuilder builder;
@@ -548,18 +597,6 @@ public class MongoDBAdaptor {
         //        return intervalList.toString();
     }
 
-
-    protected int getChunkId(int position, int chunksize) {
-        return position / chunksize;
-    }
-
-    private int getChunkStart(int id, int chunksize) {
-        return (id == 0) ? 1 : id * chunksize;
-    }
-
-    private int getChunkEnd(int id, int chunksize) {
-        return (id * chunksize) + chunksize - 1;
-    }
 
 
     /*
