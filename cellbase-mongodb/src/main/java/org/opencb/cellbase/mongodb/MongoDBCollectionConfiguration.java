@@ -27,5 +27,6 @@ public class MongoDBCollectionConfiguration {
     public static final int CONSERVATION_CHUNK_SIZE = 2000;
     public static final int REGULATORY_REGION_CHUNK_SIZE = 2000;
     public static final int VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE = 1000;
+    public static final int CLINICAL_CHUNK_SIZE = 5000;
 
 }

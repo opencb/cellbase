@@ -40,7 +40,10 @@ public interface GeneDBAdaptor<Gene> extends FeatureDBAdaptor<Gene> {
         ANNOTATION_EXPRESSION_GENE("annotation.expression.gene", TEXT_ARRAY, ""),
         ANNOTATION_EXPRESSION_TISSUE("annotation.expression.tissue", TEXT_ARRAY, ""),
         ANNOTATION_DRUGS_NAME("annotation.drugs.name", TEXT_ARRAY, ""),
-        ANNOTATION_DRUGS_GENE("annotation.drugs.gene", TEXT_ARRAY, "");
+        ANNOTATION_DRUGS_GENE("annotation.drugs.gene", TEXT_ARRAY, ""),
+        CLINICAL_SO("so", TEXT_ARRAY, ""),
+        CLINICAL_GENE("gene", TEXT_ARRAY, ""),
+        CLINICAL_PHENOTYPE("phenotype", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;

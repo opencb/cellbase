@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -36,6 +37,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private static Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly", "include", "exclude",
             "skip", "limit", "of", "count", "json"));
+    private static String clinvarInclude = "clinvar";
+    private static String cosmicInclude = "cosmic";
+    private static String gwasInclude = "gwas";
+
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -131,14 +136,15 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (filteringOptionsEnabled(query)) {
             Bson commonFiltersBson = getCommonFilters(query);
             List<Bson> sourceSpecificFilterList = new ArrayList<>();
-            List<String> sourceContent = query.getAsStringList("source");
-            if (sourceContent == null || sourceContent.isEmpty() || sourceContains(sourceContent, "clinvar")) {
+            Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
+                    ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
+            if (sourceContent == null || sourceContent.isEmpty() || sourceContent.contains(clinvarInclude)) {
                 sourceSpecificFilterList.add(getClinvarFilters(query));
             }
-            if (sourceContent == null || sourceContent.isEmpty() || sourceContains(sourceContent, "cosmic")) {
+            if (sourceContent == null || sourceContent.isEmpty() || sourceContent.contains(cosmicInclude)) {
                 sourceSpecificFilterList.add(getCosmicFilters(query));
             }
-            if (sourceContent == null || sourceContent.isEmpty() || sourceContains(sourceContent, "gwas")) {
+            if (sourceContent == null || sourceContent.isEmpty() || sourceContent.contains(gwasInclude)) {
                 sourceSpecificFilterList.add(getGwasFilters(query));
             }
             if (sourceSpecificFilterList.size() > 0 && commonFiltersBson != null) {
@@ -174,18 +180,23 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private Bson getCommonFilters(Query query) {
-        return null;
+        List<Bson> andBsonList = new ArrayList<>();
+        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.CLINICAL_CHUNK_SIZE, andBsonList);
+
+        createOrQuery(query, QueryParams.SO.key(), "annot.consequenceTypes.soTerms.soName", andBsonList);
+        createOrQuery(query, QueryParams.GENE.key(), "_geneIds", andBsonList);
+        createOrQuery(query, QueryParams.PHENOTYPE.key(), "_phenotypes", andBsonList);
+
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return null;
+        }
     }
 
-    private Boolean sourceContains(List<String> includeContent, String feature) {
-        if (includeContent != null) {
-            int i = 0;
-            while (i < includeContent.size() && !includeContent.get(i).equals(feature)) {
-                i++;
-            }
-            return i < includeContent.size();
-        } else {
-            return false;
+    private void addIfNotNull(List<Bson> bsonList, Bson bson) {
+        if (bson != null) {
+            bsonList.add(bson);
         }
     }
 

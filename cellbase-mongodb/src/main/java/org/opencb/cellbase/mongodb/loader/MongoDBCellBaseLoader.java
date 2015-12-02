@@ -198,6 +198,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 case "conservation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
                     break;
+                case "clinical":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.CLINICAL_CHUNK_SIZE};
+                    break;
                 default:
                     break;
             }
@@ -396,6 +399,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     }
                 }
             }
+            logger.info("Setting chunkIds to {}", chunkIds.toString());
             dbObject.put("_chunkIds", chunkIds);
         }
     }
