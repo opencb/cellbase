@@ -29,6 +29,7 @@ import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -83,6 +84,23 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response count() {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.count());
+    }
+
+    @GET
+    @Path("/count2")
+    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
+    public Response count2(@DefaultValue("") @QueryParam("region") String region,
+                           @DefaultValue("") @QueryParam("biotype") String biotype,
+                           @DefaultValue("") @QueryParam("xrefs") String xrefs) {
+        org.opencb.cellbase.core.api.TranscriptDBAdaptor transcriptDBAdaptor =
+                dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+
+        Query query = new Query();
+        query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.REGION.key(), region);
+        query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
+        query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
+
+        return createOkResponse(transcriptDBAdaptor.count(query));
     }
 
     @GET

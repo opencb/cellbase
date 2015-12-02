@@ -102,16 +102,19 @@ public class MongoDBAdaptor {
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongodbField, List<Bson> andBsonList) {
-        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            List<String> queryList = query.getAsStringList(queryParam);
-            if (queryList.size() == 1) {
-                andBsonList.add(Filters.eq(mongodbField, queryList.get(0)));
-            } else {
-                List<Bson> orBsonList = new ArrayList<>(queryList.size());
-                for (String queryItem : queryList) {
-                    orBsonList.add(Filters.eq(mongodbField, queryItem));
+        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+                List<String> queryList = query.getAsStringList(queryParam);
+                if (queryList.size() == 1) {
+                    andBsonList.add(Filters.eq(mongodbField, queryList.get(0)));
+                } else {
+                    List<Bson> orBsonList = new ArrayList<>(queryList.size());
+                    for (String queryItem : queryList) {
+                        orBsonList.add(Filters.eq(mongodbField, queryItem));
+                    }
+                    andBsonList.add(Filters.or(orBsonList));
                 }
-                andBsonList.add(Filters.or(orBsonList));
+//
             }
         }
     }

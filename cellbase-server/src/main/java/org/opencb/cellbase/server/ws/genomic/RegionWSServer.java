@@ -515,8 +515,7 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores")
     public Response conservation2(@PathParam("chrRegionId") String region) {
         ConservationDBAdaptor conservationDBAdaptor =
-                dbAdaptorFactory2.getConservedRegionDBAdaptor(this.species, this.assembly);
-
+                dbAdaptorFactory2.getConservationDBAdaptor(this.species, this.assembly);
         Query query = new Query();
         query.append(ConservationDBAdaptor.QueryParams.REGION.key(), region);
         return createOkResponse(conservationDBAdaptor.nativeGet(query, queryOptions));

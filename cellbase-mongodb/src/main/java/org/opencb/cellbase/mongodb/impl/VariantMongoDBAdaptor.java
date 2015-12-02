@@ -87,8 +87,17 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        return null;
+    }
+
+    @Override
+    public Iterator<Variation> iterator() {
+        return null;
+    }
+
+    @Override
+    public Iterator nativeIterator() {
+        return null;
     }
 
     @Override
