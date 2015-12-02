@@ -16,7 +16,10 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
@@ -27,6 +30,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -128,7 +132,15 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        return null;
+        Bson match = Aggregates.match(parseQuery(query));
+        Bson project = Aggregates.project(Projections.include(field, "name"));
+        Bson group;
+        if (options.getBoolean("count", false)) {
+            group = Aggregates.group("$" + field, Accumulators.sum("count", 1));
+        } else {
+            group = Aggregates.group("$" + field, Accumulators.addToSet("genes", "$name"));
+        }
+        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
     }
 
     @Override
