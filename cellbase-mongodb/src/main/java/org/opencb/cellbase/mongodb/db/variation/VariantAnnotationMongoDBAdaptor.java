@@ -67,7 +67,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         super(species, assembly, mongoDataStore);
 
         geneObjectMapper = new ObjectMapper();
-        normalizer = new VariantNormalizer();
+        normalizer = new VariantNormalizer(false);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }

@@ -16,19 +16,31 @@
 
 package org.opencb.cellbase.core.variant.annotation;
 
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderVersion;
+import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Variant> {
+public class VariantAnnotatorTask implements ParallelTaskRunner.Task<String, Variant> {
 
     private List<VariantAnnotator> variantAnnotatorList;
+    private FullVcfCodec vcfCodec;
+    private VariantContextToVariantConverter converter;
 
-    public VariantAnnotatorTask(List<VariantAnnotator> variantAnnotatorList) {
+    public VariantAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
+                                List<VariantAnnotator> variantAnnotatorList) {
+        this.vcfCodec = new FullVcfCodec();
+        this.vcfCodec.setVCFHeader(header, version);
+        this.converter = new VariantContextToVariantConverter("", "");
         this.variantAnnotatorList = variantAnnotatorList;
     }
 
@@ -38,11 +50,24 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Va
         }
     }
 
-    public List<Variant> apply(List<Variant> variantList) {
+    public List<Variant> apply(List<String> batch) {
+        List<Variant> variantList = parseVariantList(batch);
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             variantAnnotator.run(variantList);
         }
         return variantList;
+    }
+
+    private List<Variant> parseVariantList(List<String> batch) {
+        List<VariantContext> variantContexts = new ArrayList<>(batch.size());
+        for (String line : batch) {
+            if (line.startsWith("#") || line.trim().isEmpty()) {
+                continue;
+            }
+            variantContexts.add(vcfCodec.decode(line));
+        }
+
+        return converter.apply(variantContexts);
     }
 
     public void post() {
