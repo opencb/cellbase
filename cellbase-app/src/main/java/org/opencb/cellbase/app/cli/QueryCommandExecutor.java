@@ -23,7 +23,11 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 /**
@@ -55,23 +59,35 @@ public class QueryCommandExecutor extends CommandExecutor {
         Query query = createQuery();
         QueryOptions queryOptions = createQueryOptions();
 
+        PrintStream output = System.out;
+        if (queryCommandOptions.output != null && !queryCommandOptions.output.isEmpty()) {
+            outputFile = Paths.get(queryCommandOptions.output);
+            if (Files.exists(outputFile.getParent()) && Files.isDirectory(outputFile.getParent())) {
+                try {
+                    output = new PrintStream(outputFile.toString());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         objectMapper = new ObjectMapper();
 
         try {
             switch (queryCommandOptions.category) {
                 case "gene":
-                    executeGeneQuery(query, queryOptions);
-                    break;
-                case "variation":
-                    executeVariationQuery(query, queryOptions);
-                    break;
-                case "protein":
-                    executeProteinQuery(query, queryOptions);
-                    break;
-                case "region":
+                    executeGeneQuery(query, queryOptions, output);
                     break;
                 case "transcript":
-                    executeTranscriptQuery(query, queryOptions);
+                    executeTranscriptQuery(query, queryOptions, output);
+                    break;
+                case "variation":
+                    executeVariationQuery(query, queryOptions, output);
+                    break;
+                case "protein":
+                    executeProteinQuery(query, queryOptions, output);
+                    break;
+                case "conservation":
                     break;
                 default:
                     break;
@@ -79,26 +95,28 @@ public class QueryCommandExecutor extends CommandExecutor {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+
+        output.close();
     }
 
 
-    private void executeGeneQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
+    private void executeGeneQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
             QueryResult queryResult = geneDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
-            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(queryResult));
+            output.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(queryResult));
         } else {
             switch (queryCommandOptions.resource) {
                 case "count":
-                    System.out.println(geneDBAdaptor.count(query));
+                    output.println(geneDBAdaptor.count(query));
                     break;
                 case "info":
                     query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
                     Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
                     while (iterator.hasNext()) {
                         Object next = iterator.next();
-                        System.out.println(objectMapper.writeValueAsString(next));
+                        output.println(objectMapper.writeValueAsString(next));
                     }
                     break;
                 case "variation":
@@ -106,7 +124,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     query.append(VariantDBAdaptor.QueryParams.GENE.key(), queryCommandOptions.id);
                     variantDBAdaptor.forEach(query, entry -> {
                         try {
-                            System.out.println(objectMapper.writeValueAsString(entry));
+                            output.println(objectMapper.writeValueAsString(entry));
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
                         }
@@ -118,19 +136,19 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeVariationQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
+    private void executeVariationQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
 
         switch (queryCommandOptions.resource) {
             case "count":
-                System.out.println(variantDBAdaptor.count(query).getResult().get(0));
+                output.println(variantDBAdaptor.count(query).getResult().get(0));
                 break;
             case "info":
                 query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
                 Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
                 while (iterator.hasNext()) {
                     Object next = iterator.next();
-                    System.out.println(objectMapper.writeValueAsString(next));
+                    output.println(objectMapper.writeValueAsString(next));
                 }
                 break;
             default:
@@ -138,8 +156,9 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeProteinQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
+    private void executeProteinQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
+
         if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
             QueryResult queryResult = proteinDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
             System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(queryResult));
@@ -162,19 +181,19 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeTranscriptQuery(Query query, QueryOptions queryOptions) throws JsonProcessingException {
+    private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
 
         switch (queryCommandOptions.resource) {
             case "count":
-                System.out.println(transcriptDBAdaptor.count(query).getResult().get(0));
+                output.println(transcriptDBAdaptor.count(query).getResult().get(0));
                 break;
             case "info":
                 query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
                 Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
                 while (iterator.hasNext()) {
                     Object next = iterator.next();
-                    System.out.println(objectMapper.writeValueAsString(next));
+                    output.println(objectMapper.writeValueAsString(next));
                 }
                 break;
             default:
@@ -182,8 +201,15 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
+
     private Query createQuery() {
         Query query = new Query();
+
+        // we first append region CLI parameter, if specified in 'options' it will be overwritten
+        if (queryCommandOptions.region != null) {
+            query.append("region", queryCommandOptions.region);
+        }
+
         for (String key : queryCommandOptions.options.keySet()) {
             query.append(key, queryCommandOptions.options.get(key));
         }
@@ -203,21 +229,6 @@ public class QueryCommandExecutor extends CommandExecutor {
         queryOptions.append("count", queryCommandOptions.count);
         return queryOptions;
     }
-
-//    private void checkParameters() {
-//        // output file
-//        if (queryCommandOptions.outputFile != null) {
-//            outputFile = Paths.get(queryCommandOptions.outputFile);
-//            Path outputDir = outputFile.getParent();
-//            if (!outputDir.toFile().exists()) {
-//                throw new ParameterException("Output directory " + outputDir + " doesn't exist");
-//            } else if (outputFile.toFile().isDirectory()) {
-//                throw new ParameterException("Output file cannot be a directory: " + outputFile);
-//            }
-//        } else {
-//            throw new ParameterException("Please check command line sintax. Provide a valid output file name.");
-//        }
-//    }
 
 //    private CellBaseClient getCellBaseClient() throws URISyntaxException {
 //        CellBaseConfiguration.DatabaseProperties cellbaseDDBBProperties = configuration.getDatabase();

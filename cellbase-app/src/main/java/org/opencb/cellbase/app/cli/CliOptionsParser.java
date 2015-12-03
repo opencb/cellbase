@@ -206,6 +206,9 @@ public class CliOptionsParser {
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
         public String assembly = "GRCh37";
 
+        @Parameter(names = {"-o", "--output"}, description = "Write result into the file path", required = false, arity = 1)
+        public String output;
+
         @Parameter(names = {"-t", "--type"}, description = "", required = true, arity = 1)
         public String category;
 
@@ -215,8 +218,17 @@ public class CliOptionsParser {
         @Parameter(names = {"-r", "--resource"}, description = "", required = false, arity = 1)
         public String resource;
 
+        @Parameter(names = {"--region"}, description = "", required = false, arity = 1)
+        public String region;
+
         @Parameter(names = {"--group-by"}, description = "", required = false, arity = 1)
         public String groupBy;
+
+        @Parameter(names = {"--rank"}, description = "", required = false, arity = 1)
+        public String rank;
+
+        @Parameter(names = {"--interval"}, description = "", required = false, arity = 1)
+        public int interval = 1000000;
 
         @DynamicParameter(names = {"-O", "--options"}, description = "Filter options in the form of -Oa=b, eg. -Obiotype=protein_coding,pseudogene -Oregion=3:44444-55555", required = false)
         public Map<String, String> options = new HashMap<>();
@@ -236,10 +248,6 @@ public class CliOptionsParser {
 
         @Parameter(names = {"-c", "--count"}, description = "Comma separated list of annotators to be excluded", required = false, arity = 0)
         public boolean count;
-
-
-        @Parameter(names = {"-o", "--output-file"}, description = "Write result into the file path", required = false, arity = 1)
-        public String output;
 
         @Deprecated
         @Parameter(names = {"--host-url"}, description = "[DEPRECATED]", required = false, arity = 1)

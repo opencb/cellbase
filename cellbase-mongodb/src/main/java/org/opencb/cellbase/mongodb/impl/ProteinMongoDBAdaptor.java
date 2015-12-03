@@ -16,10 +16,7 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
@@ -29,7 +26,10 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -67,15 +67,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        Bson match = Aggregates.match(parseQuery(query));
-        Bson project = Aggregates.project(Projections.include(field, "name"));
-        Bson group;
-        if (options.getBoolean("count", false)) {
-            group = Aggregates.group("$" + field, Accumulators.sum("count", 1));
-        } else {
-            group = Aggregates.group("$" + field, Accumulators.addToSet("protein", "$name"));
-        }
-        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
@@ -144,13 +137,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.ACCESSION.key(), "accession", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.GENE.key(), "gene", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.XREF.key(), "xref", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.KEYWORD.key(), "keyword", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
+        createOrQuery(query, QueryParams.ACCESSION.key(), "accession", andBsonList);
+        createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(query, QueryParams.GENE.key(), "gene", andBsonList);
+        createOrQuery(query, QueryParams.XREF.key(), "xref", andBsonList);
+        createOrQuery(query, QueryParams.KEYWORD.key(), "keyword", andBsonList);
+        createOrQuery(query, QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
+        createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
