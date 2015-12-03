@@ -158,18 +158,49 @@ public class MongoDBAdaptor {
         }
     }
 
-    public QueryResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
-        Bson match = Aggregates.match(query);
-        Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
-        Bson group;
-        if (options.getBoolean("count", false)) {
-            group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
+    protected QueryResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField.contains(",")) {
+            // call to multiple groupBy if commas are present
+            return groupBy(query, Arrays.asList(groupByField.split(",")), featureIdField, options);
         } else {
-            group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
+            Bson match = Aggregates.match(query);
+            Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
+            Bson group;
+            if (options.getBoolean("count", false)) {
+                group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
+            } else {
+                group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
+            }
+            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
         }
-        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
     }
 
+    protected QueryResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField.size() == 1) {
+            // if only one field then we call to simple groupBy
+            return groupBy(query, groupByField.get(0), featureIdField, options);
+        } else {
+            Bson match = Aggregates.match(query);
+
+            // add all group-by fields to the projection together with the aggregation field name
+            List<String> groupByFields = new ArrayList<>(groupByField);
+            groupByFields.add(featureIdField);
+            Bson project = Aggregates.project(Projections.include(groupByFields));
+
+            // _id document creation to have the multiple id
+            Document id = new Document();
+            for (String s : groupByField) {
+                id.append(s, "$" + s);
+            }
+            Bson group;
+            if (options.getBoolean("count", false)) {
+                group = Aggregates.group(id, Accumulators.sum("count", 1));
+            } else {
+                group = Aggregates.group(id, Accumulators.addToSet("features", "$" + featureIdField));
+            }
+            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+        }
+    }
 
 
 

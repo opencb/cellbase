@@ -133,7 +133,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
     }
 
     private Bson parseQuery(Query query) {
