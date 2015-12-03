@@ -72,7 +72,7 @@ public class MongoDBAdaptor {
     }
 
     protected void createRegionQuery(Query query, String queryParam, List<Bson> andBsonList) {
-        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
             if (regions != null && regions.size() > 0) {
                 // if there is only one region we add the AND filter directly to the andBsonList passed
@@ -104,7 +104,7 @@ public class MongoDBAdaptor {
             createRegionQuery(query, queryParam, andBsonList);
         }
 
-        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
             if (regions != null && regions.size() > 0) {
                 if (regions.size() == 1) {
@@ -142,18 +142,16 @@ public class MongoDBAdaptor {
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
-        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-                List<String> queryList = query.getAsStringList(queryParam);
-                if (queryList.size() == 1) {
-                    andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
-                } else {
-                    List<Bson> orBsonList = new ArrayList<>(queryList.size());
-                    for (String queryItem : queryList) {
-                        orBsonList.add(Filters.eq(mongoDbField, queryItem));
-                    }
-                    andBsonList.add(Filters.or(orBsonList));
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            List<String> queryList = query.getAsStringList(queryParam);
+            if (queryList.size() == 1) {
+                andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
+            } else {
+                List<Bson> orBsonList = new ArrayList<>(queryList.size());
+                for (String queryItem : queryList) {
+                    orBsonList.add(Filters.eq(mongoDbField, queryItem));
                 }
+                andBsonList.add(Filters.or(orBsonList));
             }
         }
     }

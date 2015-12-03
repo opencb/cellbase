@@ -61,13 +61,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult<Long> count(Query query) {
-        Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.count(bsonDocument);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.distinct(field, bsonDocument);
     }
 
     @Override
@@ -121,14 +122,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
-//        Bson project = Aggregates.project(Projections.include(field, "name"));
-//        Bson group;
-//        if (options.getBoolean("count", false)) {
-//            group = Aggregates.group("$" + field, Accumulators.sum("count", 1));
-//        } else {
-//            group = Aggregates.group("$" + field, Accumulators.addToSet("genes", "$name"));
-//        }
-//        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
     }
 
     @Override

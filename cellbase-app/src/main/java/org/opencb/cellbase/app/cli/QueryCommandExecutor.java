@@ -49,6 +49,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                 queryCommandOptions.commonOptions.conf);
 
         this.queryCommandOptions = queryCommandOptions;
+        objectMapper = new ObjectMapper();
     }
 
 
@@ -70,8 +71,6 @@ public class QueryCommandExecutor extends CommandExecutor {
                 }
             }
         }
-
-        objectMapper = new ObjectMapper();
 
         try {
             switch (queryCommandOptions.category) {
@@ -103,14 +102,10 @@ public class QueryCommandExecutor extends CommandExecutor {
     private void executeGeneQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
 
-        if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
-            QueryResult queryResult = geneDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
-            output.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(queryResult));
-        } else {
+        executeFeatureAggregation(geneDBAdaptor, query, queryOptions, output);
+
+        if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
-                case "count":
-                    output.println(geneDBAdaptor.count(query));
-                    break;
                 case "info":
                     query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
                     Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
@@ -140,9 +135,6 @@ public class QueryCommandExecutor extends CommandExecutor {
         VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
 
         switch (queryCommandOptions.resource) {
-            case "count":
-                output.println(variantDBAdaptor.count(query).getResult().get(0));
-                break;
             case "info":
                 query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
                 Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
@@ -160,9 +152,6 @@ public class QueryCommandExecutor extends CommandExecutor {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
         switch (queryCommandOptions.resource) {
-            case "count":
-                output.println(proteinDBAdaptor.count(query).getResult().get(0));
-                break;
             case "info":
                 query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
                 Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
@@ -180,9 +169,6 @@ public class QueryCommandExecutor extends CommandExecutor {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
 
         switch (queryCommandOptions.resource) {
-            case "count":
-                output.println(transcriptDBAdaptor.count(query).getResult().get(0));
-                break;
             case "info":
                 query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
                 Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
@@ -196,6 +182,33 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
+    private void executeFeatureAggregation(FeatureDBAdaptor featureDBAdaptor, Query query, QueryOptions queryOptions, PrintStream output)
+            throws JsonProcessingException {
+
+        if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
+            QueryResult distinct = featureDBAdaptor.distinct(query, queryCommandOptions.distinct);
+            output.println(objectMapper.writeValueAsString(distinct));
+            return;
+        }
+
+        if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
+            QueryResult groupBy = featureDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
+            output.println(objectMapper.writeValueAsString(groupBy));
+            return;
+        }
+
+        if (queryCommandOptions.rank != null && !queryCommandOptions.rank.isEmpty()) {
+            QueryResult rank = featureDBAdaptor.rank(query, queryCommandOptions.rank, queryCommandOptions.limit, true);
+            output.println(objectMapper.writeValueAsString(rank));
+            return;
+        }
+
+        if (queryCommandOptions.count) {
+            QueryResult count = featureDBAdaptor.count(query);
+            output.println(objectMapper.writeValueAsString(count));
+            return;
+        }
+    }
 
     private Query createQuery() {
         Query query = new Query();
@@ -225,13 +238,4 @@ public class QueryCommandExecutor extends CommandExecutor {
         return queryOptions;
     }
 
-//    private CellBaseClient getCellBaseClient() throws URISyntaxException {
-//        CellBaseConfiguration.DatabaseProperties cellbaseDDBBProperties = configuration.getDatabase();
-////        String host = cellbaseDDBBProperties.getHost();
-////        int port = Integer.parseInt(cellbaseDDBBProperties.getPort());
-//        // TODO: read path from configuration file?
-//        // TODO: hardcoded port???
-//        String path = "/cellbase/webservices/rest/";
-//        return new CellBaseClient(queryCommandOptions.url, 8080, path, configuration.getVersion(), queryCommandOptions.species);
-//    }
 }
