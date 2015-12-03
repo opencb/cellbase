@@ -92,16 +92,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public Iterator<Gene> iterator() {
-        return null;
-    }
-
-    @Override
-    public Iterator nativeIterator() {
-        return null;
-    }
-
-    @Override
     public Iterator<Gene> iterator(Query query, QueryOptions options) {
         return null;
     }
