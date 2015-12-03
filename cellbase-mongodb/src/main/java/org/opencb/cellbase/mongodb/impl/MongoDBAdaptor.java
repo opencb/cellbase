@@ -18,7 +18,10 @@ package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
@@ -153,6 +156,18 @@ public class MongoDBAdaptor {
                 }
             }
         }
+    }
+
+    public QueryResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
+        Bson match = Aggregates.match(query);
+        Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
+        Bson group;
+        if (options.getBoolean("count", false)) {
+            group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
+        } else {
+            group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
+        }
+        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
     }
 
     protected QueryResult executeDistinct(Object id, String fields, Document query) {
