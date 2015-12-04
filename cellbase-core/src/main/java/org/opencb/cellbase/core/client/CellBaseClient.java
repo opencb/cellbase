@@ -427,7 +427,6 @@ public class CellBaseClient {
         }
 
         boolean post = queryOptions.getBoolean("post", false);
-        queryOptions.remove("post");
 
         String categoryStr = CATEGORY_STRING_MAP.containsKey(category) ? CATEGORY_STRING_MAP.get(category) : category.name();
         String subCategoryStr = SUB_CATEGORY_STRING_MAP.containsKey(subCategory)
@@ -450,7 +449,9 @@ public class CellBaseClient {
 
         clone = clone.path(resourceStr);
         for (Map.Entry<String, Object> entry : queryOptions.entrySet()) {
-            clone.queryParam(entry.getKey(), entry.getValue());
+            if (!entry.getKey().equals("post")) {
+                clone.queryParam(entry.getKey(), entry.getValue());
+            }
         }
 
         lastQuery = clone.build();
