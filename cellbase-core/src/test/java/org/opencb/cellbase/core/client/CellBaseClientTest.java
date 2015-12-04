@@ -59,10 +59,10 @@ public class CellBaseClientTest extends TestCase {
         //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/22:10000000:A:T/gene?of=json
         CellBaseClient cellBaseClient = new CellBaseClient("wwwdev.ebi.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
         QueryResponse<QueryResult<VariantAnnotation>> fullAnnotationPost =
-                cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
+                cellBaseClient.getAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
                         new QueryOptions("post", true));
         QueryResponse<QueryResult<VariantAnnotation>> fullAnnotationGet =
-                cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
+                cellBaseClient.getAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
                         new QueryOptions("post", false));
         ObjectMapper mapper = new ObjectMapper(new JsonFactory());
         Assert.assertEquals(mapper.writeValueAsString(fullAnnotationGet.getResponse().iterator().next().first()),

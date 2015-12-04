@@ -92,7 +92,7 @@ public class CellBaseClient {
         gene, transcript, exon, snp, mutation, structuralVariation, sequence, tfbs, mimaTarget, cpgIsland,
         conserved_region, regulatory, reverse,
         //genomic/variant
-        effect, consequenceType, phenotype, snp_phenotype, mutation_phenotype, fullAnnotation, annotation,
+        effect, consequenceType, phenotype, snp_phenotype, mutation_phenotype, annotation,
         //genomic/position
         //gene, snp, transcript, consequence_type, functional
         //genomic/chromosome
@@ -138,7 +138,7 @@ public class CellBaseClient {
         RESOURCE_STRING_MAP.put(Resource.cpgIsland, "cpg_island");
         RESOURCE_STRING_MAP.put(Resource.mimaTarget, "mima_target");
         RESOURCE_STRING_MAP.put(Resource.consequenceType, "consequence_type");
-        RESOURCE_STRING_MAP.put(Resource.fullAnnotation, "full_annotation");
+        RESOURCE_STRING_MAP.put(Resource.annotation, "annotation");
 
 
         SUB_CATEGORY_BEAN_MAP = new HashMap<>();
@@ -172,7 +172,6 @@ public class CellBaseClient {
         RESOURCE_BEAN_MAP.put(Resource.snp_phenotype, String.class);  //TODO
         RESOURCE_BEAN_MAP.put(Resource.mutation_phenotype, Mutation.class);
         RESOURCE_BEAN_MAP.put(Resource.annotation, VariantAnnotation.class);  //TODO
-        RESOURCE_BEAN_MAP.put(Resource.fullAnnotation, VariantAnnotation.class);  //TODO
         //genomic/chromosome
         RESOURCE_BEAN_MAP.put(Resource.size, Chromosome.class);
         RESOURCE_BEAN_MAP.put(Resource.cytoband, Cytoband.class);
@@ -373,9 +372,9 @@ public class CellBaseClient {
         return get(category, subCategory, ids, Resource.consequenceType, queryOptions, (ConsequenceType.class));
     }
 
-    public QueryResponse<QueryResult<VariantAnnotation>> getFullAnnotation(Category category, SubCategory subCategory, List<Variant> ids,
-                                                                           QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.fullAnnotation, queryOptions, (VariantAnnotation.class));
+    public QueryResponse<QueryResult<VariantAnnotation>> getAnnotation(Category category, SubCategory subCategory, List<Variant> ids,
+                                                                       QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, ids, Resource.annotation, queryOptions, (VariantAnnotation.class));
     }
 
     public QueryResponse<QueryResult<Phenotype>> getPhenotype(Category category, SubCategory subCategory, String phenotype,

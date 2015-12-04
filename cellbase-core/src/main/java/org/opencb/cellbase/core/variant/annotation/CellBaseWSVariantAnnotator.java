@@ -59,7 +59,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         QueryResponse<QueryResult<VariantAnnotation>> response;
         queryOptions.put("post", true);
         try {
-            response = cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
+            response = cellBaseClient.getAnnotation(CellBaseClient.Category.genomic,
                     CellBaseClient.SubCategory.variant, variantList, queryOptions);
 //                    CellBaseClient.SubCategory.variant, variantList, new QueryOptions("post", true));
         } catch (IOException e) {
