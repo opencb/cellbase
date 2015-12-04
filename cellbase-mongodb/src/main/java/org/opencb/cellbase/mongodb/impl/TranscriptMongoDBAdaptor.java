@@ -122,7 +122,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         return null;
     }
 

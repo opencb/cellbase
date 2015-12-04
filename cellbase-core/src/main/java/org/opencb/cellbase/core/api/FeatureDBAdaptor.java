@@ -40,6 +40,6 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
     QueryResult groupBy(Query query, List<String> fields, QueryOptions options);
 
 
-    QueryResult getIntervalFrequencies(Query query, QueryOptions options);
+    QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options);
 
 }

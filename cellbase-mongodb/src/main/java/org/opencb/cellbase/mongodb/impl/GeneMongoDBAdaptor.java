@@ -20,6 +20,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
@@ -28,7 +29,6 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -56,7 +56,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+        if (query.getString("region") != null) {
+            Region region = Region.parseRegion(query.getString("region"));
+            Bson bsonDocument = parseQuery(query);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+        }
         return null;
     }
 

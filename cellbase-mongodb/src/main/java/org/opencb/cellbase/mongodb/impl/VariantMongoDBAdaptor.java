@@ -19,6 +19,7 @@ package org.opencb.cellbase.mongodb.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
@@ -55,7 +56,12 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+        if (query.getString("region") != null) {
+            Region region = Region.parseRegion(query.getString("region"));
+            Bson bsonDocument = parseQuery(query);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+        }
         return null;
     }
 
@@ -87,16 +93,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public Iterator<Variation> iterator() {
-        return null;
-    }
-
-    @Override
-    public Iterator nativeIterator() {
         return null;
     }
 

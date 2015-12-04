@@ -137,68 +137,79 @@ public class QueryCommandExecutor extends CommandExecutor {
     private void executeVariationQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
 
-        switch (queryCommandOptions.resource) {
-            case "info":
-                query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    output.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        executeFeatureAggregation(variantDBAdaptor, query, queryOptions, output);
+
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(VariantDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                    Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
     private void executeProteinQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
-        switch (queryCommandOptions.resource) {
-            case "info":
-                query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-                Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    output.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
+
 
     private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(queryCommandOptions.species);
 
-        switch (queryCommandOptions.resource) {
-            case "info":
-                query.append(RegulatoryRegionDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-                Iterator iterator = regulatoryRegionDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    output.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(RegulatoryRegionDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    Iterator iterator = regulatoryRegionDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
     private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
 
-        switch (queryCommandOptions.resource) {
-            case "info":
-                query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    output.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                    Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -228,6 +239,13 @@ public class QueryCommandExecutor extends CommandExecutor {
             output.println(objectMapper.writeValueAsString(count));
             return;
         }
+
+        if (queryCommandOptions.histogram) {
+            QueryResult histogram = featureDBAdaptor.getIntervalFrequencies(query, queryCommandOptions.interval, queryOptions);
+            output.println(objectMapper.writeValueAsString(histogram));
+            return;
+        }
+
     }
 
     private Query createQuery() {

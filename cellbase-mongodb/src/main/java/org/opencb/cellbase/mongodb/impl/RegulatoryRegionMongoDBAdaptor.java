@@ -28,37 +28,6 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
     }
 
     @Override
-    public QueryResult next(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult nativeNext(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
-
-    @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, field, "name", options);
-    }
-
-    @Override
-    public QueryResult groupBy(Query query, List fields, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
         return mongoDBCollection.count(document);
