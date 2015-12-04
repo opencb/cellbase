@@ -62,13 +62,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult<Long> count(Query query) {
-        Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.count(bsonDocument);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.distinct(field, bsonDocument);
     }
 
     @Override
@@ -122,33 +123,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
-//        Bson project = Aggregates.project(Projections.include(field, "name"));
-//        Bson group;
-//        if (options.getBoolean("count", false)) {
-//            group = Aggregates.group("$" + field, Accumulators.sum("count", 1));
-//        } else {
-//            group = Aggregates.group("$" + field, Accumulators.addToSet("genes", "$name"));
-//        }
-//        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
     }
 
     @Override
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        return null;
-//        List<String> fieldList = query.getAsStringList(String.valueOf(fields));
-//        if (fieldList.size() == 1) {
-//            return groupBy(query, fieldList.get(0), options);
-//        } else {
-//            List<String> vals = new ArrayList<>();
-//            vals.add("pseudogene");
-//            vals.add("protein_coding");
-//            Bson match = new Document("$match", new Document("chromosome", "1").append("biotype", new Document("$in", vals)));
-//            Bson project = new Document("$project", new Document("chromosome", 1).append("biotype", 1).append("name", 1));
-//            Bson group = new Document("$group", new Document("_id", new Document("chr", "$chromosome").append("bio", "$biotype"))
-//                    .append("count", new Document("$sum", 1)));
-//
-//            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
-//        }
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
     }
 
     private Bson parseQuery(Query query) {
@@ -179,5 +159,4 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             return new Document();
         }
     }
-
 }

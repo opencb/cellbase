@@ -227,6 +227,9 @@ public class CliOptionsParser {
         @Parameter(names = {"--rank"}, description = "", required = false, arity = 1)
         public String rank;
 
+        @Parameter(names = {"--distinct"}, description = "", required = false, arity = 1)
+        public String distinct;
+
         @Parameter(names = {"--interval"}, description = "", required = false, arity = 1)
         public int interval = 1000000;
 
@@ -244,7 +247,7 @@ public class CliOptionsParser {
         public int skip;
 
         @Parameter(names = {"--limit"}, description = "Return the number of records specified", required = false)
-        public int limit;
+        public int limit = 10;
 
         @Parameter(names = {"-c", "--count"}, description = "Comma separated list of annotators to be excluded", required = false, arity = 0)
         public boolean count;

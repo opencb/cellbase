@@ -72,7 +72,7 @@ public class MongoDBAdaptor {
     }
 
     protected void createRegionQuery(Query query, String queryParam, List<Bson> andBsonList) {
-        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
             if (regions != null && regions.size() > 0) {
                 // if there is only one region we add the AND filter directly to the andBsonList passed
@@ -104,7 +104,7 @@ public class MongoDBAdaptor {
             createRegionQuery(query, queryParam, andBsonList);
         }
 
-        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
             if (regions != null && regions.size() > 0) {
                 if (regions.size() == 1) {
@@ -142,34 +142,63 @@ public class MongoDBAdaptor {
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
-        if (query.containsKey(queryParam) && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-                List<String> queryList = query.getAsStringList(queryParam);
-                if (queryList.size() == 1) {
-                    andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
-                } else {
-                    List<Bson> orBsonList = new ArrayList<>(queryList.size());
-                    for (String queryItem : queryList) {
-                        orBsonList.add(Filters.eq(mongoDbField, queryItem));
-                    }
-                    andBsonList.add(Filters.or(orBsonList));
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            List<String> queryList = query.getAsStringList(queryParam);
+            if (queryList.size() == 1) {
+                andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
+            } else {
+                List<Bson> orBsonList = new ArrayList<>(queryList.size());
+                for (String queryItem : queryList) {
+                    orBsonList.add(Filters.eq(mongoDbField, queryItem));
                 }
+                andBsonList.add(Filters.or(orBsonList));
             }
         }
     }
 
-    public QueryResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
-        Bson match = Aggregates.match(query);
-        Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
-        Bson group;
-        if (options.getBoolean("count", false)) {
-            group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
+    protected QueryResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField.contains(",")) {
+            // call to multiple groupBy if commas are present
+            return groupBy(query, Arrays.asList(groupByField.split(",")), featureIdField, options);
         } else {
-            group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
+            Bson match = Aggregates.match(query);
+            Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
+            Bson group;
+            if (options.getBoolean("count", false)) {
+                group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
+            } else {
+                group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
+            }
+            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
         }
-        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
     }
 
+    protected QueryResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField.size() == 1) {
+            // if only one field then we call to simple groupBy
+            return groupBy(query, groupByField.get(0), featureIdField, options);
+        } else {
+            Bson match = Aggregates.match(query);
+
+            // add all group-by fields to the projection together with the aggregation field name
+            List<String> groupByFields = new ArrayList<>(groupByField);
+            groupByFields.add(featureIdField);
+            Bson project = Aggregates.project(Projections.include(groupByFields));
+
+            // _id document creation to have the multiple id
+            Document id = new Document();
+            for (String s : groupByField) {
+                id.append(s, "$" + s);
+            }
+            Bson group;
+            if (options.getBoolean("count", false)) {
+                group = Aggregates.group(id, Accumulators.sum("count", 1));
+            } else {
+                group = Aggregates.group(id, Accumulators.addToSet("features", "$" + featureIdField));
+            }
+            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+        }
+    }
 
 
 
