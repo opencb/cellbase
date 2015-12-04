@@ -134,17 +134,21 @@ public class QueryCommandExecutor extends CommandExecutor {
     private void executeVariationQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
 
-        switch (queryCommandOptions.resource) {
-            case "info":
-                query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    output.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        executeFeatureAggregation(variantDBAdaptor, query, queryOptions, output);
+
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(VariantDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                    Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -208,6 +212,13 @@ public class QueryCommandExecutor extends CommandExecutor {
             output.println(objectMapper.writeValueAsString(count));
             return;
         }
+
+        if (queryCommandOptions.histogram) {
+            QueryResult histogram = featureDBAdaptor.getIntervalFrequencies(query, queryCommandOptions.interval, queryOptions);
+            output.println(objectMapper.writeValueAsString(histogram));
+            return;
+        }
+
     }
 
     private Query createQuery() {

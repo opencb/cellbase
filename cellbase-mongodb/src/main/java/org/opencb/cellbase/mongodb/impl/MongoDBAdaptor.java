@@ -18,11 +18,8 @@ package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
-import org.bson.Document;
+import com.mongodb.client.model.*;
+import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
@@ -202,7 +199,7 @@ public class MongoDBAdaptor {
 
 
 
-    public QueryResult getIntervalFrequencies(Region region, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Bson query, Region region, int intervalSize, QueryOptions options) {
         //  MONGO QUERY TO IMPLEMENT
         //    db.variation.aggregate({$match: {$and: [{chromosome: "1"}, {start: {$gt: 251391, $lt: 2701391}}]}}, {$group:
         // {_id: {$subtract: [{$divide: ["$start", 40000]}, {$divide: [{$mod: ["$start", 40000]}, 40000]}]}, totalCount: {$sum: 1}}})
@@ -237,45 +234,51 @@ public class MongoDBAdaptor {
         //                }
         //            }
         //        }
-        int interval = options.getInt("interval");
 
-        Document start = new Document("$gt", region.getStart());
-        start.append("$lt", region.getEnd());
+        int interval = 50000;
+        if (intervalSize > 0) {
+            interval = intervalSize;
+        }
 
+        Bson match = Aggregates.match(query);
 
-        Document andArr = new Document();
-        andArr.append("chromosome", region.getChromosome());
-        andArr.append("start", start);
-
-        Document match = new Document("$match", new Document("$and", andArr));
-
-        Document divide1 = new Document();
-        divide1.append("$start", interval);
+        // group
+//        Document divide1 = new Document();
+//        divide1.append("$start", interval);
 //        divide1.add("$start");
 //        divide1.add(interval);
+        BsonArray divide1 = new BsonArray();
+        divide1.add(new BsonString("$start"));
+        divide1.add(new BsonInt32(interval));
 
-        Document divide2 = new Document();
+//        Document divide2 = new Document();
 //        divide2.add(new Document("$mod", divide1));
 //        divide2.add(interval);
+        BsonArray divide2 = new BsonArray();
+        divide2.add(new BsonDocument("$mod", divide1));
+        divide2.add(new BsonInt32(interval));
 
-        Document subtractList = new Document();
-        subtractList.append("$divide", divide1);
-        subtractList.append("$divide", divide2);
+//        Document subtractList = new Document();
+//        subtractList.append("$divide", divide1);
+//        subtractList.append("$divide", divide2);
+        BsonArray subtractList = new BsonArray();
+        subtractList.add(new BsonDocument("$divide", divide1));
+        subtractList.add(new BsonDocument("$divide", divide2));
 //        subtractList.add(new Document("$divide", divide1));
 //        subtractList.add(new Document("$divide", divide2));
 
-
         Document substract = new Document("$subtract", subtractList);
-
         Document totalCount = new Document("$sum", 1);
 
         Document g = new Document("_id", substract);
         g.append("features_count", totalCount);
         Document group = new Document("$group", g);
 
+//        Bson sort = Sorts.ascending("$_id");
         Document sort = new Document("$sort", new Document("_id", 1));
 
         QueryResult<Document> aggregationOutput = mongoDBCollection.aggregate(Arrays.asList(match, group, sort), options);
+
         Map<Long, Document> ids = new HashMap<>();
         for (Document intervalObj : aggregationOutput.getResult()) {
             Long id = Math.round((Double) intervalObj.get("_id")); //is double
@@ -283,14 +286,16 @@ public class MongoDBAdaptor {
             Document intervalVisited = ids.get(id);
             if (intervalVisited == null) {
                 intervalObj.put("_id", id);
+                intervalObj.put("chromosome", region.getChromosome());
                 intervalObj.put("start", getChunkStart(id.intValue(), interval));
                 intervalObj.put("end", getChunkEnd(id.intValue(), interval));
-                intervalObj.put("chromosome", region.getChromosome());
-                intervalObj.put("features_count", Math.log((int) intervalObj.get("features_count")));
+//                intervalObj.put("features_count", Math.log((int) intervalObj.get("features_count")));
+                intervalObj.put("features_count", intervalObj.getInteger("features_count"));
                 ids.put(id, intervalObj);
             } else {
-                Double sum = (Double) intervalVisited.get("features_count") + Math.log((int) intervalObj.get("features_count"));
-                intervalVisited.put("features_count", sum.intValue());
+//                Double sum = (Double) intervalVisited.get("features_count") + Math.log((int) intervalObj.get("features_count"));
+                int sum = intervalVisited.getInteger("features_count") + intervalObj.getInteger("features_count");
+                intervalVisited.put("features_count", sum);
             }
         }
 
@@ -303,10 +308,12 @@ public class MongoDBAdaptor {
             if (intervalObj == null) {
                 intervalObj = new Document();
                 intervalObj.put("_id", chunkId);
+                intervalObj.put("chromosome", region.getChromosome());
                 intervalObj.put("start", getChunkStart(chunkId, interval));
                 intervalObj.put("end", getChunkEnd(chunkId, interval));
-                intervalObj.put("chromosome", region.getChromosome());
                 intervalObj.put("features_count", 0);
+            } else {
+                intervalObj.put("features_count", Math.log(intervalObj.getInteger("features_count")));
             }
             resultList.add(intervalObj);
         }
@@ -317,48 +324,7 @@ public class MongoDBAdaptor {
         queryResult.setResultType("frequencies");
 
         return queryResult;
-        //        QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end")
-        //                .greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
-        //        int numIntervals = (region.getEnd() - region.getStart()) / interval + 1;
-        //        int[] intervalCount = new int[numIntervals];
-        //        List<Variation> variationList = executeQuery(new Document(builder.get().toMap()), Arrays.asList("id,chromosome,end,strand,
-        // type,reference,alternate,alleleString,species,assembly,source,version,transcriptVariations,xrefs,featureId,featureAlias,
-        // variantFreq,validationStatus"));
-        //        for (Variation variation : variationList) {
-        //            System.out.print("gsnp start:" + variation.getStart() + " ");
-        //            if (variation.getStart() >= region.getStart() && variation.getStart() <= region.getEnd()) {
-        //                int intervalIndex = (variation.getStart() - region.getStart()) / interval; // truncate
-        //                System.out.print(intervalIndex + " ");
-        //                intervalCount[intervalIndex]++;
-        //            }
-        //        }
-        //        System.out.println("Variation index");
-        //
-        //        int intervalStart = region.getStart();
-        //        int intervalEnd = intervalStart + interval - 1;
-        //        BasicDBList intervalList = new BasicDBList();
-        //        for (int i = 0; i < numIntervals; i++) {
-        //            Document intervalObj = new Document();
-        //            intervalObj.put("start", intervalStart);
-        //            intervalObj.put("end", intervalEnd);
-        //            intervalObj.put("interval", i);
-        //            intervalObj.put("value", intervalCount[i]);
-        //            intervalList.add(intervalObj);
-        //            intervalStart = intervalEnd + 1;
-        //            intervalEnd = intervalStart + interval - 1;
-        //        }
-        //        return intervalList.toString();
     }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -654,13 +620,13 @@ public class MongoDBAdaptor {
 //        return executeQueryList(ids, queries, options, mongoDBCollection);
 //    }
 
-    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
-        List<QueryResult> queryResult = new ArrayList<>(regions.size());
-        for (Region region : regions) {
-            queryResult.add(getIntervalFrequencies(region, queryOptions));
-        }
-        return queryResult;
-    }
+//    public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
+//        List<QueryResult> queryResult = new ArrayList<>(regions.size());
+//        for (Region region : regions) {
+//            queryResult.add(getIntervalFrequencies(region, queryOptions));
+//        }
+//        return queryResult;
+//    }
 
 
 

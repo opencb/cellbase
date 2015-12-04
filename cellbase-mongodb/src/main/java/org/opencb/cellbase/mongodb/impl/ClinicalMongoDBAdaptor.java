@@ -70,7 +70,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         return null;
     }
 
