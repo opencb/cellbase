@@ -111,9 +111,9 @@ public abstract class DBAdaptorFactory {
 //    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species, String assembly);
 //
 //
-//    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species);
-//
-//    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly);
+    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species);
+
+    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly);
 //
 //
 //    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species);

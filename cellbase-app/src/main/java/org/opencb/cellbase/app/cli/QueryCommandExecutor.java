@@ -78,14 +78,17 @@ public class QueryCommandExecutor extends CommandExecutor {
                 case "gene":
                     executeGeneQuery(query, queryOptions, output);
                     break;
-                case "transcript":
-                    executeTranscriptQuery(query, queryOptions, output);
-                    break;
                 case "variation":
                     executeVariationQuery(query, queryOptions, output);
                     break;
                 case "protein":
                     executeProteinQuery(query, queryOptions, output);
+                    break;
+                case "regulatory_region":
+                    executeRegulatoryRegionQuery(query, queryOptions, output);
+                    break;
+                case "transcript":
+                    executeTranscriptQuery(query, queryOptions, output);
                     break;
                 case "conservation":
                     break;
@@ -181,6 +184,31 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
+    private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
+        RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(queryCommandOptions.species);
+
+        if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
+            QueryResult queryResult = regulatoryRegionDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
+            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(queryResult));
+        } else {
+            switch (queryCommandOptions.resource) {
+                case "count":
+                    System.out.println(regulatoryRegionDBAdaptor.count(query).getResult().get(0));
+                    break;
+                case "info":
+                    query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    Iterator iterator = regulatoryRegionDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        System.out.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
 
@@ -200,7 +228,6 @@ public class QueryCommandExecutor extends CommandExecutor {
                 break;
         }
     }
-
 
     private Query createQuery() {
         Query query = new Query();

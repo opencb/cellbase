@@ -284,17 +284,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
 //    }
 //
-//
-//    @Override
-//    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species) {
-//        return getRegulatoryRegionDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new RegulatoryRegionMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
+
+    @Override
+    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species) {
+        return getRegulatoryRegionDBAdaptor(species, null);
+    }
+
+    @Override
+    public RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new RegulatoryRegionMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
 //
 //
 //    @Override

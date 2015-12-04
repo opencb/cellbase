@@ -28,6 +28,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -134,6 +135,20 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
         return null;
+//        List<String> fieldList = query.getAsStringList(String.valueOf(fields));
+//        if (fieldList.size() == 1) {
+//            return groupBy(query, fieldList.get(0), options);
+//        } else {
+//            List<String> vals = new ArrayList<>();
+//            vals.add("pseudogene");
+//            vals.add("protein_coding");
+//            Bson match = new Document("$match", new Document("chromosome", "1").append("biotype", new Document("$in", vals)));
+//            Bson project = new Document("$project", new Document("chromosome", 1).append("biotype", 1).append("name", 1));
+//            Bson group = new Document("$group", new Document("_id", new Document("chr", "$chromosome").append("bio", "$biotype"))
+//                    .append("count", new Document("$sum", 1)));
+//
+//            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+//        }
     }
 
     private Bson parseQuery(Query query) {
