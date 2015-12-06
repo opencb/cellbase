@@ -21,13 +21,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import htsjdk.tribble.readers.LineIterator;
+import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.apache.commons.lang.math.NumberUtils;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
-import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
+import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantSource;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
@@ -35,6 +36,7 @@ import org.opencb.cellbase.core.variant.annotation.*;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
+import org.opencb.commons.io.StringDataReader;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.opencb.commons.utils.FileUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -43,19 +45,20 @@ import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by fjlopez on 18/03/15.
  */
 public class VariantAnnotationCommandExecutor extends CommandExecutor {
+
+    public enum FileFormat {VCF, JSON, VEP};
 
     private CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions;
 
@@ -73,6 +76,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private List<String> dbLocations;
     private List<String> customFileIds;
     private List<List<String>> customFileFields;
+    private FileFormat inputFormat;
+    private FileFormat outputFormat;
 
     private QueryOptions queryOptions;
 
@@ -130,25 +135,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 return;
             }
 
-            List<ParallelTaskRunner.Task<Variant, VariantAnnotation>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
-            for (int i = 0; i < numThreads; i++) {
-                List<VariantAnnotator> variantAnnotatorList = createAnnotators();
-                //List<VariantAnnotator> variantAnnotatorList = createAnnotators(cellBaseClient);
-                variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
-            }
+            DataReader dataReader = new StringDataReader(input);
+            List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getTaskList();
+            DataWriter dataWriter = getDataWriter();
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-            DataReader dataReader = new VariantVcfReader(new VariantSource(input.toString(), "", "", ""), input.toString());
-
-            DataWriter dataWriter;
-            if (output.toString().endsWith(".json")) {
-                dataWriter = new JsonAnnotationWriter(output.toString());
-            } else {
-                dataWriter = new VepFormatWriter(output.toString());
-            }
-
-            ParallelTaskRunner<Variant, VariantAnnotation> runner =
+            ParallelTaskRunner<String, Variant> runner =
                     new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+
             runner.run();
 
             if (customFiles != null) {
@@ -162,16 +156,47 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
+    private DataWriter getDataWriter() {
+        DataWriter dataWriter = null;
+        if (outputFormat.equals(FileFormat.JSON)) {
+            dataWriter = new JsonAnnotationWriter(output.toString());
+        } else if (outputFormat.equals(FileFormat.VEP)) {
+            dataWriter = new VepFormatWriter(output.toString());
+        }
+        return dataWriter;
+    }
+
+    private List<ParallelTaskRunner.Task<String, Variant>> getTaskList() throws IOException {
+        List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+        for (int i = 0; i < numThreads; i++) {
+            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
+            switch (inputFormat) {
+                case VCF:
+                    logger.info("Using HTSJDK to read variants.");
+                    FullVcfCodec codec = new FullVcfCodec();
+                    try (InputStream fileInputStream = input.toString().endsWith("gz")
+                            ? new GZIPInputStream(new FileInputStream(input.toFile()))
+                            : new FileInputStream(input.toFile())) {
+                        LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
+                        VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
+                        VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
+                        variantAnnotatorTaskList.add(new VariantAnnotatorTask(header, headerVersion, variantAnnotatorList));
+                    } catch (IOException e) {
+                        throw new IOException("Unable to read VCFHeader");
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return variantAnnotatorTaskList;
+    }
+
     private void closeIndexes() {
-        //try {
         for (int i = 0; i < dbIndexes.size(); i++) {
             dbIndexes.get(i).close();
             dbOptions.get(i).dispose();
-            //FileUtils.deleteDirectory(new File(dbLocations.get(i)));
         }
-        //} catch (IOException e) {
-        //    e.printStackTrace();
-        //}
     }
 
     private List<VariantAnnotator> createAnnotators() {
@@ -365,6 +390,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         if (variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
             FileUtils.checkFile(input);
+            String fileName = input.toFile().getName();
+            if (!(fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz"))) {
+                throw new ParameterException("Only VCF format is currently accepted. Please provide a valid .vcf or .vcf.gz file");
+            } else {
+                inputFormat = FileFormat.VCF;
+            }
         }
         // output file
         if (variantAnnotationCommandOptions.output != null) {
@@ -382,6 +413,20 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //            }
         } else {
             throw new ParameterException("Please check command line sintax. Provide a valid output file name.");
+        }
+
+        if (variantAnnotationCommandOptions.outputFormat != null) {
+            switch (variantAnnotationCommandOptions.outputFormat.toLowerCase()) {
+                case "json":
+                    outputFormat = FileFormat.JSON;
+                    break;
+                case "vep":
+                    outputFormat = FileFormat.VEP;
+                    break;
+                default:
+                    throw  new ParameterException("Only JSON and VEP output formats are currently available. Please, select one of them.");
+            }
+
         }
 
         if (variantAnnotationCommandOptions.include != null && !variantAnnotationCommandOptions.include.isEmpty()) {

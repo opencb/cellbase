@@ -61,14 +61,16 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("22:16051722:TA:T")  // Should return drug interactions
+                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 948813, "G", "C"))  // Should return drug interactions
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 167385325, "A", "-"))  // Should not return null
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 220603289, "-", "GTGT"))  // Should not return null
 //                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16050612, "C", "G"))  // Should return any result
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("13", 45411941, "T", "C"))  // Should return any result
@@ -90,12 +92,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16123409, "-", "A"))
 //                , new QueryOptions());
 
-        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
-        vepFormatWriter.open();
-        vepFormatWriter.pre();
-        vepFormatWriter.write(variantAnnotationList);
-        vepFormatWriter.post();
-        vepFormatWriter.close();
+//        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
+//        vepFormatWriter.open();
+//        vepFormatWriter.pre();
+//        vepFormatWriter.write(variantAnnotationList);
+//        vepFormatWriter.post();
+//        vepFormatWriter.close();
 
 
 
@@ -278,7 +280,8 @@ public class VariantAnnotationMongoDBAdaptorTest {
         // TODO: check differences against Web VEP
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 //        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should return ENST 00000454360 splice donor
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 38679764, "-", "GATCTGAGAAGNGGAANANAAGGG"), new QueryOptions());  // should not return NPE
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("20", 44485953, "-", "ATCT"), new QueryOptions());  // should return ENSG00000101473 ENST00000217455 -       initiator_codon_variant
@@ -440,11 +443,11 @@ public class VariantAnnotationMongoDBAdaptorTest {
         /**
          * Calculates annotation for vcf file variants, loads vep annotations, compares batches and writes results
          */
-        String DIROUT = "/home/fjlopez/tmp/";
-//        String DIROUT = "/homes/fjlopez/tmp/";
+//        String DIROUT = "/home/fjlopez/tmp/";
+        String DIROUT = "/homes/fjlopez/tmp/";
         List<String> VCFS = new ArrayList<>();
 //        VCFS.add("/tmp/test.vcf");
-        VCFS.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+//        VCFS.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
@@ -471,7 +474,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         List<String> VEPFILENAMES = new ArrayList<>();
 //        VEPFILENAMES.add("/tmp/test.txt");
-        VEPFILENAMES.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//        VEPFILENAMES.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 //        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 //        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 //        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
@@ -721,7 +724,9 @@ public class VariantAnnotationMongoDBAdaptorTest {
         List<AnnotationComparisonObject> uvaSpecificAnnotationList = new ArrayList(uvaAnnotationSet);
         Collections.sort(uvaSpecificAnnotationList, new AnnotationComparisonObjectComparator());
         for(AnnotationComparisonObject comparisonObject : uvaSpecificAnnotationList) {
-            bw.write(comparisonObject.toString());
+            if(comparisonObject.getSOname().equals("regulatory_region_variant")) {
+                bw.write(comparisonObject.toString());
+            }
         }
         bw.close();
 
