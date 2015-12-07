@@ -65,6 +65,10 @@ public interface ProteinDBAdaptor<Protein> extends CellBaseDBAdaptor<Protein> {
         }
     }
 
+    default QueryResult first() {
+        return get(new Query(), new QueryOptions("limit", 1));
+    }
+
     QueryResult<Map<String, Object>> getSubstitutionScores(Query query, QueryOptions options);
 
 }

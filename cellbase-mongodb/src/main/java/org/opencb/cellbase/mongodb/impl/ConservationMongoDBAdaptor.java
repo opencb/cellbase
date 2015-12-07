@@ -57,17 +57,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
-    public QueryResult first() {
-        return null;
-    }
-
-    @Override
     public QueryResult get(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public List<QueryResult> get(List list, QueryOptions options) {
         return null;
     }
 
@@ -78,17 +68,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
-
-    public Iterator iterator() {
-        return null;
-    }
-
-    @Override
-    public Iterator nativeIterator() {
-        return null;
-    }
-
-    @Override
     public Iterator iterator(Query query, QueryOptions options) {
         return null;
     }
@@ -96,11 +75,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         return null;
-    }
-
-    @Override
-    public void forEach(Consumer action) {
-
     }
 
     @Override
@@ -118,4 +92,5 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             return new Document();
         }
     }
+
 }

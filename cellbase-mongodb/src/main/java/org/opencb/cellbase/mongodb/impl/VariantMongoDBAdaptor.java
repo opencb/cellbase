@@ -82,11 +82,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     @Override
-    public QueryResult first() {
-        return null;
-    }
-
-    @Override
     public QueryResult<Variation> get(Query query, QueryOptions options) {
         return null;
     }
@@ -105,11 +100,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options).iterator();
-    }
-
-    @Override
-    public void forEach(Consumer action) {
-
     }
 
     @Override

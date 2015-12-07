@@ -67,11 +67,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     }
 
     @Override
-    public QueryResult first() {
-        return null;
-    }
-
-    @Override
     public QueryResult<Entry> get(Query query, QueryOptions options) {
         return null;
     }
@@ -91,11 +86,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options).iterator();
-    }
-
-    @Override
-    public void forEach(Consumer action) {
-
     }
 
     @Override
@@ -120,6 +110,5 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
             return new Document();
         }
     }
-
 
 }
