@@ -282,7 +282,11 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         RocksDB db = null;
         try {
             // a factory method that returns a RocksDB instance
-            db = RocksDB.open(options, dbLocation);
+            if (indexingNeeded) {
+                db = RocksDB.open(options, dbLocation);
+            } else {
+                db = RocksDB.openReadOnly(options, dbLocation);
+            }
             // do something
         } catch (RocksDBException e) {
             // do some error handling

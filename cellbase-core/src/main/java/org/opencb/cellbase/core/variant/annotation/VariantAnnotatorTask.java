@@ -40,7 +40,7 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<String, Var
                                 List<VariantAnnotator> variantAnnotatorList) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
-        this.converter = new VariantContextToVariantConverter("", "");
+        this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
     }
 
