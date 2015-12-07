@@ -699,7 +699,7 @@ public class VariationParser extends CellBaseParser {
     private String getVariationFrequenciesString(String chromosome, int start, String reference, String alternate) throws IOException {
         try {
             if (frequenciesTabixReader != null) {
-                TabixReader.Iterator frequenciesFileIterator = frequenciesTabixReader.query(chromosome, start, start);
+                TabixReader.Iterator frequenciesFileIterator = frequenciesTabixReader.query(chromosome, start-1, start);
                 if (frequenciesFileIterator != null) {
                     String variationFrequenciesLine = frequenciesFileIterator.next();
                     while (variationFrequenciesLine != null) {
