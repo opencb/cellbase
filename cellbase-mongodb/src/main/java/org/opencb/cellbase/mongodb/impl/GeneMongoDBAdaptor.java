@@ -83,11 +83,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult first() {
-        return null;
-    }
-
-    @Override
     public QueryResult<Gene> get(Query query, QueryOptions options) {
         return null;
     }
@@ -107,11 +102,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options).iterator();
-    }
-
-    @Override
-    public void forEach(Consumer action) {
-
     }
 
     @Override

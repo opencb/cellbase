@@ -28,6 +28,10 @@ import java.util.List;
 public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
 
+    default QueryResult first() {
+        return get(new Query(), new QueryOptions("limit", 1));
+    }
+
     QueryResult<T> next(Query query, QueryOptions options);
 
     QueryResult nativeNext(Query query, QueryOptions options);

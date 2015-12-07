@@ -184,28 +184,42 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         proteinSubstitionScoresQueryResult.setDbTime(allChangesQueryResult.getDbTime());
         proteinSubstitionScoresQueryResult.setId(transcriptId + "-" + aaPosition + "-" + newAa);
 
-        String currentAaShortName = aaShortName.get(newAa);
-        Map aaPositions = ((HashMap) ((Document) allChangesQueryResult.getResult().get(0)).get("aaPositions"));
-        if (allChangesQueryResult.getNumResults() > 0 && currentAaShortName != null && aaPositions != null) {
-            Document positionDBObject = (Document) aaPositions.get(Integer.toString(aaPosition));
-            if (positionDBObject != null) {
-                Object aaObject = positionDBObject.get(currentAaShortName);
-                if (aaObject != null) {
-                    proteinSubstitionScoresQueryResult.setNumResults(1);
-                    proteinSubstitionScoresQueryResult.setResult(Arrays.asList(aaObject));
+//<<<<<<< HEAD
+//        String currentAaShortName = aaShortName.get(newAa);
+//        Map aaPositions = ((HashMap) ((Document) allChangesQueryResult.getResult().get(0)).get("aaPositions"));
+//        if (allChangesQueryResult.getNumResults() > 0 && currentAaShortName != null && aaPositions != null) {
+//            Document positionDBObject = (Document) aaPositions.get(Integer.toString(aaPosition));
+//            if (positionDBObject != null) {
+//                Object aaObject = positionDBObject.get(currentAaShortName);
+//                if (aaObject != null) {
+//                    proteinSubstitionScoresQueryResult.setNumResults(1);
+//                    proteinSubstitionScoresQueryResult.setResult(Arrays.asList(aaObject));
+//=======
+        if (allChangesQueryResult.getNumResults() > 0) {
+            String currentAaShortName = aaShortName.get(newAa);
+            Map aaPositions = ((HashMap) ((Document) allChangesQueryResult.getResult().get(0)).get("aaPositions"));
+            if (currentAaShortName != null && aaPositions != null) {
+                Document positionDBObject = (Document) aaPositions.get(Integer.toString(aaPosition));
+                if (positionDBObject != null) {
+                    Object aaObject = positionDBObject.get(currentAaShortName);
+                    if (aaObject != null) {
+                        proteinSubstitionScoresQueryResult.setNumResults(1);
+                        proteinSubstitionScoresQueryResult.setResult(Arrays.asList(aaObject));
+                    } else {
+                        proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted AA " + currentAaShortName
+                                + ". Available AA changes for transcript " + transcriptId + ", position " + aaPosition
+                                + ": " + positionDBObject.keySet().toString());
+                        return proteinSubstitionScoresQueryResult;
+                    }
+//>>>>>>> develop
                 } else {
-                    proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted AA " + currentAaShortName
-                            + ". Available AA changes for transcript " + transcriptId + ", position " + aaPosition
-                            + ": " + positionDBObject.keySet().toString());
+                    proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted position " + Integer.toString(aaPosition)
+                            + ". Available positions for transcript " + transcriptId + ": " + aaPositions.keySet().toString());
                     return proteinSubstitionScoresQueryResult;
                 }
             } else {
-                proteinSubstitionScoresQueryResult.setErrorMsg("Unaccepted position " + Integer.toString(aaPosition)
-                        + ". Available positions for transcript " + transcriptId + ": " + aaPositions.keySet().toString());
-                return proteinSubstitionScoresQueryResult;
+                proteinSubstitionScoresQueryResult.setNumResults(0);
             }
-        } else {
-            proteinSubstitionScoresQueryResult.setNumResults(0);
         }
 
         return proteinSubstitionScoresQueryResult;

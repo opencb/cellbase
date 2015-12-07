@@ -45,17 +45,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult first() {
-        return null;
-    }
-
-    @Override
     public QueryResult get(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public List<QueryResult> get(List list, QueryOptions options) {
         return null;
     }
 
@@ -63,16 +53,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.find(bson, options);
-    }
-
-    @Override
-    public Iterator iterator() {
-        return null;
-    }
-
-    @Override
-    public Iterator nativeIterator() {
-        return null;
     }
 
     @Override
@@ -84,11 +64,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options).iterator();
-    }
-
-    @Override
-    public void forEach(Consumer action) {
-
     }
 
     @Override
@@ -141,4 +116,5 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
             return new Document();
         }
     }
+
 }
