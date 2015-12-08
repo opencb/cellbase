@@ -123,7 +123,7 @@ public class VariationParser extends CellBaseParser {
         this.variationDirectoryPath = variationDirectoryPath;
         cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))+");
         populationFrequnciesPattern = Pattern.compile("(?<" + POPULATION_ID_GROUP + ">\\w+):(?<" + REFERENCE_FREQUENCY_GROUP
-                + ">\\d+.\\d+),(?<" + ALTERNATE_FREQUENCY_GROUP + ">\\d+.\\d+)");
+                + ">\\d+(.\\d)*),(?<" + ALTERNATE_FREQUENCY_GROUP + ">\\d+(.\\d)*)");
         thousandGenomesPhase1MissedPopulations = new HashSet<>();
         thousandGenomesPhase3MissedPopulations = new HashSet<>();
         outputFileNames = new HashMap<>();
@@ -411,7 +411,7 @@ public class VariationParser extends CellBaseParser {
 
     private Variant buildVariation(String[] variationFields, String[] variationFeatureFields, String chromosome,
                                      int start, int end, String id, String reference, String alternate, VariantType type,
-                                     List<TranscriptVariation> transcriptVariation, List<Xref> xrefs,
+                                     List<TranscriptVariation> transcriptVariations, List<Xref> xrefs,
                                      List<PopulationFrequency> populationFrequencies, String[] allelesArray,
                                      List<String> consequenceTypes) throws IllegalArgumentException
     {
@@ -422,7 +422,7 @@ public class VariationParser extends CellBaseParser {
         variant.setIds(ids);
         variant.setType(type);
 
-        List<String> hgvs = null; // TODO: rellenar una lista con todos los hgvs que vienen en transcript variation
+        List<String> hgvs = null; // TODO: fill a list with all hgvs from transcript variation
         Map<String, Object> additionalAttributes = new HashMap<>();
         String ancestralAllele = (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "";
         additionalAttributes.put("Ensembl Ancestral Allele", ancestralAllele);
@@ -434,9 +434,8 @@ public class VariationParser extends CellBaseParser {
                 && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
         additionalAttributes.put("Minor Allele Freq", (variationFeatureFields[17] != null
                 && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
-        // TODO: Poner un String separado con comas con todos los conseq types
 
-        List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
+        List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariations);
 
         VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
                 xrefs, hgvs, conseqTypes, populationFrequencies, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
@@ -737,7 +736,6 @@ public class VariationParser extends CellBaseParser {
         thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_EUROPEAN_POPULATION);
         thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_EASTASIAN_POPULATION);
         thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_SOUTHASIAN_POPULATION);
-        thousandGenomesPhase3MissedPopulations.add(THOUSAND_GENOMES_ASIAN_POPULATION);
         frequencies = addMissedPopulations(frequencies, thousandGenomesPhase3MissedPopulations,
                 THOUSAND_GENOMES_PHASE_3_STUDY, THOUSAND_GENOMES_ALL_POPULATION);
 
