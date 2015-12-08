@@ -23,12 +23,14 @@ import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Path("/{version}/{species}/genomic/region")
@@ -182,10 +184,18 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
-            query.put(GenomeDBAdaptor.QueryParams.REGION.key(), region);
-//            List<Region> regions = Region.parseRegions(region);
-//            queryOptions.put("strand", strand);
-            return createOkResponse(genomeDBAdaptor.getGenomicSequence(query, queryOptions));
+
+            if (region.contains(",")) {
+                String[] regions = region.split(",");
+                List<Query> queries = new ArrayList<>(regions.length);
+                for (String s : regions) {
+                    queries.add(new Query("region", s));
+                }
+                return createOkResponse(genomeDBAdaptor.getGenomicSequence(queries, queryOptions));
+            } else {
+                query.put(GenomeDBAdaptor.QueryParams.REGION.key(), region);
+                return createOkResponse(genomeDBAdaptor.getGenomicSequence(query, queryOptions));
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }

@@ -16,14 +16,23 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -31,31 +40,60 @@ import java.util.function.Consumer;
  */
 public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdaptor {
 
+    private MongoDBCollection genomeInfoMongoDBCollection;
+
     public GenomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
+        genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
 
         logger.debug("GenomeMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
-    public QueryResult<Map<String, Object>> getGenomeInfo(Query query, QueryOptions queryOptions) {
-        return null;
+    public QueryResult getGenomeInfo(Query query, QueryOptions queryOptions) {
+        return genomeInfoMongoDBCollection.find(new Document(), new QueryOptions());
     }
 
     @Override
-    public QueryResult<String> getGenomicSequence(Query query, QueryOptions queryOptions) {
-        return null;
+    public QueryResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions) {
+        QueryResult<Document> queryResult = nativeGet(query, queryOptions);
+        List<Document> queryResultList = queryResult.getResult();
+
+        QueryResult<GenomeSequenceFeature> result = new QueryResult<>();
+
+        if (queryResultList != null && !queryResultList.isEmpty()) {
+            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
+
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Document document : queryResult.getResult()) {
+                stringBuilder.append(document.getString("sequence"));
+            }
+            int startIndex = region.getStart() % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
+            int length = region.getEnd() - region.getStart() + 1;
+            String sequence = stringBuilder.toString().substring(startIndex, startIndex + length);
+
+            String sequenceType = queryResult.getResult().get(0).getString("sequenceType");
+            String assembly = queryResult.getResult().get(0).getString("assembly");
+
+            result.setResult(Arrays.asList(new GenomeSequenceFeature(
+                    region.getChromosome(), region.getStart(), region.getEnd(), 1, sequenceType, assembly, sequence)
+            ));
+        }
+
+        return result;
     }
 
     @Override
     public QueryResult<Long> count(Query query) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.count(bson);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.distinct(field, bson);
     }
 
     @Override
@@ -70,7 +108,8 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.find(bson, options);
     }
 
     @Override
@@ -80,12 +119,26 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
     public void forEach(Query query, Consumer action, QueryOptions options) {
 
+    }
+
+    private Bson parseQuery(Query query) {
+        List<Bson> andBsonList = new ArrayList<>();
+
+        createRegionQuery(query, GenomeDBAdaptor.QueryParams.REGION.key(),
+                MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE, andBsonList);
+
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
     }
 
 }
