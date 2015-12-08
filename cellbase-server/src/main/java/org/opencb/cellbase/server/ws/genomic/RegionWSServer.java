@@ -179,8 +179,7 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{chrRegionId}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinical variants")
-    public Response getSequenceByRegion(@PathParam("chrRegionId") String region, @DefaultValue("1") @QueryParam("strand") String strand,
-                                        @DefaultValue("") @QueryParam("format") String format) {
+    public Response getSequenceByRegion(@PathParam("chrRegionId") String region, @DefaultValue("1") @QueryParam("strand") String strand) {
         try {
             parseQueryParams();
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
@@ -189,11 +188,14 @@ public class RegionWSServer extends GenericRestWSServer {
                 String[] regions = region.split(",");
                 List<Query> queries = new ArrayList<>(regions.length);
                 for (String s : regions) {
-                    queries.add(new Query("region", s));
+                    Query q = new Query("region", s);
+                    q.put("strand", strand);
+                    queries.add(q);
                 }
                 return createOkResponse(genomeDBAdaptor.getGenomicSequence(queries, queryOptions));
             } else {
                 query.put(GenomeDBAdaptor.QueryParams.REGION.key(), region);
+                query.put("strand", strand);
                 return createOkResponse(genomeDBAdaptor.getGenomicSequence(query, queryOptions));
             }
         } catch (Exception e) {

@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
@@ -73,11 +74,18 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             int length = region.getEnd() - region.getStart() + 1;
             String sequence = stringBuilder.toString().substring(startIndex, startIndex + length);
 
+            String strand = "1";
+            String queryStrand= (query.getString("strand") != null) ? query.getString("strand") : "1";
+            if (queryStrand.equals("-1") || queryStrand.equals("-")) {
+                sequence = DNASequenceUtils.reverseComplement(sequence);
+                strand = "-1";
+            }
+
             String sequenceType = queryResult.getResult().get(0).getString("sequenceType");
             String assembly = queryResult.getResult().get(0).getString("assembly");
 
             result.setResult(Arrays.asList(new GenomeSequenceFeature(
-                    region.getChromosome(), region.getStart(), region.getEnd(), 1, sequenceType, assembly, sequence)
+                    region.getChromosome(), region.getStart(), region.getEnd(), Integer.parseInt(strand), sequenceType, assembly, sequence)
             ));
         }
 
