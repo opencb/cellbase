@@ -150,7 +150,11 @@ sub createCoreTables {
 			print XREFS $trans->stable_id()."\t".$gene->stable_id()."\t".&get_dbname_short("Ensembl gene")."\t"."Ensembl gene"."\t".$gene->description()."\n";
 			
 #			print XREF $ntrans."\t".$gene->external_name."\t".&get_dbname($gene->get_all_DBEntries->[0]->{'db_display_name'})."\t".$gene->get_all_DBEntries->[0]->{'description'}."\n";
-			print XREFS $trans->stable_id()."\t".$gene->external_name()."\t".&get_dbname_short($gene->get_all_DBEntries->[0]->{'db_display_name'})."\t".$gene->get_all_DBEntries->[0]->{'db_display_name'}."\t".$gene->get_all_DBEntries->[0]->{'description'}."\n";
+#			print XREFS $trans->stable_id()."\t".$gene->external_name()."\t".&get_dbname_short($gene->get_all_DBEntries->[0]->{'db_display_name'})."\t".$gene->get_all_DBEntries->[0]->{'db_display_name'}."\t".$gene->get_all_DBEntries->[0]->{'description'}."\n";
+			foreach my $dbentry(@{$gene->get_all_DBEntries}){
+					print XREFS $trans->stable_id()."\t".$dbentry->{'display_id'}."\t".&get_dbname_short($dbentry->{'db_display_name'})."\t".$dbentry->{'db_display_name'}."\t".$dbentry->{'description'}."\n";
+			}
+
 	
 			# Referencia al ensembl transcript id
 			print XREFS $trans->stable_id()."\t".$trans->stable_id()."\t".&get_dbname_short("Ensembl transcript")."\t"."Ensembl transcript"."\t".$trans->description()."\n";
