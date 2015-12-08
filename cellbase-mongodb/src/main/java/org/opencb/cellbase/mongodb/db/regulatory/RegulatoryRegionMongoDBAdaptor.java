@@ -48,7 +48,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
-        logger.debug("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
+        logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
     }
 
 

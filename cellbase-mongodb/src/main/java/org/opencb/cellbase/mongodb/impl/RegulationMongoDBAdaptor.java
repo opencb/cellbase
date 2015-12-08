@@ -3,7 +3,7 @@ package org.opencb.cellbase.mongodb.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.cellbase.core.api.RegulatoryRegionDBAdaptor;
+import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -18,13 +18,13 @@ import java.util.function.Consumer;
 /**
  * Created by swaathi on 04/12/15.
  */
-public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements RegulatoryRegionDBAdaptor {
+public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor {
 
-    public RegulatoryRegionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
-        logger.debug("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
+        logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
@@ -40,11 +40,6 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     @Override
     public QueryResult stats(Query query) {
-        return null;
-    }
-
-    @Override
-    public QueryResult first() {
         return null;
     }
 

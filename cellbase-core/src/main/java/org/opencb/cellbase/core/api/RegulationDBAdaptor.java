@@ -5,9 +5,9 @@ import org.opencb.commons.datastore.core.QueryParam;
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by swaathi on 04/12/15.
+ * Created by swaathi on 08/12/15.
  */
-public interface RegulatoryRegionDBAdaptor<RegulatoryRegion> extends CellBaseDBAdaptor<RegulatoryRegion> {
+public interface RegulationDBAdaptor<RegulatoryRegion> extends CellBaseDBAdaptor<RegulatoryRegion> {
 
     enum QueryParams implements QueryParam {
         NAME("name", TEXT_ARRAY, ""),
