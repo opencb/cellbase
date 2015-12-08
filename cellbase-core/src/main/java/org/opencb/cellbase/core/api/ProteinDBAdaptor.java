@@ -21,8 +21,6 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
 
-import java.util.Map;
-
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
@@ -69,6 +67,6 @@ public interface ProteinDBAdaptor<Protein> extends CellBaseDBAdaptor<Protein> {
         return get(new Query(), new QueryOptions("limit", 1));
     }
 
-    QueryResult<Map<String, Object>> getSubstitutionScores(Query query, QueryOptions options);
+    QueryResult getSubstitutionScores(Query query, QueryOptions options);
 
 }

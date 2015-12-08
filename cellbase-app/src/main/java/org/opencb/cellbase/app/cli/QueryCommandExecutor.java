@@ -177,17 +177,35 @@ public class QueryCommandExecutor extends CommandExecutor {
     private void executeProteinQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
-        switch (queryCommandOptions.resource) {
-            case "info":
-                query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-                Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    output.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
+            QueryResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
+            output.println(objectMapper.writeValueAsString(distinct));
+            return;
+        }
+
+        if (queryCommandOptions.count) {
+            QueryResult count = proteinDBAdaptor.count(query);
+            output.println(objectMapper.writeValueAsString(count));
+            return;
+        }
+
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                case "substitution-scores":
+                    QueryResult substitutionScores = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
+                    output.println(objectMapper.writeValueAsString(substitutionScores));
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
