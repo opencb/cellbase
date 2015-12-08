@@ -123,19 +123,30 @@ public class MongoDBAdaptor {
     private Bson createChunkQuery(Region region, int chunkSize) {
         int startChunkId = getChunkId(region.getStart(), chunkSize);
         int endChunkId = getChunkId(region.getEnd(), chunkSize);
-        // We only use chunks if region queried belongs to a single chunk
-        if (startChunkId == endChunkId) {
-            logger.info("Querying by chunkId, {}, {}", startChunkId, endChunkId);
-            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
-            Bson start = Filters.lte("start", region.getEnd());
-            Bson end = Filters.gte("end", region.getStart());
-            return Filters.and(chunk, start, end);
-        } else {
-            Bson chromosome = Filters.eq("chromosome", region.getChromosome());
-            Bson start = Filters.lte("start", region.getEnd());
-            Bson end = Filters.gte("end", region.getStart());
-            return Filters.and(chromosome, start, end);
+
+        List<String> chunkIds = new ArrayList<>(endChunkId - startChunkId + 1);
+        for (int chunkId = startChunkId; chunkId <= endChunkId; chunkId++) {
+            chunkIds.add(region.getChromosome() + "_" + chunkId + "_" + chunkSize / 1000 + "k");
         }
+
+        Bson chunk = Filters.in("_chunkIds", chunkIds);
+        Bson start = Filters.lte("start", region.getEnd());
+        Bson end = Filters.gte("end", region.getStart());
+        return Filters.and(chunk, start, end);
+
+//        // We only use chunks if region queried belongs to a single chunk
+//        if (startChunkId == endChunkId) {
+//            logger.info("Querying by chunkId, {}, {}", startChunkId, endChunkId);
+//            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
+//            Bson start = Filters.lte("start", region.getEnd());
+//            Bson end = Filters.gte("end", region.getStart());
+//            return Filters.and(chunk, start, end);
+//        } else {
+//            Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+//            Bson start = Filters.lte("start", region.getEnd());
+//            Bson end = Filters.gte("end", region.getStart());
+//            return Filters.and(chromosome, start, end);
+//        }
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {

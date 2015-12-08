@@ -20,7 +20,6 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.ConservationDBAdaptor;
-import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -44,12 +43,14 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
     @Override
     public QueryResult<Long> count(Query query) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.count(bson);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.distinct(field, bson);
     }
 
     @Override
@@ -75,7 +76,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
@@ -85,7 +87,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE, andBsonList);
+        createRegionQuery(query, ConservationDBAdaptor.QueryParams.REGION.key(), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

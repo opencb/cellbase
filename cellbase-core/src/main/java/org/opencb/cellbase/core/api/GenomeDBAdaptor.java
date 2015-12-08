@@ -16,19 +16,22 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
  * Created by imedina on 30/11/15.
  */
-public interface GenomeDBAdaptor {
+public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, "");
@@ -59,8 +62,15 @@ public interface GenomeDBAdaptor {
         }
     }
 
-    QueryResult<Map<String, Object>> getGenomeInfo(Query query, QueryOptions queryOptions);
+    QueryResult getGenomeInfo(Query query, QueryOptions queryOptions);
 
-    QueryResult<String> getGenomicSequence(Query query, QueryOptions queryOptions);
+
+    QueryResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions);
+
+    default List<QueryResult<GenomeSequenceFeature>> getGenomicSequence(List<Query> queries, QueryOptions queryOptions) {
+        List<QueryResult<GenomeSequenceFeature>> queryResults = new ArrayList<>(queries.size());
+        queryResults.addAll(queries.stream().map(query -> getGenomicSequence(query, queryOptions)).collect(Collectors.toList()));
+        return queryResults;
+    }
 
 }

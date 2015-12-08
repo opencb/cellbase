@@ -16,23 +16,22 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
-import org.opencb.cellbase.core.api.RegulationDBAdaptor;
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.Xref;
+import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<GenericFeature> {
+public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<Xref> {
 
-    public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
@@ -41,32 +40,12 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
 
 
     @Override
-    public QueryResult<GenericFeature> next(Query query, QueryOptions options) {
+    public QueryResult<Xref> startsWith(String id, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeNext(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
-
-    @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+    public QueryResult<Xref> contains(String likeQuery, QueryOptions options) {
         return null;
     }
 
@@ -86,7 +65,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public QueryResult<GenericFeature> get(Query query, QueryOptions options) {
+    public QueryResult<Xref> get(Query query, QueryOptions options) {
         return null;
     }
 
@@ -96,7 +75,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public Iterator<GenericFeature> iterator(Query query, QueryOptions options) {
+    public Iterator<Xref> iterator(Query query, QueryOptions options) {
         return null;
     }
 
@@ -110,4 +89,3 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
 
     }
 }
-

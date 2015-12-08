@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.cli;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -74,6 +75,9 @@ public class QueryCommandExecutor extends CommandExecutor {
 
         try {
             switch (queryCommandOptions.category) {
+                case "genome":
+                    executeGenomeQuery(query, queryOptions, output);
+                    break;
                 case "gene":
                     executeGeneQuery(query, queryOptions, output);
                     break;
@@ -99,6 +103,24 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
 
         output.close();
+    }
+
+    private void executeGenomeQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
+        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(queryCommandOptions.species);
+
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    genomeDBAdaptor.getGenomeInfo(query, queryOptions);
+                    break;
+                case "sequence":
+                    QueryResult<GenomeSequenceFeature> genomicSequence = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
+                    output.println(objectMapper.writeValueAsString(genomicSequence));
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
 
@@ -176,13 +198,13 @@ public class QueryCommandExecutor extends CommandExecutor {
 
 
     private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(queryCommandOptions.species);
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
-                    query.append(RegulatoryRegionDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-                    Iterator iterator = regulatoryRegionDBAdaptor.nativeIterator(query, queryOptions);
+                    query.append(RegulationDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
                     while (iterator.hasNext()) {
                         Object next = iterator.next();
                         output.println(objectMapper.writeValueAsString(next));

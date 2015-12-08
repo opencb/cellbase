@@ -22,9 +22,11 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -88,7 +90,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        options.put(MongoDBCollection.SKIP_COUNT, true);
+        return mongoDBCollection.find(bson, options);
     }
 
     @Override
@@ -129,7 +133,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(), andBsonList);
+        createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
+                MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "transcriptVariations.transcriptId", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(), "consequenceTypes", andBsonList);
