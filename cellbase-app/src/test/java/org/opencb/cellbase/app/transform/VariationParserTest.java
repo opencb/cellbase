@@ -79,8 +79,41 @@ public class VariationParserTest {
         // TODO hgvs
         // TODO check xrefs
 
-        assertEquals(1, serializedVariantsMap.get("variation_chr7").size());
-        assertEquals(2, serializedVariantsMap.get("variation_chr14").size());
+        List<Variant> chr7Variations = serializedVariantsMap.get("variation_chr7");
+        assertEquals(1, chr7Variations.size());
+        variant = chr7Variations.get(0);
+        checkVariant(variant, "G", "A", 54421937, 54421937, "1", "rs1404666", VariantType.SNV);
+        annotation = variant.getAnnotation();
+        consequenceTypes = annotation.getConsequenceTypes();
+        assertEquals(2, consequenceTypes.size());
+        // TODO consequence types details
+        assertEquals(0, annotation.getPopulationFrequencies().size());
+        // TODO frequencies
+        // TODO hgvs
+        // TODO check xrefs
+
+        List<Variant> chr14Variations = serializedVariantsMap.get("variation_chr14");
+        assertEquals(2, chr14Variations.size());
+        variant = chr14Variations.stream().filter(v -> v.getAlternate().equals("C")).findFirst().get();
+        checkVariant(variant, "A", "C", 77697967, 77697967, "1", "rs375566", VariantType.SNV);
+        annotation = variant.getAnnotation();
+        consequenceTypes = annotation.getConsequenceTypes();
+        assertEquals(4, consequenceTypes.size());
+        // TODO consequence types details
+        assertEquals(0, annotation.getPopulationFrequencies().size());
+        // TODO frequencies
+        // TODO hgvs
+        // TODO check xrefs
+        variant = chr14Variations.stream().filter(v -> v.getAlternate().equals("G")).findFirst().get();
+        checkVariant(variant, "A", "G", 77697967, 77697967, "1", "rs375566", VariantType.SNV);
+        annotation = variant.getAnnotation();
+        consequenceTypes = annotation.getConsequenceTypes();
+        assertEquals(4, consequenceTypes.size());
+        // TODO consequence types details
+        assertEquals(22, annotation.getPopulationFrequencies().size());
+        // TODO frequencies
+        // TODO hgvs
+        // TODO check xrefs
     }
 
     private void checkVariant(Variant variant, String expectedReference, String expectedAlternate, Integer expectedStart,
