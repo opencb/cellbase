@@ -234,26 +234,28 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 BasicDBObject chunk = list.get(j);
 
                 if (!chunk.isEmpty()) {
-                    String source = chunk.getString("source");
-                    List<Float> valuesList;
-                    if (!typeMap.containsKey(source)) {
-                        valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
-                        for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
-                            valuesList.add(null);
-                        }
-                        typeMap.put(source, valuesList);
-                    } else {
-                        valuesList = typeMap.get(source);
-                    }
-
                     BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
-                    int pos = 0;
-                    if (region.getStart() > chunk.getInt("start")) {
-                        pos = region.getStart() - chunk.getInt("start");
-                    }
+                    if (valuesChunk != null) {  // TODO: temporary patch to skip empty chunks - remove as soon as conservation is reloaded
+                        String source = chunk.getString("source");
+                        List<Float> valuesList;
+                        if (!typeMap.containsKey(source)) {
+                            valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
+                            for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
+                                valuesList.add(null);
+                            }
+                            typeMap.put(source, valuesList);
+                        } else {
+                            valuesList = typeMap.get(source);
+                        }
 
-                    for (; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
-                        valuesList.set(pos + chunk.getInt("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                        int pos = 0;
+                        if (region.getStart() > chunk.getInt("start")) {
+                            pos = region.getStart() - chunk.getInt("start");
+                        }
+
+                        for (; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
+                            valuesList.set(pos + chunk.getInt("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                        }
                     }
                 } else {
                     continue;
