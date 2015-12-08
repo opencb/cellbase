@@ -70,9 +70,10 @@ public abstract class DBAdaptorFactory {
     public abstract void close();
 
 
-//    public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species);
-//
-//    public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species, String assembly);
+
+    public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species);
+
+    public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species, String assembly);
 
 
     public abstract GeneDBAdaptor getGeneDBAdaptor(String species);
@@ -83,6 +84,11 @@ public abstract class DBAdaptorFactory {
     public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species);
 
     public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
+
+
+    public abstract XRefDBAdaptor getXRefDBAdaptor(String species);
+
+    public abstract XRefDBAdaptor getXRefDBAdaptor(String species, String assembly);
 
 
     public abstract VariantDBAdaptor getVariationDBAdaptor(String species);
@@ -99,37 +105,27 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
 
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
-//
-//
-//    public abstract XRefDBAdaptor getXRefDBAdaptor(String species);
-//
-//    public abstract XRefDBAdaptor getXRefDBAdaptor(String species, String assembly);
-//
+
 //
 //    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species);
 //
 //    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species, String assembly);
 //
-//
-//    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species);
-//
-//    public abstract RegulatoryRegionDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly);
-//
+
+    public abstract RegulationDBAdaptor getRegulatoryRegionDBAdaptor(String species);
+
+    public abstract RegulationDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly);
+
 //
 //    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species);
 //
 //    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species, String assembly);
 //
-//
-//    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species);
-//
-//    public abstract ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly);
-//
-//
+
     public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
 
     public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
-//
+
 //
 //    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species);
 //
@@ -140,12 +136,11 @@ public abstract class DBAdaptorFactory {
 //
 //    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
 //
-//
-//    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
-//
-//    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
-//
-//
+
+    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
+
+    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
+
 
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species);
 

@@ -21,12 +21,15 @@ import org.opencb.commons.datastore.core.QueryParam;
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by imedina on 01/12/15.
+ * Created by imedina on 07/12/15.
  */
-public interface VariantFunctionalScore<GenomicPositionScore> extends CellBaseDBAdaptor<GenomicPositionScore> {
+public interface RegulationDBAdaptor<RegulatoryElement> extends FeatureDBAdaptor<RegulatoryElement> {
 
     enum QueryParams implements QueryParam {
-        REGION("region", TEXT_ARRAY, "");
+        ID("id", TEXT_ARRAY, ""),
+        NAME("name", TEXT_ARRAY, ""),
+        REGION("region", TEXT_ARRAY, ""),
+        BIOTYPE("biotype", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -38,20 +41,19 @@ public interface VariantFunctionalScore<GenomicPositionScore> extends CellBaseDB
         private Type type;
         private String description;
 
-
         @Override
         public String key() {
-            return null;
+            return key;
         }
 
         @Override
         public String description() {
-            return null;
+            return description;
         }
 
         @Override
         public Type type() {
-            return null;
+            return type;
         }
     }
 

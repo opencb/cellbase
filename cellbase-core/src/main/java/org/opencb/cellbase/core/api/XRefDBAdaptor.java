@@ -16,22 +16,20 @@
 
 package org.opencb.cellbase.core.api;
 
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
-
-import java.util.Map;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
  * Created by imedina on 30/11/15.
  */
-public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
+public interface XRefDBAdaptor<XRef> extends CellBaseDBAdaptor<XRef> {
 
     enum QueryParams implements QueryParam {
-        REGION("region", TEXT_ARRAY, "");
+        ID("transcripts.xrefs.id", TEXT_ARRAY, ""),
+        DBNAME("transcripts.xrefs.dbname", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -59,8 +57,9 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
         }
     }
 
-    QueryResult<Map<String, Object>> getGenomeInfo(Query query, QueryOptions queryOptions);
 
-    QueryResult<String> getGenomicSequence(Query query, QueryOptions queryOptions);
+    QueryResult<XRef> startsWith(String id, QueryOptions options);
+
+    QueryResult<XRef> contains(String likeQuery, QueryOptions options);
 
 }
