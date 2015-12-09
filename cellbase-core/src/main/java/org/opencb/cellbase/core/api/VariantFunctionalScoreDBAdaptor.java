@@ -16,20 +16,17 @@
 
 package org.opencb.cellbase.core.api;
 
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.core.QueryResult;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by imedina on 30/11/15.
+ * Created by imedina on 01/12/15.
  */
-public interface XrefDBAdaptor<XRef> extends CellBaseDBAdaptor<XRef> {
+public interface VariantFunctionalScoreDBAdaptor<GenomicPositionScore> extends CellBaseDBAdaptor<GenomicPositionScore> {
 
     enum QueryParams implements QueryParam {
-        ID("transcripts.xrefs.id", TEXT_ARRAY, ""),
-        DBNAME("transcripts.xrefs.dbname", TEXT_ARRAY, "");
+        REGION("region", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -41,25 +38,21 @@ public interface XrefDBAdaptor<XRef> extends CellBaseDBAdaptor<XRef> {
         private Type type;
         private String description;
 
+
         @Override
         public String key() {
-            return key;
+            return null;
         }
 
         @Override
         public String description() {
-            return description;
+            return null;
         }
 
         @Override
         public Type type() {
-            return type;
+            return null;
         }
     }
-
-
-    QueryResult<XRef> startsWith(String id, QueryOptions options);
-
-    QueryResult<XRef> contains(String likeQuery, QueryOptions options);
 
 }

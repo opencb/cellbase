@@ -16,13 +16,11 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
@@ -31,9 +29,9 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -59,28 +57,29 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+        if (query.getString("region") != null) {
+            Region region = Region.parseRegion(query.getString("region"));
+            Bson bsonDocument = parseQuery(query);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+        }
         return null;
     }
 
     @Override
     public QueryResult<Long> count(Query query) {
-        Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.count(bsonDocument);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.distinct(field, bsonDocument);
     }
 
     @Override
     public QueryResult stats(Query query) {
-        return null;
-    }
-
-    @Override
-    public QueryResult first() {
         return null;
     }
 
@@ -96,16 +95,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public Iterator<Gene> iterator() {
-        return null;
-    }
-
-    @Override
-    public Iterator nativeIterator() {
-        return null;
-    }
-
-    @Override
     public Iterator<Gene> iterator(Query query, QueryOptions options) {
         return null;
     }
@@ -117,13 +106,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public void forEach(Consumer action) {
-
-    }
-
-    @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
-
+        Objects.requireNonNull(action);
+        Iterator iterator = nativeIterator(query, options);
+        while (iterator.hasNext()) {
+            action.accept(iterator.next());
+        }
     }
 
     @Override
@@ -133,20 +121,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        Bson match = Aggregates.match(parseQuery(query));
-        Bson project = Aggregates.project(Projections.include(field, "name"));
-        Bson group;
-        if (options.getBoolean("count", false)) {
-            group = Aggregates.group("$" + field, Accumulators.sum("count", 1));
-        } else {
-            group = Aggregates.group("$" + field, Accumulators.addToSet("genes", "$name"));
-        }
-        return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
     }
 
     private Bson parseQuery(Query query) {

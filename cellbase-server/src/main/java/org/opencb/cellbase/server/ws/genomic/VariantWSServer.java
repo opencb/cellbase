@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.Position;
@@ -24,6 +26,7 @@ import org.opencb.cellbase.core.db.api.variation.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +42,7 @@ import java.util.List;
 
 @Path("/{version}/{species}/genomic/variant")
 @Produces(MediaType.APPLICATION_JSON)
+@Api(value = "Variant", description = "Variant RESTful Web Services API")
 public class VariantWSServer extends GenericRestWSServer {
 
     protected static final HashMap<String, List<Transcript>> CACHE_TRANSCRIPT = new HashMap<>();
@@ -137,7 +141,13 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{variants}/annotation")
-    public Response getAnnotationByVariantsGET(@PathParam("variants") String variants) {
+    @ApiOperation(httpMethod = "GET",
+            value = "Retrieves variant annotation for a list of variants. Results within response will contain a list "
+                    + "of VariantAnnotation objects.",
+            response = QueryResponse.class)
+    public Response getAnnotationByVariantsGET(@ApiParam(value = "Comma-separated list of variants to annotate")
+                                               @DefaultValue("19:45411941:T:C,14:38679764:-:GATCTGAGAAGGGAAAAAGGG")
+                                               @PathParam("variants") String variants) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
@@ -181,13 +191,16 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @POST
     @Consumes("text/plain")
-    @Path("/full_annotation")
+    @Path("/annotation")
+    @ApiOperation(httpMethod = "POST",
+            value = "Retrieves variant annotation for a list of variants. Results within response will contain a list "
+                    + "of VariantAnnotation objects.",
+            response = QueryResponse.class)
     public Response getAnnotationByVariantsPOST(String variants) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
-
             VariantAnnotationDBAdaptor varAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
             List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
@@ -195,6 +208,13 @@ public class VariantWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    @POST
+    @Consumes("text/plain")
+    @Path("/full_annotation")
+    public Response getFullAnnotationByVariantsPOST(String variants) {
+        return getAnnotationByVariantsPOST(variants);
     }
 
     @GET

@@ -56,8 +56,6 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     /*
      Main methods to query.
      */
-    QueryResult first();
-
     QueryResult<T> get(Query query, QueryOptions options);
 
     default List<QueryResult<T>> get(List<Query> queries, QueryOptions options) {
@@ -91,20 +89,16 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
         return nativeIterator(new Query(), new QueryOptions());
     }
 
-    default Iterator nativeIiterator() {
-        return nativeIterator(new Query(), new QueryOptions());
-    }
-
     Iterator<T> iterator(Query query, QueryOptions options);
 
     Iterator nativeIterator(Query query, QueryOptions options);
 
 
-    /*
-     Iterator queries
-     */
+
     @Override
-    void forEach(Consumer action);
+    default void forEach(Consumer action) {
+        forEach(new Query(), action, new QueryOptions());
+    }
 
     void forEach(Query query, Consumer<? super Object> action, QueryOptions options);
 

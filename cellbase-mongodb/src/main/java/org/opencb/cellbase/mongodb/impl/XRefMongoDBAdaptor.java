@@ -17,9 +17,11 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.cellbase.core.api.ConservationDBAdaptor;
+import org.opencb.biodata.models.core.Xref;
+import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -29,29 +31,45 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
- * Created by swaathi on 26/11/15.
+ * Created by imedina on 07/12/15.
  */
-public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
+public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<Xref> {
 
-    public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("conservation");
+        mongoDBCollection = mongoDataStore.getCollection("gene");
 
-        logger.debug("ConservationMongoDBAdaptor: in 'constructor'");
+        logger.debug("GeneMongoDBAdaptor: in 'constructor'");
+    }
+
+
+    @Override
+    public QueryResult startsWith(String id, QueryOptions options) {
+        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
+        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+        return mongoDBCollection.find(regex, include, options);
+    }
+
+    @Override
+    public QueryResult contains(String id, QueryOptions options) {
+        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("\\w" + id + "\\w"));
+        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+        return mongoDBCollection.find(regex, include, options);
     }
 
     @Override
     public QueryResult<Long> count(Query query) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        Bson document = parseQuery(query);
+        return mongoDBCollection.count(document);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        Bson document = parseQuery(query);
+        return mongoDBCollection.distinct(field, document);
     }
 
     @Override
@@ -60,35 +78,35 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
-    public QueryResult get(Query query, QueryOptions options) {
+    public QueryResult<Xref> get(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        return null;
     }
 
     @Override
-    public Iterator iterator(Query query, QueryOptions options) {
+    public Iterator<Xref> iterator(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
+        return null;
     }
 
     @Override
-    public void forEach(Query query, Consumer action, QueryOptions options) {
+    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
 
     }
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, ConservationDBAdaptor.QueryParams.REGION.key(), andBsonList);
+
+        createOrQuery(query, XRefDBAdaptor.QueryParams.ID.key(), "transcripts.xrefs.id", andBsonList);
+        createOrQuery(query, XRefDBAdaptor.QueryParams.DBNAME.key(), "transcripts.xrefs.dbName", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

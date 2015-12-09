@@ -28,6 +28,10 @@ import java.util.List;
 public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
 
+    default QueryResult first() {
+        return get(new Query(), new QueryOptions("limit", 1));
+    }
+
     QueryResult<T> next(Query query, QueryOptions options);
 
     QueryResult nativeNext(Query query, QueryOptions options);
@@ -40,6 +44,6 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
     QueryResult groupBy(Query query, List<String> fields, QueryOptions options);
 
 
-    QueryResult getIntervalFrequencies(Query query, QueryOptions options);
+    QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options);
 
 }

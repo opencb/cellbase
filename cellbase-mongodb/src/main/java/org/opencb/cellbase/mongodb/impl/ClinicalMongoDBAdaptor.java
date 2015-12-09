@@ -75,7 +75,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, QueryOptions options) {
+    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         return null;
     }
 
@@ -91,11 +91,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult stats(Query query) {
-        return null;
-    }
-
-    @Override
-    public QueryResult first() {
         return null;
     }
 
@@ -118,11 +113,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         return null;
-    }
-
-    @Override
-    public void forEach(Consumer action) {
-
     }
 
     @Override
