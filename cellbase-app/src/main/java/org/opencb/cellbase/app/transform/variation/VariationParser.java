@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.transform;
+package org.opencb.cellbase.app.transform.variation;
 
 import com.google.common.base.Stopwatch;
 import htsjdk.tribble.readers.TabixReader;
@@ -25,6 +25,7 @@ import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailabl
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 
+import org.opencb.cellbase.app.transform.CellBaseParser;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -48,18 +49,11 @@ import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils
 public class VariationParser extends CellBaseParser {
 
     private static final String VARIATION_FILENAME = "variation.txt";
-    private static final String PREPROCESSED_VARIATION_FILENAME = "variation.sorted.txt";
+    protected static final String PREPROCESSED_VARIATION_FILENAME = "variation.sorted.txt";
     private static final String VARIATION_FEATURE_FILENAME = "variation_feature.txt";
     private static final String TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.txt";
     private static final String VARIATION_SYNONYM_FILENAME = "variation_synonym.txt";
     private static final String VARIATION_FREQUENCIES_FILENAME = "eva_population_freqs.sorted.txt.gz";
-    private static final String PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.includingVariationId.txt";
-    private static final String PREPROCESSED_VARIATION_FEATURE_FILENAME = "variation_feature.sorted.txt";
-    private static final String PREPROCESSED_VARIATION_SYNONYM_FILENAME = "variation_synonym.sorted.txt";
-
-    private static final int VARIATION_FEATURE_FILE_ID = 0;
-    private static final int TRANSCRIPT_VARIATION_FILE_ID = 1;
-    private static final int VARIATION_SYNONYM_FILE_ID = 2;
 
     private static final String THOUSAND_GENOMES_PHASE_1_STUDY = "1000GENOMES_phase_1";
     private static final String THOUSAND_GENOMES_PHASE_3_STUDY = "1000GENOMES_phase_3";
@@ -86,21 +80,15 @@ public class VariationParser extends CellBaseParser {
 
     private Path variationDirectoryPath;
 
-    private BufferedReader variationSynonymsFileReader;
-    private BufferedReader variationTranscriptsFileReader;
-    private BufferedReader variationFeaturesFileReader;
+    private VariationFileReader variationSynonymsFileReader;
+    private VariationFileReader variationTranscriptsFileReader;
+    private VariationFileReader variationFeaturesFileReader;
 
     private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FILE = 0;
-    private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE = 1;
-    private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE = 5;
+
+
     private static final int VARIATION_FEATURE_ID_COLUMN_INDEX_IN_TRANSCRIPT_VARIATION_FILE = 1;
     private int variationIdColumnIndexInTranscriptVariationFile;
-
-    private int[] lastVariationIdInVariationRelatedFiles;
-    private boolean[] endOfFileOfVariationRelatedFiles;
-    private String[][] lastLineInVariationRelatedFile;
-    private int[] variationIdColumnIndexInVariationRelatedFile;
-    private BufferedReader[] variationRelatedFileReader;
 
     private Pattern cnvPattern;
     private static final String SEQUENCE_GROUP = "seq";
@@ -154,12 +142,11 @@ public class VariationParser extends CellBaseParser {
         BufferedReader bufferedReaderVariation = getBufferedReader(PREPROCESSED_VARIATION_FILENAME);
 
         // create buffered readers for all other input files
-        createVariationFilesBufferedReaders();
+        createVariationFilesReaders();
 
         Map<String, String> seqRegionMap = VariationUtils.parseSeqRegionToMap(variationDirectoryPath);
         Map<String, String> sourceMap = VariationUtils.parseSourceToMap(variationDirectoryPath);
 
-        initializeVariationRelatedArrays();
         Stopwatch globalStartwatch = Stopwatch.createStarted();
         Stopwatch batchWatch = Stopwatch.createStarted();
         logger.info("Parsing variation file " + variationDirectoryPath.resolve(PREPROCESSED_VARIATION_FILENAME) + " ...");
@@ -170,7 +157,7 @@ public class VariationParser extends CellBaseParser {
 
             int variationId = Integer.parseInt(variationFields[0]);
 
-            List<String[]> resultVariationFeature = getVariationRelatedFields(VARIATION_FEATURE_FILE_ID, variationId);
+            List<String[]> resultVariationFeature = variationFeaturesFileReader.getVariationRelatedLines(variationId);
             if (resultVariationFeature != null && resultVariationFeature.size() > 0) {
                 String[] variationFeatureFields = resultVariationFeature.get(0);
 
@@ -262,10 +249,10 @@ public class VariationParser extends CellBaseParser {
 
     private void preprocessInputFiles() throws IOException, InterruptedException {
         preprocessVariationFile();
-        sortInputFile(VARIATION_FEATURE_FILENAME, PREPROCESSED_VARIATION_FEATURE_FILENAME,
-                VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE);
-        sortInputFile(VARIATION_SYNONYM_FILENAME, PREPROCESSED_VARIATION_SYNONYM_FILENAME,
-                VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE);
+        sortInputFile(VARIATION_FEATURE_FILENAME, VariationFeatureFileReader.PREPROCESSED_VARIATION_FEATURE_FILENAME,
+                VariationFeatureFileReader.VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE);
+        sortInputFile(VARIATION_SYNONYM_FILENAME, VariationSynonymFileReader.PREPROCESSED_VARIATION_SYNONYM_FILENAME,
+                VariationSynonymFileReader.VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE);
         preprocessTranscriptVariationFile();
     }
 
@@ -310,8 +297,9 @@ public class VariationParser extends CellBaseParser {
     }
 
     private void preprocessTranscriptVariationFile() throws IOException, InterruptedException {
-        Path preprocessedTranscriptVariationFile = variationDirectoryPath.resolve(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
-        if (!existsZippedOrUnzippedFile(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
+        Path preprocessedTranscriptVariationFile = variationDirectoryPath.resolve(
+                VariationTranscriptFileReader.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
+        if (!existsZippedOrUnzippedFile(VariationTranscriptFileReader.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
             this.logger.info("Preprocessing " + TRANSCRIPT_VARIATION_FILENAME + " file ...");
             Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -329,7 +317,8 @@ public class VariationParser extends CellBaseParser {
             this.logger.info("Removed");
 
             this.logger.info(TRANSCRIPT_VARIATION_FILENAME + " preprocessed. New file "
-                    + PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + " including (and sorted by) variation Id has been created");
+                    + VariationTranscriptFileReader.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME
+                    + " including (and sorted by) variation Id has been created");
             this.logger.debug("Elapsed time preprocessing transcript variation file: " + stopwatch);
         } else {
             // transcript_variation file columns number can vary, so we need to save the variationId column index because it is not constant
@@ -400,10 +389,11 @@ public class VariationParser extends CellBaseParser {
         return variationFeatureToVariationId;
     }
 
-    private void createVariationFilesBufferedReaders() throws IOException {
-        variationFeaturesFileReader = getBufferedReader(PREPROCESSED_VARIATION_FEATURE_FILENAME);
-        variationSynonymsFileReader = getBufferedReader(PREPROCESSED_VARIATION_SYNONYM_FILENAME);
-        variationTranscriptsFileReader = getBufferedReader(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
+    private void createVariationFilesReaders() throws IOException {
+        variationFeaturesFileReader = new VariationFeatureFileReader(variationDirectoryPath);
+        variationSynonymsFileReader = new VariationSynonymFileReader(variationDirectoryPath);
+        variationTranscriptsFileReader = new VariationTranscriptFileReader(variationDirectoryPath,
+                variationIdColumnIndexInTranscriptVariationFile);
         if (Files.exists(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME))) {
             frequenciesTabixReader = new TabixReader(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME).toString());
         }
@@ -597,7 +587,7 @@ public class VariationParser extends CellBaseParser {
     }
 
     private List<Xref> getXrefs(Map<String, String> sourceMap, int variationId) throws IOException, SQLException {
-        List<String[]> variationSynonyms = getVariationRelatedFields(VARIATION_SYNONYM_FILE_ID, variationId);
+        List<String[]> variationSynonyms = variationSynonymsFileReader.getVariationRelatedLines(variationId);
         List<Xref> xrefs = new ArrayList<>();
         if (variationSynonyms != null && variationSynonyms.size() > 0) {
             String[] arr;
@@ -610,77 +600,6 @@ public class VariationParser extends CellBaseParser {
             }
         }
         return xrefs;
-    }
-
-    private void initializeVariationRelatedArrays() {
-        lastLineInVariationRelatedFile = new String[5][];
-
-        lastVariationIdInVariationRelatedFiles = new int[5];
-        for (int i = 0; i < lastVariationIdInVariationRelatedFiles.length; i++) {
-            lastVariationIdInVariationRelatedFiles[i] = -1;
-        }
-        endOfFileOfVariationRelatedFiles = new boolean[5];
-
-        variationRelatedFileReader = new BufferedReader[5];
-        variationRelatedFileReader[VARIATION_FEATURE_FILE_ID] = variationFeaturesFileReader;
-        variationRelatedFileReader[TRANSCRIPT_VARIATION_FILE_ID] = variationTranscriptsFileReader;
-        variationRelatedFileReader[VARIATION_SYNONYM_FILE_ID] = variationSynonymsFileReader;
-
-        variationIdColumnIndexInVariationRelatedFile = new int[5];
-        variationIdColumnIndexInVariationRelatedFile[VARIATION_FEATURE_FILE_ID] = VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FEATURE_FILE;
-        variationIdColumnIndexInVariationRelatedFile[TRANSCRIPT_VARIATION_FILE_ID] = variationIdColumnIndexInTranscriptVariationFile;
-        variationIdColumnIndexInVariationRelatedFile[VARIATION_SYNONYM_FILE_ID] = VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE;
-
-    }
-
-    private List<String[]> getVariationRelatedFields(int fileId, int variationId) throws IOException {
-        List<String[]> variationRelatedLines;
-
-        readFileLinesUntilReachVariation(fileId, variationId);
-        if (endOfFile(fileId) || variationIdExceededInFile(fileId, variationId)) {
-            variationRelatedLines = Collections.EMPTY_LIST;
-        } else {
-            variationRelatedLines = new ArrayList<>();
-            while (!endOfFile(fileId) && !variationIdExceededInFile(fileId, variationId)) {
-                variationRelatedLines.add(lastLineInVariationRelatedFile[fileId]);
-                readLineInVariationRelatedFile(fileId);
-            }
-        }
-        return variationRelatedLines;
-    }
-
-    private boolean variationIdExceededInFile(int fileId, int variationId) {
-        return lastVariationIdInVariationRelatedFiles[fileId] > variationId;
-    }
-
-
-    private void readFileLinesUntilReachVariation(int fileId, int variationId) throws IOException {
-        while (!endOfFileOfVariationRelatedFiles[fileId] && !variationReachedInFile(fileId, variationId)) {
-            readLineInVariationRelatedFile(fileId);
-        }
-    }
-
-    private void readLineInVariationRelatedFile(int fileId) throws IOException {
-        String line = variationRelatedFileReader[fileId].readLine();
-        if (line == null) {
-            endOfFileOfVariationRelatedFiles[fileId] = true;
-        } else {
-            lastLineInVariationRelatedFile[fileId] = line.split("\t", -1);
-            lastVariationIdInVariationRelatedFiles[fileId] = getVariationIdFromLastLineInVariationRelatedFile(fileId);
-        }
-    }
-
-    private int getVariationIdFromLastLineInVariationRelatedFile(int fileId) {
-        int variationId = Integer.parseInt(lastLineInVariationRelatedFile[fileId][variationIdColumnIndexInVariationRelatedFile[fileId]]);
-        return variationId;
-    }
-
-    private boolean variationReachedInFile(int fileId, int variationId) {
-        return lastVariationIdInVariationRelatedFiles[fileId] != -1 && lastVariationIdInVariationRelatedFiles[fileId] >= variationId;
-    }
-
-    private boolean endOfFile(int fileId) {
-        return endOfFileOfVariationRelatedFiles[fileId];
     }
 
     private List<PopulationFrequency> getPopulationFrequencies(String chromosome, int start, String referenceAllele,
@@ -882,7 +801,7 @@ public class VariationParser extends CellBaseParser {
     private List<TranscriptVariation> getTranscriptVariations(int variationId, String variationFeatureId) throws IOException, SQLException {
         // Note the ID used, TranscriptVariation references to VariationFeature no Variation !!!
         List<TranscriptVariation> transcriptVariation = new ArrayList<>();
-        List<String[]> resultTranscriptVariations = getVariationRelatedFields(TRANSCRIPT_VARIATION_FILE_ID, variationId);
+        List<String[]> resultTranscriptVariations = variationTranscriptsFileReader.getVariationRelatedLines(variationId);
         //getVariationTranscripts(variationId, Integer.parseInt(variationFeatureId));
         if (resultTranscriptVariations != null && resultTranscriptVariations.size() > 0) {
             for (String[] transcriptVariationFields : resultTranscriptVariations) {
@@ -926,13 +845,13 @@ public class VariationParser extends CellBaseParser {
             // unzip variation file name for preprocess it later
             gunzipFileIfNeeded(variationDirectoryPath, VARIATION_FILENAME);
         }
-        if (!existsZippedOrUnzippedFile(PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
+        if (!existsZippedOrUnzippedFile(VariationTranscriptFileReader.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME)) {
             gunzipFileIfNeeded(variationDirectoryPath, TRANSCRIPT_VARIATION_FILENAME);
         }
-        if (!existsZippedOrUnzippedFile(PREPROCESSED_VARIATION_FEATURE_FILENAME)) {
+        if (!existsZippedOrUnzippedFile(VariationFeatureFileReader.PREPROCESSED_VARIATION_FEATURE_FILENAME)) {
             gunzipFileIfNeeded(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
         }
-        if (!existsZippedOrUnzippedFile(PREPROCESSED_VARIATION_SYNONYM_FILENAME)) {
+        if (!existsZippedOrUnzippedFile(VariationSynonymFileReader.PREPROCESSED_VARIATION_SYNONYM_FILENAME)) {
             gunzipFileIfNeeded(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
         }
 
@@ -962,7 +881,7 @@ public class VariationParser extends CellBaseParser {
         } else {
             Path unzippedFile = directory.resolve(fileName);
             if (Files.exists(unzippedFile)) {
-                logger.info("File " + unzippedFile + " was previously unzipped: skipping 'gunzip' for this file ...");
+                logger.info("File {} was previously unzipped: skipping 'gunzip' for this filVariationSynonymFileReadere ...", unzippedFile);
             } else {
                 throw new FileNotFoundException("File " + zippedFile + " doesn't exist");
             }
@@ -977,9 +896,9 @@ public class VariationParser extends CellBaseParser {
         gzipFile(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
         gzipFile(variationDirectoryPath, TRANSCRIPT_VARIATION_FILENAME);
         gzipFile(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
-        gzipFile(variationDirectoryPath, PREPROCESSED_VARIATION_FEATURE_FILENAME);
-        gzipFile(variationDirectoryPath, PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
-        gzipFile(variationDirectoryPath, PREPROCESSED_VARIATION_SYNONYM_FILENAME);
+        gzipFile(variationDirectoryPath, VariationFeatureFileReader.PREPROCESSED_VARIATION_FEATURE_FILENAME);
+        gzipFile(variationDirectoryPath, VariationTranscriptFileReader.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
+        gzipFile(variationDirectoryPath, VariationSynonymFileReader.PREPROCESSED_VARIATION_SYNONYM_FILENAME);
         this.logger.info("Files compressed");
         this.logger.debug("Elapsed time compressing files: " + stopwatch);
     }

@@ -1,21 +1,18 @@
-package org.opencb.cellbase.app.transform;
+package org.opencb.cellbase.app.transform.variation;
 
-import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.biodata.models.variant.avro.Xref;
+
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.*;
 
 /**
@@ -23,25 +20,29 @@ import static org.junit.Assert.*;
  */
 public class VariationParserTest {
 
-    @Before
-    public void setUp() throws Exception {
+    private static Path variationParserTestDirectory;
 
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        variationParserTestDirectory = Paths.get(VariationParserTest.class.getResource("/variationParser").getPath());
     }
 
-    @After
-    public void tearDown() throws Exception {
-        // TODO: remove temp files
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        variationParserTestDirectory.resolve(VariationParser.PREPROCESSED_VARIATION_FILENAME + ".gz").toFile().delete();
+        variationParserTestDirectory.resolve(VariationFeatureFileReader.PREPROCESSED_VARIATION_FEATURE_FILENAME + ".gz").toFile().delete();
+        variationParserTestDirectory.resolve(VariationTranscriptFileReader.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + ".gz").toFile().delete();
+        variationParserTestDirectory.resolve(VariationSynonymFileReader.PREPROCESSED_VARIATION_SYNONYM_FILENAME + ".gz").toFile().delete();
     }
 
     @Test
     public void testParse() throws Exception {
         TestSerializer testSerializer = new TestSerializer();
-        VariationParser parser = new VariationParser(Paths.get(this.getClass().getResource("/variationParser").getPath()), testSerializer);
+        VariationParser parser = new VariationParser(variationParserTestDirectory, testSerializer);
         parser.parse();
 
         Set<String> outputFileNames = checkOutputFileNames(testSerializer.serializedVariants);
         checkVariants(testSerializer.serializedVariants);
-
     }
 
     private Set<String> checkOutputFileNames(Map<String, List<Variant>> serializedVariantsMap) {
@@ -53,7 +54,6 @@ public class VariationParserTest {
     }
 
     private void checkVariants(Map<String, List<Variant>> serializedVariantsMap) {
-
         // chr1 variants
         List<Variant> chr1Variations = serializedVariantsMap.get("variation_chr1");
         assertEquals(2, chr1Variations.size());
@@ -126,6 +126,16 @@ public class VariationParserTest {
         assertEquals(1, variant.getIds().size());
         assertEquals(expectedId, variant.getIds().get(0));
         assertEquals(expectedVariantType, variant.getType());
+    }
+
+    @Test
+    public void testParseUsingPreprocessedFiles() throws Exception {
+        TestSerializer testSerializer = new TestSerializer();
+        VariationParser parser = new VariationParser(variationParserTestDirectory, testSerializer);
+        parser.parse();
+
+        Set<String> outputFileNames = checkOutputFileNames(testSerializer.serializedVariants);
+        checkVariants(testSerializer.serializedVariants);
     }
 
     class TestSerializer implements CellBaseFileSerializer {
