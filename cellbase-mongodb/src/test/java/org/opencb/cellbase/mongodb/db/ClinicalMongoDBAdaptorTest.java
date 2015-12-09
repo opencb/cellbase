@@ -151,13 +151,13 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-    @Test
-    public void testGetByGeneId() throws Exception {
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-        QueryOptions queryOptions = new QueryOptions();
-//        QueryOptions queryOptions = new QueryOptions("phenotype", "carcinoma");
-        queryOptions.add("limit",3);
-        QueryResult queryResult = clinicalDBAdaptor.getByGeneId("BRCA2", queryOptions);
-    }
+//    @Test
+//    public void testGetByGeneId() throws Exception {
+//        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+//        QueryOptions queryOptions = new QueryOptions();
+////        QueryOptions queryOptions = new QueryOptions("phenotype", "carcinoma");
+//        queryOptions.add("limit",3);
+//        QueryResult queryResult = clinicalDBAdaptor.getByGeneId("BRCA2", queryOptions);
+//    }
 
 }

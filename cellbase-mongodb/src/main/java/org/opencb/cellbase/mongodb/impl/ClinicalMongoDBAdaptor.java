@@ -124,7 +124,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private Bson parseQuery(Query query) {
         Bson filtersBson = null;
 
-        if (filteringOptionsEnabled(query)) {
+        // No filtering parameters mean all records
+        if (query.size()>0) {
+//        if (filteringOptionsEnabled(query)) {
             Bson commonFiltersBson = getCommonFilters(query);
             List<Bson> sourceSpecificFilterList = new ArrayList<>();
             Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
@@ -177,7 +179,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         createClinvarReviewQuery(query, andBsonList);
         createClinvarClinicalSignificanceQuery(query, andBsonList);
 
-        if (andBsonList.size() > 0) {
+        if (andBsonList.size() == 1) {
+            return andBsonList.get(0);
+        } else if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
             return null;
@@ -248,7 +252,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         createOrQuery(query, QueryParams.GENE.key(), "_geneIds", andBsonList);
         createOrQuery(query, QueryParams.PHENOTYPE.key(), "_phenotypes", andBsonList);
 
-        if (andBsonList.size() > 0) {
+        if (andBsonList.size() == 1) {
+            return andBsonList.get(0);
+        } else if (andBsonList.size() > 1) {
             return Filters.and(andBsonList);
         } else {
             return null;
