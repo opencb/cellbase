@@ -31,6 +31,7 @@ public class DNASequenceUtils {
         COMPLEMENT.put('T', 'A');
         COMPLEMENT.put('C', 'G');
         COMPLEMENT.put('G', 'C');
+        COMPLEMENT.put('N', 'N');
     }
 
     static {

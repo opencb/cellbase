@@ -31,6 +31,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -106,7 +107,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
-
+        Objects.requireNonNull(action);
+        Iterator iterator = nativeIterator(query, options);
+        while (iterator.hasNext()) {
+            action.accept(iterator.next());
+        }
     }
 
     @Override

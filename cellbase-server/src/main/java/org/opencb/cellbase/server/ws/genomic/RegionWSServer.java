@@ -141,11 +141,10 @@ public class RegionWSServer extends GenericRestWSServer {
 
 
     @GET
-    @Path("/{chrRegionId}/snp")
+    @Path("/{chrRegionId}/variation")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects")
-    public Response getSnpByRegion(@PathParam("chrRegionId") String region,
-                                   @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
-                                   @DefaultValue("") @QueryParam("phenotype") String phenotype) {
+    public Response getVariationByRegion(@PathParam("chrRegionId") String region,
+                                         @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
@@ -173,6 +172,42 @@ public class RegionWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    @GET
+    @Path("/{chrRegionId}/snp")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects")
+    public Response getSnpByRegion(@PathParam("chrRegionId") String region,
+                                   @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
+                                   @DefaultValue("") @QueryParam("phenotype") String phenotype) {
+        return getVariationByRegion(region, consequenceTypes);
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//
+//            List<Region> regions = Region.parseRegions(region);
+//            // remove regions bigger than 10Mb
+//            if (regions != null) {
+//                for (Region r : regions) {
+//                    if ((r.getEnd() - r.getStart()) > 10000000) {
+//                        return createErrorResponse("getSNpByRegion", "Regions must be smaller than 10Mb");
+//                    }
+//                }
+//            }
+//
+//            query.put(VariantDBAdaptor.QueryParams.REGION.key(), region);
+//
+//            if (hasHistogramQueryParam()) {
+//                queryOptions.put("interval", getHistogramIntervalSize());
+//                return createOkResponse(variationDBAdaptor.getIntervalFrequencies(query, histogramIntervalSize, queryOptions));
+//            } else {
+//                System.out.println("query = " + query.toJson());
+//                System.out.println("queryOptions = " + queryOptions.toJson());
+//                return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
+//            }
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
     }
 
 

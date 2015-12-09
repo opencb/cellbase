@@ -75,7 +75,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson document = parseQuery(query);
+        return mongoDBCollection.distinct(field, document);
     }
 
     @Override
@@ -122,12 +123,14 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     @Override
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
     }
 
     private Bson parseQuery(Query query) {
