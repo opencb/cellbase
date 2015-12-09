@@ -77,18 +77,34 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     public QueryResult getSubstitutionScores(Query query, QueryOptions options) {
         QueryResult result = null;
 
-        if (query.getString("transcript") != null && query.getInt("position", 0) != 0 && query.getString("aa") != null) {
+        // Ensembl transcript id is needed for this collection
+        if (query.getString("transcript") != null) {
             Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
-            Bson position = Projections
-                    .include("aaPositions." + query.getInt("position") + "." + aaShortName.get(query.getString("aa").toUpperCase()));
-            result = proteinSubstitutionMongoDBCollection.find(transcript, position, options);
+
+            // If position and aa change are provided we create a 'projection' to return only the required data from the database
+            if (query.getInt("position", 0) != 0) {
+                String  projectionString = "aaPositions." + query.getInt("position");
+
+                // If aa change is provided we only return that information
+                if (query.getString("aa") != null) {
+                    projectionString += "." + aaShortName.get(query.getString("aa").toUpperCase());
+                }
+
+                // Projection is used to minimize the returned data
+                Bson position = Projections.include(projectionString);
+                result = proteinSubstitutionMongoDBCollection.find(transcript, position, options);
+            } else {
+                // Return the whole transcript data
+                result = proteinSubstitutionMongoDBCollection.find(transcript, options);
+            }
 
             if (result != null && !result.getResult().isEmpty()) {
                 // Return only the inner Document, not the whole document projected
                 Document document = (Document) result.getResult().get(0);
                 Document aaPositionsDocument = (Document) document.get("aaPositions");
-                Document positionDocument = (Document) aaPositionsDocument.get("" + query.getInt("position"));
-                result.setResult(Collections.singletonList(positionDocument.get(aaShortName.get(query.getString("aa").toUpperCase()))));
+//                Document positionDocument = (Document) aaPositionsDocument.get("" + query.getInt("position"));
+//                result.setResult(Collections.singletonList(positionDocument.get(aaShortName.get(query.getString("aa").toUpperCase()))));
+                result.setResult(Collections.singletonList(aaPositionsDocument));
             }
         }
         return result;

@@ -88,6 +88,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
+
         createRegionQuery(query, ConservationDBAdaptor.QueryParams.REGION.key(), andBsonList);
 
         if (andBsonList.size() > 0) {
