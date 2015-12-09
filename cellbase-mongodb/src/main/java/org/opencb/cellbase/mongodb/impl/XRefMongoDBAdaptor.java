@@ -16,6 +16,10 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
@@ -23,8 +27,11 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
  * Created by imedina on 07/12/15.
@@ -40,23 +47,29 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
 
     @Override
-    public QueryResult<Xref> startsWith(String id, QueryOptions options) {
-        return null;
+    public QueryResult startsWith(String id, QueryOptions options) {
+        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
+        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+        return mongoDBCollection.find(regex, include, options);
     }
 
     @Override
-    public QueryResult<Xref> contains(String likeQuery, QueryOptions options) {
-        return null;
+    public QueryResult contains(String id, QueryOptions options) {
+        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("\\w" + id + "\\w"));
+        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+        return mongoDBCollection.find(regex, include, options);
     }
 
     @Override
     public QueryResult<Long> count(Query query) {
-        return null;
+        Bson document = parseQuery(query);
+        return mongoDBCollection.count(document);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson document = parseQuery(query);
+        return mongoDBCollection.distinct(field, document);
     }
 
     @Override
@@ -88,4 +101,18 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
 
     }
+
+    private Bson parseQuery(Query query) {
+        List<Bson> andBsonList = new ArrayList<>();
+
+        createOrQuery(query, XRefDBAdaptor.QueryParams.ID.key(), "transcripts.xrefs.id", andBsonList);
+        createOrQuery(query, XRefDBAdaptor.QueryParams.DBNAME.key(), "transcripts.xrefs.dbName", andBsonList);
+
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
+    }
+
 }
