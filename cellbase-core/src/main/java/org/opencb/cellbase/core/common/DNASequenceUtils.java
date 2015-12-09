@@ -21,16 +21,17 @@ import java.util.Map;
 
 public class DNASequenceUtils {
 
-    public static final Map<String, String> COMPLEMENT = new HashMap<>();
+    public static final Map<Character, Character> COMPLEMENT = new HashMap<>();
 
     public static final Map<String, String> CODON_TO_AMINOACID = new HashMap<>();
     public static final Map<String, String> CODON_TO_AMINOACID_SHORT = new HashMap<>();
 
     static {
-        COMPLEMENT.put("A", "T");
-        COMPLEMENT.put("T", "A");
-        COMPLEMENT.put("C", "G");
-        COMPLEMENT.put("G", "C");
+        COMPLEMENT.put('A', 'T');
+        COMPLEMENT.put('T', 'A');
+        COMPLEMENT.put('C', 'G');
+        COMPLEMENT.put('G', 'C');
+        COMPLEMENT.put('N', 'N');
     }
 
     static {

@@ -180,6 +180,18 @@ public class QueryCommandExecutor extends CommandExecutor {
     private void executeProteinQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
+        if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
+            QueryResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
+            output.println(objectMapper.writeValueAsString(distinct));
+            return;
+        }
+
+        if (queryCommandOptions.count) {
+            QueryResult count = proteinDBAdaptor.count(query);
+            output.println(objectMapper.writeValueAsString(count));
+            return;
+        }
+
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
@@ -190,11 +202,17 @@ public class QueryCommandExecutor extends CommandExecutor {
                         output.println(objectMapper.writeValueAsString(next));
                     }
                     break;
+                case "substitution-scores":
+                    QueryResult substitutionScores = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
+                    output.println(objectMapper.writeValueAsString(substitutionScores));
+                    break;
                 default:
                     break;
             }
         }
     }
+
+
 
 
     private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {

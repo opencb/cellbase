@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
@@ -25,12 +26,10 @@ import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -38,17 +37,62 @@ import java.util.function.Consumer;
  */
 public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAdaptor<Entry> {
 
+    private MongoDBCollection proteinSubstitutionMongoDBCollection;
+
+    private static Map<String, String> aaShortName = new HashMap<>();
+
+    static {
+        aaShortName.put("ALA", "A");
+        aaShortName.put("ARG", "R");
+        aaShortName.put("ASN", "N");
+        aaShortName.put("ASP", "D");
+        aaShortName.put("CYS", "C");
+        aaShortName.put("GLN", "Q");
+        aaShortName.put("GLU", "E");
+        aaShortName.put("GLY", "G");
+        aaShortName.put("HIS", "H");
+        aaShortName.put("ILE", "I");
+        aaShortName.put("LEU", "L");
+        aaShortName.put("LYS", "K");
+        aaShortName.put("MET", "M");
+        aaShortName.put("PHE", "F");
+        aaShortName.put("PRO", "P");
+        aaShortName.put("SER", "S");
+        aaShortName.put("THR", "T");
+        aaShortName.put("TRP", "W");
+        aaShortName.put("TYR", "Y");
+        aaShortName.put("VAL", "V");
+    }
+
+
     public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("protein");
+        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
 
-        logger.debug("ProteinDBAdaptor: in 'constructor'");
+        logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
     }
 
 
     @Override
-    public QueryResult<Map<String, Object>> getSubstitutionScores(Query query, QueryOptions options) {
-        return null;
+    public QueryResult getSubstitutionScores(Query query, QueryOptions options) {
+        QueryResult result = null;
+
+        if (query.getString("transcript") != null && query.getInt("position", 0) != 0 && query.getString("aa") != null) {
+            Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
+            Bson position = Projections
+                    .include("aaPositions." + query.getInt("position") + "." + aaShortName.get(query.getString("aa").toUpperCase()));
+            result = proteinSubstitutionMongoDBCollection.find(transcript, position, options);
+
+            if (result != null && !result.getResult().isEmpty()) {
+                // Return only the inner Document, not the whole document projected
+                Document document = (Document) result.getResult().get(0);
+                Document aaPositionsDocument = (Document) document.get("aaPositions");
+                Document positionDocument = (Document) aaPositionsDocument.get("" + query.getInt("position"));
+                result.setResult(Collections.singletonList(positionDocument.get(aaShortName.get(query.getString("aa").toUpperCase()))));
+            }
+        }
+        return result;
     }
 
     @Override
@@ -96,8 +140,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.distinct(field, bsonDocument);
+        Bson document = parseQuery(query);
+        return mongoDBCollection.distinct(field, document);
     }
 
     @Override

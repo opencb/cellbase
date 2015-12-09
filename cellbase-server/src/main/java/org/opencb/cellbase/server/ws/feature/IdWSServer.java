@@ -17,14 +17,12 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
+import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -65,9 +63,9 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getByFeatureIdInfo(@PathParam("id") String query) {
         try {
             parseQueryParams();
-            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
             List<String> list = Splitter.on(",").splitToList(query);
-            List<QueryResult> dbNameList = xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions);
+            List<QueryResult> dbNameList = xRefDBAdaptor.get(Splitter.on(",").splitToList(query), queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
                 for (Object o : dbNameList.get(i).getResult()) {
                     if (((Document) o).get("id").equals(list.get(i))) {
@@ -90,11 +88,11 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getAllXrefsByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
         try {
             parseQueryParams();
-            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
             if (dbname != null && !dbname.isEmpty()) {
                 queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
             }
-            return createOkResponse(xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions));
+            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -103,11 +101,11 @@ public class IdWSServer extends GenericRestWSServer {
     @GET
     @Path("/{id}/starts_with")
     @ApiOperation(httpMethod = "GET", value = "Get the genes that match the beginning of the given string")
-    public Response getByLikeQuery(@PathParam("id") String query) {
+    public Response getByLikeQuery(@PathParam("id") String id) {
         try {
             parseQueryParams();
-            XRefsDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            return createOkResponse(x.getByStartsWithQueryList(Splitter.on(",").splitToList(query), queryOptions));
+            XRefDBAdaptor x = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            return createOkResponse(x.startsWith(id, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -116,11 +114,11 @@ public class IdWSServer extends GenericRestWSServer {
     @GET
     @Path("/{id}/contains")
     @ApiOperation(httpMethod = "GET", value = "Get the IDs that contain the given string")
-    public Response getByContainsQuery(@PathParam("id") String query) {
+    public Response getByContainsQuery(@PathParam("id") String id) {
         try {
             parseQueryParams();
-            XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            List<QueryResult> xrefs = xRefDBAdaptor.getByContainsQueryList(Splitter.on(",").splitToList(query), queryOptions);
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            QueryResult xrefs = xRefDBAdaptor.contains(id, queryOptions);
             return createOkResponse(xrefs);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -131,25 +129,26 @@ public class IdWSServer extends GenericRestWSServer {
     @GET
     @Path("/{id}/gene")
     @ApiOperation(httpMethod = "GET", value = "Get the gene for the given ID")
-    public Response getGeneByEnsemblId(@PathParam("id") String query) {
+    public Response getGeneByEnsemblId(@PathParam("id") String id) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), id);
+            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @Deprecated
     @GET
-    @Path("/{id}/snp")
+    @Path("/dbnames")
     @ApiOperation(httpMethod = "GET", value = "Get the SNP for the given ID")
-    public Response getSnpByFeatureId(@PathParam("id") String query) {
+    public Response getSnpByFeatureId() {
         try {
             parseQueryParams();
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(variationDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            QueryResult xrefs = xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
+            return createOkResponse(xrefs);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

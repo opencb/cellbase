@@ -35,6 +35,7 @@ import java.util.function.Consumer;
  * Created by swaathi on 26/11/15.
  */
 public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
+
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("conservation");

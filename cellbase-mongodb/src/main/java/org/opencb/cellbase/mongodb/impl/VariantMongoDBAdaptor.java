@@ -75,8 +75,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.distinct(field, bsonDocument);
+        Bson document = parseQuery(query);
+        return mongoDBCollection.distinct(field, document);
     }
 
     @Override

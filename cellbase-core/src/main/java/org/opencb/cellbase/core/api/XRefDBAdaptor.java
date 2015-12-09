@@ -58,8 +58,8 @@ public interface XRefDBAdaptor<XRef> extends CellBaseDBAdaptor<XRef> {
     }
 
 
-    QueryResult<XRef> startsWith(String id, QueryOptions options);
+    QueryResult startsWith(String id, QueryOptions options);
 
-    QueryResult<XRef> contains(String likeQuery, QueryOptions options);
+    QueryResult contains(String likeQuery, QueryOptions options);
 
 }
