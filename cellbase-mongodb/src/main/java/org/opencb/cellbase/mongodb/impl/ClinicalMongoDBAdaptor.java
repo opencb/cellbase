@@ -35,11 +35,11 @@ import java.util.function.Consumer;
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
 
-    private static Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly", "include", "exclude",
+    private static final Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly", "include", "exclude",
             "skip", "limit", "of", "count", "json"));
-    private static String clinvarInclude = "clinvar";
-    private static String cosmicInclude = "cosmic";
-    private static String gwasInclude = "gwas";
+    private static final String clinvarInclude = "clinvar";
+    private static final String cosmicInclude = "cosmic";
+    private static final String gwasInclude = "gwas";
 
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
@@ -176,12 +176,49 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private Bson getClinvarFilters(Query query) {
-        return null;
+        List<Bson> andBsonList = new ArrayList<>();
+
+        andBsonList.add(Filters.eq("source", "clinvar"));
+        createOrQuery(query, QueryParams.CLINVARRCV.key(), "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+                andBsonList);
+        createClinvarRsQuery(query, andBsonList);
+        createOrQuery(query, QueryParams.CLINVARTYPE.key(), "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+                andBsonList);
+
+
+        addIfNotNull(filterList, getClinvarTypeFilter(options.getAsStringList("type")));
+        addIfNotNull(filterList, getClinvarReviewFilter(options.getAsStringList("review")));
+        addIfNotNull(filterList, getClinvarClinicalSignificanceFilter(options.getAsStringList("significance")));
+
+        return new Document("$and", filterList);
+
+    }
+
+    private void createClinvarRsQuery(Query query, List<Bson> andBsonList) {
+        if (query != null && query.getString(QueryParams.CLINVARRS.key()) != null
+                && !query.getString(QueryParams.CLINVARRS.key()).isEmpty()) {
+            List<String> queryList = query.getAsStringList(QueryParams.CLINVARRS.key());
+            if (queryList.size() == 1) {
+                andBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+                        queryList.get(0).substring(2)));
+                andBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type", "rs"));
+            } else {
+                List<Bson> orBsonList = new ArrayList<>(queryList.size());
+                for (String queryItem : queryList) {
+                    List<Bson> innerAndBsonList = new ArrayList<>();
+                    innerAndBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
+                            queryList.get(0).substring(2)));
+                    innerAndBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type", "rs"));
+                    orBsonList.add(Filters.and(innerAndBsonList));
+                }
+                andBsonList.add(Filters.or(orBsonList));
+            }
+        }
     }
 
     private Bson getCommonFilters(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.CLINICAL_CHUNK_SIZE, andBsonList);
+        createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
 
         createOrQuery(query, QueryParams.SO.key(), "annot.consequenceTypes.soTerms.soName", andBsonList);
         createOrQuery(query, QueryParams.GENE.key(), "_geneIds", andBsonList);
