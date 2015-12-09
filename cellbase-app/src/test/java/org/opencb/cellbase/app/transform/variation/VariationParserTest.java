@@ -30,9 +30,9 @@ public class VariationParserTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
         variationParserTestDirectory.resolve(VariationParser.PREPROCESSED_VARIATION_FILENAME + ".gz").toFile().delete();
-        variationParserTestDirectory.resolve(VariationFeatureFileReader.PREPROCESSED_VARIATION_FEATURE_FILENAME + ".gz").toFile().delete();
-        variationParserTestDirectory.resolve(VariationTranscriptFileReader.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + ".gz").toFile().delete();
-        variationParserTestDirectory.resolve(VariationSynonymFileReader.PREPROCESSED_VARIATION_SYNONYM_FILENAME + ".gz").toFile().delete();
+        variationParserTestDirectory.resolve(VariationFeatureFile.PREPROCESSED_VARIATION_FEATURE_FILENAME + ".gz").toFile().delete();
+        variationParserTestDirectory.resolve(VariationTranscriptFile.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + ".gz").toFile().delete();
+        variationParserTestDirectory.resolve(VariationSynonymFile.PREPROCESSED_VARIATION_SYNONYM_FILENAME + ".gz").toFile().delete();
     }
 
     @Test
