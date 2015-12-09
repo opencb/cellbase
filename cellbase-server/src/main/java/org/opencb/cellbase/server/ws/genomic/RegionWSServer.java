@@ -131,12 +131,12 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+
             query.put(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-            return createOkResponse(transcriptDBAdaptor.get(query, queryOptions));
+            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-
     }
 
 

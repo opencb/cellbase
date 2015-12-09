@@ -3,6 +3,7 @@ package org.opencb.cellbase.mongodb.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
@@ -36,7 +37,9 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.distinct(field, bsonDocument);
+
     }
 
     @Override
@@ -78,12 +81,15 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, field, "name", options);
+
     }
 
     @Override
     public QueryResult groupBy(Query query, List fields, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
     }
 
     @Override
@@ -98,12 +104,18 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+        if (query.getString("region") != null) {
+            Region region = Region.parseRegion(query.getString("region"));
+            Bson bsonDocument = parseQuery(query);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+        }
         return null;
     }
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
+        createRegionQuery(query, QueryParams.REGION.key(),
+                MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
         createOrQuery(query, QueryParams.ID.key(), "transcripts.id", andBsonList);
         createOrQuery(query, QueryParams.NAME.key(), "transcripts.name", andBsonList);
         createOrQuery(query, QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);

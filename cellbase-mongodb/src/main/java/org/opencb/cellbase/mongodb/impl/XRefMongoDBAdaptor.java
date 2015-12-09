@@ -16,6 +16,9 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
@@ -23,7 +26,9 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -35,7 +40,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
-        logger.debug("GeneMongoDBAdaptor: in 'constructor'");
+        logger.debug("XRefMongoDBAdaptor: in 'constructor'");
     }
 
 
@@ -51,12 +56,14 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public QueryResult<Long> count(Query query) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.count(bsonDocument);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        return mongoDBCollection.distinct(field, bsonDocument);
     }
 
     @Override
@@ -71,7 +78,8 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.find(bson, options);
     }
 
     @Override
@@ -81,11 +89,25 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
 
+    }
+
+    private Bson parseQuery(Query query) {
+        List<Bson> andBsonList = new ArrayList<>();
+
+        createOrQuery(query, QueryParams.ID.key(), "transcripts.xrefs.id", andBsonList);
+        createOrQuery(query, QueryParams.DBNAME.key(), "transcripts.xrefs.dbname", andBsonList);
+
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
     }
 }

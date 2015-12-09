@@ -26,10 +26,11 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 public interface RegulationDBAdaptor<RegulatoryElement> extends FeatureDBAdaptor<RegulatoryElement> {
 
     enum QueryParams implements QueryParam {
-        ID("id", TEXT_ARRAY, ""),
         NAME("name", TEXT_ARRAY, ""),
         REGION("region", TEXT_ARRAY, ""),
-        BIOTYPE("biotype", TEXT_ARRAY, "");
+        FEATURE_TYPE("featureType", TEXT_ARRAY, ""),
+        FEATURE_CLASS("featureClass", TEXT_ARRAY, ""),
+        CELL_TYPES("cellTypes", TEXT_ARRAY, "");
 
 
         QueryParams(String key, Type type, String description) {
