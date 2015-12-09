@@ -29,6 +29,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 01/12/15.
@@ -158,11 +159,11 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private Bson getGwasFilters(Query query) {
-        return null;
+        return Filters.eq("source", "gwas");
     }
 
     private Bson getCosmicFilters(Query query) {
-        return null;
+        return Filters.eq("source", "cosmic");
     }
 
     private Bson getClinvarFilters(Query query) {
@@ -172,16 +173,49 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         createOrQuery(query, QueryParams.CLINVARRCV.key(), "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
                 andBsonList);
         createClinvarRsQuery(query, andBsonList);
-        createOrQuery(query, QueryParams.CLINVARTYPE.key(), "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-                andBsonList);
+        createClinvarTypeQuery(query, andBsonList);
+        createClinvarReviewQuery(query, andBsonList);
+        createClinvarClinicalSignificanceQuery(query, andBsonList);
 
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return null;
+        }
 
-        addIfNotNull(filterList, getClinvarTypeFilter(options.getAsStringList("type")));
-        addIfNotNull(filterList, getClinvarReviewFilter(options.getAsStringList("review")));
-        addIfNotNull(filterList, getClinvarClinicalSignificanceFilter(options.getAsStringList("significance")));
+    }
 
-        return new Document("$and", filterList);
+    private void createClinvarClinicalSignificanceQuery(Query query, List<Bson> andBsonList) {
+        if (query != null && query.getString(QueryParams.CLINVARCLINSIG.key()) != null
+                && !query.getString(QueryParams.CLINVARCLINSIG.key()).isEmpty()) {
+            createOrQuery(query.getAsStringList(QueryParams.CLINVARCLINSIG.key()).stream()
+                            .map((clinicalSignificanceString) -> clinicalSignificanceString.replace("_", " "))
+                            .collect(Collectors.toList()),
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description",
+                    andBsonList);
+        }
+    }
 
+    private void createClinvarReviewQuery(Query query, List<Bson> andBsonList) {
+        if (query != null && query.getString(QueryParams.CLINVARREVIEW.key()) != null
+                && !query.getString(QueryParams.CLINVARREVIEW.key()).isEmpty()) {
+            createOrQuery(query.getAsStringList(QueryParams.CLINVARREVIEW.key()).stream()
+                            .map((reviewString) -> reviewString.toUpperCase())
+                            .collect(Collectors.toList()),
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
+                    andBsonList);
+        }
+    }
+
+    private void createClinvarTypeQuery(Query query, List<Bson> andBsonList) {
+        if (query != null && query.getString(QueryParams.CLINVARTYPE.key()) != null
+                && !query.getString(QueryParams.CLINVARTYPE.key()).isEmpty()) {
+            createOrQuery(query.getAsStringList(QueryParams.CLINVARTYPE.key()).stream()
+                    .map((typeString) -> typeString.replace("_", " "))
+                    .collect(Collectors.toList()),
+                    "clinvarSet.referenceClinVarAssertion.measureSet.measure.type",
+                    andBsonList);
+        }
     }
 
     private void createClinvarRsQuery(Query query, List<Bson> andBsonList) {
