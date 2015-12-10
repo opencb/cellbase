@@ -21,7 +21,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
-import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -36,11 +35,11 @@ import java.util.stream.Collectors;
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
 
-    private static final Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly", "include", "exclude",
-            "skip", "limit", "of", "count", "json"));
-    private static final String clinvarInclude = "clinvar";
-    private static final String cosmicInclude = "cosmic";
-    private static final String gwasInclude = "gwas";
+    private static final Set<String> NO_FILTERING_QUERY_PARAMETERS = new HashSet<>(Arrays.asList(
+            "assembly", "include", "exclude", "skip", "limit", "of", "count", "json"));
+    private static final String CLINVAR_INCLUDE = "clinvar";
+    private static final String COSMIC_INCLUDE = "cosmic";
+    private static final String GWAS_INCLUDE = "gwas";
 
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
@@ -125,7 +124,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         Bson filtersBson = null;
 
         // No filtering parameters mean all records
-        if (query.size()>0) {
+        if (query.size() > 0) {
 //        if (filteringOptionsEnabled(query)) {
             Bson commonFiltersBson = getCommonFilters(query);
             Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
@@ -156,13 +155,12 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         } else {
             return new Document();
         }
-
     }
 
     private void getGwasFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
         // If only clinvar-specific filters are provided it must be avoided to include the source=gwas condition since
         // sourceBson is going to be an OR list
-        if(!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
+        if (!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
                 || query.containsKey(QueryParams.CLINVARREVIEW.key())
                 || query.containsKey(QueryParams.CLINVARTYPE.key())
                 || query.containsKey(QueryParams.CLINVARRS.key()))) {
@@ -175,7 +173,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private void getCosmicFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
         // If only clinvar-specific filters are provided it must be avoided to include the source=cosmic condition since
         // sourceBson is going to be an OR list
-        if(!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
+        if (!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
                 || query.containsKey(QueryParams.CLINVARREVIEW.key())
                 || query.containsKey(QueryParams.CLINVARTYPE.key())
                 || query.containsKey(QueryParams.CLINVARRS.key()))) {
@@ -212,8 +210,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             createOrQuery(query.getAsStringList(QueryParams.CLINVARCLINSIG.key()).stream()
                             .map((clinicalSignificanceString) -> clinicalSignificanceString.replace("_", " "))
                             .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description",
-                    andBsonList);
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description", andBsonList);
         }
     }
 
@@ -221,10 +218,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (query != null && query.getString(QueryParams.CLINVARREVIEW.key()) != null
                 && !query.getString(QueryParams.CLINVARREVIEW.key()).isEmpty()) {
             createOrQuery(query.getAsStringList(QueryParams.CLINVARREVIEW.key()).stream()
-                            .map((reviewString) -> reviewString.toUpperCase())
+                            .map(String::toUpperCase)
                             .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
-                    andBsonList);
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus", andBsonList);
         }
     }
 
@@ -234,8 +230,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             createOrQuery(query.getAsStringList(QueryParams.CLINVARTYPE.key()).stream()
                     .map((typeString) -> typeString.replace("_", " "))
                     .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.measureSet.measure.type",
-                    andBsonList);
+                    "clinvarSet.referenceClinVarAssertion.measureSet.measure.type", andBsonList);
         }
     }
 
@@ -294,7 +289,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private boolean filteringOptionsEnabled(Query query) {
         int i = 0;
         Object[] keys = query.keySet().toArray();
-        while ((i < query.size()) && noFilteringQueryParameters.contains(keys[i])) {
+        while ((i < query.size()) && NO_FILTERING_QUERY_PARAMETERS.contains(keys[i])) {
             i++;
         }
         return (i < query.size());
