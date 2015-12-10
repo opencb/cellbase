@@ -13,6 +13,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -55,7 +56,12 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        QueryResult result = mongoDBCollection.find(bson, options);
+        if (result != null && !result.getResult().isEmpty()) {
+            Document document = (Document) result.getResult().get(0);
+            result.setResult(Collections.singletonList(document.get("transcripts")));
+        }
+        return result;
     }
 
     @Override
@@ -114,13 +120,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(),
+        createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, QueryParams.ID.key(), "transcripts.id", andBsonList);
-        createOrQuery(query, QueryParams.NAME.key(), "transcripts.name", andBsonList);
-        createOrQuery(query, QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
-        createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
-        createOrQuery(query, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "transcripts.id", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "transcripts.name", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+        createOrQuery(query, TranscriptDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

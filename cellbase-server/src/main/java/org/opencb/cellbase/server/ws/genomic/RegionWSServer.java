@@ -397,6 +397,8 @@ public class RegionWSServer extends GenericRestWSServer {
             RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
 //            List<Region> regions = Region.parseRegions(region);
             query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
+            query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType);
+            query.put(RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass);
 //            queryOptions.put("featureType", (!featureType.equals("")) ? Splitter.on(",").splitToList(featureType) : null);
 //            queryOptions.put("featureClass", (!featureClass.equals("")) ? Splitter.on(",").splitToList(featureClass) : null);
 //            logger.info(regions.get(0).toString());
