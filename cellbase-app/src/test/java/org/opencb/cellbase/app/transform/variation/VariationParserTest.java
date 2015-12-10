@@ -7,6 +7,8 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -87,7 +89,7 @@ public class VariationParserTest {
         consequenceTypes = annotation.getConsequenceTypes();
         assertEquals(2, consequenceTypes.size());
         // TODO consequence types details
-        assertEquals(0, annotation.getPopulationFrequencies().size());
+        assertNull(annotation.getPopulationFrequencies());
         // TODO frequencies
         // TODO hgvs
         // TODO check xrefs
@@ -100,7 +102,7 @@ public class VariationParserTest {
         consequenceTypes = annotation.getConsequenceTypes();
         assertEquals(4, consequenceTypes.size());
         // TODO consequence types details
-        assertEquals(0, annotation.getPopulationFrequencies().size());
+        assertNull(annotation.getPopulationFrequencies());
         // TODO frequencies
         // TODO hgvs
         // TODO check xrefs
@@ -136,6 +138,13 @@ public class VariationParserTest {
 
         Set<String> outputFileNames = checkOutputFileNames(testSerializer.serializedVariants);
         checkVariants(testSerializer.serializedVariants);
+    }
+
+    @Test
+    public void testParseToJson() throws Exception {
+        CellBaseJsonFileSerializer serializer = new CellBaseJsonFileSerializer(variationParserTestDirectory.resolve("output"), "", false);
+        VariationParser parser = new VariationParser(variationParserTestDirectory, serializer);
+        parser.parse();
     }
 
     class TestSerializer implements CellBaseFileSerializer {
