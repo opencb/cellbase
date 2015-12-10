@@ -128,18 +128,17 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (query.size()>0) {
 //        if (filteringOptionsEnabled(query)) {
             Bson commonFiltersBson = getCommonFilters(query);
-            List<Bson> sourceSpecificFilterList = new ArrayList<>();
             Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
                     ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
-            if (sourceContent == null || sourceContent.isEmpty() || sourceContent.contains(clinvarInclude)) {
-                sourceSpecificFilterList.add(getClinvarFilters(query));
-            }
-            if (sourceContent == null || sourceContent.isEmpty() || sourceContent.contains(cosmicInclude)) {
-                sourceSpecificFilterList.add(getCosmicFilters(query));
-            }
-            if (sourceContent == null || sourceContent.isEmpty() || sourceContent.contains(gwasInclude)) {
-                sourceSpecificFilterList.add(getGwasFilters(query));
-            }
+            List<Bson> sourceSpecificFilterList = new ArrayList<>();
+            getClinvarFilters(query, sourceContent, sourceSpecificFilterList);
+            getCosmicFilters(query, sourceContent, sourceSpecificFilterList);
+            getGwasFilters(query, sourceContent, sourceSpecificFilterList);
+
+//            sourceSpecificFilterList.add(getClinvarFilters(query, sourceContent));
+//            sourceSpecificFilterList.add(getCosmicFilters(query, sourceContent));
+//            sourceSpecificFilterList.add(getGwasFilters(query, sourceContent));
+
             if (sourceSpecificFilterList.size() > 0 && commonFiltersBson != null) {
                 List<Bson> filtersBsonList = new ArrayList<>();
                 filtersBsonList.add(commonFiltersBson);
@@ -160,18 +159,39 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     }
 
-    private Bson getGwasFilters(Query query) {
-        return Filters.eq("source", "gwas");
+    private void getGwasFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
+        // If only clinvar-specific filters are provided it must be avoided to include the source=gwas condition since
+        // sourceBson is going to be an OR list
+        if(!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
+                || query.containsKey(QueryParams.CLINVARREVIEW.key())
+                || query.containsKey(QueryParams.CLINVARTYPE.key())
+                || query.containsKey(QueryParams.CLINVARRS.key()))) {
+            if (sourceContent != null && sourceContent.contains("gwas")) {
+                sourceBson.add(Filters.eq("source", "gwas"));
+            }
+        }
     }
 
-    private Bson getCosmicFilters(Query query) {
-        return Filters.eq("source", "cosmic");
+    private void getCosmicFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
+        // If only clinvar-specific filters are provided it must be avoided to include the source=cosmic condition since
+        // sourceBson is going to be an OR list
+        if(!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
+                || query.containsKey(QueryParams.CLINVARREVIEW.key())
+                || query.containsKey(QueryParams.CLINVARTYPE.key())
+                || query.containsKey(QueryParams.CLINVARRS.key()))) {
+            if (sourceContent != null && sourceContent.contains("cosmic")) {
+                sourceBson.add(Filters.eq("source", "cosmic"));
+            }
+        }
     }
 
-    private Bson getClinvarFilters(Query query) {
+    private void getClinvarFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        andBsonList.add(Filters.eq("source", "clinvar"));
+        if (sourceContent != null && sourceContent.contains("clinvar")) {
+            andBsonList.add(Filters.eq("source", "clinvar"));
+        }
+
         createOrQuery(query, QueryParams.CLINVARRCV.key(), "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
                 andBsonList);
         createClinvarRsQuery(query, andBsonList);
@@ -180,13 +200,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         createClinvarClinicalSignificanceQuery(query, andBsonList);
 
         if (andBsonList.size() == 1) {
-            return andBsonList.get(0);
+            sourceBson.add(andBsonList.get(0));
         } else if (andBsonList.size() > 0) {
-            return Filters.and(andBsonList);
-        } else {
-            return null;
+            sourceBson.add(Filters.and(andBsonList));
         }
-
     }
 
     private void createClinvarClinicalSignificanceQuery(Query query, List<Bson> andBsonList) {
@@ -250,7 +267,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         createOrQuery(query, QueryParams.SO.key(), "annot.consequenceTypes.soTerms.soName", andBsonList);
         createOrQuery(query, QueryParams.GENE.key(), "_geneIds", andBsonList);
-        createOrQuery(query, QueryParams.PHENOTYPE.key(), "_phenotypes", andBsonList);
+        createPhenotypeQuery(query, andBsonList);
 
         if (andBsonList.size() == 1) {
             return andBsonList.get(0);
@@ -258,6 +275,13 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             return Filters.and(andBsonList);
         } else {
             return null;
+        }
+    }
+
+    private void createPhenotypeQuery(Query query, List<Bson> andBsonList) {
+        if (query != null && query.getString(QueryParams.PHENOTYPE.key()) != null
+                && !query.getString(QueryParams.PHENOTYPE.key()).isEmpty()) {
+            andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPE.key())));
         }
     }
 
