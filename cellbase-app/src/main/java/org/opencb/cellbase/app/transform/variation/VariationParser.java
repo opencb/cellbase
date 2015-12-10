@@ -155,8 +155,11 @@ public class VariationParser extends CellBaseParser {
                                             alternate);
                                     incorrectEndVariants++;
                                 } else {
-                                    List<PopulationFrequency> populationFrequencies =
-                                            frequenciesFetcher.getPopulationFrequencies(chromosome, start, reference, alternate);
+                                    List<PopulationFrequency> populationFrequencies = null;
+                                    if (frequenciesFetcher != null) {
+                                        populationFrequencies =
+                                                frequenciesFetcher.getPopulationFrequencies(chromosome, start, reference, alternate);
+                                    }
                                     // build and serialize variant
                                     Variant variation = buildVariant(chromosome, start, end, reference, alternate, type, ids, hgvs,
                                             additionalAttributes, conseqTypes, id, xrefs, populationFrequencies, strand);
@@ -186,6 +189,7 @@ public class VariationParser extends CellBaseParser {
             }
         }
 
+        serializer.close();
         logger.info("Variation parsing finished");
         logger.info("Variants processed: {}", countprocess);
         logger.info("Variants not parsed due to incorrect start-end: {}", incorrectEndVariants);
@@ -218,7 +222,7 @@ public class VariationParser extends CellBaseParser {
         }
     }
 
-    public Variant buildVariant(String chromosome, int start, int end, String reference, String alternate, VariantType type,
+    private Variant buildVariant(String chromosome, int start, int end, String reference, String alternate, VariantType type,
                                 List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
                                 List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
                                 List<PopulationFrequency> populationFrequencies, String strand)
@@ -227,8 +231,7 @@ public class VariationParser extends CellBaseParser {
         variant.setIds(ids);
         variant.setType(type);
         VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
-                xrefs, hgvs, conseqTypes, populationFrequencies, Collections.EMPTY_LIST, Collections.EMPTY_LIST,
-                Collections.EMPTY_LIST, Collections.EMPTY_LIST, null, Collections.EMPTY_LIST, additionalAttributes);
+                xrefs, hgvs, conseqTypes, populationFrequencies, null, null, null, null, null, null, additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 
@@ -252,7 +255,6 @@ public class VariationParser extends CellBaseParser {
     private VariantType checkSnv(String reference, String alternate) {
         Matcher referenceMatcher = cnvPattern.matcher(reference);
         Matcher alternateMatcher = cnvPattern.matcher(alternate);
-        logger.debug("Checking CNV variant {}/{}", reference, alternate);
         if (referenceMatcher.matches() && alternateMatcher.matches()) {
             if (referenceMatcher.group(SEQUENCE_GROUP).equals(alternateMatcher.group(SEQUENCE_GROUP))
                     && !referenceMatcher.group(COUNT_GROUP).equals(alternateMatcher.group(COUNT_GROUP)))
@@ -300,25 +302,9 @@ public class VariationParser extends CellBaseParser {
     }
 
     private List<ConsequenceType> getConsequenceTypes(List<TranscriptVariation> transcriptVariations) {
-        List<ConsequenceType>  consequenceTypes = new ArrayList<>();
+        List<ConsequenceType>  consequenceTypes = null;
         for (TranscriptVariation transcriptVariation : transcriptVariations) {
-            List<Score> substitionScores = getSubstitutionScores(transcriptVariation);
-
-            // get peptide reference and alternate
-            String peptideReference = null,
-                    peptideAlternate = null;
-            if (!transcriptVariation.getPeptideAlleleString().equals("\\N")) {
-                String[] peptideAlleles = transcriptVariation.getPeptideAlleleString().split("/");
-                peptideReference = peptideAlleles[0];
-                if (peptideAlleles.length == 1) {
-                    peptideAlternate = peptideAlleles[0];
-                } else {
-                    peptideAlternate = peptideAlleles[1];
-                }
-            }
-
-            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, 0,
-                    peptideReference, peptideAlternate, null, null, substitionScores, null , null);
+            ProteinVariantAnnotation proteinVariantAnnotation = getProteinVariantAnnotation(transcriptVariation);
 
             List<SequenceOntologyTerm> soTerms = null;
             try {
@@ -327,18 +313,53 @@ public class VariationParser extends CellBaseParser {
                 logger.warn(e.getMessage());
             }
 
+            if (consequenceTypes == null) {
+                consequenceTypes = new ArrayList<>();
+            }
             consequenceTypes.add(new ConsequenceType(null, null, transcriptVariation.getTranscriptId(), null, null,
-                    Collections.EMPTY_LIST, transcriptVariation.getCdnaStart(), transcriptVariation.getCdsStart(),
+                    null, transcriptVariation.getCdnaStart(), transcriptVariation.getCdsStart(),
                     transcriptVariation.getCodonAlleleString(), proteinVariantAnnotation, soTerms));
 
         }
         return consequenceTypes;
     }
 
+    private ProteinVariantAnnotation getProteinVariantAnnotation(TranscriptVariation transcriptVariation) {
+        List<Score> substitionScores = getSubstitutionScores(transcriptVariation);
+
+        // get peptide reference and alternate
+        String peptideReference = null,
+                peptideAlternate = null;
+        if (transcriptVariation.getPeptideAlleleString() != null) {
+            String[] peptideAlleles = transcriptVariation.getPeptideAlleleString().split("/");
+            peptideReference = peptideAlleles[0];
+            if (peptideAlleles.length == 1) {
+                peptideAlternate = peptideAlleles[0];
+            } else {
+                peptideAlternate = peptideAlleles[1];
+            }
+        }
+
+        ProteinVariantAnnotation proteinVariantAnnotation = null;
+        if (peptideAlternate != null || peptideReference != null || substitionScores != null) {
+            proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, 0,
+                    peptideReference, peptideAlternate, null, null, substitionScores, null, null);
+        }
+        return proteinVariantAnnotation;
+    }
+
     private List<Score> getSubstitutionScores(TranscriptVariation transcriptVariation) {
-        List<Score> substitionScores = new ArrayList<>();
-        substitionScores.add(new Score((double) transcriptVariation.getPolyphenScore(), "Polyphen", ""));
-        substitionScores.add(new Score((double) transcriptVariation.getSiftScore(), "Sift", ""));
+        List<Score> substitionScores = null;
+        if (transcriptVariation.getPolyphenScore() != null) {
+            substitionScores = new ArrayList<>();
+            substitionScores.add(new Score((double) transcriptVariation.getPolyphenScore(), "Polyphen", ""));
+        }
+        if (transcriptVariation.getSiftScore() != null) {
+            if (substitionScores == null) {
+                substitionScores = new ArrayList<>();
+            }
+            substitionScores.add(new Score((double) transcriptVariation.getSiftScore(), "Sift", ""));
+        }
         return substitionScores;
     }
 
@@ -370,13 +391,16 @@ public class VariationParser extends CellBaseParser {
 
     private List<Xref> getXrefs(Map<String, String> sourceMap, int variationId) throws IOException, SQLException {
         List<String[]> variationSynonyms = variationSynonymFile.getVariationRelatedLines(variationId);
-        List<Xref> xrefs = new ArrayList<>();
+        List<Xref> xrefs = null;
         if (variationSynonyms != null && variationSynonyms.size() > 0) {
             String[] arr;
             for (String[] variationSynonymFields : variationSynonyms) {
                 // TODO: use constans to identify the fields
                 if (sourceMap.get(variationSynonymFields[3]) != null) {
                     arr = sourceMap.get(variationSynonymFields[3]).split(",");
+                    if (xrefs == null) {
+                        xrefs = new ArrayList<>();
+                    }
                     xrefs.add(new Xref(variationSynonymFields[4], arr[0]));
                 }
             }
@@ -402,9 +426,9 @@ public class VariationParser extends CellBaseParser {
 
     private TranscriptVariation buildTranscriptVariation(String[] transVarFields) {
         return new TranscriptVariation(
-                (transVarFields[2] != null && !transVarFields[2].equals("\\N")) ? transVarFields[2] : ""
-                , (transVarFields[3] != null && !transVarFields[3].equals("\\N")) ? transVarFields[3] : ""
-                , (transVarFields[4] != null && !transVarFields[4].equals("\\N")) ? transVarFields[4] : ""
+                (transVarFields[2] != null && !transVarFields[2].equals("\\N")) ? transVarFields[2] : null
+                , (transVarFields[3] != null && !transVarFields[3].equals("\\N")) ? transVarFields[3] : null
+                , (transVarFields[4] != null && !transVarFields[4].equals("\\N")) ? transVarFields[4] : null
                 , Arrays.asList(transVarFields[5].split(","))
                 , (transVarFields[6] != null && !transVarFields[6].equals("\\N")) ? Integer.parseInt(transVarFields[6]) : 0
                 , (transVarFields[7] != null && !transVarFields[7].equals("\\N")) ? Integer.parseInt(transVarFields[7]) : 0
@@ -413,15 +437,15 @@ public class VariationParser extends CellBaseParser {
                 , (transVarFields[10] != null && !transVarFields[10].equals("\\N")) ? Integer.parseInt(transVarFields[10]) : 0
                 , (transVarFields[11] != null && !transVarFields[11].equals("\\N")) ? Integer.parseInt(transVarFields[11]) : 0
                 , (transVarFields[12] != null && !transVarFields[12].equals("\\N")) ? Integer.parseInt(transVarFields[12]) : 0
-                , (transVarFields[13] != null && !transVarFields[13].equals("\\N")) ? transVarFields[13] : ""
-                , (transVarFields[14] != null && !transVarFields[14].equals("\\N")) ? transVarFields[14] : ""
-                , (transVarFields[15] != null && !transVarFields[15].equals("\\N")) ? transVarFields[15] : ""
-                , (transVarFields[16] != null && !transVarFields[16].equals("\\N")) ? transVarFields[16] : ""
-                , (transVarFields[17] != null && !transVarFields[17].equals("\\N")) ? transVarFields[17] : ""
-                , (transVarFields[18] != null && !transVarFields[18].equals("\\N")) ? transVarFields[18] : ""
-                , (transVarFields[19] != null && !transVarFields[19].equals("\\N")) ? Float.parseFloat(transVarFields[19]) : 0f
-                , (transVarFields[20] != null && !transVarFields[20].equals("\\N")) ? transVarFields[20] : ""
-                , (transVarFields[21] != null && !transVarFields[21].equals("\\N")) ? Float.parseFloat(transVarFields[21]) : 0f);
+                , (transVarFields[13] != null && !transVarFields[13].equals("\\N")) ? transVarFields[13] : null
+                , (transVarFields[14] != null && !transVarFields[14].equals("\\N")) ? transVarFields[14] : null
+                , (transVarFields[15] != null && !transVarFields[15].equals("\\N")) ? transVarFields[15] : null
+                , (transVarFields[16] != null && !transVarFields[16].equals("\\N")) ? transVarFields[16] : null
+                , (transVarFields[17] != null && !transVarFields[17].equals("\\N")) ? transVarFields[17] : null
+                , (transVarFields[18] != null && !transVarFields[18].equals("\\N")) ? transVarFields[18] : null
+                , (transVarFields[19] != null && !transVarFields[19].equals("\\N")) ? Float.parseFloat(transVarFields[19]) : null
+                , (transVarFields[20] != null && !transVarFields[20].equals("\\N")) ? transVarFields[20] : null
+                , (transVarFields[21] != null && !transVarFields[21].equals("\\N")) ? Float.parseFloat(transVarFields[21]) : null);
     }
 
     private void gunzipVariationInputFiles() throws IOException, InterruptedException {
