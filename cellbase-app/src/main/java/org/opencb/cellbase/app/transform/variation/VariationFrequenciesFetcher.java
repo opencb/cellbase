@@ -67,7 +67,7 @@ public class VariationFrequenciesFetcher {
         if (variationFrequenciesString != null) {
             populationFrequencies = parseVariationFrequenciesString(variationFrequenciesString, referenceAllele, alternativeAllele);
         } else {
-            populationFrequencies = Collections.EMPTY_LIST;
+            populationFrequencies = null;
         }
         return populationFrequencies;
     }
@@ -128,7 +128,7 @@ public class VariationFrequenciesFetcher {
             String study = "";
             String population = m.group(POPULATION_ID_GROUP);
             switch (population) {
-                case "1000G_PHASE_1_AF":
+                case "1000G_PHASE_1_ALL_AF":
                     study = THOUSAND_GENOMES_PHASE_1_STUDY;
                     populationName = THOUSAND_GENOMES_ALL_POPULATION;
                     break;
@@ -148,7 +148,7 @@ public class VariationFrequenciesFetcher {
                     study = THOUSAND_GENOMES_PHASE_1_STUDY;
                     populationName = THOUSAND_GENOMES_EUROPEAN_POPULATION;
                     break;
-                case "1000G_PHASE_3_AF":
+                case "1000G_PHASE_3_ALL_AF":
                     study = THOUSAND_GENOMES_PHASE_3_STUDY;
                     populationName = THOUSAND_GENOMES_ALL_POPULATION;
                     break;
