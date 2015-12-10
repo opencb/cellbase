@@ -61,14 +61,18 @@ public class VariantAnnotationMongoDBAdaptorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("6:160990451:C:G")  // Should return drug interactions
+                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("22:16051722:TA:T")  // Should return drug interactions
+//                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 948813, "G", "C"))  // Should return drug interactions
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 167385325, "A", "-"))  // Should not return null
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 220603289, "-", "GTGT"))  // Should not return null
 //                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16050612, "C", "G"))  // Should return any result
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("13", 45411941, "T", "C"))  // Should return any result
@@ -90,12 +94,12 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16123409, "-", "A"))
 //                , new QueryOptions());
 
-        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
-        vepFormatWriter.open();
-        vepFormatWriter.pre();
-        vepFormatWriter.write(variantAnnotationList);
-        vepFormatWriter.post();
-        vepFormatWriter.close();
+//        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
+//        vepFormatWriter.open();
+//        vepFormatWriter.pre();
+//        vepFormatWriter.write(variantAnnotationList);
+//        vepFormatWriter.post();
+//        vepFormatWriter.close();
 
 
 
