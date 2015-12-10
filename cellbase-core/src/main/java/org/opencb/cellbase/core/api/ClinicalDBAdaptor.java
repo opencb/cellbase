@@ -28,7 +28,14 @@ public interface ClinicalDBAdaptor<Clinical> extends FeatureDBAdaptor<Clinical> 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, ""),
         GENE("gene", TEXT_ARRAY, ""),
-        PHENOTYPE("phenotype", TEXT_ARRAY, "");
+        PHENOTYPE("phenotype", TEXT_ARRAY, ""),
+        SO("so", TEXT_ARRAY, ""),
+        SOURCE("source", TEXT_ARRAY, ""),
+        CLINVARRCV("rcv", TEXT_ARRAY, ""),
+        CLINVARCLINSIG("significance", TEXT_ARRAY, ""),
+        CLINVARREVIEW("review", TEXT_ARRAY, ""),
+        CLINVARTYPE("type", TEXT_ARRAY, ""),
+        CLINVARRS("rs", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;

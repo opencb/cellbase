@@ -151,16 +151,19 @@ public class MongoDBAdaptor {
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
         if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            List<String> queryList = query.getAsStringList(queryParam);
-            if (queryList.size() == 1) {
-                andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
-            } else {
-                List<Bson> orBsonList = new ArrayList<>(queryList.size());
-                for (String queryItem : queryList) {
-                    orBsonList.add(Filters.eq(mongoDbField, queryItem));
-                }
-                andBsonList.add(Filters.or(orBsonList));
+            createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
+        }
+    }
+
+    protected void createOrQuery(List<String> queryValues, String mongoDbField, List<Bson> andBsonList) {
+        if (queryValues.size() == 1) {
+            andBsonList.add(Filters.eq(mongoDbField, queryValues.get(0)));
+        } else {
+            List<Bson> orBsonList = new ArrayList<>(queryValues.size());
+            for (String queryItem : queryValues) {
+                orBsonList.add(Filters.eq(mongoDbField, queryItem));
             }
+            andBsonList.add(Filters.or(orBsonList));
         }
     }
 
