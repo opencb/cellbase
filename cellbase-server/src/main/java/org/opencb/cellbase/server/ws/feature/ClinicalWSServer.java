@@ -25,14 +25,12 @@ import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author imedina
@@ -62,6 +60,18 @@ public class ClinicalWSServer extends GenericRestWSServer {
             }
 
             return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/group")
+    public Response groupBy(@DefaultValue("") @QueryParam("fields") String fields) {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinicalDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

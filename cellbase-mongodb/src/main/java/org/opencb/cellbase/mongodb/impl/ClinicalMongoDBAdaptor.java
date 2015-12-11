@@ -59,12 +59,14 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
     }
 
     @Override
@@ -224,8 +226,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (query != null && query.getString(QueryParams.CLINVARTYPE.key()) != null
                 && !query.getString(QueryParams.CLINVARTYPE.key()).isEmpty()) {
             createOrQuery(query.getAsStringList(QueryParams.CLINVARTYPE.key()).stream()
-                    .map((typeString) -> typeString.replace("_", " "))
-                    .collect(Collectors.toList()),
+                            .map((typeString) -> typeString.replace("_", " "))
+                            .collect(Collectors.toList()),
                     "clinvarSet.referenceClinVarAssertion.measureSet.measure.type", andBsonList);
         }
     }
