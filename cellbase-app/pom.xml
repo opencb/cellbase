@@ -23,6 +23,12 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-server</artifactId>
+            <version>${cellbase.version}</version>
+            <type>war</type>
+        </dependency>
 
         <dependency>
             <groupId>com.google.protobuf</groupId>
