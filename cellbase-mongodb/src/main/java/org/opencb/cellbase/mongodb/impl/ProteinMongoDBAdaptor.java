@@ -83,7 +83,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
             Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
 
             // If position and aa change are provided we create a 'projection' to return only the required data from the database
-            if (query.get("position") != null && query.getInt("position", 0) != 0) {
+            if (query.get("position") != null && !query.getString("position").isEmpty() && query.getInt("position", 0) != 0) {
                 String projectionString = "aaPositions." + query.getInt("position");
 
                 // If aa change is provided we only return that information
