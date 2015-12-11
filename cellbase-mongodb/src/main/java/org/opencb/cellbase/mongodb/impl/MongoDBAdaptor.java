@@ -168,6 +168,10 @@ public class MongoDBAdaptor {
     }
 
     protected QueryResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField == null || groupByField.isEmpty()) {
+            return new QueryResult();
+        }
+
         if (groupByField.contains(",")) {
             // call to multiple groupBy if commas are present
             return groupBy(query, Arrays.asList(groupByField.split(",")), featureIdField, options);
@@ -185,6 +189,10 @@ public class MongoDBAdaptor {
     }
 
     protected QueryResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField == null || groupByField.isEmpty()) {
+            return new QueryResult();
+        }
+
         if (groupByField.size() == 1) {
             // if only one field then we call to simple groupBy
             return groupBy(query, groupByField.get(0), featureIdField, options);
