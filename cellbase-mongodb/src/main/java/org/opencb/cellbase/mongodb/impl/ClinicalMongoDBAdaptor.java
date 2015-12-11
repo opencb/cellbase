@@ -74,12 +74,14 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult<Long> count(Query query) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.count(bson);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.distinct(field, bson);
     }
 
     @Override
@@ -149,7 +151,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         } else {
             return new Document();
         }
-
     }
 
     private void getGwasFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
@@ -205,8 +206,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             createOrQuery(query.getAsStringList(QueryParams.CLINVARCLINSIG.key()).stream()
                             .map((clinicalSignificanceString) -> clinicalSignificanceString.replace("_", " "))
                             .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description",
-                    andBsonList);
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description", andBsonList);
         }
     }
 
@@ -214,10 +214,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         if (query != null && query.getString(QueryParams.CLINVARREVIEW.key()) != null
                 && !query.getString(QueryParams.CLINVARREVIEW.key()).isEmpty()) {
             createOrQuery(query.getAsStringList(QueryParams.CLINVARREVIEW.key()).stream()
-                            .map((reviewString) -> reviewString.toUpperCase())
+                            .map(String::toUpperCase)
                             .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
-                    andBsonList);
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus", andBsonList);
         }
     }
 
@@ -227,8 +226,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             createOrQuery(query.getAsStringList(QueryParams.CLINVARTYPE.key()).stream()
                     .map((typeString) -> typeString.replace("_", " "))
                     .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.measureSet.measure.type",
-                    andBsonList);
+                    "clinvarSet.referenceClinVarAssertion.measureSet.measure.type", andBsonList);
         }
     }
 
@@ -339,7 +337,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         pipeline.add(new Document("$project", fields));
 
         return executeAggregation2("", pipeline, queryOptions);
-
     }
 
 }

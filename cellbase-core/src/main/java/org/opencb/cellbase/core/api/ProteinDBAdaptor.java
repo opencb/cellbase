@@ -26,7 +26,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by imedina on 30/11/15.
  */
-public interface ProteinDBAdaptor<Protein> extends CellBaseDBAdaptor<Protein> {
+public interface ProteinDBAdaptor<Protein> extends FeatureDBAdaptor<Protein> {
 
     enum QueryParams implements QueryParam {
         ACCESSION("accession", TEXT_ARRAY, ""),
@@ -61,10 +61,6 @@ public interface ProteinDBAdaptor<Protein> extends CellBaseDBAdaptor<Protein> {
         public Type type() {
             return type;
         }
-    }
-
-    default QueryResult first() {
-        return get(new Query(), new QueryOptions("limit", 1));
     }
 
     QueryResult getSubstitutionScores(Query query, QueryOptions options);

@@ -42,7 +42,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
-        logger.debug("GeneMongoDBAdaptor: in 'constructor'");
+        logger.debug("XRefMongoDBAdaptor: in 'constructor'");
     }
 
 
@@ -62,14 +62,14 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public QueryResult<Long> count(Query query) {
-        Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.count(bson);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        Bson document = parseQuery(query);
-        return mongoDBCollection.distinct(field, document);
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.distinct(field, bson);
     }
 
     @Override
@@ -84,7 +84,8 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.find(bson, options);
     }
 
     @Override
@@ -94,7 +95,8 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
@@ -104,7 +106,6 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-
         createOrQuery(query, XRefDBAdaptor.QueryParams.ID.key(), "transcripts.xrefs.id", andBsonList);
         createOrQuery(query, XRefDBAdaptor.QueryParams.DBNAME.key(), "transcripts.xrefs.dbName", andBsonList);
 

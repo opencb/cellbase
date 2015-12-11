@@ -26,11 +26,13 @@ import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -41,7 +43,7 @@ import java.util.List;
  * @author imedina
  */
 @Path("/{version}/{species}/feature/id")
-@Produces("application/json")
+@Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Xref", description = "External References RESTful Web Services API")
 public class IdWSServer extends GenericRestWSServer {
 
@@ -60,17 +62,24 @@ public class IdWSServer extends GenericRestWSServer {
     @GET
     @Path("/{id}/info")
     @ApiOperation(httpMethod = "GET", value = "Retrieves the external reference info for the ID")
-    public Response getByFeatureIdInfo(@PathParam("id") String query) {
+    public Response getByFeatureIdInfo(@PathParam("id") String id) {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
-            List<String> list = Splitter.on(",").splitToList(query);
-            List<QueryResult> dbNameList = xRefDBAdaptor.get(Splitter.on(",").splitToList(query), queryOptions);
+
+            List<String> list = Splitter.on(",").splitToList(id);
+            String[] ids = id.split(",");
+            List<Query> queries = new ArrayList<>(ids.length);
+            for (String s : ids) {
+                queries.add(new Query(XRefDBAdaptor.QueryParams.ID.key(), s));
+            }
+
+            List<QueryResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
-                for (Object o : dbNameList.get(i).getResult()) {
-                    if (((Document) o).get("id").equals(list.get(i))) {
-                        List<Object> objectList = new ArrayList<>(1);
-                        objectList.add(o);
+                for (Document document : dbNameList.get(i).getResult()) {
+                    if (document.get("id").equals(list.get(i))) {
+                        List<Document> objectList = new ArrayList<>(1);
+                        objectList.add(document);
                         dbNameList.get(i).setResult(objectList);
                         break;
                     }
@@ -133,8 +142,14 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), id);
-            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
+
+            String[] ids = id.split(",");
+            List<Query> queries = new ArrayList<>(ids.length);
+            for (String s : ids) {
+                queries.add(new Query(GeneDBAdaptor.QueryParams.XREFS.key(), s));
+            }
+
+            return createOkResponse(geneDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

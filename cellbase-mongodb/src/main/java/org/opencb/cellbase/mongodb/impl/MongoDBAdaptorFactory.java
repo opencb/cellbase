@@ -287,16 +287,15 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //
 
     @Override
-    public RegulationDBAdaptor getRegulatoryRegionDBAdaptor(String species) {
-        return getRegulatoryRegionDBAdaptor(species, null);
+    public RegulationDBAdaptor getRegulationDBAdaptor(String species) {
+        return getRegulationDBAdaptor(species, null);
     }
 
     @Override
-    public RegulationDBAdaptor getRegulatoryRegionDBAdaptor(String species, String assembly) {
+    public RegulationDBAdaptor getRegulationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new RegulationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 //
 //    @Override
 //    public TfbsDBAdaptor getTfbsDBAdaptor(String species) {

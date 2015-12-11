@@ -20,10 +20,9 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.ProteinDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -73,7 +72,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Override
     @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
     public Response first() {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+//        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.first());
     }
 
@@ -82,7 +82,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Override
     @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
     public Response count() {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.count());
     }
 
@@ -92,13 +92,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response count2(@DefaultValue("") @QueryParam("region") String region,
                            @DefaultValue("") @QueryParam("biotype") String biotype,
                            @DefaultValue("") @QueryParam("xrefs") String xrefs) {
-        org.opencb.cellbase.core.api.TranscriptDBAdaptor transcriptDBAdaptor =
-                dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
 
         Query query = new Query();
-        query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-        query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
-        query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
+        query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
+        query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
+        query.append(TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
 
         return createOkResponse(transcriptDBAdaptor.count(query));
     }
@@ -115,47 +114,42 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("transcriptId") String query) {
         try {
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            return createOkResponse(transcriptDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+
+            return createOkResponse(transcriptDBAdaptor.nativeGet(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    @GET
+    @Path("/{transcriptId}/info2")
+    public Response getByEnsemblId2(@PathParam("transcriptId") String transcriptid) {
+            parseQueryParams();
+            TranscriptDBAdaptor  transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            Query query = new Query();
+            query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.ID.key(), transcriptid);
+            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
     }
 
     @GET
     @Path("/{transcriptId}/fullinfo")
-    public Response getFullInfoByEnsemblId(@PathParam("transcriptId") String query) {
-        try {
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<String> queryStrList = Splitter.on(",").splitToList(query);
-            return createOkResponse(geneDBAdaptor.getAllByIdList(queryStrList, queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse("getFullInfoByEnsemblId", e.toString());
-        }
+    public Response getFullInfoByEnsemblId(@PathParam("transcriptId") String transcriptid) {
+            parseQueryParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            Query query = new Query();
+            query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key(), transcriptid);
+            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
     }
 
     @GET
     @Path("/{transcriptId}/gene")
-    public Response getGeneById(@PathParam("transcriptId") String query) {
-        try {
-            parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/{transcriptId}/exon")
-    public Response getExonsByTranscriptId(@PathParam("transcriptId") String query) {
-        try {
-            parseQueryParams();
-            ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-            return createOkResponse("not implemented");
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
+    public Response getGeneById(@PathParam("transcriptId") String transcriptid) {
+        parseQueryParams();
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+        Query query = new Query();
+        query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key(), transcriptid);
+        return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
     }
 
     @GET
@@ -175,20 +169,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getSequencesByIdList(@PathParam("transcriptId") String query) {
         try {
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species,
-                    this.assembly);
-            return Response.ok().build();
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/{transcriptId}/region")
-    public Response getRegionsByIdList(@PathParam("transcriptId") String query) {
-        try {
-            parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
             return Response.ok().build();
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -212,16 +193,16 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/function_prediction")
-    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId") String query,
+    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId") String id,
                                                                @DefaultValue("") @QueryParam("aaPosition") String aaPosition,
                                                                @DefaultValue("") @QueryParam("aaChange") String aaChange) {
         try {
             parseQueryParams();
-            queryOptions.put("aaPosition", aaPosition);
-            queryOptions.put("aaChange", aaChange);
-            ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = mutationAdaptor
-                    .getAllFunctionPredictionByEnsemblTranscriptIdList(Splitter.on(",").splitToList(query), queryOptions);
+            ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            query.put("transcript", id);
+            query.put("position", aaPosition);
+            query.put("aa", aaChange);
+            QueryResult queryResults = mutationAdaptor.getSubstitutionScores(query, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -242,18 +223,6 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-    @GET
-    @Path("/{transcriptId}/cdna")
-    public Response getCdnaByTranscriptId(@PathParam("transcriptId") String query) {
-        try {
-            parseQueryParams();
-            ExonDBAdaptor dbAdaptor = dbAdaptorFactory.getExonDBAdaptor(this.species, this.assembly);
-
-            return null;
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
 
     @GET
     public Response defaultMethod() {
