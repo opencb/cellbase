@@ -81,14 +81,17 @@ public class QueryCommandExecutor extends CommandExecutor {
                 case "gene":
                     executeGeneQuery(query, queryOptions, output);
                     break;
-                case "transcript":
-                    executeTranscriptQuery(query, queryOptions, output);
-                    break;
                 case "variation":
                     executeVariationQuery(query, queryOptions, output);
                     break;
                 case "protein":
                     executeProteinQuery(query, queryOptions, output);
+                    break;
+                case "regulatory_region":
+                    executeRegulatoryRegionQuery(query, queryOptions, output);
+                    break;
+                case "transcript":
+                    executeTranscriptQuery(query, queryOptions, output);
                     break;
                 case "conservation":
                     break;
@@ -209,20 +212,44 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
+
+
+
+    private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
+
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(RegulationDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
 
-        switch (queryCommandOptions.resource) {
-            case "info":
-                query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    output.println(objectMapper.writeValueAsString(next));
-                }
-                break;
-            default:
-                break;
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                    Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

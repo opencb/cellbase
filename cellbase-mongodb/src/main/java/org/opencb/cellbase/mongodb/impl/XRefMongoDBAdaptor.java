@@ -42,7 +42,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
-        logger.debug("GeneMongoDBAdaptor: in 'constructor'");
+        logger.debug("XRefMongoDBAdaptor: in 'constructor'");
     }
 
 
@@ -106,7 +106,6 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-
         createOrQuery(query, XRefDBAdaptor.QueryParams.ID.key(), "transcripts.xrefs.id", andBsonList);
         createOrQuery(query, XRefDBAdaptor.QueryParams.DBNAME.key(), "transcripts.xrefs.dbName", andBsonList);
 

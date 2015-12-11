@@ -159,5 +159,4 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             return new Document();
         }
     }
-
 }

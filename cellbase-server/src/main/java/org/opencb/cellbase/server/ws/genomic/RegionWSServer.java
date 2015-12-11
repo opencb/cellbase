@@ -131,12 +131,12 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+
             query.put(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-            return createOkResponse(transcriptDBAdaptor.get(query, queryOptions));
+            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-
     }
 
 
@@ -394,9 +394,11 @@ public class RegionWSServer extends GenericRestWSServer {
                                   @DefaultValue("") @QueryParam("class") String featureClass) {
         try {
             parseQueryParams();
-            RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory2.getRegulatoryRegionDBAdaptor(this.species, this.assembly);
+            RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
 //            List<Region> regions = Region.parseRegions(region);
             query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
+            query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType);
+            query.put(RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass);
 //            queryOptions.put("featureType", (!featureType.equals("")) ? Splitter.on(",").splitToList(featureType) : null);
 //            queryOptions.put("featureClass", (!featureClass.equals("")) ? Splitter.on(",").splitToList(featureClass) : null);
 //            logger.info(regions.get(0).toString());

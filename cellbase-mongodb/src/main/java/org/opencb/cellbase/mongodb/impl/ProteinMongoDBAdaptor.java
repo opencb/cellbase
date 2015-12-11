@@ -21,6 +21,7 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -111,6 +112,43 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     }
 
     @Override
+    public QueryResult<Entry> next(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult nativeNext(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, field, "name", options);
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
+    }
+
+    @Override
+    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+        if (query.getString("region") != null) {
+            Region region = Region.parseRegion(query.getString("region"));
+            Bson bsonDocument = parseQuery(query);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+        }
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
         return mongoDBCollection.count(document);
@@ -157,13 +195,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.ACCESSION.key(), "accession", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.GENE.key(), "gene", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.XREF.key(), "xref", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.KEYWORD.key(), "keyword", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
-        createOrQuery(query, ProteinDBAdaptor.QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
+        createOrQuery(query, QueryParams.ACCESSION.key(), "accession", andBsonList);
+        createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(query, QueryParams.GENE.key(), "gene", andBsonList);
+        createOrQuery(query, QueryParams.XREF.key(), "xref", andBsonList);
+        createOrQuery(query, QueryParams.KEYWORD.key(), "keyword", andBsonList);
+        createOrQuery(query, QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
+        createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

@@ -48,7 +48,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
-        logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
+        logger.info("RegulationMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
