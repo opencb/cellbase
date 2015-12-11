@@ -18,7 +18,7 @@ package org.opencb.cellbase.server.ws.feature;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -54,13 +54,14 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "description?", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
     public Response getAll() {
         try {
+            logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHGGGGGGGGGGGG");
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
             if (!queryOptions.containsKey("limit") || ((int) queryOptions.get("limit")) > 1000) {
                 queryOptions.put("limit", 1000);
             }
 
-            return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
+            return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -73,24 +74,24 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions));
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/listAcc")
-    @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
-    public Response getAllListAccessions() {
-        try {
-            parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/listAcc")
+//    @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
+//    public Response getAllListAccessions() {
+//        try {
+//            parseQueryParams();
+//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+//            return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
 }

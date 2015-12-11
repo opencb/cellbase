@@ -61,30 +61,22 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query5.put("significance", "Likely_pathogenic");
         QueryResult queryResult5 = clinicalDBAdaptor.nativeGet(query5, queryOptions);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult5.getNumTotalResults(), 10);
-        assertEquals(((Document) queryResult5.getResult().get(4)).get("mutationID"), "COSM228320");
-        assertEquals(((Document)((Document) ((Document) ((Document) queryResult5.getResult().get(17)).get("clinvarSet"))
-                .get("referenceClinVarAssertion")).get("clinVarAccession")).get("acc"), "RCV000171500");
+        assertEquals(queryResult5.getNumTotalResults(), 6915);
 
-//        queryOptions.add("source", "gwas");
-//        queryOptions.add("phenotype", "ALZHEIMER DISEASE 2, DUE TO APOE4 ISOFORM");
-//        queryOptions.addToListOption("phenotype", "ALZHEIMER");
+        Query query6 = new Query();
+        query6.put("gene", "APOE");
+        QueryResult queryResult6 = clinicalDBAdaptor.nativeGet(query6, queryOptions);
+        // WARNING: these values may change from one ClinVar version to another
+        assertEquals(queryResult6.getNumTotalResults(), 85);
 
-//        queryOptions.addToListOption("phenotype", "retinitis");
-//        queryOptions.addToListOption("phenotype", "diabetes");
-//        queryOptions.addToListOption("region", new Region("3", 550000, 1166666));
-//        queryOptions.add("region", "5:13759611-13799611");
-//        queryOptions.addToListOption("region", new Region("1", 550000, 1166666));
-//        queryOptions.addToListOption("gene", "APOE");
-//        queryOptions.addToListOption("significance", "Likely_pathogenic");
-//        queryOptions.addToListOption("review", "REVIEWED_BY_PROFESSIONAL_SOCIETY");
-//        queryOptions.addToListOption("type", "Indel");
-//        queryOptions.addToListOption("so", "missense_variant");
-//        queryOptions.addToListOption("rs", "rs429358");
-//        queryOptions.addToListOption("rcv", "RCV000019455");
+        query6.put("source", "clinvar");
+        QueryResult queryResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions);
+        assertEquals(queryResult7.getNumTotalResults(), 38);
 
-//        ((List<String>) queryOptions.get("include")).remove(0);
-
+        query6.put("source", "cosmic");
+        QueryResult queryResult8 = clinicalDBAdaptor.nativeGet(query6, queryOptions);
+        assertEquals(queryResult8.getNumTotalResults(), 47);
+        assertEquals(((Document) queryResult8.getResult().get(0)).get("geneName"), "APOE");
 
     }
 }

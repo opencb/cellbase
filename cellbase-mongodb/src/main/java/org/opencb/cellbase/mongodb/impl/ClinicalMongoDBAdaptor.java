@@ -21,7 +21,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
-import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -35,13 +34,6 @@ import java.util.stream.Collectors;
  * Created by imedina on 01/12/15.
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
-
-    private static final Set<String> noFilteringQueryParameters = new HashSet<>(Arrays.asList("assembly", "include", "exclude",
-            "skip", "limit", "of", "count", "json"));
-    private static final String clinvarInclude = "clinvar";
-    private static final String cosmicInclude = "cosmic";
-    private static final String gwasInclude = "gwas";
-
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -113,20 +105,25 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
-
+        Objects.requireNonNull(action);
+        Iterator iterator = nativeIterator(query, options);
+        while (iterator.hasNext()) {
+            action.accept(iterator.next());
+        }
     }
 
     private Bson parseQuery(Query query) {
+        logger.info("Parsing query...");
         Bson filtersBson = null;
 
         // No filtering parameters mean all records
-        if (query.size()>0) {
-//        if (filteringOptionsEnabled(query)) {
+        if (query.size() > 0) {
             Bson commonFiltersBson = getCommonFilters(query);
             Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
                     ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
@@ -134,10 +131,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             getClinvarFilters(query, sourceContent, sourceSpecificFilterList);
             getCosmicFilters(query, sourceContent, sourceSpecificFilterList);
             getGwasFilters(query, sourceContent, sourceSpecificFilterList);
-
-//            sourceSpecificFilterList.add(getClinvarFilters(query, sourceContent));
-//            sourceSpecificFilterList.add(getCosmicFilters(query, sourceContent));
-//            sourceSpecificFilterList.add(getGwasFilters(query, sourceContent));
 
             if (sourceSpecificFilterList.size() > 0 && commonFiltersBson != null) {
                 List<Bson> filtersBsonList = new ArrayList<>();
@@ -162,7 +155,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private void getGwasFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
         // If only clinvar-specific filters are provided it must be avoided to include the source=gwas condition since
         // sourceBson is going to be an OR list
-        if(!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
+        if (!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
                 || query.containsKey(QueryParams.CLINVARREVIEW.key())
                 || query.containsKey(QueryParams.CLINVARTYPE.key())
                 || query.containsKey(QueryParams.CLINVARRS.key()))) {
@@ -175,7 +168,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private void getCosmicFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
         // If only clinvar-specific filters are provided it must be avoided to include the source=cosmic condition since
         // sourceBson is going to be an OR list
-        if(!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
+        if (!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
                 || query.containsKey(QueryParams.CLINVARREVIEW.key())
                 || query.containsKey(QueryParams.CLINVARTYPE.key())
                 || query.containsKey(QueryParams.CLINVARRS.key()))) {
@@ -285,19 +278,68 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
     }
 
-    private void addIfNotNull(List<Bson> bsonList, Bson bson) {
-        if (bson != null) {
-            bsonList.add(bson);
+    public List<QueryResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
+
+        Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
+                ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
+        List<QueryResult> queryResultList = new ArrayList<>();
+        if (sourceContent == null || sourceContent.contains("clinvar")) {
+            queryResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
+
         }
+        if (sourceContent == null || sourceContent.contains("gwas")) {
+            queryResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
+        }
+
+        return queryResultList;
     }
 
-    private boolean filteringOptionsEnabled(Query query) {
-        int i = 0;
-        Object[] keys = query.keySet().toArray();
-        while ((i < query.size()) && noFilteringQueryParameters.contains(keys[i])) {
-            i++;
-        }
-        return (i < query.size());
+    private QueryResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
+
+        List<Bson> pipeline = new ArrayList<>();
+        pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+                new Document("$exists", 1))));
+//        pipeline.add(new Document("$match", new Document("clinvarSet", new Document("$exists", 1))));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name"));
+        Document groupFields = new Document();
+        groupFields.put("_id", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
+        groupFields.put("associatedGenes",
+                new Document("$addToSet",
+                        "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value"));
+        pipeline.add(new Document("$group", groupFields));
+        Document fields = new Document();
+        fields.put("_id", 0);
+        fields.put("phenotype", "$_id");
+        fields.put("associatedGenes", 1);
+        pipeline.add(new Document("$project", fields));
+
+        return executeAggregation2("", pipeline, queryOptions);
+
+    }
+
+    private QueryResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
+
+        List<Bson> pipeline = new ArrayList<>();
+        // Select only GWAS documents
+        pipeline.add(new Document("$match", new Document("snpIdCurrent", new Document("$exists", 1))));
+        pipeline.add(new Document("$unwind", "$studies"));
+        pipeline.add(new Document("$unwind", "$studies.traits"));
+        Document groupFields = new Document();
+        groupFields.put("_id", "$studies.traits.diseaseTrait");
+        groupFields.put("associatedGenes", new Document("$addToSet", "$reportedGenes"));
+        pipeline.add(new Document("$group", groupFields));
+        Document fields = new Document();
+        fields.put("_id", 0);
+        fields.put("phenotype", "$_id");
+        fields.put("associatedGenes", 1);
+        pipeline.add(new Document("$project", fields));
+
+        return executeAggregation2("", pipeline, queryOptions);
+
     }
 
 }
