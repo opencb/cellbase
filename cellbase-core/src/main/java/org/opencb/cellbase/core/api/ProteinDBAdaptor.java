@@ -63,10 +63,6 @@ public interface ProteinDBAdaptor<Protein> extends FeatureDBAdaptor<Protein> {
         }
     }
 
-    default QueryResult first() {
-        return get(new Query(), new QueryOptions("limit", 1));
-    }
-
     QueryResult getSubstitutionScores(Query query, QueryOptions options);
 
 }

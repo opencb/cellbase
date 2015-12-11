@@ -83,11 +83,11 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
             Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
 
             // If position and aa change are provided we create a 'projection' to return only the required data from the database
-            if (query.getInt("position", 0) != 0) {
-                String  projectionString = "aaPositions." + query.getInt("position");
+            if (query.get("position") != null && query.getInt("position", 0) != 0) {
+                String projectionString = "aaPositions." + query.getInt("position");
 
                 // If aa change is provided we only return that information
-                if (query.getString("aa") != null) {
+                if (query.getString("aa") != null && !query.getString("aa").isEmpty()) {
                     projectionString += "." + aaShortName.get(query.getString("aa").toUpperCase());
                 }
 
@@ -103,8 +103,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                 // Return only the inner Document, not the whole document projected
                 Document document = (Document) result.getResult().get(0);
                 Document aaPositionsDocument = (Document) document.get("aaPositions");
-//                Document positionDocument = (Document) aaPositionsDocument.get("" + query.getInt("position"));
-//                result.setResult(Collections.singletonList(positionDocument.get(aaShortName.get(query.getString("aa").toUpperCase()))));
                 result.setResult(Collections.singletonList(aaPositionsDocument));
             }
         }
