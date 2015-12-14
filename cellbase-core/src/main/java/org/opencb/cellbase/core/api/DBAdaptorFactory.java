@@ -131,11 +131,11 @@ public abstract class DBAdaptorFactory {
 //
 //    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species, String assembly);
 //
-//
-//    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
-//
-//    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
-//
+
+    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
+
+    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
+
 
     public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
 

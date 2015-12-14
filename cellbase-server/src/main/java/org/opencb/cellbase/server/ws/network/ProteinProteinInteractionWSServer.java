@@ -16,12 +16,12 @@
 
 package org.opencb.cellbase.server.ws.network;
 
-import com.google.common.base.Splitter;
 import org.opencb.biodata.models.protein.Interaction;
-import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,33 +66,8 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-
-            if (interactor != null && !interactor.equals("")) {
-                queryOptions.put("interactor", Splitter.on(",").splitToList(interactor));
-            }
-
-            if (type != null && !type.equals("")) {
-                queryOptions.put("type", Splitter.on(",").splitToList(type));
-            }
-
-            if (database != null && !database.equals("")) {
-                queryOptions.put("database", Splitter.on(",").splitToList(database));
-            }
-
-            if (detectionMethod != null && !detectionMethod.equals("")) {
-                queryOptions.put("detectionMethod", Splitter.on(",").splitToList(detectionMethod));
-            }
-
-            if (status != null && !status.equals("")) {
-                queryOptions.put("status", Splitter.on(",").splitToList(status));
-            }
-
-//            if(type != null && !type.equals("")) {
-//                queryOptions.put("type", type);
-//            }
-
-            return createOkResponse(ppiDBAdaptor.getAll(queryOptions));
+                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            return createOkResponse(ppiDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -104,9 +79,9 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
-
+                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
+            List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -121,9 +96,10 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
-
+                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            queryOptions.put("include", "interactorA,interactorB");
+            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
+            List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

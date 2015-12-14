@@ -82,6 +82,21 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
+    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, List fields, QueryOptions options) {
+        return null;
+    }
+
+    @Override
     public void forEach(Query query, Consumer action, QueryOptions options) {
 
     }

@@ -100,6 +100,21 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     }
 
     @Override
+    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+        return groupBy(parseQuery(query), field, "name", options);
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+        return groupBy(parseQuery(query), fields, "name", options);
+    }
+
+    @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
 
     }

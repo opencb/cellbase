@@ -135,7 +135,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
         createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "featureType", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_CLASS.key(), "featureClass", andBsonList);
-        createOrQuery(query, QueryParams.CELL_TYPES.key(), "CellTypes", andBsonList);
+        createOrQuery(query, QueryParams.CELL_TYPES.key(), "cellTypes", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

@@ -71,7 +71,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
     public Response first() {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-        return createOkResponse(geneDBAdaptor.first());
+        return createOkResponse(geneDBAdaptor.first(queryOptions));
     }
 
 //    @GET
