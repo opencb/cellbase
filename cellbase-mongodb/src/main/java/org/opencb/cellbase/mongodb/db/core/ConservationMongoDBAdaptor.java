@@ -233,51 +233,53 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 Document chunk = list.get(j);
 
                 if (!chunk.isEmpty()) {
-                    String source = chunk.getString("source");
-                    List<Float> valuesList;
-                    if (!typeMap.containsKey(source)) {
-                        valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
-                        for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
-                            valuesList.add(null);
-                        }
-                        typeMap.put(source, valuesList);
-                    } else {
-                        valuesList = typeMap.get(source);
-                    }
-
                     BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
-                    int pos = 0;
-                    if (region.getStart() > chunk.getInteger("start")) {
-                        pos = region.getStart() - chunk.getInteger("start");
+                    if (valuesChunk != null) {  // TODO: temporary patch to skip empty chunks - remove as soon as conservation is reloaded
+                        String source = chunk.getString("source");
+                        List<Float> valuesList;
+                        if (!typeMap.containsKey(source)) {
+                            valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
+                            for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
+                                valuesList.add(null);
+                            }
+                            typeMap.put(source, valuesList);
+                        } else {
+                            valuesList = typeMap.get(source);
+                        }
+
+                        valuesChunk = (BasicDBList) chunk.get("values");
+                        int pos = 0;
+                        if (region.getStart() > chunk.getInteger("start")) {
+                            pos = region.getStart() - chunk.getInteger("start");
+                        }
+
+                        for (; pos < valuesChunk.size() && (pos + chunk.getInteger("start") <= region.getEnd()); pos++) {
+                            valuesList.set(pos + chunk.getInteger("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                        }
+                    } else {
+                        continue;
                     }
 
-                    for (; pos < valuesChunk.size() && (pos + chunk.getInteger("start") <= region.getEnd()); pos++) {
-                        valuesList.set(pos + chunk.getInteger("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                }
+
+                BasicDBList resultList = new BasicDBList();
+                for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
+                    for (Float value : elem.getValue()) {
+                        if (value != null) {
+                            resultList.add(new Score(new Double(value), elem.getKey()));
+                        }
                     }
+                }
+                if (!resultList.isEmpty()) {
+                    queryResult.setResult(resultList);
                 } else {
-                    continue;
-                }
-
-            }
-
-            BasicDBList resultList = new BasicDBList();
-            for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                for (Float value : elem.getValue()) {
-                    if (value != null) {
-                        resultList.add(new Score(new Double(value), elem.getKey()));
-                    }
+                    queryResult.setResult(null);
                 }
             }
-            if (!resultList.isEmpty()) {
-                queryResult.setResult(resultList);
-            } else {
-                queryResult.setResult(null);
-            }
+
         }
-
         return queryResults;
     }
-
 
 //    private List<ConservedRegion> executeQuery(Document query) {
 //        List<ConservedRegion> result = null;

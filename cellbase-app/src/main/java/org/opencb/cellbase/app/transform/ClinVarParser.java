@@ -17,7 +17,7 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.*;
+import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
@@ -216,7 +216,7 @@ public class ClinVarParser extends CellBaseParser {
     }
 
     private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException, IOException {
-        return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v19);
+        return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v24);
     }
 
     class EFO {
