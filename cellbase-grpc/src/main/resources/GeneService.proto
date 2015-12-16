@@ -3,25 +3,13 @@ syntax = "proto3";
 package org.opencb.cellbase.grpc;
 option java_outer_classname = "GeneService";
 
-import "traggene.proto";
+import "gene.proto";
 import "google/protobuf/any.proto";
 
 service GeneService {
-    rpc nativeGet (Query) returns (QueryResult) {}
+    rpc get (Query) returns (stream Gene) {}
 }
 
 message Query {
     repeated string query_items = 1;
-}
-
-message QueryResult {
-    string id = 1;
-    int32 db_time = 2;
-    int32 num_results = 3;
-    int64 num_total_results = 4;
-    string warning_msg = 5;
-    string error_msg = 6;
-    string result_type = 7;
-    //    class = 8;
-    repeated Any result = 8;
 }
