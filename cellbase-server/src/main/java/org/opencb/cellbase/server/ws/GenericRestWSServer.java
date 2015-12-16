@@ -30,15 +30,13 @@ import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.datastore.core.ObjectMap;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResponse;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.File;
@@ -103,8 +101,9 @@ public class GenericRestWSServer implements IWSServer {
     protected String outputFormat;
 
 
-    protected QueryResponse queryResponse;
+    protected Query query;
     protected QueryOptions queryOptions;
+    protected QueryResponse queryResponse;
 
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
@@ -130,6 +129,7 @@ public class GenericRestWSServer implements IWSServer {
      * factory for creating adaptors like GeneDBAdaptor
      */
     protected static DBAdaptorFactory dbAdaptorFactory;
+    protected static org.opencb.cellbase.core.api.DBAdaptorFactory dbAdaptorFactory2;
 
     private static final int LIMIT_DEFAULT = 1000;
     private static final int LIMIT_MAX = 5000;
@@ -151,6 +151,7 @@ public class GenericRestWSServer implements IWSServer {
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
             dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+            dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -189,8 +190,9 @@ public class GenericRestWSServer implements IWSServer {
     protected void init(boolean checkSpecies) throws VersionException, SpeciesException {
         startTime = System.currentTimeMillis();
 
-        queryResponse = new QueryResponse();
+        query = new Query();
         queryOptions = new QueryOptions();
+        queryResponse = new QueryResponse();
 
         checkPathParams(checkSpecies);
     }
@@ -213,7 +215,7 @@ public class GenericRestWSServer implements IWSServer {
             logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
         }
 
-        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
+        if (!version.equalsIgnoreCase("v3") && !cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new VersionException("Version not valid: '" + version + "'");
         }
@@ -222,9 +224,8 @@ public class GenericRestWSServer implements IWSServer {
     @Override
     public void parseQueryParams() {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-        queryOptions.put("metadata", (multivaluedMap.get("metadata") != null)
-                ? multivaluedMap.get("metadata").get(0).equals("true")
-                : true);
+
+        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
 
         if (exclude != null && !exclude.equals("")) {
             queryOptions.put("exclude", new LinkedList<>(Splitter.on(",").splitToList(exclude)));
@@ -244,14 +245,15 @@ public class GenericRestWSServer implements IWSServer {
 
         queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
         queryOptions.put("skip", (skip > 0) ? skip : -1);
-        queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);
+        queryOptions.put("count", (count != null && !count.equals("")) && Boolean.parseBoolean(count));
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
-        // Now we add all the others QueryParams in the URL
+        // Add all the others QueryParams from the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
             if (!queryOptions.containsKey(entry.getKey())) {
-                logger.info("Adding '{}' to queryOptions", entry);
+//                logger.info("Adding '{}' to queryOptions", entry);
                 queryOptions.put(entry.getKey(), entry.getValue().get(0));
+                query.put(entry.getKey(), entry.getValue().get(0));
             }
         }
     }
@@ -394,104 +396,13 @@ public class GenericRestWSServer implements IWSServer {
         return false;
     }
 
-    //    @Deprecated
-//    protected Response createJsonResponse(List<QueryResult> obj) {
-//        endTime = System.currentTimeMillis() - startTime;
-//        queryResponse.setTime((int) endTime);
-//        queryResponse.setApiVersion(version);
-//        queryResponse.setQueryOptions(queryOptions);
-//        queryResponse.setResponse(obj);
-//
-////        queryResponse.put("species", species);
-////        queryResponse.put("queryOptions", queryOptions);
-////        queryResponse.put("response", obj);
-//
-//        try {
-//            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//            logger.error("Error parsing queryResponse object");
-//            return null;
-//        }
-//    }
-
-
-//    @Deprecated
-//    protected Response createErrorResponse(Object o) {
-//        String objMsg = o.toString();
-//        if (objMsg.startsWith("ERROR:")) {
-//            return buildResponse(Response.ok("" + o));
-//        } else {
-//            return buildResponse(Response.ok("ERROR: " + o));
-//        }
-//    }
-
-//    @Deprecated
-//    protected Response createOkResponse(String message) {
-//        return buildResponse(Response.ok(message));
-//    }
-
-//    @Deprecated
-//    protected Response createOkResponse(QueryResult queryResult) {
-//        return createOkResponse(Arrays.asList(queryResult));
-//    }
-
-//    @Deprecated
-//    protected Response createOkResponse(List<QueryResult> queryResults) {
-//        switch (outputFormat.toLowerCase()) {
-//            case "json":
-//                return createJsonResponse(queryResults);
-//            case "xml":
-//                return createOkResponse(queryResults, MediaType.APPLICATION_XML_TYPE);
-//            default:
-//                return buildResponse(Response.ok(queryResults));
-//        }
-//    }
-
-    //    protected Response createResponse(String response, MediaType mediaType) throws IOException {
-//        if (fileFormat == null || fileFormat.equalsIgnoreCase("")) {
-//            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")
-//                    && !outputFormat.equalsIgnoreCase("jsonp") && !outputFormat.equalsIgnoreCase("jsontext")) {
-//                response = Arrays.toString(StringUtils.gzipToBytes(response)).replace(" ", "");
-//            }
-//        } else {
-//            mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
-//            logger.debug("\t\t - Creating byte stream ");
-//
-//            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")) {
-//                OutputStream bos = new ByteArrayOutputStream();
-//                bos.write(response.getBytes());
-//
-//                ZipOutputStream zipstream = new ZipOutputStream(bos);
-//                zipstream.setLevel(9);
-//
-//                logger.debug("CellBase - CreateResponse, zipping... Final media Type: " + mediaType.toString());
-//
-//                return this.createOkResponse(zipstream, mediaType, filename + ".zip");
-//
-//            } else {
-//                if (fileFormat.equalsIgnoreCase("xml")) {
-//                    // mediaType = MediaType.valueOf("application/xml");
-//                }
-//
-//                if (fileFormat.equalsIgnoreCase("excel")) {
-//                    // mediaType =
-//                    // MediaType.valueOf("application/vnd.ms-excel");
-//                }
-//                if (fileFormat.equalsIgnoreCase("txt") || fileFormat.equalsIgnoreCase("text")) {
-//                    logger.debug("\t\t - text File ");
-//
-//                    byte[] streamResponse = response.getBytes();
-//                    // return Response.ok(streamResponse,
-//                    // mediaType).header("content-disposition","attachment; filename = "+
-//                    // filename + ".txt").build();
-//                    return this.createOkResponse(streamResponse, mediaType, filename + ".txt");
-//                }
-//            }
-//        }
-//        logger.debug("CellBase - CreateResponse, Final media Type: " + mediaType.toString());
-//        // return Response.ok(response, mediaType).build();
-//        return this.createOkResponse(response, mediaType);
-//    }
+    protected List<Query> createQueries(String csvField, String queryKey) {
+        String[] ids = csvField.split(",");
+        List<Query> queries = new ArrayList<>(ids.length);
+        for (String s : ids) {
+            queries.add(new Query(queryKey, s));
+        }
+        return queries;
+    }
 
 }

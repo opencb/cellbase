@@ -23,8 +23,8 @@ import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.GenericMongoDBAdaptorTest;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,9 +52,9 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //                queryResult.setNumResults(clinvarQueryResult.getNumResults());
 //                BasicDBList basicDBList = new BasicDBList();
 //
-//                for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinvarQueryResult.getResult()) {
+//                for (Document clinicalRecord : (List<Document>) clinvarQueryResult.getResult()) {
 //                    if (clinicalRecord.containsKey("clinvarList")) {
-//                        for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
+//                        for (Document clinvarRecord : (List<Document>) clinicalRecord.get("clinvarList")) {
 //                            basicDBList.add(clinvarRecord);
 //                        }
 //                    }
@@ -151,13 +151,13 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-    @Test
-    public void testGetByGeneId() throws Exception {
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-        QueryOptions queryOptions = new QueryOptions();
-//        QueryOptions queryOptions = new QueryOptions("phenotype", "carcinoma");
-        queryOptions.add("limit",3);
-        QueryResult queryResult = clinicalDBAdaptor.getByGeneId("BRCA2", queryOptions);
-    }
+//    @Test
+//    public void testGetByGeneId() throws Exception {
+//        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+//        QueryOptions queryOptions = new QueryOptions();
+////        QueryOptions queryOptions = new QueryOptions("phenotype", "carcinoma");
+//        queryOptions.add("limit",3);
+//        QueryResult queryResult = clinicalDBAdaptor.getByGeneId("BRCA2", queryOptions);
+//    }
 
 }

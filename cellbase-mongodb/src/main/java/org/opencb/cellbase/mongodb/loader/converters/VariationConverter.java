@@ -17,8 +17,8 @@
 package org.opencb.cellbase.mongodb.loader.converters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import org.bson.Document;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 
@@ -29,7 +29,7 @@ import java.util.List;
  * Created by imedina on 31/08/14.
  */
 @Deprecated
-public class VariationConverter extends MongoDBTypeConverter<Variation, DBObject> {
+public class VariationConverter extends MongoDBTypeConverter<Variation, Document> {
 
     private int chunkSize;
     private String chunkIdSuffix;
@@ -48,10 +48,10 @@ public class VariationConverter extends MongoDBTypeConverter<Variation, DBObject
     }
 
     @Override
-    public DBObject convertToStorageSchema(Variation variation) {
-        DBObject document = null;
+    public Document convertToStorageSchema(Variation variation) {
+        Document document = null;
         try {
-            document = (DBObject) JSON.parse(jsonObjectWriter.writeValueAsString(variation));
+            document = (Document) JSON.parse(jsonObjectWriter.writeValueAsString(variation));
 
             int chunkStart = (variation.getStart()) / chunkSize;
             int chunkEnd = (variation.getEnd()) / chunkSize;
@@ -70,7 +70,7 @@ public class VariationConverter extends MongoDBTypeConverter<Variation, DBObject
     }
 
     @Override
-    public Variation convertToDataModel(DBObject dbObject) {
+    public Variation convertToDataModel(Document dbObject) {
         return null;
     }
 }

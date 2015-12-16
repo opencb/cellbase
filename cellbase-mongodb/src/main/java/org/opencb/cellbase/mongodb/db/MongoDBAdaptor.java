@@ -16,13 +16,16 @@
 
 package org.opencb.cellbase.mongodb.db;
 
-import com.mongodb.*;
+import com.mongodb.QueryBuilder;
+import com.mongodb.client.MongoCursor;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDBCollection;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,11 +66,11 @@ public class MongoDBAdaptor {
         }
     }
 
-    protected QueryResult executeDistinct(Object id, String fields, DBObject query) {
+    protected QueryResult executeDistinct(Object id, String fields, Document query) {
 //        long dbTimeStart, dbTimeEnd;
 //        dbTimeStart = System.currentTimeMillis();
         QueryResult queryResult = mongoDBCollection.distinct(fields, query);
-//        List<DBObject> dbObjectList = new LinkedList<>();
+//        List<Document> dbObjectList = new LinkedList<>();
 //        while (cursor.hasNext()) {
 //            dbObjectList.add(cursor.next());
 //        }
@@ -79,26 +82,26 @@ public class MongoDBAdaptor {
         return queryResult;
     }
 
-    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
+    protected QueryResult executeQuery(Object id, Document query, QueryOptions options) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection).get(0);
     }
 
-    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
+    protected QueryResult executeQuery(Object id, Document query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
     }
 
-    protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
+    protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options) {
         return executeQueryList2(ids, queries, options, mongoDBCollection);
     }
 
-    protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<DBObject> queries, QueryOptions options,
+    protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options,
                                                   MongoDBCollection mongoDBCollection2) {
         List<QueryResult> queryResults = new ArrayList<>(ids.size());
         long dbTimeStart, dbTimeEnd;
 
         for (int i = 0; i < queries.size(); i++) {
-            DBObject query = queries.get(i);
-            QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
+            Document query = queries.get(i);
+            QueryResult queryResult = new QueryResult();
             queryResult.setId(ids.get(i).toString());
 
             // Execute query and calculate time
@@ -106,8 +109,8 @@ public class MongoDBAdaptor {
             if (options.containsKey("count") && options.getBoolean("count")) {
                 queryResult = mongoDBCollection2.count(query);
             } else {
-                DBCursor cursor = mongoDBCollection2.nativeQuery().find(query, options);
-                List<DBObject> dbObjectList = new LinkedList<>();
+                MongoCursor<Document> cursor = mongoDBCollection2.nativeQuery().find(query, options).iterator();
+                List<Document> dbObjectList = new LinkedList<>();
                 while (cursor.hasNext()) {
                     dbObjectList.add(cursor.next());
                 }
@@ -130,29 +133,29 @@ public class MongoDBAdaptor {
         return queryResults;
     }
 
-    protected QueryResult executeAggregation2(Object id, List<DBObject> pipeline, QueryOptions options) {
+    protected QueryResult executeAggregation2(Object id, List<Bson> pipeline, QueryOptions options) {
         return executeAggregationist2(Arrays.asList(id), Arrays.asList(pipeline), options, mongoDBCollection).get(0);
     }
 
-    protected List<QueryResult> executeAggregationList2(List<? extends Object> ids, List<List<DBObject>> queries,
+    protected List<QueryResult> executeAggregationList2(List<? extends Object> ids, List<List<Bson>> queries,
                                                         QueryOptions options) {
         return executeAggregationist2(ids, queries, options, mongoDBCollection);
     }
 
-    protected List<QueryResult> executeAggregationist2(List<? extends Object> ids, List<List<DBObject>> pipelines,
+    protected List<QueryResult> executeAggregationist2(List<? extends Object> ids, List<List<Bson>> pipelines,
                                                        QueryOptions options, MongoDBCollection mongoDBCollection2) {
         List<QueryResult> queryResults = new ArrayList<>(ids.size());
 //        logger.info("executeQueryList2");
         long dbTimeStart, dbTimeEnd;
 
         for (int i = 0; i < pipelines.size(); i++) {
-            List<DBObject> pipeline = pipelines.get(i);
-//            QueryResult queryResult = new org.opencb.datastore.core.QueryResult();
+            List<Bson> pipeline = pipelines.get(i);
+//            QueryResult queryResult = new org.opencb.commons.datastore.core.QueryResult();
 
             // Execute query and calculate time
             dbTimeStart = System.currentTimeMillis();
             QueryResult queryResult = mongoDBCollection2.aggregate(pipeline, options);
-//            List<DBObject> dbObjectList = new LinkedList<>();
+//            List<Document> dbObjectList = new LinkedList<>();
 //            while (cursor.hasNext()) {
 //                dbObjectList.add(cursor.next());
 //            }
@@ -175,9 +178,23 @@ public class MongoDBAdaptor {
         return queryResults;
     }
 
+
     protected String getChunkIdPrefix(String chromosome, int position, int chunkSize) {
         return chromosome + "_" + position / chunkSize + "_" + chunkSize / 1000 + "k";
     }
+
+    protected int getChunkId(int position, int chunkSize) {
+        return position / chunkSize;
+    }
+
+    private int getChunkStart(int position, int chunkSize) {
+        return (position == 0) ? 1 : position * chunkSize;
+    }
+
+    private int getChunkEnd(int position, int chunkSize) {
+        return (position * chunkSize) + chunkSize - 1;
+    }
+
 
     public QueryResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
         QueryBuilder builder;
@@ -191,7 +208,7 @@ public class MongoDBAdaptor {
             options.put("sort", new HashMap<String, String>().put("end", "desc"));
             options.put("limit", 1);
         }
-        return executeQuery("result", builder.get(), options, mongoDBCollection);
+        return executeQuery("result", new Document(builder.get().toMap()), options, mongoDBCollection);
     }
 
     @Deprecated
@@ -228,9 +245,9 @@ public class MongoDBAdaptor {
     }
 
     @Deprecated
-    protected BasicDBObject getReturnFields(QueryOptions options) {
+    protected Document getReturnFields(QueryOptions options) {
         // Select which fields are excluded and included in MongoDB query
-        BasicDBObject returnFields = new BasicDBObject("_id", 0);
+        Document returnFields = new Document("_id", 0);
         if (options != null) {
 //            List<Object> includeList = options.getList("include");
 
@@ -258,83 +275,6 @@ public class MongoDBAdaptor {
         }
         return returnFields;
     }
-
-//    @Deprecated
-//    protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options) {
-//        return executeFind(query, returnFields, options, mongoDBCollection);
-//    }
-//
-//    @Deprecated
-//    protected BasicDBList executeFind(DBObject query, DBObject returnFields, QueryOptions options, DBCollection dbCollection) {
-//        BasicDBList list = new BasicDBList();
-//
-//        if (options.getBoolean("count")) {
-//            Long count = dbCollection.count(query);
-//            list.add(new BasicDBObject("count", count));
-//        }else {
-//            DBCursor cursor = dbCollection.find(query, returnFields);
-//
-//            int limit = options.getInt("limit", 0);
-//            if (limit > 0) {
-//                cursor.limit(limit);
-//            }
-//            int skip = options.getInt("skip", 0);
-//            if (skip > 0) {
-//                cursor.skip(skip);
-//            }
-//
-//            BasicDBObject sort = (BasicDBObject) options.get("sort");
-//            if (sort != null) {
-//                cursor.sort(sort);
-//            }
-//            try {
-//                if (cursor != null) {
-//                    while (cursor.hasNext()) {
-//                        list.add(cursor.next());
-//                    }
-//                }
-//            } finally {
-//                if (cursor != null) {
-//                    cursor.close();
-//                }
-//            }
-//        }
-//        return list;
-//    }
-
-//    @Deprecated
-//    protected QueryResult executeDistinct(Object id, String key) {
-//        return executeDistinct(id, key, mongoDBCollection);
-//    }
-//
-//    @Deprecated
-//    protected QueryResult executeDistinct(Object id, String key, DBCollection dbCollection) {
-//        QueryResult queryResult = new QueryResult();
-//        long dbTimeStart = System.currentTimeMillis();
-//        List<String> diseases = dbCollection.distinct(key);
-//        long dbTimeEnd = System.currentTimeMillis();
-//        queryResult.setId(id.toString());
-////        queryResult.setDbTime(dbTimeEnd - dbTimeStart);
-//        queryResult.setResult(diseases);
-//        queryResult.setNumResults(diseases.size());
-//
-//        return queryResult;
-//    }
-
-//    @Deprecated
-//    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options) {
-//        return executeQuery(id, query, options, mongoDBCollection);
-//    }
-
-//    @Deprecated
-//    protected QueryResult executeQuery(Object id, DBObject query, QueryOptions options, DBCollection dbCollection) {
-//        return executeQueryList(Arrays.asList(id), Arrays.asList(query), options, dbCollection).get(0);
-//    }
-//
-//    @Deprecated
-//    protected List<QueryResult> executeQueryList(List<? extends Object> ids, List<DBObject> queries, QueryOptions options) {
-//        return executeQueryList(ids, queries, options, mongoDBCollection);
-//    }
 
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         List<QueryResult> queryResult = new ArrayList<>(regions.size());
@@ -381,44 +321,48 @@ public class MongoDBAdaptor {
         //        }
         int interval = options.getInt("interval");
 
-        BasicDBObject start = new BasicDBObject("$gt", region.getStart());
+        Document start = new Document("$gt", region.getStart());
         start.append("$lt", region.getEnd());
 
-        BasicDBList andArr = new BasicDBList();
-        andArr.add(new BasicDBObject("chromosome", region.getChromosome()));
-        andArr.add(new BasicDBObject("start", start));
 
-        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", andArr));
+        Document andArr = new Document();
+        andArr.append("chromosome", region.getChromosome());
+        andArr.append("start", start);
 
-        BasicDBList divide1 = new BasicDBList();
-        divide1.add("$start");
-        divide1.add(interval);
+        Document match = new Document("$match", new Document("$and", andArr));
 
-        BasicDBList divide2 = new BasicDBList();
-        divide2.add(new BasicDBObject("$mod", divide1));
-        divide2.add(interval);
+        Document divide1 = new Document();
+        divide1.append("$start", interval);
+//        divide1.add("$start");
+//        divide1.add(interval);
 
-        BasicDBList subtractList = new BasicDBList();
-        subtractList.add(new BasicDBObject("$divide", divide1));
-        subtractList.add(new BasicDBObject("$divide", divide2));
+        Document divide2 = new Document();
+//        divide2.add(new Document("$mod", divide1));
+//        divide2.add(interval);
+
+        Document subtractList = new Document();
+        subtractList.append("$divide", divide1);
+        subtractList.append("$divide", divide2);
+//        subtractList.add(new Document("$divide", divide1));
+//        subtractList.add(new Document("$divide", divide2));
 
 
-        BasicDBObject substract = new BasicDBObject("$subtract", subtractList);
+        Document substract = new Document("$subtract", subtractList);
 
-        DBObject totalCount = new BasicDBObject("$sum", 1);
+        Document totalCount = new Document("$sum", 1);
 
-        BasicDBObject g = new BasicDBObject("_id", substract);
+        Document g = new Document("_id", substract);
         g.append("features_count", totalCount);
-        BasicDBObject group = new BasicDBObject("$group", g);
+        Document group = new Document("$group", g);
 
-        BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("_id", 1));
+        Document sort = new Document("$sort", new Document("_id", 1));
 
-        QueryResult<DBObject> aggregationOutput = mongoDBCollection.aggregate(Arrays.asList(match, group, sort), options);
-        Map<Long, DBObject> ids = new HashMap<>();
-        for (DBObject intervalObj : aggregationOutput.getResult()) {
+        QueryResult<Document> aggregationOutput = mongoDBCollection.aggregate(Arrays.asList(match, group, sort), options);
+        Map<Long, Document> ids = new HashMap<>();
+        for (Document intervalObj : aggregationOutput.getResult()) {
             Long id = Math.round((Double) intervalObj.get("_id")); //is double
 
-            DBObject intervalVisited = ids.get(id);
+            Document intervalVisited = ids.get(id);
             if (intervalVisited == null) {
                 intervalObj.put("_id", id);
                 intervalObj.put("start", getChunkStart(id.intValue(), interval));
@@ -432,14 +376,14 @@ public class MongoDBAdaptor {
             }
         }
 
-        BasicDBList resultList = new BasicDBList();
+        List<Document> resultList = new ArrayList<>();
         int firstChunkId = getChunkId(region.getStart(), interval);
         int lastChunkId = getChunkId(region.getEnd(), interval);
-        DBObject intervalObj;
+        Document intervalObj;
         for (int chunkId = firstChunkId; chunkId <= lastChunkId; chunkId++) {
             intervalObj = ids.get((long) chunkId);
             if (intervalObj == null) {
-                intervalObj = new BasicDBObject();
+                intervalObj = new Document();
                 intervalObj.put("_id", chunkId);
                 intervalObj.put("start", getChunkStart(chunkId, interval));
                 intervalObj.put("end", getChunkEnd(chunkId, interval));
@@ -459,8 +403,8 @@ public class MongoDBAdaptor {
         //                .greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
         //        int numIntervals = (region.getEnd() - region.getStart()) / interval + 1;
         //        int[] intervalCount = new int[numIntervals];
-        //        List<Variation> variationList = executeQuery(builder.get(), Arrays.asList("id,chromosome,end,strand,type,
-        // reference,alternate,alleleString,species,assembly,source,version,transcriptVariations,xrefs,featureId,featureAlias,
+        //        List<Variation> variationList = executeQuery(new Document(builder.get().toMap()), Arrays.asList("id,chromosome,end,strand,
+        // type,reference,alternate,alleleString,species,assembly,source,version,transcriptVariations,xrefs,featureId,featureAlias,
         // variantFreq,validationStatus"));
         //        for (Variation variation : variationList) {
         //            System.out.print("gsnp start:" + variation.getStart() + " ");
@@ -476,7 +420,7 @@ public class MongoDBAdaptor {
         //        int intervalEnd = intervalStart + interval - 1;
         //        BasicDBList intervalList = new BasicDBList();
         //        for (int i = 0; i < numIntervals; i++) {
-        //            BasicDBObject intervalObj = new BasicDBObject();
+        //            Document intervalObj = new Document();
         //            intervalObj.put("start", intervalStart);
         //            intervalObj.put("end", intervalEnd);
         //            intervalObj.put("interval", i);
@@ -489,17 +433,6 @@ public class MongoDBAdaptor {
     }
 
 
-    protected int getChunkId(int position, int chunksize) {
-        return position / chunksize;
-    }
-
-    private int getChunkStart(int id, int chunksize) {
-        return (id == 0) ? 1 : id * chunksize;
-    }
-
-    private int getChunkEnd(int id, int chunksize) {
-        return (id * chunksize) + chunksize - 1;
-    }
 
 
     /*
@@ -580,7 +513,6 @@ public class MongoDBAdaptor {
     public void setSpecies(String species) {
         this.species = species;
     }
-
 
 
     public String getAssembly() {

@@ -17,8 +17,8 @@
 package org.opencb.cellbase.mongodb.loader.converters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 
@@ -29,7 +29,7 @@ import java.util.List;
  * Created by imedina on 06/07/14.
  */
 @Deprecated
-public class GeneConverter extends MongoDBTypeConverter<Gene, DBObject> {
+public class GeneConverter extends MongoDBTypeConverter<Gene, Document> {
 
     private int chunkSize;
     private String chunkIdSuffix;
@@ -48,10 +48,10 @@ public class GeneConverter extends MongoDBTypeConverter<Gene, DBObject> {
     }
 
     @Override
-    public DBObject convertToStorageSchema(Gene gene) {
-        DBObject document = null;
+    public Document convertToStorageSchema(Gene gene) {
+        Document document = null;
         try {
-            document = (DBObject) JSON.parse(jsonObjectWriter.writeValueAsString(gene));
+            document = (Document) JSON.parse(jsonObjectWriter.writeValueAsString(gene));
 
             int chunkStart = (gene.getStart() - 5000) / chunkSize;
             int chunkEnd = (gene.getEnd() + 5000) / chunkSize;
@@ -71,7 +71,7 @@ public class GeneConverter extends MongoDBTypeConverter<Gene, DBObject> {
 
 
     @Override
-    public Gene convertToDataModel(DBObject dbObject) {
+    public Gene convertToDataModel(Document dbObject) {
         return null;
     }
 }

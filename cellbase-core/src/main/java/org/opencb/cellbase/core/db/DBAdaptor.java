@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.db;
 
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryResult;
 
 public interface DBAdaptor {
 

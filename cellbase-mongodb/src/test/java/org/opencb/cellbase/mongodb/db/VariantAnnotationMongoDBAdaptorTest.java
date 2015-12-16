@@ -29,8 +29,8 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -252,7 +252,7 @@ public class VariantAnnotationMongoDBAdaptorTest {
 //        String responseStr = response.readEntity(String.class);
 //        ObjectMapper objectMapper = new ObjectMapper();
 //        ObjectReader objectReader = objectMapper.reader(objectMapper.getTypeFactory().constructParametricType(
-//                QueryResponse.class, objectMapper.getTypeFactory().constructParametricType(org.opencb.datastore.core.QueryResult.class, VariantAnnotation.class)));
+//                QueryResponse.class, objectMapper.getTypeFactory().constructParametricType(org.opencb.commons.datastore.core.QueryResult.class, VariantAnnotation.class)));
 //        objectReader.readValue(response);
 //        String result = objectMapper.writeValueAsString(response);
 //        int a = 1;

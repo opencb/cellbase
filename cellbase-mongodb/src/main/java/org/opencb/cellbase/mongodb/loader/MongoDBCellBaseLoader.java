@@ -17,23 +17,22 @@
 package org.opencb.cellbase.mongodb.loader;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.BulkWriteResult;
-import com.mongodb.DBObject;
+import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.core.config.DataStoreServerAddress;
-import org.opencb.datastore.mongodb.MongoDBCollection;
-import org.opencb.datastore.mongodb.MongoDBConfiguration;
-import org.opencb.datastore.mongodb.MongoDataStore;
-import org.opencb.datastore.mongodb.MongoDataStoreManager;
+import org.opencb.commons.datastore.core.DataStoreServerAddress;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -215,9 +214,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 if (batch == LoadRunner.POISON_PILL) {
                     finished = true;
                 } else {
-                    List<DBObject> dbObjectsBatch = new ArrayList<>(batch.size());
+                    List<Document> dbObjectsBatch = new ArrayList<>(batch.size());
                     for (String jsonLine : batch) {
-                        DBObject dbObject = (DBObject) JSON.parse(jsonLine);
+                        Document dbObject = (Document) JSON.parse(jsonLine);
                         addChunkId(dbObject);
                         addClinicalPrivateFields(dbObject);
                         dbObjectsBatch.add(dbObject);
@@ -234,7 +233,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         return numLoadedObjects;
     }
 
-    private void addClinicalPrivateFields(DBObject dbObject) {
+    private void addClinicalPrivateFields(Document dbObject) {
         if (clinicalVariantSource != null) {
             List<String> geneIdList = null;
             List<String> phenotypeList = null;
@@ -265,15 +264,15 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-    private List<String> getGwasPhenotypes(DBObject dbObject) {
+    private List<String> getGwasPhenotypes(Document dbObject) {
         List<String> phenotypeList = new ArrayList<>();
         BasicDBList studiesDBList = ((BasicDBList) dbObject.get("studies"));
         for (Object studyObject : studiesDBList) {
-            BasicDBObject studyDBObject = (BasicDBObject) studyObject;
+            Document studyDBObject = (Document) studyObject;
             BasicDBList traitsDBList = (BasicDBList) studyDBObject.get("traits");
             if (traitsDBList != null) {
                 for (Object traitObject : traitsDBList) {
-                    BasicDBObject traitDBObject = (BasicDBObject) traitObject;
+                    Document traitDBObject = (Document) traitObject;
                     if (traitDBObject.get("diseaseTrait") != null) {
                         phenotypeList.add((String) traitDBObject.get("diseaseTrait"));
                     }
@@ -284,7 +283,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         return phenotypeList;
     }
 
-    private List<String> getCosmicPhenotypes(DBObject dbObject) {
+    private List<String> getCosmicPhenotypes(Document dbObject) {
         List<String> phenotypeList = new ArrayList<>(4);
         addIfNotEmpty((String) dbObject.get("primarySite"), phenotypeList);
         addIfNotEmpty((String) dbObject.get("histologySubtype"), phenotypeList);
@@ -301,16 +300,16 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-    private List<String> getClinvarPhenotypes(DBObject dbObject) {
+    private List<String> getClinvarPhenotypes(Document dbObject) {
         List<String> phenotypeList = new ArrayList<>();
-        BasicDBList basicDBList = (BasicDBList) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) dbObject.get("clinvarSet"))
+        BasicDBList basicDBList = (BasicDBList) ((Document) ((Document) ((Document) dbObject.get("clinvarSet"))
                 .get("referenceClinVarAssertion")).get("traitSet")).get("trait");
         for (Object object : basicDBList) {
-            BasicDBObject basicDBObject = (BasicDBObject) object;
-            BasicDBList nameDBList = (BasicDBList) basicDBObject.get("name");
+            Document document = (Document) object;
+            BasicDBList nameDBList = (BasicDBList) document.get("name");
             if (nameDBList != null) {
                 for (Object nameObject : nameDBList) {
-                    BasicDBObject elementValueDBObject = (BasicDBObject) ((BasicDBObject) nameObject).get("elementValue");
+                    Document elementValueDBObject = (Document) ((Document) nameObject).get("elementValue");
                     if (elementValueDBObject != null) {
                         String phenotype = (String) elementValueDBObject.get("value");
                         if (phenotype != null) {
@@ -328,19 +327,19 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-    private List<String> getClinvarGeneIds(DBObject dbObject) {
+    private List<String> getClinvarGeneIds(Document dbObject) {
         List<String> geneIdList = new ArrayList<>();
-        BasicDBList basicDBList = (BasicDBList) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) dbObject.get("clinvarSet"))
+        BasicDBList basicDBList = (BasicDBList) ((Document) ((Document) ((Document) dbObject.get("clinvarSet"))
                 .get("referenceClinVarAssertion")).get("measureSet")).get("measure");
         for (Object object : basicDBList) {
-            BasicDBObject basicDBObject = (BasicDBObject) object;
-            BasicDBList measureRelationshipDBList = (BasicDBList) basicDBObject.get("measureRelationship");
+            Document document = (Document) object;
+            BasicDBList measureRelationshipDBList = (BasicDBList) document.get("measureRelationship");
             if (measureRelationshipDBList != null) {
                 for (Object measureRelationShipObject : measureRelationshipDBList) {
-                    BasicDBList symbolDBList = (BasicDBList) ((BasicDBObject) measureRelationShipObject).get("symbol");
+                    BasicDBList symbolDBList = (BasicDBList) ((Document) measureRelationShipObject).get("symbol");
                     if (symbolDBList != null) {
                         for (Object symbolObject : symbolDBList) {
-                            BasicDBObject elementValueDBObject = (BasicDBObject) ((BasicDBObject) symbolObject).get("elementValue");
+                            Document elementValueDBObject = (Document) ((Document) symbolObject).get("elementValue");
                             if (elementValueDBObject != null) {
                                 String geneId = (String) elementValueDBObject.get("value");
                                 if (geneId != null) {
@@ -376,13 +375,13 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-    public int load(List<DBObject> batch) {
+    public int load(List<Document> batch) {
         // TODO: queryOptions?
         QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
         return result.first().getInsertedCount();
     }
 
-    private void addChunkId(DBObject dbObject) {
+    private void addChunkId(Document dbObject) {
         if (chunkSizes != null && chunkSizes.length > 0) {
             List<String> chunkIds = new ArrayList<>();
             for (int chunkSize : chunkSizes) {
@@ -390,13 +389,14 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 int chunkEnd = (Integer) dbObject.get("end") / chunkSize;
                 String chunkIdSuffix = chunkSize / 1000 + "k";
                 for (int i = chunkStart; i <= chunkEnd; i++) {
-                    if (dbObject.containsField("chromosome")) {
+                    if (dbObject.containsKey("chromosome")) {
                         chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
                     } else {
                         chunkIds.add(dbObject.get("sequenceName") + "_" + i + "_" + chunkIdSuffix);
                     }
                 }
             }
+            logger.info("Setting chunkIds to {}", chunkIds.toString());
             dbObject.put("_chunkIds", chunkIds);
         }
     }

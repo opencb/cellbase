@@ -16,11 +16,11 @@
 
 package org.opencb.cellbase.mongodb.db.systems;
 
-import com.mongodb.BasicDBObject;
+import org.bson.Document;
 import org.opencb.cellbase.core.db.api.systems.PathwayDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -48,16 +48,16 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 
     @Override
     public String getPathways() {
-        BasicDBObject query = new BasicDBObject();
+        Document query = new Document();
 
-        BasicDBObject returnFields = new BasicDBObject();
+        Document returnFields = new Document();
         returnFields.put("_id", 0);
         returnFields.put("name", 1);
         returnFields.put("displayName", 1);
         returnFields.put("subPathways", 1);
         returnFields.put("parentPathway", 1);
 
-        BasicDBObject orderBy = new BasicDBObject();
+        Document orderBy = new Document();
         orderBy.put("name", 1);
 
         return null;
@@ -65,16 +65,16 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 
     @Override
     public String getTree() {
-        BasicDBObject query = new BasicDBObject();
+        Document query = new Document();
         query.put("parentPathway", "none");
 
-        BasicDBObject returnFields = new BasicDBObject();
+        Document returnFields = new Document();
         returnFields.put("_id", 0);
         returnFields.put("name", 1);
         returnFields.put("displayName", 1);
         returnFields.put("subPathways", 1);
 
-        BasicDBObject orderBy = new BasicDBObject();
+        Document orderBy = new Document();
         orderBy.put("displayName", 1);
 
         return null;
@@ -82,10 +82,10 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 
     @Override
     public String getPathway(String pathwayId) {
-        BasicDBObject query = new BasicDBObject();
+        Document query = new Document();
         query.put("name", pathwayId);
 
-        BasicDBObject returnFields = new BasicDBObject();
+        Document returnFields = new Document();
         returnFields.put("_id", 0);
 
         return null;
@@ -95,13 +95,13 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
     public String search(String searchBy, String searchText, boolean returnOnlyIds) {
         Pattern regex = Pattern.compile(searchText, Pattern.CASE_INSENSITIVE);
 
-        BasicDBObject query = new BasicDBObject();
+        Document query = new Document();
         if (searchBy.equalsIgnoreCase("pathway")) {
             query.put("displayName", regex);
         } else {
-            BasicDBObject query1 = new BasicDBObject("physicalEntities.params.displayName", regex);
-            BasicDBObject query2 = new BasicDBObject("interactions.params.displayName", regex);
-            ArrayList<BasicDBObject> queryList = new ArrayList<BasicDBObject>();
+            Document query1 = new Document("physicalEntities.params.displayName", regex);
+            Document query2 = new Document("interactions.params.displayName", regex);
+            ArrayList<Document> queryList = new ArrayList<Document>();
             queryList.add(query1);
             queryList.add(query2);
             query.put("$or", queryList);
@@ -109,7 +109,7 @@ public class PathwayMongoDBAdaptor extends MongoDBAdaptor implements PathwayDBAd
 
         System.out.println("Query: " + query);
 
-        BasicDBObject returnFields = new BasicDBObject();
+        Document returnFields = new Document();
         returnFields.put("_id", 0);
         if (returnOnlyIds) {
             returnFields.put("name", 1);
