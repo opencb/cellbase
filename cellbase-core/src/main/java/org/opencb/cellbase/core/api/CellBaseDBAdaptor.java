@@ -95,6 +95,14 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
 
 
+    QueryResult rank(Query query, String field, int numResults, boolean asc);
+
+    QueryResult groupBy(Query query, String field, QueryOptions options);
+
+    QueryResult groupBy(Query query, List<String> fields, QueryOptions options);
+
+
+
     @Override
     default void forEach(Consumer action) {
         forEach(new Query(), action, new QueryOptions());

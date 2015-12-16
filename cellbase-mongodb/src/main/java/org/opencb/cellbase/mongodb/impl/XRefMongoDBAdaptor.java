@@ -62,14 +62,14 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public QueryResult<Long> count(Query query) {
-        Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.count(bson);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        Bson document = parseQuery(query);
-        return mongoDBCollection.distinct(field, document);
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.distinct(field, bson);
     }
 
     @Override
@@ -97,6 +97,21 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options).iterator();
+    }
+
+    @Override
+    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+        return groupBy(parseQuery(query), field, "name", options);
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+        return groupBy(parseQuery(query), fields, "name", options);
     }
 
     @Override

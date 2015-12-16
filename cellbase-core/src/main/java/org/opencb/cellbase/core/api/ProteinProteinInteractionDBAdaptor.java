@@ -16,26 +16,24 @@
 
 package org.opencb.cellbase.core.api;
 
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.core.QueryResult;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
- * Created by imedina on 30/11/15.
+ * Created by imedina on 13/12/15.
  */
-public interface ProteinDBAdaptor<Protein> extends CellBaseDBAdaptor<Protein> {
+public interface ProteinProteinInteractionDBAdaptor<PPI> extends CellBaseDBAdaptor<PPI> {
 
     enum QueryParams implements QueryParam {
-        ACCESSION("accession", TEXT_ARRAY, ""),
-        NAME("name", TEXT_ARRAY, ""),
-        GENE("gene", TEXT_ARRAY, ""),
-        XREF("xref", TEXT_ARRAY, ""),
-        KEYWORD("keyword", TEXT_ARRAY, ""),
-        FEATURE_ID("feature.id", TEXT_ARRAY, ""),
-        FEATURE_TYPE("feature.type", TEXT_ARRAY, "");
+        INTERACTOR_A_ID("interactorA.id", TEXT_ARRAY, ""),
+        INTERACTOR_B_ID("interactorB.id", TEXT_ARRAY, ""),
+        INTERACTOR_A_XREFS("interactorA.xrefs", TEXT_ARRAY, ""),
+        INTERACTOR_B_XREFS("interactorB.xrefs", TEXT_ARRAY, ""),
+        XREFs("xrefs", TEXT_ARRAY, ""),
+        TYPE_PSIMI("type.psimi", TEXT_ARRAY, ""),
+        TYPE_NAME("type.name", TEXT_ARRAY, ""),
+        DETECTION_METHOD_NAME("detectionMethod.name", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -62,7 +60,5 @@ public interface ProteinDBAdaptor<Protein> extends CellBaseDBAdaptor<Protein> {
             return type;
         }
     }
-
-    QueryResult getSubstitutionScores(Query query, QueryOptions options);
 
 }

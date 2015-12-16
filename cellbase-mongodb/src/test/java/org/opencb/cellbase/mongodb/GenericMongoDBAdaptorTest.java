@@ -2,8 +2,8 @@ package org.opencb.cellbase.mongodb;
 
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.core.Gene;
-import org.opencb.cellbase.core.db.DBAdaptorFactory;
-import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
 
 import java.io.IOException;
 

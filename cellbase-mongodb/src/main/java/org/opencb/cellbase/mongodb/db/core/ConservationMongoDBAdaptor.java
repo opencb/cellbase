@@ -280,7 +280,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         return queryResults;
     }
 
-
 //    private List<ConservedRegion> executeQuery(Document query) {
 //        List<ConservedRegion> result = null;
 //        DBCursor cursor = mongoDBCollection.find(query);

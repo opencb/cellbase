@@ -1,6 +1,7 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
@@ -28,6 +29,25 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
+    }
+
+
+    @Override
+    public QueryResult<String> getCdna(String id) {
+        Bson bson = Filters.eq("transcripts.xrefs.id", id);
+        Bson elemMatch = Projections.elemMatch("transcripts", Filters.eq("xrefs.id", id));
+        Bson include = Projections.include("transcripts.cDnaSequence");
+        // elemMatch and include are combined to reduce the data sent from the server
+        Bson projection = Projections.fields(elemMatch, include);
+        QueryResult<Document> result = mongoDBCollection.find(bson, projection, new QueryOptions());
+
+        String sequence = null;
+        if (result != null && !result.getResult().isEmpty()) {
+            List<Document> transcripts = (List<Document>) result.getResult().get(0).get("transcripts");
+            sequence = transcripts.get(0).getString("cDnaSequence");
+        }
+        return new QueryResult<>(id, result.getDbTime(), result.getNumResults(), result.getNumTotalResults(),
+                result.getWarningMsg(), result.getErrorMsg(), Collections.singletonList(sequence));
     }
 
     @Override
@@ -58,8 +78,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         Bson bson = parseQuery(query);
         QueryResult result = mongoDBCollection.find(bson, options);
         if (result != null && !result.getResult().isEmpty()) {
-            Document document = (Document) result.getResult().get(0);
-            result.setResult(Collections.singletonList(document.get("transcripts")));
+            Document gene = (Document) result.getResult().get(0);
+            List<Document> transcripts = (List<Document>) gene.get("transcripts");
+            if (options.getInt("limit", 0) == 1 && !transcripts.isEmpty()) {
+                result.setResult(Collections.singletonList(transcripts.get(0)));
+            } else {
+                result.setResult(transcripts);
+            }
         }
         return result;
     }

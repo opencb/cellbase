@@ -396,6 +396,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     }
                 }
             }
+            logger.info("Setting chunkIds to {}", chunkIds.toString());
             dbObject.put("_chunkIds", chunkIds);
         }
     }

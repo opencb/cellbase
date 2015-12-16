@@ -151,20 +151,27 @@ public class MongoDBAdaptor {
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
         if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            List<String> queryList = query.getAsStringList(queryParam);
-            if (queryList.size() == 1) {
-                andBsonList.add(Filters.eq(mongoDbField, queryList.get(0)));
-            } else {
-                List<Bson> orBsonList = new ArrayList<>(queryList.size());
-                for (String queryItem : queryList) {
-                    orBsonList.add(Filters.eq(mongoDbField, queryItem));
-                }
-                andBsonList.add(Filters.or(orBsonList));
+            createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
+        }
+    }
+
+    protected void createOrQuery(List<String> queryValues, String mongoDbField, List<Bson> andBsonList) {
+        if (queryValues.size() == 1) {
+            andBsonList.add(Filters.eq(mongoDbField, queryValues.get(0)));
+        } else {
+            List<Bson> orBsonList = new ArrayList<>(queryValues.size());
+            for (String queryItem : queryValues) {
+                orBsonList.add(Filters.eq(mongoDbField, queryItem));
             }
+            andBsonList.add(Filters.or(orBsonList));
         }
     }
 
     protected QueryResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField == null || groupByField.isEmpty()) {
+            return new QueryResult();
+        }
+
         if (groupByField.contains(",")) {
             // call to multiple groupBy if commas are present
             return groupBy(query, Arrays.asList(groupByField.split(",")), featureIdField, options);
@@ -182,6 +189,10 @@ public class MongoDBAdaptor {
     }
 
     protected QueryResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
+        if (groupByField == null || groupByField.isEmpty()) {
+            return new QueryResult();
+        }
+
         if (groupByField.size() == 1) {
             // if only one field then we call to simple groupBy
             return groupBy(query, groupByField.get(0), featureIdField, options);

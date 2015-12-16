@@ -16,15 +16,13 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
-import com.google.common.base.Splitter;
+import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -37,6 +35,7 @@ import java.util.List;
 
 @Path("/{version}/{species}/genomic/position")
 @Produces(MediaType.APPLICATION_JSON)
+@Deprecated
 public class PositionWSServer extends GenericRestWSServer {
 
     public PositionWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
@@ -46,13 +45,12 @@ public class PositionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/gene")
-    public Response getGeneByPosition(@PathParam("geneId") String query) {
+    public Response getGeneByPosition(@PathParam("geneId") String id) {
         try {
             parseQueryParams();
-            List<Position> positionList = Position.parsePositions(query);
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            QueryOptions queryOptions = new QueryOptions("exclude", null);
-            return createOkResponse(geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions));
+            List<Position> positionList = Position.parsePositions(id);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getGeneByPosition", e.toString());
@@ -61,12 +59,12 @@ public class PositionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/transcript")
-    public Response getTranscriptByPosition(@PathParam("geneId") String query) {
+    public Response getTranscriptByPosition(@PathParam("geneId") String id) {
         try {
             parseQueryParams();
-            List<Position> positionList = Position.parsePositions(query);
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            return createOkResponse(transcriptDBAdaptor.getAllByPositionList(positionList, queryOptions));
+            List<Position> positionList = Position.parsePositions(id);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             e.printStackTrace();
             return createErrorResponse("getTranscriptByPosition", e.toString());
@@ -90,49 +88,13 @@ public class PositionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             List<Position> positionList = Position.parsePositions(query);
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(variationDBAdaptor.getAllByPositionList(positionList, queryOptions));
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            return createOkResponse(variationDBAdaptor.nativeGet(positionList, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/{positionId}/consequence_type")
-    public Response getConsequenceTypeByPositionGet(@PathParam("positionId") String positionId) {
-        return getConsequenceTypeByPosition(positionId);
-    }
-
-    @POST
-    @Path("/{positionId}/consequence_type")
-    public Response getConsequenceTypeByPositionPost(@PathParam("positionId") String positionId) {
-        return getConsequenceTypeByPosition(positionId);
-    }
-
-    @Deprecated
-    public Response getConsequenceTypeByPosition(String positionId) {
-        List<Position> positionList = Position.parsePositions(positionId);
-        return null;
-    }
-
-    @GET
-    @Path("/{positionId}/functional")
-    public Response getFunctionalByPositionGet(@PathParam("positionId") String positionId,
-                                               @DefaultValue("") @QueryParam("source") String source) {
-        return getFunctionalByPosition(positionId);
-    }
-
-    @POST
-    @Path("/{positionId}/functional")
-    public Response getFunctionalTypeByPositionPost(@PathParam("positionId") String positionId) {
-        return getFunctionalByPosition(positionId);
-    }
-
-    @Deprecated
-    public Response getFunctionalByPosition(@PathParam("positionId") String positionId) {
-        List<Position> positionList = Position.parsePositions(positionId);
-        return null;
-    }
 
     @GET
     public Response defaultMethod() {

@@ -261,7 +261,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //
 
 
-
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species) {
         return getProteinDBAdaptor(species, null);
@@ -272,19 +271,19 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-//
-//
-//    @Override
-//    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {
-//        return getProteinProteinInteractionDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-//
+
+
+    @Override
+    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {
+        return getProteinProteinInteractionDBAdaptor(species, null);
+    }
+
+    @Override
+    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
 
     @Override
     public RegulationDBAdaptor getRegulationDBAdaptor(String species) {
@@ -355,18 +354,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //    public MirnaDBAdaptor getMirnaDBAdaptor(String species, String assembly) {
 //        // TODO Auto-generated method stub
 //        return null;
-//    }
-//
-//
-//    @Override
-//    public ClinVarDBAdaptor getClinVarDBAdaptor(String species) {
-//        return getClinVarDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public ClinVarDBAdaptor getClinVarDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return (ClinVarDBAdaptor) new ClinVarMongoDBAdaptor(species, assembly, mongoDatastore);
 //    }
 //
 }

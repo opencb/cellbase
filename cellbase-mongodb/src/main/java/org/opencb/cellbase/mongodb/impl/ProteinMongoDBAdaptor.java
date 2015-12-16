@@ -21,7 +21,6 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
-import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -78,31 +77,35 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     public QueryResult getSubstitutionScores(Query query, QueryOptions options) {
         QueryResult result = null;
 
-        if (query.getString("transcript") != null && query.getInt("position", 0) != 0 && query.getString("aa") != null) {
+        // Ensembl transcript id is needed for this collection
+        if (query.getString("transcript") != null) {
             Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
-            Bson position = Projections
-                    .include("aaPositions." + query.getInt("position") + "." + aaShortName.get(query.getString("aa").toUpperCase()));
-            result = proteinSubstitutionMongoDBCollection.find(transcript, position, options);
+
+            // If position and aa change are provided we create a 'projection' to return only the required data from the database
+            if (query.get("position") != null && !query.getString("position").isEmpty() && query.getInt("position", 0) != 0) {
+                String projectionString = "aaPositions." + query.getInt("position");
+
+                // If aa change is provided we only return that information
+                if (query.getString("aa") != null && !query.getString("aa").isEmpty()) {
+                    projectionString += "." + aaShortName.get(query.getString("aa").toUpperCase());
+                }
+
+                // Projection is used to minimize the returned data
+                Bson position = Projections.include(projectionString);
+                result = proteinSubstitutionMongoDBCollection.find(transcript, position, options);
+            } else {
+                // Return the whole transcript data
+                result = proteinSubstitutionMongoDBCollection.find(transcript, options);
+            }
 
             if (result != null && !result.getResult().isEmpty()) {
                 // Return only the inner Document, not the whole document projected
                 Document document = (Document) result.getResult().get(0);
                 Document aaPositionsDocument = (Document) document.get("aaPositions");
-                Document positionDocument = (Document) aaPositionsDocument.get("" + query.getInt("position"));
-                result.setResult(Collections.singletonList(positionDocument.get(aaShortName.get(query.getString("aa").toUpperCase()))));
+                result.setResult(Collections.singletonList(aaPositionsDocument));
             }
         }
         return result;
-    }
-
-    @Override
-    public QueryResult<Entry> next(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public QueryResult nativeNext(Query query, QueryOptions options) {
-        return null;
     }
 
     @Override
@@ -120,16 +123,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
-    }
-
-    @Override
-    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
-        if (query.getString("region") != null) {
-            Region region = Region.parseRegion(query.getString("region"));
-            Bson bsonDocument = parseQuery(query);
-            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
-        }
-        return null;
     }
 
     @Override
