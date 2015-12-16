@@ -1,17 +1,26 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.grpc.models;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import io.grpc.stub.StreamObserver;
-import org.bson.Document;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
-import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.cellbase.grpc.GeneModel;
 import org.opencb.cellbase.grpc.GeneServiceGrpc;
-import org.opencb.cellbase.grpc.GeneServiceModel;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,20 +28,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
- * Created by swaathi on 16/12/15.
+ * Created by imedina on 16/12/15.
  */
-public class GeneServer {
+public class GenericGrpcServer {
+
+    private Server server;
+    private int port = 9090;
+
+    private static CellBaseConfiguration cellBaseConfiguration;
+    protected static DBAdaptorFactory dbAdaptorFactory;
 
     protected static Logger logger; // = Logger.getLogger(GeneServer.class.getName());
-
-    private int port = 9090;
-    private Server server;
-
-    protected static CellBaseConfiguration cellBaseConfiguration;
-    protected static DBAdaptorFactory dbAdaptorFactory;
 
     static {
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
@@ -60,7 +68,7 @@ public class GeneServer {
 
     private void start() throws Exception {
         server = ServerBuilder.forPort(port)
-                .addService(GeneServiceGrpc.bindService(new GeneServiceImpl()))
+                .addService(GeneServiceGrpc.bindService(new GeneGrpcService()))
                 .build()
                 .start();
         logger.info("Server started, listening on {}", port);
@@ -68,7 +76,7 @@ public class GeneServer {
             @Override
             public void run() {
                 System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                GeneServer.this.stop();
+                GenericGrpcServer.this.stop();
                 System.err.println("*** server shut down");
             }
         });
@@ -87,27 +95,9 @@ public class GeneServer {
     }
 
     public static void main(String[] args) throws Exception {
-        final GeneServer server = new GeneServer();
+        final GenericGrpcServer server = new GenericGrpcServer();
         server.start();
         server.blockUntilShutdown();
     }
 
-    private class GeneServiceImpl implements GeneServiceGrpc.GeneService {
-        @Override
-        public void get(GeneServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "grch37");
-            Query query = new Query();
-            Iterator<Document> iterator = geneDBAdaptor.nativeIterator(new Query(), new QueryOptions());
-            while (iterator.hasNext()) {
-                Document document = iterator.next();
-                GeneModel.Gene gene = GeneModel.Gene.newBuilder()
-                        .setName(document.getString("name"))
-                        .setChromosome(document.getString("chromosome"))
-                        .setBiotype(document.getString("biotype"))
-                        .build();
-                responseObserver.onNext(gene);
-            }
-            responseObserver.onCompleted();
-        }
-    }
 }

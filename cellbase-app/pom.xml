@@ -114,7 +114,7 @@
                         </program>
                         <program>
                             <name>cellbase-grpc.sh</name>
-                            <mainClass>org.opencb.cellbase.grpc.models.GeneServer</mainClass>
+                            <mainClass>org.opencb.cellbase.grpc.models.GeneGrpcService</mainClass>
                         </program>
                         <program>
                             <name>cellbase-grpc-client.sh</name>
