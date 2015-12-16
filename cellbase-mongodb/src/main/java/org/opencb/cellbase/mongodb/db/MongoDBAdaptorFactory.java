@@ -95,32 +95,38 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 logger.debug("Database for the species is '{}'", database);
 
                 MongoDBConfiguration mongoDBConfiguration;
-                MongoDBConfiguration.Builder builder;
+                MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder().init();
+                if (cellBaseConfiguration.getDatabase().getOptions().get("readPreference") != null
+                        && !cellBaseConfiguration.getDatabase().getOptions().get("readPreference").isEmpty()) {
+                    builder = builder.add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"));
+                }
+
+                if (cellBaseConfiguration.getDatabase().getOptions().get("replicaSet") != null
+                        && !cellBaseConfiguration.getDatabase().getOptions().get("replicaSet").isEmpty()) {
+                    builder = builder.add("replicaSet", cellBaseConfiguration.getDatabase().getOptions().get("replicaSet"));
+                }
+
                 // For authenticated databases
                 if (!cellBaseConfiguration.getDatabase().getUser().isEmpty()
                         && !cellBaseConfiguration.getDatabase().getPassword().isEmpty()) {
                     // MongoDB could authenticate against different databases
                     if (cellBaseConfiguration.getDatabase().getOptions().containsKey("authenticationDatabase")) {
-                        builder = MongoDBConfiguration.builder()
+                        builder = builder
                                 .add("username", cellBaseConfiguration.getDatabase().getUser())
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
-                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"))
                                 .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions()
                                         .get("authenticationDatabase"));
                     } else {
-                        builder = MongoDBConfiguration.builder()
+                        builder = builder
                                 .add("username", cellBaseConfiguration.getDatabase().getUser())
-                                .add("password", cellBaseConfiguration.getDatabase().getPassword())
-                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"));
+                                .add("password", cellBaseConfiguration.getDatabase().getPassword());
                     }
-                    if (cellBaseConfiguration.getDatabase().getOptions().get("replicaSet") != null
-                            && !cellBaseConfiguration.getDatabase().getOptions().get("replicaSet").isEmpty()) {
-                        builder.add("replicaSet", cellBaseConfiguration.getDatabase().getOptions().get("replicaSet"));
-                    }
-                    mongoDBConfiguration = builder.build();
-                } else {
-                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
                 }
+
+                mongoDBConfiguration = builder.build();
+//                else {
+//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+//                }
 
                 // A MongoDataStore to this host and database is returned
                 MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
