@@ -25,6 +25,10 @@
         </dependency>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-grpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-server</artifactId>
             <version>${cellbase.version}</version>
             <type>war</type>
@@ -107,6 +111,14 @@
                         <program>
                             <name>cellbase.sh</name>
                             <mainClass>org.opencb.cellbase.app.CellBaseMain</mainClass>
+                        </program>
+                        <program>
+                            <name>cellbase-grpc.sh</name>
+                            <mainClass>org.opencb.cellbase.grpc.models.GeneServer</mainClass>
+                        </program>
+                        <program>
+                            <name>cellbase-grpc-client.sh</name>
+                            <mainClass>org.opencb.cellbase.grpc.models.GeneClient</mainClass>
                         </program>
                     </programs>
                 </configuration>

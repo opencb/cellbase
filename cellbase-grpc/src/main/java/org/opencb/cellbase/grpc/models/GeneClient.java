@@ -22,6 +22,7 @@ public class GeneClient {
 
     public GeneClient(String host, int port) {
         channel = ManagedChannelBuilder.forAddress(host, port)
+                .usePlaintext(true)
                 .build();
         geneServiceBlockingStub = GeneServiceGrpc.newBlockingStub(channel);
     }
@@ -37,8 +38,12 @@ public class GeneClient {
 //                    .setSpecies(species)
 //                    .setName(query)
                     .build();
-            Iterator<GeneModel.Gene> response = geneServiceBlockingStub.get(request);
-            LOGGER.info(String.valueOf(response));
+
+            Iterator<GeneModel.Gene> geneIterator = geneServiceBlockingStub.get(request);
+            while (geneIterator.hasNext()) {
+                GeneModel.Gene next = geneIterator.next();
+                System.out.println(next.toString());
+            }
         } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, "RPC failed", e);
             return;

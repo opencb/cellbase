@@ -96,6 +96,11 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-grpc</artifactId>
+                <version>${cellbase.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-models</artifactId>
                 <version>${biodata.version}</version>
