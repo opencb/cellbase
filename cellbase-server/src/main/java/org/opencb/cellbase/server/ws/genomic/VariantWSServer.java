@@ -26,8 +26,8 @@ import org.opencb.cellbase.core.db.api.variation.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryResponse;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -146,8 +146,8 @@ public class VariantWSServer extends GenericRestWSServer {
                     + "of VariantAnnotation objects.",
             response = QueryResponse.class)
     public Response getAnnotationByVariantsGET(@ApiParam(value = "Comma-separated list of variants to annotate")
-                                                   @DefaultValue("19:45411941:T:C,14:38679764:-:GATCTGAGAAGGGAAAAAGGG")
-                                                   @PathParam("variants") String variants) {
+                                               @DefaultValue("19:45411941:T:C,14:38679764:-:GATCTGAGAAGGGAAAAAGGG")
+                                               @PathParam("variants") String variants) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);

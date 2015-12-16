@@ -3,8 +3,8 @@ package org.opencb.cellbase.mongodb.db.core;
 import org.junit.Test;
 import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.mongodb.GenericMongoDBAdaptorTest;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 /**
  * Created by fjlopez on 17/09/15.

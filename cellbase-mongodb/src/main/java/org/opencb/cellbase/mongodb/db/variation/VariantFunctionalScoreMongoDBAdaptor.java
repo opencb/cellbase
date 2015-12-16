@@ -17,16 +17,16 @@
 package org.opencb.cellbase.mongodb.db.variation;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
+import org.bson.Document;
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.db.api.variation.VariantFunctionalScoreDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
 //                .and("start").is(position);
 //        System.out.println(chunkId);
         QueryResult result = executeQuery(chromosome + "_" + position + "_" + reference + "_" + alternate,
-                builder.get(), queryOptions, mongoDBCollection);
+                new Document(builder.get().toMap()), queryOptions, mongoDBCollection);
 
 //        System.out.println("result = " + result);
 
@@ -62,7 +62,7 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
         List<Score> scores = new ArrayList<>();
         for (Object object : result.getResult()) {
 //            System.out.println("object = " + object);
-            BasicDBObject dbObject = (BasicDBObject) object;
+            Document dbObject = (Document) object;
             BasicDBList basicDBList = (BasicDBList) dbObject.get("values");
             Long l1 = (Long) basicDBList.get(offset);
 //            System.out.println("l1 = " + l1);

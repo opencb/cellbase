@@ -33,10 +33,10 @@ import org.opencb.cellbase.mongodb.db.regulatory.TfbsMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.systems.PathwayMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.systems.ProteinProteinInteractionMongoDBAdaptor;
 import org.opencb.cellbase.mongodb.db.variation.*;
-import org.opencb.datastore.core.config.DataStoreServerAddress;
-import org.opencb.datastore.mongodb.MongoDBConfiguration;
-import org.opencb.datastore.mongodb.MongoDataStore;
-import org.opencb.datastore.mongodb.MongoDataStoreManager;
+import org.opencb.commons.datastore.core.DataStoreServerAddress;
+import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 
 import java.util.ArrayList;
 import java.util.List;
