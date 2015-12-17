@@ -10,7 +10,9 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by swaathi on 16/12/15.
@@ -20,12 +22,30 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.LongResponse> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
+        Query query = createQuery(request);
+        QueryResult queryResult = geneDBAdaptor.count(query);
+        Long value = Long.valueOf(queryResult.getResult().get(0).toString());
+        GenericServiceModel.LongResponse count = GenericServiceModel.LongResponse.newBuilder()
+                .setValue(value)
+                .build();
+        responseObserver.onNext(count);
+        responseObserver.onCompleted();
     }
 
     @Override
     public void distinct(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringArrayResponse> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
+        Query query = createQuery(request);
+        QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptions().get("distinct"));
+        List<String> values = new ArrayList<>(queryResult.getResult());
+        GenericServiceModel.StringArrayResponse distinctValues = GenericServiceModel.StringArrayResponse.newBuilder()
+                .addAllValues(values)
+                .build();
+        responseObserver.onNext(distinctValues);
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -64,9 +84,15 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     private GeneModel.Gene convert(Document document) {
         GeneModel.Gene gene = GeneModel.Gene.newBuilder()
+                .setId(document.getString("id"))
                 .setName(document.getString("name"))
                 .setChromosome(document.getString("chromosome"))
+                .setStart(document.getInteger("start"))
+                .setEnd(document.getInteger("end"))
                 .setBiotype(document.getString("biotype"))
+                .setStatus(document.getString("status"))
+                .setStrand(document.getString("strand"))
+                .setSource(document.getString("source"))
                 .build();
         return gene;
     }

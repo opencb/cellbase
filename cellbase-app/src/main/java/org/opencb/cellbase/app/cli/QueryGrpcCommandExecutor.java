@@ -22,7 +22,6 @@ import io.grpc.ManagedChannelBuilder;
 import org.opencb.cellbase.grpc.GeneModel;
 import org.opencb.cellbase.grpc.GeneServiceGrpc;
 import org.opencb.cellbase.grpc.GenericServiceModel;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -59,7 +58,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                 .build();
 
         Map<String, String> query = createQueryMap();
-        QueryOptions queryOptions = createQueryOptions();
+//        Map<String, String> queryOptions = createQueryOptionsMap();
 
         PrintStream output = System.out;
         if (queryGrpcCommandOptions.output != null && !queryGrpcCommandOptions.output.isEmpty()) {
@@ -128,17 +127,23 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                         GeneModel.Gene next = geneIterator.next();
                         output.println(next.toString());
                     }
-//                    query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-//                    Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
-//                    while (iterator.hasNext()) {
-//                        Object next = iterator.next();
-//                        output.println(objectMapper.writeValueAsString(next));
-//                    }
+                    break;
+                case "first":
+                    GeneModel.Gene first = geneServiceBlockingStub.first(request);
+                    output.println(first.toString());
                     break;
                 default:
                     break;
             }
         }
+        if (queryGrpcCommandOptions.count) {
+            GenericServiceModel.LongResponse value = geneServiceBlockingStub.count(request);
+            output.println(value);
+        }
+//        if (queryGrpcCommandOptions.distinct != null) {
+//            GenericServiceModel.StringArrayResponse values = geneServiceBlockingStub.distinct(request);
+//            output.println(values);
+//        }
     }
 
     private Map<String, String> createQueryMap() {
@@ -155,17 +160,17 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         return query;
     }
 
-    private QueryOptions createQueryOptions() {
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.append("include", queryGrpcCommandOptions.include);
+    private Map<String, String> createQueryOptionsMap() {
+        Map<String, String> queryOptions = new HashMap<>();
+        queryOptions.put("include", queryGrpcCommandOptions.include);
         if (queryGrpcCommandOptions.exclude != null && !queryGrpcCommandOptions.exclude.isEmpty()) {
-            queryOptions.append("exclude", queryGrpcCommandOptions.exclude + ",_id,_chunkIds");
+            queryOptions.put("exclude", queryGrpcCommandOptions.exclude + ",_id,_chunkIds");
         } else {
-            queryOptions.append("exclude", "_id,_chunkIds");
+            queryOptions.put("exclude", "_id,_chunkIds");
         }
-        queryOptions.append("skip", queryGrpcCommandOptions.skip);
-        queryOptions.append("limit", queryGrpcCommandOptions.limit);
-        queryOptions.append("count", queryGrpcCommandOptions.count);
+        queryOptions.put("skip", String.valueOf(queryGrpcCommandOptions.skip));
+        queryOptions.put("limit", String.valueOf(queryGrpcCommandOptions.limit));
+        queryOptions.put("count", String.valueOf(queryGrpcCommandOptions.count));
         return queryOptions;
     }
 
