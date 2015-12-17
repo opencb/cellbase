@@ -16,33 +16,37 @@ import java.util.Iterator;
  */
 public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc.GeneService {
 
+
     @Override
-    public void count(GenericServiceModel.Query request, StreamObserver<GenericServiceModel.LongQueryResponse> responseObserver) {
+    public void count(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.LongResponse> responseObserver) {
 
     }
 
     @Override
-    public void distinct(GenericServiceModel.Query request, StreamObserver<GenericServiceModel.StringArrayQueryResponse> responseObserver) {
+    public void distinct(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringArrayResponse> responseObserver) {
 
     }
 
     @Override
-    public void first(GenericServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void first(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
 
     }
 
     @Override
-    public void next(GenericServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void next(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
 
     }
 
     @Override
-    public void get(GenericServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void get(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "grch37");
-        Query query = new Query();
-        Iterator<Document> iterator = geneDBAdaptor.nativeIterator(new Query(), new QueryOptions());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+
+        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
         while (iterator.hasNext()) {
-            Document document = iterator.next();
+            Document document = (Document) iterator.next();
             GeneModel.Gene gene = GeneModel.Gene.newBuilder()
                     .setName(document.getString("name"))
                     .setChromosome(document.getString("chromosome"))
@@ -54,7 +58,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void groupBy(GenericServiceModel.Query request, StreamObserver<GenericServiceModel.GroupQueryResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.GroupResponse> responseObserver) {
 
     }
 

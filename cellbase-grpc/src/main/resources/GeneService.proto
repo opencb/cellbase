@@ -8,16 +8,16 @@ import "gene.proto";
 
 service GeneService {
 
-    rpc count(Query) returns (LongQueryResponse) {}
+    rpc count(Request) returns (LongResponse) {}
 
-    rpc distinct(Query) returns (StringArrayQueryResponse) {}
+    rpc distinct(Request) returns (StringArrayResponse) {}
 
-    rpc first(Query) returns (Gene) {}
+    rpc first(Request) returns (Gene) {}
 
-    rpc next(Query) returns (Gene) {}
+    rpc next(Request) returns (Gene) {}
 
-    rpc get(Query) returns (stream Gene) {}
+    rpc get(Request) returns (stream Gene) {}
 
-    rpc groupBy(Query) returns (GroupQueryResponse) {}
+    rpc groupBy(Request) returns (GroupResponse) {}
 
 }

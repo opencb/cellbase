@@ -21,6 +21,9 @@ import io.grpc.ServerBuilder;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.grpc.GeneServiceGrpc;
+import org.opencb.cellbase.grpc.GenericServiceModel;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +96,24 @@ public class GenericGrpcServer {
             server.awaitTermination();
         }
     }
+
+
+    protected Query createQuery(GenericServiceModel.Request request) {
+        Query query = new Query();
+        for (String key : request.getQuery().keySet()) {
+            query.put(key, request.getQuery().get(key));
+        }
+        return query;
+    }
+
+    protected QueryOptions createQueryOptions(GenericServiceModel.Request request) {
+        QueryOptions queryOptions = new QueryOptions();
+        for (String key : request.getOptions().keySet()) {
+            queryOptions.put(key, request.getOptions().get(key));
+        }
+        return queryOptions;
+    }
+
 
     public static void main(String[] args) throws Exception {
         final GenericGrpcServer server = new GenericGrpcServer();

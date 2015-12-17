@@ -34,7 +34,7 @@ public class GeneClient {
     public void getGene(String species, String query) {
         try {
             LOGGER.info("fetching gene info");
-            GenericServiceModel.Query request = GenericServiceModel.Query.newBuilder()
+            GenericServiceModel.Request request = GenericServiceModel.Request.newBuilder()
 //                    .setSpecies(species)
 //                    .setName(query)
                     .build();
