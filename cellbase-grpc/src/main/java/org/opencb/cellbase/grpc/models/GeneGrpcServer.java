@@ -8,6 +8,7 @@ import org.opencb.cellbase.grpc.GeneServiceGrpc;
 import org.opencb.cellbase.grpc.GenericServiceModel;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.Iterator;
 
@@ -29,7 +30,12 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     @Override
     public void first(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
+        QueryOptions queryOptions = createQueryOptions(request);
+        QueryResult first = geneDBAdaptor.first(queryOptions);
+        responseObserver.onNext(convert((Document) first.getResult().get(0)));
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -39,20 +45,14 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     @Override
     public void get(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "grch37");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
-
         Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
         while (iterator.hasNext()) {
             Document document = (Document) iterator.next();
-            GeneModel.Gene gene = GeneModel.Gene.newBuilder()
-                    .setName(document.getString("name"))
-                    .setChromosome(document.getString("chromosome"))
-                    .setBiotype(document.getString("biotype"))
-                    .build();
-            responseObserver.onNext(gene);
+            responseObserver.onNext(convert(document));
         }
         responseObserver.onCompleted();
     }
@@ -62,4 +62,12 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     }
 
+    private GeneModel.Gene convert(Document document) {
+        GeneModel.Gene gene = GeneModel.Gene.newBuilder()
+                .setName(document.getString("name"))
+                .setChromosome(document.getString("chromosome"))
+                .setBiotype(document.getString("biotype"))
+                .build();
+        return gene;
+    }
 }

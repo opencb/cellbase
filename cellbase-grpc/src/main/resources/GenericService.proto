@@ -5,8 +5,10 @@ package org.opencb.cellbase.grpc;
 option java_outer_classname = "GenericServiceModel";
 
 message Request {
-    map<string, string> query = 1;
-    map<string, string> options = 2;
+    string species = 1;
+    string assembly = 2;
+    map<string, string> query = 3;
+    map<string, string> options = 4;
 }
 
 message LongResponse {
