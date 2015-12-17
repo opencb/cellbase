@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.grpc.models;
+package org.opencb.cellbase.grpc.server;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;

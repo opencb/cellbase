@@ -394,7 +394,11 @@ public class CliOptionsParser {
         return loadCommandOptions;
     }
 
-    public QueryCommandOptions getQueryGrpcCommandOptions() {
+    public QueryCommandOptions getQueryCommandOptions() {
+        return queryCommandOptions;
+    }
+
+    public QueryGrpcCommandOptions getQueryGrpcCommandOptions() {
         return queryGrpcCommandOptions;
     }
 

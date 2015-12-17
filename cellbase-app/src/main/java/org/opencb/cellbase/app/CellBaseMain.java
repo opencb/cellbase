@@ -71,7 +71,10 @@ public class CellBaseMain {
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;
                     case "query":
-                        commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryGrpcCommandOptions());
+                        commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryCommandOptions());
+                        break;
+                    case "query-grpc":
+                        commandExecutor = new QueryGrpcCommandExecutor(cliOptionsParser.getQueryGrpcCommandOptions());
                         break;
                     case "variant-annotation":
                         commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());

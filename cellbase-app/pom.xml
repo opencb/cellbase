@@ -114,11 +114,7 @@
                         </program>
                         <program>
                             <name>cellbase-grpc.sh</name>
-                            <mainClass>org.opencb.cellbase.grpc.models.GeneGrpcServer</mainClass>
-                        </program>
-                        <program>
-                            <name>cellbase-grpc-client.sh</name>
-                            <mainClass>org.opencb.cellbase.grpc.models.GeneClient</mainClass>
+                            <mainClass>org.opencb.cellbase.grpc.server.GeneGrpcServer</mainClass>
                         </program>
                     </programs>
                 </configuration>

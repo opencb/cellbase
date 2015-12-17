@@ -1,4 +1,4 @@
-package org.opencb.cellbase.grpc.models;
+package org.opencb.cellbase.grpc.server;
 
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
