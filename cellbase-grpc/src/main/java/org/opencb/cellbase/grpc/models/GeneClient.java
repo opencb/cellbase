@@ -4,7 +4,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.opencb.cellbase.grpc.GeneModel;
 import org.opencb.cellbase.grpc.GeneServiceGrpc;
-import org.opencb.cellbase.grpc.GeneServiceModel;
+import org.opencb.cellbase.grpc.GenericServiceModel;
 
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +34,7 @@ public class GeneClient {
     public void getGene(String species, String query) {
         try {
             LOGGER.info("fetching gene info");
-            GeneServiceModel.Query request = GeneServiceModel.Query.newBuilder()
+            GenericServiceModel.Query request = GenericServiceModel.Query.newBuilder()
 //                    .setSpecies(species)
 //                    .setName(query)
                     .build();

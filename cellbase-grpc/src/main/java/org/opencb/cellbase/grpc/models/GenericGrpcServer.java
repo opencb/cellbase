@@ -68,7 +68,7 @@ public class GenericGrpcServer {
 
     private void start() throws Exception {
         server = ServerBuilder.forPort(port)
-                .addService(GeneServiceGrpc.bindService(new GeneGrpcService()))
+                .addService(GeneServiceGrpc.bindService(new GeneGrpcServer()))
                 .build()
                 .start();
         logger.info("Server started, listening on {}", port);

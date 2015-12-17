@@ -5,7 +5,7 @@ import org.bson.Document;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.grpc.GeneModel;
 import org.opencb.cellbase.grpc.GeneServiceGrpc;
-import org.opencb.cellbase.grpc.GeneServiceModel;
+import org.opencb.cellbase.grpc.GenericServiceModel;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -14,10 +14,30 @@ import java.util.Iterator;
 /**
  * Created by swaathi on 16/12/15.
  */
-public class GeneGrpcService extends GenericGrpcServer implements GeneServiceGrpc.GeneService {
+public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc.GeneService {
 
     @Override
-    public void get(GeneServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void count(GenericServiceModel.Query request, StreamObserver<GenericServiceModel.LongQueryResponse> responseObserver) {
+
+    }
+
+    @Override
+    public void distinct(GenericServiceModel.Query request, StreamObserver<GenericServiceModel.StringArrayQueryResponse> responseObserver) {
+
+    }
+
+    @Override
+    public void first(GenericServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
+
+    }
+
+    @Override
+    public void next(GenericServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
+
+    }
+
+    @Override
+    public void get(GenericServiceModel.Query request, StreamObserver<GeneModel.Gene> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "grch37");
         Query query = new Query();
         Iterator<Document> iterator = geneDBAdaptor.nativeIterator(new Query(), new QueryOptions());
@@ -31,6 +51,11 @@ public class GeneGrpcService extends GenericGrpcServer implements GeneServiceGrp
             responseObserver.onNext(gene);
         }
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void groupBy(GenericServiceModel.Query request, StreamObserver<GenericServiceModel.GroupQueryResponse> responseObserver) {
+
     }
 
 }

@@ -3,14 +3,21 @@ syntax = "proto3";
 package org.opencb.cellbase.grpc;
 option java_outer_classname = "GeneServiceModel";
 
+import "GenericService.proto";
 import "gene.proto";
 
 service GeneService {
-    rpc get (Query) returns (stream Gene) {}
-}
 
-message Query {
-    repeated string query_items = 1;
-    map<string, string> options = 2;
-}
+    rpc count(Query) returns (LongQueryResponse) {}
 
+    rpc distinct(Query) returns (StringArrayQueryResponse) {}
+
+    rpc first(Query) returns (Gene) {}
+
+    rpc next(Query) returns (Gene) {}
+
+    rpc get(Query) returns (stream Gene) {}
+
+    rpc groupBy(Query) returns (GroupQueryResponse) {}
+
+}
