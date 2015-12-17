@@ -128,6 +128,13 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                         GeneModel.Gene next = geneIterator.next();
                         output.println(next.toString());
                     }
+
+//                    Iterator<GenericServiceModel.StringResponse> geneIterator = geneServiceBlockingStub.getJson(request);
+//                    while (geneIterator.hasNext()) {
+//                        GenericServiceModel.StringResponse next = geneIterator.next();
+//                        output.println(next.toString());
+//                    }
+
 //                    query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
 //                    Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
 //                    while (iterator.hasNext()) {

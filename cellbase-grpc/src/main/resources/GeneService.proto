@@ -18,6 +18,8 @@ service GeneService {
 
     rpc get(Request) returns (stream Gene) {}
 
+    rpc getJson(Request) returns (stream StringResponse) {}
+
     rpc groupBy(Request) returns (GroupResponse) {}
 
 }

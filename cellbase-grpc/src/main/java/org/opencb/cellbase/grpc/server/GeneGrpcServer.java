@@ -58,6 +58,23 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
+    public void getJson(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringResponse> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
+        while (iterator.hasNext()) {
+            Document document = (Document) iterator.next();
+            GenericServiceModel.StringResponse response =
+                    GenericServiceModel.StringResponse.newBuilder().setValue(document.toJson()).build();
+            responseObserver.onNext(response);
+        }
+        responseObserver.onCompleted();
+    }
+
+
+    @Override
     public void groupBy(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.GroupResponse> responseObserver) {
 
     }

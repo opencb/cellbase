@@ -15,6 +15,10 @@ message LongResponse {
     int64 value = 1;
 }
 
+message StringResponse {
+    string value = 1;
+}
+
 message StringArrayResponse {
     repeated string values = 1;
 }
