@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package org.opencb.cellbase.grpc;
+
+option java_outer_classname = "GenericServiceModel";
+
+message Query {
+    repeated string query_items = 1;
+    map<string, string> options = 2;
+}
+
+message LongQueryResponse {
+    int64 value = 1;
+}
+
+message StringArrayQueryResponse {
+    repeated string values = 1;
+}
+
+message GroupQueryResponse {
+    map<string, string> values = 1;
+}
