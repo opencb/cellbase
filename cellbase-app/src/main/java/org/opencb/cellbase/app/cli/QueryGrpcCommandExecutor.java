@@ -19,9 +19,7 @@ package org.opencb.cellbase.app.cli;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.opencb.cellbase.grpc.GeneModel;
-import org.opencb.cellbase.grpc.GeneServiceGrpc;
-import org.opencb.cellbase.grpc.GenericServiceModel;
+import org.opencb.cellbase.grpc.*;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -58,7 +56,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                 .build();
 
         Map<String, String> query = createQueryMap();
-//        Map<String, String> queryOptions = createQueryOptionsMap();
+        Map<String, String> queryOptions = createQueryOptionsMap();
 
         PrintStream output = System.out;
         if (queryGrpcCommandOptions.output != null && !queryGrpcCommandOptions.output.isEmpty()) {
@@ -76,7 +74,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                 .setSpecies(queryGrpcCommandOptions.species)
                 .setAssembly(queryGrpcCommandOptions.assembly)
                 .putAllQuery(query)
-//                .putAllOptions(queryOptions)
+                .putAllOptions(queryOptions)
                 .build();
 
 
@@ -97,9 +95,9 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
 //                case "regulatory_region":
 //                    executeRegulatoryRegionQuery(query, queryOptions, output);
 //                    break;
-//                case "transcript":
-//                    executeTranscriptQuery(query, queryOptions, output);
-//                    break;
+                case "transcript":
+                    executeTranscriptQuery(request, output);
+                    break;
 //                case "conservation":
 //                    break;
                 default:
@@ -140,10 +138,33 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
             GenericServiceModel.LongResponse value = geneServiceBlockingStub.count(request);
             output.println(value);
         }
-//        if (queryGrpcCommandOptions.distinct != null) {
-//            GenericServiceModel.StringArrayResponse values = geneServiceBlockingStub.distinct(request);
-//            output.println(values);
-//        }
+        if (queryGrpcCommandOptions.distinct != null) {
+            GenericServiceModel.StringArrayResponse values = geneServiceBlockingStub.distinct(request);
+            output.println(values);
+        }
+    }
+
+    private void executeTranscriptQuery(GenericServiceModel.Request request, PrintStream output)
+            throws JsonProcessingException {
+        TranscriptServiceGrpc.TranscriptServiceBlockingStub transcriptServiceBlockingStub = TranscriptServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "info":
+                    Iterator<TranscriptModel.Transcript> transcriptIterator = transcriptServiceBlockingStub.get(request);
+                    while (transcriptIterator.hasNext()) {
+                        TranscriptModel.Transcript next = transcriptIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (queryGrpcCommandOptions.count) {
+            GenericServiceModel.LongResponse value = transcriptServiceBlockingStub.count(request);
+            output.println(value);
+        }
     }
 
     private Map<String, String> createQueryMap() {
@@ -162,16 +183,26 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
 
     private Map<String, String> createQueryOptionsMap() {
         Map<String, String> queryOptions = new HashMap<>();
-        queryOptions.put("include", queryGrpcCommandOptions.include);
+        if (queryGrpcCommandOptions.include != null && !queryGrpcCommandOptions.include.isEmpty()) {
+            queryOptions.put("include", queryGrpcCommandOptions.include);
+        }
         if (queryGrpcCommandOptions.exclude != null && !queryGrpcCommandOptions.exclude.isEmpty()) {
             queryOptions.put("exclude", queryGrpcCommandOptions.exclude + ",_id,_chunkIds");
         } else {
             queryOptions.put("exclude", "_id,_chunkIds");
         }
-        queryOptions.put("skip", String.valueOf(queryGrpcCommandOptions.skip));
-        queryOptions.put("limit", String.valueOf(queryGrpcCommandOptions.limit));
-        queryOptions.put("count", String.valueOf(queryGrpcCommandOptions.count));
+        if (queryGrpcCommandOptions.skip != 0) {
+            queryOptions.put("skip", String.valueOf(queryGrpcCommandOptions.skip));
+        }
+        if (queryGrpcCommandOptions.limit != 0) {
+            queryOptions.put("limit", String.valueOf(queryGrpcCommandOptions.limit));
+        }
+        if (queryGrpcCommandOptions.count) {
+            queryOptions.put("count", String.valueOf(queryGrpcCommandOptions.count));
+        }
+        if (queryGrpcCommandOptions.distinct != null && !queryGrpcCommandOptions.distinct.isEmpty()) {
+            queryOptions.put("distinct", queryGrpcCommandOptions.distinct);
+        }
         return queryOptions;
     }
-
 }

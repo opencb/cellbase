@@ -22,6 +22,7 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.grpc.GeneServiceGrpc;
 import org.opencb.cellbase.grpc.GenericServiceModel;
+import org.opencb.cellbase.grpc.TranscriptServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -72,6 +73,7 @@ public class GenericGrpcServer {
     private void start() throws Exception {
         server = ServerBuilder.forPort(port)
                 .addService(GeneServiceGrpc.bindService(new GeneGrpcServer()))
+                .addService(TranscriptServiceGrpc.bindService(new TranscriptGrpcServer()))
                 .build()
                 .start();
         logger.info("Server started, listening on {}", port);
@@ -101,7 +103,9 @@ public class GenericGrpcServer {
     protected Query createQuery(GenericServiceModel.Request request) {
         Query query = new Query();
         for (String key : request.getQuery().keySet()) {
-            query.put(key, request.getQuery().get(key));
+            if (request.getQuery().get(key) != null) {
+                query.put(key, request.getQuery().get(key));
+            }
         }
         return query;
     }
@@ -109,7 +113,9 @@ public class GenericGrpcServer {
     protected QueryOptions createQueryOptions(GenericServiceModel.Request request) {
         QueryOptions queryOptions = new QueryOptions();
         for (String key : request.getOptions().keySet()) {
-            queryOptions.put(key, request.getOptions().get(key));
+            if (request.getOptions().get(key) != null) {
+                queryOptions.put(key, request.getOptions().get(key));
+            }
         }
         return queryOptions;
     }

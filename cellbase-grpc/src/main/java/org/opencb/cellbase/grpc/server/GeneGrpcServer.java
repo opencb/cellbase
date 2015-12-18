@@ -10,7 +10,6 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
         Query query = createQuery(request);
         QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptions().get("distinct"));
-        List<String> values = new ArrayList<>(queryResult.getResult());
+        List values = queryResult.getResult();
         GenericServiceModel.StringArrayResponse distinctValues = GenericServiceModel.StringArrayResponse.newBuilder()
                 .addAllValues(values)
                 .build();
@@ -83,7 +82,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     private GeneModel.Gene convert(Document document) {
-        GeneModel.Gene gene = GeneModel.Gene.newBuilder()
+        GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
                 .setId(document.getString("id"))
                 .setName(document.getString("name"))
                 .setChromosome(document.getString("chromosome"))
@@ -92,8 +91,9 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
                 .setBiotype(document.getString("biotype"))
                 .setStatus(document.getString("status"))
                 .setStrand(document.getString("strand"))
-                .setSource(document.getString("source"))
-                .build();
-        return gene;
+                .setSource(document.getString("source"));
+//                .addAllTranscripts()
+
+        return builder.build();
     }
 }
