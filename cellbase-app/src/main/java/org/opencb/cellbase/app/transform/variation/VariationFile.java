@@ -15,10 +15,11 @@ public class VariationFile extends AbstractVariationFile {
     public static final String VARIATION_FILENAME = "variation.txt";
     public static final String PREPROCESSED_VARIATION_FILENAME = "variation.sorted.txt";
 
-    private static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FILE = 0;
+    public static final int VARIATION_ID_COLUMN_INDEX = 0;
+    public static final int RS_COLUMN_INDEX = 2;
 
     public VariationFile(Path variationDirectory) {
-        super(variationDirectory, VARIATION_FILENAME, PREPROCESSED_VARIATION_FILENAME, VARIATION_ID_COLUMN_INDEX_IN_VARIATION_FILE);
+        super(variationDirectory, VARIATION_FILENAME, PREPROCESSED_VARIATION_FILENAME, VARIATION_ID_COLUMN_INDEX);
     }
 
     public BufferedReader getBufferedReader() throws IOException {

@@ -10,10 +10,11 @@ public class VariationSynonymFile extends AbstractVariationFile {
     public static final String VARIATION_SYNONYM_FILENAME = "variation_synonym.txt";
     public static final String PREPROCESSED_VARIATION_SYNONYM_FILENAME = "variation_synonym.sorted.txt";
 
-    static final int VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE = 1;
+    static final int VARIATION_ID_COLUMN_INDEX = 1;
+    static final int RS_COLUMN_INDEX = 4;
 
     public VariationSynonymFile(Path variationDirectory) {
         super(variationDirectory, VARIATION_SYNONYM_FILENAME, PREPROCESSED_VARIATION_SYNONYM_FILENAME,
-                VARIATION_ID_COLUMN_INDEX_IN_VARIATION_SYNONYM_FILE);
+                VARIATION_ID_COLUMN_INDEX);
     }
 }
