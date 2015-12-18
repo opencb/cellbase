@@ -58,6 +58,10 @@ public class QueryCommandExecutor extends CommandExecutor {
     public void execute() {
         dbAdaptorFactory = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(configuration);
 
+        if (queryCommandOptions.limit == 0) {
+            queryCommandOptions.limit = 10;
+        }
+
         Query query = createQuery();
         QueryOptions queryOptions = createQueryOptions();
 
@@ -72,6 +76,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                 }
             }
         }
+
 
         try {
             switch (queryCommandOptions.category) {

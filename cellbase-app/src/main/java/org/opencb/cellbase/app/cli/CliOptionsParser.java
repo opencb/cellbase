@@ -251,7 +251,7 @@ public class CliOptionsParser {
         public int skip;
 
         @Parameter(names = {"--limit"}, description = "Return the number of records specified", required = false)
-        public int limit = 10;
+        public int limit;
 
         @Parameter(names = {"-c", "--count"}, description = "Comma separated list of annotators to be excluded", required = false, arity = 0)
         public boolean count;
