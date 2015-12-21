@@ -18,7 +18,6 @@ import java.util.List;
  */
 public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc.GeneService {
 
-
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.LongResponse> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
@@ -102,13 +101,14 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
         GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
                 .setId(document.getString("id"))
                 .setName(document.getString("name"))
+                .setBiotype(document.getString("biotype"))
+                .setStatus(document.getString("status"))
                 .setChromosome(document.getString("chromosome"))
                 .setStart(document.getInteger("start"))
                 .setEnd(document.getInteger("end"))
-                .setBiotype(document.getString("biotype"))
-                .setStatus(document.getString("status"))
                 .setStrand(document.getString("strand"))
-                .setSource(document.getString("source"));
+                .setSource(document.getString("source"))
+                .setDescription((String) document.getOrDefault("description", ""));
 //                .addAllTranscripts()
 
         return builder.build();

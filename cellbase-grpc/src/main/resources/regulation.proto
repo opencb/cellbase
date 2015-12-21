@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package org.opencb.cellbase.grpc;
+option java_outer_classname = "RegulationModel";
+
+message Regulation {
+    string name = 1;
+    string chromosome = 2;
+    int32 start = 3;
+    int32 end = 4;
+    string source = 5;
+    string feature_type = 6;
+    string score = 7;
+    string strand = 8;
+    string frame = 9;
+    string feature_class = 10;
+    string alias = 11;
+    repeated string cell_types = 12;
+}

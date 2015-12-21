@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package org.opencb.cellbase.grpc;
+option java_outer_classname = "RegulationServiceModel";
+
+import "GenericService.proto";
+import "regulation.proto";
+
+service RegulationService {
+
+    rpc count(Request) returns (LongResponse) {}
+
+    rpc distinct(Request) returns (StringArrayResponse) {}
+
+    rpc first(Request) returns (Regulation) {}
+
+    rpc next(Request) returns (Regulation) {}
+
+    rpc get(Request) returns (stream Regulation) {}
+
+    rpc getJson(Request) returns (stream StringResponse) {}
+
+    rpc groupBy(Request) returns (GroupResponse) {}
+
+}
