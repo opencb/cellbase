@@ -31,7 +31,7 @@ class CellBaseCLIExecutor():
 
     def run(self):
         self.__checkParameters()
-        CellBaseCLIExecutor.loadCellBaseConfiguration()
+        self.loadCellBaseConfiguration()
         cellBaseClient = CellBaseClient.CellBaseClient(self.__configuration)
         queryResponse = cellBaseClient.get(self.__species, self.__type, self.__method, self.__id, self.__options)
         print(queryResponse)
@@ -73,9 +73,12 @@ class CellBaseCLIExecutor():
                 "Incorrect format provided for query options. Please, provide a list of filter pairs. For example: source=clinvar skip=10 limit=200")
 
     def __validQueryOptions(self,options):
-        i = 0
-        while(i<len(options) and len(options[i].split("="))==2):
-            i += 1
-        return i==len(options)
+        if (options != None):
+            i = 0
+            while(i<len(options) and len(options[i].split("="))==2):
+                i += 1
+            return i == len(options)
+        else:
+            return True
 
 
