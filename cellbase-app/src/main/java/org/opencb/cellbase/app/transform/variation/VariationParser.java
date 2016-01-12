@@ -30,7 +30,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -82,7 +81,7 @@ public class VariationParser extends CellBaseParser {
                 || !Files.isReadable(variationDirectoryPath)) {
             throw new IOException("Variation directory whether does not exist, is not a directory or cannot be read");
         }
-        if (!existsZippedOrUnzippedFile(VARIATION_FILENAME) || isEmpty(variationDirectoryPath.resolve(VARIATION_FILENAME).toString())) {
+        if (!variationFile.existsZippedOrUnzippedFile() || variationFile.isEmpty()) {
             throw new IOException("variation.txt.gz whether does not exist, is not a directory or cannot be read");
         }
 
@@ -449,41 +448,17 @@ public class VariationParser extends CellBaseParser {
         logger.debug("Elapsed time unzipping files: {}", stopwatch);
     }
 
-    private boolean existsZippedOrUnzippedFile(String baseFilename) {
-        return Files.exists(variationDirectoryPath.resolve(baseFilename))
-                || Files.exists(variationDirectoryPath.resolve(baseFilename + ".gz"));
-    }
-
-    private boolean isEmpty(String fileName) throws IOException {
-        if (Files.exists(Paths.get(fileName))) {
-            return Files.size(Paths.get(fileName)) == 0;
-        } else {
-            return Files.size(Paths.get(fileName + ".gz")) == 0;
-        }
-    }
-
     private void gzipVariationFiles(Path variationDirectoryPath) throws IOException, InterruptedException {
         logger.info("Compressing variation files ...");
         Stopwatch stopwatch = Stopwatch.createStarted();
-        gzipFile(variationDirectoryPath, VARIATION_FILENAME);
-        gzipFile(variationDirectoryPath, PREPROCESSED_VARIATION_FILENAME);
-        gzipFile(variationDirectoryPath, VARIATION_FEATURE_FILENAME);
-        gzipFile(variationDirectoryPath, TRANSCRIPT_VARIATION_FILENAME);
-        gzipFile(variationDirectoryPath, VARIATION_SYNONYM_FILENAME);
-        gzipFile(variationDirectoryPath, VariationFeatureFile.PREPROCESSED_VARIATION_FEATURE_FILENAME);
-        gzipFile(variationDirectoryPath, VariationTranscriptFile.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME);
-        gzipFile(variationDirectoryPath, VariationSynonymFile.PREPROCESSED_VARIATION_SYNONYM_FILENAME);
+
+        variationFile.gzip();
+        variationFeatureFile.gzip();
+        variationTranscriptFile.gzip();
+        variationSynonymFile.gzip();
+
         logger.info("Files compressed");
         logger.debug("Elapsed time compressing files: {}", stopwatch);
-    }
-
-    private void gzipFile(Path directory, String fileName) throws IOException, InterruptedException {
-        Path unzippedFile = directory.resolve(fileName);
-        if (Files.exists(unzippedFile)) {
-            logger.info("Compressing {}", unzippedFile.toAbsolutePath());
-            Process process = Runtime.getRuntime().exec("gzip " + unzippedFile.toAbsolutePath());
-            process.waitFor();
-        }
     }
 
     private String getOutputFileName(String chromosome) {

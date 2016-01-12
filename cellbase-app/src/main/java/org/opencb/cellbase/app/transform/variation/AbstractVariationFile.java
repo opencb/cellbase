@@ -170,4 +170,31 @@ public abstract class AbstractVariationFile {
         logger.info("Sorted");
         logger.debug("Elapsed time sorting file: {}", stopwatch);
     }
+
+    public void gzip() throws IOException, InterruptedException {
+        gzipFile(unprocessedFileName);
+        gzipFile(preprocessedFileName);
+    }
+
+    private void gzipFile(String fileName) throws IOException, InterruptedException {
+        Path unzippedFile = variationDirectory.resolve(fileName);
+        if (Files.exists(unzippedFile)) {
+            logger.info("Compressing {}", unzippedFile.toAbsolutePath());
+            Process process = Runtime.getRuntime().exec("gzip " + unzippedFile.toAbsolutePath());
+            process.waitFor();
+        }
+    }
+
+    public boolean existsZippedOrUnzippedFile() {
+        return Files.exists(variationDirectory.resolve(unprocessedFileName))
+                || Files.exists(variationDirectory.resolve(unprocessedFileName + ".gz"));
+    }
+
+    public boolean isEmpty() throws IOException {
+        if (Files.exists(variationDirectory.resolve(unprocessedFileName))) {
+            return Files.size(variationDirectory.resolve(unprocessedFileName)) == 0;
+        } else {
+            return Files.size(variationDirectory.resolve(unprocessedFileName + ".gz")) == 0;
+        }
+    }
 }
