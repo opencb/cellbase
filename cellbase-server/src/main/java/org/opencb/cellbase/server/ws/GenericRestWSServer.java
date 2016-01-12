@@ -213,7 +213,7 @@ public class GenericRestWSServer implements IWSServer {
             logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
         }
 
-        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
+        if (!version.equalsIgnoreCase("v3") && !cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new VersionException("Version not valid: '" + version + "'");
         }

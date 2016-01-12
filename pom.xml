@@ -18,6 +18,7 @@
         <module>cellbase-core</module>
         <module>cellbase-mongodb</module>
         <module>cellbase-server</module>
+        <module>cellbase-grpc</module>
     </modules>
 
     <properties>
