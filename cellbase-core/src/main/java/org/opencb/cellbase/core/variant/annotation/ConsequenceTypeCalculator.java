@@ -124,5 +124,5 @@ public abstract class ConsequenceTypeCalculator {
     private SequenceOntologyTerm newSequenceOntologyTerm(String name) {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
-    
+
 }
