@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils.newSequenceOntologyTerm;
-
 /**
  * Created by fjlopez on 19/06/15.
  */
@@ -126,4 +124,5 @@ public abstract class ConsequenceTypeCalculator {
     private SequenceOntologyTerm newSequenceOntologyTerm(String name) {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
+    
 }
