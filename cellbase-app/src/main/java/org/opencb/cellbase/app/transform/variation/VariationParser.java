@@ -45,7 +45,6 @@ public class VariationParser extends CellBaseParser {
     private static final String VARIATION_FEATURE_FILENAME = "variation_feature.txt";
     private static final String TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.txt";
     private static final String VARIATION_SYNONYM_FILENAME = "variation_synonym.txt";
-    private static final String VARIATION_FREQUENCIES_FILENAME = "eva_population_freqs.sorted.txt.gz";
 
     private Path variationDirectoryPath;
 
@@ -62,8 +61,6 @@ public class VariationParser extends CellBaseParser {
     private VariationTranscriptFile variationTranscriptFile;
     private VariationFeatureFile variationFeatureFile;
     private VariationSynonymFile variationSynonymFile;
-
-    private VariationFrequenciesFetcher frequenciesFetcher;
 
     public VariationParser(Path variationDirectoryPath, CellBaseFileSerializer serializer) {
         super(serializer);
@@ -155,14 +152,9 @@ public class VariationParser extends CellBaseParser {
                                             alternate);
                                     incorrectEndVariants++;
                                 } else {
-                                    List<PopulationFrequency> populationFrequencies = null;
-                                    if (frequenciesFetcher != null) {
-                                        populationFrequencies =
-                                                frequenciesFetcher.getPopulationFrequencies(chromosome, start, reference, alternate);
-                                    }
                                     // build and serialize variant
                                     Variant variation = buildVariant(chromosome, start, end, reference, alternate, type, ids, hgvs,
-                                            additionalAttributes, conseqTypes, id, xrefs, populationFrequencies, strand);
+                                            additionalAttributes, conseqTypes, id, xrefs, strand);
                                     fileSerializer.serialize(variation, getOutputFileName(chromosome));
                                 }
                             }
@@ -183,10 +175,10 @@ public class VariationParser extends CellBaseParser {
                     break;
                 }
             }
-            // TODO: just for testing, remove
-            if (countprocess % 1000000 == 0) {
-                break;
-            }
+//            // TODO: just for testing, remove
+//            if (countprocess % 1000000 == 0) {
+//                break;
+//            }
         }
 
         serializer.close();
@@ -217,21 +209,17 @@ public class VariationParser extends CellBaseParser {
         variationFeatureFile.createBufferedReader();
         variationSynonymFile.createBufferedReader();
         variationTranscriptFile.createBufferedReader();
-        if (Files.exists(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME))) {
-            frequenciesFetcher = new VariationFrequenciesFetcher(variationDirectoryPath.resolve(VARIATION_FREQUENCIES_FILENAME));
-        }
     }
 
     private Variant buildVariant(String chromosome, int start, int end, String reference, String alternate, VariantType type,
                                 List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
-                                List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
-                                List<PopulationFrequency> populationFrequencies, String strand)
+                                List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs, String strand)
     {
         Variant variant = new Variant(chromosome, start, end, reference, alternate);
         variant.setIds(ids);
         variant.setType(type);
         VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
-                xrefs, hgvs, conseqTypes, populationFrequencies, null, null, null, null, null, null, additionalAttributes);
+                xrefs, hgvs, conseqTypes, null, null, null, null, null, null, null, additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 
