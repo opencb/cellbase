@@ -66,8 +66,7 @@ public class VariationParserTest {
         List<ConsequenceType> consequenceTypes = annotation.getConsequenceTypes();
         assertEquals(6, consequenceTypes.size());
         // TODO consequence types details
-        assertEquals(11, annotation.getPopulationFrequencies().size());
-        // TODO frequencies
+        assertNull(annotation.getPopulationFrequencies());
         // TODO hgvs
         // TODO check xrefs
         variant = chr1Variations.stream().filter(v -> v.getAlternate().equals("C")).findFirst().get();
@@ -76,8 +75,7 @@ public class VariationParserTest {
         consequenceTypes = annotation.getConsequenceTypes();
         assertEquals(6, consequenceTypes.size());
         // TODO consequence types details
-        assertEquals(6, annotation.getPopulationFrequencies().size());
-        // TODO frequencies
+        assertNull(annotation.getPopulationFrequencies());
         // TODO hgvs
         // TODO check xrefs
 
@@ -112,7 +110,7 @@ public class VariationParserTest {
         consequenceTypes = annotation.getConsequenceTypes();
         assertEquals(4, consequenceTypes.size());
         // TODO consequence types details
-        assertEquals(22, annotation.getPopulationFrequencies().size());
+        assertNull(annotation.getPopulationFrequencies());
         // TODO frequencies
         // TODO hgvs
         // TODO check xrefs
