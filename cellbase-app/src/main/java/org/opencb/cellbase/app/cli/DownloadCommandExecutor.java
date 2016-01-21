@@ -615,7 +615,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(url, clinicalFolder.resolve("ClinVar_Traits_EFO_Names.csv").toString());
 
             url = configuration.getDownload().getClinvarSummary().getHost();
-            downloadFile(url, clinicalFolder.resolve("variant_summary.txt").toString());
+            downloadFile(url, clinicalFolder.resolve("variant_summary.txt.gz").toString());
 
             url = configuration.getDownload().getGwasCatalog().getHost();
             downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());

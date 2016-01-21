@@ -23,7 +23,9 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import java.io.IOException;
+import java.io.*;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by imedina on 26/09/14.
@@ -48,11 +51,14 @@ public class ClinVarParser extends CellBaseParser {
     private final String selectedAssembly;
 
     private Path clinvarXmlFile;
+    private Path clinvarSummaryFile;
     private Path efosFile;
 
-    public ClinVarParser(Path clinvarXmlFile, Path efosFile, String assembly, CellBaseSerializer serializer) {
+    public ClinVarParser(Path clinvarXmlFile, Path clinvarSummaryFile, Path efosFile, String assembly,
+                         CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXmlFile = clinvarXmlFile;
+        this.clinvarSummaryFile = clinvarSummaryFile;
         this.efosFile = efosFile;
         this.selectedAssembly = ASSEMBLY_PREFIX + assembly;
     }
@@ -64,7 +70,7 @@ public class ClinVarParser extends CellBaseParser {
             logger.info("Done");
 
             Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
-            Map<String, SequenceLocationType> rcvTo37SequenceLocation= loadSequenceLocation();  // TODO implement this method
+            Map<String, SequenceLocationType> rcvTo37SequenceLocation = loadSequenceLocation();
 
             long serializedClinvarObjects = 0,
                     clinvarRecordsParsed = 0,
@@ -96,8 +102,44 @@ public class ClinVarParser extends CellBaseParser {
         } catch (JAXBException e) {
             logger.error("Error unmarshalling clinvar Xml file " + clinvarXmlFile + ": " + e.getMessage());
         } catch (IOException e) {
-            logger.error("File not found: " + clinvarXmlFile + ": " + e.getMessage());
+            logger.error("File not found: " + e.getMessage());
         }
+    }
+
+    private Map<String, SequenceLocationType> loadSequenceLocation() throws IOException {
+        logger.info("Loading ClinVar {} genomic coordinates, reference and alternate strings from {}...",
+                selectedAssembly, clinvarSummaryFile);
+        BufferedReader bufferedReader;
+        if (clinvarSummaryFile.toFile().getName().endsWith(".gz")) {
+            bufferedReader =
+                    new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(clinvarSummaryFile.toFile()))));
+        } else {
+            bufferedReader = Files.newBufferedReader(clinvarSummaryFile, Charset.defaultCharset());
+        }
+
+        Map<String, SequenceLocationType> rcvToSequenceLocation = new HashMap<>();
+        // Skip header, read first data line
+        bufferedReader.readLine();
+        String line = bufferedReader.readLine();
+        while (line != null) {
+            String[] parts = line.split("\t");
+            // Check assembly
+            if (parts[12].equals(selectedAssembly)) {
+                SequenceLocationType sequenceLocation = new SequenceLocationType();
+                sequenceLocation.setChr(parts[13]);
+                sequenceLocation.setStart(new BigInteger(parts[14]));
+                sequenceLocation.setStop(new BigInteger(parts[15]));
+                sequenceLocation.setReferenceAllele(parts[25]);
+                sequenceLocation.setAlternateAllele(parts[26]);
+                // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
+                String[] rcvArray = parts[8].split(";");
+                for (String rcv : rcvArray) {
+                    rcvToSequenceLocation.put(rcv, sequenceLocation);
+                }
+            }
+            line = bufferedReader.readLine();
+        }
+        return rcvToSequenceLocation;
     }
 
     private Map<String, EFO> loadEFOTerms() {

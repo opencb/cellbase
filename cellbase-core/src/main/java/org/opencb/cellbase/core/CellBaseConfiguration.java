@@ -216,9 +216,13 @@ public class CellBaseConfiguration {
             this.clinvar = clinvar;
         }
 
-        public URLProperties getClinvarSummary() { return clinvarSummary; }
+        public URLProperties getClinvarSummary() {
+            return clinvarSummary;
+        }
 
-        public void setClinvarSummary(URLProperties clinvarSummary) { this.clinvarSummary = clinvarSummary; }
+        public void setClinvarSummary(URLProperties clinvarSummary) {
+            this.clinvarSummary = clinvarSummary;
+        }
 
         public URLProperties getClinvarEfoTerms() {
             return clinvarEfoTerms;
