@@ -17,7 +17,6 @@ import java.util.List;
 public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
 
     private VariantAnnotationDBAdaptor variantAnnotationDBAdaptor;
-    private List<VariantAnnotation> variantAnnotationList;
 
     private QueryOptions queryOptions;
 
@@ -42,36 +41,37 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         return false;
     }
 
-    public List<VariantAnnotation> run(List<Variant> variantList) {
+    public void run(List<Variant> variantList) {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
         List<QueryResult> queryResultList =
                 variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
-        for (QueryResult<VariantAnnotation> queryResult : queryResultList) {
-            if (queryResult.getResult().size() > 0) {
-                variantAnnotationList.add(queryResult.getResult().get(0));
+        for (int i = 0; i < queryResultList.size(); i++) {
+            if (queryResultList.get(i).getResult().size() > 0) {
+                variantList.get(i).setAnnotation((VariantAnnotation) queryResultList.get(i).getResult().get(0));
             } else {
-                logger.warn("Emtpy result for '{}'", queryResult.getId());
+                logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
             }
         }
-        return variantAnnotationList;
     }
 
 
     // TODO: use a external class for this (this method could be added to GenomicVariant class)
     private Variant getGenomicVariant(Variant variant) {
-        if(variant.getAlternate().equals(".")) {  // reference positions are not variants
+        if (variant.getAlternate().equals(".")) {  // reference positions are not variants
             return null;
         } else {
             String ref;
             if (variant.getAlternate().equals("<DEL>")) {  // large deletion
-                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));  // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
+                // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
+                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));
                 ref = StringUtils.repeat("N", end - variant.getStart());
                 return new Variant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
                 // TODO: structural variants are not yet properly handled. Implement and remove this patch asap
-            } else if(variant.getAlternate().startsWith("<") || (variant.getAlternate().length()>1 && variant.getReference().length()>1)) {
+            } else if (variant.getAlternate().startsWith("<")
+                    || (variant.getAlternate().length() > 1 && variant.getReference().length() > 1)) {
                 return null;
             } else {
                 ref = variant.getReference().equals("") ? "-" : variant.getReference();
@@ -79,10 +79,6 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
             }
         }
-    }
-
-    public void setVariantAnnotationList(List<VariantAnnotation> variantAnnotationList) {
-        this.variantAnnotationList = variantAnnotationList;
     }
 
 }

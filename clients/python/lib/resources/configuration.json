@@ -1,0 +1,9 @@
+{
+  "version": "v3",
+  "apiVersion": "v3.1",
+  "wiki": "https://github.com/opencb/cellbase/wiki",
+  "database": {
+	"host": "bioinfodev.hpc.cam.ac.uk",
+    "port": 80
+  }
+}

@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.mongodb.loader;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BulkWriteResult;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -38,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -52,6 +55,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private Path indexScriptFolder;
     private int[] chunkSizes;
+    private String clinicalVariantSource;
+
+    private static final String CLINVARVARIANTSOURCE = "clinvar";
+    private static final String COSMICVARIANTSOURCE = "cosmic";
+    private static final String GWASVARIANTSOURCE = "gwas";
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
         this(queue, data, database, null);
@@ -60,7 +68,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
                                  CellBaseConfiguration cellBaseConfiguration) {
         super(queue, data, database, cellBaseConfiguration);
-        if(cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder") != null) {
+        if (cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder") != null) {
             indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder"));
         }
     }
@@ -76,14 +84,15 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
          */
         String[] hosts = cellBaseConfiguration.getDatabase().getHost().split(",");
         List<DataStoreServerAddress> dataStoreServerAddressList = new ArrayList<>(hosts.length);
-        for (String host: hosts) {
+        for (String host : hosts) {
             String[] hostAndPort = host.split(":");
-            dataStoreServerAddressList.add(new DataStoreServerAddress(hostAndPort[0], (hostAndPort.length == 2) ? Integer.parseInt(hostAndPort[1]) : 27017));
+            dataStoreServerAddressList.add(new DataStoreServerAddress(hostAndPort[0], (hostAndPort.length == 2)
+                    ? Integer.parseInt(hostAndPort[1]) : 27017));
         }
         mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddressList);
 
         MongoDBConfiguration mongoDBConfiguration;
-        if(cellBaseConfiguration != null
+        if (cellBaseConfiguration != null
                 && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null
                 && !cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase").isEmpty()) {
             mongoDBConfiguration = MongoDBConfiguration.builder()
@@ -92,7 +101,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase")).build();
             logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
                     cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
-        }else {
+        } else {
             mongoDBConfiguration = MongoDBConfiguration.builder()
                     .add("username", cellBaseConfiguration.getDatabase().getUser())
                     .add("password", cellBaseConfiguration.getDatabase().getPassword()).build();
@@ -128,6 +137,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "variation":
                 collectionName = "variation";
                 break;
+            case "cadd":
+                collectionName = "variation_functional_score";
+                break;
             case "regulatory_region":
                 collectionName = "regulatory_region";
                 break;
@@ -144,8 +156,17 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 collectionName = "conservation";
                 break;
             case "cosmic":
+                clinicalVariantSource = "cosmic";
+                collectionName = "clinical";
+                break;
             case "clinvar":
+                clinicalVariantSource = "clinvar";
+                collectionName = "clinical";
+                break;
             case "gwas":
+                clinicalVariantSource = "gwas";
+                collectionName = "clinical";
+                break;
             case "clinical":
                 collectionName = "clinical";
                 break;
@@ -167,7 +188,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     break;
                 case "variation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE,
-                            10 * MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE};
+                            10 * MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, };
+                    break;
+                case "variation_functional_score":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE};
                     break;
                 case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
@@ -183,7 +207,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     @Override
     public Integer call() {
-        Integer loadedObjects = 0;
+        int numLoadedObjects = 0;
         boolean finished = false;
         while (!finished) {
             try {
@@ -195,9 +219,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     for (String jsonLine : batch) {
                         DBObject dbObject = (DBObject) JSON.parse(jsonLine);
                         addChunkId(dbObject);
+                        addClinicalPrivateFields(dbObject);
                         dbObjectsBatch.add(dbObject);
                     }
-                    loadedObjects += load(dbObjectsBatch);
+                    numLoadedObjects += load(dbObjectsBatch);
                 }
             } catch (InterruptedException e) {
                 logger.error("Loader thread interrupted: " + e.getMessage());
@@ -205,14 +230,140 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 logger.error("Error Loading batch: " + e.getMessage());
             }
         }
-        logger.debug("'load' finished. " + loadedObjects + " records loaded");
-        return loadedObjects;
+        logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
+        return numLoadedObjects;
+    }
+
+    private void addClinicalPrivateFields(DBObject dbObject) {
+        if (clinicalVariantSource != null) {
+            List<String> geneIdList = null;
+            List<String> phenotypeList = null;
+            switch (clinicalVariantSource) {
+                case CLINVARVARIANTSOURCE:
+                    geneIdList = getClinvarGeneIds(dbObject);
+                    phenotypeList = getClinvarPhenotypes(dbObject);
+                    break;
+                case COSMICVARIANTSOURCE:
+                    geneIdList = dbObject.get("geneName") != null
+                            ? Collections.singletonList((String) dbObject.get("geneName")) : null;
+                    phenotypeList = getCosmicPhenotypes(dbObject);
+                    break;
+                case GWASVARIANTSOURCE:
+                    geneIdList = dbObject.get("reportedGenes") != null
+                            ? Collections.singletonList((String) dbObject.get("reportedGenes")) : null;
+                    phenotypeList = getGwasPhenotypes(dbObject);
+                    break;
+                default:
+                    break;
+            }
+            if (geneIdList != null) {
+                dbObject.put("_geneIds", geneIdList);
+            }
+            if (phenotypeList != null) {
+                dbObject.put("_phenotypes", phenotypeList);
+            }
+        }
+    }
+
+    private List<String> getGwasPhenotypes(DBObject dbObject) {
+        List<String> phenotypeList = new ArrayList<>();
+        BasicDBList studiesDBList = ((BasicDBList) dbObject.get("studies"));
+        for (Object studyObject : studiesDBList) {
+            BasicDBObject studyDBObject = (BasicDBObject) studyObject;
+            BasicDBList traitsDBList = (BasicDBList) studyDBObject.get("traits");
+            if (traitsDBList != null) {
+                for (Object traitObject : traitsDBList) {
+                    BasicDBObject traitDBObject = (BasicDBObject) traitObject;
+                    if (traitDBObject.get("diseaseTrait") != null) {
+                        phenotypeList.add((String) traitDBObject.get("diseaseTrait"));
+                    }
+                }
+            }
+        }
+
+        return phenotypeList;
+    }
+
+    private List<String> getCosmicPhenotypes(DBObject dbObject) {
+        List<String> phenotypeList = new ArrayList<>(4);
+        addIfNotEmpty((String) dbObject.get("primarySite"), phenotypeList);
+        addIfNotEmpty((String) dbObject.get("histologySubtype"), phenotypeList);
+        addIfNotEmpty((String) dbObject.get("primaryHistology"), phenotypeList);
+        addIfNotEmpty((String) dbObject.get("siteSubtype"), phenotypeList);
+
+        return phenotypeList;
+
+    }
+
+    private void addIfNotEmpty(String element, List<String> stringList) {
+        if (element != null && !element.isEmpty()) {
+            stringList.add(element);
+        }
+    }
+
+    private List<String> getClinvarPhenotypes(DBObject dbObject) {
+        List<String> phenotypeList = new ArrayList<>();
+        BasicDBList basicDBList = (BasicDBList) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) dbObject.get("clinvarSet"))
+                .get("referenceClinVarAssertion")).get("traitSet")).get("trait");
+        for (Object object : basicDBList) {
+            BasicDBObject basicDBObject = (BasicDBObject) object;
+            BasicDBList nameDBList = (BasicDBList) basicDBObject.get("name");
+            if (nameDBList != null) {
+                for (Object nameObject : nameDBList) {
+                    BasicDBObject elementValueDBObject = (BasicDBObject) ((BasicDBObject) nameObject).get("elementValue");
+                    if (elementValueDBObject != null) {
+                        String phenotype = (String) elementValueDBObject.get("value");
+                        if (phenotype != null) {
+                            phenotypeList.add(phenotype);
+                        }
+                    }
+                }
+
+            }
+        }
+        if (phenotypeList.size() > 0) {
+            return phenotypeList;
+        } else {
+            return null;
+        }
+    }
+
+    private List<String> getClinvarGeneIds(DBObject dbObject) {
+        List<String> geneIdList = new ArrayList<>();
+        BasicDBList basicDBList = (BasicDBList) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) dbObject.get("clinvarSet"))
+                .get("referenceClinVarAssertion")).get("measureSet")).get("measure");
+        for (Object object : basicDBList) {
+            BasicDBObject basicDBObject = (BasicDBObject) object;
+            BasicDBList measureRelationshipDBList = (BasicDBList) basicDBObject.get("measureRelationship");
+            if (measureRelationshipDBList != null) {
+                for (Object measureRelationShipObject : measureRelationshipDBList) {
+                    BasicDBList symbolDBList = (BasicDBList) ((BasicDBObject) measureRelationShipObject).get("symbol");
+                    if (symbolDBList != null) {
+                        for (Object symbolObject : symbolDBList) {
+                            BasicDBObject elementValueDBObject = (BasicDBObject) ((BasicDBObject) symbolObject).get("elementValue");
+                            if (elementValueDBObject != null) {
+                                String geneId = (String) elementValueDBObject.get("value");
+                                if (geneId != null) {
+                                    geneIdList.add(geneId);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        if (geneIdList.size() > 0) {
+            return geneIdList;
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void createIndex(String data) throws LoaderException {
         Path indexFilePath = getIndexFilePath(data);
-        if(indexFilePath != null) {
+        if (indexFilePath != null) {
             try {
                 runCreateIndexProcess(indexFilePath);
             } catch (IOException e) {
@@ -220,8 +371,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }else {
-            logger.warn("No index found for '{}'", data);        }
+        } else {
+            logger.warn("No index found for '{}'", data);
+        }
     }
 
     public int load(List<DBObject> batch) {
@@ -238,9 +390,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 int chunkEnd = (Integer) dbObject.get("end") / chunkSize;
                 String chunkIdSuffix = chunkSize / 1000 + "k";
                 for (int i = chunkStart; i <= chunkEnd; i++) {
-                    if(dbObject.containsField("chromosome")) {
+                    if (dbObject.containsField("chromosome")) {
                         chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
-                    }else {
+                    } else {
                         chunkIds.add(dbObject.get("sequenceName") + "_" + i + "_" + chunkIdSuffix);
                     }
                 }
@@ -255,7 +407,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     private Path getIndexFilePath(String data) throws LoaderException {
-        if(indexScriptFolder == null || data == null) {
+        if (indexScriptFolder == null || data == null) {
             logger.error("No path can be provided for index, check index folder '{}' and data '{}'",
                     indexScriptFolder, data);
             return null;
@@ -274,6 +426,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "variation":
                 indexFileName = "variation-indexes.js";
+                break;
+            case "variation_functional_score":
+                indexFileName = "variation_functional_score-indexes.js";
                 break;
             case "regulatory_region":
                 indexFileName = "regulatory_region-indexes.js";
@@ -299,7 +454,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             default:
                 break;
         }
-        if(indexFileName == null) {
+        if (indexFileName == null) {
             return null;
         }
         return indexScriptFolder.resolve(indexFileName);
@@ -311,13 +466,13 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         args.add("mongo");
         args.add("--host");
         args.add(cellBaseConfiguration.getDatabase().getHost());
-        if(cellBaseConfiguration.getDatabase().getUser() != null && !cellBaseConfiguration.getDatabase().getUser().equals("")) {
+        if (cellBaseConfiguration.getDatabase().getUser() != null && !cellBaseConfiguration.getDatabase().getUser().equals("")) {
             args.addAll(Arrays.asList(
                     "-u", cellBaseConfiguration.getDatabase().getUser(),
                     "-p", cellBaseConfiguration.getDatabase().getPassword()
             ));
         }
-        if(cellBaseConfiguration != null && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null) {
+        if (cellBaseConfiguration != null && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null) {
             args.add("--authenticationDatabase");
             args.add(cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
             logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
@@ -327,7 +482,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         args.add(indexFilePath.toString());
 
         ProcessBuilder processBuilder = new ProcessBuilder(args);
-        logger.debug("Executing command: '{}'",  StringUtils.join(processBuilder.command(), " "));
+        logger.debug("Executing command: '{}'", StringUtils.join(processBuilder.command(), " "));
 
 //        processBuilder.redirectErrorStream(true);
 //        if (logFilePath != null) {

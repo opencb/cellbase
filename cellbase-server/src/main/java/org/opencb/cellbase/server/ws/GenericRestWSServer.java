@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
@@ -61,9 +60,9 @@ public class GenericRestWSServer implements IWSServer {
     @DefaultValue("")
     @PathParam("species")
     @ApiParam(name = "species", value = "Name of the species to query", defaultValue = "hsapiens",
-            allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla," +
-                    "mmulatta,sscrofa,cfamiliaris,ggallus,btaurus,cintestinalis,celegans,dmelanogaster,agambiae,pfalciparum," +
-                    "scerevisiae,lmajor,athaliana,osativa,gmax,vvinifera,zmays,slycopersicum,csabeus,oaries,olatipes,sbicolor,afumigatus")
+            allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla,"
+                    + "mmulatta,sscrofa,cfamiliaris,ggallus,btaurus,cintestinalis,celegans,dmelanogaster,agambiae,pfalciparum,"
+                    + "scerevisiae,lmajor,athaliana,osativa,gmax,vvinifera,zmays,slycopersicum,csabeus,oaries,olatipes,sbicolor,afumigatus")
     protected String species;
 
     @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g.: grch38")
@@ -99,7 +98,8 @@ public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("json")
     @QueryParam("of")
-    @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json", allowableValues = "json,pb (Not implemented yet)")
+    @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json",
+            allowableValues = "json,pb (Not implemented yet)")
     protected String outputFormat;
 
 
@@ -139,7 +139,7 @@ public class GenericRestWSServer implements IWSServer {
         logger.info("Static block, creating MongoDBAdapatorFactory");
         try {
             if (System.getenv("CELLBASE_HOME") != null) {
-                logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME")+"/configuration.json");
+                logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME") + "/configuration.json");
                 cellBaseConfiguration = CellBaseConfiguration
                         .load(new FileInputStream(new File(System.getenv("CELLBASE_HOME") + "/configuration.json")));
             } else {
@@ -213,7 +213,7 @@ public class GenericRestWSServer implements IWSServer {
             logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
         }
 
-        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
+        if (!version.equalsIgnoreCase("v3") && !cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new VersionException("Version not valid: '" + version + "'");
         }
@@ -222,9 +222,11 @@ public class GenericRestWSServer implements IWSServer {
     @Override
     public void parseQueryParams() {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-        queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
+        queryOptions.put("metadata", (multivaluedMap.get("metadata") != null)
+                ? multivaluedMap.get("metadata").get(0).equals("true")
+                : true);
 
-        if(exclude != null && !exclude.equals("")) {
+        if (exclude != null && !exclude.equals("")) {
             queryOptions.put("exclude", new LinkedList<>(Splitter.on(",").splitToList(exclude)));
         } else {
             queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
@@ -232,7 +234,7 @@ public class GenericRestWSServer implements IWSServer {
                     : null);
         }
 
-        if(include != null && !include.equals("")) {
+        if (include != null && !include.equals("")) {
             queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
         } else {
             queryOptions.put("include", (multivaluedMap.get("include") != null)
@@ -240,14 +242,14 @@ public class GenericRestWSServer implements IWSServer {
                     : null);
         }
 
-        queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX): LIMIT_DEFAULT);
+        queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
         queryOptions.put("skip", (skip > 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) ? Boolean.parseBoolean(count) : false);
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
         // Now we add all the others QueryParams in the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-            if(!queryOptions.containsKey(entry.getKey())) {
+            if (!queryOptions.containsKey(entry.getKey())) {
                 logger.info("Adding '{}' to queryOptions", entry);
                 queryOptions.put(entry.getKey(), entry.getValue().get(0));
             }
@@ -266,6 +268,8 @@ public class GenericRestWSServer implements IWSServer {
         switch (species) {
             case "echo":
                 return createStringResponse("Status active");
+            default:
+                break;
         }
         return createOkResponse("Not valid option");
     }
@@ -308,7 +312,8 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createErrorResponse(String method, String errorMessage) {
         try {
-            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)), MediaType.APPLICATION_JSON_TYPE));
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)),
+                    MediaType.APPLICATION_JSON_TYPE));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -363,19 +368,17 @@ public class GenericRestWSServer implements IWSServer {
     }
 
 
-
-
-    /**
+    /*
      * TO DELETE
      */
     @Deprecated
     protected Response generateResponse(String queryString, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
+        return createOkResponse("TODO: generateResponse is deprecated");
     }
 
     @Deprecated
     protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
+        return createOkResponse("TODO: generateResponse is deprecated");
     }
 
     @Deprecated
@@ -446,10 +449,6 @@ public class GenericRestWSServer implements IWSServer {
 //    }
 
     //    protected Response createResponse(String response, MediaType mediaType) throws IOException {
-//        logger.debug("CellBase - CreateResponse, QueryParams: FileFormat => " + fileFormat + ", OutputFormat => " + outputFormat + ", Compress => " + outputCompress);
-//        logger.debug("CellBase - CreateResponse, Inferred media type: " + mediaType.toString());
-//        logger.debug("CellBase - CreateResponse, Response: " + ((response.length() > 50) ? response.substring(0, 49) + "..." : response));
-//
 //        if (fileFormat == null || fileFormat.equalsIgnoreCase("")) {
 //            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")
 //                    && !outputFormat.equalsIgnoreCase("jsonp") && !outputFormat.equalsIgnoreCase("jsontext")) {

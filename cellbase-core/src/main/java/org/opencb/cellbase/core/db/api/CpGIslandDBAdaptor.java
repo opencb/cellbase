@@ -24,11 +24,11 @@ import java.util.List;
 
 @Deprecated
 public interface CpGIslandDBAdaptor {
-	
-	public List<CpGIsland> getAllByRegion(Region region);
-	
-	public List<List<CpGIsland>> getAllByRegionList(List<Region> regionList);
-	
-	
-	public List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
+
+    List<CpGIsland> getAllByRegion(Region region);
+
+    List<List<CpGIsland>> getAllByRegionList(List<Region> regionList);
+
+
+    List<IntervalFeatureFrequency> getAllIntervalFrequencies(Region region, int interval);
 }

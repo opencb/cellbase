@@ -16,9 +16,13 @@
 
 package org.opencb.cellbase.core.variant.annotation;
 
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderVersion;
+import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +30,17 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, VariantAnnotation> {
+public class VariantAnnotatorTask implements ParallelTaskRunner.Task<String, Variant> {
 
     private List<VariantAnnotator> variantAnnotatorList;
+    private FullVcfCodec vcfCodec;
+    private VariantContextToVariantConverter converter;
 
-    public VariantAnnotatorTask(List<VariantAnnotator> variantAnnotatorList) {
+    public VariantAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
+                                List<VariantAnnotator> variantAnnotatorList) {
+        this.vcfCodec = new FullVcfCodec();
+        this.vcfCodec.setVCFHeader(header, version);
+        this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
     }
 
@@ -40,17 +50,24 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Va
         }
     }
 
-    public List<VariantAnnotation> apply(List<Variant> variantList) {
-        // A new variantAnnotationList must be created each time apply is called to avoid overwriting previous results
-        // of the apply method
-        List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
+    public List<Variant> apply(List<String> batch) {
+        List<Variant> variantList = parseVariantList(batch);
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
-            // All annotators must have a reference to the same variantAnnotationList so that each one updates the
-            // annotation of the others
-            variantAnnotator.setVariantAnnotationList(variantAnnotationList);
-            variantAnnotationList = variantAnnotator.run(variantList);
+            variantAnnotator.run(variantList);
         }
-        return variantAnnotationList;
+        return variantList;
+    }
+
+    private List<Variant> parseVariantList(List<String> batch) {
+        List<VariantContext> variantContexts = new ArrayList<>(batch.size());
+        for (String line : batch) {
+            if (line.startsWith("#") || line.trim().isEmpty()) {
+                continue;
+            }
+            variantContexts.add(vcfCodec.decode(line));
+        }
+
+        return converter.apply(variantContexts);
     }
 
     public void post() {
@@ -104,7 +121,8 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Va
 //        List<Future<Integer>> futureAnnotatedVariants = startAnnotators(annotatorExecutorService, variantAnnotatorList);
 //
 //        ExecutorService writerExecutorService = Executors.newSingleThreadExecutor();
-//        VariantAnnotationWriterThread variantAnnotationWriterThread = new VariantAnnotationWriterThread(outputFile, variantAnnotationQueue);
+//        VariantAnnotationWriterThread variantAnnotationWriterThread =
+// new VariantAnnotationWriterThread(outputFile, variantAnnotationQueue);
 //        Future<Integer> futureWrittenVariants = writerExecutorService.submit(variantAnnotationWriterThread);
 //
 //        /*
@@ -135,7 +153,8 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Va
 //        return variantAnnotatorList;
 //    }
 //
-//    private List<Future<Integer>> startAnnotators(ExecutorService executorService, List<CellbaseWSVariantAnnotator> variantAnnotatorList) {
+//    private List<Future<Integer>> startAnnotators(ExecutorService executorService,
+// List<CellbaseWSVariantAnnotator> variantAnnotatorList) {
 //        List<Future<Integer>> futures = new ArrayList<>(numThreads);
 //        for (int i = 0; i < variantAnnotatorList.size(); i++) {
 //            futures.add(executorService.submit(variantAnnotatorList.get(i)));

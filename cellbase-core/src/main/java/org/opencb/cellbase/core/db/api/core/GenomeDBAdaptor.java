@@ -17,7 +17,6 @@
 package org.opencb.cellbase.core.db.api.core;
 
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
@@ -30,12 +29,12 @@ public interface GenomeDBAdaptor {
     @Deprecated
     QueryResult speciesInfoTmp(String id, QueryOptions options);
 
-	QueryResult getGenomeInfo(QueryOptions options);
+    QueryResult getGenomeInfo(QueryOptions options);
 
 
-	QueryResult getChromosomeById(String id, QueryOptions options);
+    QueryResult getChromosomeById(String id, QueryOptions options);
 
-	List<QueryResult> getAllByChromosomeIdList(List<String> idList, QueryOptions options);
+    List<QueryResult> getAllByChromosomeIdList(List<String> idList, QueryOptions options);
 
 
     QueryResult getSequenceByRegion(String chromosome, int start, int end, QueryOptions options);
@@ -52,5 +51,4 @@ public interface GenomeDBAdaptor {
 
     List<QueryResult> getAllCytobandsByIdList(List<String> idList, QueryOptions options);
 
-//    String getRevComp(String sequence);
 }

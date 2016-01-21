@@ -88,7 +88,9 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/stats")
     @Override
-    public Response stats() { return super.stats(); }
+    public Response stats() {
+        return super.stats();
+    }
 
     @GET
     @Path("/all")
@@ -212,7 +214,6 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
-//            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor.getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
             List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
 //            return generateResponse(query, "MUTATION", queryResults);
             return createOkResponse(queryResults);
@@ -270,8 +271,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getPPIByEnsemblId(@PathParam("geneId") String query) {
         try {
             parseQueryParams();
-            ProteinProteinInteractionDBAdaptor PPIDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-            return createOkResponse(PPIDBAdaptor.getAllByInteractorIdList(Splitter.on(",").splitToList(query), queryOptions));
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            return createOkResponse(ppiDBAdaptor.getAllByInteractorIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -294,7 +296,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
             queryOptions.add("source", "clinvar");
             queryOptions.add("gene", geneId);
-            if(phenotype != null && !phenotype.isEmpty()) {
+            if (phenotype != null && !phenotype.isEmpty()) {
                 queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
             }
             return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
@@ -316,9 +318,11 @@ public class GeneWSServer extends GenericRestWSServer {
         sb.append("all id formats are accepted.\n\n\n");
         sb.append("Resources:\n");
         sb.append("- info: Get gene information: name, position, biotype.\n");
-        sb.append(" Output columns: Ensembl gene, external name, external name source, biotype, status, chromosome, start, end, strand, source, description.\n\n");
+        sb.append(" Output columns: Ensembl gene, external name, external name source, biotype, status, chromosome, start, end, strand, "
+                + "source, description.\n\n");
         sb.append("- transcript: Get all transcripts for this gene.\n");
-        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, coding region start, coding region end, cdna coding start, cdna coding end, description.\n\n");
+        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, "
+                + "coding region start, coding region end, cdna coding start, cdna coding end, description.\n\n");
         sb.append("- tfbs: Get transcription factor binding sites (TFBSs) that map to the promoter region of this gene.\n");
         sb.append(" Output columns: TF name, target gene name, chromosome, start, end, cell type, sequence, score.\n\n");
         sb.append("- mirna_target: Get all microRNA target sites for this gene.\n");

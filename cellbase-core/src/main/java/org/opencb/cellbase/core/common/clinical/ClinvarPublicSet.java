@@ -16,12 +16,12 @@
 
 package org.opencb.cellbase.core.common.clinical;
 
-import org.opencb.biodata.formats.variant.clinvar.v19jaxb.PublicSetType;
+import org.opencb.biodata.formats.variant.clinvar.v24jaxb.PublicSetType;
 
 /**
  * Created by parce on 10/29/14.
  */
-public class ClinvarPublicSet extends ClinicalVariant{
+public class ClinvarPublicSet extends ClinicalVariant {
 
     private PublicSetType clinvarSet;
 

@@ -23,6 +23,7 @@ package org.opencb.cellbase.core.common.variation;
  * Time: 12:51 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class ConsequenceType {
 
     private String soTerm;

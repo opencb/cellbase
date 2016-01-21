@@ -66,7 +66,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
     public QueryResult stats() {
         return null;
     }
-    
+
     @Override
     public QueryResult getAll(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
@@ -194,7 +194,10 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
+            QueryBuilder builder = QueryBuilder.start("chromosome")
+                    .is(region.getChromosome())
+                    .and("start").greaterThanEquals(region.getStart())
+                    .lessThanEquals(region.getEnd());
             queries.add(builder.get());
             ids.add(region.toString());
         }
@@ -203,11 +206,11 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
     }
 
     public QueryResult next(String id, QueryOptions options) {
-        QueryOptions _options = new QueryOptions();
-        _options.put("include", Arrays.asList("chromosome", "start"));
-        QueryResult queryResult = getAllById(id, _options);
-        if(queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject)queryResult.getResult().get(0);
+        QueryOptions options1 = new QueryOptions();
+        options1.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, options1);
+        if (queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);

@@ -21,8 +21,8 @@ package org.opencb.cellbase.core.loader;
  */
 public interface CellBaseTypeConverter<DataModel, StorageSchema> {
 
-    public StorageSchema convertToStorageSchema(DataModel dataModel);
+    StorageSchema convertToStorageSchema(DataModel dataModel);
 
-    public DataModel convertToDataModel(StorageSchema storageSchema);
+    DataModel convertToDataModel(StorageSchema storageSchema);
 
 }

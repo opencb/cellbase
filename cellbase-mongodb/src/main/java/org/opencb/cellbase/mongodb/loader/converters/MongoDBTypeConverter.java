@@ -24,7 +24,7 @@ import org.opencb.cellbase.core.loader.CellBaseTypeConverter;
 /**
  * Created by imedina on 01/09/14.
  */
-public abstract class MongoDBTypeConverter<DataModel, StorageSchema> implements CellBaseTypeConverter<DataModel, StorageSchema> {
+public abstract class MongoDBTypeConverter<DATAMODEL, STORAGESCHEMA> implements CellBaseTypeConverter<DATAMODEL, STORAGESCHEMA> {
 
     protected ObjectMapper jsonObjectMapper;
     protected ObjectWriter jsonObjectWriter;

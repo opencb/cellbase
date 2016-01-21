@@ -18,27 +18,31 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
+import org.opencb.datastore.core.QueryOptions;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Created by fjlopez on 14/04/15.
  */
-public class PostLoadCommandExecutor extends CommandExecutor{
+public class PostLoadCommandExecutor extends CommandExecutor {
 
     private CliOptionsParser.PostLoadCommandOptions postLoadCommandOptions;
 
     private Path clinicalAnnotationFilename = null;
     private String assembly = null;
-    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
+    private static final int CLINICAL_ANNOTATION_BATCH_SIZE = 1000;
 //    private static final int CLINICAL_ANNOTATION_BATCH_SIZE=1000;
 
     // TODO: remove constructor, just for debugging purposes
-    public PostLoadCommandExecutor() {}
+    public PostLoadCommandExecutor() {
+    }
 
     public PostLoadCommandExecutor(CliOptionsParser.PostLoadCommandOptions postLoadCommandOptions) {
         super(postLoadCommandOptions.commonOptions.logLevel, postLoadCommandOptions.commonOptions.verbose,
@@ -50,7 +54,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
     @Override
     public void execute() {
         checkParameters();
-        if(clinicalAnnotationFilename!=null) {
+        if (clinicalAnnotationFilename != null) {
             loadClinicalAnnotation();
         } else {
             throw new ParameterException("Only post-load of clinical annotations is available right now.");
@@ -67,17 +71,18 @@ public class PostLoadCommandExecutor extends CommandExecutor{
                 throw new ParameterException("Input file cannot be a directory: " + clinicalAnnotationFilename);
             }
 
-            if(postLoadCommandOptions.assembly != null) {
+            if (postLoadCommandOptions.assembly != null) {
                 assembly = postLoadCommandOptions.assembly;
-                if(!assembly.equals("GRCh37") && !assembly.equals("GRCh38")) {
-                    throw  new ParameterException("Please, provide a valid human assembly. Available assemblies: GRCh37, GRCh38");
+                if (!assembly.equals("GRCh37") && !assembly.equals("GRCh38")) {
+                    throw new ParameterException("Please, provide a valid human assembly. Available assemblies: GRCh37, GRCh38");
                 }
             } else {
-                throw  new ParameterException("Providing human assembly is mandatory if loading clinical annotations. Available assemblies: GRCh37, GRCh38");
+                throw new ParameterException("Providing human assembly is mandatory if loading clinical annotations. "
+                        + "Available assemblies: GRCh37, GRCh38");
             }
 
         } else {
-            throw  new ParameterException("Please check command line syntax. Provide a valid input file name.");
+            throw new ParameterException("Please check command line syntax. Provide a valid input file name.");
         }
     }
 
@@ -86,7 +91,7 @@ public class PostLoadCommandExecutor extends CommandExecutor{
 
         /**
          * Initialize VEP reader
-          */
+         */
         logger.info("Initializing VEP reader...");
         VepFormatReader vepFormatReader = new VepFormatReader(clinicalAnnotationFilename.toString());
         vepFormatReader.open();
@@ -124,17 +129,17 @@ public class PostLoadCommandExecutor extends CommandExecutor{
          */
         logger.info("Reading/Loading variant annotations...");
         int nVepAnnotatedVariants = 0;
-//        List<VariantAnnotation> variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
-//        while(!variantAnnotationList.isEmpty()) {
-//            nVepAnnotatedVariants += variantAnnotationList.size();
-//            clinicalDBAdaptor.updateAnnotations(variantAnnotationList, new QueryOptions());
-//            logger.info(Integer.valueOf(nVepAnnotatedVariants)+" read variants with vep annotations");
-//            variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
-//        }
+        List<VariantAnnotation> variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
+        while (!variantAnnotationList.isEmpty()) {
+            nVepAnnotatedVariants += variantAnnotationList.size();
+            clinicalDBAdaptor.updateAnnotations(variantAnnotationList, new QueryOptions());
+            logger.info(Integer.valueOf(nVepAnnotatedVariants) + " read variants with vep annotations");
+            variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
+        }
 
         vepFormatReader.post();
         vepFormatReader.close();
-        logger.info(nVepAnnotatedVariants+" VEP annotated variants were read from "+clinicalAnnotationFilename.toString());
+        logger.info(nVepAnnotatedVariants + " VEP annotated variants were read from " + clinicalAnnotationFilename.toString());
         logger.info("Finished");
     }
 

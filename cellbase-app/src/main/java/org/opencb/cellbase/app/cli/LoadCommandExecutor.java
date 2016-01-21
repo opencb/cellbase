@@ -25,6 +25,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -47,20 +49,20 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         this.loadCommandOptions = loadCommandOptions;
 
-        if(loadCommandOptions.input != null) {
+        if (loadCommandOptions.input != null) {
             input = Paths.get(loadCommandOptions.input);
         }
-        if(loadCommandOptions.database != null) {
+        if (loadCommandOptions.database != null) {
             database = loadCommandOptions.database;
         }
-        if(loadCommandOptions.loader != null) {
+        if (loadCommandOptions.loader != null) {
             loader = loadCommandOptions.loader;
         }
     }
 
 
     /**
-     * Parse specific 'data' command options
+     * Parse specific 'data' command options.
      */
     public void execute() {
 
@@ -70,11 +72,13 @@ public class LoadCommandExecutor extends CommandExecutor {
             if (loadCommandOptions.data != null) {
 
                 if (loadCommandOptions.loaderParams.containsKey("mongodb-index-folder")) {
-                    configuration.getDatabase().getOptions().put("mongodb-index-folder", loadCommandOptions.loaderParams.get("mongodb-index-folder"));
+                    configuration.getDatabase().getOptions().put("mongodb-index-folder",
+                            loadCommandOptions.loaderParams.get("mongodb-index-folder"));
                 }
                 // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
                 if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
-                    configuration.getDatabase().getOptions().put("authenticationDatabase", loadCommandOptions.loaderParams.get("authenticationDatabase"));
+                    configuration.getDatabase().getOptions().put("authenticationDatabase",
+                            loadCommandOptions.loaderParams.get("authenticationDatabase"));
                 }
 
 //                loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
@@ -82,15 +86,14 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if (loadCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{"genome", "gene", "variation", "regulatory_region", "protein", "ppi",
-                            "protein_functional_prediction", "conservation", "clinical"};
+                    buildOptions = new String[]{"genome", "gene", "gene_disease_association", "variation", "variation_functional_score",
+                            "regulatory_region", "protein", "ppi", "protein_functional_prediction", "conservation", "clinical", };
                 } else {
                     buildOptions = loadCommandOptions.data.split(",");
                 }
 
                 for (int i = 0; i < buildOptions.length; i++) {
                     String buildOption = buildOptions[i];
-
                     try {
                         switch (buildOption) {
                             case "genome":
@@ -102,8 +105,14 @@ public class LoadCommandExecutor extends CommandExecutor {
                                 loadRunner.load(input.resolve("gene.json.gz"), "gene");
                                 loadRunner.index("gene");
                                 break;
+                            case "gene_disease_association":
+                                break;
                             case "variation":
                                 loadVariationData();
+                                break;
+                            case "variation_functional_score":
+                                loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
+                                loadRunner.index("variation_functional_score");
                                 break;
                             case "regulatory_region":
                                 loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
@@ -124,17 +133,16 @@ public class LoadCommandExecutor extends CommandExecutor {
                                 loadConservation();
                                 break;
                             case "clinical":
-                                loadRunner.load(input.resolve("clinvar.json.gz"), "clinvar");
-                                loadRunner.load(input.resolve("cosmic.json.gz"), "cosmic");
-                                loadRunner.load(input.resolve("gwas.json.gz"), "gwas");
-                                loadRunner.index("clinical");
+                                loadClinical();
+                                break;
+                            default:
+                                logger.warn("We should ot reach this point");
                                 break;
                         }
-                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException
-                            | ExecutionException | NoSuchMethodException | InterruptedException | ClassNotFoundException e) {
-                                } catch (LoaderException e) {
-                                } catch (IOException e) {
-                                }
+                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ExecutionException
+                            | NoSuchMethodException | InterruptedException | ClassNotFoundException | LoaderException | IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } else {
@@ -145,7 +153,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private void checkParameters() {
         if (loadCommandOptions.numThreads > 1) {
             numThreads = loadCommandOptions.numThreads;
-        }else {
+        } else {
             numThreads = 1;
             logger.warn("Incorrect number of numThreads, it must be a positive value. This has been set to '{}'", numThreads);
         }
@@ -164,13 +172,11 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.getFileName().toString().startsWith("variation_chr");
-            }
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+            return entry.getFileName().toString().startsWith("variation_chr");
         });
-        for (Path entry: stream) {
+
+        for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "variation");
         }
@@ -181,13 +187,11 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.getFileName().toString().startsWith("conservation_");
-            }
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+            return entry.getFileName().toString().startsWith("conservation_");
         });
-        for (Path entry: stream) {
+
+        for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "conservation");
         }
@@ -198,17 +202,39 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                return entry.getFileName().toString().startsWith("prot_func_pred_");
-            }
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+            return entry.getFileName().toString().startsWith("prot_func_pred_");
         });
-        for (Path entry: stream) {
+
+        for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
         }
         loadRunner.index("protein_functional_prediction");
+    }
+
+    private void loadClinical() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
+            LoaderException, InvocationTargetException, ClassNotFoundException {
+
+        Map<String, String> files = new LinkedHashMap<>();
+        files.put("clinvar", "clinvar.json.gz");
+        files.put("cosmic", "cosmic.json.gz");
+        files.put("gwas", "gwas.json.gz");
+
+        files.keySet().forEach(entry -> {
+            Path path = input.resolve(files.get(entry));
+            if (Files.exists(path)) {
+                try {
+                    logger.debug("Loading '{}' ...", entry);
+                    loadRunner.load(path, entry);
+                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                        | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                    logger.error(e.toString());
+                }
+            }
+        });
+
+        loadRunner.index("clinical");
     }
 
 }

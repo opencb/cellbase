@@ -25,10 +25,12 @@ import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import java.util.ArrayList;
 import java.util.List;
 
-/** @author Luis Miguel Cruz
- *  @version 1.2.3
- *  @since October 08, 2014  */
-public class Gwas extends ClinicalVariant{
+/**
+ * @author Luis Miguel Cruz
+ * @version 1.2.3
+ * @since October 08, 2014
+ */
+public class Gwas extends ClinicalVariant {
 
     private String region;
     private String reportedGenes;

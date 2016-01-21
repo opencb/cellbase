@@ -16,39 +16,40 @@
 
 package org.opencb.cellbase.core.common.variation;
 
+@Deprecated
 public class GenomicVariantEffect {
 
-	private String chromosome;
-	private int position;
-	private String referenceAllele;
-	private String alternativeAllele;
+    private String chromosome;
+    private int position;
+    private String referenceAllele;
+    private String alternativeAllele;
 
-	private String featureId;
-	private String featureName;
-	private String featureType;
-	private String featureBiotype;
-	private String featureChromosome;
-	private int featureStart;
-	private int featureEnd;
-	private String featureStrand;
+    private String featureId;
+    private String featureName;
+    private String featureType;
+    private String featureBiotype;
+    private String featureChromosome;
+    private int featureStart;
+    private int featureEnd;
+    private String featureStrand;
 
-	private String snpId;
-	private String snpRefAltAlleles;
-	private String snpAncestralAllele;
+    private String snpId;
+    private String snpRefAltAlleles;
+    private String snpAncestralAllele;
     // TODO: MAF frequencies
 
-	private String geneId;
-	private String transcriptId;
-	private String geneName;
+    private String geneId;
+    private String transcriptId;
+    private String geneName;
 
-	public String consequenceTypeSoAccession;
-	private String consequenceTypeSoTerm;
-	private String consequenceTypeSoDescription;
-	private String consequenceTypeCategory;
+    private String consequenceTypeSoAccession;
+    private String consequenceTypeSoTerm;
+    private String consequenceTypeSoDescription;
+    private String consequenceTypeCategory;
 
-	private int aaPosition;
-	private String aminoacidChange;
-	private String codonChange;
+    private int aaPosition;
+    private String aminoacidChange;
+    private String codonChange;
 
     private float polyphenScore;
     private String polyphenPrediction;
@@ -60,7 +61,6 @@ public class GenomicVariantEffect {
 
 
     public GenomicVariantEffect() {
-
     }
 
     public GenomicVariantEffect(String chromosome, int position, String referenceAllele, String alternativeAllele,
@@ -73,74 +73,74 @@ public class GenomicVariantEffect {
                                 String consequenceTypeCategory, int aaPosition, String aminoacidChange, String codonChange,
                                 float polyphenScore, String polyphenPrediction, float siftScore, String siftPrediciton,
                                 float phastConsScore, float phyloPScore) {
-		this.chromosome = chromosome;
-		this.position = position;
-		this.referenceAllele = referenceAllele;
-		this.alternativeAllele = alternativeAllele;
-		this.featureId = featureId;
-		this.featureName = featureName;
-		this.featureType = featureType;
-		this.featureBiotype = featureBiotype;
-		this.featureChromosome = featureChromosome;
-		this.featureStart = featureStart;
-		this.featureEnd = featureEnd;
-		this.featureStrand = featureStrand;
-		this.snpId = snpId;
-		this.snpAncestralAllele = snpAncestralAllele;
-		this.snpRefAltAlleles = snpRefAltAlleles;
-		this.geneId = geneId;
-		this.transcriptId = transcriptId;
-		this.geneName = geneName;
-		this.consequenceTypeSoAccession = consequenceTypeSoAccession;
-		this.consequenceTypeSoTerm = consequenceTypeSoTerm;
-		this.consequenceTypeSoDescription = consequenceTypeSoDescription;
-		this.consequenceTypeCategory = consequenceTypeCategory;
-		this.aaPosition = aaPosition;
-		this.aminoacidChange = aminoacidChange;
-		this.codonChange = codonChange;
+        this.chromosome = chromosome;
+        this.position = position;
+        this.referenceAllele = referenceAllele;
+        this.alternativeAllele = alternativeAllele;
+        this.featureId = featureId;
+        this.featureName = featureName;
+        this.featureType = featureType;
+        this.featureBiotype = featureBiotype;
+        this.featureChromosome = featureChromosome;
+        this.featureStart = featureStart;
+        this.featureEnd = featureEnd;
+        this.featureStrand = featureStrand;
+        this.snpId = snpId;
+        this.snpAncestralAllele = snpAncestralAllele;
+        this.snpRefAltAlleles = snpRefAltAlleles;
+        this.geneId = geneId;
+        this.transcriptId = transcriptId;
+        this.geneName = geneName;
+        this.consequenceTypeSoAccession = consequenceTypeSoAccession;
+        this.consequenceTypeSoTerm = consequenceTypeSoTerm;
+        this.consequenceTypeSoDescription = consequenceTypeSoDescription;
+        this.consequenceTypeCategory = consequenceTypeCategory;
+        this.aaPosition = aaPosition;
+        this.aminoacidChange = aminoacidChange;
+        this.codonChange = codonChange;
         this.polyphenScore = polyphenScore;
         this.polyphenPrediction = polyphenPrediction;
         this.siftScore = siftScore;
         this.siftPrediciton = siftPrediciton;
         this.phastConsScore = phastConsScore;
         this.phyloPScore = phyloPScore;
-	}
+    }
 
 
-	public String toString(){
-		StringBuilder br = new StringBuilder();
-		return br.append(chromosome).append("\t")
-				.append(position).append("\t")
-				.append(referenceAllele).append("\t")
-				.append(alternativeAllele).append("\t")
-				.append(featureId).append("\t")
-				.append(featureName).append("\t")
-				.append(featureType).append("\t")
-				.append(featureBiotype).append("\t")
-				.append(featureChromosome).append("\t")
-				.append(featureStart).append("\t")
-				.append(featureEnd).append("\t")
-				.append(featureStrand).append("\t")
-				.append(snpId).append("\t")
-				.append(snpAncestralAllele).append("\t")
-				.append(snpRefAltAlleles).append("\t")
-				.append(geneId).append("\t")
-				.append(transcriptId).append("\t")
-				.append(geneName).append("\t")
-				.append(consequenceTypeSoAccession).append("\t")
-				.append(consequenceTypeSoTerm).append("\t")
-				.append(consequenceTypeSoDescription).append("\t")
-				.append(consequenceTypeCategory).append("\t")
-				.append(aaPosition).append("\t")
-				.append(aminoacidChange).append("\t")
-				.append(codonChange).append("\t")
+    public String toString() {
+        StringBuilder br = new StringBuilder();
+        return br.append(chromosome).append("\t")
+                .append(position).append("\t")
+                .append(referenceAllele).append("\t")
+                .append(alternativeAllele).append("\t")
+                .append(featureId).append("\t")
+                .append(featureName).append("\t")
+                .append(featureType).append("\t")
+                .append(featureBiotype).append("\t")
+                .append(featureChromosome).append("\t")
+                .append(featureStart).append("\t")
+                .append(featureEnd).append("\t")
+                .append(featureStrand).append("\t")
+                .append(snpId).append("\t")
+                .append(snpAncestralAllele).append("\t")
+                .append(snpRefAltAlleles).append("\t")
+                .append(geneId).append("\t")
+                .append(transcriptId).append("\t")
+                .append(geneName).append("\t")
+                .append(consequenceTypeSoAccession).append("\t")
+                .append(consequenceTypeSoTerm).append("\t")
+                .append(consequenceTypeSoDescription).append("\t")
+                .append(consequenceTypeCategory).append("\t")
+                .append(aaPosition).append("\t")
+                .append(aminoacidChange).append("\t")
+                .append(codonChange).append("\t")
                 .append(polyphenScore).append("\t")
                 .append(polyphenPrediction).append("\t")
                 .append(siftScore).append("\t")
                 .append(siftPrediciton).append("\t")
                 .append(phastConsScore).append("\t")
                 .append(phyloPScore).toString();
-	}
+    }
 
     public String getChromosome() {
         return chromosome;

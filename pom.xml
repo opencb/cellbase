@@ -18,6 +18,7 @@
         <module>cellbase-core</module>
         <module>cellbase-mongodb</module>
         <module>cellbase-server</module>
+        <module>cellbase-grpc</module>
     </modules>
 
     <properties>
@@ -26,10 +27,9 @@
         <datastore.version>0.5.0-SNAPSHOT</datastore.version>
         <java-common-libs.version>3.1.0-SNAPSHOT</java-common-libs.version>
 
-        <jackson.version>2.5.4</jackson.version>
-        <jersey.version>2.19</jersey.version>
+        <jackson.version>2.6.3</jackson.version>
+        <jersey.version>2.22.1</jersey.version>
         <compileSource>1.8</compileSource>
-        <build.dir>build</build.dir>
     </properties>
 
     <scm>
@@ -86,7 +86,7 @@
             </snapshots>
         </repository>
     </repositories>
-    
+
     <dependencyManagement>
         <dependencies>
             <!-- Intra-module dependencies -->
@@ -103,6 +103,11 @@
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-formats</artifactId>
+                <version>${biodata.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.biodata</groupId>
+                <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
             </dependency>
             <dependency>
@@ -123,6 +128,11 @@
 
             <!-- General dependencies -->
             <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>3.0.0-beta-1</version>
+            </dependency>
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>18.0</version>
@@ -130,12 +140,12 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.12</version>
+                <version>1.7.13</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
-                <version>1.7.12</version>
+                <version>1.7.13</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -148,9 +158,14 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-dataformat-protobuf</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.xerial</groupId>
                 <artifactId>sqlite-jdbc</artifactId>
-                <version>3.8.7</version>
+                <version>3.8.11.2</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
@@ -165,7 +180,7 @@
             <dependency>
                 <groupId>org.rocksdb</groupId>
                 <artifactId>rocksdbjni</artifactId>
-                <version>3.10.1</version>
+                <version>3.13.1</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
@@ -237,6 +252,24 @@
                         <version>2.0.8</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.16</version>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <configLocation>checkstyle.xml</configLocation>
+                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java</excludes>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

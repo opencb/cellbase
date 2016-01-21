@@ -75,11 +75,11 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     public QueryResult next(String id, QueryOptions options) {
-        QueryOptions _options = new QueryOptions();
-        _options.put("include", Arrays.asList("chromosome", "start", "strand"));
-        QueryResult queryResult = getById(id, _options);
-        if(queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject)queryResult.getResult().get(0);
+        QueryOptions options1 = new QueryOptions();
+        options1.put("include", Arrays.asList("chromosome", "start", "strand"));
+        QueryResult queryResult = getById(id, options1);
+        if (queryResult != null && queryResult.getResult() != null) {
+            DBObject gene = (DBObject) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
 //            options.put("strand", gene.get("strand").toString());
             int start = Integer.parseInt(gene.get("start").toString());
@@ -90,14 +90,13 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
-        return next(chromosome, position+1, options, mongoDBCollection);
+        return next(chromosome, position + 1, options, mongoDBCollection);
     }
 
     @Override
     public QueryResult getById(String id, QueryOptions options) {
         return getAllByIdList(Arrays.asList(id), options).get(0);
     }
-
 
 
     @Override
@@ -112,7 +111,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
     @Override
     public QueryResult getAllConsequenceTypes(QueryOptions options) {
-        return new QueryResult("consequenceTypes", 0, consequenceTypes.size(), consequenceTypes.size(), null, null, consequenceTypes);
+        return new QueryResult("consequenceTypes", 0, CONSEQUENCE_TYPES.size(), CONSEQUENCE_TYPES.size(), null, null, CONSEQUENCE_TYPES);
     }
 
 
@@ -133,7 +132,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         for (String id : idList) {
             QueryResult queryResult = geneMongoDBAdaptor.getAllById(id, geneQueryOptions);
             if (queryResult != null && queryResult.getResult().size() > 0) {
-                DBObject gene = (DBObject)geneMongoDBAdaptor.getAllById(id, geneQueryOptions).getResult().get(0);
+                DBObject gene = (DBObject) geneMongoDBAdaptor.getAllById(id, geneQueryOptions).getResult().get(0);
                 regions.add(new Region(gene.get("chromosome").toString(),
                         Integer.parseInt(gene.get("start").toString()) - offset,
                         Integer.parseInt(gene.get("end").toString()) + offset));
@@ -166,9 +165,9 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     public QueryResult getAllPhenotypes(QueryOptions options) {
 //        return executeDistinct("distinct", "phenotype", mongoVariationPhenotypeDBCollection);
         QueryBuilder builder = new QueryBuilder();
-        if(options.containsKey("phenotype")) {
+        if (options.containsKey("phenotype")) {
             String pheno = options.getString("phenotype");
-            if(pheno != null && !pheno.equals("")) {
+            if (pheno != null && !pheno.equals("")) {
                 builder = builder.start("phenotype").is(pheno);
             }
         }
@@ -194,7 +193,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 //        List<Region> regions = Region.parseRegions(options.getString("region"));
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
-            if(region != null && !region.equals("")) {
+            if (region != null && !region.equals("")) {
                 // If regions is 1 position then query can be optimize using chunks
                 if (region.getStart() == region.getEnd()) {
                     String chunkId = getChunkIdPrefix(region.getChromosome(), region.getStart(), variationChunkSize);
@@ -222,7 +221,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
 
         List<QueryResult> queryResults = new ArrayList<>();
-        if(options.containsKey("variants")) {
+        if (options.containsKey("variants")) {
             List<Object> variantList = options.getList("variants");
             List<Variant> variants = new ArrayList<>(variantList.size());
             for (int i = 0; i < variantList.size(); i++) {
@@ -255,21 +254,23 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         }
         return executeQueryList2(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection2);
     }
+
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
 
         String phenotype = options.getString("phenotype");
-        if(phenotype != null && !phenotype.equals("")) {
+        if (phenotype != null && !phenotype.equals("")) {
             for (Region region : regions) {
-                QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
+                QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome())
+                        .and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
                 builder = builder.and("phenotype").is(phenotype);
                 queries.add(builder.get());
                 ids.add(region.toString());
             }
             return executeQueryList2(ids, queries, options, mongoVariationPhenotypeDBCollection2);
-        }else {
+        } else {
             String consequenceTypes = options.getString("consequence_type", null);
             BasicDBList consequenceTypeDBList = new BasicDBList();
             if (consequenceTypes != null && !consequenceTypes.equals("")) {
@@ -279,8 +280,10 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             }
 
             for (Region region : regions) {
-                //			QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName()).and("end").greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
-                QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
+                // QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getSequenceName())
+                // .and("end").greaterThan(region.getStart()).and("start").lessThan(region.getEnd());
+                QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome())
+                        .and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
                 if (consequenceTypeDBList.size() > 0) {
                     builder = builder.and("transcriptVariations.consequenceTypes").in(consequenceTypeDBList);
                 }
@@ -303,7 +306,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
-    public List<QueryResult> getIdByVariantList(List<Variant> variations, QueryOptions options){
+    public List<QueryResult> getIdByVariantList(List<Variant> variations, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>(variations.size());
         List<QueryResult> results;
 
@@ -313,7 +316,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                     .and("chromosome").is(variation.getChromosome())
                     .and("start").is(variation.getStart())
                     .and("alternate").is(variation.getAlternate());
-            if(variation.getReference() != null){
+            if (variation.getReference() != null) {
                 builder = builder.and("reference").is(variation.getReference());
             }
 
@@ -323,7 +326,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         results = executeQueryList2(variations, queries, options, mongoDBCollection);
 
 
-        for (QueryResult result: results){
+        for (QueryResult result : results) {
             List<String> idList = new LinkedList();
 
             BasicDBList idListObject = (BasicDBList) result.getResult();
@@ -340,7 +343,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     @Override
-    public List<QueryResult> getAllByVariantList(List<Variant> variations, QueryOptions options){
+    public List<QueryResult> getAllByVariantList(List<Variant> variations, QueryOptions options) {
         List<DBObject> queries = new ArrayList<>(variations.size());
         List<QueryResult> results;
 
@@ -352,7 +355,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                     .and("start").is(variation.getStart())
                     .and("alternate").is(variation.getAlternate());
 
-            if(variation.getReference() != null){
+            if (variation.getReference() != null) {
                 builder = builder.and("reference").is(variation.getReference());
             }
 

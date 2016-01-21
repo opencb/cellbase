@@ -19,16 +19,19 @@ package org.opencb.cellbase.app.transform;
 import org.opencb.biodata.formats.protein.uniprot.UniProtParser;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 public class ProteinParser extends CellBaseParser {
 
@@ -55,7 +58,7 @@ public class ProteinParser extends CellBaseParser {
     @Override
     public void parse() throws IOException {
 
-        if(uniprotFilesDir == null || !Files.exists(uniprotFilesDir)) {
+        if (uniprotFilesDir == null || !Files.exists(uniprotFilesDir)) {
             throw new IOException("File '" + uniprotFilesDir + "' not valid");
         }
 
@@ -86,14 +89,8 @@ public class ProteinParser extends CellBaseParser {
             }
             logger.debug("Number of proteins stored in map: '{}'", proteinMap.size());
 
-            if(interproFilePath != null && Files.exists(interproFilePath)) {
-                BufferedReader interproBuffereReader;
-                if(interproFilePath.toString().endsWith(".gz")) {
-                    interproBuffereReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(interproFilePath.toFile()))));
-                }else {
-                    interproBuffereReader = new BufferedReader(new InputStreamReader(new FileInputStream(interproFilePath.toFile())));
-                }
-
+            if (interproFilePath != null && Files.exists(interproFilePath)) {
+                BufferedReader interproBuffereReader = FileUtils.newBufferedReader(interproFilePath);
                 Set<String> hashSet = new HashSet<>(proteinMap.keySet());
                 Set<String> visited = new HashSet<>(30000);
 
@@ -102,15 +99,15 @@ public class ProteinParser extends CellBaseParser {
                 String[] fields;
                 String line;
                 boolean iprAdded;
-                while((line = interproBuffereReader.readLine()) != null) {
+                while ((line = interproBuffereReader.readLine()) != null) {
                     fields = line.split("\t");
 
-                    if(hashSet.contains(fields[0])) {
+                    if (hashSet.contains(fields[0])) {
                         iprAdded = false;
                         BigInteger start = BigInteger.valueOf(Integer.parseInt(fields[4]));
                         BigInteger end = BigInteger.valueOf(Integer.parseInt(fields[5]));
-                        for(FeatureType featureType: proteinMap.get(fields[0]).getFeature()) {
-                            if(featureType.getLocation() != null && featureType.getLocation().getBegin() != null
+                        for (FeatureType featureType : proteinMap.get(fields[0]).getFeature()) {
+                            if (featureType.getLocation() != null && featureType.getLocation().getBegin() != null
                                     && featureType.getLocation().getBegin().getPosition() != null
                                     && featureType.getLocation().getEnd().getPosition() != null
                                     && featureType.getLocation().getBegin().getPosition().equals(start)
@@ -122,7 +119,7 @@ public class ProteinParser extends CellBaseParser {
                             }
                         }
 
-                        if(!iprAdded) {
+                        if (!iprAdded) {
                             FeatureType featureType = new FeatureType();
                             featureType.setId(fields[1]);
                             featureType.setDescription(fields[2]);
@@ -140,13 +137,13 @@ public class ProteinParser extends CellBaseParser {
                             proteinMap.get(fields[0]).getFeature().add(featureType);
                         }
 
-                        if(!visited.contains(fields[0])) {
+                        if (!visited.contains(fields[0])) {
                             visited.add(fields[0]);
                             numUniqueProteinsProcessed++;
                         }
                     }
 
-                    if(++numInterProLinesProcessed % 10000000 == 0) {
+                    if (++numInterProLinesProcessed % 10000000 == 0) {
                         logger.debug("{} InterPro lines processed. {} unique proteins processed",
                                 numInterProLinesProcessed, numUniqueProteinsProcessed);
                     }
@@ -155,7 +152,7 @@ public class ProteinParser extends CellBaseParser {
             }
 
             // Serialize and save results
-            for(Entry entry: proteinMap.values()) {
+            for (Entry entry : proteinMap.values()) {
                 serializer.serialize(entry);
             }
 

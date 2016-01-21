@@ -60,7 +60,7 @@ public abstract class CommandExecutor {
          */
         this.appHome = System.getProperty("app.home", System.getenv("CELLBASE_HOME"));
 
-        if(logLevel != null && !logLevel.isEmpty()) {
+        if (logLevel != null && !logLevel.isEmpty()) {
             // We must call to this method
             setLogLevel(logLevel);
         }
@@ -100,36 +100,36 @@ public abstract class CommandExecutor {
         return logger;
     }
 
-    /**
+    /*
      * This method attempts to first data configuration from CLI parameter, if not present then uses
-     * the configuration from installation directory, if not exists then loads JAR configuration.json
-     * @throws URISyntaxException
-     * @throws IOException
+     * the configuration from installation directory, if not exists then loads JAR configuration.json.
      */
     public void loadCellBaseConfiguration() throws URISyntaxException, IOException {
-        if(this.configFile != null) {
+        if (this.configFile != null) {
             logger.debug("Loading configuration from '{}'", this.configFile);
             this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.configFile)));
-        }else {
-            if(Files.exists(Paths.get(this.appHome+"/configuration.json"))) {
-                logger.debug("Loading configuration from '{}'", this.appHome+"/configuration.json");
-                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome+"/configuration.json")));
-            }else {
+        } else {
+            if (Files.exists(Paths.get(this.appHome + "/configuration.json"))) {
+                logger.debug("Loading configuration from '{}'", this.appHome + "/configuration.json");
+                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/configuration.json")));
+            } else {
                 logger.debug("Loading configuration from '{}'",
                         CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
-                this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+                this.configuration = CellBaseConfiguration
+                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
             }
         }
     }
 
 
     protected void makeDir(Path folderPath) throws IOException {
-        if(!Files.exists(folderPath)) {
+        if (!Files.exists(folderPath)) {
             Files.createDirectories(folderPath);
         }
     }
 
-    protected boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath) throws IOException, InterruptedException {
+    protected boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
+            throws IOException, InterruptedException {
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
         logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));

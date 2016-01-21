@@ -17,7 +17,6 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.formats.feature.gff.Gff2;
-import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
@@ -25,23 +24,20 @@ import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
-import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 public class GeneParser extends CellBaseParser {
 
@@ -51,7 +47,7 @@ public class GeneParser extends CellBaseParser {
 
     private Path gtfFile;
     private Path proteinFastaFile;
-    private Path cDnaFastaFile ;
+    private Path cDnaFastaFile;
     private Path geneDescriptionFile;
     private Path xrefsFile;
     private Path uniprotIdMappingFile;
@@ -59,6 +55,8 @@ public class GeneParser extends CellBaseParser {
     private Path mirnaFile;
     private Path geneExpressionFile;
     private Path geneDrugFile;
+    private Path hpoFile;
+    private Path disgenetFile;
     private Path genomeSequenceFilePath;
 
     private CellBaseConfiguration.SpeciesProperties.Species species;
@@ -67,25 +65,27 @@ public class GeneParser extends CellBaseParser {
     private PreparedStatement sqlQuery;
 
     private int CHUNK_SIZE = 2000;
-    private String chunkIdSuffix = CHUNK_SIZE/1000 + "k";
+    private String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
     private Set<String> indexedSequences;
 
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                      CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseConfiguration.SpeciesProperties.Species species,
+                      CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
                 geneDirectoryPath.resolve("mirna.txt"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
+                geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
+                geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
                 genomeSequenceFastaFile, species, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
-    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
-                      Path mirnaFile, Path geneExpressionFile, Path geneDrugFile, Path genomeSequenceFilePath,
+    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
+                      Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path genomeSequenceFilePath,
                       CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
@@ -96,6 +96,8 @@ public class GeneParser extends CellBaseParser {
         this.mirnaFile = mirnaFile;
         this.geneExpressionFile = geneExpressionFile;
         this.geneDrugFile = geneDrugFile;
+        this.hpoFile = hpoFile;
+        this.disgenetFile = disgenetFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.species = species;
 
@@ -112,14 +114,17 @@ public class GeneParser extends CellBaseParser {
         int cds = 1;
 
         Map<String, String> geneDescriptionMap = getGeneDescriptionMap();
-        Map<String, ArrayList<Xref>> xrefMap = getXrefMap();
+        Map<String, ArrayList<Xref>> xrefMap = GeneParserUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
-        Map<String, SortedSet<Gff2>> tfbsMap = getTfbsMap();
-        Map<String, MiRNAGene> mirnaGeneMap = getmiRNAGeneMap(mirnaFile);
-        Map<String, List<Expression>> geneExpressionMap = getGeneExpressionMap();
-        Map<String, List<GeneDrugInteraction>> geneDrugMap = getGeneDrugMap();
+        Map<String, SortedSet<Gff2>> tfbsMap = GeneParserUtils.getTfbsMap(tfbsFile);
+        Map<String, MiRNAGene> mirnaGeneMap = GeneParserUtils.getmiRNAGeneMap(mirnaFile);
 
+        // Gene annotation data
+        Map<String, List<Expression>> geneExpressionMap = GeneParserUtils
+                .getGeneExpressionMap(species.getScientificName(), geneExpressionFile);
+        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
+        Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
 
         // Preparing the fasta file for fast accessing
         try {
@@ -129,7 +134,6 @@ public class GeneParser extends CellBaseParser {
             return;
         }
 
-        // TODO remove
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
         exonDict.clear();
@@ -139,7 +143,8 @@ public class GeneParser extends CellBaseParser {
         Gtf gtf;
         while ((gtf = gtfReader.read()) != null) {
 
-            if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript") || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
+            if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
+                    || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
                 continue;
             }
 
@@ -152,10 +157,14 @@ public class GeneParser extends CellBaseParser {
                     serializer.serialize(gene);
                 }
 
+                GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
+                        diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
+                        geneDrugMap.get(gtf.getAttributes().get("gene_name")));
+
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
-                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<Transcript>(),
-                        mirnaGeneMap.get(geneId), geneExpressionMap.get(geneId), geneDrugMap.get(gtf.getAttributes().get("gene_name")));
+                        gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<>(),
+                        mirnaGeneMap.get(geneId), geneAnnotation);
                 // Do not change order!! size()-1 is the index of the gene ID
             }
 
@@ -169,17 +178,19 @@ public class GeneParser extends CellBaseParser {
                         (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), transcriptTfbses);
-                String tags;
-                if((tags = gtf.getAttributes().get("tag"))!=null) {
+
+                String tags = gtf.getAttributes().get("tag");
+                if (tags != null) {
                     transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
                 }
 
-                Fasta proteinFasta;
-                if ((proteinFasta = proteinSequencesMap.get(transcriptId)) != null) {
+                Fasta proteinFasta = proteinSequencesMap.get(transcriptId);
+                if (proteinFasta != null) {
                     transcript.setProteinSequence(proteinFasta.getSeq());
                 }
-                Fasta cDnaFasta;
-                if ((cDnaFasta = cDnaSequencesMap.get(transcriptId)) != null) {
+
+                Fasta cDnaFasta = cDnaSequencesMap.get(transcriptId);
+                if (cDnaFasta != null) {
                     transcript.setcDnaSequence(cDnaFasta.getSeq());
                 }
                 gene.getTranscripts().add(transcript);
@@ -191,7 +202,6 @@ public class GeneParser extends CellBaseParser {
             }
 
             // At this point gene and transcript objects are set up
-
             // Update gene and transcript genomic coordinates, start must be the
             // lower, and end the higher
             updateTranscriptAndGeneCoords(transcript, gene, gtf);
@@ -224,14 +234,15 @@ public class GeneParser extends CellBaseParser {
                         // cDNA coordinates
                         exon.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
                         exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        // Set cdnaCodingEnd to prevent those cases without stop_codon
 
+                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
-                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         exon.setPhase(Integer.valueOf(gtf.getFrame()));
 
@@ -245,7 +256,6 @@ public class GeneParser extends CellBaseParser {
                         if (transcript.getCdnaCodingStart() == 0) {
                             transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
                         }
-
                         // strand -
                     } else {
                         // CDS states the beginning of coding start
@@ -253,16 +263,19 @@ public class GeneParser extends CellBaseParser {
                         exon.setGenomicCodingEnd(gtf.getEnd());
 
                         // cDNA coordinates
-                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        // cdnaCodingStart points to the same base position than genomicCodingEnd
+                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
 
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
-                        transcript.setCdsLength(cds-1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                        transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
                         exon.setPhase(Integer.valueOf(gtf.getFrame()));
 
@@ -274,20 +287,22 @@ public class GeneParser extends CellBaseParser {
                         }
                         // only first time
                         if (transcript.getCdnaCodingStart() == 0) {
-                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);  // cdnaCodingStart points to the same base position than genomicCodingEnd
+                            // cdnaCodingStart points to the same base position than genomicCodingEnd
+                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
                         }
                     }
-
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
 
                 if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
                     // nothing to do
+                    System.out.println("Empty block, this should be redesigned");
                 }
 
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
-//                    setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here, no need to set it at the beginning of next feature
+//                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
+//                      no need to set it at the beginning of next feature
                     if (exon.getStrand().equals("+")) {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingEnd(gtf.getEnd());
@@ -298,18 +313,20 @@ public class GeneParser extends CellBaseParser {
                         // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingEnd(gtf.getEnd());
                         transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-                        transcript.setCdsLength(cds-1);
+                        transcript.setCdsLength(cds - 1);
                     } else {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingStart(gtf.getStart());
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
                         cds += gtf.getEnd() - gtf.getStart();
 
                         // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingStart(gtf.getStart());
-                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);  // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        transcript.setCdsLength(cds-1);
+                        // cdnaCodingEnd points to the same base position than genomicCodingStart
+                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                        transcript.setCdsLength(cds - 1);
                     }
                 }
             }
@@ -327,80 +344,6 @@ public class GeneParser extends CellBaseParser {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    private Map<String, List<GeneDrugInteraction>> getGeneDrugMap() throws IOException {
-        Map<String,List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
-        BufferedReader br;
-        if (geneDrugFile.toFile().getName().endsWith(".gz")) {
-            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(geneDrugFile.toFile()))));
-        } else {
-            br = Files.newBufferedReader(geneDrugFile, Charset.defaultCharset());
-        }
-
-        logger.info("Loading gene-drug data form {}", geneDrugFile);
-        // Skip header
-        br.readLine();
-
-        int lineCounter = 1;
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] parts = line.split("\t");
-            addValueToMapElement(geneDrugMap, parts[0], new GeneDrugInteraction(parts[0], parts[4], "dgidb", parts[2],
-                    parts[3]));
-            lineCounter++;
-        }
-
-        br.close();
-        return geneDrugMap;
-    }
-
-    private Map<String, List<Expression>> getGeneExpressionMap() throws IOException {
-        Map<String, List<Expression>> geneExpressionMap = new HashMap<>();
-
-        BufferedReader br;
-        if (geneExpressionFile.toFile().getName().endsWith(".gz")) {
-            br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(geneExpressionFile.toFile()))));
-        } else {
-            br = Files.newBufferedReader(geneExpressionFile, Charset.defaultCharset());
-        }
-
-        logger.info("Loading gene expression data form {}", geneExpressionFile);
-        // Skip header. Column name line does not start with # so the last line read by this while will be this one
-        int lineCounter = 0;
-        String line;
-        while (((line = br.readLine()) != null) && (line.startsWith("#"))) {
-            lineCounter++;
-        }
-
-        while ((line = br.readLine()) != null) {
-            String[] parts = line.split("\t");
-            if(species.getScientificName().equals(parts[2])) {
-                if(parts[7].equals("UP")) {
-                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-                            parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
-                } else if (parts[7].equals("DOWN")) {
-                    addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-                            parts[4], parts[5], parts[6], ExpressionCall.DOWN, Float.valueOf(parts[8])));
-                } else {
-                    logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
-                }
-            }
-            lineCounter++;
-        }
-        br.close();
-        return geneExpressionMap;
-    }
-
-    private <T> void addValueToMapElement (Map<String, List<T>> map, String key, T value){
-        if(map.containsKey(key)) {
-            map.get(key).add(value);
-        } else {
-            List<T> expressionValueList = new ArrayList<>();
-            expressionValueList.add(value);
-            map.put(key, expressionValueList);
-        }
-
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
@@ -426,12 +369,15 @@ public class GeneParser extends CellBaseParser {
         return transcriptTfbses;
     }
 
-    private ArrayList<TranscriptTfbs> addTranscriptTfbstoList(Gff2 tfbs, Gtf transcript, String chromosome, ArrayList<TranscriptTfbs> transcriptTfbses) {
+    private ArrayList<TranscriptTfbs> addTranscriptTfbstoList(Gff2 tfbs, Gtf transcript, String chromosome,
+                                                              ArrayList<TranscriptTfbs> transcriptTfbses) {
         if (transcriptTfbses == null) {
             transcriptTfbses = new ArrayList<>();
         }
         String[] tfbsNameFields = tfbs.getAttribute().split("=")[1].split(":");
-        transcriptTfbses.add(new TranscriptTfbs(tfbsNameFields[0], tfbsNameFields[1], chromosome, tfbs.getStart(), tfbs.getEnd(), tfbs.getStrand(), getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript), Float.parseFloat(tfbs.getScore())));
+        transcriptTfbses.add(new TranscriptTfbs(tfbsNameFields[0], tfbsNameFields[1], chromosome, tfbs.getStart(), tfbs.getEnd(),
+                tfbs.getStrand(), getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript),
+                Float.parseFloat(tfbs.getScore())));
         return transcriptTfbses;
     }
 
@@ -462,65 +408,25 @@ public class GeneParser extends CellBaseParser {
             } else {
                 relativeEnd = tfbs.getEnd() - transcript.getStart() + 1;
             }
-        }else {
+        } else {
             if (tfbs.getStart() > transcript.getEnd()) {
                 relativeEnd = transcript.getEnd() - tfbs.getStart();
-            }else {
+            } else {
                 relativeEnd = transcript.getEnd() - tfbs.getStart() + 1;
             }
         }
         return relativeEnd;
     }
 
-    private Map<String, SortedSet<Gff2>> getTfbsMap() {
-        // data MotifFeatures content in a Map
-        Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
-        try {
-            if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
-                Gff2Reader motifsFeatureReader = new Gff2Reader(tfbsFile);
-                Gff2 tfbsMotifFeature;
-                while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
-                    addTfbsMotifToMap(tfbsMap, tfbsMotifFeature);
-                }
-                motifsFeatureReader.close();
-            }
-        }catch (IOException | NoSuchMethodException | FileFormatException e) {
-            logger.error("Error loading TFBS file: " + e.getMessage());
-            logger.error("transcript TFBS objects will not be serialized");
-            tfbsMap.clear();
-        }
-        return tfbsMap;
-    }
-
-    private void addTfbsMotifToMap(Map<String, SortedSet<Gff2>> tfbsMap, Gff2 tfbsMotifFeature) {
-        String chromosome = tfbsMotifFeature.getSequenceName().replaceFirst("chr", "");
-        SortedSet<Gff2> chromosomeTfbsSet = tfbsMap.get(chromosome);
-        if (chromosomeTfbsSet == null) {
-            chromosomeTfbsSet = new TreeSet<Gff2>(new Comparator<Gff2>() {
-                @Override
-                public int compare(Gff2 feature1, Gff2 feature2) {
-                    // TODO: maybe this should be in TranscriptTfbs class, and equals method should be overriden too
-                    if (feature1.getStart() != feature2.getStart()) {
-                        return feature1.getStart() - feature2.getStart();
-                    } else {
-                        return feature1.getAttribute().compareTo(feature2.getAttribute());
-                    }
-                }
-            });
-            tfbsMap.put(chromosome, chromosomeTfbsSet);
-        }
-        chromosomeTfbsSet.add(tfbsMotifFeature);
-    }
 
     private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's cDNA sequences...");
         Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
-        if(cDnaFastaFile != null && Files.exists(cDnaFastaFile) &&
-                !Files.isDirectory(cDnaFastaFile)) {
+        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)) {
             FastaReader fastaReader = new FastaReader(cDnaFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
-            for(Fasta fasta : fastaList) {
+            for (Fasta fasta : fastaList) {
                 cDnaSequencesMap.put(fasta.getId(), fasta);
             }
         } else {
@@ -533,12 +439,11 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Fasta> getProteinSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's protein sequences...");
         Map<String, Fasta> proteinSequencesMap = new HashMap<>();
-        if(proteinFastaFile != null && Files.exists(proteinFastaFile) &&
-                !Files.isDirectory(proteinFastaFile)) {
+        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)) {
             FastaReader fastaReader = new FastaReader(proteinFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
-            for(Fasta fasta : fastaList) {
+            for (Fasta fasta : fastaList) {
                 proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0], fasta);
             }
         } else {
@@ -548,57 +453,11 @@ public class GeneParser extends CellBaseParser {
         return proteinSequencesMap;
     }
 
-    private Map<String, ArrayList<Xref>> getXrefMap() throws IOException {
-        String[] fields;
-        logger.info("Loading xref data...");
-        Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
-        if (xrefsFile != null && Files.exists(xrefsFile)) {
-            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
-            for (String line : lines) {
-                fields = line.split("\t", -1);
-                if (fields.length >= 4) {
-                    if (!xrefMap.containsKey(fields[0])) {
-                        xrefMap.put(fields[0], new ArrayList<>());
-                    }
-                    xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3]));
-                }
-            }
-        } else {
-            logger.warn("Xrefs file " + xrefsFile + " not found");
-            logger.warn("Xref data not loaded");
-        }
-
-        logger.info("Loading protein mapping into xref data...");
-        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile)) {
-            BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
-            String line;
-            while ((line = br.readLine()) != null) {
-                fields = line.split("\t", -1);
-                if (fields.length >= 19 && fields[19].startsWith("ENST")) {
-//                    System.out.println(Arrays.toString(fields[19].split("; ")));
-                    String[] transcripts = fields[19].split("; ");
-                    for(String transcript: transcripts) {
-                        if (!xrefMap.containsKey(transcript)) {
-                            xrefMap.put(transcript, new ArrayList<Xref>());
-                        }
-                        xrefMap.get(transcript).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
-                        xrefMap.get(transcript).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
-                    }
-                }
-            }
-            br.close();
-        } else {
-            logger.warn("Uniprot if mapping file " + uniprotIdMappingFile + " not found");
-            logger.warn("Protein mapping into xref data not loaded");
-        }
-
-        return xrefMap;
-    }
 
     private Map<String, String> getGeneDescriptionMap() throws IOException {
-        String[] fields;
         logger.info("Loading gene description data...");
         Map<String, String> geneDescriptionMap = new HashMap<>();
+        String[] fields;
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
             List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
             for (String line : lines) {
@@ -612,21 +471,6 @@ public class GeneParser extends CellBaseParser {
         return geneDescriptionMap;
     }
 
-//    private Map<String, ArrayList<TranscriptTfbs>> getTfbsMap() throws IOException {
-//        String[] fields;
-//        Map<String, ArrayList<TranscriptTfbs>> tfbsMap = new HashMap<>();
-//        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
-//            List<String> lines = Files.readAllLines(tfbsFile, Charset.defaultCharset());
-//            for (String line : lines) {
-//                fields = line.split("\t", -1);
-//                if (!tfbsMap.containsKey(fields[0])) {
-//                    tfbsMap.put(fields[0], new ArrayList<TranscriptTfbs>());
-//                }
-//                tfbsMap.get(fields[0]).add(new TranscriptTfbs(fields[1], fields[2], fields[3], Integer.parseInt(fields[4]), Integer.parseInt(fields[5]), fields[6], Integer.parseInt(fields[7]), Integer.parseInt(fields[8]), Float.parseFloat(fields[9])));
-//            }
-//        }
-//        return tfbsMap;
-//    }
 
     private boolean newGene(Gene previousGene, String newGeneId) {
         return previousGene == null || !newGeneId.equals(previousGene.getId());
@@ -636,11 +480,12 @@ public class GeneParser extends CellBaseParser {
         logger.info("Connecting to reference genome sequence database ...");
         Class.forName("org.sqlite.JDBC");
         sqlConn = DriverManager.getConnection("jdbc:sqlite:" + genomeSequenceFilePath.getParent().toString() + "/reference_genome.db");
-        if(!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db")) ||
-                Files.size(genomeSequenceFilePath.getParent().resolve("reference_genome.db")) == 0) {
+        if (!Files.exists(Paths.get(genomeSequenceFilePath.getParent().toString(), "reference_genome.db"))
+                || Files.size(genomeSequenceFilePath.getParent().resolve("reference_genome.db")) == 0) {
             logger.info("Genome sequence database doesn't exists and will be created");
             Statement createTable = sqlConn.createStatement();
-            createTable.executeUpdate("CREATE TABLE if not exists  genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
+            createTable.executeUpdate("CREATE TABLE if not exists  "
+                    + "genome_sequence (sequenceName VARCHAR(50), chunkId VARCHAR(30), start INT, end INT, sequence VARCHAR(2000))");
             indexReferenceGenomeFasta(genomeSequenceFilePath);
         }
         indexedSequences = getIndexedSequences();
@@ -666,13 +511,14 @@ public class GeneParser extends CellBaseParser {
     }
 
     private void indexReferenceGenomeFasta(Path genomeSequenceFilePath) throws IOException, ClassNotFoundException, SQLException {
-       BufferedReader bufferedReader = FileUtils.newBufferedReader(genomeSequenceFilePath);
+        BufferedReader bufferedReader = FileUtils.newBufferedReader(genomeSequenceFilePath);
 
         // Some parameters initialization
         String sequenceName = "";
         boolean haplotypeSequenceType = false;
 
-        PreparedStatement sqlInsert = sqlConn.prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence, sequenceName) values (?, ?, ?, ?, ?)");
+        PreparedStatement sqlInsert = sqlConn
+                .prepareStatement("INSERT INTO genome_sequence (chunkID, start, end, sequence, sequenceName) values (?, ?, ?, ?, ?)");
         StringBuilder sequenceStringBuilder = new StringBuilder();
         String line;
         while ((line = bufferedReader.readLine()) != null) {
@@ -700,17 +546,18 @@ public class GeneParser extends CellBaseParser {
         stm.executeUpdate("CREATE INDEX chunkId_idx on genome_sequence(chunkId)");
     }
 
-    private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert, StringBuilder sequenceStringBuilder) throws SQLException {
+    private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert,
+                                      StringBuilder sequenceStringBuilder) throws SQLException {
         int chunk = 0;
         int start = 1;
         int end = CHUNK_SIZE - 1;
         // if the sequence read is not HAP then we stored in sqlite
-        if(!haplotypeSequenceType && !sequenceName.contains("PATCH")) {
+        if (!haplotypeSequenceType && !sequenceName.contains("PATCH")) {
             logger.info("Indexing genome sequence {} ...", sequenceName);
             sqlInsert.setString(5, sequenceName);
             //chromosome sequence length could shorter than CHUNK_SIZE
             if (sequenceStringBuilder.length() < CHUNK_SIZE) {
-                sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                sqlInsert.setString(1, sequenceName + "_" + chunk + "_" + chunkIdSuffix);
                 sqlInsert.setInt(2, start);
                 sqlInsert.setInt(3, sequenceStringBuilder.length() - 1);
                 sqlInsert.setString(4, sequenceStringBuilder.toString());
@@ -727,11 +574,12 @@ public class GeneParser extends CellBaseParser {
                     }
 
                     // chunkId is common for all the options
-                    sqlInsert.setString(1, sequenceName+"_"+chunk+"_"+chunkIdSuffix);
+                    sqlInsert.setString(1, sequenceName + "_" + chunk + "_" + chunkIdSuffix);
                     if (start == 1) {   // First chunk of the chromosome
                         // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
 //                                        chunkSequence = sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1);
-//                                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"+chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+//                                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome+"_"+chunk+"_"
+// +chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
                         sqlInsert.setInt(2, start);
                         sqlInsert.setInt(3, end);
                         sqlInsert.setString(4, sequenceStringBuilder.substring(start - 1, CHUNK_SIZE - 1));
@@ -765,10 +613,10 @@ public class GeneParser extends CellBaseParser {
         }
     }
 
-    private String getExonSequence(String sequenceName, int start, int end){
+    private String getExonSequence(String sequenceName, int start, int end) {
         String subStr = "";
         if (indexedSequences.contains(sequenceName)) {
-            try{
+            try {
                 StringBuilder stringBuilder = new StringBuilder();
                 ResultSet rs;
                 int regionChunkStart = getChunk(start);
@@ -820,48 +668,6 @@ public class GeneParser extends CellBaseParser {
         }
     }
 
-    private Map<String, MiRNAGene> getmiRNAGeneMap(Path mirnaGeneFile) throws IOException {
-        logger.info("Loading miRNA data ...");
-        Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
-        if (mirnaFile != null && Files.exists(mirnaFile) && !Files.isDirectory(mirnaFile)) {
-            BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
-            String line;
-            String[] fields, mirnaMatures, mirnaMaturesFields;
-            List<String> aliases;
-            MiRNAGene miRNAGene;
-            while ((line = br.readLine()) != null) {
-                fields = line.split("\t");
-
-                // First, read aliases of miRNA, field #5
-                aliases = new ArrayList<>();
-                for (String alias : fields[5].split(",")) {
-                    aliases.add(alias);
-                }
-
-                miRNAGene = new MiRNAGene(fields[1], fields[2], fields[3], fields[4], aliases, new ArrayList<MiRNAGene.MiRNAMature>());
-
-                // Second, read the miRNA matures, field #6
-                mirnaMatures = fields[6].split(",");
-                for (String s : mirnaMatures) {
-                    mirnaMaturesFields = s.split("\\|");
-                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2])+1;
-                    int cdnaEnd = cdnaStart+mirnaMaturesFields[2].length()-1;
-                    // Save directly into MiRNAGene object.
-                    miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2],
-                            cdnaStart, cdnaEnd);
-                }
-
-                // Add object to Map<EnsemblID, MiRNAGene>
-                mirnaGeneMap.put(fields[0], miRNAGene);
-            }
-            br.close();
-        } else {
-            logger.warn("Mirna file " + mirnaFile + " not found");
-            logger.warn("Mirna data not loaded");
-        }
-
-        return mirnaGeneMap;
-    }
 
     private void getGtfFileFromGeneDirectoryPath(Path geneDirectoryPath) {
         for (String fileName : geneDirectoryPath.toFile().list()) {

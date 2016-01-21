@@ -21,8 +21,6 @@ import org.opencb.datastore.core.QueryResult;
 public interface DBAdaptor {
 
 
-//	protected static Config applicationProperties;
-
     QueryResult first();
 
     QueryResult count();

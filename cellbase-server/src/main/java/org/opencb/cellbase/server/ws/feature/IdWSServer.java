@@ -69,7 +69,7 @@ public class IdWSServer extends GenericRestWSServer {
             List<QueryResult> dbNameList = xRefDBAdaptor.getAllByDBNameList(Splitter.on(",").splitToList(query), queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
                 for (Object o : dbNameList.get(i).getResult()) {
-                    if (((DBObject)o).get("id").equals(list.get(i))) {
+                    if (((DBObject) o).get("id").equals(list.get(i))) {
                         List<Object> objectList = new ArrayList<>(1);
                         objectList.add(o);
                         dbNameList.get(i).setResult(objectList);
@@ -120,12 +120,6 @@ public class IdWSServer extends GenericRestWSServer {
             parseQueryParams();
             XRefsDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             List<QueryResult> xrefs = xRefDBAdaptor.getByContainsQueryList(Splitter.on(",").splitToList(query), queryOptions);
-//            if (query.startsWith("rs") || query.startsWith("AFFY_") || query.startsWith("SNP_") || query.startsWith("VAR_") || query.startsWith("CRTAP_") || query.startsWith("FKBP10_") || query.startsWith("LEPRE1_") || query.startsWith("PPIB_")) {
-//                List<QueryResult> snpXrefs = xRefDBAdaptor.getByStartsWithSnpQueryList(Splitter.on(",").splitToList(query),queryOptions);
-//                for (List<Xref> xrefList : snpXrefs) {
-//                    xrefs.get(0).addAll(xrefList);
-//                }
-//            }
             return createOkResponse(xrefs);
         } catch (Exception e) {
             return createErrorResponse(e);

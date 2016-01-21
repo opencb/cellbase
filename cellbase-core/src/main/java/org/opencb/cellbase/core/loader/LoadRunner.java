@@ -64,29 +64,17 @@ public class LoadRunner {
     }
 
 
-    /**
-     *
-     * @param filePath
-     * @param data
-     * @throws ClassNotFoundException
-     * @throws NoSuchMethodException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
     public void load(Path filePath, String data) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
         try {
 
             if (filePath == null || !Files.exists(filePath) || Files.isDirectory(filePath)) {
-                throw new IOException("File '" + filePath.toString() + "' does not exist or is a directory");
+                throw new IOException("File '" + filePath + "' does not exist or is a directory");
             }
 
             // One CellBaseLoader is created for each thread in 'numThreads' variable
             List<CellBaseLoader> cellBaseLoaders = new ArrayList<>(numThreads);
-            for (int i=0; i < numThreads; i++) {
+            for (int i = 0; i < numThreads; i++) {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
                         .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
@@ -100,7 +88,7 @@ public class LoadRunner {
              */
             ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
             List<Future<Integer>> futures = new ArrayList<>(numThreads);
-            for (int i=0; i < numThreads; i++) {
+            for (int i = 0; i < numThreads; i++) {
                 cellBaseLoaders.get(i).init();
                 futures.add(executorService.submit(cellBaseLoaders.get(i)));
                 logger.debug("CellBaseLoader '{}' initialized and submitted to the ExecutorService", i);
@@ -126,7 +114,7 @@ public class LoadRunner {
              * For sanity database connection and other resources must be released. This close() call must be
              * implemented in the specific data loader.
              */
-            for (int i=0; i < numThreads; i++) {
+            for (int i = 0; i < numThreads; i++) {
                 cellBaseLoaders.get(i).close();
                 logger.debug("CellBaseLoader '{}' being closed", i);
             }
@@ -142,9 +130,9 @@ public class LoadRunner {
         int inputFileRecords = 0;
         try {
             BufferedReader br;
-            if(inputFile.toString().endsWith(".gz")) {
+            if (inputFile.toString().endsWith(".gz")) {
                 br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(inputFile.toFile()))));
-            }else {
+            } else {
                 br = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile.toFile())));
             }
 
@@ -166,7 +154,7 @@ public class LoadRunner {
             logger.info("{} records read from '{}'", inputFileRecords, inputFile.toString());
 
             // Poison Pill to consumers so they know that there are no more batches to consume
-            for (int i=0; i < numThreads; i++) {
+            for (int i = 0; i < numThreads; i++) {
                 blockingQueue.put(POISON_PILL);
             }
         } catch (Exception e) {

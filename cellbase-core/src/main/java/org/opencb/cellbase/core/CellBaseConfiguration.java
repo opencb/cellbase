@@ -172,12 +172,16 @@ public class CellBaseConfiguration {
         private URLProperties intact;
         private URLProperties interpro;
         private URLProperties conservation;
+        private URLProperties gerp;
         private URLProperties clinvar;
         private URLProperties clinvarSummary;
         private URLProperties clinvarEfoTerms;
+        private URLProperties hpo;
         private URLProperties disgenet;
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
+        private URLProperties dbsnp;
+        private URLProperties cadd;
 
 
         public EnsemblProperties getEnsembl() {
@@ -224,13 +228,29 @@ public class CellBaseConfiguration {
             this.clinvarEfoTerms = clinvarEfoTerms;
         }
 
-        public URLProperties getDisgenet() { return disgenet; }
+        public URLProperties getHpo() {
+            return hpo;
+        }
 
-        public void setDisgenet(URLProperties disgenet) { this.disgenet = disgenet; }
+        public void setHpo(URLProperties hpo) {
+            this.hpo = hpo;
+        }
 
-        public URLProperties getDgidb() { return dgidb; }
+        public URLProperties getDisgenet() {
+            return disgenet;
+        }
 
-        public void setDgidb(URLProperties dgidb) { this.dgidb = dgidb; }
+        public void setDisgenet(URLProperties disgenet) {
+            this.disgenet = disgenet;
+        }
+
+        public URLProperties getDgidb() {
+            return dgidb;
+        }
+
+        public void setDgidb(URLProperties dgidb) {
+            this.dgidb = dgidb;
+        }
 
         public URLProperties getConservation() {
             return conservation;
@@ -238,6 +258,14 @@ public class CellBaseConfiguration {
 
         public void setConservation(URLProperties conservation) {
             this.conservation = conservation;
+        }
+
+        public URLProperties getGerp() {
+            return gerp;
+        }
+
+        public void setGerp(URLProperties gerp) {
+            this.gerp = gerp;
         }
 
         public URLProperties getIntact() {
@@ -280,6 +308,14 @@ public class CellBaseConfiguration {
             this.gwasCatalog = gwasCatalog;
         }
 
+        public URLProperties getDbsnp() {
+            return dbsnp;
+        }
+
+        public void setDbsnp(URLProperties dbsnp) {
+            this.dbsnp = dbsnp;
+        }
+
         public URLProperties getMirbase() {
             return mirbase;
         }
@@ -304,6 +340,13 @@ public class CellBaseConfiguration {
             this.miRTarBase = miRTarBase;
         }
 
+        public URLProperties getCadd() {
+            return cadd;
+        }
+
+        public void setCadd(URLProperties cadd) {
+            this.cadd = cadd;
+        }
 
         public static class EnsemblProperties {
             private DatabaseProperties database;
@@ -396,21 +439,24 @@ public class CellBaseConfiguration {
         }
 
         public static class Species {
+
             private String id;
             private String scientificName;
             private String commonName;
             private List<Assembly> assemblies;
             private List<String> data;
 
+
             @Override
             public String toString() {
-                return "Species{" +
-                        "id='" + id + '\'' +
-                        ", scientificName='" + scientificName + '\'' +
-                        ", commonName='" + commonName + '\'' +
-                        ", assemblies=" + assemblies +
-                        ", data=" + data +
-                        '}';
+                final StringBuilder sb = new StringBuilder("Species{");
+                sb.append("id='").append(id).append('\'');
+                sb.append(", scientificName='").append(scientificName).append('\'');
+                sb.append(", commonName='").append(commonName).append('\'');
+                sb.append(", assemblies=").append(assemblies);
+                sb.append(", data=").append(data);
+                sb.append('}');
+                return sb.toString();
             }
 
             public String getId() {

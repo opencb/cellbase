@@ -23,12 +23,13 @@ import java.util.List;
  * @author lcruz
  * @since 31/10/2014
  */
+@Deprecated
 public class ConservedRegionFeature {
     private String chromosome;
     private int start;
     private int end;
     private int chunk;
-    private List<ConservedRegionSource>sources;
+    private List<ConservedRegionSource> sources;
 
     public ConservedRegionFeature(String chromosome, int start, int end, int chunk) {
         this.chromosome = chromosome;
@@ -82,9 +83,9 @@ public class ConservedRegionFeature {
         this.sources.add(new ConservedRegionSource(type, values));
     }
 
-    public static class ConservedRegionSource{
+    public static class ConservedRegionSource {
         private String type;
-        private List<Float>values;
+        private List<Float> values;
 
         public ConservedRegionSource(String type, List<Float> values) {
             this.type = type;

@@ -16,48 +16,49 @@
 
 package org.opencb.cellbase.core.common.variation;
 
+@Deprecated
 public class Xref {
 
-	private String id; 			//1
-	private String source; 		//2
-	private String version; 	//3
+    private String id;            //1
+    private String source;        //2
+    private String version;    //3
 
-	public Xref(String id, String source) {
-		this(id, source, "");
-	}
-	
-	public Xref(String id, String source, String version) {
-		this.id = id;
-		this.source = source;
-		this.version = version;
-	}
-	
+    public Xref(String id, String source) {
+        this(id, source, "");
+    }
 
-	public String getDataBase() {
-		return source;
-	}
+    public Xref(String id, String source, String version) {
+        this.id = id;
+        this.source = source;
+        this.version = version;
+    }
 
-	public void setDataBase(String dataBase) {
-		this.source = dataBase;
-	}
-	
 
-	public String getCrossReference() {
-		return id;
-	}
+    public String getDataBase() {
+        return source;
+    }
 
-	public void setCrossReference(String crossReference) {
-		this.id = crossReference;
-	}
-	
+    public void setDataBase(String dataBase) {
+        this.source = dataBase;
+    }
 
-	public String getVersion() {
-		return version;
-	}
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
-	
+    public String getCrossReference() {
+        return id;
+    }
+
+    public void setCrossReference(String crossReference) {
+        this.id = crossReference;
+    }
+
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
 
 }
