@@ -175,11 +175,17 @@ public class CliOptionsParser {
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded. Can also be used to specify a" +
+                "custom json file to be loaded (look at the --field parameter).", required = true, arity = 1)
         public String input;
 
         @Parameter(names = {"--database"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
         public String database;
+
+        @Parameter(names = {"--field"}, description = "Use this parameter when an custom update of the database documents is required. Indicate here" +
+                "the full path to the document field that must be updated, e.g. annotation.populationFrequencies. This parameter must be used together" +
+                "with a custom file provided at --input and the data to update indicated at --data.", required = false, arity = 1)
+        public String field;
 
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
         public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";

@@ -16,10 +16,7 @@
 
 package org.opencb.cellbase.mongodb.db.variation;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.*;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
@@ -43,6 +40,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     private int variationChunkSize = MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE;
 
     private GeneMongoDBAdaptor geneMongoDBAdaptor;
+
+    private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
 
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -367,4 +366,59 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
         return results;
     }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+
+        int nLoadedObjects = 0;
+        switch (field) {
+            case POP_FREQUENCIES_FIELD:
+                nLoadedObjects = updatePopulationFrequencies((List<DBObject>) objectList);
+                break;
+            default:
+                logger.error("Invalid field {}: no action implemented for updating this field.", field);
+                nLoadedObjects = 0;
+                break;
+        }
+        return nLoadedObjects;
+    }
+
+    private int updatePopulationFrequencies(List<DBObject> variantDBObjectList) {
+
+        List<DBObject> queries = new ArrayList<>(variantDBObjectList.size());
+        List<DBObject> updates = new ArrayList<>(variantDBObjectList.size());
+
+        for (DBObject variantDBObject : variantDBObjectList) {
+            DBObject push = new BasicDBObject(POP_FREQUENCIES_FIELD,
+                    ((BasicDBList) variantDBObject.get("annotation")).get("populationFrequencies"));
+            BasicDBObject update = new BasicDBObject()
+                    .append("$pushAll", push)
+                    .append("$setOnInsert", variantDBObject);
+
+            updates.add(update);
+            queries.add(new BasicDBObject("chromosome", variantDBObject.get("chromosome"))
+                    .append("start", variantDBObject.get("start"))
+                    .append("end", variantDBObject.get("end"))
+                    .append("reference", variantDBObject.get("reference"))
+                    .append("alternate", variantDBObject.get("alternate")));
+        }
+
+        BulkWriteResult bulkWriteResult;
+        if (!queries.isEmpty()) {
+            QueryOptions options = new QueryOptions("upsert", true);
+            options.put("multi", false);
+            try {
+                bulkWriteResult = mongoDBCollection.update(queries, updates, options).first();
+            } catch (BulkWriteException e) {
+                throw e;
+            }
+            return bulkWriteResult.getUpserts().size() + bulkWriteResult.getModifiedCount();
+        }
+        return 0;
+
+    }
+
 }

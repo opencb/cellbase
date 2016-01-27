@@ -45,6 +45,17 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
         logger.debug("VariantFunctionalScoreMongoDBAdaptor: in 'constructor'");
     }
 
+    public QueryResult first() {
+        return null;
+    }
+
+    public QueryResult count() {
+        return null;
+    }
+
+    public QueryResult stats() {
+        return null;
+    }
 
     @Override
     public QueryResult getByVariant(String chromosome, int position, String reference, String alternate, QueryOptions queryOptions) {
@@ -138,6 +149,14 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
                     variant.getAlternate(), queryOptions));
         }
         return queryResultList;
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }

@@ -393,5 +393,12 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         return scoreList;
     }
 
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
 
 }

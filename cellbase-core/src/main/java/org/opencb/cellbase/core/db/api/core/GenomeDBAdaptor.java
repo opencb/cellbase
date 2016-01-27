@@ -17,13 +17,14 @@
 package org.opencb.cellbase.core.db.api.core;
 
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.db.DBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
 import java.util.List;
 
 
-public interface GenomeDBAdaptor {
+public interface GenomeDBAdaptor extends DBAdaptor {
 
 
     @Deprecated

@@ -63,8 +63,12 @@ public class LoadRunner {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-
     public void load(Path filePath, String data) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
+            IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
+        load(filePath, data, null);
+    }
+
+    public void load(Path filePath, String data, String field) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
         try {
 
@@ -77,8 +81,8 @@ public class LoadRunner {
             for (int i = 0; i < numThreads; i++) {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                        .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
-                        .newInstance(blockingQueue, data, database, cellBaseConfiguration));
+                        .getConstructor(BlockingQueue.class, String.class, String.class, String.class, CellBaseConfiguration.class)
+                        .newInstance(blockingQueue, data, database, field, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
             }
 

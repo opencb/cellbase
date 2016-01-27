@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.db.api.variation;
 
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.db.DBAdaptor;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * Created by imedina on 16/11/15.
  */
-public interface VariantFunctionalScoreDBAdaptor {
+public interface VariantFunctionalScoreDBAdaptor extends DBAdaptor {
 
 
     QueryResult getByVariant(String chromosome, int position, String reference, String alternate, QueryOptions queryOptions);

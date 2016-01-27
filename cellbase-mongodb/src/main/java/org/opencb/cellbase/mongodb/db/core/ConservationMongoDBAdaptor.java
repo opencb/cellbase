@@ -57,6 +57,18 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //        return (id * chunkSize) + chunkSize - 1;
 //    }
 
+    public QueryResult first() {
+        return null;
+    }
+
+    public QueryResult count() {
+        return null;
+    }
+
+    public QueryResult stats() {
+        return null;
+    }
+
     private int getOffset(int position) {
         return ((position) % chunkSize);
     }
@@ -280,6 +292,15 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
         return queryResults;
     }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
+
 
 
 //    private List<ConservedRegion> executeQuery(DBObject query) {

@@ -261,4 +261,13 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
             return (id * chunksize) + chunksize - 1;
         }
     }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
+
 }

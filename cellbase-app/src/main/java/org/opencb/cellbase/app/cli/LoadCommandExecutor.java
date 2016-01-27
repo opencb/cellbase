@@ -40,6 +40,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private Path input;
 
     private String database;
+    private String field;
     private String loader;
     private int numThreads;
 
@@ -54,6 +55,9 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
         if (loadCommandOptions.database != null) {
             database = loadCommandOptions.database;
+        }
+        if (loadCommandOptions.field != null) {
+            field = loadCommandOptions.field;
         }
         if (loadCommandOptions.loader != null) {
             loader = loadCommandOptions.loader;
@@ -158,6 +162,11 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.warn("Incorrect number of numThreads, it must be a positive value. This has been set to '{}'", numThreads);
         }
 
+        if (field != null) {
+            if (loadCommandOptions.data == null) {
+                logger.error("--data option cannot be empty. Please provide a valid value for the --data parameter.");
+            }
+        }
         try {
             Class.forName(loader);
         } catch (ClassNotFoundException e) {
@@ -172,15 +181,22 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-            return entry.getFileName().toString().startsWith("variation_chr");
-        });
+        // Common loading process from CellBase variation data models
+        if (field == null) {
+            DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+                return entry.getFileName().toString().startsWith("variation_chr");
+            });
 
-        for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(input.resolve(entry.getFileName()), "variation");
+            for (Path entry : stream) {
+                logger.info("Loading file '{}'", entry.toString());
+                loadRunner.load(input.resolve(entry.getFileName()), "variation");
+            }
+            loadRunner.index("variation");
+        // Custom update required e.g. population freqs loading
+        } else {
+            logger.info("Loading file '{}'", input.getFileName().toString());
+            loadRunner.load(input, "variation", field);
         }
-        loadRunner.index("variation");
     }
 
     private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,

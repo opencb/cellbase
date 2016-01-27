@@ -23,10 +23,13 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.db.DBAdaptor;
+import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.datastore.core.config.DataStoreServerAddress;
@@ -53,6 +56,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private MongoDataStore mongoDataStore;
     private MongoDBCollection mongoDBCollection;
 
+    private DBAdaptorFactory dbAdaptorFactory;
+    private DBAdaptor dbAdaptor;
+
     private Path indexScriptFolder;
     private int[] chunkSizes;
     private String clinicalVariantSource;
@@ -62,12 +68,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String GWASVARIANTSOURCE = "gwas";
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
-        this(queue, data, database, null);
+        this(queue, data, database, null, null);
     }
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database,
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database, String field,
                                  CellBaseConfiguration cellBaseConfiguration) {
-        super(queue, data, database, cellBaseConfiguration);
+        super(queue, data, database, field, cellBaseConfiguration);
         if (cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder") != null) {
             indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder"));
         }
@@ -119,9 +125,73 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         // Some collections need to add an extra _chunkIds field to speed up some queries
         getChunkSizes(collectionName);
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
+
+        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        dbAdaptor = getDBAdaptor(data);
     }
 
 
+    private DBAdaptor getDBAdaptor(String data) throws LoaderException {
+        String[] databaseParts = database.split("_");
+        String species = databaseParts[1];
+        String assembly = databaseParts[2];
+        DBAdaptor dbAdaptor;
+        switch (data) {
+            case "genome_info":
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                break;
+            case "genome_sequence":
+                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+                break;
+            case "gene":
+                dbAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+                break;
+            case "variation":
+                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+                break;
+            case "cadd":
+                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
+                break;
+            case "regulatory_region":
+                dbAdaptor = dbAdaptorFactory.getRegulatoryRegionDBAdaptor(species, assembly);
+                break;
+            case "protein":
+                dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+                break;
+            case "protein_protein_interaction":
+                dbAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(species, assembly);
+                break;
+            // TODO: implement an adaptor for protein_functional_prediction - current queries are issued from the
+            // TODO: ProteinDBAdaptors, that's why there isn't one yet
+//            case "protein_functional_prediction":
+//                collectionName = "protein_functional_prediction";
+//                break;
+            case "conservation":
+                dbAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(species, assembly);
+                break;
+            case "cosmic":
+                clinicalVariantSource = "cosmic";
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                break;
+            case "clinvar":
+                clinicalVariantSource = "clinvar";
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                break;
+            case "gwas":
+                clinicalVariantSource = "gwas";
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                break;
+            case "clinical":
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                break;
+            default:
+                throw new LoaderException("Unknown data to load: '" + data + "'");
+        }
+
+        return dbAdaptor;
+    }
+
+    // TODO: use adaptors within MongoDBCellBaseLoader, avoid using mongoDBCollection and remove this method
     private String getCollectionName(String data) throws LoaderException {
         String collectionName;
         switch (data) {
@@ -207,6 +277,36 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     @Override
     public Integer call() {
+        if (field != null) {
+            return prepareBatchAndUpdate();
+        } else {
+            return prepareBatchAndLoad();
+        }
+    }
+
+    private int prepareBatchAndUpdate() {
+        int numLoadedObjects = 0;
+        boolean finished = false;
+        while (!finished) {
+            try {
+                List<String> batch = blockingQueue.take();
+                if (batch == LoadRunner.POISON_PILL) {
+                    finished = true;
+                } else {
+                    List<DBObject> dbObjectsBatch = new ArrayList<>(batch.size());
+                    numLoadedObjects += dbAdaptor.update(dbObjectsBatch, field);
+                }
+            } catch (InterruptedException e) {
+                logger.error("Loader thread interrupted: " + e.getMessage());
+            } catch (Exception e) {
+                logger.error("Error Loading batch: " + e.getMessage());
+            }
+        }
+        logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
+        return numLoadedObjects;
+    }
+
+    private int prepareBatchAndLoad() {
         int numLoadedObjects = 0;
         boolean finished = false;
         while (!finished) {

@@ -49,6 +49,18 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");
     }
 
+    public QueryResult first() {
+        return null;
+    }
+
+    public QueryResult count() {
+        return null;
+    }
+
+    public QueryResult stats() {
+        return null;
+    }
+
     @Deprecated
     public QueryResult speciesInfoTmp(String id, QueryOptions options) {
         // reading application.properties file
@@ -226,6 +238,14 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         sequence = sequence.replace("3", "G");
         sequence = sequence.replace("4", "C");
         return sequence;
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }
