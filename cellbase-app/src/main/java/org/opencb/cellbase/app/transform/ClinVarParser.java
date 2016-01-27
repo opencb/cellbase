@@ -74,13 +74,17 @@ public class ClinVarParser extends CellBaseParser {
 
             long serializedClinvarObjects = 0,
                     clinvarRecordsParsed = 0,
-                    clinvarObjectsWithEfo = 0;
+                    clinvarObjectsWithEfo = 0,
+                    nsvs = 0;
 
             logger.info("Serializing clinvar records that have Sequence Location for Assembly " + selectedAssembly + " ...");
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 SequenceLocationType sequenceLocation =
                         rcvTo37SequenceLocation.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
                 if (sequenceLocation != null) {
+                    if (sequenceLocation.getAccession() != null) {
+                        nsvs++;
+                    }
                     ClinvarPublicSet clinvarPublicSet = new ClinvarPublicSet(sequenceLocation.getChr(),
                             sequenceLocation.getStart().intValue(),
                             sequenceLocation.getStop().intValue(),
@@ -97,6 +101,7 @@ public class ClinVarParser extends CellBaseParser {
             }
             logger.info("Done");
             this.printSummary(clinvarRecordsParsed, serializedClinvarObjects, clinvarObjectsWithEfo);
+            logger.info("{} nsvs serialized", nsvs);
 
 
         } catch (JAXBException e) {
@@ -131,6 +136,9 @@ public class ClinVarParser extends CellBaseParser {
                 sequenceLocation.setStop(new BigInteger(parts[15]));
                 sequenceLocation.setReferenceAllele(parts[25]);
                 sequenceLocation.setAlternateAllele(parts[26]);
+                if (!parts[7].equals("-")) {
+                    sequenceLocation.setAssemblyAccessionVersion(parts[7]);
+                }
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
                 String[] rcvArray = parts[8].split(";");
                 for (String rcv : rcvArray) {
