@@ -256,7 +256,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 case "gene":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENE_CHUNK_SIZE};
                     break;
-                case "variation":
+                case "variation":  // TODO: why are we using different chunk sizes??
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE,
                             10 * MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, };
                     break;
@@ -294,6 +294,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     finished = true;
                 } else {
                     List<DBObject> dbObjectsBatch = new ArrayList<>(batch.size());
+                    for (String jsonLine : batch) {
+                        DBObject dbObject = (DBObject) JSON.parse(jsonLine);
+                        dbObjectsBatch.add(dbObject);
+                    }
                     numLoadedObjects += dbAdaptor.update(dbObjectsBatch, field);
                 }
             } catch (InterruptedException e) {
@@ -485,7 +489,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private void addChunkId(DBObject dbObject) {
         if (chunkSizes != null && chunkSizes.length > 0) {
             List<String> chunkIds = new ArrayList<>();
-            for (int chunkSize : chunkSizes) {
+            for (int chunkSize : chunkSizes) {  // TODO: why are we using different chunk sizes??
                 int chunkStart = (Integer) dbObject.get("start") / chunkSize;
                 int chunkEnd = (Integer) dbObject.get("end") / chunkSize;
                 String chunkIdSuffix = chunkSize / 1000 + "k";

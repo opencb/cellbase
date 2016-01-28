@@ -372,7 +372,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     }
 
     public int update(List objectList, String field) {
-
         int nLoadedObjects = 0;
         switch (field) {
             case POP_FREQUENCIES_FIELD:
@@ -392,14 +391,25 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
         List<DBObject> updates = new ArrayList<>(variantDBObjectList.size());
 
         for (DBObject variantDBObject : variantDBObjectList) {
-            DBObject push = new BasicDBObject(POP_FREQUENCIES_FIELD,
-                    ((BasicDBList) variantDBObject.get("annotation")).get("populationFrequencies"));
+            BasicDBObject annotationDBObject = (BasicDBObject) variantDBObject.get("annotation");
+            DBObject push = new BasicDBObject(POP_FREQUENCIES_FIELD, annotationDBObject.get("populationFrequencies"));
+
+            // Remove annotation object from the DBObject so that push and setOnInsert do not update the same fields:
+            // i.e. annotation.populationFrequencies and annotation
+            variantDBObject.removeField("annotation");
+            addChunkId(variantDBObject);
+
             BasicDBObject update = new BasicDBObject()
                     .append("$pushAll", push)
                     .append("$setOnInsert", variantDBObject);
 
             updates.add(update);
-            queries.add(new BasicDBObject("chromosome", variantDBObject.get("chromosome"))
+
+            String chunkId = getChunkIdPrefix((String) variantDBObject.get("chromosome"),
+                    (int) variantDBObject.get("start"), variationChunkSize);
+            
+            queries.add(new BasicDBObject("_chunkIds", chunkId)
+                    .append("chromosome", variantDBObject.get("chromosome"))
                     .append("start", variantDBObject.get("start"))
                     .append("end", variantDBObject.get("end"))
                     .append("reference", variantDBObject.get("reference"))
@@ -408,6 +418,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
         BulkWriteResult bulkWriteResult;
         if (!queries.isEmpty()) {
+            logger.info("updating object");
             QueryOptions options = new QueryOptions("upsert", true);
             options.put("multi", false);
             try {
@@ -415,10 +426,30 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             } catch (BulkWriteException e) {
                 throw e;
             }
+            logger.info("{} object updated", bulkWriteResult.getUpserts().size() + bulkWriteResult.getModifiedCount());
             return bulkWriteResult.getUpserts().size() + bulkWriteResult.getModifiedCount();
         }
+        logger.info("no object updated");
         return 0;
 
     }
+
+    // Method copied from MongoDBCellbaseLoader. In a near future only this one will stay. Insert work currently done
+    // by MongoDBCellbaseLoader must be replaced by an appropriate method in this adaptor
+    private void addChunkId(DBObject dbObject) {
+        List<String> chunkIds = new ArrayList<>();
+        int chunkStart = (Integer) dbObject.get("start") / variationChunkSize;
+        int chunkEnd = (Integer) dbObject.get("end") / variationChunkSize;
+        String chunkIdSuffix = variationChunkSize / 1000 + "k";
+        for (int i = chunkStart; i <= chunkEnd; i++) {
+            if (dbObject.containsField("chromosome")) {
+                chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
+            } else {
+                chunkIds.add(dbObject.get("sequenceName") + "_" + i + "_" + chunkIdSuffix);
+            }
+        }
+        dbObject.put("_chunkIds", chunkIds);
+    }
+
 
 }
