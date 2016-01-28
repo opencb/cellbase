@@ -138,13 +138,6 @@ public class GeneParser extends CellBaseParser {
             return;
         }
 
-//        try {
-//            connect(genomeSequenceFilePath);
-//        } catch (ClassNotFoundException | SQLException e) {
-//            e.printStackTrace();
-//            return;
-//        }
-
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
         exonDict.clear();
