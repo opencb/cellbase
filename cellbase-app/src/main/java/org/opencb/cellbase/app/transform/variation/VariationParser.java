@@ -16,6 +16,11 @@
 
 package org.opencb.cellbase.app.transform.variation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Stopwatch;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
@@ -39,11 +44,7 @@ import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils
 
 public class VariationParser extends CellBaseParser {
 
-    private static final String VARIATION_FILENAME = "variation.txt";
     protected static final String PREPROCESSED_VARIATION_FILENAME = "variation.sorted.txt";
-    private static final String VARIATION_FEATURE_FILENAME = "variation_feature.txt";
-    private static final String TRANSCRIPT_VARIATION_FILENAME = "transcript_variation.txt";
-    private static final String VARIATION_SYNONYM_FILENAME = "variation_synonym.txt";
 
     private Path variationDirectoryPath;
 
@@ -60,6 +61,7 @@ public class VariationParser extends CellBaseParser {
     private VariationTranscriptFile variationTranscriptFile;
     private VariationFeatureFile variationFeatureFile;
     private VariationSynonymFile variationSynonymFile;
+    private ObjectWriter jsonObjectWriter;
 
     public VariationParser(Path variationDirectoryPath, CellBaseFileSerializer serializer) {
         super(serializer);
@@ -72,6 +74,7 @@ public class VariationParser extends CellBaseParser {
         variationFeatureFile = new VariationFeatureFile(variationDirectoryPath);
         variationTranscriptFile = new VariationTranscriptFile(variationDirectoryPath);
         variationSynonymFile = new VariationSynonymFile(variationDirectoryPath);
+        initializeJsonWriter();
     }
 
     @Override
@@ -156,11 +159,12 @@ public class VariationParser extends CellBaseParser {
                                             additionalAttributes, conseqTypes, id, xrefs, strand);
                                     fileSerializer.serialize(variation, getOutputFileName(chromosome));
                                 }
+                                countprocess++;
                             }
                         }
                     }
 
-                    if (++countprocess % 100000 == 0 && countprocess != 0) {
+                    if (countprocess % 100000 == 0 && countprocess != 0) {
                         logger.info("Processed variations: {}", countprocess);
                         logger.debug("Elapsed time processing batch: {}", batchWatch);
                         batchWatch.reset();
@@ -217,13 +221,34 @@ public class VariationParser extends CellBaseParser {
         Variant variant = new Variant(chromosome, start, end, reference, alternate);
         variant.setIds(ids);
         variant.setType(type);
-        VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
-                xrefs, hgvs, conseqTypes, null, null, null, null, null, null, null, additionalAttributes);
+        VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
+                xrefs, hgvs, conseqTypes, null, null, null, null, null, null, null, null);
+        try {
+            String ensemblAnnotationJson = getEnsemblAnnotationJson(ensemblVariantAnnotation);
+            additionalAttributes.put("ensemblAnnotation", ensemblAnnotationJson);
+        } catch (JsonProcessingException e) {
+            logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
+        }
+        VariantAnnotation variantAnnotation = new VariantAnnotation(null, start, end, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 
         return variant;
     }
+
+    private String getEnsemblAnnotationJson(VariantAnnotation ensemblVariantAnnotation) throws JsonProcessingException {
+        return jsonObjectWriter.writeValueAsString(ensemblVariantAnnotation);
+    }
+
+    private void initializeJsonWriter() {
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectWriter = jsonObjectMapper.writer();
+    }
+
+
 
     private VariantType getVariantType(String reference, String alternate) {
         if (reference.length() != alternate.length()) {
@@ -354,7 +379,7 @@ public class VariationParser extends CellBaseParser {
         String[] allelesArray = null;
         if (variationFeatureFields != null && variationFeatureFields[6] != null) {
             allelesArray = variationFeatureFields[6].split("/");
-            if (allelesArray.length == 1) {
+            if (allelesArray.length == 1 || allelesArray.length == 0) {
                 allelesArray = null;
             }
         }
