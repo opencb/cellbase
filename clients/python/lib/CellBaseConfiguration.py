@@ -6,7 +6,7 @@ import string
 class CellBaseConfiguration(dict):
     def __init__(self, configFileName):
         fdw = open(configFileName)
-        dictionaryString = string.join(fdw.readlines(),sep="")
+        dictionaryString = str.join("", fdw.readlines())
         fdw.close()
         dict.__init__(self, json.loads(dictionaryString))
 
