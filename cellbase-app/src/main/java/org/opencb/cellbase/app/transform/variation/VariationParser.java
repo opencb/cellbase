@@ -229,8 +229,8 @@ public class VariationParser extends CellBaseParser {
         } catch (JsonProcessingException e) {
             logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
         }
-        VariantAnnotation variantAnnotation = new VariantAnnotation(null, start, end, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, additionalAttributes);
+        VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, null, null, null, null,
+                null, null, null, null, null, null, null, additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 
