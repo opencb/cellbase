@@ -20,12 +20,12 @@
             <artifactId>biodata-formats</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opencb.commons</groupId>
-            <artifactId>commons-datastore-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-tools</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.commons</groupId>
+            <artifactId>commons-datastore-core</artifactId>
         </dependency>
 
         <dependency>
@@ -43,10 +43,6 @@
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.rocksdb</groupId>
-            <artifactId>rocksdbjni</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
