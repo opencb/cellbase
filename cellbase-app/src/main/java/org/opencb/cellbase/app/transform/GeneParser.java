@@ -131,8 +131,10 @@ public class GeneParser extends CellBaseParser {
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = null;
         try {
-            fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath);
-            fastaIndexManager.index();
+            fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
+            if (!fastaIndexManager.isConnected()) {
+                fastaIndexManager.index();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -348,12 +350,7 @@ public class GeneParser extends CellBaseParser {
         // cleaning
         gtfReader.close();
         serializer.close();
-
-//        try {
-//            disconnectSqlite();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
+        fastaIndexManager.close();
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
