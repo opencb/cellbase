@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
@@ -28,10 +30,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -131,6 +130,30 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return groupBy(bsonQuery, fields, "name", options);
     }
 
+    @Override
+    public QueryResult getTfbs(Query query, QueryOptions queryOptions) {
+        Bson bsonQuery = parseQuery(query);
+        Bson match = Aggregates.match(bsonQuery);
+
+        Bson project = Aggregates.project(Projections.include("transcripts.tfbs"));
+        Bson unwind = Aggregates.unwind("$transcripts");
+        Bson unwind2 = Aggregates.unwind("$transcripts.tfbs");
+
+        // This project the three fields of Xref to the top of the object
+        Document document = new Document("tfName", "$transcripts.tfbs.tfName");
+        document.put("pwm", "$transcripts.tfbs.pwm");
+        document.put("chromosome", "$transcripts.tfbs.chromosome");
+        document.put("start", "$transcripts.tfbs.start");
+        document.put("end", "$transcripts.tfbs.end");
+        document.put("strand", "$transcripts.tfbs.strand");
+        document.put("relativeStart", "$transcripts.tfbs.relativeStart");
+        document.put("relativeEnd", "$transcripts.tfbs.relativeEnd");
+        document.put("score", "$transcripts.tfbs.score");
+        Bson project1 = Aggregates.project(document);
+
+        return mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), queryOptions);
+    }
+
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
@@ -159,4 +182,5 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             return new Document();
         }
     }
+
 }

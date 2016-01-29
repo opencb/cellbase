@@ -26,7 +26,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by imedina on 30/11/15.
  */
-public interface ProteinDBAdaptor<Protein> extends CellBaseDBAdaptor<Protein> {
+public interface ProteinDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     enum QueryParams implements QueryParam {
         ACCESSION("accession", TEXT_ARRAY, ""),

@@ -93,7 +93,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         Bson unwind = Aggregates.unwind("$transcripts");
         Bson unwind2 = Aggregates.unwind("$transcripts.xrefs");
 
-        // This projects the three fields of Xref to the top of the object
+        // This project the three fields of Xref to the top of the object
         Document document = new Document("id", "$transcripts.xrefs.id");
         document.put("dbName", "$transcripts.xrefs.dbName");
         document.put("dbDisplayName", "$transcripts.xrefs.dbDisplayName");

@@ -23,7 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by imedina on 07/12/15.
  */
-public interface RegulationDBAdaptor<RegulatoryElement> extends FeatureDBAdaptor<RegulatoryElement> {
+public interface RegulationDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
     enum QueryParams implements QueryParam {
         NAME("name", TEXT_ARRAY, ""),
