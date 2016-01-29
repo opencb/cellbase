@@ -190,7 +190,7 @@ public class GenericRestWSServer implements IWSServer {
         startTime = System.currentTimeMillis();
 
         query = new Query();
-        queryOptions = new QueryOptions();
+        queryOptions = new QueryOptions("exclude", "_chunkIds");
         queryResponse = new QueryResponse();
 
         checkPathParams(checkSpecies);

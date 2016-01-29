@@ -365,26 +365,6 @@ public class RegionWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-//    @GET
-//    @Path("/{chrRegionId}/tfbs")
-//    @ApiOperation(httpMethod = "GET", value = "Retrieves all the TFBS")
-//    public Response getTfByRegion(@PathParam("chrRegionId") String query) {
-//        try {
-//            parseQueryParams();
-//            TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory2.getTfbsDBAdaptor(this.species, this.assembly);
-//            List<Region> regions = Region.parseRegions(query);
-//
-//            if (hasHistogramQueryParam()) {
-//                List<IntervalFeatureFrequency> intervalList = tfbsDBAdaptor.getAllTfIntervalFrequencies(regions.get(0),
-//                        getHistogramIntervalSize());
-//                return generateResponse(query, intervalList);
-//            } else {
-//                return createOkResponse(tfbsDBAdaptor.getAllByRegionList(regions, queryOptions));
-//            }
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
 
     @GET
     @Path("/{chrRegionId}/regulatory")
@@ -399,6 +379,29 @@ public class RegionWSServer extends GenericRestWSServer {
             query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType);
             query.put(RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass);
             return createOkResponse(regRegionDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{chrRegionId}/tfbs")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the TFBS")
+    public Response getTfByRegion(@PathParam("chrRegionId") String regionId) {
+        try {
+            parseQueryParams();
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+
+            if (hasHistogramQueryParam()) {
+                Query query = new Query();
+                QueryResult intervalFrequencies =
+                        regulationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
+                return createOkResponse(intervalFrequencies);
+            } else {
+                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), regionId);
+                query.put("featureType", "TF_binding_site_motif");
+                return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
