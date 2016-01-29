@@ -45,7 +45,7 @@ public interface FeatureDBAdaptor extends DBAdaptor {
     default List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
 //        List<Region> regions = new ArrayList<>(positionList.size());
 //        for (Position position : positionList) {
-//            regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
+//            regions.add(new Region(position.getChromosomeInfo(), position.getPosition(), position.getPosition()));
 //        }
         List<Region> regions = positionList.stream()
                 .map(position -> new Region(position.getChromosome(), position.getPosition(), position.getPosition()))

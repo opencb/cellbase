@@ -62,7 +62,9 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
         }
     }
 
-    QueryResult getGenomeInfo(Query query, QueryOptions queryOptions);
+    QueryResult getGenomeInfo(QueryOptions queryOptions);
+
+    QueryResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions);
 
 
     QueryResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions);

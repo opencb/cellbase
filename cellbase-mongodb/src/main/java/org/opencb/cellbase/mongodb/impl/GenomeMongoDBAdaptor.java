@@ -45,15 +45,26 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     public GenomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
         genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
+        mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
 
         logger.debug("GenomeMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
-    public QueryResult getGenomeInfo(Query query, QueryOptions queryOptions) {
+    public QueryResult getGenomeInfo(QueryOptions queryOptions) {
         return genomeInfoMongoDBCollection.find(new Document(), new QueryOptions());
+    }
+
+    @Override
+    public QueryResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions) {
+        if (queryOptions == null) {
+            queryOptions = new QueryOptions("include", Arrays.asList("chromosomes.$"));
+        } else {
+            queryOptions.addToListOption("include", "chromosomes.$");
+        }
+        Document dbObject = new Document("chromosomes", new Document("$elemMatch", new Document("name", chromosomeId)));
+        return executeQuery(chromosomeId, dbObject, queryOptions, genomeInfoMongoDBCollection);
     }
 
     @Override

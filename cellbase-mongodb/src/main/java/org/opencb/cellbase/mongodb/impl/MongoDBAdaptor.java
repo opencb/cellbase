@@ -137,12 +137,12 @@ public class MongoDBAdaptor {
 //        // We only use chunks if region queried belongs to a single chunk
 //        if (startChunkId == endChunkId) {
 //            logger.info("Querying by chunkId, {}, {}", startChunkId, endChunkId);
-//            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
+//            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosomeInfo(), region.getStart(), chunkSize));
 //            Bson start = Filters.lte("start", region.getEnd());
 //            Bson end = Filters.gte("end", region.getStart());
 //            return Filters.and(chunk, start, end);
 //        } else {
-//            Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+//            Bson chromosome = Filters.eq("chromosome", region.getChromosomeInfo());
 //            Bson start = Filters.lte("start", region.getEnd());
 //            Bson end = Filters.gte("end", region.getStart());
 //            return Filters.and(chromosome, start, end);

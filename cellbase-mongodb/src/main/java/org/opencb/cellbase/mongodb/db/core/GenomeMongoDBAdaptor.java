@@ -140,7 +140,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                 chunkIds.add(chunkIdStr);
                 integerChunkIds.add(chunkId);
             }
-//            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosome()).and("_chunkIds").in(chunkIds);
+//            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosomeInfo()).and("_chunkIds").in(chunkIds);
             QueryBuilder builder = QueryBuilder.start("_chunkIds").in(chunkIds);
             /****/
             queries.add(new Document(builder.get().toMap()));

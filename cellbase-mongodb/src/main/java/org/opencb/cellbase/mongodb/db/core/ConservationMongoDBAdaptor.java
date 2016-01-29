@@ -97,13 +97,13 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             } else {
 //                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
 ////                    integerChunkIds.add(chunkId);
-//                    integerChunkIds.add(region.getChromosome() + "_" + chunkId + "_" + this.chunkSize/1000 + "k");
+//                    integerChunkIds.add(region.getChromosomeInfo() + "_" + chunkId + "_" + this.chunkSize/1000 + "k");
 //                }
-//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(integerChunkIds);
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(hunkIds);
             /****/
 
             queries.add(new Document(builder.get().toMap()));
@@ -200,8 +200,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
 //                    integerChunkIds.add(chunkId);
 //                }
-//    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
-//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+//    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(hunkIds);
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(integerChunkIds);
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }

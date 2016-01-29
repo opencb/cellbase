@@ -111,7 +111,7 @@ public class QueryCommandExecutor extends CommandExecutor {
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
-                    genomeDBAdaptor.getGenomeInfo(query, queryOptions);
+                    genomeDBAdaptor.getGenomeInfo(queryOptions);
                     break;
                 case "sequence":
                     QueryResult<GenomeSequenceFeature> genomicSequence = genomeDBAdaptor.getGenomicSequence(query, queryOptions);

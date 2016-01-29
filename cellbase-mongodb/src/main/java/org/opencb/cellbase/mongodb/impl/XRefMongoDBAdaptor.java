@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
@@ -28,6 +29,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -85,7 +87,19 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        Bson match = Aggregates.match(bson);
+
+        Bson project = Aggregates.project(Projections.include("transcripts.xrefs"));
+        Bson unwind = Aggregates.unwind("$transcripts");
+        Bson unwind2 = Aggregates.unwind("$transcripts.xrefs");
+
+        // This projects the three fields of Xref to the top of the object
+        Document document = new Document("id", "$transcripts.xrefs.id");
+        document.put("dbName", "$transcripts.xrefs.dbName");
+        document.put("dbDisplayName", "$transcripts.xrefs.dbDisplayName");
+        Bson project1 = Aggregates.project(document);
+
+        return mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), options);
     }
 
     @Override
