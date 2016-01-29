@@ -80,25 +80,29 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 logger.debug("Database for the species is '{}'", database);
 
                 MongoDBConfiguration mongoDBConfiguration;
+                MongoDBConfiguration.Builder builder;
                 // For authenticated databases
                 if (!cellBaseConfiguration.getDatabase().getUser().isEmpty()
                         && !cellBaseConfiguration.getDatabase().getPassword().isEmpty()) {
                     // MongoDB could authenticate against different databases
                     if (cellBaseConfiguration.getDatabase().getOptions().containsKey("authenticationDatabase")) {
-                        mongoDBConfiguration = MongoDBConfiguration.builder()
+                        builder = MongoDBConfiguration.builder()
                                 .add("username", cellBaseConfiguration.getDatabase().getUser())
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
                                 .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"))
                                 .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions()
-                                        .get("authenticationDatabase"))
-                                .build();
+                                        .get("authenticationDatabase"));
                     } else {
-                        mongoDBConfiguration = MongoDBConfiguration.builder()
+                        builder = MongoDBConfiguration.builder()
                                 .add("username", cellBaseConfiguration.getDatabase().getUser())
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
-                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"))
-                                .build();
+                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"));
                     }
+                    if (cellBaseConfiguration.getDatabase().getOptions().get("replicaSet") != null
+                            && !cellBaseConfiguration.getDatabase().getOptions().get("replicaSet").isEmpty()) {
+                        builder.add("replicaSet", cellBaseConfiguration.getDatabase().getOptions().get("replicaSet"));
+                    }
+                    mongoDBConfiguration = builder.build();
                 } else {
                     mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
                 }
