@@ -98,8 +98,9 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
                                 .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"));
                     }
-                    if (cellBaseConfiguration.getDatabase().getOptions().get("replicaSet") != null
-                            && !cellBaseConfiguration.getDatabase().getOptions().get("replicaSet").isEmpty()) {
+
+                    String replicaSet = cellBaseConfiguration.getDatabase().getOptions().get("replicaSet");
+                    if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
                         builder.add("replicaSet", cellBaseConfiguration.getDatabase().getOptions().get("replicaSet"));
                     }
                     mongoDBConfiguration = builder.build();

@@ -27,7 +27,6 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
-import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.*;
@@ -150,7 +149,7 @@ public class GenericRestWSServer implements IWSServer {
             }
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
-            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+//            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
             dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
