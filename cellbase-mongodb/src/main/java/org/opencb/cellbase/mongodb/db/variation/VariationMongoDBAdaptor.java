@@ -407,7 +407,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
             String chunkId = getChunkIdPrefix((String) variantDBObject.get("chromosome"),
                     (int) variantDBObject.get("start"), variationChunkSize);
-            
             queries.add(new BasicDBObject("_chunkIds", chunkId)
                     .append("chromosome", variantDBObject.get("chromosome"))
                     .append("start", variantDBObject.get("start"))
