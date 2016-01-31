@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -142,7 +143,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            queryOptions.put("include", Arrays.asList("id"));
+            queryOptions.put("include", Collections.singletonList("id"));
             return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -264,6 +265,21 @@ public class GeneWSServer extends GenericRestWSServer {
 //            return createErrorResponse(e);
 //        }
 //    }
+
+    @GET
+    @Path("/{geneId}/regulation")
+    @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
+    public Response getAllRegulatoryElements(@PathParam("geneId") String geneId) {
+        try {
+            parseQueryParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            Query query = new Query(GeneDBAdaptor.QueryParams.ID.key(), geneId);
+            QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 
     @GET
     @Path("/{geneId}/tfbs")

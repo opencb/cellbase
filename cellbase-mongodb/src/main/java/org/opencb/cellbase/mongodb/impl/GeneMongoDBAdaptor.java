@@ -28,6 +28,7 @@ import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
@@ -128,6 +129,26 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
+    }
+
+    @Override
+    public QueryResult getRegulatoryElements(Query query, QueryOptions queryOptions) {
+        Bson bson = parseQuery(query);
+        QueryResult<Document> queryResult = null;
+        QueryResult<Document> gene = mongoDBCollection.find(bson, new QueryOptions(MongoDBCollection.INCLUDE, "chromosome,start,end"));
+        if (gene != null) {
+            MongoDBCollection regulatoryRegionCollection = mongoDataStore.getCollection("regulatory_region");
+            for (Document document : gene.getResult()) {
+//                String region = document.getString("chromosome") + ":"
+//                        + document.getInteger("start", 1) + "-" + document.getInteger("end", Integer.MAX_VALUE);
+//                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
+                Bson eq = Filters.eq("chromosome", document.getString("chromosome"));
+                Bson lte = Filters.lte("start", document.getInteger("end", Integer.MAX_VALUE));
+                Bson gte = Filters.gte("end", document.getInteger("start", 1));
+                queryResult = regulatoryRegionCollection.find(Filters.and(eq, lte, gte), queryOptions);
+            }
+        }
+        return queryResult;
     }
 
     @Override

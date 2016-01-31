@@ -129,13 +129,13 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(),
-                MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
+        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
 
         createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "featureType", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_CLASS.key(), "featureClass", andBsonList);
         createOrQuery(query, QueryParams.CELL_TYPES.key(), "cellTypes", andBsonList);
+        createOrQuery(query, QueryParams.SCORE.key(), "score", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
