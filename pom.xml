@@ -25,7 +25,7 @@
         <cellbase.version>4.0.0-SNAPSHOT</cellbase.version>
         <biodata.version>0.6.0-SNAPSHOT</biodata.version>
         <datastore.version>0.5.0-SNAPSHOT</datastore.version>
-        <java-common-libs.version>3.1.0-SNAPSHOT</java-common-libs.version>
+        <java-common-libs.version>3.2.0-SNAPSHOT</java-common-libs.version>
 
         <jackson.version>2.6.3</jackson.version>
         <jersey.version>2.22.1</jersey.version>
