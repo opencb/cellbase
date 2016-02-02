@@ -72,10 +72,9 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
     private void init() {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         if (!serializeEmptyValues) {
-            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         }
-        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 
