@@ -150,7 +150,7 @@ public class LoadRunner {
                     batch = new ArrayList<>(BATCH_SIZE);
                 }
                 if (inputFileRecords % 1000 == 0) {
-                    logger.info("{} records read");
+                    logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
                 }
             }
             // Last batch
