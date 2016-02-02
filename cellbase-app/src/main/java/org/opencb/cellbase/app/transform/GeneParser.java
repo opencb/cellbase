@@ -74,7 +74,7 @@ public class GeneParser extends CellBaseParser {
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseConfiguration.SpeciesProperties.Species species,
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
-                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
+                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
                 geneDirectoryPath.resolve("mirna.txt"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),

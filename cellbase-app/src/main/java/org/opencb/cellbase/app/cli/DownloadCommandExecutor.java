@@ -288,11 +288,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadDrugData(sp, speciesFolder);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas();
+        downloadGeneDiseaseAnnotation(geneFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
-    private void downloadDrugData(Species species, Path speciesFolder)
-            throws IOException, InterruptedException {
+    private void downloadDrugData(Species species, Path speciesFolder) throws IOException, InterruptedException {
 
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
@@ -308,12 +308,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
+
         String ensemblHost = host + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
             ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
 
-        String url = ensemblHost + "/gtf/" + spShortName + "/*.gtf.gz";
+        // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
+        // to download the correct GTF file.
+        String version = ensemblRelease.split("-")[1];
+        String url = ensemblHost + "/gtf/" + spShortName + "/*" + version + ".gtf.gz";
         String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
         downloadFile(url, fileName);
 
@@ -352,6 +356,19 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(geneGtfUrl, expression.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
         }
     }
+
+    private void downloadGeneDiseaseAnnotation(Path geneFolder) throws IOException, InterruptedException {
+        logger.info("Downloading gene disease annotation ...");
+
+        String host = configuration.getDownload().getHpo().getHost();
+        String fileName = StringUtils.substringAfterLast(host, "/");
+        downloadFile(host, geneFolder.resolve(fileName).toString());
+
+        host = configuration.getDownload().getDisgenet().getHost();
+        fileName = StringUtils.substringAfterLast(host, "/");
+        downloadFile(host, geneFolder.resolve(fileName).toString());
+    }
+
 
     private void runGeneExtraInfo(Species sp, String assembly, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
@@ -548,14 +565,15 @@ public class DownloadCommandExecutor extends CommandExecutor {
             makeDir(conservationFolder.resolve("phylop"));
             makeDir(conservationFolder.resolve("gerp"));
 
+            String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
+                    "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M", };
+
             if (assembly.equalsIgnoreCase("GRCh37")) {
                 logger.debug("Downloading GERP++ ...");
                 downloadFile(configuration.getDownload().getGerp().getHost(),
                         conservationFolder.resolve("gerp/hg19.GERP_scores.tar.gz").toAbsolutePath().toString());
 
                 String url = configuration.getDownload().getConservation().getHost() + "/hg19";
-                String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
-                        "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M", };
                 for (int i = 0; i < chromosomes.length; i++) {
                     String phastConsUrl = url + "/phastCons46way/primates/chr" + chromosomes[i] + ".phastCons46way.primates.wigFix.gz";
                     downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i]
@@ -569,14 +587,23 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             if (assembly.equalsIgnoreCase("GRCh38")) {
                 String url = configuration.getDownload().getConservation().getHost() + "/hg38";
+                for (int i = 0; i < chromosomes.length; i++) {
+                    String phastConsUrl = url + "/phastCons100way/hg38.100way.phastCons/chr" + chromosomes[i]
+                            + ".phastCons100way.wigFix.gz";
+                    downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i]
+                            + ".phastCons100way.wigFix.gz").toString());
 
-                String phastConsUrl = url + "/phastCons7way/hg38.phastCons7way.wigFix.gz";
-                Path outFile = conservationFolder.resolve("phastCons").resolve("hg38.phastCons7way.wigFix.gz");
-                downloadFile(phastConsUrl, outFile.toString());
-
-                String phyloPUrl = url + "/phyloP7way/hg38.phyloP7way.wigFix.gz";
-                outFile = conservationFolder.resolve("phylop").resolve("hg38.phyloP7way.wigFix.gz");
-                downloadFile(phyloPUrl, outFile.toString());
+                    String phyloPUrl = url + "/phyloP100way/hg38.100way.phyloP100way/chr" + chromosomes[i] + ".phyloP100way.wigFix.gz";
+                    downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosomes[i]
+                            + ".phyloP100way.wigFix.gz").toString());
+                }
+//                String phastConsUrl = url + "/phastCons7way/hg38.phastCons100way.wigFix.gz";
+//                Path outFile = conservationFolder.resolve("phastCons").resolve("hg38.phastCons100way.wigFix.gz");
+//                downloadFile(phastConsUrl, outFile.toString());
+//
+//                String phyloPUrl = url + "/phyloP7way/hg38.phyloP100way.wigFix.gz";
+//                outFile = conservationFolder.resolve("phylop").resolve("hg38.phyloP100way.wigFix.gz");
+//                downloadFile(phyloPUrl, outFile.toString());
             }
         }
 
