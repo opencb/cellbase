@@ -163,9 +163,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             // TODO: implement an adaptor for protein_functional_prediction - current queries are issued from the
             // TODO: ProteinDBAdaptors, that's why there isn't one yet
-//            case "protein_functional_prediction":
+            case "protein_functional_prediction":
+                dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
-//                break;
+                break;
             case "conservation":
                 dbAdaptor = dbAdaptorFactory.getConservedRegionDBAdaptor(species, assembly);
                 break;
