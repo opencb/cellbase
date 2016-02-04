@@ -437,33 +437,45 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         List<BasicDBObject> variationDBList = (List<BasicDBObject>) variationQueryResults.get(i).getResult();
 
                         if (variationDBList != null && variationDBList.size() > 0) {
-                            ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                    .setId(variationDBList.get(0).getString("id", ""));
+                            BasicDBList idsDBList = (BasicDBList) variationDBList.get(0).get("ids");
+                            if (idsDBList != null) {
+                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                        .setId((String) idsDBList.get(0));
+                            }
 
                             if (annotatorSet.contains("populationFrequencies")) {
-                                BasicDBList freqsDBList = (BasicDBList) variationDBList.get(0).get("populationFrequencies");
-                                if (freqsDBList != null) {
-                                    BasicDBObject freqDBObject;
-                                    ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                            .setPopulationFrequencies(new ArrayList<>());
-                                    for (int j = 0; j < freqsDBList.size(); j++) {
-                                        freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                                        if (freqDBObject != null && freqDBObject.get("refAllele") != null) {
-                                            if (freqDBObject.containsKey("study")) {
-                                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                                        .getPopulationFrequencies()
-                                                        .add(new PopulationFrequency(freqDBObject.get("study").toString(),
-                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
-                                            } else {
-                                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                                        .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
-                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
+                                BasicDBObject annotationDBObject =  (BasicDBObject) variationDBList.get(0).get("annotation");
+                                if (annotationDBObject != null) {
+                                    BasicDBList freqsDBList = (BasicDBList) annotationDBObject.get("populationFrequencies");
+                                    if (freqsDBList != null) {
+                                        BasicDBObject freqDBObject;
+                                        ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                                .setPopulationFrequencies(new ArrayList<>());
+                                        for (int j = 0; j < freqsDBList.size(); j++) {
+                                            freqDBObject = ((BasicDBObject) freqsDBList.get(j));
+                                            if (freqDBObject != null && freqDBObject.get("refAllele") != null) {
+                                                if (freqDBObject.containsKey("study")) {
+                                                    ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                                            .getPopulationFrequencies()
+                                                            .add(new PopulationFrequency(freqDBObject.get("study").toString(),
+                                                                    freqDBObject.get("population").toString(),
+                                                                    freqDBObject.get("superPopulation").toString(),
+                                                                    freqDBObject.get("refAllele").toString(),
+                                                                    freqDBObject.get("altAllele").toString(),
+                                                                    Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                                                    Float.valueOf(freqDBObject.get("altAlleleFreq").toString()),
+                                                                    0.0f, 0.0f, 0.0f));
+                                                } else {
+                                                    ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                                            .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
+                                                            freqDBObject.get("population").toString(),
+                                                            freqDBObject.get("superPopulation").toString(),
+                                                            freqDBObject.get("refAllele").toString(),
+                                                            freqDBObject.get("altAllele").toString(),
+                                                            Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                                            Float.valueOf(freqDBObject.get("altAlleleFreq").toString()),
+                                                            0.0f, 0.0f, 0.0f));
+                                                }
                                             }
                                         }
                                     }

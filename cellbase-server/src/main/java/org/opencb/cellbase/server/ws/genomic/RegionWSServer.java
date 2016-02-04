@@ -312,29 +312,29 @@ public class RegionWSServer extends GenericRestWSServer {
         }
     }
 
-
-    @GET
-    @Path("/{chrRegionId}/phenotype")
-    public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query, @DefaultValue("") @QueryParam("source") String source) {
-        try {
-            parseQueryParams();
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            List<Region> regions = Region.parseRegions(query);
-
-            if (hasHistogramQueryParam()) {
-                QueryResult queryResult = variationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
-                return createOkResponse(queryResult);
-            } else {
-                if (source != null && !source.equals("")) {
-                    queryOptions.put("source", Splitter.on(",").splitToList(source));
-                }
-                List<QueryResult> queryResults = variationDBAdaptor.getAllPhenotypeByRegion(regions, queryOptions);
-                return createOkResponse(queryResults);
-            }
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+    // TODO: modify the code below to use clinicalDBAdaptor rather than variationDBAdaptor
+//    @GET
+//    @Path("/{chrRegionId}/phenotype")
+//    public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query, @DefaultValue("") @QueryParam("source") String source) {
+//        try {
+//            parseQueryParams();
+//            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//            List<Region> regions = Region.parseRegions(query);
+//
+//            if (hasHistogramQueryParam()) {
+//                QueryResult queryResult = variationDBAdaptor.getAllIntervalFrequencies(regions.get(0), queryOptions);
+//                return createOkResponse(queryResult);
+//            } else {
+//                if (source != null && !source.equals("")) {
+//                    queryOptions.put("source", Splitter.on(",").splitToList(source));
+//                }
+//                List<QueryResult> queryResults = variationDBAdaptor.getAllPhenotypeByRegion(regions, queryOptions);
+//                return createOkResponse(queryResults);
+//            }
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/{chrRegionId}/structural_variation")

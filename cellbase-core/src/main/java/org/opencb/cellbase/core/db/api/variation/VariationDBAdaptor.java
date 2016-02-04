@@ -83,17 +83,17 @@ public interface VariationDBAdaptor extends FeatureDBAdaptor {
     List<QueryResult> getAllByTranscriptIdList(List<String> idList, QueryOptions options);
 
 
-    QueryResult getAllPhenotypes(QueryOptions options);
-
-    List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options);
-
-    QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
-
-    List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options);
-
-    QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options);
-
-    List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
+//    QueryResult getAllPhenotypes(QueryOptions options);
+//
+//    List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options);
+//
+//    QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
+//
+//    List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options);
+//
+//    QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options);
+//
+//    List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
 
     // public List<SnpPopulationFrequency> getAllSnpPopulationFrequency(String name);
     // public List<List<SnpPopulationFrequency>> getAllSnpPopulationFrequencyList(List<String> nameList);

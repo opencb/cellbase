@@ -119,21 +119,22 @@ public class SnpWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/phenotypes")
-    @Deprecated
-    public Response getAllPhenotypes(@QueryParam("phenotype") String phenotype) {
-        try {
-            parseQueryParams();
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-
-            queryOptions.put("phenotype", phenotype);
-
-            return createOkResponse(variationDBAdaptor.getAllPhenotypes(queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+    // TODO: phenotype queries to be solved by the clinical WS
+//    @GET
+//    @Path("/phenotypes")
+//    @Deprecated
+//    public Response getAllPhenotypes(@QueryParam("phenotype") String phenotype) {
+//        try {
+//            parseQueryParams();
+//            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//
+//            queryOptions.put("phenotype", phenotype);
+//
+//            return createOkResponse(variationDBAdaptor.getAllPhenotypes(queryOptions));
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/{snpId}/consequence_type")
