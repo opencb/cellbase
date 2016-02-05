@@ -23,10 +23,13 @@ import static org.junit.Assert.*;
 public class VariationParserTest {
 
     private static Path variationParserTestDirectory;
+    private static Path variationParserTestOutputDirectory;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         variationParserTestDirectory = Paths.get(VariationParserTest.class.getResource("/variationParser").getPath());
+        variationParserTestOutputDirectory = variationParserTestDirectory.resolve("output");
+        variationParserTestOutputDirectory.toFile().mkdir();
     }
 
     @AfterClass
@@ -35,6 +38,7 @@ public class VariationParserTest {
         variationParserTestDirectory.resolve(VariationFeatureFile.PREPROCESSED_VARIATION_FEATURE_FILENAME + ".gz").toFile().delete();
         variationParserTestDirectory.resolve(VariationTranscriptFile.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + ".gz").toFile().delete();
         variationParserTestDirectory.resolve(VariationSynonymFile.PREPROCESSED_VARIATION_SYNONYM_FILENAME + ".gz").toFile().delete();
+        variationParserTestOutputDirectory.toFile().delete();
     }
 
     @Test
