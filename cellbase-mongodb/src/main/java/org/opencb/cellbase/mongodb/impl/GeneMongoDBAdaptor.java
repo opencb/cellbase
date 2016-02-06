@@ -67,6 +67,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
         return mongoDBCollection.count(bsonDocument);

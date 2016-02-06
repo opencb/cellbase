@@ -43,6 +43,11 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.count(bson);

@@ -32,6 +32,13 @@ import java.util.function.Consumer;
 public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
 
+//    int insert(List objectList);
+
+    QueryResult<Long> update(List objectList, String field);
+
+//    QueryResult<Long> update(Query query, ObjectMap parameters);
+
+
     default QueryResult<Long> count() {
         return count(new Query());
     }

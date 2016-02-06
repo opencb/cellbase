@@ -45,6 +45,11 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
     }
 
     @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.count(bson);

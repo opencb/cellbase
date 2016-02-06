@@ -74,7 +74,7 @@ public class GeneParser extends CellBaseParser {
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseConfiguration.SpeciesProperties.Species species,
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
-                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
+                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
                 geneDirectoryPath.resolve("mirna.txt"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
@@ -131,8 +131,10 @@ public class GeneParser extends CellBaseParser {
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = null;
         try {
-            fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath);
-            fastaIndexManager.index();
+            fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
+            if (!fastaIndexManager.isConnected()) {
+                fastaIndexManager.index();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -348,12 +350,7 @@ public class GeneParser extends CellBaseParser {
         // cleaning
         gtfReader.close();
         serializer.close();
-
-//        try {
-//            disconnectSqlite();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
+        fastaIndexManager.close();
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {

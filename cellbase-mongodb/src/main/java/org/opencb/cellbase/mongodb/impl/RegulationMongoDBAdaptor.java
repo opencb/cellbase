@@ -84,6 +84,11 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
         return mongoDBCollection.count(bsonDocument);

@@ -17,6 +17,7 @@
 package org.opencb.cellbase.app.transform
 
 import org.opencb.biodata.models.core.Gene
+import org.opencb.cellbase.core.CellBaseConfiguration
 import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -40,7 +41,8 @@ class GeneParserTest extends Specification {
         serializedGenes = new ArrayList<Gene>()
         serializer.serialize(_) >> { Gene arg -> serializedGenes.add(arg) }
 
-        def geneParser = new GeneParser(geneTestDir, genomeSequenceFasta, serializer)
+        def species = new CellBaseConfiguration.SpeciesProperties.Species()
+        def geneParser = new GeneParser(geneTestDir, genomeSequenceFasta, species, serializer)
         geneParser.parse()
     }
 

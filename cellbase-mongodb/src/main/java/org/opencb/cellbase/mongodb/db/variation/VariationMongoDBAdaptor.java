@@ -17,8 +17,11 @@
 package org.opencb.cellbase.mongodb.db.variation;
 
 import com.mongodb.BasicDBList;
+import com.mongodb.BulkWriteException;
 import com.mongodb.QueryBuilder;
+import com.mongodb.bulk.BulkWriteResult;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
@@ -42,6 +45,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     private int variationChunkSize = MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE;
 
     private GeneMongoDBAdaptor geneMongoDBAdaptor;
+
+    private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
 
     public VariationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -366,4 +371,89 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
 
         return results;
     }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        int nLoadedObjects = 0;
+        switch (field) {
+            case POP_FREQUENCIES_FIELD:
+                nLoadedObjects = updatePopulationFrequencies((List<Document>) objectList);
+                break;
+            default:
+                logger.error("Invalid field {}: no action implemented for updating this field.", field);
+                nLoadedObjects = 0;
+                break;
+        }
+        return nLoadedObjects;
+    }
+
+    private int updatePopulationFrequencies(List<Document> variantDocumentList) {
+
+        List<Bson> queries = new ArrayList<>(variantDocumentList.size());
+        List<Bson> updates = new ArrayList<>(variantDocumentList.size());
+
+        for (Document variantDBObject : variantDocumentList) {
+            Document annotationDBObject = (Document) variantDBObject.get("annotation");
+            Document push = new Document(POP_FREQUENCIES_FIELD, annotationDBObject.get("populationFrequencies"));
+
+            // Remove annotation object from the DBObject so that push and setOnInsert do not update the same fields:
+            // i.e. annotation.populationFrequencies and annotation
+            variantDBObject.remove("annotation");
+            addChunkId(variantDBObject);
+
+            Document update = new Document()
+                    .append("$pushAll", push)
+                    .append("$setOnInsert", variantDBObject);
+
+            updates.add(update);
+
+            String chunkId = getChunkIdPrefix((String) variantDBObject.get("chromosome"),
+                    (int) variantDBObject.get("start"), variationChunkSize);
+            queries.add(new Document("_chunkIds", chunkId)
+                    .append("chromosome", variantDBObject.get("chromosome"))
+                    .append("start", variantDBObject.get("start"))
+                    .append("end", variantDBObject.get("end"))
+                    .append("reference", variantDBObject.get("reference"))
+                    .append("alternate", variantDBObject.get("alternate")));
+        }
+
+        BulkWriteResult bulkWriteResult;
+        if (!queries.isEmpty()) {
+            logger.info("updating object");
+            QueryOptions options = new QueryOptions("upsert", true);
+            options.put("multi", false);
+            try {
+                bulkWriteResult = mongoDBCollection.update(queries, updates, options).first();
+            } catch (BulkWriteException e) {
+                throw e;
+            }
+            logger.info("{} object updated", bulkWriteResult.getUpserts().size() + bulkWriteResult.getModifiedCount());
+            return bulkWriteResult.getUpserts().size() + bulkWriteResult.getModifiedCount();
+        }
+        logger.info("no object updated");
+        return 0;
+
+    }
+
+    // Method copied from MongoDBCellbaseLoader. In a near future only this one will stay. Insert work currently done
+    // by MongoDBCellbaseLoader must be replaced by an appropriate method in this adaptor
+    private void addChunkId(Document dbObject) {
+        List<String> chunkIds = new ArrayList<>();
+        int chunkStart = (Integer) dbObject.get("start") / variationChunkSize;
+        int chunkEnd = (Integer) dbObject.get("end") / variationChunkSize;
+        String chunkIdSuffix = variationChunkSize / 1000 + "k";
+        for (int i = chunkStart; i <= chunkEnd; i++) {
+            if (dbObject.containsKey("chromosome")) {
+                chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
+            } else {
+                chunkIds.add(dbObject.get("sequenceName") + "_" + i + "_" + chunkIdSuffix);
+            }
+        }
+        dbObject.put("_chunkIds", chunkIds);
+    }
+
+
 }

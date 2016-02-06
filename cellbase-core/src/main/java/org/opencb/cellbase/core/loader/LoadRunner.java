@@ -63,8 +63,12 @@ public class LoadRunner {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-
     public void load(Path filePath, String data) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
+            IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
+        load(filePath, data, null);
+    }
+
+    public void load(Path filePath, String data, String field) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
         try {
 
@@ -77,8 +81,8 @@ public class LoadRunner {
             for (int i = 0; i < numThreads; i++) {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                        .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
-                        .newInstance(blockingQueue, data, database, cellBaseConfiguration));
+                        .getConstructor(BlockingQueue.class, String.class, String.class, String.class, CellBaseConfiguration.class)
+                        .newInstance(blockingQueue, data, database, field, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
             }
 
@@ -145,6 +149,9 @@ public class LoadRunner {
                     blockingQueue.put(batch);
                     batch = new ArrayList<>(BATCH_SIZE);
                 }
+                if (inputFileRecords % 1000 == 0) {
+                    logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
+                }
             }
             // Last batch
             if (!batch.isEmpty()) {
@@ -166,8 +173,8 @@ public class LoadRunner {
     public void index(String data) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException, LoaderException {
         CellBaseLoader cellBaseLoader = (CellBaseLoader) Class.forName(loader)
-                .getConstructor(BlockingQueue.class, String.class, String.class, CellBaseConfiguration.class)
-                .newInstance(blockingQueue, data, database, cellBaseConfiguration);
+                .getConstructor(BlockingQueue.class, String.class, String.class, String.class, CellBaseConfiguration.class)
+                .newInstance(blockingQueue, data, database, "", cellBaseConfiguration);
         cellBaseLoader.createIndex(data);
     }
 

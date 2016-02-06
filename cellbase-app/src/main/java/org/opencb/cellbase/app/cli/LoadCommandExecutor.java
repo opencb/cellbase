@@ -40,6 +40,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private Path input;
 
     private String database;
+    private String field;
     private String loader;
     private int numThreads;
 
@@ -55,6 +56,9 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (loadCommandOptions.database != null) {
             database = loadCommandOptions.database;
         }
+        if (loadCommandOptions.field != null) {
+            field = loadCommandOptions.field;
+        }
         if (loadCommandOptions.loader != null) {
             loader = loadCommandOptions.loader;
         }
@@ -66,87 +70,83 @@ public class LoadCommandExecutor extends CommandExecutor {
      */
     public void execute() {
 
-        if (Files.exists(input) && Files.isDirectory(input)) {
-            checkParameters();
+        checkParameters();
 
-            if (loadCommandOptions.data != null) {
+        if (loadCommandOptions.data != null) {
 
-                if (loadCommandOptions.loaderParams.containsKey("mongodb-index-folder")) {
-                    configuration.getDatabase().getOptions().put("mongodb-index-folder",
-                            loadCommandOptions.loaderParams.get("mongodb-index-folder"));
-                }
-                // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
-                if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
-                    configuration.getDatabase().getOptions().put("authenticationDatabase",
-                            loadCommandOptions.loaderParams.get("authenticationDatabase"));
-                }
+            if (loadCommandOptions.loaderParams.containsKey("mongodb-index-folder")) {
+                configuration.getDatabase().getOptions().put("mongodb-index-folder",
+                        loadCommandOptions.loaderParams.get("mongodb-index-folder"));
+            }
+            // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
+            if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
+                configuration.getDatabase().getOptions().put("authenticationDatabase",
+                        loadCommandOptions.loaderParams.get("authenticationDatabase"));
+            }
 
 //                loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
-                loadRunner = new LoadRunner(loader, database, numThreads, configuration);
+            loadRunner = new LoadRunner(loader, database, numThreads, configuration);
 
-                String[] buildOptions;
-                if (loadCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{"genome", "gene", "gene_disease_association", "variation", "variation_functional_score",
-                            "regulatory_region", "protein", "ppi", "protein_functional_prediction", "conservation", "clinical", };
-                } else {
-                    buildOptions = loadCommandOptions.data.split(",");
-                }
+            String[] buildOptions;
+            if (loadCommandOptions.data.equals("all")) {
+                buildOptions = new String[]{"genome", "gene", "gene_disease_association", "variation", "variation_functional_score",
+                        "regulatory_region", "protein", "ppi", "protein_functional_prediction", "conservation", "clinical", };
+            } else {
+                buildOptions = loadCommandOptions.data.split(",");
+            }
 
-                for (int i = 0; i < buildOptions.length; i++) {
-                    String buildOption = buildOptions[i];
-                    try {
-                        switch (buildOption) {
-                            case "genome":
-                                loadRunner.load(input.resolve("genome_info.json"), "genome_info");
-                                loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
-                                loadRunner.index("genome_sequence");
-                                break;
-                            case "gene":
-                                loadRunner.load(input.resolve("gene.json.gz"), "gene");
-                                loadRunner.index("gene");
-                                break;
-                            case "gene_disease_association":
-                                break;
-                            case "variation":
-                                loadVariationData();
-                                break;
-                            case "variation_functional_score":
-                                loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
-                                loadRunner.index("variation_functional_score");
-                                break;
-                            case "regulatory_region":
-                                loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
-                                loadRunner.index("regulatory_region");
-                                break;
-                            case "protein":
-                                loadRunner.load(input.resolve("protein.json.gz"), "protein");
-                                loadRunner.index("protein");
-                                break;
-                            case "ppi":
-                                loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
-                                loadRunner.index("protein_protein_interaction");
-                                break;
-                            case "protein_functional_prediction":
-                                loadProteinFunctionalPrediction();
-                                break;
-                            case "conservation":
-                                loadConservation();
-                                break;
-                            case "clinical":
-                                loadClinical();
-                                break;
-                            default:
-                                logger.warn("We should ot reach this point");
-                                break;
-                        }
-                    } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ExecutionException
-                            | NoSuchMethodException | InterruptedException | ClassNotFoundException | LoaderException | IOException e) {
-                        e.printStackTrace();
+            for (int i = 0; i < buildOptions.length; i++) {
+                String buildOption = buildOptions[i];
+                try {
+                    switch (buildOption) {
+                        case "genome":
+                            loadRunner.load(input.resolve("genome_info.json"), "genome_info");
+                            loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
+                            loadRunner.index("genome_sequence");
+                            break;
+                        case "gene":
+                            loadRunner.load(input.resolve("gene.json.gz"), "gene");
+                            loadRunner.index("gene");
+                            break;
+                        case "gene_disease_association":
+                            break;
+                        case "variation":
+                            loadVariationData();
+                            break;
+                        case "variation_functional_score":
+                            loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
+                            loadRunner.index("variation_functional_score");
+                            break;
+                        case "regulatory_region":
+                            loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
+                            loadRunner.index("regulatory_region");
+                            break;
+                        case "protein":
+                            loadRunner.load(input.resolve("protein.json.gz"), "protein");
+                            loadRunner.index("protein");
+                            break;
+                        case "ppi":
+                            loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
+                            loadRunner.index("protein_protein_interaction");
+                            break;
+                        case "protein_functional_prediction":
+                            loadProteinFunctionalPrediction();
+                            break;
+                        case "conservation":
+                            loadConservation();
+                            break;
+                        case "clinical":
+                            loadClinical();
+                            break;
+                        default:
+                            logger.warn("We should ot reach this point");
+                            break;
                     }
+                } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ExecutionException
+                        | NoSuchMethodException | InterruptedException | ClassNotFoundException | LoaderException | IOException e) {
+                    e.printStackTrace();
                 }
             }
-        } else {
-            logger.error("Input parameter '{}' does not exist or is not a directory", input.toString());
         }
     }
 
@@ -158,6 +158,15 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.warn("Incorrect number of numThreads, it must be a positive value. This has been set to '{}'", numThreads);
         }
 
+        if (field != null) {
+            if (loadCommandOptions.data == null) {
+                logger.error("--data option cannot be empty. Please provide a valid value for the --data parameter.");
+            } else if (!Files.exists(input)) {
+                logger.error("Input parameter {} does not exist", input);
+            }
+        } else if (!Files.exists(input) || !Files.isDirectory(input)) {
+            logger.error("Input parameter {} does not exist or is not a directory", input);
+        }
         try {
             Class.forName(loader);
         } catch (ClassNotFoundException e) {
@@ -172,15 +181,22 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-            return entry.getFileName().toString().startsWith("variation_chr");
-        });
+        // Common loading process from CellBase variation data models
+        if (field == null) {
+            DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+                return entry.getFileName().toString().startsWith("variation_chr");
+            });
 
-        for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(input.resolve(entry.getFileName()), "variation");
+            for (Path entry : stream) {
+                logger.info("Loading file '{}'", entry.toString());
+                loadRunner.load(input.resolve(entry.getFileName()), "variation");
+            }
+            loadRunner.index("variation");
+        // Custom update required e.g. population freqs loading
+        } else {
+            logger.info("Loading file '{}'", input.toString());
+            loadRunner.load(input, "variation", field);
         }
-        loadRunner.index("variation");
     }
 
     private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
