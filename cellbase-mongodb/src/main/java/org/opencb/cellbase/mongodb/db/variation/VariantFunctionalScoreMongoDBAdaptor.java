@@ -137,8 +137,7 @@ public class VariantFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor impleme
 
     @Override
     public QueryResult getByVariant(Variant variant, QueryOptions queryOptions) {
-        return getByVariant(variant.getChromosome(), variant.getStart(), variant.getReference(),
-                variant.getAlternate(), queryOptions);
+        return getByVariant(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(), queryOptions);
     }
 
     @Override

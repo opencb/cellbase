@@ -329,6 +329,10 @@ public class CliOptionsParser {
         @Parameter(names = {"--gzip"}, description = "Whether the output file is gzipped", required = false, arity = 0)
         public boolean gzip;
 
+
+        @Parameter(names = {"--input-variation-collection"}, description = "", required = false, arity = 0)
+        public boolean cellBaseAnnotation;
+
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")

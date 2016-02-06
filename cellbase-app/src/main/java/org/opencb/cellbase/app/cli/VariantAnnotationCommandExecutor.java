@@ -29,11 +29,11 @@ import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.core.api.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.db.DBAdaptorFactory;
-import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.*;
-import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
+import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.io.StringDataReader;
@@ -135,15 +135,27 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 return;
             }
 
-            DataReader dataReader = new StringDataReader(input);
-            List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getTaskList();
-            DataWriter dataWriter = getDataWriter();
+            // If a variant file is provided then we annotate it
+            if (input != null) {
+                DataReader dataReader = new StringDataReader(input);
+                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getTaskList();
+                DataWriter dataWriter = getDataWriter();
 
-            ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-            ParallelTaskRunner<String, Variant> runner =
-                    new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
-
-            runner.run();
+                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+                ParallelTaskRunner<String, Variant> runner =
+                        new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                runner.run();
+            } else {
+                // This will annotate the CellBase Variation collection
+                if (variantAnnotationCommandOptions.cellBaseAnnotation) {
+                    DBAdaptorFactory dbAdaptorFactory = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(configuration);
+//                    DataWriter dataWriter = getDataWriter();
+//                    ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+//                    ParallelTaskRunner<String, Variant> runner =
+// new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+//                    runner.run();
+                }
+            }
 
             if (customFiles != null) {
                 closeIndexes();

@@ -3,7 +3,7 @@ package org.opencb.cellbase.core.variant.annotation;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.api.VariantAnnotationDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -43,8 +43,7 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
 
     public void run(List<Variant> variantList) {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
-        List<QueryResult> queryResultList =
-                variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+        List<QueryResult> queryResultList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
         for (int i = 0; i < queryResultList.size(); i++) {

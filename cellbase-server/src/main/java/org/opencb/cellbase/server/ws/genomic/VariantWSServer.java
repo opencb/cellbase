@@ -21,8 +21,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.common.Position;
-import org.opencb.cellbase.core.db.api.variation.*;
+import org.opencb.cellbase.core.api.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -36,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -72,66 +71,66 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{variants}/snp_phenotype")
-    public Response getSnpPhenotypesByPositionByGet(@PathParam("variants") String variants) {
-        return getSnpPhenotypesByPosition(variants, outputFormat);
-    }
+//    @GET
+//    @Path("/{variants}/snp_phenotype")
+//    public Response getSnpPhenotypesByPositionByGet(@PathParam("variants") String variants) {
+//        return getSnpPhenotypesByPosition(variants, outputFormat);
+//    }
+//
+//    @Consumes("application/x-www-form-urlencoded")
+//    @Path("/snp_phenotype")
+//    public Response getSnpPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
+//        return getSnpPhenotypesByPosition(variants, outputFormat);
+//    }
+//
+//    public Response getSnpPhenotypesByPosition(String variants, String outputFormat) {
+//        try {
+//            parseQueryParams();
+//            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//            List<Variant> variantList = Variant.parseVariants(variants);
+//            List<Position> positionList = new ArrayList<>(variantList.size());
+//            for (Variant gv : variantList) {
+//                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
+//            }
+//            return createOkResponse("Mongo TODO");
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
-    @Consumes("application/x-www-form-urlencoded")
-    @Path("/snp_phenotype")
-    public Response getSnpPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
-        return getSnpPhenotypesByPosition(variants, outputFormat);
-    }
 
-    public Response getSnpPhenotypesByPosition(String variants, String outputFormat) {
-        try {
-            parseQueryParams();
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            List<Variant> variantList = Variant.parseVariants(variants);
-            List<Position> positionList = new ArrayList<>(variantList.size());
-            for (Variant gv : variantList) {
-                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
-            }
-            return createOkResponse("Mongo TODO");
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-
-    @GET
-    @Path("/{variants}/mutation_phenotype")
-    public Response getMutationPhenotypesByPositionByGet(@PathParam("variants") String variants) {
-        return getMutationPhenotypesByPosition(variants, outputFormat);
-    }
-
-    @POST
-    @Consumes("application/x-www-form-urlencoded")
-//    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
-    @Path("/mutation_phenotype")
-    public Response getMutationPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
-        return getMutationPhenotypesByPosition(variants, outputFormat);
-    }
-
-    public Response getMutationPhenotypesByPosition(String variants, String outputFormat) {
-        try {
-            parseQueryParams();
-            MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
-            List<Variant> variantList = Variant.parseVariants(variants);
-            List<Position> positionList = new ArrayList<Position>(variantList.size());
-            for (Variant gv : variantList) {
-                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
-            }
-            long t0 = System.currentTimeMillis();
-            List<QueryResult> queryResults = mutationDBAdaptor.getAllByPositionList(positionList, queryOptions);
-            logger.debug("getMutationPhenotypesByPosition: " + (System.currentTimeMillis() - t0) + "ms");
-//            return generateResponse(variants, "MUTATION", mutationPhenotypeAnnotList);
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{variants}/mutation_phenotype")
+//    public Response getMutationPhenotypesByPositionByGet(@PathParam("variants") String variants) {
+//        return getMutationPhenotypesByPosition(variants, outputFormat);
+//    }
+//
+//    @POST
+//    @Consumes("application/x-www-form-urlencoded")
+////    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
+//    @Path("/mutation_phenotype")
+//    public Response getMutationPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
+//        return getMutationPhenotypesByPosition(variants, outputFormat);
+//    }
+//
+//    public Response getMutationPhenotypesByPosition(String variants, String outputFormat) {
+//        try {
+//            parseQueryParams();
+//            MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
+//            List<Variant> variantList = Variant.parseVariants(variants);
+//            List<Position> positionList = new ArrayList<Position>(variantList.size());
+//            for (Variant gv : variantList) {
+//                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
+//            }
+//            long t0 = System.currentTimeMillis();
+//            List<QueryResult> queryResults = mutationDBAdaptor.getAllByPositionList(positionList, queryOptions);
+//            logger.debug("getMutationPhenotypesByPosition: " + (System.currentTimeMillis() - t0) + "ms");
+////            return generateResponse(variants, "MUTATION", mutationPhenotypeAnnotList);
+//            return createOkResponse(queryResults);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
 
     @GET
@@ -153,7 +152,12 @@ public class VariantWSServer extends GenericRestWSServer {
             List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
-            VariantAnnotationDBAdaptor varAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
+// dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+
+            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
+                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
             List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
             return createOkResponse(clinicalQueryResultList);
@@ -170,11 +174,13 @@ public class VariantWSServer extends GenericRestWSServer {
             List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
-            VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor =
-                    dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(this.species, this.assembly);
+//            VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor =
+            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor =
+                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
             Variant variant = variantList.get(0);
-            QueryResult byVariant = variantFunctionalScoreDBAdaptor.getByVariant(variant.getChromosome(),
-                    variant.getStart(), variant.getReference(), variant.getAlternate(), queryOptions);
+//            QueryResult byVariant = variantFunctionalScoreDBAdaptor.getByVariant(variant.getChromosome(),
+//                    variant.getStart(), variant.getReference(), variant.getAlternate(), queryOptions);
+            QueryResult byVariant = variantAnnotationDBAdaptor.getFunctionalScore(variant, queryOptions);
 
             return createOkResponse(byVariant);
         } catch (Exception e) {
@@ -201,7 +207,8 @@ public class VariantWSServer extends GenericRestWSServer {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
-            VariantAnnotationDBAdaptor varAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
+                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
             List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
             return createOkResponse(clinicalQueryResultList);

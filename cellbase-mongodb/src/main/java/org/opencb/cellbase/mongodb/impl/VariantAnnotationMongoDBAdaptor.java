@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.mongodb.db.variation;
+package org.opencb.cellbase.mongodb.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBList;
@@ -24,44 +24,46 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
-import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
-import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariantFunctionalScoreDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.*;
-import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
+
+//import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
+//import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
+//import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
+//import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
+//import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
+//import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
+//import org.opencb.cellbase.core.db.api.variation.VariantFunctionalScoreDBAdaptor;
+//import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 
 /**
- * Created by imedina on 11/07/14.
- *
- * @author Javier Lopez fjlopez@ebi.ac.uk;
+ * Created by imedina on 06/02/16.
  */
-public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements VariantAnnotationDBAdaptor {
+public class VariantAnnotationMongoDBAdaptor  extends MongoDBAdaptor implements VariantAnnotationDBAdaptor<VariantAnnotation> {
 
     private GeneDBAdaptor geneDBAdaptor;
-    private RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor;
-    private VariationDBAdaptor variationDBAdaptor;
+    private RegulationDBAdaptor regulatoryRegionDBAdaptor;
+    private VariantAnnotationDBAdaptor variationDBAdaptor;
     private ClinicalDBAdaptor clinicalDBAdaptor;
     private ProteinDBAdaptor proteinDBAdaptor;
-    private ConservedRegionDBAdaptor conservedRegionDBAdaptor;
+    private ConservationDBAdaptor conservedRegionDBAdaptor;
+    @Deprecated
     private VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor;
     private GenomeDBAdaptor genomeDBAdaptor;
 
     private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
 
+    @Deprecated
     public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
 
@@ -71,56 +73,28 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
 
+    public VariantAnnotationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                                           DBAdaptorFactory dbAdaptorFactory) {
+        super(species, assembly, mongoDataStore);
 
-    @Override
-    public QueryResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions) {
-        long dbTimeStart = System.currentTimeMillis();
+        geneObjectMapper = new ObjectMapper();
+        normalizer = new VariantNormalizer(false);
 
-        // We process include and exclude query options to know which annotators to use.
-        // Include parameter has preference over exclude.
-        Set<String> annotatorSet = getAnnotatorSet(queryOptions);
+        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        regulatoryRegionDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+        proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
 
-        // This field contains all the fields to be returned by overlapping genes
-        String includeGeneFields = getIncludedGeneFields(annotatorSet);
-        List<Gene> geneList = getAffectedGenes(variant, includeGeneFields);
-
-        // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
-        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true);
-
-        QueryResult queryResult = new QueryResult();
-        queryResult.setId(variant.toString());
-        queryResult.setDbTime(Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue());
-        queryResult.setNumResults(consequenceTypeList.size());
-        queryResult.setNumTotalResults(consequenceTypeList.size());
-        queryResult.setResult(consequenceTypeList);
-
-        return queryResult;
-
+        logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
-    public List<QueryResult> getAllConsequenceTypesByVariantList(List<Variant> variants, QueryOptions options) {
-        List<QueryResult> queryResults = new ArrayList<>(variants.size());
-        for (Variant variant : variants) {
-            try {
-                queryResults.add(getAllConsequenceTypesByVariant(variant, options));
-            } catch (UnsupportedURLVariantFormat e) {
-                logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
-                        variant.toString());
-            }
-        }
-        return queryResults;
-    }
-
-    @Override
-    public QueryResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions) {
+    public QueryResult<VariantAnnotation> getAnnotationByVariant(Variant variant, QueryOptions queryOptions) {
         return getAnnotationByVariantList(Collections.singletonList(variant), queryOptions).get(0);
     }
 
     @Override
-    public List<QueryResult> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
-
-        List<Variant> normalizedVariantList = normalizer.apply(variantList);
+    public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variants, QueryOptions queryOptions) {
+        List<Variant> normalizedVariantList = normalizer.apply(variants);
 
         // We process include and exclude query options to know which annotators to use.
         // Include parameter has preference over exclude.
@@ -131,7 +105,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         String includeGeneFields = getIncludedGeneFields(annotatorSet);
 
         // Object to be returned
-        List<QueryResult> variantAnnotationResultList = new ArrayList<>(normalizedVariantList.size());
+        List<QueryResult<VariantAnnotation>> variantAnnotationResultList = new ArrayList<>(normalizedVariantList.size());
 
         long globalStartTime = System.currentTimeMillis();
         long startTime;
@@ -157,7 +131,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
 
         FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
-        Future<List<QueryResult>> variantFunctionalScoreFuture = null;
+        Future<List<QueryResult<Score>>> variantFunctionalScoreFuture = null;
         if (annotatorSet.contains("functionalScore")) {
             futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, queryOptions);
             variantFunctionalScoreFuture = fixedThreadPool.submit(futureVariantFunctionalScoreAnnotator);
@@ -207,7 +181,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if (annotatorSet.contains("expression")) {
                 variantAnnotation.setGeneExpression(new ArrayList<>());
                 for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getExpression() != null) {
+                    if (gene.getAnnotation() != null && gene.getAnnotation().getExpression() != null) {
                         variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
                     }
                 }
@@ -216,7 +190,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if (annotatorSet.contains("geneDisease")) {
                 variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
                 for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getDiseases() != null) {
+                    if (gene.getAnnotation() != null && gene.getAnnotation().getDiseases() != null) {
                         variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
                     }
                 }
@@ -225,7 +199,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             if (annotatorSet.contains("drugInteraction")) {
                 variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
                 for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getDrugs() != null) {
+                    if (gene.getAnnotation() != null && gene.getAnnotation().getDrugs() != null) {
                         variantAnnotation.getGeneDrugInteraction().addAll(gene.getAnnotation().getDrugs());
                     }
                 }
@@ -269,6 +243,92 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         return variantAnnotationResultList;
     }
 
+    @Override
+    public QueryResult<ConsequenceType> getConsequenceTypes(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult<Score> getFunctionalScore(Variant variant, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public List<QueryResult<Score>> getFunctionalScore(List<Variant> variants, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult<Score> getFunctionalScore(Query query, QueryOptions options) {
+        return null;
+    }
+
+
+
+    @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
+    public QueryResult<Long> count(Query query) {
+        return null;
+    }
+
+    @Override
+    public QueryResult distinct(Query query, String field) {
+        return null;
+    }
+
+    @Override
+    public QueryResult stats(Query query) {
+        return null;
+    }
+
+    @Override
+    public QueryResult<VariantAnnotation> get(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult nativeGet(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public Iterator<VariantAnnotation> iterator(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public Iterator nativeIterator(Query query, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+        return null;
+    }
+
+    @Override
+    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
+
+    }
+
+
+
+
+
     private Set<String> getAnnotatorSet(QueryOptions queryOptions) {
         Set<String> annotatorSet;
         List<String> includeList = queryOptions.getAsStringList("include");
@@ -305,12 +365,18 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     private List<Gene> getAffectedGenes(Variant variant, String includeFields) {
         int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions("include", includeFields);
-        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
+        queryOptions.append("exclude", "_id");
+//        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+//                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
+        Query query = new Query(GeneDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                + ":" + (variantStart - 5000)
+                + "-" + (variant.getStart() + variant.getReference().length() - 1 + 5000));
+        QueryResult queryResult = geneDBAdaptor.nativeGet(query, queryOptions);
 
         List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
         for (Object object : queryResult.getResult()) {
             Gene gene = geneObjectMapper.convertValue(object, Gene.class);
+            System.out.println(gene);
             geneList.add(gene);
         }
         return geneList;
@@ -329,42 +395,46 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
     private ProteinVariantAnnotation getProteinAnnotation(ConsequenceType consequenceType) {
         if (consequenceType.getProteinVariantAnnotation() != null) {
-            QueryResult proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
-                    consequenceType.getEnsemblTranscriptId(),
-                    consequenceType.getProteinVariantAnnotation().getPosition(),
-                    consequenceType.getProteinVariantAnnotation().getReference(),
-                    consequenceType.getProteinVariantAnnotation().getAlternate(), new QueryOptions());
-
-            if (proteinVariantAnnotation.getNumResults() > 0) {
-                return (ProteinVariantAnnotation) proteinVariantAnnotation.getResult().get(0);
-            }
+            System.out.println("To be fixed!");
+//            QueryResult proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
+//                    consequenceType.getEnsemblTranscriptId(),
+//                    consequenceType.getProteinVariantAnnotation().getPosition(),
+//                    consequenceType.getProteinVariantAnnotation().getReference(),
+//                    consequenceType.getProteinVariantAnnotation().getAlternate(), new QueryOptions());
+//
+//            if (proteinVariantAnnotation.getNumResults() > 0) {
+//                return (ProteinVariantAnnotation) proteinVariantAnnotation.getResult().get(0);
+//            }
         }
         return null;
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
-//        if (variant.getReference().isEmpty()) {
-//            return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
-//        } else {
-//            if (variant.getAlternate().isEmpty()) {
-//                return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
-//            } else {
-//                if (variant.getReference().length() == 1 && variant.getAlternate().length() == 1) {
-//                    return new ConsequenceTypeSNVCalculator();
-//                } else {
-//                    throw new UnsupportedURLVariantFormat();
-//                }
-//            }
-//        }
-        return null;
+        if (variant.getReference().isEmpty()) {
+            return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
+        } else {
+            if (variant.getAlternate().isEmpty()) {
+                return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+            } else {
+                if (variant.getReference().length() == 1 && variant.getAlternate().length() == 1) {
+                    return new ConsequenceTypeSNVCalculator();
+                } else {
+                    throw new UnsupportedURLVariantFormat();
+                }
+            }
+        }
     }
 
     private List<RegulatoryRegion> getAffectedRegulatoryRegions(Variant variant) {
         int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add("include", "chromosome,start,end");
-        QueryResult queryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-                variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
+//        QueryResult queryResult = regulatoryRegionDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
+//                variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
+
+        Region region = new Region(variant.getChromosome(), variantStart, variant.getStart() + variant.getReference().length() - 1);
+        Query query = new Query(RegulationDBAdaptor.QueryParams.REGION.key(), region.toString());
+        QueryResult queryResult = regulatoryRegionDBAdaptor.nativeGet(query, queryOptions);
 
         List<RegulatoryRegion> regionList = new ArrayList<>(queryResult.getNumResults());
         for (Object object : queryResult.getResult()) {
@@ -418,14 +488,15 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         @Override
         public List<QueryResult> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<QueryResult> variationQueryResultList = variationDBAdaptor.getAllByVariantList(variantList, queryOptions);
+//            List<QueryResult> variationQueryResultList = variationDBAdaptor.getAllByVariantList(variantList, queryOptions);
+            List<QueryResult> variationQueryResultList = variationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
             logger.debug("Variation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());
             return variationQueryResultList;
         }
 
         public void processResults(Future<List<QueryResult>> conservationFuture,
-                                   List<QueryResult> variantAnnotationResultList, Set<String> annotatorSet) {
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList, Set<String> annotatorSet) {
             try {
                 while (!conservationFuture.isDone()) {
                     Thread.sleep(1);
@@ -437,33 +508,30 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                         List<Document> variationDBList = (List<Document>) variationQueryResults.get(i).getResult();
 
                         if (variationDBList != null && variationDBList.size() > 0) {
-                            ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                    .setId(variationDBList.get(0).getString("id"));
+                            variantAnnotationResultList.get(i).getResult().get(0).setId(variationDBList.get(0).getString("id"));
 
                             if (annotatorSet.contains("populationFrequencies")) {
                                 BasicDBList freqsDBList = (BasicDBList) variationDBList.get(0).get("populationFrequencies");
                                 if (freqsDBList != null) {
                                     Document freqDoc;
-                                    ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                            .setPopulationFrequencies(new ArrayList<>());
+                                    variantAnnotationResultList.get(i).getResult().get(0).setPopulationFrequencies(new ArrayList<>());
                                     for (int j = 0; j < freqsDBList.size(); j++) {
                                         freqDoc = ((Document) freqsDBList.get(j));
                                         if (freqDoc != null && freqDoc.get("refAllele") != null) {
                                             if (freqDoc.containsKey("study")) {
-                                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                                        .getPopulationFrequencies()
+                                                variantAnnotationResultList.get(i).getResult().get(0).getPopulationFrequencies()
                                                         .add(new PopulationFrequency(freqDoc.get("study").toString(),
                                                                 freqDoc.get("pop").toString(), freqDoc.get("superPop").toString(),
                                                                 freqDoc.get("refAllele").toString(), freqDoc.get("altAllele").toString(),
                                                                 Float.valueOf(freqDoc.get("refAlleleFreq").toString()),
                                                                 Float.valueOf(freqDoc.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
                                             } else {
-                                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                                        .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
-                                                        freqDoc.get("pop").toString(), freqDoc.get("superPop").toString(),
-                                                        freqDoc.get("refAllele").toString(), freqDoc.get("altAllele").toString(),
-                                                        Float.valueOf(freqDoc.get("refAlleleFreq").toString()),
-                                                        Float.valueOf(freqDoc.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
+                                                variantAnnotationResultList.get(i).getResult().get(0).getPopulationFrequencies()
+                                                        .add(new PopulationFrequency("1000G_PHASE_3",
+                                                                freqDoc.get("pop").toString(), freqDoc.get("superPop").toString(),
+                                                                freqDoc.get("refAllele").toString(), freqDoc.get("altAllele").toString(),
+                                                                Float.valueOf(freqDoc.get("refAlleleFreq").toString()),
+                                                                Float.valueOf(freqDoc.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
                                             }
                                         }
                                     }
@@ -498,7 +566,8 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             return conservationQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> conservationFuture, List<QueryResult> variantAnnotationResultList) {
+        public void processResults(Future<List<QueryResult>> conservationFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList) {
             try {
                 while (!conservationFuture.isDone()) {
                     Thread.sleep(1);
@@ -507,7 +576,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 List<QueryResult> conservationQueryResults = conservationFuture.get();
                 if (conservationQueryResults != null) {
                     for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                        ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                        variantAnnotationResultList.get(i).getResult().get(0)
                                 .setConservation((List<Score>) conservationQueryResults.get(i).getResult());
                     }
                 }
@@ -518,7 +587,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
     }
 
-    class FutureVariantFunctionalScoreAnnotator implements Callable<List<QueryResult>> {
+    class FutureVariantFunctionalScoreAnnotator implements Callable<List<QueryResult<Score>>> {
         private List<Variant> variantList;
 
         private QueryOptions queryOptions;
@@ -529,27 +598,29 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
 
         @Override
-        public List<QueryResult> call() throws Exception {
+        public List<QueryResult<Score>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<QueryResult> variantFunctionalScoreQueryResultList =
-                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
+//            List<QueryResult> variantFunctionalScoreQueryResultList =
+//                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
+            List<QueryResult<Score>> variantFunctionalScoreQueryResultList =
+                    variationDBAdaptor.getFunctionalScore(variantList, queryOptions);
             logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
                     System.currentTimeMillis() - startTime, variantList.size());
             return variantFunctionalScoreQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> variantFunctionalScoreFuture,
-                                   List<QueryResult> variantAnnotationResultList) {
+        public void processResults(Future<List<QueryResult<Score>>> variantFunctionalScoreFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList) {
             try {
                 while (!variantFunctionalScoreFuture.isDone()) {
                     Thread.sleep(1);
                 }
 
-                List<QueryResult> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
+                List<QueryResult<Score>> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
                 if (variantFunctionalScoreQueryResults != null) {
                     for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                        ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
+                        variantAnnotationResultList.get(i).getResult().get(0)
+                                .setFunctionalScore(variantFunctionalScoreQueryResults.get(i).getResult());
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {
@@ -571,12 +642,14 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         @Override
         public List<QueryResult> call() throws Exception {
             long startTime = System.currentTimeMillis();
+//            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
             List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> clinicalFuture, List<QueryResult> variantAnnotationResultList) {
+        public void processResults(Future<List<QueryResult>> clinicalFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList) {
             try {
                 while (!clinicalFuture.isDone()) {
                     Thread.sleep(1);
@@ -587,7 +660,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                     for (int i = 0; i < variantAnnotationResultList.size(); i++) {
                         QueryResult clinicalQueryResult = clinicalQueryResults.get(i);
                         if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
-                            ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                            variantAnnotationResultList.get(i).getResult().get(0)
                                     .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
                         }
                     }
@@ -598,23 +671,23 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         }
     }
 
-    @Override
-    public void setVariationDBAdaptor(VariationDBAdaptor variationDBAdaptor) {
+    //    @Override
+    public void setVariationDBAdaptor(VariantAnnotationMongoDBAdaptor variationDBAdaptor) {
         this.variationDBAdaptor = variationDBAdaptor;
     }
 
-    @Override
+    //    @Override
     public void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor) {
         this.clinicalDBAdaptor = clinicalDBAdaptor;
     }
 
-    @Override
+    //    @Override
     public void setProteinDBAdaptor(ProteinDBAdaptor proteinDBAdaptor) {
         this.proteinDBAdaptor = proteinDBAdaptor;
     }
 
-    @Override
-    public void setConservedRegionDBAdaptor(ConservedRegionDBAdaptor conservedRegionDBAdaptor) {
+    //    @Override
+    public void setConservedRegionDBAdaptor(ConservationDBAdaptor conservedRegionDBAdaptor) {
         this.conservedRegionDBAdaptor = conservedRegionDBAdaptor;
     }
 
@@ -622,7 +695,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         this.variantFunctionalScoreDBAdaptor = variantFunctionalScoreDBAdaptor;
     }
 
-    @Override
+    //    @Override
     public void setGenomeDBAdaptor(GenomeDBAdaptor genomeDBAdaptor) {
         this.genomeDBAdaptor = genomeDBAdaptor;
     }
@@ -631,7 +704,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         this.geneDBAdaptor = geneDBAdaptor;
     }
 
-    public void setRegulatoryRegionDBAdaptor(RegulatoryRegionDBAdaptor regulatoryRegionDBAdaptor) {
+    public void setRegulatoryRegionDBAdaptor(RegulationDBAdaptor regulatoryRegionDBAdaptor) {
         this.regulatoryRegionDBAdaptor = regulatoryRegionDBAdaptor;
     }
 

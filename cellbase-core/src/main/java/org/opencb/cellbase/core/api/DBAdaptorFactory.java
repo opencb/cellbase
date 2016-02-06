@@ -95,13 +95,12 @@ public abstract class DBAdaptorFactory {
 
     public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
 
-//
-//
-//    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
-//
-//    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
-//
-//
+
+    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
+
+    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
+
+
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
 
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
