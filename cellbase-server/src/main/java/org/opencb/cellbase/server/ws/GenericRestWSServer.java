@@ -190,7 +190,8 @@ public class GenericRestWSServer implements IWSServer {
         startTime = System.currentTimeMillis();
 
         query = new Query();
-        queryOptions = new QueryOptions("exclude", "_chunkIds");
+        // This needs to be an ArrayList since it may be added some extra fields later
+        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         queryResponse = new QueryResponse();
 
         checkPathParams(checkSpecies);
@@ -226,15 +227,19 @@ public class GenericRestWSServer implements IWSServer {
 
         queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
 
-        if (exclude != null && !exclude.equals("")) {
-            queryOptions.put("exclude", new LinkedList<>(Splitter.on(",").splitToList(exclude)));
-        } else {
-            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
-                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
-                    : null);
+        if (exclude != null && !exclude.isEmpty()) {
+            // We add the user's 'exclude' fields to the default values _id and _chunks
+            if (queryOptions.containsKey("exclude")) {
+                queryOptions.getAsStringList("exclude").addAll(Splitter.on(",").splitToList(exclude));
+            }
         }
+//        else {
+//            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
+//                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
+//                    : null);
+//        }
 
-        if (include != null && !include.equals("")) {
+        if (include != null && !include.isEmpty()) {
             queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
         } else {
             queryOptions.put("include", (multivaluedMap.get("include") != null)

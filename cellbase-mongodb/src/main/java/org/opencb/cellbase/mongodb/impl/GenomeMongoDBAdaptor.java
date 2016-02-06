@@ -30,10 +30,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -95,7 +92,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             String sequenceType = queryResult.getResult().get(0).getString("sequenceType");
             String assembly = queryResult.getResult().get(0).getString("assembly");
 
-            result.setResult(Arrays.asList(new GenomeSequenceFeature(
+            result.setResult(Collections.singletonList(new GenomeSequenceFeature(
                     region.getChromosome(), region.getStart(), region.getEnd(), Integer.parseInt(strand), sequenceType, assembly, sequence)
             ));
         }

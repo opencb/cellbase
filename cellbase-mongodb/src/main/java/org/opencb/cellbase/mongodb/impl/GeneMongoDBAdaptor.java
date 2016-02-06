@@ -161,7 +161,21 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         Bson bsonQuery = parseQuery(query);
         Bson match = Aggregates.match(bsonQuery);
 
-        Bson project = Aggregates.project(Projections.include("transcripts.tfbs"));
+        // We parse user's exclude options, ONLY _id can be added if exists
+        Bson includeAndExclude;
+        Bson exclude = null;
+        if (queryOptions != null && queryOptions.containsKey("exclude")) {
+            List<String> stringList = queryOptions.getAsStringList("exclude");
+            if (stringList.contains("_id")) {
+                exclude = Aggregates.project(Projections.exclude("_id"));
+            }
+        }
+        if (exclude != null) {
+            includeAndExclude = Aggregates.project(Projections.fields(Projections.excludeId(), Projections.include("transcripts.tfbs")));
+        } else {
+            includeAndExclude = Aggregates.project(Projections.include("transcripts.tfbs"));
+        }
+
         Bson unwind = Aggregates.unwind("$transcripts");
         Bson unwind2 = Aggregates.unwind("$transcripts.tfbs");
 
@@ -175,9 +189,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         document.put("relativeStart", "$transcripts.tfbs.relativeStart");
         document.put("relativeEnd", "$transcripts.tfbs.relativeEnd");
         document.put("score", "$transcripts.tfbs.score");
-        Bson project1 = Aggregates.project(document);
+        Bson project = Aggregates.project(document);
 
-        return mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), queryOptions);
+        return mongoDBCollection.aggregate(Arrays.asList(match, includeAndExclude, unwind, unwind2, project), queryOptions);
     }
 
     private Bson parseQuery(Query query) {
