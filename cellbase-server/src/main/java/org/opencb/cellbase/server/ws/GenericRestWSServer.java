@@ -40,7 +40,6 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -151,8 +150,6 @@ public class GenericRestWSServer implements IWSServer {
             // If Configuration has been loaded we can create the DBAdaptorFactory
 //            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
             dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -213,6 +210,10 @@ public class GenericRestWSServer implements IWSServer {
         if (version.equalsIgnoreCase("latest")) {
             version = cellBaseConfiguration.getVersion();
             logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
+        } else {
+            // FIXME this will only work when no database schemas are done, in version 3 and 4 this can raise some problems
+            // we set the version from the URL, this will decide which database is queried,
+            cellBaseConfiguration.setVersion(version);
         }
 
         if (!version.equalsIgnoreCase("v3") && !cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
