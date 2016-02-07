@@ -3,7 +3,7 @@
 //  1. This script assumes that 'biouser' and 'cellbase' users exist, you can create them executin in MongoDB:
 //      db.createUser({user: "siteUserAdmin", pwd: "XXX", roles: [ { role: "userAdminAnyDatabase", db: "admin" }]})
 //  Now set auth to true in /etc/mongodb.conf and restart MongoDB
-//      db.createUser( { user: "siteRootAdmin", pwd: "Bi0_P@ss.nosql",roles: [ { role: "root", db: "admin" }]})
+//      db.createUser( { user: "siteRootAdmin", pwd: "XXX",roles: [ { role: "root", db: "admin" }]})
 //      db.createUser({user: "biouser", pwd: "XXX", roles: []})
 //      db.createUser({user: "cellbase", pwd: "XXX", roles: []})
 //  2. 'biouser' will have rad only access while 'cellbase' will be the owner
