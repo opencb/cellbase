@@ -184,7 +184,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             VariantAnnotation variantAnnotation = new VariantAnnotation();
             variantAnnotation.setChromosome(normalizedVariantList.get(i).getChromosome());
             variantAnnotation.setStart(normalizedVariantList.get(i).getStart());
-            variantAnnotation.setEnd(normalizedVariantList.get(i).getEnd());
             variantAnnotation.setReference(normalizedVariantList.get(i).getReference());
             variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
 
@@ -459,7 +458,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                                             .getPopulationFrequencies()
                                                             .add(new PopulationFrequency(freqDBObject.get("study").toString(),
                                                                     freqDBObject.get("population").toString(),
-                                                                    freqDBObject.get("superPopulation").toString(),
                                                                     freqDBObject.get("refAllele").toString(),
                                                                     freqDBObject.get("altAllele").toString(),
                                                                     Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
@@ -469,7 +467,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                                                     ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
                                                             .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
                                                             freqDBObject.get("population").toString(),
-                                                            freqDBObject.get("superPopulation").toString(),
                                                             freqDBObject.get("refAllele").toString(),
                                                             freqDBObject.get("altAllele").toString(),
                                                             Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
