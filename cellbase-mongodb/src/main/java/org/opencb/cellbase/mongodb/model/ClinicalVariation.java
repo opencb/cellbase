@@ -27,6 +27,7 @@ import java.util.List;
 /**
  * Created by parce on 10/31/14.
  */
+@Deprecated
 public class ClinicalVariation {
 
     private String chromosome;

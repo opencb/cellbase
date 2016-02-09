@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 /**
  * Created by imedina on 09/10/15.
  */
-public class VariantAnnotationMongoDBAdaptorTest {
+public class VariantAnnotationCalculatorTest {
 
     @Test
     public void testGetAnnotationByVariant() throws Exception {

@@ -153,9 +153,9 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //    }
 
     @Override
-    public QueryResult getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference, String aaAlternate,
-                                            QueryOptions options) {
-        QueryResult queryResult = new QueryResult();
+    public QueryResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
+                                                                      String aaAlternate, QueryOptions options) {
+        QueryResult<ProteinVariantAnnotation> queryResult = new QueryResult<>();
         queryResult.setId(ensemblTranscriptId + "/" + position + "/" + aaAlternate);
         long dbTimeStart = System.currentTimeMillis();
 
@@ -299,7 +299,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public QueryResult<Entry> get(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        return mongoDBCollection.find(bson, null, Entry.class, options);
     }
 
     @Override
@@ -344,56 +345,57 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     private ProteinVariantAnnotation processProteinVariantData(ProteinVariantAnnotation proteinVariantAnnotation,
                                                                String shortAlternativeAa, Document proteinVariantData) {
-        proteinVariantAnnotation.setUniprotAccession((String) ((BasicDBList) proteinVariantData.get("_id")).get(0));
+
+        proteinVariantAnnotation.setUniprotAccession(proteinVariantData.get("_id", ArrayList.class).get(0).toString());
 
         proteinVariantAnnotation.setKeywords(new ArrayList<>());
-        for (Object keywordObject : ((BasicDBList) ((BasicDBList) proteinVariantData.get("keyword")).get(0))) {
-//            proteinVariantAnnotation.addUniprotKeyword((String)((Document) keywordObject).get("value"));
+        ArrayList keywordList = (ArrayList) proteinVariantData.get("keyword", ArrayList.class).get(0);
+        for (Object keywordObject : keywordList) {
             proteinVariantAnnotation.getKeywords().add((String) ((Document) keywordObject).get("value"));
         }
 
         proteinVariantAnnotation.setFeatures(new ArrayList<>());
-        for (Object featureObject : (BasicDBList) proteinVariantData.get("feature")) {
-            Document featureDBObject = (Document) featureObject;
-            String type = (String) featureDBObject.get("type");
+        ArrayList featureList = proteinVariantData.get("feature", ArrayList.class);
+        for (Object featureObject : featureList) {
+            Document featureDocument = (Document) featureObject;
+            String type = (String) featureDocument.get("type");
 
-            BasicDBList variationDBList = (BasicDBList) featureDBObject.get("variation");
+
+            ArrayList variationList = featureDocument.get("variation", ArrayList.class);
             //Check and process protein variants within the "feature" list
 //            if(type!=null && type.equals("sequence variant") &&
 //                    ((int)((Document)((Document) featureDBObject.get("location")).get("position"))
 //                            .get("position"))==proteinVariantAnnotation.getPosition()) {
             // Current feature corresponds to current variant
-            if (variationDBList != null && variationDBList.contains(shortAlternativeAa)) {
-                proteinVariantAnnotation.setUniprotVariantId((String) featureDBObject.get("id"));
-                proteinVariantAnnotation.setFunctionalDescription((String) featureDBObject.get("description"));
+            if (variationList != null && variationList.contains(shortAlternativeAa)) {
+                proteinVariantAnnotation.setUniprotVariantId((String) featureDocument.get("id"));
+                proteinVariantAnnotation.setFunctionalDescription((String) featureDocument.get("description"));
                 // Not a protein variant, another type of feature e.g. protein domain
             } else {
                 ProteinFeature proteinFeature = new ProteinFeature();
-                proteinFeature.setId((String) featureDBObject.get("id"));
-                proteinFeature.setType((String) featureDBObject.get("type"));
-                proteinFeature.setDescription((String) featureDBObject.get("description"));
+                proteinFeature.setId((String) featureDocument.get("id"));
+                proteinFeature.setType((String) featureDocument.get("type"));
+                proteinFeature.setDescription((String) featureDocument.get("description"));
 //                proteinFeature.setRef((String) featureDBObject.get("ref"));
-                if (featureDBObject.get("location") != null) {
-                    if (((Document) featureDBObject.get("location")).get("begin") != null) {
-                        proteinFeature.setStart((int) ((Document) ((Document) featureDBObject.get("location"))
+                if (featureDocument.get("location") != null) {
+                    if (((Document) featureDocument.get("location")).get("begin") != null) {
+                        proteinFeature.setStart((int) ((Document) ((Document) featureDocument.get("location"))
                                 .get("begin")).get("position"));
-                        if (((Document) featureDBObject.get("location")).get("end") != null) {
-                            proteinFeature.setEnd((int) ((Document) ((Document) featureDBObject.get("location"))
+                        if (((Document) featureDocument.get("location")).get("end") != null) {
+                            proteinFeature.setEnd((int) ((Document) ((Document) featureDocument.get("location"))
                                     .get("end")).get("position"));
                         } else {
                             proteinFeature.setEnd(proteinFeature.getStart());
                         }
-                    } else if (((Document) featureDBObject.get("location")).get("position") != null) {
-                        proteinFeature.setStart((int) ((Document) ((Document) featureDBObject.get("location"))
+                    } else if (((Document) featureDocument.get("location")).get("position") != null) {
+                        proteinFeature.setStart((int) ((Document) ((Document) featureDocument.get("location"))
                                 .get("position")).get("position"));
                         proteinFeature.setEnd(proteinFeature.getStart());
                     }
                 }
-//                proteinVariantAnnotation.addProteinFeature(proteinFeature);
                 proteinVariantAnnotation.getFeatures().add(proteinFeature);
             }
         }
-
         return proteinVariantAnnotation;
     }
 }

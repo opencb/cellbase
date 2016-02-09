@@ -16,14 +16,20 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.core.QueryResult;
+
+import java.util.List;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
  * Created by imedina on 01/12/15.
  */
-public interface VariantFunctionalScoreDBAdaptor<GenomicPositionScore> extends CellBaseDBAdaptor<GenomicPositionScore> {
+@Deprecated
+public interface VariantFunctionalScoreDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, "");
@@ -54,5 +60,9 @@ public interface VariantFunctionalScoreDBAdaptor<GenomicPositionScore> extends C
             return null;
         }
     }
+
+    QueryResult getByVariant(Variant variant, QueryOptions queryOptions);
+
+    List<QueryResult> getAllByVariantList(List<Variant> variantList, QueryOptions queryOptions);
 
 }

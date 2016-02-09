@@ -203,7 +203,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                     valuesList = typeMap.get(source);
                 }
 
-                BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
+//                BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
+                ArrayList valuesChunk = chunk.get("values", ArrayList.class);
 
                 int pos = 0;
                 if (region.getStart() > chunk.getInteger("start")) {
@@ -297,7 +298,9 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 Document chunk = list.get(j);
 
                 if (!chunk.isEmpty()) {
-                    BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
+//                    BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
+                    ArrayList valuesChunk = chunk.get("values", ArrayList.class);
+
                     if (valuesChunk != null) {  // TODO: temporary patch to skip empty chunks - remove as soon as conservation is reloaded
                         String source = chunk.getString("source");
                         List<Float> valuesList;
@@ -311,7 +314,8 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                             valuesList = typeMap.get(source);
                         }
 
-                        valuesChunk = (BasicDBList) chunk.get("values");
+//                        valuesChunk = (BasicDBList) chunk.get("values");
+                        valuesChunk = chunk.get("values", ArrayList.class);
                         int pos = 0;
                         if (region.getStart() > chunk.getInteger("start")) {
                             pos = region.getStart() - chunk.getInteger("start");

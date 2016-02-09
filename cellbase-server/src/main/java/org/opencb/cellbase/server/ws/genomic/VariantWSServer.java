@@ -21,8 +21,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.VariantAnnotationDBAdaptor;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -156,9 +157,14 @@ public class VariantWSServer extends GenericRestWSServer {
 // dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 //            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
-            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
-                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
+//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+
+            VariantAnnotationCalculator variantAnnotationCalculator =
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+            List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
+                    variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
             return createOkResponse(clinicalQueryResultList);
         } catch (Exception e) {
@@ -174,15 +180,12 @@ public class VariantWSServer extends GenericRestWSServer {
             List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
 
-//            VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor =
-            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor =
-                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-            Variant variant = variantList.get(0);
-//            QueryResult byVariant = variantFunctionalScoreDBAdaptor.getByVariant(variant.getChromosome(),
-//                    variant.getStart(), variant.getReference(), variant.getAlternate(), queryOptions);
-            QueryResult byVariant = variantAnnotationDBAdaptor.getFunctionalScore(variant, queryOptions);
+//            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor =
+//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+//            Variant variant = variantList.get(0);
+//            QueryResult byVariant = variantAnnotationDBAdaptor.getFunctionalScore(variant, queryOptions);
 
-            return createOkResponse(byVariant);
+            return createOkResponse(variantList);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -207,9 +210,14 @@ public class VariantWSServer extends GenericRestWSServer {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
-            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
-                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
+//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+
+            VariantAnnotationCalculator variantAnnotationCalculator =
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+            List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
+                    variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
             return createOkResponse(clinicalQueryResultList);
         } catch (Exception e) {

@@ -215,28 +215,28 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    @Override
-    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
-        return getVariantAnnotationDBAdaptor(species, null);
-    }
+//    @Override
+//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
+//        return getVariantAnnotationDBAdaptor(species, null);
+//    }
+//
+//    @Override
+//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly) {
+//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+//        return new VariantAnnotationCalculator(species, assembly, mongoDatastore, this);
+//    }
 
-    @Override
-    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new VariantAnnotationMongoDBAdaptor(species, assembly, mongoDatastore, this);
-    }
 
-
-    @Override
-    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
-        return getVariantFunctionalScoreDBAdaptor(species, null);
-    }
-
-    @Override
-    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
-    }
+//    @Override
+//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
+//        return getVariantFunctionalScoreDBAdaptor(species, null);
+//    }
+//
+//    @Override
+//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
+//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+//        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
+//    }
 
 
     @Override

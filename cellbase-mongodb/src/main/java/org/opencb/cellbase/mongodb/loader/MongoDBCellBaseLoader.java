@@ -149,7 +149,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
                 break;
             case "cadd":
-                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "regulatory_region":
                 dbAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);

@@ -96,9 +96,9 @@ public abstract class DBAdaptorFactory {
     public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
 
 
-    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
-
-    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
+//    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
+//
+//    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
 
 
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
@@ -136,9 +136,9 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
 
 
-    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
-
-    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
+//    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
+//
+//    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
 
 
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species);

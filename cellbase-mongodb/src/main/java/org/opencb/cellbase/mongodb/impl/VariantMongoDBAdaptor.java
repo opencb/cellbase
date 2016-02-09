@@ -17,12 +17,14 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.BulkWriteException;
+import com.mongodb.QueryBuilder;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.variation.Variation;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
@@ -37,19 +39,23 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 26/11/15.
  */
-public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAdaptor<Variation> {
+public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAdaptor<Variant> {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
+    private static final float DECIMAL_RESOLUTION = 1000f;
+
+    private MongoDBCollection caddDBCollection;
 
     public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("variation");
+        caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
 
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
-    public QueryResult<Variation> next(Query query, QueryOptions options) {
+    public QueryResult<Variant> next(Query query, QueryOptions options) {
         return null;
     }
 
@@ -100,8 +106,20 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     @Override
-    public QueryResult<Variation> get(Query query, QueryOptions options) {
-        return null;
+    public QueryResult<Variant> get(Query query, QueryOptions options) {
+        Bson bson = parseQuery(query);
+        options.put(MongoDBCollection.SKIP_COUNT, true);
+        if (options != null) {
+            if (options.get("exclude") == null) {
+                options.put("exclude", "_id,_chunkIds,annotation.additionalAttributes");
+            } else {
+                String exclude = options.getString("exclude");
+                options.put("exclude", exclude + ",_id,_chunkIds,annotation.additionalAttributes");
+            }
+        } else {
+            options = new QueryOptions("exclude", "_id,_chunkIds,annotation.additionalAttributes");
+        }
+        return mongoDBCollection.find(bson, null, Variant.class, options);
     }
 
     @Override
@@ -112,7 +130,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     @Override
-    public Iterator<Variation> iterator(Query query, QueryOptions options) {
+    public Iterator<Variant> iterator(Query query, QueryOptions options) {
         return null;
     }
 
@@ -155,6 +173,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "transcriptVariations.transcriptId", andBsonList);
+        createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
+        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
+        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(), "consequenceTypes", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
@@ -238,4 +259,86 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         dbObject.put("_chunkIds", chunkIds);
     }
 
+    @Override
+    public QueryResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions) {
+        String chromosome = variant.getChromosome();
+        int position = variant.getStart();
+        String reference = variant.getReference();
+        String alternate = variant.getAlternate();
+
+        String chunkId = getChunkIdPrefix(chromosome, position, MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
+        QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId);
+//                .and("chromosome").is(chromosome)
+//                .and("start").is(position);
+//        System.out.println(chunkId);
+        QueryResult result = executeQuery(chromosome + "_" + position + "_" + reference + "_" + alternate,
+                new Document(builder.get().toMap()), queryOptions, caddDBCollection);
+
+//        System.out.println("result = " + result);
+
+        int offset = (position % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE) - 1;
+        List<Score> scores = new ArrayList<>();
+        for (Object object : result.getResult()) {
+//            System.out.println("object = " + object);
+            Document dbObject = (Document) object;
+//            BasicDBList basicDBList = (BasicDBList) dbObject.get("values");
+            ArrayList basicDBList = dbObject.get("values", ArrayList.class);
+            Long l1 = (Long) basicDBList.get(offset);
+//            System.out.println("l1 = " + l1);
+            if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
+                float value = 0f;
+                switch (alternate.toLowerCase()) {
+                    case "a":
+                        value = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    case "c":
+                        value = ((short) (l1 >> 32) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    case "g":
+                        value = ((short) (l1 >> 16) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    case "t":
+                        value = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
+                        break;
+                    default:
+                        break;
+                }
+                scores.add(Score.newBuilder()
+                        .setScore(value)
+                        .setSource(dbObject.getString("source"))
+                        .setDescription(null)
+//                        .setDescription("")
+                        .build());
+            }
+
+            if (dbObject.getString("source").equalsIgnoreCase("cadd_scaled")) {
+                float value = 0f;
+                switch (alternate.toLowerCase()) {
+                    case "a":
+                        value = ((short) (l1 >> 48)) / DECIMAL_RESOLUTION;
+                        break;
+                    case "c":
+                        value = ((short) (l1 >> 32)) / DECIMAL_RESOLUTION;
+                        break;
+                    case "g":
+                        value = ((short) (l1 >> 16)) / DECIMAL_RESOLUTION;
+                        break;
+                    case "t":
+                        value = ((short) (l1 >> 0)) / DECIMAL_RESOLUTION;
+                        break;
+                    default:
+                        break;
+                }
+                scores.add(Score.newBuilder()
+                        .setScore(value)
+                        .setSource(dbObject.getString("source"))
+                        .setDescription(null)
+//                        .setDescription("")
+                        .build());
+            }
+        }
+
+        result.setResult(scores);
+        return result;
+    }
 }

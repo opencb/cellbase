@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * Created by imedina on 30/11/15.
  */
+@Deprecated
 public interface VariantAnnotationDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     QueryResult<T> getAnnotationByVariant(Variant variant, QueryOptions options);
@@ -44,19 +45,19 @@ public interface VariantAnnotationDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     QueryResult<Score> getFunctionalScore(Query query, QueryOptions options);
 
-    void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
-
-    void setProteinDBAdaptor(ProteinDBAdaptor proteinDBAdaptor);
-
-    void setConservationDBAdaptor(ConservationDBAdaptor conservationDBAdaptor);
-
-    void setVariantFunctionalScoreDBAdaptor(VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor);
-
-    void setGenomeDBAdaptor(GenomeDBAdaptor genomeDBAdaptor);
-
-    void setGeneDBAdaptor(GeneDBAdaptor geneDBAdaptor);
-
-    void setRegulationDBAdaptor(RegulationDBAdaptor regulationDBAdaptor);
+//    void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
+//
+//    void setProteinDBAdaptor(ProteinDBAdaptor proteinDBAdaptor);
+//
+//    void setConservationDBAdaptor(ConservationDBAdaptor conservationDBAdaptor);
+//
+//    void setVariantFunctionalScoreDBAdaptor(VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor);
+//
+//    void setGenomeDBAdaptor(GenomeDBAdaptor genomeDBAdaptor);
+//
+//    void setGeneDBAdaptor(GeneDBAdaptor geneDBAdaptor);
+//
+//    void setRegulationDBAdaptor(RegulationDBAdaptor regulationDBAdaptor);
 
 
 }

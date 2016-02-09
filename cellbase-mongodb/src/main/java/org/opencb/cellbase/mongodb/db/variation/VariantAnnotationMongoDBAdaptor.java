@@ -385,13 +385,13 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             regulatoryRegionList = getAffectedRegulatoryRegions(variant);
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
-        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
-        for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (nonSynonymous(consequenceType)) {
-                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
-            }
-        }
-        return consequenceTypeList;
+//        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
+//        for (ConsequenceType consequenceType : consequenceTypeList) {
+//            if (nonSynonymous(consequenceType)) {
+//                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+//            }
+//        }
+        return null;
     }
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {

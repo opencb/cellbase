@@ -16,8 +16,18 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.opencb.commons.datastore.core.QueryParam.Type.INTEGER;
+import static org.opencb.commons.datastore.core.QueryParam.Type.STRING;
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
@@ -28,6 +38,10 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
     enum QueryParams implements QueryParam {
         ID("id", TEXT_ARRAY, ""),
         REGION("region", TEXT_ARRAY, ""),
+        CHROMOSOME("chromosome", STRING, ""),
+        START("start", INTEGER, ""),
+        REFERENCE("reference", STRING, ""),
+        ALTERNATE("alternate", STRING, ""),
         GENE("gene", TEXT_ARRAY, ""),
         CONSEQUENCE_TYPE("consequenceType", TEXT_ARRAY, ""),
         TRANSCRIPT_CONSEQUENCE_TYPE("transcriptVariations.consequenceTypes", TEXT_ARRAY, ""),
@@ -59,5 +73,29 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
     }
 
+    default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
+        Query query = new Query(QueryParams.REGION.key(), variant.getChromosome() + ":" + variant.getStart() + "-" + variant.getStart())
+                .append(QueryParams.REFERENCE.key(), variant.getReference())
+                .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
+        return get(query, options);
+    }
+
+    default List<QueryResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {
+        List<QueryResult<T>> results = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            results.add(getByVariant(variant, options));
+        }
+        return results;
+    }
+
+    QueryResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions options);
+
+    default List<QueryResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options) {
+        List<QueryResult<Score>> queryResults = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            queryResults.add(getFunctionalScoreVariant(variant, options));
+        }
+        return queryResults;
+    }
 
 }
