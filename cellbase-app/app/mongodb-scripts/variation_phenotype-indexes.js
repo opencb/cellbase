@@ -15,5 +15,5 @@
  * limitations under the License.
  */
 
-db.getCollection('variation_phenotype').ensureIndex({'phenotype': 1})
-db.getCollection('variation_phenotype').ensureIndex({'associatedGenes': 1})
+db.getCollection('variation_phenotype').createIndex({'phenotype': 1})
+db.getCollection('variation_phenotype').createIndex({'associatedGenes': 1})

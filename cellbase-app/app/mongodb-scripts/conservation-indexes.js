@@ -15,5 +15,5 @@
  * limitations under the License.
  */
 
-db.getCollection('conservation').ensureIndex({'_chunkIds': 1})
-db.getCollection('conservation').ensureIndex({'chromosome': 1, 'start': 1, 'end': 1})
+db.getCollection('conservation').createIndex({'_chunkIds': 1})
+db.getCollection('conservation').createIndex({'chromosome': 1, 'start': 1, 'end': 1})

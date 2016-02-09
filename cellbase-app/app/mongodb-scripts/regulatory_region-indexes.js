@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-db.getCollection('regulatory_region').ensureIndex({'_chunkIds': 1})
-db.getCollection('regulatory_region').ensureIndex({'chromosome': 1, "start": 1, "end": 1})
-db.getCollection('regulatory_region').ensureIndex({'name': 1})
-db.getCollection('regulatory_region').ensureIndex({'featureType': 1})
-db.getCollection('regulatory_region').ensureIndex({'featureClass': 1})
+db.getCollection('regulatory_region').createIndex({'_chunkIds': 1})
+db.getCollection('regulatory_region').createIndex({'chromosome': 1, "start": 1, "end": 1})
+db.getCollection('regulatory_region').createIndex({'name': 1})
+db.getCollection('regulatory_region').createIndex({'featureType': 1})
+db.getCollection('regulatory_region').createIndex({'featureClass': 1})
