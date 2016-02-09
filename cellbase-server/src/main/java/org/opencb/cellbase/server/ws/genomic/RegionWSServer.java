@@ -469,16 +469,14 @@ public class RegionWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-
     @GET
-    @Path("/{chrRegionId}/conservation2")
+    @Path("/{chrRegionId}/conservation")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores")
-    public Response conservation2(@PathParam("chrRegionId") String region) {
+    public Response conservation(@PathParam("chrRegionId") String region) {
         try {
             parseQueryParams();
-            ConservationDBAdaptor conservationDBAdaptor = dbAdaptorFactory2.getConservationDBAdaptor(this.species, this.assembly);
-            query.append(ConservationDBAdaptor.QueryParams.REGION.key(), region);
-            return createOkResponse(conservationDBAdaptor.nativeGet(query, queryOptions));
+            GenomeDBAdaptor conservationDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+            return createOkResponse(conservationDBAdaptor.getConservation(Region.parseRegions(region), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

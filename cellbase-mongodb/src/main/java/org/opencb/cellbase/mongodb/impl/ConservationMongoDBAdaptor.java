@@ -37,6 +37,7 @@ import java.util.function.Consumer;
 /**
  * Created by swaathi on 26/11/15.
  */
+@Deprecated
 public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
 
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
@@ -120,11 +121,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         } else {
             return new Document();
         }
-    }
-
-    @Override
-    public QueryResult getAllByRegionList(Region region, QueryOptions options) {
-        return null;
     }
 
 //    @Override
@@ -236,6 +232,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
+    @Deprecated
     public List<QueryResult> getAllScoresByRegionList(List regionList, QueryOptions options) {
         //TODO not finished yet
         List<Document> queries = new ArrayList<>();

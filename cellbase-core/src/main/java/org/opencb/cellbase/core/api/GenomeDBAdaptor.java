@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.common.ConservationScoreRegion;
 import org.opencb.cellbase.core.common.GenomeSequenceFeature;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -23,10 +25,11 @@ import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
+import static org.opencb.commons.datastore.core.QueryParam.Type.STRING;
 
 /**
  * Created by imedina on 30/11/15.
@@ -34,7 +37,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
 
     enum QueryParams implements QueryParam {
-        REGION("region", TEXT_ARRAY, "");
+        REGION("region", STRING, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -67,12 +70,30 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
     QueryResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions);
 
 
+    @Deprecated
     QueryResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions);
 
+    @Deprecated
     default List<QueryResult<GenomeSequenceFeature>> getGenomicSequence(List<Query> queries, QueryOptions queryOptions) {
         List<QueryResult<GenomeSequenceFeature>> queryResults = new ArrayList<>(queries.size());
         queryResults.addAll(queries.stream().map(query -> getGenomicSequence(query, queryOptions)).collect(Collectors.toList()));
         return queryResults;
     }
+
+
+    QueryResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions);
+
+    default List<QueryResult<GenomeSequenceFeature>> getSequence(List<Region> regions, QueryOptions queryOptions) {
+        List<QueryResult<GenomeSequenceFeature>> queryResults = new ArrayList<>(regions.size());
+        queryResults.addAll(regions.stream().map(region -> getSequence(region, queryOptions)).collect(Collectors.toList()));
+        return queryResults;
+    }
+
+
+    default QueryResult<ConservationScoreRegion> getConservation(Region region, QueryOptions queryOptions) {
+        return getConservation(Collections.singletonList(region), queryOptions).get(0);
+    }
+
+    List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regions, QueryOptions queryOptions);
 
 }

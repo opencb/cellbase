@@ -12,6 +12,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by swaathi on 26/11/15.
  */
+@Deprecated
 public interface ConservationDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     enum QueryParams implements QueryParam {
@@ -44,10 +45,9 @@ public interface ConservationDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         }
     }
 
-    QueryResult getAllByRegionList(Region region, QueryOptions options);
-
     List<QueryResult> getAllByRegionList(List<Region> regionList, QueryOptions options);
 
+    @Deprecated
     List<QueryResult> getAllScoresByRegionList(List<Region> regions, QueryOptions options);
 
 }
