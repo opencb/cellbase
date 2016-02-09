@@ -126,6 +126,7 @@ public class SnpWSServer extends GenericRestWSServer {
         }
     }
 
+    // TODO: phenotype queries to be solved by the clinical WS
 //    @GET
 //    @Path("/phenotypes")
 //    @Deprecated

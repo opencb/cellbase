@@ -292,7 +292,7 @@ public class RegionWSServer extends GenericRestWSServer {
         }
     }
 
-
+    // TODO: modify the code below to use clinicalDBAdaptor rather than variationDBAdaptor
 //    @GET
 //    @Path("/{chrRegionId}/phenotype")
 //    public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query, @DefaultValue("") @QueryParam("source") String source) {

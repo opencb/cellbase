@@ -107,7 +107,7 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
         List<Document> queries = new ArrayList<>();
         for (String id : idList) {
-            QueryBuilder builder = QueryBuilder.start("id").is(id);
+            QueryBuilder builder = QueryBuilder.start("ids").is(id);
             queries.add(new Document(builder.get().toMap()));
         }
         return executeQueryList2(idList, queries, options);
@@ -158,112 +158,115 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
     public List<QueryResult> getAllByTranscriptIdList(List<String> idList, QueryOptions options) {
         List<Document> queries = new ArrayList<>();
         for (String id : idList) {
-            QueryBuilder builder = QueryBuilder.start("transcriptVariations.transcriptId").is(id);
+            QueryBuilder builder = QueryBuilder.start("annotation.consequenceTypes.ensemblTranscriptId").is(id);
             queries.add(new Document(builder.get().toMap()));
         }
         return executeQueryList2(idList, queries, options);
     }
 
 
-    @Override
-    public QueryResult getAllPhenotypes(QueryOptions options) {
-//        return executeDistinct("distinct", "phenotype", mongoVariationPhenotypeDBCollection);
-        QueryBuilder builder = new QueryBuilder();
-        if (options.containsKey("phenotype")) {
-            String pheno = options.getString("phenotype");
-            if (pheno != null && !pheno.equals("")) {
-                builder = builder.start("phenotype").is(pheno);
-            }
-        }
-        return executeQuery("result", new Document(builder.get().toMap()), options);
-//        return executeQuery("result", builder.get(), options, mongoVariationPhenotypeDBCollection);
-    }
-
-    @Override
-    public List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options) {
-        QueryBuilder builder = null;
-        List<Document> queries = new ArrayList<>();
-
-        /**
-         * If source is present in options is it parsed and prepare first,
-         * otherwise ti will be done for each iteration of regions.
-         */
-        List<Object> source = options.getList("source", null);
-        BasicDBList sourceIds = new BasicDBList();
-        if (source != null && source.size() > 0) {
-            sourceIds.addAll(source);
-        }
-
-//        List<Region> regions = Region.parseRegions(options.getString("region"));
-        List<String> ids = new ArrayList<>(regions.size());
-        for (Region region : regions) {
-            if (region != null && !region.equals("")) {
-                // If regions is 1 position then query can be optimize using chunks
-                if (region.getStart() == region.getEnd()) {
-                    String chunkId = getChunkIdPrefix(region.getChromosome(), region.getStart(), variationChunkSize);
-                    System.out.println(chunkId);
-                    builder = QueryBuilder.start("_chunkIds").is(chunkId).and("end")
-                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
-                } else {
-                    builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
-                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
-                }
-
-                if (sourceIds != null && sourceIds.size() > 0) {
-                    builder = builder.and("source").in(sourceIds);
-                }
-
-                queries.add(new Document(builder.get().toMap()));
-                ids.add(region.toString());
-            }
-        }
-        return executeQueryList2(ids, queries, options, mongoVariationPhenotypeDBCollection2);
-    }
-
-    @Override
-    public QueryResult getAllByPhenotype(String phenotype, QueryOptions options) {
-        QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
-
-        List<QueryResult> queryResults = new ArrayList<>();
-        if (options.containsKey("variants")) {
-            List<Object> variantList = options.getList("variants");
-            List<Variant> variants = new ArrayList<>(variantList.size());
-            for (int i = 0; i < variantList.size(); i++) {
-                Variant genomicVariant = (Variant) variantList.get(i);
-                variants.add(genomicVariant);
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options) {
-        return null;
-    }
-
-
-    @Override
-    public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options) {
-        QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
-        return executeQuery(phenotype, new Document(builder.get().toMap()), options, mongoVariationPhenotypeDBCollection2);
-    }
-
-    @Override
-    public List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options) {
-        List<Document> queries = new ArrayList<>(phenotypeList.size());
-        for (String id : phenotypeList) {
-            QueryBuilder builder = QueryBuilder.start("phenotype").is(id);
-            queries.add(new Document(builder.get().toMap()));
-        }
-        return executeQueryList2(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection2);
-    }
+    // TODO: phenotype queries shall be answered by the clinicalMongoDBAdaptor
+//    @Override
+//    public QueryResult getAllPhenotypes(QueryOptions options) {
+////        return executeDistinct("distinct", "phenotype", mongoVariationPhenotypeDBCollection);
+//        QueryBuilder builder = new QueryBuilder();
+//        if (options.containsKey("phenotype")) {
+//            String pheno = options.getString("phenotype");
+//            if (pheno != null && !pheno.equals("")) {
+//                builder = builder.start("phenotype").is(pheno);
+//            }
+//        }
+//        return executeQuery("result", new Document(builder.get().toMap()), options);
+////        return executeQuery("result", builder.get(), options, mongoVariationPhenotypeDBCollection);
+//    }
+//
+//    @Override
+//    public List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options) {
+//        QueryBuilder builder = null;
+//        List<Document> queries = new ArrayList<>();
+//
+//        /**
+//         * If source is present in options is it parsed and prepare first,
+//         * otherwise ti will be done for each iteration of regions.
+//         */
+//        List<Object> source = options.getList("source", null);
+//        BasicDBList sourceIds = new BasicDBList();
+//        if (source != null && source.size() > 0) {
+//            sourceIds.addAll(source);
+//        }
+//
+////        List<Region> regions = Region.parseRegions(options.getString("region"));
+//        List<String> ids = new ArrayList<>(regions.size());
+//        for (Region region : regions) {
+//            if (region != null && !region.equals("")) {
+//                // If regions is 1 position then query can be optimize using chunks
+//                if (region.getStart() == region.getEnd()) {
+//                    String chunkId = getChunkIdPrefix(region.getChromosome(), region.getStart(), variationChunkSize);
+//                    System.out.println(chunkId);
+//                    builder = QueryBuilder.start("_chunkIds").is(chunkId).and("end")
+//                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+//                } else {
+//                    builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//                            .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+//                }
+//
+//                if (sourceIds != null && sourceIds.size() > 0) {
+//                    builder = builder.and("source").in(sourceIds);
+//                }
+//
+//                queries.add(new Document(builder.get().toMap()));
+//                ids.add(region.toString());
+//            }
+//        }
+//        return executeQueryList2(ids, queries, options, mongoVariationPhenotypeDBCollection2);
+//    }
+//
+//    @Override
+//    public QueryResult getAllByPhenotype(String phenotype, QueryOptions options) {
+//        QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
+//
+//        List<QueryResult> queryResults = new ArrayList<>();
+//        if (options.containsKey("variants")) {
+//            List<Object> variantList = options.getList("variants");
+//            List<Variant> variants = new ArrayList<>(variantList.size());
+//            for (int i = 0; i < variantList.size(); i++) {
+//                Variant genomicVariant = (Variant) variantList.get(i);
+//                variants.add(genomicVariant);
+//            }
+//        }
+//
+//        return null;
+//    }
+//
+//    @Override
+//    public List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options) {
+//        return null;
+//    }
+//
+//
+//    @Override
+//    public QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options) {
+//        QueryBuilder builder = QueryBuilder.start("phenotype").is(phenotype);
+//        return executeQuery(phenotype, new Document(builder.get().toMap()), options, mongoVariationPhenotypeDBCollection2);
+//    }
+//
+//    @Override
+//    public List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options) {
+//        List<Document> queries = new ArrayList<>(phenotypeList.size());
+//        for (String id : phenotypeList) {
+//            QueryBuilder builder = QueryBuilder.start("phenotype").is(id);
+//            queries.add(new Document(builder.get().toMap()));
+//        }
+//        return executeQueryList2(phenotypeList, queries, options, mongoVariationPhenotypeDBCollection2);
+//    }
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
 
+        // TODO: do not allow phenotype queries on the variation collection.
+        // TODO: phenotype queries shall be answered by the clinicalMongoDBAdaptor
         String phenotype = options.getString("phenotype");
         if (phenotype != null && !phenotype.equals("")) {
             for (Region region : regions) {
@@ -289,7 +292,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
                 QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome())
                         .and("start").greaterThanEquals(region.getStart()).lessThanEquals(region.getEnd());
                 if (consequenceTypeDBList.size() > 0) {
-                    builder = builder.and("transcriptVariations.consequenceTypes").in(consequenceTypeDBList);
+                    builder = builder.and("annotation.consequenceTypes.sequenceOntologyTerms.name")
+                            .in(consequenceTypeDBList);
                 }
                 queries.add(new Document(builder.get().toMap()));
                 ids.add(region.toString());
@@ -336,7 +340,8 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             BasicDBList idListObject = (BasicDBList) result.getResult();
             for (Object idObject : idListObject) {
                 Document variantObject = (Document) idObject;
-                idList.add(variantObject.get("id").toString());
+                // Arbitrarily selects the first one. Assuming variants in variation collection will just have one id
+                idList.add(((BasicDBList) variantObject.get("ids")).get(0).toString());
             }
 
 //            result.setResult(Joiner.on(",").skipNulls().join(idList));
@@ -415,7 +420,6 @@ public class VariationMongoDBAdaptor extends MongoDBAdaptor implements Variation
             queries.add(new Document("_chunkIds", chunkId)
                     .append("chromosome", variantDBObject.get("chromosome"))
                     .append("start", variantDBObject.get("start"))
-                    .append("end", variantDBObject.get("end"))
                     .append("reference", variantDBObject.get("reference"))
                     .append("alternate", variantDBObject.get("alternate")));
         }

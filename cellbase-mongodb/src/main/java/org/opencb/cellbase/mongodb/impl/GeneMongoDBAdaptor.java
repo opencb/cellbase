@@ -90,7 +90,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult<Gene> get(Query query, QueryOptions options) {
-        return null;
+        QueryResult queryResult = nativeGet(query, options);
+        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
+        for (Object object : queryResult.getResult()) {
+            Gene gene = objectMapper.convertValue(object, Gene.class);
+            geneList.add(gene);
+        }
+        queryResult.setResult(geneList);
+        return queryResult;
     }
 
     @Override

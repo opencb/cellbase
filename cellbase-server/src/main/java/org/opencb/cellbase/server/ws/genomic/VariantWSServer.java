@@ -220,6 +220,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @POST
     @Consumes("text/plain")
     @Path("/full_annotation")
+    @Deprecated
     public Response getFullAnnotationByVariantsPOST(String variants) {
         return getAnnotationByVariantsPOST(variants);
     }

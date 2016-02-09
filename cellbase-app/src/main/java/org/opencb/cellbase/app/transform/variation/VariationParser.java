@@ -141,7 +141,14 @@ public class VariationParser extends CellBaseParser {
                             Map<String, Object> additionalAttributes = getAdditionalAttributes(variationFields, variationFeatureFields);
 
                             List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
+                            String displayConsequenceTypes = getDisplayConsequenceType(variationFeatureFields);
                             String strand = variationFeatureFields[4];
+                            String ancestralAllele = (variationFields[4] != null && !variationFields[4].equals("\\N"))
+                                    ? variationFields[4] : "";
+                            String minorAllele = (variationFeatureFields[16] != null && !variationFeatureFields[16].equals("\\N"))
+                                    ? variationFeatureFields[16] : "";
+                            Float minorAlleleFreq = (variationFeatureFields[17] != null && !variationFeatureFields[17].equals("\\N"))
+                                    ? Float.parseFloat(variationFeatureFields[17]) : null;
 
                             // create a variation object for each alternative
                             for (String alternate : alternates) {
@@ -156,7 +163,8 @@ public class VariationParser extends CellBaseParser {
                                 } else {
                                     // build and serialize variant
                                     Variant variation = buildVariant(chromosome, start, end, reference, alternate, type, ids, hgvs,
-                                            additionalAttributes, conseqTypes, id, xrefs, strand);
+                                            additionalAttributes, displayConsequenceTypes, conseqTypes, id, xrefs, strand, ancestralAllele,
+                                            minorAllele, minorAlleleFreq);
                                     fileSerializer.serialize(variation, getOutputFileName(chromosome));
                                 }
                                 countprocess++;
@@ -215,26 +223,42 @@ public class VariationParser extends CellBaseParser {
     }
 
     private Variant buildVariant(String chromosome, int start, int end, String reference, String alternate, VariantType type,
-                                List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
-                                List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs, String strand)
-    {
+                                 List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
+                                 String displayConsequenceType, List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
+                                 String strand, String ancestralAllele, String minorAllele, Float minorAlleleFreq) {
         Variant variant = new Variant(chromosome, start, end, reference, alternate);
         variant.setIds(ids);
         variant.setType(type);
-        VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, id,
-                xrefs, hgvs, conseqTypes, null, null, null, null, null, null, null, null);
+        VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(null, null, null, null, null, id, xrefs, hgvs,
+                displayConsequenceType, conseqTypes, null, null, null, null, null, null, null, null, null, null);
         try {
             String ensemblAnnotationJson = getEnsemblAnnotationJson(ensemblVariantAnnotation);
             additionalAttributes.put("ensemblAnnotation", ensemblAnnotationJson);
         } catch (JsonProcessingException e) {
             logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
         }
-        VariantAnnotation variantAnnotation = new VariantAnnotation(chromosome, start, end, reference, alternate, null, null, null, null,
-                null, null, null, null, null, null, null, additionalAttributes);
+        VariantAnnotation variantAnnotation = new VariantAnnotation(null, null, null, null, ancestralAllele, null, null, null,
+                displayConsequenceType, null, null, minorAllele, minorAlleleFreq, null, null, null, null, null, null, additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 
         return variant;
+    }
+
+    private String getDisplayConsequenceType(String[] variationFeatureFields) {
+        List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));
+        String displayConsequenceType = null;
+        if (consequenceTypes.size() == 1) {
+            displayConsequenceType = consequenceTypes.get(0);
+        } else {
+            for (String cons : consequenceTypes) {
+                if (!cons.equals("intergenic_variant")) {
+                    displayConsequenceType = cons;
+                    break;
+                }
+            }
+        }
+        return displayConsequenceType;
     }
 
     private String getEnsemblAnnotationJson(VariantAnnotation ensemblVariantAnnotation) throws JsonProcessingException {
@@ -247,8 +271,6 @@ public class VariationParser extends CellBaseParser {
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
-
-
 
     private VariantType getVariantType(String reference, String alternate) {
         if (reference.length() != alternate.length()) {
@@ -314,7 +336,7 @@ public class VariationParser extends CellBaseParser {
     }
 
     private List<ConsequenceType> getConsequenceTypes(List<TranscriptVariation> transcriptVariations) {
-        List<ConsequenceType>  consequenceTypes = null;
+        List<ConsequenceType> consequenceTypes = null;
         for (TranscriptVariation transcriptVariation : transcriptVariations) {
             ProteinVariantAnnotation proteinVariantAnnotation = getProteinVariantAnnotation(transcriptVariation);
 
@@ -388,16 +410,10 @@ public class VariationParser extends CellBaseParser {
 
     private Map<String, Object> getAdditionalAttributes(String[] variationFields, String[] variationFeatureFields) {
         Map<String, Object> additionalAttributes = new HashMap<>();
-        String ancestralAllele = (variationFields[4] != null && !variationFields[4].equals("\\N")) ? variationFields[4] : "";
-        additionalAttributes.put("Ensembl Ancestral Allele", ancestralAllele);
+
         additionalAttributes.put("Ensembl Validation Status", (variationFeatureFields[11] != null
                 && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "");
-        additionalAttributes.put("Ensembl Evidence", (variationFeatureFields[20] != null
-                && !variationFeatureFields[20].equals("\\N")) ? variationFeatureFields[20] : "");
-        additionalAttributes.put("Minor Allele", (variationFeatureFields[16] != null
-                && !variationFeatureFields[16].equals("\\N")) ? variationFeatureFields[16] : "");
-        additionalAttributes.put("Minor Allele Freq", (variationFeatureFields[17] != null
-                && !variationFeatureFields[17].equals("\\N")) ? variationFeatureFields[17] : "");
+
         return additionalAttributes;
     }
 

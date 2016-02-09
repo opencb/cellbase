@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.*;
@@ -44,6 +45,8 @@ public class MongoDBAdaptor {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    protected ObjectMapper objectMapper;
+
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
         this("", "", mongoDataStore);
     }
@@ -54,6 +57,7 @@ public class MongoDBAdaptor {
         this.mongoDataStore = mongoDataStore;
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
+        objectMapper = new ObjectMapper();
 
         initSpeciesAssembly(species, assembly);
 //        jsonObjectMapper = new ObjectMapper();

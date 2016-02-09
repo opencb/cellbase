@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-db.getCollection('variation').createIndex({'id': 1})
-db.getCollection('variation').createIndex({'_chunkIds': 1})
-db.getCollection('variation').createIndex({'chromosome': 1, "start": 1, "end": 1})
-db.getCollection('variation').createIndex({'type': 1})
-db.getCollection('variation').createIndex({'consequenceTypes': 1})
-db.getCollection('variation').createIndex({'transcriptVariations.transcriptId': 1})
-db.getCollection('variation').createIndex({'transcriptVariations.consequenceTypes': 1})
-db.getCollection('variation').createIndex({'xrefs.crossReference': 1})
+db.getCollection('variation').ensureIndex({'ids': 1})
+db.getCollection('variation').ensureIndex({'_chunkIds': 1})
+db.getCollection('variation').ensureIndex({'chromosome': 1, "start": 1})
+db.getCollection('variation').ensureIndex({'type': 1})
+db.getCollection('variation').ensureIndex({'consequenceTypes': 1})
+db.getCollection('variation').ensureIndex({'annotation.consequenceTypes.ensemblTranscriptId': 1})
+db.getCollection('variation').ensureIndex({'annotation.consequenceTypes.sequenceOntologyTerms.name': 1})
+db.getCollection('variation').ensureIndex({'annotation.xrefs': 1})
