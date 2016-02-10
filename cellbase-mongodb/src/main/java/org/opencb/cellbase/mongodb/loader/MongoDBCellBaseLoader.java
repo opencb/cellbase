@@ -16,9 +16,7 @@
 
 package org.opencb.cellbase.mongodb.loader;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.bulk.BulkWriteResult;
-import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.opencb.cellbase.core.CellBaseConfiguration;
@@ -56,6 +54,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private MongoDBCollection mongoDBCollection;
 
     private DBAdaptorFactory dbAdaptorFactory;
+    @Deprecated
     private CellBaseDBAdaptor dbAdaptor;
 
     private Path indexScriptFolder;
@@ -126,10 +125,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
 
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        dbAdaptor = getDBAdaptor(data);
+//        dbAdaptor = getDBAdaptor(data);
     }
 
-
+    @Deprecated
     private CellBaseDBAdaptor getDBAdaptor(String data) throws LoaderException {
         String[] databaseParts = database.split("_");
         String species = databaseParts[1];
@@ -296,7 +295,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 } else {
                     List<Document> dbObjectsBatch = new ArrayList<>(batch.size());
                     for (String jsonLine : batch) {
-                        Document dbObject = (Document) JSON.parse(jsonLine);
+                        Document dbObject = Document.parse(jsonLine);
                         dbObjectsBatch.add(dbObject);
                     }
 
@@ -322,18 +321,20 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 if (batch == LoadRunner.POISON_PILL) {
                     finished = true;
                 } else {
-                    List<Document> dbObjectsBatch = new ArrayList<>(batch.size());
+                    List<Document> documentBatch = new ArrayList<>(batch.size());
                     for (String jsonLine : batch) {
-                        Document dbObject = (Document) JSON.parse(jsonLine);
-                        addChunkId(dbObject);
-                        addClinicalPrivateFields(dbObject);
-                        dbObjectsBatch.add(dbObject);
+                        Document document = Document.parse(jsonLine);
+                        addChunkId(document);
+                        addClinicalPrivateFields(document);
+                        documentBatch.add(document);
                     }
-                    numLoadedObjects += load(dbObjectsBatch);
+                    numLoadedObjects += load(documentBatch);
                 }
             } catch (InterruptedException e) {
+                e.printStackTrace();
                 logger.error("Loader thread interrupted: " + e.getMessage());
             } catch (Exception e) {
+                e.printStackTrace();
                 logger.error("Error Loading batch: " + e.getMessage());
             }
         }
@@ -341,62 +342,61 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         return numLoadedObjects;
     }
 
-    private void addClinicalPrivateFields(Document dbObject) {
+    private void addClinicalPrivateFields(Document document) {
         if (clinicalVariantSource != null) {
             List<String> geneIdList = null;
             List<String> phenotypeList = null;
             switch (clinicalVariantSource) {
                 case CLINVARVARIANTSOURCE:
-                    geneIdList = getClinvarGeneIds(dbObject);
-                    phenotypeList = getClinvarPhenotypes(dbObject);
+                    geneIdList = getClinvarGeneIds(document);
+                    phenotypeList = getClinvarPhenotypes(document);
                     break;
                 case COSMICVARIANTSOURCE:
-                    geneIdList = dbObject.get("geneName") != null
-                            ? Collections.singletonList((String) dbObject.get("geneName")) : null;
-                    phenotypeList = getCosmicPhenotypes(dbObject);
+                    geneIdList = document.get("geneName") != null ? Collections.singletonList(document.getString("geneName")) : null;
+                    phenotypeList = getCosmicPhenotypes(document);
                     break;
                 case GWASVARIANTSOURCE:
-                    geneIdList = dbObject.get("reportedGenes") != null
-                            ? Collections.singletonList((String) dbObject.get("reportedGenes")) : null;
-                    phenotypeList = getGwasPhenotypes(dbObject);
+                    geneIdList = document.get("reportedGenes") != null
+                            ? Collections.singletonList(document.getString("reportedGenes"))
+                            : null;
+                    phenotypeList = getGwasPhenotypes(document);
                     break;
                 default:
                     break;
             }
             if (geneIdList != null) {
-                dbObject.put("_geneIds", geneIdList);
+                document.put("_geneIds", geneIdList);
             }
             if (phenotypeList != null) {
-                dbObject.put("_phenotypes", phenotypeList);
+                document.put("_phenotypes", phenotypeList);
             }
         }
     }
 
-    private List<String> getGwasPhenotypes(Document dbObject) {
+    private List<String> getGwasPhenotypes(Document document) {
         List<String> phenotypeList = new ArrayList<>();
-        BasicDBList studiesDBList = ((BasicDBList) dbObject.get("studies"));
+        List studiesDBList = document.get("studies", List.class);
         for (Object studyObject : studiesDBList) {
             Document studyDBObject = (Document) studyObject;
-            BasicDBList traitsDBList = (BasicDBList) studyDBObject.get("traits");
+            List traitsDBList = studyDBObject.get("traits", List.class);
             if (traitsDBList != null) {
                 for (Object traitObject : traitsDBList) {
                     Document traitDBObject = (Document) traitObject;
                     if (traitDBObject.get("diseaseTrait") != null) {
-                        phenotypeList.add((String) traitDBObject.get("diseaseTrait"));
+                        phenotypeList.add(traitDBObject.getString("diseaseTrait"));
                     }
                 }
             }
         }
-
         return phenotypeList;
     }
 
-    private List<String> getCosmicPhenotypes(Document dbObject) {
+    private List<String> getCosmicPhenotypes(Document document) {
         List<String> phenotypeList = new ArrayList<>(4);
-        addIfNotEmpty((String) dbObject.get("primarySite"), phenotypeList);
-        addIfNotEmpty((String) dbObject.get("histologySubtype"), phenotypeList);
-        addIfNotEmpty((String) dbObject.get("primaryHistology"), phenotypeList);
-        addIfNotEmpty((String) dbObject.get("siteSubtype"), phenotypeList);
+        addIfNotEmpty((String) document.get("primarySite"), phenotypeList);
+        addIfNotEmpty((String) document.get("histologySubtype"), phenotypeList);
+        addIfNotEmpty((String) document.get("primaryHistology"), phenotypeList);
+        addIfNotEmpty((String) document.get("siteSubtype"), phenotypeList);
 
         return phenotypeList;
 
@@ -410,11 +410,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private List<String> getClinvarPhenotypes(Document dbObject) {
         List<String> phenotypeList = new ArrayList<>();
-        BasicDBList basicDBList = (BasicDBList) ((Document) ((Document) ((Document) dbObject.get("clinvarSet"))
-                .get("referenceClinVarAssertion")).get("traitSet")).get("trait");
+        List basicDBList = ((Document) ((Document) ((Document) dbObject.get("clinvarSet")).get("referenceClinVarAssertion"))
+                .get("traitSet")).get("trait", List.class);
         for (Object object : basicDBList) {
             Document document = (Document) object;
-            BasicDBList nameDBList = (BasicDBList) document.get("name");
+            List nameDBList = document.get("name", List.class);
             if (nameDBList != null) {
                 for (Object nameObject : nameDBList) {
                     Document elementValueDBObject = (Document) ((Document) nameObject).get("elementValue");
@@ -437,14 +437,14 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private List<String> getClinvarGeneIds(Document dbObject) {
         List<String> geneIdList = new ArrayList<>();
-        BasicDBList basicDBList = (BasicDBList) ((Document) ((Document) ((Document) dbObject.get("clinvarSet"))
-                .get("referenceClinVarAssertion")).get("measureSet")).get("measure");
+        List basicDBList = ((Document) ((Document) ((Document) dbObject.get("clinvarSet")).get("referenceClinVarAssertion"))
+                .get("measureSet")).get("measure", List.class);
         for (Object object : basicDBList) {
             Document document = (Document) object;
-            BasicDBList measureRelationshipDBList = (BasicDBList) document.get("measureRelationship");
+            List measureRelationshipDBList = document.get("measureRelationship", List.class);
             if (measureRelationshipDBList != null) {
                 for (Object measureRelationShipObject : measureRelationshipDBList) {
-                    BasicDBList symbolDBList = (BasicDBList) ((Document) measureRelationShipObject).get("symbol");
+                    List symbolDBList = ((Document) measureRelationShipObject).get("symbol", List.class);
                     if (symbolDBList != null) {
                         for (Object symbolObject : symbolDBList) {
                             Document elementValueDBObject = (Document) ((Document) symbolObject).get("elementValue");
@@ -457,7 +457,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         }
                     }
                 }
-
             }
         }
         if (geneIdList.size() > 0) {
@@ -473,9 +472,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if (indexFilePath != null) {
             try {
                 runCreateIndexProcess(indexFilePath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
         } else {
@@ -489,23 +486,23 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         return result.first().getInsertedCount();
     }
 
-    private void addChunkId(Document dbObject) {
+    private void addChunkId(Document document) {
         if (chunkSizes != null && chunkSizes.length > 0) {
             List<String> chunkIds = new ArrayList<>();
-            for (int chunkSize : chunkSizes) {  // TODO: why are we using different chunk sizes??
-                int chunkStart = (Integer) dbObject.get("start") / chunkSize;
-                int chunkEnd = (Integer) dbObject.get("end") / chunkSize;
+            for (int chunkSize : chunkSizes) {
+                int chunkStart = (Integer) document.get("start") / chunkSize;
+                int chunkEnd = (Integer) document.get("end") / chunkSize;
                 String chunkIdSuffix = chunkSize / 1000 + "k";
                 for (int i = chunkStart; i <= chunkEnd; i++) {
-                    if (dbObject.containsKey("chromosome")) {
-                        chunkIds.add(dbObject.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
+                    if (document.containsKey("chromosome")) {
+                        chunkIds.add(document.get("chromosome") + "_" + i + "_" + chunkIdSuffix);
                     } else {
-                        chunkIds.add(dbObject.get("sequenceName") + "_" + i + "_" + chunkIdSuffix);
+                        chunkIds.add(document.get("sequenceName") + "_" + i + "_" + chunkIdSuffix);
                     }
                 }
             }
-            logger.info("Setting chunkIds to {}", chunkIds.toString());
-            dbObject.put("_chunkIds", chunkIds);
+            logger.debug("Setting chunkIds to {}", chunkIds.toString());
+            document.put("_chunkIds", chunkIds);
         }
     }
 

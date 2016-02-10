@@ -89,8 +89,8 @@ public class LoadCommandExecutor extends CommandExecutor {
 
             String[] buildOptions;
             if (loadCommandOptions.data.equals("all")) {
-                buildOptions = new String[]{"genome", "gene", "gene_disease_association", "variation", "variation_functional_score",
-                        "regulatory_region", "protein", "ppi", "protein_functional_prediction", "conservation", "clinical", };
+                buildOptions = new String[]{"genome", "gene", "conservation", "regulatory_region",
+                        "protein", "ppi", "protein_functional_prediction", "variation", "variation_functional_score", "clinical", };
             } else {
                 buildOptions = loadCommandOptions.data.split(",");
             }
@@ -108,14 +108,15 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.load(input.resolve("gene.json.gz"), "gene");
                             loadRunner.index("gene");
                             break;
-                        case "gene_disease_association":
-                            break;
                         case "variation":
                             loadVariationData();
                             break;
                         case "variation_functional_score":
                             loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
                             loadRunner.index("variation_functional_score");
+                            break;
+                        case "conservation":
+                            loadConservation();
                             break;
                         case "regulatory_region":
                             loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
@@ -132,14 +133,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case "protein_functional_prediction":
                             loadProteinFunctionalPrediction();
                             break;
-                        case "conservation":
-                            loadConservation();
-                            break;
                         case "clinical":
                             loadClinical();
                             break;
                         default:
-                            logger.warn("We should ot reach this point");
+                            logger.warn("Not valid 'data'. We should not reach this point");
                             break;
                     }
                 } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ExecutionException
@@ -192,7 +190,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 loadRunner.load(input.resolve(entry.getFileName()), "variation");
             }
             loadRunner.index("variation");
-        // Custom update required e.g. population freqs loading
+            // Custom update required e.g. population freqs loading
         } else {
             logger.info("Loading file '{}'", input.toString());
             loadRunner.load(input, "variation", field);
