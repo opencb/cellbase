@@ -108,16 +108,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     @Override
     public QueryResult<GenericFeature> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        if (options != null) {
-            if (options.get("exclude") == null) {
-                options.put("exclude", "_id,_chunkIds");
-            } else {
-                String exclude = options.getString("exclude");
-                options.put("exclude", exclude + ",_id,_chunkIds");
-            }
-        } else {
-            options = new QueryOptions("exclude", "_id,_chunkIds");
-        }
+        options = addPrivateExcludeOptions(options);
         return mongoDBCollection.find(bson, null, GenericFeature.class, options);
     }
 

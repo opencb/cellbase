@@ -72,6 +72,20 @@ public class MongoDBAdaptor {
         }
     }
 
+    protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
+        if (options != null) {
+            if (options.get("exclude") == null) {
+                options.put("exclude", "_id,_chunkIds");
+            } else {
+                String exclude = options.getString("exclude");
+                options.put("exclude", exclude + ",_id,_chunkIds");
+            }
+        } else {
+            options = new QueryOptions("exclude", "_id,_chunkIds");
+        }
+        return options;
+    }
+
     protected void createRegionQuery(Query query, String queryParam, List<Bson> andBsonList) {
         if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));

@@ -109,16 +109,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         options.put(MongoDBCollection.SKIP_COUNT, true);
-        if (options != null) {
-            if (options.get("exclude") == null) {
-                options.put("exclude", "_id,_chunkIds,annotation.additionalAttributes");
-            } else {
-                String exclude = options.getString("exclude");
-                options.put("exclude", exclude + ",_id,_chunkIds,annotation.additionalAttributes");
-            }
-        } else {
-            options = new QueryOptions("exclude", "_id,_chunkIds,annotation.additionalAttributes");
-        }
+        options = addPrivateExcludeOptions(options);
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
 

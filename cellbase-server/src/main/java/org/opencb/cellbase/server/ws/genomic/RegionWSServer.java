@@ -126,12 +126,10 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{chrRegionId}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the transcripts objects")
-    public Response getTranscriptByRegion(@PathParam("chrRegionId") String region,
-                                          @DefaultValue("") @QueryParam("biotype") String biotype) {
+    public Response getTranscriptByRegion(@PathParam("chrRegionId") String region, @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-
             query.put(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
             return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {

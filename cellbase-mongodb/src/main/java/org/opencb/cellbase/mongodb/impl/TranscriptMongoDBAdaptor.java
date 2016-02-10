@@ -1,5 +1,6 @@
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
@@ -13,10 +14,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -74,28 +72,55 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult get(Query query, QueryOptions options) {
+    public QueryResult<Transcript> get(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        QueryResult result = mongoDBCollection.find(bson, options);
-        if (result != null && !result.getResult().isEmpty()) {
-            Document gene = (Document) result.getResult().get(0);
-            List<Document> transcripts = (List<Document>) gene.get("transcripts");
-            if (options.getInt("limit", 0) == 1 && !transcripts.isEmpty()) {
-                result.setResult(Collections.singletonList(transcripts.get(0)));
-            } else {
-                result.setResult(transcripts);
+        Bson match = Aggregates.match(bson);
+
+        Bson include = null;
+        if (options != null && options.containsKey("include")) {
+            List<String> includeList = new ArrayList<>();
+            List<String> optionsAsStringList = options.getAsStringList("include");
+            for (String s : optionsAsStringList) {
+                if (s.startsWith("transcripts")) {
+                    includeList.add(s);
+                }
+            }
+
+            if (includeList.size() > 0) {
+                include = Projections.include(includeList);
             }
         }
-        return result;
+
+        if (include == null) {
+            include = Projections.include("transcripts");
+        }
+        Bson excludeAndInclude = Aggregates.project(Projections.fields(Projections.excludeId(), include));
+        Bson unwind = Aggregates.unwind("$transcripts");
+
+        // This project the three fields of Xref to the top of the object
+        Document document = new Document("id", "$transcripts.id");
+        document.put("name", "$transcripts.name");
+        document.put("biotype", "$transcripts.biotype");
+        document.put("chromosome", "$transcripts.chromosome");
+        document.put("start", "$transcripts.start");
+        document.put("end", "$transcripts.end");
+        document.put("strand", "$transcripts.strand");
+        document.put("cDnaSequence", "$transcripts.cDnaSequence");
+        document.put("xrefs", "$transcripts.xrefs");
+        document.put("exons", "$transcripts.exons");
+        document.put("annotationFlags", "$transcripts.annotationFlags");
+        Bson project = Aggregates.project(document);
+
+        return mongoDBCollection.aggregate(Arrays.asList(match, excludeAndInclude, unwind, project), options);
     }
 
     @Override
-    public Iterator iterator(Query query, QueryOptions options) {
+    public Iterator<Transcript> iterator(Query query, QueryOptions options) {
         return null;
     }
 
@@ -150,13 +175,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(),
-                MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "transcripts.id", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "transcripts.name", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+
+        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
+        createOrQuery(query, QueryParams.ID.key(), "transcripts.id", andBsonList);
+        createOrQuery(query, QueryParams.NAME.key(), "transcripts.name", andBsonList);
+        createOrQuery(query, QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
+        createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+        createOrQuery(query, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
