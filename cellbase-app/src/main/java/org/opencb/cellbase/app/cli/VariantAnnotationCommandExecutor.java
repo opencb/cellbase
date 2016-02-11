@@ -25,6 +25,7 @@ import htsjdk.tribble.readers.LineIterator;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.apache.commons.lang.math.NumberUtils;
+import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
@@ -35,6 +36,7 @@ import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.variant.annotation.*;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.io.StringDataReader;
@@ -155,8 +157,11 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 // This will annotate the CellBase Variation collection
                 if (cellBaseAnnotation) {
                     dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+                    Query query = new Query("$match",
+                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
+                    QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate");
                     DataReader dataReader =
-                            new CellBaseVariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species));
+                            new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
                     List<ParallelTaskRunner.Task> variantAnnotatorTaskList = getTaskList();
                     DataWriter dataWriter = getDataWriter();
 
@@ -192,23 +197,27 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         List<ParallelTaskRunner.Task> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
-            switch (inputFormat) {
-                case VCF:
-                    logger.info("Using HTSJDK to read variants.");
-                    FullVcfCodec codec = new FullVcfCodec();
-                    try (InputStream fileInputStream = input.toString().endsWith("gz")
-                            ? new GZIPInputStream(new FileInputStream(input.toFile()))
-                            : new FileInputStream(input.toFile())) {
-                        LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
-                        VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
-                        VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
-                        variantAnnotatorTaskList.add(new VariantAnnotatorTask(header, headerVersion, variantAnnotatorList));
-                    } catch (IOException e) {
-                        throw new IOException("Unable to read VCFHeader");
-                    }
-                    break;
-                default:
-                    break;
+            if (cellBaseAnnotation) {
+                variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
+            } else {
+                switch (inputFormat) {
+                    case VCF:
+                        logger.info("Using HTSJDK to read variants.");
+                        FullVcfCodec codec = new FullVcfCodec();
+                        try (InputStream fileInputStream = input.toString().endsWith("gz")
+                                ? new GZIPInputStream(new FileInputStream(input.toFile()))
+                                : new FileInputStream(input.toFile())) {
+                            LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
+                            VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
+                            VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
+                            variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion, variantAnnotatorList));
+                        } catch (IOException e) {
+                            throw new IOException("Unable to read VCFHeader");
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         return variantAnnotatorTaskList;
