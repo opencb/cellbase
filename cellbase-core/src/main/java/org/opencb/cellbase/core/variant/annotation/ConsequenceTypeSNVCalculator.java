@@ -7,7 +7,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,7 +21,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     public ConsequenceTypeSNVCalculator() {
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<GenericFeature> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;

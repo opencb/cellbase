@@ -22,7 +22,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.*;
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -367,17 +367,17 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
     }
 
-    private List<GenericFeature> getAffectedRegulatoryRegions(Variant variant) {
+    private List<RegulatoryFeature> getAffectedRegulatoryRegions(Variant variant) {
         int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add("include", "chromosome,start,end");
 //        QueryResult queryResult = regulationDBAdaptor.nativeGet(new Query("region", variant.getChromosome()
 //                + ":" + variantStart + ":" + (variant.getStart() + variant.getReference().length() - 1)), queryOptions);
-        QueryResult<GenericFeature> queryResult = regulationDBAdaptor.getByRegion(new Region(variant.getChromosome(),
+        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor.getByRegion(new Region(variant.getChromosome(),
                 variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
 
-        List<GenericFeature> regionList = new ArrayList<>(queryResult.getNumResults());
-        for (GenericFeature object : queryResult.getResult()) {
+        List<RegulatoryFeature> regionList = new ArrayList<>(queryResult.getNumResults());
+        for (RegulatoryFeature object : queryResult.getResult()) {
             regionList.add(object);
         }
 
@@ -395,7 +395,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList, boolean regulatoryAnnotation) {
-        List<GenericFeature> regulatoryRegionList = null;
+        List<RegulatoryFeature> regulatoryRegionList = null;
         if (regulatoryAnnotation) {
             regulatoryRegionList = getAffectedRegulatoryRegions(variant);
         }

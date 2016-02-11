@@ -22,9 +22,9 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.cellbase.core.common.ConservationScoreRegion;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -144,7 +144,8 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     @Override
-    public List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regionList, QueryOptions options) {
+//    public List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regionList, QueryOptions options) {
+    public List<QueryResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regionList, QueryOptions options) {
         //TODO not finished yet
         List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regionList.size());
@@ -190,12 +191,14 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options, conservationMongoDBCollection);
-        List<QueryResult<ConservationScoreRegion>> conservationQueryResults = new ArrayList<>();
+//        List<QueryResult<ConservationScoreRegion>> conservationQueryResults = new ArrayList<>();
+        List<QueryResult<GenomicScoreRegion<Float>>> conservationQueryResults = new ArrayList<>();
 
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
-            QueryResult<ConservationScoreRegion> conservationQueryResult = new QueryResult<>();
+//            QueryResult<ConservationScoreRegion> conservationQueryResult = new QueryResult<>();
+            QueryResult<GenomicScoreRegion<Float>> conservationQueryResult = new QueryResult<>();
 
 //            BasicDBList list = (BasicDBList) queryResult.getResult();
             List list = queryResult.getResult();
@@ -229,10 +232,14 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             }
 
 //            BasicDBList resultList = new BasicDBList();
-            List<ConservationScoreRegion> resultList = new ArrayList<>();
-            ConservationScoreRegion conservedRegionChunk;
+//            List<ConservationScoreRegion> resultList = new ArrayList<>();
+            List<GenomicScoreRegion<Float>> resultList = new ArrayList<>();
+//            ConservationScoreRegion conservedRegionChunk;
+            GenomicScoreRegion<Float> conservedRegionChunk;
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(), region.getEnd(),
+//                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(), region.getEnd(),
+//                        elem.getKey(), elem.getValue());
+                conservedRegionChunk = new GenomicScoreRegion<>(region.getChromosome(), region.getStart(), region.getEnd(),
                         elem.getKey(), elem.getValue());
                 resultList.add(conservedRegionChunk);
             }

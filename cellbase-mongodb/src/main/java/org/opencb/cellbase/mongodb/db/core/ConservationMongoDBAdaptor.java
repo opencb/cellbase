@@ -21,7 +21,7 @@ import com.mongodb.QueryBuilder;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.annotation.Score;
-import org.opencb.cellbase.core.common.ConservationScoreRegion;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -171,9 +171,12 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             }
 //
             BasicDBList resultList = new BasicDBList();
-            ConservationScoreRegion conservedRegionChunk;
+//            ConservationScoreRegion conservedRegionChunk;
+            GenomicScoreRegion<Float> conservedRegionChunk;
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(),
+//                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(),
+//                        region.getEnd(), elem.getKey(), elem.getValue());
+                conservedRegionChunk = new GenomicScoreRegion<>(region.getChromosome(), region.getStart(),
                         region.getEnd(), elem.getKey(), elem.getValue());
                 resultList.add(conservedRegionChunk);
             }

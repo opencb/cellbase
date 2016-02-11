@@ -19,7 +19,7 @@ package org.opencb.cellbase.app.cli;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.core.api.*;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;

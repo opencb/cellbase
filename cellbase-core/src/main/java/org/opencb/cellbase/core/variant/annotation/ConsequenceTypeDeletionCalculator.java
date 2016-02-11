@@ -7,7 +7,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -33,7 +33,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         this.genomeDBAdaptor = genomeDBAdaptor;
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<GenericFeature> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getStart() + variant.getReference().length() - 1;

@@ -8,7 +8,7 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,13 +26,13 @@ public abstract class ConsequenceTypeCalculator {
     protected Transcript transcript;
     protected Variant variant;
 
-    public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList, List<GenericFeature> regulatoryRegionList);
+    public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList);
 
     protected Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
         return (region2Start <= region1End && region2End >= region1Start);
     }
 
-    protected void solveRegulatoryRegions(List<GenericFeature> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
+    protected void solveRegulatoryRegions(List<RegulatoryFeature> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {
         if (regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
             ConsequenceType consequenceType = new ConsequenceType();
             SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);

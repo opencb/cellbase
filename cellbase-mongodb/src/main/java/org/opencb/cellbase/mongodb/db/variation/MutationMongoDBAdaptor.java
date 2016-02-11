@@ -20,8 +20,8 @@ import com.mongodb.BasicDBList;
 import org.bson.Document;
 
 import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Position;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;

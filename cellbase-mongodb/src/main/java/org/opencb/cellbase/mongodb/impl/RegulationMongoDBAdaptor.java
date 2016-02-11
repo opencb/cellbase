@@ -21,7 +21,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<GenericFeature> {
+public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<RegulatoryFeature> {
 
     public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -47,7 +47,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
 
 
     @Override
-    public QueryResult<GenericFeature> next(Query query, QueryOptions options) {
+    public QueryResult<RegulatoryFeature> next(Query query, QueryOptions options) {
         return null;
     }
 
@@ -106,10 +106,10 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public QueryResult<GenericFeature> get(Query query, QueryOptions options) {
+    public QueryResult<RegulatoryFeature> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         options = addPrivateExcludeOptions(options);
-        return mongoDBCollection.find(bson, null, GenericFeature.class, options);
+        return mongoDBCollection.find(bson, null, RegulatoryFeature.class, options);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public Iterator<GenericFeature> iterator(Query query, QueryOptions options) {
+    public Iterator<RegulatoryFeature> iterator(Query query, QueryOptions options) {
         return null;
     }
 

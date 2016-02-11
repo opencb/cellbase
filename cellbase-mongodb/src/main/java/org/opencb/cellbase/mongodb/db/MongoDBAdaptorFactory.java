@@ -358,17 +358,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
-    public VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species) {
-        return getVariationPhenotypeAnnotationDBAdaptor(species, null);
-    }
-
-    @Override
-    public VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return (VariationPhenotypeAnnotationDBAdaptor) new VariationPhenotypeAnnotationMongoDBAdaptor(species, assembly, mongoDatastore);
-    }
-
-    @Override
     public CpGIslandDBAdaptor getCpGIslandDBAdaptor(String species) {
         // TODO Auto-generated method stub
         return null;

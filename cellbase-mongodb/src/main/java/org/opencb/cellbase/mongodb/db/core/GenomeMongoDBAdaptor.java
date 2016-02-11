@@ -20,7 +20,7 @@ import org.bson.Document;
 
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;

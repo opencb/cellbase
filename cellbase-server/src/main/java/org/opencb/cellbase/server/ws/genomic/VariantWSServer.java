@@ -21,8 +21,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.db.api.variation.VariationPhenotypeAnnotationDBAdaptor;
+import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -64,9 +65,10 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
         try {
             parseQueryParams();
-            VariationPhenotypeAnnotationDBAdaptor va =
-                    dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(va.getAllByPhenotype(phenotype, queryOptions));
+//            VariationPhenotypeAnnotationDBAdaptor va =
+//                    dbAdaptorFactory.getVariationPhenotypeAnnotationDBAdaptor(this.species, this.assembly);
+//            return createOkResponse(va.getAllByPhenotype(phenotype, queryOptions));
+            return Response.ok("Not implemented").build();
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -177,15 +179,10 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getCaddScoreByVariant(@PathParam("variants") String variants) {
         try {
             parseQueryParams();
-            List<Variant> variantList = Variant.parseVariants(variants);
-            logger.debug("queryOptions: " + queryOptions);
-
-//            VariantAnnotationDBAdaptor variantAnnotationDBAdaptor =
-//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-//            Variant variant = variantList.get(0);
-//            QueryResult byVariant = variantAnnotationDBAdaptor.getFunctionalScore(variant, queryOptions);
-
-            return createOkResponse(variantList);
+            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            List<QueryResult<Score>> functionalScoreVariant =
+                    variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);
+            return createOkResponse(functionalScoreVariant);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

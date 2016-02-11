@@ -17,8 +17,8 @@
 package org.opencb.cellbase.core.api;
 
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.ConservationScoreRegion;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -90,10 +90,12 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
     }
 
 
-    default QueryResult<ConservationScoreRegion> getConservation(Region region, QueryOptions queryOptions) {
+//    default QueryResult<ConservationScoreRegion> getConservation(Region region, QueryOptions queryOptions) {
+    default QueryResult<GenomicScoreRegion<Float>> getConservation(Region region, QueryOptions queryOptions) {
         return getConservation(Collections.singletonList(region), queryOptions).get(0);
     }
 
-    List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regions, QueryOptions queryOptions);
+//    List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regions, QueryOptions queryOptions);
+    List<QueryResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regions, QueryOptions queryOptions);
 
 }
