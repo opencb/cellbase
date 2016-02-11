@@ -159,4 +159,12 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
         return resultList;
     }
 
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
+
 }

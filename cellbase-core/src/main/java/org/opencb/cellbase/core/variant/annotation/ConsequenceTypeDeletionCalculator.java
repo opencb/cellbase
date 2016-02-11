@@ -6,14 +6,16 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
-import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
-import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+//import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 
 /**
  * Created by fjlopez on 05/08/15.
@@ -31,7 +33,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         this.genomeDBAdaptor = genomeDBAdaptor;
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryRegion> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getStart() + variant.getReference().length() - 1;
@@ -441,10 +443,15 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             for (codonPosition = variantPhaseShift1; codonPosition < 3; codonPosition++) {
                 if (i >= reverseTranscriptSequence.length()) {
                     int genomicCoordinate = transcript.getStart() - (i - reverseTranscriptSequence.length() + 1);
+//                    modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.
+//                            get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
+//                                    genomicCoordinate, genomicCoordinate + 1,
+//                                    new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
+                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                            + ":" + genomicCoordinate
+                            + "-" + (genomicCoordinate + 1));
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.
-                            get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
-                                    genomicCoordinate, genomicCoordinate + 1,
-                                    new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
+                            get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0));
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseTranscriptSequence.charAt(i));
@@ -724,9 +731,14 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             for (codonPosition = variantPhaseShift1; codonPosition < 3; codonPosition++) {
                 if (i >= transcriptSequence.length()) {
                     int genomicCoordinate = transcript.getEnd() + (i - transcriptSequence.length()) + 1;
-                    modifiedCodonArray[codonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor
-                            .getSequenceByRegion(variant.getChromosome(), genomicCoordinate, genomicCoordinate + 1,
-                                    new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
+//                    modifiedCodonArray[codonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor
+//                            .getSequenceByRegion(variant.getChromosome(), genomicCoordinate, genomicCoordinate + 1,
+//                                    new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
+                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                            + ":" + genomicCoordinate
+                            + "-" + (genomicCoordinate + 1));
+                    modifiedCodonArray[codonPosition] = genomeDBAdaptor
+                            .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
                     modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);

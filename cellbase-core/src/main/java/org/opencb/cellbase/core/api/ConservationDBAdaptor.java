@@ -1,13 +1,19 @@
 package org.opencb.cellbase.core.api;
 
+import org.opencb.biodata.models.core.Region;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.core.QueryResult;
+
+import java.util.List;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
 /**
  * Created by swaathi on 26/11/15.
  */
-public interface ConservationDBAdaptor<ConservationScoreRegion> extends CellBaseDBAdaptor<ConservationScoreRegion> {
+@Deprecated
+public interface ConservationDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, "");
@@ -38,5 +44,10 @@ public interface ConservationDBAdaptor<ConservationScoreRegion> extends CellBase
             return null;
         }
     }
+
+    List<QueryResult> getAllByRegionList(List<Region> regionList, QueryOptions options);
+
+    @Deprecated
+    List<QueryResult> getAllScoresByRegionList(List<Region> regions, QueryOptions options);
 
 }

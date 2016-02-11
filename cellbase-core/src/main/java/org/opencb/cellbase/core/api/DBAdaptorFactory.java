@@ -86,41 +86,30 @@ public abstract class DBAdaptorFactory {
     public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
 
 
+    public abstract VariantDBAdaptor getVariationDBAdaptor(String species);
+
+    public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
+
+
     public abstract XRefDBAdaptor getXRefDBAdaptor(String species);
 
     public abstract XRefDBAdaptor getXRefDBAdaptor(String species, String assembly);
 
 
-    public abstract VariantDBAdaptor getVariationDBAdaptor(String species);
-
-    public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
-
-//
-//
 //    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
 //
 //    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
-//
-//
+
+
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
 
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
 
-//
-//    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species);
-//
-//    public abstract TfbsDBAdaptor getTfbsDBAdaptor(String species, String assembly);
-//
 
     public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species);
 
     public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species, String assembly);
 
-//
-//    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species);
-//
-//    public abstract MirnaDBAdaptor getMirnaDBAdaptor(String species, String assembly);
-//
 
     public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
 
@@ -137,14 +126,8 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
 
 
-    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species);
-
-    public abstract VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly);
-
-
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species);
 
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly);
-
 
 }

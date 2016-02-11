@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -108,15 +108,15 @@ public class RegulatoryRegionParser extends CellBaseParser {
         }
 
         List<String> chromosomes = new ArrayList<>(setChr);
-        List<GenericFeature> genericFeatures;
+        List<RegulatoryFeature> regulatoryFeatures;
         HashSet<Integer> chunksHash;
         for (String chromosome : chromosomes) {
             for (int i = 0; i < tableNames.size(); i++) {
                 chunksHash = new HashSet<>();
-                genericFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
-                for (GenericFeature genericFeature : genericFeatures) {
-                    int firstChunkId = getChunkId(genericFeature.getStart(), CHUNK_SIZE);
-                    int lastChunkId = getChunkId(genericFeature.getEnd(), CHUNK_SIZE);
+                regulatoryFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
+                for (RegulatoryFeature regulatoryFeature : regulatoryFeatures) {
+                    int firstChunkId = getChunkId(regulatoryFeature.getStart(), CHUNK_SIZE);
+                    int lastChunkId = getChunkId(regulatoryFeature.getEnd(), CHUNK_SIZE);
 
                     List<String> chunkIds = new ArrayList<>();
                     String chunkId;
@@ -128,13 +128,13 @@ public class RegulatoryRegionParser extends CellBaseParser {
                             chunksHash.add(j);
                         }
                     }
-                    genericFeature.setChunkIds(chunkIds);
+//                    regulatoryFeature.setChunkIds(chunkIds);
 
                     // remove 'chr' prefix
 //                    if (genericFeature.getChromosome() != null) {
 //                        genericFeature.setSequenceName(genericFeature.getSequenceName().replace("chr", ""));
 //                    }
-                    serializer.serialize(genericFeature);
+                    serializer.serialize(regulatoryFeature);
                 }
             }
         }
@@ -242,9 +242,9 @@ public class RegulatoryRegionParser extends CellBaseParser {
         return chromosomes;
     }
 
-    public static List<GenericFeature> queryChromosomesRegulatoryDB(Path dbPath, String tableName, String chromosome) {
+    public static List<RegulatoryFeature> queryChromosomesRegulatoryDB(Path dbPath, String tableName, String chromosome) {
         Connection conn;
-        List<GenericFeature> genericFeatures = new ArrayList<>();
+        List<RegulatoryFeature> regulatoryFeatures = new ArrayList<>();
         try {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
@@ -252,19 +252,19 @@ public class RegulatoryRegionParser extends CellBaseParser {
             Statement query = conn.createStatement();
             ResultSet rs = query.executeQuery("select * from " + tableName + " where seqname='chr" + chromosome + "'");
             while (rs.next()) {
-                genericFeatures.add(getGenericFeature(rs, tableName));
+                regulatoryFeatures.add(getRegulatoryFeature(rs, tableName));
             }
             conn.close();
 
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
-        return genericFeatures;
+        return regulatoryFeatures;
     }
 
-    public static List<GenericFeature> queryRegulatoryDB(Path dbPath, String tableName, String chrFile, int start, int end) {
+    public static List<RegulatoryFeature> queryRegulatoryDB(Path dbPath, String tableName, String chrFile, int start, int end) {
         Connection conn = null;
-        List<GenericFeature> genericFeatures = new ArrayList<>();
+        List<RegulatoryFeature> regulatoryFeatures = new ArrayList<>();
         try {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
@@ -273,116 +273,116 @@ public class RegulatoryRegionParser extends CellBaseParser {
             ResultSet rs = query.executeQuery("select * from " + tableName + " where start<=" + end + " AND end>=" + start);
 
             while (rs.next()) {
-                genericFeatures.add(getGenericFeature(rs, tableName));
+                regulatoryFeatures.add(getRegulatoryFeature(rs, tableName));
             }
             conn.close();
 
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
-        return genericFeatures;
+        return regulatoryFeatures;
     }
 
-    private static GenericFeature getGenericFeature(ResultSet rs, String tableName) throws SQLException {
-        GenericFeature genericFeature = null;
+    private static RegulatoryFeature getRegulatoryFeature(ResultSet rs, String tableName) throws SQLException {
+        RegulatoryFeature regulatoryFeature = null;
         switch (tableName.toLowerCase()) {
             case "annotated_features":
-                genericFeature = getAnnotatedFeature(rs);
+                regulatoryFeature = getAnnotatedFeature(rs);
                 break;
             case "regulatory_features_multicell":
-                genericFeature = getRegulatoryFeature(rs);
+                regulatoryFeature = getRegulatoryFeature(rs);
                 break;
             case "motif_features":
-                genericFeature = getMotifFeature(rs);
+                regulatoryFeature = getMotifFeature(rs);
                 break;
             case "mirna_uniq":
-                genericFeature = getMirnaFeature(rs);
+                regulatoryFeature = getMirnaFeature(rs);
                 break;
             default:
                 break;
         }
-        return genericFeature;
+        return regulatoryFeature;
     }
 
-    private static GenericFeature getAnnotatedFeature(ResultSet rs) throws SQLException {
+    private static RegulatoryFeature getAnnotatedFeature(ResultSet rs) throws SQLException {
         //   GFF     https://genome.ucsc.edu/FAQ/FAQformat.html#format3
-        GenericFeature genericFeature = new GenericFeature();
+        RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
-        genericFeature.setSource(rs.getString(2));
-        genericFeature.setFeatureType(rs.getString(3));
-        genericFeature.setStart(rs.getInt(4));
-        genericFeature.setEnd(rs.getInt(5));
-        genericFeature.setScore(rs.getString(6));
-        genericFeature.setStrand(rs.getString(7));
-        genericFeature.setFrame(rs.getString(8));
+        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setSource(rs.getString(2));
+        regulatoryFeature.setFeatureType(rs.getString(3));
+        regulatoryFeature.setStart(rs.getInt(4));
+        regulatoryFeature.setEnd(rs.getInt(5));
+        regulatoryFeature.setScore(rs.getString(6));
+        regulatoryFeature.setStrand(rs.getString(7));
+        regulatoryFeature.setFrame(rs.getString(8));
 
-        genericFeature.setName(groupFields.get("name"));
-        genericFeature.setAlias(groupFields.get("alias"));
-        genericFeature.setFeatureClass(groupFields.get("class"));
-        genericFeature.getCellTypes().add(groupFields.get("cell_type"));
+        regulatoryFeature.setName(groupFields.get("name"));
+        regulatoryFeature.setAlias(groupFields.get("alias"));
+        regulatoryFeature.setFeatureClass(groupFields.get("class"));
+        regulatoryFeature.getCellTypes().add(groupFields.get("cell_type"));
 
-        return genericFeature;
+        return regulatoryFeature;
     }
 
-    private static GenericFeature getRegulatoryFeature(ResultSet rs) throws SQLException {
+    private static RegulatoryFeature getRegulatoryFeature(ResultSet rs) throws SQLException {
         //   GFF     https://genome.ucsc.edu/FAQ/FAQformat.html#format3
-        GenericFeature genericFeature = new GenericFeature();
+        RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
-        genericFeature.setSource(rs.getString(2));
-        genericFeature.setFeatureType(rs.getString(3));
-        genericFeature.setStart(rs.getInt(4));
-        genericFeature.setEnd(rs.getInt(5));
-        genericFeature.setScore(rs.getString(6));
-        genericFeature.setStrand(rs.getString(7));
-        genericFeature.setFrame(rs.getString(8));
-        genericFeature.setFrame(rs.getString(9));
+        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setSource(rs.getString(2));
+        regulatoryFeature.setFeatureType(rs.getString(3));
+        regulatoryFeature.setStart(rs.getInt(4));
+        regulatoryFeature.setEnd(rs.getInt(5));
+        regulatoryFeature.setScore(rs.getString(6));
+        regulatoryFeature.setStrand(rs.getString(7));
+        regulatoryFeature.setFrame(rs.getString(8));
+        regulatoryFeature.setFrame(rs.getString(9));
 
-        return genericFeature;
+        return regulatoryFeature;
     }
 
-    private static GenericFeature getMotifFeature(ResultSet rs) throws SQLException {
+    private static RegulatoryFeature getMotifFeature(ResultSet rs) throws SQLException {
         //   GFF     https://genome.ucsc.edu/FAQ/FAQformat.html#format3
-        GenericFeature genericFeature = new GenericFeature();
+        RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
-        genericFeature.setSource(rs.getString(2));
-        genericFeature.setFeatureType(rs.getString(3) + "_motif");
-        genericFeature.setStart(rs.getInt(4));
-        genericFeature.setEnd(rs.getInt(5));
-        genericFeature.setScore(rs.getString(6));
-        genericFeature.setStrand(rs.getString(7));
-        genericFeature.setFrame(rs.getString(8));
+        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setSource(rs.getString(2));
+        regulatoryFeature.setFeatureType(rs.getString(3) + "_motif");
+        regulatoryFeature.setStart(rs.getInt(4));
+        regulatoryFeature.setEnd(rs.getInt(5));
+        regulatoryFeature.setScore(rs.getString(6));
+        regulatoryFeature.setStrand(rs.getString(7));
+        regulatoryFeature.setFrame(rs.getString(8));
 
         String[] split = groupFields.get("name").split(":");
-        genericFeature.setName(split[0]);
-        genericFeature.setMatrix(split[1]);
+        regulatoryFeature.setName(split[0]);
+        regulatoryFeature.setMatrix(split[1]);
 
-        return genericFeature;
+        return regulatoryFeature;
     }
 
-    private static GenericFeature getMirnaFeature(ResultSet rs) throws SQLException {
+    private static RegulatoryFeature getMirnaFeature(ResultSet rs) throws SQLException {
         //   GFF     https://genome.ucsc.edu/FAQ/FAQformat.html#format3
-        GenericFeature genericFeature = new GenericFeature();
+        RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        genericFeature.setChromosome(rs.getString(1).replace("chr", ""));
-        genericFeature.setSource(rs.getString(2));
-        genericFeature.setFeatureType(rs.getString(3));
-        genericFeature.setStart(rs.getInt(4));
-        genericFeature.setEnd(rs.getInt(5));
-        genericFeature.setScore(rs.getString(6));
-        genericFeature.setStrand(rs.getString(7));
-        genericFeature.setFrame(rs.getString(8));
+        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setSource(rs.getString(2));
+        regulatoryFeature.setFeatureType(rs.getString(3));
+        regulatoryFeature.setStart(rs.getInt(4));
+        regulatoryFeature.setEnd(rs.getInt(5));
+        regulatoryFeature.setScore(rs.getString(6));
+        regulatoryFeature.setStrand(rs.getString(7));
+        regulatoryFeature.setFrame(rs.getString(8));
 
-        genericFeature.setFeatureClass("microRNA");
-        genericFeature.setName(groupFields.get("name"));
+        regulatoryFeature.setFeatureClass("microRNA");
+        regulatoryFeature.setName(groupFields.get("name"));
 
-        return genericFeature;
+        return regulatoryFeature;
     }
 
     private static Map<String, String> getGroupFields(String group) {

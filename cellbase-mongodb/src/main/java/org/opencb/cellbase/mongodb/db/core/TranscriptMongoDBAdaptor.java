@@ -20,9 +20,9 @@ import org.bson.Document;
 
 import com.mongodb.QueryBuilder;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Position;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -161,14 +161,12 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult getAllByPosition(Position position,
-                                        QueryOptions options) {
+    public QueryResult getAllByPosition(Position position, QueryOptions options) {
         return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
     }
 
     @Override
-    public List<QueryResult> getAllByPositionList(List<Position> positionList,
-                                                  QueryOptions options) {
+    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
         List<Region> regions = new ArrayList<>();
         for (Position position : positionList) {
             regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
@@ -177,8 +175,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult getAllByRegion(String chromosome, int start, int end,
-                                      QueryOptions options) {
+    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
         return getAllByRegion(new Region(chromosome, start, end), options);
     }
 
@@ -188,8 +185,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public List<QueryResult> getAllByRegionList(List<Region> regions,
-                                                QueryOptions options) {
+    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
 
 
         List<Document[]> commandsList = new ArrayList<>(regions.size());
@@ -283,6 +279,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     @Override
     public List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList) {
         return null;
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }

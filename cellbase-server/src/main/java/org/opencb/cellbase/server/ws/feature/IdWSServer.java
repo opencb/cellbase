@@ -94,14 +94,17 @@ public class IdWSServer extends GenericRestWSServer {
     @GET
     @Path("/{id}/xref")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references for the ID")
-    public Response getAllXrefsByFeatureId(@PathParam("id") String query, @DefaultValue("") @QueryParam("dbname") String dbname) {
+    public Response getAllXrefsByFeatureId(@PathParam("id") String ids, @DefaultValue("") @QueryParam("dbname") String dbname) {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
             if (dbname != null && !dbname.isEmpty()) {
                 queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
             }
-            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(query), queryOptions));
+            Query query = new Query();
+            query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
+//            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
+            return createOkResponse(xRefDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.*;
@@ -44,6 +45,8 @@ public class MongoDBAdaptor {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    protected ObjectMapper objectMapper;
+
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
         this("", "", mongoDataStore);
     }
@@ -54,6 +57,7 @@ public class MongoDBAdaptor {
         this.mongoDataStore = mongoDataStore;
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
+        objectMapper = new ObjectMapper();
 
         initSpeciesAssembly(species, assembly);
 //        jsonObjectMapper = new ObjectMapper();
@@ -66,6 +70,20 @@ public class MongoDBAdaptor {
                 this.assembly = "default";
             }
         }
+    }
+
+    protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
+        if (options != null) {
+            if (options.get("exclude") == null) {
+                options.put("exclude", "_id,_chunkIds");
+            } else {
+                String exclude = options.getString("exclude");
+                options.put("exclude", exclude + ",_id,_chunkIds");
+            }
+        } else {
+            options = new QueryOptions("exclude", "_id,_chunkIds");
+        }
+        return options;
     }
 
     protected void createRegionQuery(Query query, String queryParam, List<Bson> andBsonList) {
@@ -137,12 +155,12 @@ public class MongoDBAdaptor {
 //        // We only use chunks if region queried belongs to a single chunk
 //        if (startChunkId == endChunkId) {
 //            logger.info("Querying by chunkId, {}, {}", startChunkId, endChunkId);
-//            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
+//            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosomeInfo(), region.getStart(), chunkSize));
 //            Bson start = Filters.lte("start", region.getEnd());
 //            Bson end = Filters.gte("end", region.getStart());
 //            return Filters.and(chunk, start, end);
 //        } else {
-//            Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+//            Bson chromosome = Filters.eq("chromosome", region.getChromosomeInfo());
 //            Bson start = Filters.lte("start", region.getEnd());
 //            Bson end = Filters.gte("end", region.getStart());
 //            return Filters.and(chromosome, start, end);

@@ -98,8 +98,9 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                                 .add("password", cellBaseConfiguration.getDatabase().getPassword())
                                 .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"));
                     }
-                    if (cellBaseConfiguration.getDatabase().getOptions().get("replicaSet") != null
-                            && !cellBaseConfiguration.getDatabase().getOptions().get("replicaSet").isEmpty()) {
+
+                    String replicaSet = cellBaseConfiguration.getDatabase().getOptions().get("replicaSet");
+                    if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
                         builder.add("replicaSet", cellBaseConfiguration.getDatabase().getOptions().get("replicaSet"));
                     }
                     mongoDBConfiguration = builder.build();
@@ -214,17 +215,28 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
+//    @Override
+//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
+//        return getVariantAnnotationDBAdaptor(species, null);
+//    }
+//
+//    @Override
+//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly) {
+//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+//        return new VariantAnnotationCalculator(species, assembly, mongoDatastore, this);
+//    }
 
-    @Override
-    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
-        return getVariantFunctionalScoreDBAdaptor(species, null);
-    }
 
-    @Override
-    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
-    }
+//    @Override
+//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
+//        return getVariantFunctionalScoreDBAdaptor(species, null);
+//    }
+//
+//    @Override
+//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
+//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+//        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
+//    }
 
 
     @Override
@@ -251,11 +263,11 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = new VariantAnnotationMongoDBAdaptor(species, assembly,
 //                mongoDatastore);
 //        variantAnnotationDBAdaptor.setGeneDBAdaptor(getGeneDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setRegulatoryRegionDBAdaptor(getRegulatoryRegionDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setVariationDBAdaptor(getVariationDBAdaptor(species, assembly));
+//        variantAnnotationDBAdaptor.setRegulationDBAdaptor(getRegulatoryRegionDBAdaptor(species, assembly));
+//        variantAnnotationDBAdaptor.setVariantDBAdaptor(getVariationDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setProteinDBAdaptor(getProteinDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setConservedRegionDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
+//        variantAnnotationDBAdaptor.setConservationDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setVariantFunctionalScoreDBAdaptor(getVariantFunctionalScoreDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setGenomeDBAdaptor(getGenomeDBAdaptor(species, assembly));
 //

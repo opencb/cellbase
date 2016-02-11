@@ -20,7 +20,7 @@ import org.bson.Document;
 
 import com.mongodb.QueryBuilder;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -47,6 +47,18 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         genomeSequenceCollection = mongoDataStore.getCollection("genome_sequence");
 
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");
+    }
+
+    public QueryResult first() {
+        return null;
+    }
+
+    public QueryResult count() {
+        return null;
+    }
+
+    public QueryResult stats() {
+        return null;
     }
 
     @Deprecated
@@ -140,7 +152,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                 chunkIds.add(chunkIdStr);
                 integerChunkIds.add(chunkId);
             }
-//            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosome()).and("_chunkIds").in(chunkIds);
+//            QueryBuilder builder = QueryBuilder.start("sequenceName").is(region.getChromosomeInfo()).and("_chunkIds").in(chunkIds);
             QueryBuilder builder = QueryBuilder.start("_chunkIds").in(chunkIds);
             /****/
             queries.add(new Document(builder.get().toMap()));
@@ -226,6 +238,14 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         sequence = sequence.replace("3", "G");
         sequence = sequence.replace("4", "C");
         return sequence;
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }

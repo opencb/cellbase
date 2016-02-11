@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
@@ -26,12 +28,10 @@ import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -67,6 +67,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
         return mongoDBCollection.count(bsonDocument);
@@ -85,7 +90,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult<Gene> get(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        options = addPrivateExcludeOptions(options);
+        return mongoDBCollection.find(bson, null, Gene.class, options);
     }
 
     @Override
@@ -131,6 +138,64 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return groupBy(bsonQuery, fields, "name", options);
     }
 
+    @Override
+    public QueryResult getRegulatoryElements(Query query, QueryOptions queryOptions) {
+        Bson bson = parseQuery(query);
+        QueryResult<Document> queryResult = null;
+        QueryResult<Document> gene = mongoDBCollection.find(bson, new QueryOptions(MongoDBCollection.INCLUDE, "chromosome,start,end"));
+        if (gene != null) {
+            MongoDBCollection regulatoryRegionCollection = mongoDataStore.getCollection("regulatory_region");
+            for (Document document : gene.getResult()) {
+//                String region = document.getString("chromosome") + ":"
+//                        + document.getInteger("start", 1) + "-" + document.getInteger("end", Integer.MAX_VALUE);
+//                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
+                Bson eq = Filters.eq("chromosome", document.getString("chromosome"));
+                Bson lte = Filters.lte("start", document.getInteger("end", Integer.MAX_VALUE));
+                Bson gte = Filters.gte("end", document.getInteger("start", 1));
+                queryResult = regulatoryRegionCollection.find(Filters.and(eq, lte, gte), queryOptions);
+            }
+        }
+        return queryResult;
+    }
+
+    @Override
+    public QueryResult getTfbs(Query query, QueryOptions queryOptions) {
+        Bson bsonQuery = parseQuery(query);
+        Bson match = Aggregates.match(bsonQuery);
+
+        // We parse user's exclude options, ONLY _id can be added if exists
+        Bson includeAndExclude;
+        Bson exclude = null;
+        if (queryOptions != null && queryOptions.containsKey("exclude")) {
+            List<String> stringList = queryOptions.getAsStringList("exclude");
+            if (stringList.contains("_id")) {
+                exclude = Aggregates.project(Projections.exclude("_id"));
+            }
+        }
+        if (exclude != null) {
+            includeAndExclude = Aggregates.project(Projections.fields(Projections.excludeId(), Projections.include("transcripts.tfbs")));
+        } else {
+            includeAndExclude = Aggregates.project(Projections.include("transcripts.tfbs"));
+        }
+
+        Bson unwind = Aggregates.unwind("$transcripts");
+        Bson unwind2 = Aggregates.unwind("$transcripts.tfbs");
+
+        // This project the three fields of Xref to the top of the object
+        Document document = new Document("tfName", "$transcripts.tfbs.tfName");
+        document.put("pwm", "$transcripts.tfbs.pwm");
+        document.put("chromosome", "$transcripts.tfbs.chromosome");
+        document.put("start", "$transcripts.tfbs.start");
+        document.put("end", "$transcripts.tfbs.end");
+        document.put("strand", "$transcripts.tfbs.strand");
+        document.put("relativeStart", "$transcripts.tfbs.relativeStart");
+        document.put("relativeEnd", "$transcripts.tfbs.relativeEnd");
+        document.put("score", "$transcripts.tfbs.score");
+        Bson project = Aggregates.project(document);
+
+        return mongoDBCollection.aggregate(Arrays.asList(match, includeAndExclude, unwind, unwind2, project), queryOptions);
+    }
+
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
@@ -159,4 +224,5 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             return new Document();
         }
     }
+
 }

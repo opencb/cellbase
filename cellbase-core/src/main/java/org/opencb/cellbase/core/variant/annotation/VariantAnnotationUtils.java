@@ -1,5 +1,9 @@
 package org.opencb.cellbase.core.variant.annotation;
 
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
+import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +100,7 @@ public class VariantAnnotationUtils {
     public static final String CDS_END_NF = "cds_end_NF";
 
     public static final Map<String, Map<String, Boolean>> IS_SYNONYMOUS_CODON = new HashMap<>();
+    public static final Map<String, String> SO_NAMES_CORRECTIONS = new HashMap<>();
     public static final Map<String, List<String>> A_TO_CODON = new HashMap<>();
     public static final Map<String, String> CODON_TO_A = new HashMap<>();
     public static final Map<Character, Character> COMPLEMENTARY_NT = new HashMap<>();
@@ -264,6 +269,8 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("feature_truncation", 2);
         SO_SEVERITY.put("intergenic_variant", 1);
 
+        SO_NAMES_CORRECTIONS.put("nc_transcript_variant", "non_coding_transcript_variant");
+        SO_NAMES_CORRECTIONS.put("non_coding_exon_variant", "non_coding_transcript_exon_variant");
     }
 
     public static Boolean isStopCodon(String codon) {
@@ -271,6 +278,24 @@ public class VariantAnnotationUtils {
             return true;
         }
         return false;
+    }
+
+    public static List<SequenceOntologyTerm> getSequenceOntologyTerms(Iterable<String> soNames) throws SOTermNotAvailableException {
+        List<SequenceOntologyTerm> sequenceOntologyTerms = new ArrayList<>();
+        for (String name : soNames) {
+            name = fixSONameIfNeeded(name);
+            sequenceOntologyTerms.add(newSequenceOntologyTerm(name));
+        }
+        return sequenceOntologyTerms;
+    }
+
+    private static String fixSONameIfNeeded(String name) {
+        String fixedName = SO_NAMES_CORRECTIONS.get(name);
+        return fixedName == null ? name : fixedName;
+    }
+
+    public static SequenceOntologyTerm newSequenceOntologyTerm(String name) throws SOTermNotAvailableException {
+        return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
 
 }

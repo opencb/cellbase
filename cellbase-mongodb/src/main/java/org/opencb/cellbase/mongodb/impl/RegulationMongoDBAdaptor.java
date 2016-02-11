@@ -21,7 +21,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
-import org.opencb.cellbase.core.common.GenericFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -36,7 +36,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<GenericFeature> {
+public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<RegulatoryFeature> {
 
     public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -47,7 +47,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
 
 
     @Override
-    public QueryResult<GenericFeature> next(Query query, QueryOptions options) {
+    public QueryResult<RegulatoryFeature> next(Query query, QueryOptions options) {
         return null;
     }
 
@@ -84,6 +84,11 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
         return mongoDBCollection.count(bsonDocument);
@@ -101,8 +106,10 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public QueryResult<GenericFeature> get(Query query, QueryOptions options) {
-        return null;
+    public QueryResult<RegulatoryFeature> get(Query query, QueryOptions options) {
+        Bson bson = parseQuery(query);
+        options = addPrivateExcludeOptions(options);
+        return mongoDBCollection.find(bson, null, RegulatoryFeature.class, options);
     }
 
     @Override
@@ -112,7 +119,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public Iterator<GenericFeature> iterator(Query query, QueryOptions options) {
+    public Iterator<RegulatoryFeature> iterator(Query query, QueryOptions options) {
         return null;
     }
 
@@ -129,13 +136,13 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(),
-                MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
+        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
 
         createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "featureType", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_CLASS.key(), "featureClass", andBsonList);
         createOrQuery(query, QueryParams.CELL_TYPES.key(), "cellTypes", andBsonList);
+        createOrQuery(query, QueryParams.SCORE.key(), "score", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

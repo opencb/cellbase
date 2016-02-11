@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-db.getCollection('drugbank').ensureIndex({'type': 1})
-db.getCollection('drugbank').ensureIndex({'action': 1})
-db.getCollection('drugbank').ensureIndex({'drug.xrefs.id': 1})
-db.getCollection('drugbank').ensureIndex({'drug.type': 1})
-db.getCollection('drugbank').ensureIndex({'drug.group': 1})
-db.getCollection('drugbank').ensureIndex({'drug.category': 1})
-db.getCollection('drugbank').ensureIndex({'partner.xrefs.id': 1})
-db.getCollection('drugbank').ensureIndex({'partner.essentiality': 1})
+db.getCollection('drugbank').createIndex({'type': 1})
+db.getCollection('drugbank').createIndex({'action': 1})
+db.getCollection('drugbank').createIndex({'drug.xrefs.id': 1})
+db.getCollection('drugbank').createIndex({'drug.type': 1})
+db.getCollection('drugbank').createIndex({'drug.group': 1})
+db.getCollection('drugbank').createIndex({'drug.category': 1})
+db.getCollection('drugbank').createIndex({'partner.xrefs.id': 1})
+db.getCollection('drugbank').createIndex({'partner.essentiality': 1})

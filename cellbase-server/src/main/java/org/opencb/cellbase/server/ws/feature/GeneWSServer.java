@@ -24,7 +24,6 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
-import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -42,6 +41,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -143,7 +143,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            queryOptions.put("include", Arrays.asList("id"));
+            queryOptions.put("include", Collections.singletonList("id"));
             return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -267,14 +267,30 @@ public class GeneWSServer extends GenericRestWSServer {
 //    }
 
     @GET
-    @Path("/{geneId}/tfbs")
+    @Path("/{geneId}/regulation")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
-    public Response getAllTfbs(@PathParam("geneId") String query) {
+    public Response getAllRegulatoryElements(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
-            TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = tfbsDBAdaptor.getAllByTargetGeneIdList(Splitter.on(",").splitToList(query), queryOptions);
-            return createOkResponse(queryResults);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            Query query = new Query(GeneDBAdaptor.QueryParams.ID.key(), geneId);
+            QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{geneId}/tfbs")
+    @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
+    public Response getAllTfbs(@PathParam("geneId") String geneId) {
+        try {
+            parseQueryParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            Query query = new Query(GeneDBAdaptor.QueryParams.ID.key(), geneId);
+            QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

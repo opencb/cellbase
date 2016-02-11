@@ -116,6 +116,13 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
         return null;
     }
 
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
 
     //    private List<Gene> executeQuery(Document query, List<String> excludeFields) {
 //        List<Gene> result = null;

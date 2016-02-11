@@ -19,8 +19,8 @@ package org.opencb.cellbase.mongodb.db.regulatory;
 import com.mongodb.BasicDBList;
 import com.mongodb.QueryBuilder;
 import org.bson.Document;
+import org.opencb.biodata.models.core.Position;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
@@ -260,4 +260,13 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
             return (id * chunksize) + chunksize - 1;
         }
     }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
+
 }

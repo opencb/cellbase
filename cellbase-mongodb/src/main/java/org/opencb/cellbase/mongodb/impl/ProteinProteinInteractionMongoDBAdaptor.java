@@ -60,6 +60,11 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
     }
 
     @Override
+    public QueryResult<Long> update(List objectList, String field) {
+        return null;
+    }
+
+    @Override
     public QueryResult<Long> count(Query query) {
         return mongoDBCollection.count(parseQuery(query));
     }

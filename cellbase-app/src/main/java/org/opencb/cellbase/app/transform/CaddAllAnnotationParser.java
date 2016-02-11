@@ -65,10 +65,8 @@ public class CaddAllAnnotationParser extends CellBaseParser {
                 }
             }
             serializer.serialize(caddVariant);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException | IOException e) {
             e.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
 

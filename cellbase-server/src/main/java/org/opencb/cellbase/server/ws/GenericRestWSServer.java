@@ -27,7 +27,6 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
-import org.opencb.cellbase.mongodb.db.MongoDBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.*;
@@ -41,7 +40,6 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -150,10 +148,8 @@ public class GenericRestWSServer implements IWSServer {
             }
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
-            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+//            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
             dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -191,7 +187,8 @@ public class GenericRestWSServer implements IWSServer {
         startTime = System.currentTimeMillis();
 
         query = new Query();
-        queryOptions = new QueryOptions();
+        // This needs to be an ArrayList since it may be added some extra fields later
+        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         queryResponse = new QueryResponse();
 
         checkPathParams(checkSpecies);
@@ -213,6 +210,10 @@ public class GenericRestWSServer implements IWSServer {
         if (version.equalsIgnoreCase("latest")) {
             version = cellBaseConfiguration.getVersion();
             logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
+        } else {
+            // FIXME this will only work when no database schemas are done, in version 3 and 4 this can raise some problems
+            // we set the version from the URL, this will decide which database is queried,
+            cellBaseConfiguration.setVersion(version);
         }
 
         if (!version.equalsIgnoreCase("v3") && !cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
@@ -227,15 +228,19 @@ public class GenericRestWSServer implements IWSServer {
 
         queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
 
-        if (exclude != null && !exclude.equals("")) {
-            queryOptions.put("exclude", new LinkedList<>(Splitter.on(",").splitToList(exclude)));
-        } else {
-            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
-                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
-                    : null);
+        if (exclude != null && !exclude.isEmpty()) {
+            // We add the user's 'exclude' fields to the default values _id and _chunks
+            if (queryOptions.containsKey("exclude")) {
+                queryOptions.getAsStringList("exclude").addAll(Splitter.on(",").splitToList(exclude));
+            }
         }
+//        else {
+//            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
+//                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
+//                    : null);
+//        }
 
-        if (include != null && !include.equals("")) {
+        if (include != null && !include.isEmpty()) {
             queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
         } else {
             queryOptions.put("include", (multivaluedMap.get("include") != null)

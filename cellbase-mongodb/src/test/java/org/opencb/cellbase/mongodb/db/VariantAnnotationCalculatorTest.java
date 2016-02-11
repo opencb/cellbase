@@ -40,7 +40,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 
-public class VariantAnnotationMongoDBAdaptorTest {
+public class VariantAnnotationCalculatorTest {
 
     @Ignore
     @Test

@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.opencb.cellbase.core.common.GenomicPositionScore;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -92,11 +92,12 @@ public class CaddScoreParser extends CellBaseParser {
 
                 if (!chromosome.equals(fields[0])) {
                     // both raw and scaled are serialized
-                    GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd_raw", rawValues);
-                    serializer.serialize(genomicPositionScore);
+                    GenomicScoreRegion<Long> genomicScoreRegion =
+                            new GenomicScoreRegion<>(fields[0], start, end, "cadd_raw", rawValues);
+                    serializer.serialize(genomicScoreRegion);
 
-                    genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd_scaled", scaledValues);
-                    serializer.serialize(genomicPositionScore);
+                    genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, end, "cadd_scaled", scaledValues);
+                    serializer.serialize(genomicScoreRegion);
 
                     chromosome = fields[0];
                     start = Integer.parseInt(fields[1]);
@@ -140,11 +141,11 @@ public class CaddScoreParser extends CellBaseParser {
 
                 if (counter == CHUNK_SIZE) {
                     // both raw and scaled are serialized
-                    GenomicPositionScore genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd_raw", rawValues);
-                    serializer.serialize(genomicPositionScore);
+                    GenomicScoreRegion genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, end, "cadd_raw", rawValues);
+                    serializer.serialize(genomicScoreRegion);
 
-                    genomicPositionScore = new GenomicPositionScore(fields[0], start, end, "cadd_scaled", scaledValues);
-                    serializer.serialize(genomicPositionScore);
+                    genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, end, "cadd_scaled", scaledValues);
+                    serializer.serialize(genomicScoreRegion);
 
                     start = end + 1;
                     end += CHUNK_SIZE;
@@ -157,12 +158,12 @@ public class CaddScoreParser extends CellBaseParser {
         }
 
         // Last chunks can be incomplete for both raw and scaled are serialized
-        GenomicPositionScore genomicPositionScore =
-                new GenomicPositionScore(fields[0], start, start + rawValues.size() - 1, "cadd_raw", rawValues);
-        serializer.serialize(genomicPositionScore);
+        GenomicScoreRegion<Long> genomicScoreRegion =
+                new GenomicScoreRegion<>(fields[0], start, start + rawValues.size() - 1, "cadd_raw", rawValues);
+        serializer.serialize(genomicScoreRegion);
 
-        genomicPositionScore = new GenomicPositionScore(fields[0], start, start + scaledValues.size() - 1, "cadd_scaled", scaledValues);
-        serializer.serialize(genomicPositionScore);
+        genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, start + scaledValues.size() - 1, "cadd_scaled", scaledValues);
+        serializer.serialize(genomicScoreRegion);
 
         serializer.close();
         bufferedReader.close();

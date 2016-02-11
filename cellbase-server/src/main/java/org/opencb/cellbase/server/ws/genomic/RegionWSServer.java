@@ -126,12 +126,10 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{chrRegionId}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the transcripts objects")
-    public Response getTranscriptByRegion(@PathParam("chrRegionId") String region,
-                                          @DefaultValue("") @QueryParam("biotype") String biotype) {
+    public Response getTranscriptByRegion(@PathParam("chrRegionId") String region, @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-
             query.put(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
             return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
@@ -292,7 +290,7 @@ public class RegionWSServer extends GenericRestWSServer {
         }
     }
 
-
+    // TODO: modify the code below to use clinicalDBAdaptor rather than variationDBAdaptor
 //    @GET
 //    @Path("/{chrRegionId}/phenotype")
 //    public Response getPhenotypeByRegion(@PathParam("chrRegionId") String query, @DefaultValue("") @QueryParam("source") String source) {
@@ -365,26 +363,6 @@ public class RegionWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-//    @GET
-//    @Path("/{chrRegionId}/tfbs")
-//    @ApiOperation(httpMethod = "GET", value = "Retrieves all the TFBS")
-//    public Response getTfByRegion(@PathParam("chrRegionId") String query) {
-//        try {
-//            parseQueryParams();
-//            TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory2.getTfbsDBAdaptor(this.species, this.assembly);
-//            List<Region> regions = Region.parseRegions(query);
-//
-//            if (hasHistogramQueryParam()) {
-//                List<IntervalFeatureFrequency> intervalList = tfbsDBAdaptor.getAllTfIntervalFrequencies(regions.get(0),
-//                        getHistogramIntervalSize());
-//                return generateResponse(query, intervalList);
-//            } else {
-//                return createOkResponse(tfbsDBAdaptor.getAllByRegionList(regions, queryOptions));
-//            }
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
 
     @GET
     @Path("/{chrRegionId}/regulatory")
@@ -399,6 +377,29 @@ public class RegionWSServer extends GenericRestWSServer {
             query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType);
             query.put(RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass);
             return createOkResponse(regRegionDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{chrRegionId}/tfbs")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the TFBS")
+    public Response getTfByRegion(@PathParam("chrRegionId") String regionId) {
+        try {
+            parseQueryParams();
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+
+            if (hasHistogramQueryParam()) {
+                Query query = new Query();
+                QueryResult intervalFrequencies =
+                        regulationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
+                return createOkResponse(intervalFrequencies);
+            } else {
+                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), regionId);
+                query.put("featureType", "TF_binding_site_motif");
+                return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -466,16 +467,14 @@ public class RegionWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-
     @GET
-    @Path("/{chrRegionId}/conservation2")
+    @Path("/{chrRegionId}/conservation")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores")
-    public Response conservation2(@PathParam("chrRegionId") String region) {
+    public Response conservation(@PathParam("chrRegionId") String region) {
         try {
             parseQueryParams();
-            ConservationDBAdaptor conservationDBAdaptor = dbAdaptorFactory2.getConservationDBAdaptor(this.species, this.assembly);
-            query.append(ConservationDBAdaptor.QueryParams.REGION.key(), region);
-            return createOkResponse(conservationDBAdaptor.nativeGet(query, queryOptions));
+            GenomeDBAdaptor conservationDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+            return createOkResponse(conservationDBAdaptor.getConservation(Region.parseRegions(region), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
