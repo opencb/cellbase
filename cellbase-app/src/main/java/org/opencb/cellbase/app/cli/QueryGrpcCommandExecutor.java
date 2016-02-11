@@ -92,9 +92,9 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
 //                case "protein":
 //                    executeProteinQuery(query, queryOptions, output);
 //                    break;
-//                case "regulatory_region":
-//                    executeRegulatoryRegionQuery(query, queryOptions, output);
-//                    break;
+                case "regulatory_region":
+                    executeRegulatoryRegionQuery(request, output);
+                    break;
                 case "transcript":
                     executeTranscriptQuery(request, output);
                     break;
@@ -171,6 +171,37 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         if (queryGrpcCommandOptions.count) {
             GenericServiceModel.LongResponse value = transcriptServiceBlockingStub.count(request);
             output.println(value);
+        }
+    }
+
+    private  void executeRegulatoryRegionQuery(GenericServiceModel.Request request, PrintStream output)
+            throws JsonProcessingException {
+        RegulatoryServiceGrpc.RegulatoryServiceBlockingStub regulatoryServiceBlockingStub = RegulatoryServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "info":
+                    Iterator<RegulatoryModel.Regulatory> regulatoryIterator = regulatoryServiceBlockingStub.get(request);
+                    while (regulatoryIterator.hasNext()) {
+                        RegulatoryModel.Regulatory next = regulatoryIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                case "first":
+                    RegulatoryModel.Regulatory first = regulatoryServiceBlockingStub.first(request);
+                    output.println(first.toString());
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (queryGrpcCommandOptions.count) {
+            GenericServiceModel.LongResponse value = regulatoryServiceBlockingStub.count(request);
+            output.println(value);
+        }
+        if (queryGrpcCommandOptions.distinct != null) {
+            GenericServiceModel.StringArrayResponse values = regulatoryServiceBlockingStub.distinct(request);
+            output.println(values);
         }
     }
 
