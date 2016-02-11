@@ -100,18 +100,18 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
     private RegulatoryModel.Regulatory convert(Document document) {
         RegulatoryModel.Regulatory.Builder builder = RegulatoryModel.Regulatory.newBuilder()
                 .setId((String) document.getOrDefault("id", ""))
-                .setChromosome(document.getString("chromosome"))
-                .setSource(document.getString("source"))
-                .setFeatureType(document.getString("featureType"))
-                .setStart(document.getInteger("start"))
-                .setEnd(document.getInteger("end"))
-                .setScore(document.getString("score"))
-                .setStrand(document.getString("strand"))
-                .setFrame(document.getString("frame"))
+                .setChromosome((String) document.getOrDefault("chromosome", ""))
+                .setSource((String) document.getOrDefault("source", ""))
+                .setFeatureType((String) document.getOrDefault("featureType", ""))
+                .setStart(document.getInteger("start", 0))
+                .setEnd(document.getInteger("end", 0))
+                .setScore((String) document.getOrDefault("score", ""))
+                .setStrand((String) document.getOrDefault("strand", ""))
+                .setFrame((String) document.getOrDefault("frame", ""))
                 .setItemRGB((String) document.getOrDefault("itemRGB", ""))
-                .setName(document.getString("name"))
+                .setName((String) document.getOrDefault("name", ""))
                 .setFeatureClass((String) document.getOrDefault("featureClass", ""))
-                .setAlias(document.getString("alias"));
+                .setAlias((String) document.getOrDefault("alias", ""));
         List<String> cellTypes = (List<String>) document.get("cellTypes");
         if (cellTypes != null) {
             builder.addAllCellTypes(cellTypes);
