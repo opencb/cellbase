@@ -25,7 +25,6 @@ import htsjdk.tribble.readers.LineIterator;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.apache.commons.lang.math.NumberUtils;
-import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
@@ -34,16 +33,15 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.variant.annotation.*;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.io.StringDataReader;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.opencb.commons.utils.FileUtils;
-import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -146,28 +144,30 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // parallel parsing of these lines
             if (input != null) {
                 DataReader dataReader = new StringDataReader(input);
-                List<ParallelTaskRunner.Task> variantAnnotatorTaskList = getTaskList();
+                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList();
                 DataWriter dataWriter = getDataWriter();
 
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
                 ParallelTaskRunner<String, Variant> runner =
-                        new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                        new ParallelTaskRunner<String, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
                 runner.run();
             } else {
                 // This will annotate the CellBase Variation collection
                 if (cellBaseAnnotation) {
                     dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
-                    Query query = new Query("$match",
-                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
-                    QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate");
+                    // TODO: enable this query in the parseQuery method within VariantMongoDBAdaptor
+//                    Query query = new Query("$match",
+//                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
+                    Query query = new Query();
+                    QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
                     DataReader dataReader =
                             new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
-                    List<ParallelTaskRunner.Task> variantAnnotatorTaskList = getTaskList();
+                    List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList();
                     DataWriter dataWriter = getDataWriter();
 
                     ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
                     ParallelTaskRunner<Variant, Variant> runner =
-                            new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                            new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
                     runner.run();
                 }
             }
@@ -193,33 +193,39 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.Task> getTaskList() throws IOException {
-        List<ParallelTaskRunner.Task> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList() throws IOException {
+        List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
-            if (cellBaseAnnotation) {
-                variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
-            } else {
-                switch (inputFormat) {
-                    case VCF:
-                        logger.info("Using HTSJDK to read variants.");
-                        FullVcfCodec codec = new FullVcfCodec();
-                        try (InputStream fileInputStream = input.toString().endsWith("gz")
-                                ? new GZIPInputStream(new FileInputStream(input.toFile()))
-                                : new FileInputStream(input.toFile())) {
-                            LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
-                            VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
-                            VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
-                            variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion, variantAnnotatorList));
-                        } catch (IOException e) {
-                            throw new IOException("Unable to read VCFHeader");
-                        }
-                        break;
-                    default:
-                        break;
-                }
+            switch (inputFormat) {
+                case VCF:
+                    logger.info("Using HTSJDK to read variants.");
+                    FullVcfCodec codec = new FullVcfCodec();
+                    try (InputStream fileInputStream = input.toString().endsWith("gz")
+                            ? new GZIPInputStream(new FileInputStream(input.toFile()))
+                            : new FileInputStream(input.toFile())) {
+                        LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
+                        VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
+                        VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
+                        variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion, variantAnnotatorList));
+                    } catch (IOException e) {
+                        throw new IOException("Unable to read VCFHeader");
+                    }
+                    break;
+                default:
+                    break;
             }
         }
+        return variantAnnotatorTaskList;
+    }
+
+    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList() throws IOException {
+        List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+        for (int i = 0; i < numThreads; i++) {
+            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
+            variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
+        }
+
         return variantAnnotatorTaskList;
     }
 

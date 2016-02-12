@@ -48,13 +48,13 @@ public class VariationDataReader implements DataReader<Variant> {
 
     public List<Variant> read(int batchSize) {
         List<Variant> listRecords = new ArrayList<>(batchSize);
-
-        List<Variant> variants = this.read();
-        int i = variants != null ? variants.size() : 0;
-        while ((i < batchSize) && (variants != null)) {
-            listRecords.addAll(variants);
-            variants = this.read();
-            i += variants.size();
+        for (int i = 0; i < batchSize; i++) {
+            List<Variant> variants = this.read();
+            if (variants != null) {
+                listRecords.addAll(variants);
+            } else {
+                return listRecords;
+            }
         }
 
         return listRecords;
