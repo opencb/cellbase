@@ -269,7 +269,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
 
-        createOrQuery(query, QueryParams.SO.key(), "annot.consequenceTypes.soTerms.soName", andBsonList);
+        createOrQuery(query, QueryParams.SO.key(), "annot.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
         createOrQuery(query, QueryParams.GENE.key(), "_geneIds", andBsonList);
         createPhenotypeQuery(query, andBsonList);
 

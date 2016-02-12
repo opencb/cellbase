@@ -19,7 +19,9 @@ package org.opencb.cellbase.app.cli;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.opencb.biodata.models.variant.protobuf.*;
 import org.opencb.cellbase.grpc.*;
+import org.opencb.cellbase.grpc.VariantProto;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -86,15 +88,15 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                 case "gene":
                     executeGeneQuery(request, output);
                     break;
-//                case "variation":
-//                    executeVariationQuery(query, queryOptions, output);
-//                    break;
+                case "variation":
+                    executeVariantQuery(request, output);
+                    break;
 //                case "protein":
 //                    executeProteinQuery(query, queryOptions, output);
 //                    break;
-//                case "regulatory_region":
-//                    executeRegulatoryRegionQuery(query, queryOptions, output);
-//                    break;
+                case "regulatory_region":
+                    executeRegulatoryRegionQuery(request, output);
+                    break;
                 case "transcript":
                     executeTranscriptQuery(request, output);
                     break;
@@ -171,6 +173,67 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         if (queryGrpcCommandOptions.count) {
             GenericServiceModel.LongResponse value = transcriptServiceBlockingStub.count(request);
             output.println(value);
+        }
+    }
+
+    private void executeVariantQuery(GenericServiceModel.Request request, PrintStream output) throws JsonProcessingException {
+        VariantServiceGrpc.VariantServiceBlockingStub variantServiceBlockingStub = VariantServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "info":
+                    Iterator<VariantProto.Variant> variantIterator = variantServiceBlockingStub.get(request);
+                    while (variantIterator.hasNext()) {
+                        VariantProto.Variant next = variantIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                case "first":
+                    VariantProto.Variant first = variantServiceBlockingStub.first(request);
+                    output.println(first.toString());
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (queryGrpcCommandOptions.count) {
+            GenericServiceModel.LongResponse value = variantServiceBlockingStub.count(request);
+            output.println(value);
+        }
+        if (queryGrpcCommandOptions.distinct != null) {
+            GenericServiceModel.StringArrayResponse values = variantServiceBlockingStub.distinct(request);
+            output.println(values);
+        }
+    }
+
+    private  void executeRegulatoryRegionQuery(GenericServiceModel.Request request, PrintStream output)
+            throws JsonProcessingException {
+        RegulatoryServiceGrpc.RegulatoryServiceBlockingStub regulatoryServiceBlockingStub = RegulatoryServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "info":
+                    Iterator<RegulatoryModel.Regulatory> regulatoryIterator = regulatoryServiceBlockingStub.get(request);
+                    while (regulatoryIterator.hasNext()) {
+                        RegulatoryModel.Regulatory next = regulatoryIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                case "first":
+                    RegulatoryModel.Regulatory first = regulatoryServiceBlockingStub.first(request);
+                    output.println(first.toString());
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (queryGrpcCommandOptions.count) {
+            GenericServiceModel.LongResponse value = regulatoryServiceBlockingStub.count(request);
+            output.println(value);
+        }
+        if (queryGrpcCommandOptions.distinct != null) {
+            GenericServiceModel.StringArrayResponse values = regulatoryServiceBlockingStub.distinct(request);
+            output.println(values);
         }
     }
 
