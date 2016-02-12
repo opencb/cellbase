@@ -35,6 +35,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
@@ -270,14 +271,20 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
 //        System.out.println("result = " + result);
 
-        int offset = (position % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE) - 1;
+        int offset = ((position-1) % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
         List<Score> scores = new ArrayList<>();
         for (Object object : result.getResult()) {
 //            System.out.println("object = " + object);
             Document dbObject = (Document) object;
 //            BasicDBList basicDBList = (BasicDBList) dbObject.get("values");
             ArrayList basicDBList = dbObject.get("values", ArrayList.class);
-            Long l1 = (Long) basicDBList.get(offset);
+
+            Long l1 = 0l; // TODO: delete
+            try { // TODO: delete
+                l1 = (Long) basicDBList.get(offset);
+            } catch (Exception e) {  // TODO: delete
+                int a = 1;  // TODO: delete
+            }
 //            System.out.println("l1 = " + l1);
             if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
                 float value = 0f;

@@ -165,7 +165,11 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         proteinVariantAnnotation.setAlternate(aaAlternate);
 //        proteinVariantAnnotation.setSubstitutionScores(getProteinSubstitutionScores(ensemblTranscriptId, position, aaAlternate));
         Query query = new Query("transcript", ensemblTranscriptId).append("position", position).append("aa", aaAlternate);
-        proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+        try {
+            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+        } catch (Exception e) {
+            int a = 1;
+        }
 
         QueryResult proteinVariantData = null;
         String shortAlternativeAa = aaShortName.get(aaAlternate);
