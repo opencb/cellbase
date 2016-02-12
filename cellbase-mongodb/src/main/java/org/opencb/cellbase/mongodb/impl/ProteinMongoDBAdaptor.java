@@ -128,9 +128,20 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                 }
                 scoreResult = new QueryResult<>(result.getId(), result.getDbTime(), result.getNumResults(),
                         result.getNumTotalResults(), result.getWarningMsg(), result.getErrorMsg(), scoreList);
+
+                return scoreResult;
+
+            // Return empty QueryResult if the query did not return any result
+            } else {
+
+                return result;
+
             }
         }
-        return scoreResult;
+
+        // Return null if no transcript id is provided
+        return null;
+
     }
 
 //    private List<Score> getProteinSubstitutionScores(String ensemblTranscriptId, int aaPosition, String alternativeAa) {
@@ -165,11 +176,14 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         proteinVariantAnnotation.setAlternate(aaAlternate);
 //        proteinVariantAnnotation.setSubstitutionScores(getProteinSubstitutionScores(ensemblTranscriptId, position, aaAlternate));
         Query query = new Query("transcript", ensemblTranscriptId).append("position", position).append("aa", aaAlternate);
-        try {
-            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
-        } catch (Exception e) {
-            int a = 1;
-        }
+//        try {
+//            if (ensemblTranscriptId.equals("ENST00000383037") || ensemblTranscriptId.equals("ENST00000428666")) {
+//                int a = 1;
+//            }
+        proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+//        } catch (Exception e) {
+//            int a = 1;
+//        }
 
         QueryResult proteinVariantData = null;
         String shortAlternativeAa = aaShortName.get(aaAlternate);
