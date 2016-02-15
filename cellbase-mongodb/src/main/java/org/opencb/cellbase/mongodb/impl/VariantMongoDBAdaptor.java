@@ -35,7 +35,6 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
@@ -271,7 +270,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
 //        System.out.println("result = " + result);
 
-        int offset = ((position-1) % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
+        int offset = ((position - 1) % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
         List<Score> scores = new ArrayList<>();
         for (Object object : result.getResult()) {
 //            System.out.println("object = " + object);

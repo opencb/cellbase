@@ -29,6 +29,8 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.VariantAnnotationDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
@@ -55,14 +57,15 @@ public class VariantAnnotationCalculatorTest {
             e.printStackTrace();
         }
 
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
+        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
+//        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("6:160990451:C:G")  // Should return drug interactions
-                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("6:160990451:C:G")  // Should return drug interactions
+//                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("22:16051722:TA:T")  // Should return drug interactions
 //                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 948813, "G", "C"))  // Should return drug interactions
@@ -71,8 +74,8 @@ public class VariantAnnotationCalculatorTest {
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 220603289, "-", "GTGT"))  // Should not return null
 //                , new QueryOptions()).get(0).getResult()).get(0));
-//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
-//                , new QueryOptions()).get(0).getResult()).get(0));
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
+                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16050612, "C", "G"))  // Should return any result
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("13", 45411941, "T", "C"))  // Should return any result
@@ -240,515 +243,515 @@ public class VariantAnnotationCalculatorTest {
     }
 
 //    @Ignore
-    @Test
-    public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
-
-//        URI uri = new URI("http", null, "172.22.68.41", 8080, "/cellbase/webservices/rest/", null, null);
-//        UriBuilder uriBuilder = UriBuilder.fromUri(uri).path("v3").path("hsapiens").path("genomic").path("variant").path("full_annotation");
-//        ClientConfig clientConfig = new ClientConfig();
-//        Client client = ClientBuilder.newClient(clientConfig);
-//        Invocation.Builder request = client.target(uriBuilder).request();
-//        Response response = request.post(Entity.entity("19:45411941:T:C", "text/plain"));
-//        String responseStr = response.readEntity(String.class);
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        ObjectReader objectReader = objectMapper.reader(objectMapper.getTypeFactory().constructParametricType(
-//                QueryResponse.class, objectMapper.getTypeFactory().constructParametricType(org.opencb.commons.datastore.core.QueryResult.class, VariantAnnotation.class)));
-//        objectReader.readValue(response);
-//        String result = objectMapper.writeValueAsString(response);
-//        int a = 1;
-
-//        CellbaseConfiguration config = new CellbaseConfiguration();
-        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-
-        try {
-            cellBaseConfiguration = CellBaseConfiguration
-                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-//        config.addSpeciesAlias("agambiae", "agambiae");
-//        config.addSpeciesAlias("hsapiens", "hsapiens");
-
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-
-        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
-//        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("agambiae", "GRCh37");
-
-        String line = null;
-
-
-        // Use ebi cellbase to test these
-        // TODO: check differences against Web VEP
-//        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
-//        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
-        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should return ENST 00000454360 splice donor
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 38679764, "-", "GATCTGAGAAGNGGAANANAAGGG"), new QueryOptions());  // should not return NPE
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("20", 44485953, "-", "ATCT"), new QueryOptions());  // should return ENSG00000101473 ENST00000217455 -       initiator_codon_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("15", 78224189, "-", "C"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 52718051, "-", "T"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 32893271, "A", "G"), new QueryOptions());  // should set functional description "In BC and ovarian cancer; unknown pathological significance; dbSNP:rs4987046" for ENST00000380152
-//        QueryResult queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), new QueryOptions());  // should return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), new QueryOptions());  // should return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 108309064, StringUtils.repeat("N",2252), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 124814698, StringUtils.repeat("N",1048), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 101786, "A", "-"), new QueryOptions());  // should return ENSG00000173876 ENST00000413237 -       intron_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 10103931, "A", "-"), new QueryOptions());  // should return ENSG00000224788 ENST00000429539 -       intron_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 10005684, "-", "AT"), new QueryOptions());  // should return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 696869, "C", "-"), new QueryOptions());  // should not return NPE
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 52365874, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 133761141, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 12172775, "G", "A"), new QueryOptions());  // should return 10      12172775        A       ENSG00000265653 ENST00000584402 -       non_coding_transcript_exon_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 10993859, "G", "C"), new QueryOptions());  // should return 10      10993859        C       ENSG00000229240 ENST00000598573 -       splice_region_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 172663, "G", "A"), new QueryOptions());  // should return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "-"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "ACTGGGCATCCT"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 220603289, "-", "GTGT"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 220603347, "CCTAGTA", "ACTACTA"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "-", "TG"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "T", "-"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 70008, "-", "TG"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 167385325, "A", "-"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "AAAAAA", "-"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 28942717, "NNN", "-"), new QueryOptions());  // should return ENST00000541932 stop_retained
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 45411941, "T", "C"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("9", 107366952, StringUtils.repeat("N",12577), "A"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("7", 23775220, "T", "A"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("5", 150407693, "T", "G"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("4", 48896023, "G", "C"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 12837706, "-", "CC"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "-", "AAAAAA"), new QueryOptions());  // should return stop_gained
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 115828861, "C", "G"), new QueryOptions());  // should return
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("16", 32859177, "C", "T"), new QueryOptions());  // should return stop_lost
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 13481174, "NN", "-"), new QueryOptions());  // should return stop_lost
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 153600596, "-", "C"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 10041199, "A", "T"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 102269845, "C", "A"), new QueryOptions());  // should
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("7", 158384306, "TGTG", "-"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("11", 118898436, "N", "-"), new QueryOptions());  // should return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "-", "T"), new QueryOptions());  // should return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 70612070, StringUtils.repeat("N",11725), "-"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 52718051, "-", "T"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 115412783, "-", "C"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 27793991, StringUtils.repeat("N",1907), "-"), new QueryOptions());  // should not return null
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 27436462, StringUtils.repeat("N",2), "-"), new QueryOptions());  // should not return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), new QueryOptions());  // should not return intergenic_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 3745870, "C", "T"), new QueryOptions());  // should not return null
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), new QueryOptions());  // should return initiator_codon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 28071285, "C", "G"), new QueryOptions());  // should return initiator_codon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), new QueryOptions());  // should return synonymous_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22274249, "-", "AGGAG"), new QueryOptions());  // should return downstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 51042514, "-", "G"), new QueryOptions());  // should return downstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), new QueryOptions());  // should
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 42537628, "T", "C"), new QueryOptions());  // should return downstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 27283340, "-", "C"), new QueryOptions());  // should return splice_region_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 31478142, "-", "G"), new QueryOptions());  // should return downstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 29684676, "G", "A"), new QueryOptions());  // should return downstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 40806293, "-", "TGTG"), new QueryOptions());  // should return downstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 39426437, StringUtils.repeat("N",20092), "-"), new QueryOptions());  // ¿should return 3_prime_UTR_variant? No if ENSEMBLs gtf was used
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 38069602, StringUtils.repeat("N",5799), "-"), new QueryOptions());  // should return 3_prime_UTR_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "A", "G"), new QueryOptions());  // should NOT return non_coding_transcript_exon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 35661560, "A", "G"), new QueryOptions());  // should return synonymous_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 31368158, StringUtils.repeat("N",4), "-"), new QueryOptions());  // should return donor_variant, intron_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 36587124, "-", "TA"), new QueryOptions());  // should return stop_retained_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 30824659, "-", "A"), new QueryOptions());  // should return stop_retained_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 26951215, "T", "C"), new QueryOptions());  // should NOT return null pointer exception
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17602839, "G", "A"), new QueryOptions());  // should NOT return null pointer exception
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20891503, "-", "CCTC"), new QueryOptions());  // should return missense_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 21991357, "T", "C"), new QueryOptions());  // should return missense_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 24717655, "C", "T"), new QueryOptions());  // should return missense_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 24314402, StringUtils.repeat("N",19399), "-"), new QueryOptions());  // should return 3prime_UTR_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22007661, "G", "A"), new QueryOptions());  // should
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 23476261, "G", "A"), new QueryOptions());  // should
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22517056, StringUtils.repeat("N",82585), "-"), new QueryOptions());  // should return 3prime_UTR_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 21388510, "A", "T"), new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22007634, "G", "A"), new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20891502, "-", "CCTC"), new QueryOptions());  // should return splice_region_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18387495, "G", "A"), new QueryOptions());  // should NOT return incomplete_teminator_codon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 19258045, StringUtils.repeat("N",27376), "-"), new QueryOptions());  // should return initiator_codon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18293502, "T", "C"), new QueryOptions());  // should return initiator_codon_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18620375, StringUtils.repeat("N",9436), "-"), new QueryOptions());  // should return transcript_ablation
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18997219, StringUtils.repeat("N",12521), "-"), new QueryOptions());  // should return transcript_ablation
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), new QueryOptions());  // should return
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 21982892, "C", "T"), new QueryOptions());  // should return a result
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16676212, "C", "T"), new QueryOptions());  // should include downstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22022872, "T", "C"), new QueryOptions());  // should not raise an error
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 179633644, "G", "C"), new QueryOptions());  // should include
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16123409, "-", "A"), new QueryOptions());  // should include
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 51234118, "C", "G"), new QueryOptions());  // should include upstream_gene_variant
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17280889, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16449075, "G", "A"), new QueryOptions());  // should not raise null exception
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287784, "C", "T"), new QueryOptions());  // should not raise null exception
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());  // should not raise null exception
-//          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "A"), new QueryOptions());  // missense_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17451081, "C", "T"), new QueryOptions());  // should not include stop_reained_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "T"), new QueryOptions());  // synonymous_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), new QueryOptions());  // should not include stop_reained_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17449238, "T", "C"), new QueryOptions());  // should not include stop_codon
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17071673, "A", "G"), new QueryOptions());  // 3_prime_UTR_variant
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16151191, "G", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16340551, "A", "G"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17039749, "C", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16101010, "TTA", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16062270, "G", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTACCAGCTACTTGGAAGGCTGAGGCAGGAGACTCTCTTGAACCTGGGAAGCCGAGGTTGCAGTGAGCTGGGCGACAGAGGGAGACTCCGTAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAAAGAAAACAGGAAGGAAAGAAGAAAGAGAAACTAGAAATAATACATGTAAAGTGGCTGATTCTATTATCCTTGTTATTCCTTCTCCATGGGGCTGTTGTCAGGATTAAGTGAGATAGAGCACAGGAAAGGGCTCTGGAAACGCCTGTAGGCTCTAACCCTGAGGCATGGGCCTGTGGCCAGGAGCTCTCCCATTGACCACCTCCGCTGCCTCTGCTCGCATCCCGCAGGCTCACCTGTTTCTCCGGCGTGGAAGAAGTAAGGCAGCTTAACGCCATCCTTGGCGGGGATCATCAGAGCTTCCTTGTAGTCATGCAAGGAGTGGCCAGTGTCCTCATGCCCCACCTGCAGGACAGAGAGGGACAGGGAGGTGTCTGCAGGGCGCATGCCTCACTTGCTGATGGCGCGCCCTGGAGCCTGTGCACACCCTTCCTTGTACCCTGCCACCACTGCCGGGACCTTTGTCACACAGCCTTTTAAGAATGACCAGGAGCAGGCCAGGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGGGAGGCCGAGGCAGGCAGATCACGAAGTCAGGAGATCGAGACCATCCTGGCTAACACAGTGAAACCCCA", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17668818, "C", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("8", 408515, "GAA", ""), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("3", 367747, "C", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("9", 214512, "C", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 19108198, "-", "GGTCTAGCATG"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("3L", 22024723, "G", "T"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2L", 37541199, "G", "A"), new QueryOptions());
-
+//    @Test
+//    public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 //
-//        // Use local gene collection to test these
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATG", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 1, "G", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATGTTACATGAAG", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 15, "GTTACATGAAG", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 21, "T", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 34, "-", "AAAT"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 42, "G", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 75, "T", "A"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 75, "TCTAAGGCCTC", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 25, "GATAGTTCCTA", "-"), new QueryOptions());
-//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 45, "GATAGGGTAC", "-"), new QueryOptions());
-
-
+////        URI uri = new URI("http", null, "172.22.68.41", 8080, "/cellbase/webservices/rest/", null, null);
+////        UriBuilder uriBuilder = UriBuilder.fromUri(uri).path("v3").path("hsapiens").path("genomic").path("variant").path("full_annotation");
+////        ClientConfig clientConfig = new ClientConfig();
+////        Client client = ClientBuilder.newClient(clientConfig);
+////        Invocation.Builder request = client.target(uriBuilder).request();
+////        Response response = request.post(Entity.entity("19:45411941:T:C", "text/plain"));
+////        String responseStr = response.readEntity(String.class);
+////        ObjectMapper objectMapper = new ObjectMapper();
+////        ObjectReader objectReader = objectMapper.reader(objectMapper.getTypeFactory().constructParametricType(
+////                QueryResponse.class, objectMapper.getTypeFactory().constructParametricType(org.opencb.commons.datastore.core.QueryResult.class, VariantAnnotation.class)));
+////        objectReader.readValue(response);
+////        String result = objectMapper.writeValueAsString(response);
+////        int a = 1;
+//
+////        CellbaseConfiguration config = new CellbaseConfiguration();
+//        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+//
 //        try {
-//            br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get("/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf"))));
+//            cellBaseConfiguration = CellBaseConfiguration
+//                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-
-        /**
-         * Calculates annotation for vcf file variants, loads vep annotations, compares batches and writes results
-         */
-//        String DIROUT = "/home/fjlopez/tmp/";
-        String DIROUT = "/homes/fjlopez/tmp/";
-        List<String> VCFS = new ArrayList<>();
-//        VCFS.add("/tmp/test.vcf");
-//        VCFS.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr13.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr14.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr15.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr16.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr17.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr18.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr19.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr20.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr2.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr3.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr4.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr5.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr6.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr7.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr8.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr9.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-//        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
-
-        List<String> VEPFILENAMES = new ArrayList<>();
-//        VEPFILENAMES.add("/tmp/test.txt");
-//        VEPFILENAMES.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr13.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr14.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr15.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr16.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr17.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr18.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr19.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr20.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr2.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr3.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr4.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr5.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr6.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr7.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr8.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr9.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-//        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
-
-
-
-        Set<AnnotationComparisonObject> uvaAnnotationSet = new HashSet<>();
-        Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
-        int vepFileIndex = 0;
-        int nNonRegulatoryAnnotations = 0;
-        int nVariants = 0;
-        for (String vcfFilename : VCFS) {
-            System.out.println("Processing "+vcfFilename+" lines...");
-            VcfRawReader vcfReader = new VcfRawReader(vcfFilename);
-            File file = new File(VEPFILENAMES.get(vepFileIndex));
-            RandomAccessFile raf = new RandomAccessFile(file, "r");
-            if (vcfReader.open()) {
-                vcfReader.pre();
-                skipVepFileHeader(raf);
-                int nLines = countLines(vcfFilename);
-                int nReadVariants;
-                int lineCounter=0;
-                do {
-                    nReadVariants = getVcfAnnotationBatch(vcfReader, variantAnnotationDBAdaptor, uvaAnnotationSet);
-                    nNonRegulatoryAnnotations += getVepAnnotationBatch(raf, nReadVariants, vepAnnotationSet);
-                    nVariants += nReadVariants;
-                    compareAndWrite(uvaAnnotationSet, vepAnnotationSet, lineCounter, nLines, nNonRegulatoryAnnotations,
-                            nVariants, DIROUT);
-                    lineCounter += nReadVariants;
-                    System.out.print(lineCounter+"/"+nLines+" - non-regulatory annotations: "+nNonRegulatoryAnnotations+"\r");
-                } while (nReadVariants > 0);
-                vcfReader.post();
-                vcfReader.close();
-                raf.close();
-            }
-            vepFileIndex++;
-        }
-    }
-
-    private void skipVepFileHeader(RandomAccessFile raf) throws IOException {
-        String line;
-        long pos;
-        do {
-            pos = raf.getFilePointer();
-            line = raf.readLine();
-        }while(line.startsWith("#"));
-        raf.seek(pos);
-    }
-
-    private int getVcfAnnotationBatch(VcfRawReader vcfReader, VariantAnnotationDBAdaptor variantAnnotationDBAdaptor,
-                                      Set<AnnotationComparisonObject> uvaAnnotationSet) {
-        QueryResult queryResult = null;
-        String pos;
-        String ref;
-        String cellbaseRef;
-        String alt;
-        String cellbaseAlt;
-        String SoNameToTest;
-
-        List<VcfRecord> vcfRecordList = vcfReader.read(1000);
-        int ensemblPos;
-        int processedVariants = 0;
-
-        for (VcfRecord vcfRecord : vcfRecordList) {
-//            boolean isSnv = false;
-            // Short deletion
-            if (vcfRecord.getReference().length() > 1) {
-                ref = vcfRecord.getReference().substring(1);
-                cellbaseRef = vcfRecord.getReference().substring(1);
-                alt = "-";
-                cellbaseAlt = "";
-                ensemblPos = vcfRecord.getPosition() + 1;
-                int end = getEndFromInfoField(vcfRecord);
-                if(end==-1) {
-                    if (ref.length() > 1) {
-                        pos = (vcfRecord.getPosition() + 1) + "-" + (vcfRecord.getPosition() + ref.length());
-                    } else {
-                        pos = Integer.toString(vcfRecord.getPosition() + 1);
-                    }
-                } else {
-                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
-                }
-                // Alternate length may be > 1 if it contains <DEL>
-            } else if (vcfRecord.getAlternate().length() > 1) {
-                // Large deletion
-                if (vcfRecord.getAlternate().equals("<DEL>")) {
-                    ensemblPos = vcfRecord.getPosition() + 1;
-                    int end = getEndFromInfoField(vcfRecord);
-                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
-                    ref = StringUtils.repeat("N", end - vcfRecord.getPosition());
-                    cellbaseRef = StringUtils.repeat("N", end - vcfRecord.getPosition());
-                    alt = "-";
-                    cellbaseAlt = "";
-                    // Short insertion
-                } else {
-                    ensemblPos = vcfRecord.getPosition() + 1;
-                    ref = "-";
-                    cellbaseRef = "";
-                    alt = vcfRecord.getAlternate().substring(1);
-                    cellbaseAlt = vcfRecord.getAlternate().substring(1);
-                    pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + 1);
-                }
-                // SNV
-            } else {
-                ref = vcfRecord.getReference();
-                cellbaseRef = vcfRecord.getReference();
-                alt = vcfRecord.getAlternate();
-                cellbaseAlt = vcfRecord.getAlternate();
-                ensemblPos = vcfRecord.getPosition();
-                pos = Integer.toString(ensemblPos);
-//                isSnv = true;
-            }
-            // TODO: Remove this if as refactoring implements consequence types for other variant types
-//            if(isSnv) {
-                processedVariants++;
-                try {
-                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt), new QueryOptions());
-                } catch (Exception e) {
-                    System.out.println("new Variant = " + new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt));
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-
-                int i;
-                List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
-                for (i = 0; i < consequenceTypeList.size(); i++) {
-                    for (SequenceOntologyTerm soTerm : consequenceTypeList.get(i).getSequenceOntologyTerms()) {
-                        if (soTerm.getName().equals("2KB_upstream_gene_variant")) {
-                            SoNameToTest = "upstream_gene_variant";
-                        } else if (soTerm.getName().equals("2KB_downstream_gene_variant")) {
-                            SoNameToTest = "downstream_gene_variant";
-                        } else {
-                            SoNameToTest = soTerm.getName();
-                        }
-                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
-                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
-                                consequenceTypeList.get(i).getEnsemblTranscriptId() == null ? "-" : consequenceTypeList.get(i).getEnsemblTranscriptId(),
-                                consequenceTypeList.get(i).getBiotype() == null ? "-" : consequenceTypeList.get(i).getBiotype(),
-                                SoNameToTest));
-                    }
-                }
-            }
+//
+////        config.addSpeciesAlias("agambiae", "agambiae");
+////        config.addSpeciesAlias("hsapiens", "hsapiens");
+//
+//        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+//
+//        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("hsapiens", "GRCh37");
+////        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("agambiae", "GRCh37");
+//
+//        String line = null;
+//
+//
+//        // Use ebi cellbase to test these
+//        // TODO: check differences against Web VEP
+////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
+////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should return ENST 00000454360 splice donor
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 38679764, "-", "GATCTGAGAAGNGGAANANAAGGG"), new QueryOptions());  // should not return NPE
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("20", 44485953, "-", "ATCT"), new QueryOptions());  // should return ENSG00000101473 ENST00000217455 -       initiator_codon_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("15", 78224189, "-", "C"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 52718051, "-", "T"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 32893271, "A", "G"), new QueryOptions());  // should set functional description "In BC and ovarian cancer; unknown pathological significance; dbSNP:rs4987046" for ENST00000380152
+////        QueryResult queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 108309064, StringUtils.repeat("N",2252), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 124814698, StringUtils.repeat("N",1048), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 101786, "A", "-"), new QueryOptions());  // should return ENSG00000173876 ENST00000413237 -       intron_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 10103931, "A", "-"), new QueryOptions());  // should return ENSG00000224788 ENST00000429539 -       intron_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 10005684, "-", "AT"), new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 696869, "C", "-"), new QueryOptions());  // should not return NPE
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 52365874, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 133761141, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 12172775, "G", "A"), new QueryOptions());  // should return 10      12172775        A       ENSG00000265653 ENST00000584402 -       non_coding_transcript_exon_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 10993859, "G", "C"), new QueryOptions());  // should return 10      10993859        C       ENSG00000229240 ENST00000598573 -       splice_region_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariantOld(new Variant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 172663, "G", "A"), new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "-"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "ACTGGGCATCCT"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 220603289, "-", "GTGT"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 220603347, "CCTAGTA", "ACTACTA"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "-", "TG"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "T", "-"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 70008, "-", "TG"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 167385325, "A", "-"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "AAAAAA", "-"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 28942717, "NNN", "-"), new QueryOptions());  // should return ENST00000541932 stop_retained
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 45411941, "T", "C"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("9", 107366952, StringUtils.repeat("N",12577), "A"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("7", 23775220, "T", "A"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("5", 150407693, "T", "G"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("4", 48896023, "G", "C"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 12837706, "-", "CC"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "-", "AAAAAA"), new QueryOptions());  // should return stop_gained
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 115828861, "C", "G"), new QueryOptions());  // should return
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("16", 32859177, "C", "T"), new QueryOptions());  // should return stop_lost
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 13481174, "NN", "-"), new QueryOptions());  // should return stop_lost
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 153600596, "-", "C"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 10041199, "A", "T"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 102269845, "C", "A"), new QueryOptions());  // should
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("7", 158384306, "TGTG", "-"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("11", 118898436, "N", "-"), new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "-", "T"), new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 70612070, StringUtils.repeat("N",11725), "-"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("13", 52718051, "-", "T"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 115412783, "-", "C"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 27793991, StringUtils.repeat("N",1907), "-"), new QueryOptions());  // should not return null
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 27436462, StringUtils.repeat("N",2), "-"), new QueryOptions());  // should not return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), new QueryOptions());  // should not return intergenic_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 3745870, "C", "T"), new QueryOptions());  // should not return null
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 28071285, "C", "G"), new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), new QueryOptions());  // should return synonymous_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22274249, "-", "AGGAG"), new QueryOptions());  // should return downstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 51042514, "-", "G"), new QueryOptions());  // should return downstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), new QueryOptions());  // should
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 42537628, "T", "C"), new QueryOptions());  // should return downstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 27283340, "-", "C"), new QueryOptions());  // should return splice_region_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 31478142, "-", "G"), new QueryOptions());  // should return downstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 29684676, "G", "A"), new QueryOptions());  // should return downstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 40806293, "-", "TGTG"), new QueryOptions());  // should return downstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 39426437, StringUtils.repeat("N",20092), "-"), new QueryOptions());  // ¿should return 3_prime_UTR_variant? No if ENSEMBLs gtf was used
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 38069602, StringUtils.repeat("N",5799), "-"), new QueryOptions());  // should return 3_prime_UTR_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "A", "G"), new QueryOptions());  // should NOT return non_coding_transcript_exon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 35661560, "A", "G"), new QueryOptions());  // should return synonymous_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 31368158, StringUtils.repeat("N",4), "-"), new QueryOptions());  // should return donor_variant, intron_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 36587124, "-", "TA"), new QueryOptions());  // should return stop_retained_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 30824659, "-", "A"), new QueryOptions());  // should return stop_retained_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 26951215, "T", "C"), new QueryOptions());  // should NOT return null pointer exception
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17602839, "G", "A"), new QueryOptions());  // should NOT return null pointer exception
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20891503, "-", "CCTC"), new QueryOptions());  // should return missense_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 21991357, "T", "C"), new QueryOptions());  // should return missense_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 24717655, "C", "T"), new QueryOptions());  // should return missense_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 24314402, StringUtils.repeat("N",19399), "-"), new QueryOptions());  // should return 3prime_UTR_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22007661, "G", "A"), new QueryOptions());  // should
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 23476261, "G", "A"), new QueryOptions());  // should
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22517056, StringUtils.repeat("N",82585), "-"), new QueryOptions());  // should return 3prime_UTR_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 21388510, "A", "T"), new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22007634, "G", "A"), new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20891502, "-", "CCTC"), new QueryOptions());  // should return splice_region_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18387495, "G", "A"), new QueryOptions());  // should NOT return incomplete_teminator_codon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 19258045, StringUtils.repeat("N",27376), "-"), new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18293502, "T", "C"), new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18620375, StringUtils.repeat("N",9436), "-"), new QueryOptions());  // should return transcript_ablation
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18997219, StringUtils.repeat("N",12521), "-"), new QueryOptions());  // should return transcript_ablation
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), new QueryOptions());  // should return
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 21982892, "C", "T"), new QueryOptions());  // should return a result
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16676212, "C", "T"), new QueryOptions());  // should include downstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 22022872, "T", "C"), new QueryOptions());  // should not raise an error
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 179633644, "G", "C"), new QueryOptions());  // should include
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16123409, "-", "A"), new QueryOptions());  // should include
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 51234118, "C", "G"), new QueryOptions());  // should include upstream_gene_variant
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17280889, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16449075, "G", "A"), new QueryOptions());  // should not raise null exception
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287784, "C", "T"), new QueryOptions());  // should not raise null exception
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());  // should not raise null exception
+////          variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "A"), new QueryOptions());  // missense_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17451081, "C", "T"), new QueryOptions());  // should not include stop_reained_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "T"), new QueryOptions());  // synonymous_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), new QueryOptions());  // should not include stop_reained_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17449238, "T", "C"), new QueryOptions());  // should not include stop_codon
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17071673, "A", "G"), new QueryOptions());  // 3_prime_UTR_variant
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16151191, "G", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16340551, "A", "G"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17039749, "C", "A"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16101010, "TTA", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16062270, "G", "T"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTACCAGCTACTTGGAAGGCTGAGGCAGGAGACTCTCTTGAACCTGGGAAGCCGAGGTTGCAGTGAGCTGGGCGACAGAGGGAGACTCCGTAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAAAGAAAACAGGAAGGAAAGAAGAAAGAGAAACTAGAAATAATACATGTAAAGTGGCTGATTCTATTATCCTTGTTATTCCTTCTCCATGGGGCTGTTGTCAGGATTAAGTGAGATAGAGCACAGGAAAGGGCTCTGGAAACGCCTGTAGGCTCTAACCCTGAGGCATGGGCCTGTGGCCAGGAGCTCTCCCATTGACCACCTCCGCTGCCTCTGCTCGCATCCCGCAGGCTCACCTGTTTCTCCGGCGTGGAAGAAGTAAGGCAGCTTAACGCCATCCTTGGCGGGGATCATCAGAGCTTCCTTGTAGTCATGCAAGGAGTGGCCAGTGTCCTCATGCCCCACCTGCAGGACAGAGAGGGACAGGGAGGTGTCTGCAGGGCGCATGCCTCACTTGCTGATGGCGCGCCCTGGAGCCTGTGCACACCCTTCCTTGTACCCTGCCACCACTGCCGGGACCTTTGTCACACAGCCTTTTAAGAATGACCAGGAGCAGGCCAGGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGGGAGGCCGAGGCAGGCAGATCACGAAGTCAGGAGATCGAGACCATCCTGGCTAACACAGTGAAACCCCA", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17668818, "C", "A"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("8", 408515, "GAA", ""), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("3", 367747, "C", "T"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("9", 214512, "C", "A"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("14", 19108198, "-", "GGTCTAGCATG"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("3L", 22024723, "G", "T"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2L", 37541199, "G", "A"), new QueryOptions());
+//
+////
+////        // Use local gene collection to test these
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATG", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 1, "G", "A"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATGTTACATGAAG", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 15, "GTTACATGAAG", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 21, "T", "A"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 34, "-", "AAAT"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 42, "G", "A"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 75, "T", "A"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 75, "TCTAAGGCCTC", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 25, "GATAGTTCCTA", "-"), new QueryOptions());
+////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("1", 45, "GATAGGGTAC", "-"), new QueryOptions());
+//
+//
+////        try {
+////            br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get("/tmp/22.wgs.integrated_phase1_v3.20101123.snps_indels_sv.sites.vcf"))));
+////        } catch (IOException e) {
+////            e.printStackTrace();
+////        }
+//
+//        /**
+//         * Calculates annotation for vcf file variants, loads vep annotations, compares batches and writes results
+//         */
+////        String DIROUT = "/home/fjlopez/tmp/";
+//        String DIROUT = "/homes/fjlopez/tmp/";
+//        List<String> VCFS = new ArrayList<>();
+////        VCFS.add("/tmp/test.vcf");
+////        VCFS.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr13.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr14.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr15.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr16.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr17.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr18.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr19.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr20.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr2.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr3.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr4.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr5.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr6.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr7.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr8.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr9.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+//
+//        List<String> VEPFILENAMES = new ArrayList<>();
+////        VEPFILENAMES.add("/tmp/test.txt");
+////        VEPFILENAMES.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr13.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr14.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr15.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr16.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr17.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr18.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr19.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr1.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr20.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr21.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr2.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr3.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr4.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr5.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr6.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr7.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr8.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr9.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+//
+//
+//
+//        Set<AnnotationComparisonObject> uvaAnnotationSet = new HashSet<>();
+//        Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
+//        int vepFileIndex = 0;
+//        int nNonRegulatoryAnnotations = 0;
+//        int nVariants = 0;
+//        for (String vcfFilename : VCFS) {
+//            System.out.println("Processing "+vcfFilename+" lines...");
+//            VcfRawReader vcfReader = new VcfRawReader(vcfFilename);
+//            File file = new File(VEPFILENAMES.get(vepFileIndex));
+//            RandomAccessFile raf = new RandomAccessFile(file, "r");
+//            if (vcfReader.open()) {
+//                vcfReader.pre();
+//                skipVepFileHeader(raf);
+//                int nLines = countLines(vcfFilename);
+//                int nReadVariants;
+//                int lineCounter=0;
+//                do {
+//                    nReadVariants = getVcfAnnotationBatch(vcfReader, variantAnnotationDBAdaptor, uvaAnnotationSet);
+//                    nNonRegulatoryAnnotations += getVepAnnotationBatch(raf, nReadVariants, vepAnnotationSet);
+//                    nVariants += nReadVariants;
+//                    compareAndWrite(uvaAnnotationSet, vepAnnotationSet, lineCounter, nLines, nNonRegulatoryAnnotations,
+//                            nVariants, DIROUT);
+//                    lineCounter += nReadVariants;
+//                    System.out.print(lineCounter+"/"+nLines+" - non-regulatory annotations: "+nNonRegulatoryAnnotations+"\r");
+//                } while (nReadVariants > 0);
+//                vcfReader.post();
+//                vcfReader.close();
+//                raf.close();
+//            }
+//            vepFileIndex++;
 //        }
-        return processedVariants;
-//        return vcfRecordList.size();
-    }
-
-    private int getEndFromInfoField(VcfRecord vcfRecord) {
-        String[] infoFields = vcfRecord.getInfo().split(";");
-        int i = 0;
-        while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
-            i++;
-        }
-
-        if(i<infoFields.length) {
-            return Integer.parseInt(infoFields[i].split("=")[1]);
-        } else {
-            return -1;
-        }
-    }
-
-    private int getVepAnnotationBatch(RandomAccessFile raf, int nVariantsToRead,
-                                       Set<AnnotationComparisonObject> vepAnnotationSet) throws IOException {
-        /**
-         * Loads VEP annotation
-         */
-        String newLine;
-        int nNonRegulatoryAnnotations = 0;
-        int nReadVariants = 0;
-        String previousChr = "";
-        String previousPosition = "";
-        String previousAlt = "";
-        String alt;
-        long filePointer=0;
-
-        if(nVariantsToRead>0) {
-            while (((newLine = raf.readLine()) != null) && nReadVariants <= nVariantsToRead) {
-                String[] lineFields = newLine.split("\t");
-                String[] coordinatesParts = lineFields[1].split(":");
-                if (lineFields[2].equals("deletion")) {
-                    alt = "-";
-                } else {
-                    alt = lineFields[2];
-                }
-                // TODO: Remove this if as refactoring implements consequence types for other variant types
-//                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
-                    if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
-                            !previousAlt.equals(alt)) {
-                        nReadVariants++;
-                    }
-                    if (nReadVariants <= nVariantsToRead) {
-                        for (String SOname : lineFields[6].split(",")) {
-                            if (SOname.equals("nc_transcript_variant")) {
-                                SOname = "non_coding_transcript_variant";
-                            }
-                            if (!SOname.equals("regulatory_region_variant")) {
-                                nNonRegulatoryAnnotations++;
-                            }
-                            vepAnnotationSet.add(new AnnotationComparisonObject(coordinatesParts[0], coordinatesParts[1], alt, lineFields[3],
-                                    lineFields[4], SOname));
-                        }
-                        previousChr = coordinatesParts[0];
-                        previousPosition = coordinatesParts[1];
-                        previousAlt = alt;
-                        filePointer = raf.getFilePointer();
-                    }
+//    }
+//
+//    private void skipVepFileHeader(RandomAccessFile raf) throws IOException {
+//        String line;
+//        long pos;
+//        do {
+//            pos = raf.getFilePointer();
+//            line = raf.readLine();
+//        }while(line.startsWith("#"));
+//        raf.seek(pos);
+//    }
+//
+//    private int getVcfAnnotationBatch(VcfRawReader vcfReader, VariantAnnotationDBAdaptor variantAnnotationDBAdaptor,
+//                                      Set<AnnotationComparisonObject> uvaAnnotationSet) {
+//        QueryResult queryResult = null;
+//        String pos;
+//        String ref;
+//        String cellbaseRef;
+//        String alt;
+//        String cellbaseAlt;
+//        String SoNameToTest;
+//
+//        List<VcfRecord> vcfRecordList = vcfReader.read(1000);
+//        int ensemblPos;
+//        int processedVariants = 0;
+//
+//        for (VcfRecord vcfRecord : vcfRecordList) {
+////            boolean isSnv = false;
+//            // Short deletion
+//            if (vcfRecord.getReference().length() > 1) {
+//                ref = vcfRecord.getReference().substring(1);
+//                cellbaseRef = vcfRecord.getReference().substring(1);
+//                alt = "-";
+//                cellbaseAlt = "";
+//                ensemblPos = vcfRecord.getPosition() + 1;
+//                int end = getEndFromInfoField(vcfRecord);
+//                if(end==-1) {
+//                    if (ref.length() > 1) {
+//                        pos = (vcfRecord.getPosition() + 1) + "-" + (vcfRecord.getPosition() + ref.length());
+//                    } else {
+//                        pos = Integer.toString(vcfRecord.getPosition() + 1);
+//                    }
+//                } else {
+//                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
 //                }
-            }
-
-            raf.seek(filePointer);
-        }
-
-        return nNonRegulatoryAnnotations;
-    }
-
-    private void compareAndWrite(Set<AnnotationComparisonObject> uvaAnnotationSet,
-                                 Set<AnnotationComparisonObject> vepAnnotationSet, int lineCounter, int nLines,
-                                 int nNonRegulatoryAnnotations, int nVariants, String dirout) throws IOException {
-
-        /**
-         * Compare both annotation sets and get UVA specific annotations
-         */
-        BufferedWriter bw = Files.newBufferedWriter(Paths.get(dirout+"/uva.specific.txt"), Charset.defaultCharset());
-        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
-        Set<AnnotationComparisonObject> uvaAnnotationSetBck = new HashSet<>(uvaAnnotationSet);
-        uvaAnnotationSet.removeAll(vepAnnotationSet);
-        List<AnnotationComparisonObject> uvaSpecificAnnotationList = new ArrayList(uvaAnnotationSet);
-        Collections.sort(uvaSpecificAnnotationList, new AnnotationComparisonObjectComparator());
-        for(AnnotationComparisonObject comparisonObject : uvaSpecificAnnotationList) {
-            if(comparisonObject.getSOname().equals("regulatory_region_variant")) {
-                bw.write(comparisonObject.toString());
-            }
-        }
-        bw.close();
-
-        /**
-         * Compare both annotation sets and get VEP specific annotations
-         */
-        bw = Files.newBufferedWriter(Paths.get(dirout+"vep.specific.txt"), Charset.defaultCharset());
-        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
-        vepAnnotationSet.removeAll(uvaAnnotationSetBck);
-        List<AnnotationComparisonObject> vepSpecificAnnotationList = new ArrayList<>(vepAnnotationSet);
-        Collections.sort(vepSpecificAnnotationList, new AnnotationComparisonObjectComparator());
-        for(AnnotationComparisonObject comparisonObject : vepSpecificAnnotationList) {
-            bw.write(comparisonObject.toString());
-        }
-        bw.write("\n\n\n");
-        bw.write(lineCounter+"/"+nLines+"\n");
-        bw.write("# processed variants: "+nVariants+"\n");
-        bw.write("# non-regulatory annotations: "+nNonRegulatoryAnnotations+"\n");
-
-        bw.close();
-    }
-
+//                // Alternate length may be > 1 if it contains <DEL>
+//            } else if (vcfRecord.getAlternate().length() > 1) {
+//                // Large deletion
+//                if (vcfRecord.getAlternate().equals("<DEL>")) {
+//                    ensemblPos = vcfRecord.getPosition() + 1;
+//                    int end = getEndFromInfoField(vcfRecord);
+//                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
+//                    ref = StringUtils.repeat("N", end - vcfRecord.getPosition());
+//                    cellbaseRef = StringUtils.repeat("N", end - vcfRecord.getPosition());
+//                    alt = "-";
+//                    cellbaseAlt = "";
+//                    // Short insertion
+//                } else {
+//                    ensemblPos = vcfRecord.getPosition() + 1;
+//                    ref = "-";
+//                    cellbaseRef = "";
+//                    alt = vcfRecord.getAlternate().substring(1);
+//                    cellbaseAlt = vcfRecord.getAlternate().substring(1);
+//                    pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + 1);
+//                }
+//                // SNV
+//            } else {
+//                ref = vcfRecord.getReference();
+//                cellbaseRef = vcfRecord.getReference();
+//                alt = vcfRecord.getAlternate();
+//                cellbaseAlt = vcfRecord.getAlternate();
+//                ensemblPos = vcfRecord.getPosition();
+//                pos = Integer.toString(ensemblPos);
+////                isSnv = true;
+//            }
+//            // TODO: Remove this if as refactoring implements consequence types for other variant types
+////            if(isSnv) {
+//                processedVariants++;
+//                try {
+//                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt), new QueryOptions());
+//                } catch (Exception e) {
+//                    System.out.println("new Variant = " + new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt));
+//                    e.printStackTrace();
+//                    System.exit(1);
+//                }
+//
+//                int i;
+//                List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
+//                for (i = 0; i < consequenceTypeList.size(); i++) {
+//                    for (SequenceOntologyTerm soTerm : consequenceTypeList.get(i).getSequenceOntologyTerms()) {
+//                        if (soTerm.getName().equals("2KB_upstream_gene_variant")) {
+//                            SoNameToTest = "upstream_gene_variant";
+//                        } else if (soTerm.getName().equals("2KB_downstream_gene_variant")) {
+//                            SoNameToTest = "downstream_gene_variant";
+//                        } else {
+//                            SoNameToTest = soTerm.getName();
+//                        }
+//                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
+//                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
+//                                consequenceTypeList.get(i).getEnsemblTranscriptId() == null ? "-" : consequenceTypeList.get(i).getEnsemblTranscriptId(),
+//                                consequenceTypeList.get(i).getBiotype() == null ? "-" : consequenceTypeList.get(i).getBiotype(),
+//                                SoNameToTest));
+//                    }
+//                }
+//            }
+////        }
+//        return processedVariants;
+////        return vcfRecordList.size();
+//    }
+//
+//    private int getEndFromInfoField(VcfRecord vcfRecord) {
+//        String[] infoFields = vcfRecord.getInfo().split(";");
+//        int i = 0;
+//        while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
+//            i++;
+//        }
+//
+//        if(i<infoFields.length) {
+//            return Integer.parseInt(infoFields[i].split("=")[1]);
+//        } else {
+//            return -1;
+//        }
+//    }
+//
+//    private int getVepAnnotationBatch(RandomAccessFile raf, int nVariantsToRead,
+//                                       Set<AnnotationComparisonObject> vepAnnotationSet) throws IOException {
+//        /**
+//         * Loads VEP annotation
+//         */
+//        String newLine;
+//        int nNonRegulatoryAnnotations = 0;
+//        int nReadVariants = 0;
+//        String previousChr = "";
+//        String previousPosition = "";
+//        String previousAlt = "";
+//        String alt;
+//        long filePointer=0;
+//
+//        if(nVariantsToRead>0) {
+//            while (((newLine = raf.readLine()) != null) && nReadVariants <= nVariantsToRead) {
+//                String[] lineFields = newLine.split("\t");
+//                String[] coordinatesParts = lineFields[1].split(":");
+//                if (lineFields[2].equals("deletion")) {
+//                    alt = "-";
+//                } else {
+//                    alt = lineFields[2];
+//                }
+//                // TODO: Remove this if as refactoring implements consequence types for other variant types
+////                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
+//                    if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
+//                            !previousAlt.equals(alt)) {
+//                        nReadVariants++;
+//                    }
+//                    if (nReadVariants <= nVariantsToRead) {
+//                        for (String SOname : lineFields[6].split(",")) {
+//                            if (SOname.equals("nc_transcript_variant")) {
+//                                SOname = "non_coding_transcript_variant";
+//                            }
+//                            if (!SOname.equals("regulatory_region_variant")) {
+//                                nNonRegulatoryAnnotations++;
+//                            }
+//                            vepAnnotationSet.add(new AnnotationComparisonObject(coordinatesParts[0], coordinatesParts[1], alt, lineFields[3],
+//                                    lineFields[4], SOname));
+//                        }
+//                        previousChr = coordinatesParts[0];
+//                        previousPosition = coordinatesParts[1];
+//                        previousAlt = alt;
+//                        filePointer = raf.getFilePointer();
+//                    }
+////                }
+//            }
+//
+//            raf.seek(filePointer);
+//        }
+//
+//        return nNonRegulatoryAnnotations;
+//    }
+//
+//    private void compareAndWrite(Set<AnnotationComparisonObject> uvaAnnotationSet,
+//                                 Set<AnnotationComparisonObject> vepAnnotationSet, int lineCounter, int nLines,
+//                                 int nNonRegulatoryAnnotations, int nVariants, String dirout) throws IOException {
+//
+//        /**
+//         * Compare both annotation sets and get UVA specific annotations
+//         */
+//        BufferedWriter bw = Files.newBufferedWriter(Paths.get(dirout+"/uva.specific.txt"), Charset.defaultCharset());
+//        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
+//        Set<AnnotationComparisonObject> uvaAnnotationSetBck = new HashSet<>(uvaAnnotationSet);
+//        uvaAnnotationSet.removeAll(vepAnnotationSet);
+//        List<AnnotationComparisonObject> uvaSpecificAnnotationList = new ArrayList(uvaAnnotationSet);
+//        Collections.sort(uvaSpecificAnnotationList, new AnnotationComparisonObjectComparator());
+//        for(AnnotationComparisonObject comparisonObject : uvaSpecificAnnotationList) {
+//            if(comparisonObject.getSOname().equals("regulatory_region_variant")) {
+//                bw.write(comparisonObject.toString());
+//            }
+//        }
+//        bw.close();
+//
+//        /**
+//         * Compare both annotation sets and get VEP specific annotations
+//         */
+//        bw = Files.newBufferedWriter(Paths.get(dirout+"vep.specific.txt"), Charset.defaultCharset());
+//        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
+//        vepAnnotationSet.removeAll(uvaAnnotationSetBck);
+//        List<AnnotationComparisonObject> vepSpecificAnnotationList = new ArrayList<>(vepAnnotationSet);
+//        Collections.sort(vepSpecificAnnotationList, new AnnotationComparisonObjectComparator());
+//        for(AnnotationComparisonObject comparisonObject : vepSpecificAnnotationList) {
+//            bw.write(comparisonObject.toString());
+//        }
+//        bw.write("\n\n\n");
+//        bw.write(lineCounter+"/"+nLines+"\n");
+//        bw.write("# processed variants: "+nVariants+"\n");
+//        bw.write("# non-regulatory annotations: "+nNonRegulatoryAnnotations+"\n");
+//
+//        bw.close();
+//    }
+//
 }

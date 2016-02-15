@@ -45,29 +45,29 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2;
 
-    private static Map<String, String> aaShortName = new HashMap<>();
+    private static Map<String, String> aaShortNameMap = new HashMap<>();
 
     static {
-        aaShortName.put("ALA", "A");
-        aaShortName.put("ARG", "R");
-        aaShortName.put("ASN", "N");
-        aaShortName.put("ASP", "D");
-        aaShortName.put("CYS", "C");
-        aaShortName.put("GLN", "Q");
-        aaShortName.put("GLU", "E");
-        aaShortName.put("GLY", "G");
-        aaShortName.put("HIS", "H");
-        aaShortName.put("ILE", "I");
-        aaShortName.put("LEU", "L");
-        aaShortName.put("LYS", "K");
-        aaShortName.put("MET", "M");
-        aaShortName.put("PHE", "F");
-        aaShortName.put("PRO", "P");
-        aaShortName.put("SER", "S");
-        aaShortName.put("THR", "T");
-        aaShortName.put("TRP", "W");
-        aaShortName.put("TYR", "Y");
-        aaShortName.put("VAL", "V");
+        aaShortNameMap.put("ALA", "A");
+        aaShortNameMap.put("ARG", "R");
+        aaShortNameMap.put("ASN", "N");
+        aaShortNameMap.put("ASP", "D");
+        aaShortNameMap.put("CYS", "C");
+        aaShortNameMap.put("GLN", "Q");
+        aaShortNameMap.put("GLU", "E");
+        aaShortNameMap.put("GLY", "G");
+        aaShortNameMap.put("HIS", "H");
+        aaShortNameMap.put("ILE", "I");
+        aaShortNameMap.put("LEU", "L");
+        aaShortNameMap.put("LYS", "K");
+        aaShortNameMap.put("MET", "M");
+        aaShortNameMap.put("PHE", "F");
+        aaShortNameMap.put("PRO", "P");
+        aaShortNameMap.put("SER", "S");
+        aaShortNameMap.put("THR", "T");
+        aaShortNameMap.put("TRP", "W");
+        aaShortNameMap.put("TYR", "Y");
+        aaShortNameMap.put("VAL", "V");
     }
 
 
@@ -82,65 +82,67 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     @Override
     public QueryResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
-        QueryResult result;
-        QueryResult<Score> scoreResult = null;
+        QueryResult result = null;
 
         // Ensembl transcript id is needed for this collection
         if (query.getString("transcript") != null) {
             Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
 
+            int position = -1;
+            String aaShortName = null;
             // If position and aa change are provided we create a 'projection' to return only the required data from the database
             if (query.get("position") != null && !query.getString("position").isEmpty() && query.getInt("position", 0) != 0) {
-                String projectionString = "aaPositions." + query.getInt("position");
+                position = query.getInt("position");
+                String projectionString = "aaPositions." + position;
 
                 // If aa change is provided we only return that information
                 if (query.getString("aa") != null && !query.getString("aa").isEmpty()) {
-                    projectionString += "." + aaShortName.get(query.getString("aa").toUpperCase());
+                    aaShortName = aaShortNameMap.get(query.getString("aa").toUpperCase());
+                    projectionString += "." + aaShortName;
                 }
 
                 // Projection is used to minimize the returned data
-                Bson position = Projections.include(projectionString);
-                result = proteinSubstitutionMongoDBCollection.find(transcript, position, options);
+                Bson positionProjection = Projections.include(projectionString);
+                result = proteinSubstitutionMongoDBCollection.find(transcript, positionProjection, options);
             } else {
                 // Return the whole transcript data
                 result = proteinSubstitutionMongoDBCollection.find(transcript, options);
             }
 
             if (result != null && !result.getResult().isEmpty()) {
-                // Return only the inner Document, not the whole document projected
                 Document document = (Document) result.getResult().get(0);
                 Document aaPositionsDocument = (Document) document.get("aaPositions");
-                result.setResult(Collections.singletonList(aaPositionsDocument));
 
-
-                List<Score> scoreList = null;
-                if (result.getNumResults() == 1) {
-                    scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
-                    Document proteinSubstitutionScores = (Document) result.getResult().get(0);
-                    if (proteinSubstitutionScores.get("ss") != null) {
-                        scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-                                "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(proteinSubstitutionScores.get("se"))));
+                // Position or aa change were not provided, returning whole transcript data
+                if (position == -1 || aaShortName == null) {
+                    // Return only the inner Document, not the whole document projected
+                    result.setResult(Collections.singletonList(aaPositionsDocument));
+                // Position and aa were provided, return only corresponding Score objects
+                } else {
+                    List<Score> scoreList = null;
+                    if (result.getNumResults() == 1) {
+                        scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
+                        Document positionDocument = (Document) aaPositionsDocument.get(Integer.toString(position));
+                        Document aaDocument = (Document) positionDocument.get(aaShortName);
+//                        Document proteinSubstitutionScores = (Document) result.getResult().get(0);
+                        if (aaDocument.get("ss") != null) {
+                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ss")),
+                                    "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(aaDocument.get("se"))));
+                        }
+                        if (aaDocument.get("ps") != null) {
+                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ps")),
+                                    "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(aaDocument.get("pe"))));
+                        }
                     }
-                    if (proteinSubstitutionScores.get("ps") != null) {
-                        scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-                                "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(proteinSubstitutionScores.get("pe"))));
-                    }
+                    result.setResult(Collections.singletonList(scoreList));
                 }
-                scoreResult = new QueryResult<>(result.getId(), result.getDbTime(), result.getNumResults(),
-                        result.getNumTotalResults(), result.getWarningMsg(), result.getErrorMsg(), scoreList);
-
-                return scoreResult;
-
-            // Return empty QueryResult if the query did not return any result
-            } else {
-
-                return result;
-
+//            // Return empty QueryResult if the query did not return any result
+//            } else {
+//                return result;
             }
         }
-
         // Return null if no transcript id is provided
-        return null;
+        return result;
 
     }
 
@@ -186,7 +188,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //        }
 
         QueryResult proteinVariantData = null;
-        String shortAlternativeAa = aaShortName.get(aaAlternate);
+        String shortAlternativeAa = aaShortNameMap.get(aaAlternate);
         if (shortAlternativeAa != null) {
             List<Bson> pipeline = new ArrayList<>();
 
