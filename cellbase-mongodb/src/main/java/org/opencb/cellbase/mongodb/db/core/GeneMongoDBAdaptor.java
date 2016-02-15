@@ -17,18 +17,17 @@
 package org.opencb.cellbase.mongodb.db.core;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
+import org.bson.Document;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
@@ -66,7 +65,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult first() {
-        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
+        return mongoDBCollection.find(new Document(), new QueryOptions("limit", 1));
     }
 
     @Override
@@ -90,7 +89,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             builder = builder.and("biotype").in(biotypeIds);
         }
 
-        return executeQuery("result", builder.get(), options);
+        return executeQuery("result", new Document(builder.get().toMap()), options);
     }
 
     public QueryResult next(String id, QueryOptions options) {
@@ -98,7 +97,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         options1.put("include", Arrays.asList("chromosome", "start", "strand"));
         QueryResult queryResult = getAllById(id, options1);
         if (queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject) queryResult.getResult().get(0);
+            Document gene = (Document) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
 //            options.put("strand", gene.get("strand").toString());
             int start = Integer.parseInt(gene.get("start").toString());
@@ -119,10 +118,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(idList.size());
+        List<Document> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
 //        options = addExcludeReturnFields("transcripts", options);
@@ -139,7 +138,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
         QueryBuilder geneBuilder = QueryBuilder.start("transcripts.xrefs.id").is(id);
         long dbTimeStart = System.currentTimeMillis();
-        QueryResult geneQueryResult = executeQuery(id, geneBuilder.get(), new QueryOptions());
+        QueryResult geneQueryResult = executeQuery(id, new Document(geneBuilder.get().toMap()), new QueryOptions());
         // TODO: clinical variant summary is only provided for ClinVar (hardcoded below)
         QueryOptions clinicalQueryOptions = new QueryOptions("source", "clinvar");
         clinicalQueryOptions.put("include",
@@ -184,9 +183,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             Map<String, Integer> clinicalSignificanceSummary = new HashMap<>();
             Map<String, Map> soSummary = new HashMap<>();
             for (Object result : queryResult.getResult()) {
-                clinicalSignificanceSummary = updateClinicalSignificanceSummary((BasicDBObject) result,
+                clinicalSignificanceSummary = updateClinicalSignificanceSummary((Document) result,
                         clinicalSignificanceSummary);
-                soSummary = updateSoSummary((BasicDBObject) result, soSummary);
+                soSummary = updateSoSummary((Document) result, soSummary);
             }
             clinicalVariantStats.put("clinicalSignificanceSummary", clinicalSignificanceSummary);
             clinicalVariantStats.put("soSummary", soSummary);
@@ -195,19 +194,19 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         return stats;
     }
 
-    private Map<String, Map> updateSoSummary(BasicDBObject result, Map<String, Map> soSummary) {
-        BasicDBObject basicDBObject = (BasicDBObject) result.get("annot");
-        if (basicDBObject != null) {
-            BasicDBList basicDBList = (BasicDBList) basicDBObject.get("consequenceTypes");
+    private Map<String, Map> updateSoSummary(Document result, Map<String, Map> soSummary) {
+        Document document = (Document) result.get("annot");
+        if (document != null) {
+            BasicDBList basicDBList = (BasicDBList) document.get("consequenceTypes");
             if (basicDBList != null) {
-                basicDBObject = getMostSevereSOTerm(basicDBList);
-                if (basicDBObject != null) {
-                    String soAccesion = (String) basicDBObject.get("soAccession");
+                document = getMostSevereSOTerm(basicDBList);
+                if (document != null) {
+                    String soAccesion = (String) document.get("soAccession");
                     if (soSummary.containsKey(soAccesion)) {
                         Integer currentCount = (Integer) soSummary.get(soAccesion).get("count");
                         soSummary.get(soAccesion).put("count", currentCount + 1);
                     } else {
-                        String soName = (String) basicDBObject.get("soName");
+                        String soName = (String) document.get("soName");
                         Map<String, Object> soSummaryMap = new HashMap<>(2);
                         soSummaryMap.put("soName", soName);
                         soSummaryMap.put("count", 1);
@@ -219,14 +218,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         return soSummary;
     }
 
-    private BasicDBObject getMostSevereSOTerm(BasicDBList consequenceTypeDBList) {
-        BasicDBObject mostSevereSODBObject = null;
+    private Document getMostSevereSOTerm(BasicDBList consequenceTypeDBList) {
+        Document mostSevereSODBObject = null;
         Integer maxSeverity = 0;
         for (Object consequenceTypeObject : consequenceTypeDBList) {
-            BasicDBList soDBList = (BasicDBList) ((BasicDBObject) consequenceTypeObject).get("soTerms");
+            BasicDBList soDBList = (BasicDBList) ((Document) consequenceTypeObject).get("soTerms");
             if (soDBList != null) {
                 for (Object soObject : soDBList) {
-                    BasicDBObject soDBObject = (BasicDBObject) soObject;
+                    Document soDBObject = (Document) soObject;
                     String soName = (String) soDBObject.get("soName");
                     if (VariantAnnotationUtils.SO_SEVERITY.containsKey(soName)) {
                         Integer severity = VariantAnnotationUtils.SO_SEVERITY.get(soName);
@@ -241,15 +240,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
         return mostSevereSODBObject;
     }
 
-    private Map<String, Integer> updateClinicalSignificanceSummary(BasicDBObject result,
-                                                                   Map<String, Integer> clinicalSignificanceSummary) {
-        BasicDBObject basicDBObject = (BasicDBObject) result.get("clinvarSet");
-        if (basicDBObject != null) {
-            basicDBObject = (BasicDBObject) basicDBObject.get("referenceClinVarAssertion");
-            if (basicDBObject != null) {
-                basicDBObject = (BasicDBObject) basicDBObject.get("clinicalSignificance");
-                if (basicDBObject != null) {
-                    String clinicalSignificance = (String) basicDBObject.get("description");
+    private Map<String, Integer> updateClinicalSignificanceSummary(Document result, Map<String, Integer> clinicalSignificanceSummary) {
+        Document document = (Document) result.get("clinvarSet");
+        if (document != null) {
+            document = (Document) document.get("referenceClinVarAssertion");
+            if (document != null) {
+                document = (Document) document.get("clinicalSignificance");
+                if (document != null) {
+                    String clinicalSignificance = (String) document.get("description");
                     if (clinicalSignificance != null) {
                         if (clinicalSignificanceSummary.containsKey(clinicalSignificance)) {
                             clinicalSignificanceSummary
@@ -266,7 +264,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     private Map<String, Object> setCoreGeneStats(QueryResult queryResult, Map<String, Object> stats) {
 
-        BasicDBObject resultDBObject = (BasicDBObject) queryResult.getResult().get(0);
+        Document resultDBObject = (Document) queryResult.getResult().get(0);
         stats.put("name", resultDBObject.get("name"));
         stats.put("id", resultDBObject.get("id"));
         stats.put("chromosome", resultDBObject.get("chromosome"));
@@ -291,10 +289,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public QueryResult getAllBiotypes(QueryOptions options) {
-        DBObject query = null;
+        Document query = null;
 
         if (options != null && options.get("chromosome") != null) {
-            query = QueryBuilder.start("chromosome").is(options.get("chromosome")).get();
+            query = new Document(QueryBuilder.start("chromosome").is(options.get("chromosome")).get().toMap());
         }
         return executeDistinct("distinct", "biotype", query);
     }
@@ -311,7 +309,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
 
         List<Object> biotypes = options.getList("biotype", null);
         BasicDBList biotypeIds = new BasicDBList();
@@ -336,7 +334,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
             if (biotypeIds.size() > 0) {
                 builder = builder.and("biotype").in(biotypeIds);
             }
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
         }
         return executeQueryList2(ids, queries, options);
@@ -351,6 +349,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor 
     @Override
     public List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions queryOptions) {
         return super.getAllIntervalFrequencies(regions, queryOptions);
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }

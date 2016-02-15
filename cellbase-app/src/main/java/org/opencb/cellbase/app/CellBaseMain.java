@@ -27,7 +27,7 @@ import java.net.URISyntaxException;
  */
 public class CellBaseMain {
 
-    public static final String VERSION = "3.1.0-RC";
+    public static final String VERSION = "4.0.0-beta";
 
     public static void main(String[] args) {
 
@@ -72,6 +72,9 @@ public class CellBaseMain {
                         break;
                     case "query":
                         commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryCommandOptions());
+                        break;
+                    case "query-grpc":
+                        commandExecutor = new QueryGrpcCommandExecutor(cliOptionsParser.getQueryGrpcCommandOptions());
                         break;
                     case "variant-annotation":
                         commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());

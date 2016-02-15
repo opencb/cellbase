@@ -16,14 +16,13 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.db.api.core.ExonDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +41,7 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
 
     @Override
     public QueryResult first() {
-        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
+        return mongoDBCollection.find(new Document(), new QueryOptions("limit", 1));
     }
 
     @Override
@@ -67,7 +66,7 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
         options1.put("include", Arrays.asList("chromosome", "start"));
         QueryResult queryResult = getById(id, options1);
         if (queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject) queryResult.getResult().get(0);
+            Document gene = (Document) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -117,13 +116,20 @@ public class ExonMongoDBAdaptor extends MongoDBAdaptor implements ExonDBAdaptor 
         return null;
     }
 
+    public int insert(List objectList) {
+        return -1;
+    }
 
-    //    private List<Gene> executeQuery(DBObject query, List<String> excludeFields) {
+    public int update(List objectList, String field) {
+        return -1;
+    }
+
+    //    private List<Gene> executeQuery(Document query, List<String> excludeFields) {
 //        List<Gene> result = null;
 //
 //        DBCursor cursor = null;
 //        if (excludeFields != null && excludeFields.size() > 0) {
-//            BasicDBObject returnFields = new BasicDBObject("_id", 0);
+//            Document returnFields = new Document("_id", 0);
 //            for (String field : excludeFields) {
 //                returnFields.put(field, 0);
 //            }

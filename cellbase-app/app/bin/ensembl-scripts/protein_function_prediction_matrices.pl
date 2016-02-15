@@ -135,7 +135,7 @@ print "\n";
 
 foreach my $chr(@chromosomes) {
 	my @transcripts = @{$chr->get_all_Transcripts()};
-	open(FILE, ">prot_func_pred_chr_".$chr->seq_region_name) || die "error opening file\n";
+	open(FILE, ">".$outdir."/prot_func_pred_chr_".$chr->seq_region_name.".json") || die "error opening file\n";
 	print @transcripts." transcripts fetched!\n";
 	foreach my $trans(@transcripts) {
 	#	$trans = $transcript_adaptor->fetch_by_stable_id($trans_id);

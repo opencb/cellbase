@@ -17,16 +17,15 @@
 package org.opencb.cellbase.mongodb.db.variation;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
+import org.bson.Document;
+import org.opencb.biodata.models.core.Position;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.variation.ClinVarDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,10 +53,10 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(idList.size());
+        List<Document> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("referenceClinVarAssertion.clinVarAccession.acc").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
         return executeQueryList2(idList, queries, options);
@@ -95,7 +94,7 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
 
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
@@ -108,8 +107,8 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
                     .greaterThanEquals(region.getStart())
                     .and("referenceClinVarAssertion.measureSet.measure.measureRelationship.sequenceLocation.start")
                     .lessThanEquals(region.getEnd());
-            System.out.println(builder.get().toString());
-            queries.add(builder.get());
+            System.out.println(new Document(builder.get().toMap()).toString());
+            queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
         }
         return executeQueryList2(ids, queries, options);
@@ -118,16 +117,16 @@ public class ClinVarMongoDBAdaptor extends MongoDBAdaptor implements ClinVarDBAd
     public QueryResult getListAccessions(QueryOptions queryOptions) {
         QueryBuilder builder = QueryBuilder.start();
         queryOptions.put("include", Arrays.asList("referenceClinVarAssertion.clinVarAccession.acc"));
-        QueryResult queryResult = executeQuery("", builder.get(), queryOptions);
+        QueryResult queryResult = executeQuery("", new Document(builder.get().toMap()), queryOptions);
         BasicDBList accInfoList = (BasicDBList) queryResult.getResult();
         List<String> accList = new ArrayList<>(accInfoList.size());
-        BasicDBObject accInfo;
+        Document accInfo;
         QueryResult listAccessionsToReturn = new QueryResult();
 
         for (Object accInfoObject : accInfoList) {
-            accInfo = (BasicDBObject) accInfoObject;
-            accInfo = (BasicDBObject) accInfo.get("referenceClinVarAssertion");
-            accInfo = (BasicDBObject) accInfo.get("clinVarAccession");
+            accInfo = (Document) accInfoObject;
+            accInfo = (Document) accInfo.get("referenceClinVarAssertion");
+            accInfo = (Document) accInfo.get("clinVarAccession");
             accList.add((String) accInfo.get("acc"));
         }
 

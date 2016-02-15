@@ -23,10 +23,26 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-grpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-server</artifactId>
+            <version>${cellbase.version}</version>
+            <type>war</type>
+        </dependency>
 
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.47</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
         </dependency>
         <dependency>
             <groupId>psidev.psi.mi</groupId>
@@ -34,13 +50,8 @@
             <version>1.8.5</version>
         </dependency>
         <dependency>
-            <groupId>com.beust</groupId>
-            <artifactId>jcommander</artifactId>
-            <version>1.47</version>
-        </dependency>
-        <dependency>
-            <groupId>org.rocksdb</groupId>
-            <artifactId>rocksdbjni</artifactId>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java-util</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -101,6 +112,10 @@
                         <program>
                             <name>cellbase.sh</name>
                             <mainClass>org.opencb.cellbase.app.CellBaseMain</mainClass>
+                        </program>
+                        <program>
+                            <name>cellbase-grpc.sh</name>
+                            <mainClass>org.opencb.cellbase.grpc.server.GeneGrpcServer</mainClass>
                         </program>
                     </programs>
                 </configuration>

@@ -206,7 +206,4 @@ public abstract class DBAdaptorFactory {
     public abstract ConservedRegionDBAdaptor getConservedRegionDBAdaptor(String species, String assembly);
 
 
-    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species);
-
-    public abstract VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species, String assembly);
 }

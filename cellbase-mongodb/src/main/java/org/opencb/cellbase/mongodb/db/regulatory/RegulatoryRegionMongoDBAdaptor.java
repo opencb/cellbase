@@ -17,17 +17,16 @@
 package org.opencb.cellbase.mongodb.db.regulatory;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
+import org.bson.Document;
+import org.opencb.biodata.models.core.Position;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,13 +48,13 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
-        logger.debug("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
+        logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
     }
 
 
     @Override
     public QueryResult first() {
-        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
+        return mongoDBCollection.find(new Document(), new QueryOptions("limit", 1));
     }
 
     @Override
@@ -75,11 +74,11 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("name").is(id);
-//          System.out.println("Query: " + builder.get());
-            queries.add(builder.get());
+//          System.out.println("Query: " + new Document(builder.get().toMap()));
+            queries.add(new Document(builder.get().toMap()));
         }
 //        options = addExcludeReturnFields("chunkIds", options);
         return executeQueryList2(idList, queries, options);
@@ -97,7 +96,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         String featureType = options.getString("featureType", null);
         String featureClass = options.getString("featureClass", null);
 
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         for (Position position : positionList) {
             String chunkId = position.getChromosome() + "_" + getChunkId(position.getPosition(), regulatoryRegionChunkSize)
                     + "_" + regulatoryRegionChunkSize / 1000 + "k";
@@ -111,8 +110,8 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
                 builder.and("featureClass").is(featureClass);
             }
 
-//        System.out.println("Query: " + builder.get());
-            queries.add(builder.get());
+//        System.out.println("Query: " + new Document(builder.get().toMap()));
+            queries.add(new Document(builder.get().toMap()));
         }
 
         System.out.println("Query: " + queries);
@@ -142,7 +141,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
 
 //        options = addExcludeReturnFields("chunkIds", options);
 
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         for (Region region : regionList) {
             int firstChunkId = getChunkId(region.getStart(), regulatoryRegionChunkSize);
             int lastChunkId = getChunkId(region.getEnd(), regulatoryRegionChunkSize);
@@ -170,10 +169,10 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
                 builder = builder.and("featureClass").in(featureClassDBList);
             }
 
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 //        System.out.println(">>"+regionList);
-//        System.out.println(">>"+builder.get().toString());
+//        System.out.println(">>"+new Document(builder.get().toMap()).toString());
         return executeQueryList2(regionList, queries, options);
     }
 
@@ -182,7 +181,7 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         options1.put("include", Arrays.asList("chromosome", "start"));
         QueryResult queryResult = getAllById(id, options1);
         if (queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject) queryResult.getResult().get(0);
+            Document gene = (Document) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -208,11 +207,11 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         if (options.getString("strand") == null || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
             // db.core.find({chromosome: "1", start: {$gt: 1000000}}).sort({start: 1}).limit(1)
             builder = QueryBuilder.start("_chunkIds").in(chunksId).and("chromosome").is(chromosome).and("start").greaterThan(position);
-            options.put("sort", new BasicDBObject("start", 1));
+            options.put("sort", new Document("start", 1));
             options.put("limit", 1);
         } else {
             builder = QueryBuilder.start("_chunkIds").in(chunksId).and("chromosome").is(chromosome).and("end").lessThan(position);
-            options.put("sort", new BasicDBObject("end", -1));
+            options.put("sort", new Document("end", -1));
             options.put("limit", 1);
         }
 
@@ -222,8 +221,8 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
         if (featureClass != null) {
             builder.and("featureClass").is(featureClass);
         }
-        System.out.println(builder.get());
-        return executeQuery("result", builder.get(), options);
+        System.out.println(new Document(builder.get().toMap()));
+        return executeQuery("result", new Document(builder.get().toMap()), options);
     }
 
     @Override
@@ -261,4 +260,13 @@ public class RegulatoryRegionMongoDBAdaptor extends MongoDBAdaptor implements Re
             return (id * chunksize) + chunksize - 1;
         }
     }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
+
 }

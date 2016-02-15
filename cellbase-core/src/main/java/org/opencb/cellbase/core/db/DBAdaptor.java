@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.core.db;
 
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryResult;
+
+import java.util.List;
 
 public interface DBAdaptor {
 
@@ -26,5 +28,9 @@ public interface DBAdaptor {
     QueryResult count();
 
     QueryResult stats();
+
+    int insert(List objectList);
+
+    int update(List objectList, String field);
 
 }

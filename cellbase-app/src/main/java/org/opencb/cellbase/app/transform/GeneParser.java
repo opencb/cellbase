@@ -26,9 +26,11 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
+import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
+import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -72,7 +74,7 @@ public class GeneParser extends CellBaseParser {
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseConfiguration.SpeciesProperties.Species species,
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
-                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
+                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
                 geneDirectoryPath.resolve("mirna.txt"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
@@ -127,9 +129,13 @@ public class GeneParser extends CellBaseParser {
         Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
 
         // Preparing the fasta file for fast accessing
+        FastaIndexManager fastaIndexManager = null;
         try {
-            connect(genomeSequenceFilePath);
-        } catch (ClassNotFoundException | SQLException e) {
+            fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
+            if (!fastaIndexManager.isConnected()) {
+                fastaIndexManager.index();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
@@ -208,7 +214,13 @@ public class GeneParser extends CellBaseParser {
 
             if (gtf.getFeature().equalsIgnoreCase("exon")) {
                 // Obtaining the exon sequence
-                String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+                //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+                String exonSequence = null;
+                try {
+                    exonSequence = fastaIndexManager.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+                } catch (RocksDBException e) {
+                    e.printStackTrace();
+                }
 
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
                         gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
@@ -338,12 +350,7 @@ public class GeneParser extends CellBaseParser {
         // cleaning
         gtfReader.close();
         serializer.close();
-
-        try {
-            disconnectSqlite();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        fastaIndexManager.close();
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
@@ -476,6 +483,7 @@ public class GeneParser extends CellBaseParser {
         return previousGene == null || !newGeneId.equals(previousGene.getId());
     }
 
+    @Deprecated
     private void connect(Path genomeSequenceFilePath) throws ClassNotFoundException, SQLException, IOException {
         logger.info("Connecting to reference genome sequence database ...");
         Class.forName("org.sqlite.JDBC");
@@ -493,6 +501,7 @@ public class GeneParser extends CellBaseParser {
         logger.info("Genome sequence database connected");
     }
 
+    @Deprecated
     private Set<String> getIndexedSequences() throws SQLException {
         Set<String> indexedSeq = new HashSet<>();
 
@@ -506,10 +515,12 @@ public class GeneParser extends CellBaseParser {
         return indexedSeq;
     }
 
+    @Deprecated
     private void disconnectSqlite() throws SQLException {
         sqlConn.close();
     }
 
+    @Deprecated
     private void indexReferenceGenomeFasta(Path genomeSequenceFilePath) throws IOException, ClassNotFoundException, SQLException {
         BufferedReader bufferedReader = FileUtils.newBufferedReader(genomeSequenceFilePath);
 
@@ -546,6 +557,7 @@ public class GeneParser extends CellBaseParser {
         stm.executeUpdate("CREATE INDEX chunkId_idx on genome_sequence(chunkId)");
     }
 
+    @Deprecated
     private void insertGenomeSequence(String sequenceName, boolean haplotypeSequenceType, PreparedStatement sqlInsert,
                                       StringBuilder sequenceStringBuilder) throws SQLException {
         int chunk = 0;
@@ -612,7 +624,7 @@ public class GeneParser extends CellBaseParser {
             }
         }
     }
-
+    @Deprecated
     private String getExonSequence(String sequenceName, int start, int end) {
         String subStr = "";
         if (indexedSequences.contains(sequenceName)) {

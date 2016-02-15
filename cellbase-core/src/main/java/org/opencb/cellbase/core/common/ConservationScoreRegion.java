@@ -18,6 +18,7 @@ package org.opencb.cellbase.core.common;
 
 import java.util.List;
 
+@Deprecated
 public class ConservationScoreRegion {
 
     private String chromosome;

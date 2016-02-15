@@ -17,16 +17,16 @@
 package org.opencb.cellbase.mongodb.db.variation;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 import com.mongodb.QueryBuilder;
+import org.opencb.biodata.models.core.Position;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +54,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
     @Override
     public QueryResult first() {
-        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
+        return mongoDBCollection.find(new Document(), new QueryOptions("limit", 1));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
             builder = builder.and("primaryHistology").in(biotypeIds);
         }
 
-        return executeQuery("result", builder.get(), options);
+        return executeQuery("result", new Document(builder.get().toMap()), options);
     }
 
     @Override
@@ -88,10 +88,10 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(idList.size());
+        List<Document> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("id").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
         return executeQueryList2(idList, queries, options);
@@ -100,7 +100,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
     @Override
     public QueryResult getAllDiseases(QueryOptions options) {
 //        List<String> diseases = mongoDBCollection.distinct("primaryHistology");
-//        DBObject distinct = new BasicDBObject("distinct", "primaryHistology");
+//        Document distinct = new Document("distinct", "primaryHistology");
 //        System.out.println(distinct.toString());
 //        return executeDistinct("distinct", "primaryHistology");
         return null;
@@ -113,10 +113,10 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
     @Override
     public List<QueryResult> getAllByDiseaseList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(idList.size());
+        List<Document> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("primaryHistology").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
         return executeQueryList2(idList, queries, options);
@@ -129,10 +129,10 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
     @Override
     public List<QueryResult> getAllByGeneNameList(List<String> geneNameList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         for (String id : geneNameList) {
             QueryBuilder builder = QueryBuilder.start("gene").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
         return executeQueryList2(geneNameList, queries, options);
@@ -145,10 +145,10 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
     @Override
     public List<QueryResult> getAllByProteinIdList(List<String> proteinIdList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         for (String id : proteinIdList) {
             QueryBuilder builder = QueryBuilder.start("protein").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 
         return executeQueryList2(proteinIdList, queries, options);
@@ -190,7 +190,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
 
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
 
         List<String> ids = new ArrayList<>(regions.size());
         for (Region region : regions) {
@@ -198,7 +198,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
                     .is(region.getChromosome())
                     .and("start").greaterThanEquals(region.getStart())
                     .lessThanEquals(region.getEnd());
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
         }
 
@@ -210,7 +210,7 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
         options1.put("include", Arrays.asList("chromosome", "start"));
         QueryResult queryResult = getAllById(id, options1);
         if (queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject) queryResult.getResult().get(0);
+            Document gene = (Document) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -221,6 +221,14 @@ public class MutationMongoDBAdaptor extends MongoDBAdaptor implements MutationDB
     @Override
     public QueryResult next(String chromosome, int position, QueryOptions options) {
         return null;
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }

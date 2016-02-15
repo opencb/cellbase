@@ -16,17 +16,18 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 import com.mongodb.QueryBuilder;
+import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Position;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public QueryResult first() {
-        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
+        return mongoDBCollection.find(new Document(), new QueryOptions("limit", 1));
     }
 
     @Override
@@ -63,14 +64,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public QueryResult getAll(QueryOptions options) {
         QueryBuilder builder = new QueryBuilder();
 
-        DBObject[] commands = new DBObject[2];
-        DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
+        Document[] commands = new Document[2];
+        Document unwind = new Document("$unwind", "$transcripts");
         commands[0] = unwind;
 
         List<Object> biotypes = options.getList("biotypes", null);
         if (biotypes != null && biotypes.size() > 0) {
 
-//            DBObject match = new BasicDBObject("$match", new BasicDBObject("chunkIds", id));
+//            Document match = new Document("$match", new Document("chunkIds", id));
 //            builder = builder.and("biotype").in(biotypeIds);
 
 //            commands[0] = match;
@@ -87,7 +88,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         options1.put("include", Arrays.asList("chromosome", "start"));
         QueryResult queryResult = getById(id, options1);
         if (queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject) queryResult.getResult().get(0);
+            Document gene = (Document) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -111,12 +112,12 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"},
 // {$match: {"transcripts.id": "ENST00000343281"}})
 
-        List<List<DBObject>> commandsList = new ArrayList<>(idList.size());
+        List<List<Bson>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
-            List<DBObject> commandList = new ArrayList<>(3);
-            DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.id", id));
-            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
-//            DBObject project = new BasicDBObject("$project", new BasicDBObject("transcripts", 1));
+            List<Bson> commandList = new ArrayList<>(3);
+            Document match = new Document("$match", new Document("transcripts.id", id));
+            Document unwind = new Document("$unwind", "$transcripts");
+//            Document project = new Document("$project", new Document("transcripts", 1));
             commandList.add(match);
             commandList.add(unwind);
             commandList.add(match);
@@ -136,12 +137,12 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //        db.core.aggregate({$match: {"transcripts.id": "ENST00000343281"}}, {$unwind: "$transcripts"},
 // {$match: {"transcripts.id": "ENST00000343281"}})
 
-        List<List<DBObject>> commandsList = new ArrayList<>(idList.size());
+        List<List<Bson>> commandsList = new ArrayList<>(idList.size());
         for (String id : idList) {
-//            DBObject[] commands = new DBObject[3];
-            List<DBObject> commandList = new ArrayList<>(3);
-            DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.id", id));
-            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
+//            Document[] commands = new Document[3];
+            List<Bson> commandList = new ArrayList<>(3);
+            Document match = new Document("$match", new Document("transcripts.xrefs.id", id));
+            Document unwind = new Document("$unwind", "$transcripts");
 //            commands[0] = match;
 //            commands[1] = unwind;
 //            commands[2] = match;
@@ -160,14 +161,12 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult getAllByPosition(Position position,
-                                        QueryOptions options) {
+    public QueryResult getAllByPosition(Position position, QueryOptions options) {
         return getAllByRegion(new Region(position.getChromosome(), position.getPosition(), position.getPosition()), options);
     }
 
     @Override
-    public List<QueryResult> getAllByPositionList(List<Position> positionList,
-                                                  QueryOptions options) {
+    public List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options) {
         List<Region> regions = new ArrayList<>();
         for (Position position : positionList) {
             regions.add(new Region(position.getChromosome(), position.getPosition(), position.getPosition()));
@@ -176,8 +175,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public QueryResult getAllByRegion(String chromosome, int start, int end,
-                                      QueryOptions options) {
+    public QueryResult getAllByRegion(String chromosome, int start, int end, QueryOptions options) {
         return getAllByRegion(new Region(chromosome, start, end), options);
     }
 
@@ -187,20 +185,19 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     }
 
     @Override
-    public List<QueryResult> getAllByRegionList(List<Region> regions,
-                                                QueryOptions options) {
+    public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
 
 
-        List<DBObject[]> commandsList = new ArrayList<>(regions.size());
+        List<Document[]> commandsList = new ArrayList<>(regions.size());
         for (Region region : regions) {
-            DBObject geneMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.chromosome", region.getChromosome()));
-            DBObject regionMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.start", region.getStart()));
-            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
+            Document geneMatch = new Document("$match", new Document("transcripts.chromosome", region.getChromosome()));
+            Document regionMatch = new Document("$match", new Document("transcripts.start", region.getStart()));
+            Document unwind = new Document("$unwind", "$transcripts");
             // biotype in, pero en aggregation
 
         }
 
-//        List<DBObject> queries = new ArrayList<>();
+//        List<Document> queries = new ArrayList<>();
 //
 //        List<Object> biotypes = options.getList("biotype", null);
 //        BasicDBList biotypeIds = new BasicDBList();
@@ -282,6 +279,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     @Override
     public List<List<Transcript>> getAllByMirnaMatureList(List<String> mirnaIDList) {
         return null;
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }

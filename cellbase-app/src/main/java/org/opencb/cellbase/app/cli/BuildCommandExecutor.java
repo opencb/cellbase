@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.transform.*;
+import org.opencb.cellbase.app.transform.variation.VariationParser;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;

@@ -19,8 +19,8 @@ package org.opencb.cellbase.core.db.api.variation;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.Arrays;
 import java.util.List;
@@ -83,17 +83,17 @@ public interface VariationDBAdaptor extends FeatureDBAdaptor {
     List<QueryResult> getAllByTranscriptIdList(List<String> idList, QueryOptions options);
 
 
-    QueryResult getAllPhenotypes(QueryOptions options);
-
-    List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options);
-
-    QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
-
-    List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options);
-
-    QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options);
-
-    List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
+//    QueryResult getAllPhenotypes(QueryOptions options);
+//
+//    List<QueryResult> getAllPhenotypeByRegion(List<Region> regions, QueryOptions options);
+//
+//    QueryResult getAllByPhenotype(String phenotype, QueryOptions options);
+//
+//    List<QueryResult> getAllByPhenotypeList(List<String> phenotypeList, QueryOptions options);
+//
+//    QueryResult getAllGenesByPhenotype(String phenotype, QueryOptions options);
+//
+//    List<QueryResult> getAllGenesByPhenotypeList(List<String> phenotypeList, QueryOptions options);
 
     // public List<SnpPopulationFrequency> getAllSnpPopulationFrequency(String name);
     // public List<List<SnpPopulationFrequency>> getAllSnpPopulationFrequencyList(List<String> nameList);

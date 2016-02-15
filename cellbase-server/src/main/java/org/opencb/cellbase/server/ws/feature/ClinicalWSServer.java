@@ -18,21 +18,19 @@ package org.opencb.cellbase.server.ws.feature;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author imedina
@@ -54,13 +52,26 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "description?", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
     public Response getAll() {
         try {
+            logger.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHGGGGGGGGGGGG");
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
             if (!queryOptions.containsKey("limit") || ((int) queryOptions.get("limit")) > 1000) {
                 queryOptions.put("limit", 1000);
             }
 
-            return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
+            return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/group")
+    public Response groupBy(@DefaultValue("") @QueryParam("fields") String fields) {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinicalDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -73,24 +84,24 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions));
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/listAcc")
-    @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
-    public Response getAllListAccessions() {
-        try {
-            parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/listAcc")
+//    @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
+//    public Response getAllListAccessions() {
+//        try {
+//            parseQueryParams();
+//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+//            return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
 }

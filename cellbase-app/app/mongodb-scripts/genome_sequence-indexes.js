@@ -15,5 +15,5 @@
  * limitations under the License.
  */
 
-db.getCollection('genome_sequence').ensureIndex({'_chunkIds': 1})
-db.getCollection('genome_sequence').ensureIndex({'sequenceType': 1})
+db.getCollection('genome_sequence').createIndex({'_chunkIds': 1})
+db.getCollection('genome_sequence').createIndex({'sequenceType': 1})

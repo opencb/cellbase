@@ -18,8 +18,7 @@ package org.opencb.cellbase.mongodb.db.variation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
@@ -37,9 +36,9 @@ import org.opencb.cellbase.core.db.api.variation.VariantFunctionalScoreDBAdaptor
 import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.*;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -184,7 +183,6 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             VariantAnnotation variantAnnotation = new VariantAnnotation();
             variantAnnotation.setChromosome(normalizedVariantList.get(i).getChromosome());
             variantAnnotation.setStart(normalizedVariantList.get(i).getStart());
-            variantAnnotation.setEnd(normalizedVariantList.get(i).getEnd());
             variantAnnotation.setReference(normalizedVariantList.get(i).getReference());
             variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
 
@@ -344,19 +342,20 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
-        if (variant.getReference().isEmpty()) {
-            return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
-        } else {
-            if (variant.getAlternate().isEmpty()) {
-                return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
-            } else {
-                if (variant.getReference().length() == 1 && variant.getAlternate().length() == 1) {
-                    return new ConsequenceTypeSNVCalculator();
-                } else {
-                    throw new UnsupportedURLVariantFormat();
-                }
-            }
-        }
+//        if (variant.getReference().isEmpty()) {
+//            return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
+//        } else {
+//            if (variant.getAlternate().isEmpty()) {
+//                return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+//            } else {
+//                if (variant.getReference().length() == 1 && variant.getAlternate().length() == 1) {
+//                    return new ConsequenceTypeSNVCalculator();
+//                } else {
+//                    throw new UnsupportedURLVariantFormat();
+//                }
+//            }
+//        }
+        return null;
     }
 
     private List<RegulatoryRegion> getAffectedRegulatoryRegions(Variant variant) {
@@ -368,7 +367,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         List<RegulatoryRegion> regionList = new ArrayList<>(queryResult.getNumResults());
         for (Object object : queryResult.getResult()) {
-            DBObject dbObject = (DBObject) object;
+            Document dbObject = (Document) object;
             RegulatoryRegion regulatoryRegion = new RegulatoryRegion();
             regulatoryRegion.setChromosome((String) dbObject.get("chromosome"));
             regulatoryRegion.setStart((int) dbObject.get("start"));
@@ -386,13 +385,13 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
             regulatoryRegionList = getAffectedRegulatoryRegions(variant);
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
-        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
-        for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (nonSynonymous(consequenceType)) {
-                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
-            }
-        }
-        return consequenceTypeList;
+//        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
+//        for (ConsequenceType consequenceType : consequenceTypeList) {
+//            if (nonSynonymous(consequenceType)) {
+//                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+//            }
+//        }
+        return null;
     }
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {
@@ -434,36 +433,44 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
                 List<QueryResult> variationQueryResults = conservationFuture.get();
                 if (variationQueryResults != null) {
                     for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                        List<BasicDBObject> variationDBList = (List<BasicDBObject>) variationQueryResults.get(i).getResult();
-
+                        List<Document> variationDBList = (List<Document>) variationQueryResults.get(i).getResult();
                         if (variationDBList != null && variationDBList.size() > 0) {
-                            ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                    .setId(variationDBList.get(0).getString("id", ""));
-
+                            BasicDBList idsDBList = (BasicDBList) variationDBList.get(0).get("ids");
+                            if (idsDBList != null) {
+                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                        .setId((String) idsDBList.get(0));
+                            }
                             if (annotatorSet.contains("populationFrequencies")) {
-                                BasicDBList freqsDBList = (BasicDBList) variationDBList.get(0).get("populationFrequencies");
-                                if (freqsDBList != null) {
-                                    BasicDBObject freqDBObject;
-                                    ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                            .setPopulationFrequencies(new ArrayList<>());
-                                    for (int j = 0; j < freqsDBList.size(); j++) {
-                                        freqDBObject = ((BasicDBObject) freqsDBList.get(j));
-                                        if (freqDBObject != null && freqDBObject.get("refAllele") != null) {
-                                            if (freqDBObject.containsKey("study")) {
-                                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                                        .getPopulationFrequencies()
-                                                        .add(new PopulationFrequency(freqDBObject.get("study").toString(),
-                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
-                                            } else {
-                                                ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
-                                                        .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
-                                                        freqDBObject.get("pop").toString(), freqDBObject.get("superPop").toString(),
-                                                        freqDBObject.get("refAllele").toString(), freqDBObject.get("altAllele").toString(),
-                                                        Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
-                                                        Float.valueOf(freqDBObject.get("altAlleleFreq").toString()), 0.0f, 0.0f, 0.0f));
+                                Document annotationDBObject =  (Document) variationDBList.get(0).get("annotation");
+                                if (annotationDBObject != null) {
+                                    BasicDBList freqsDBList = (BasicDBList) annotationDBObject.get("populationFrequencies");
+                                    if (freqsDBList != null) {
+                                        Document freqDBObject;
+                                        ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                                .setPopulationFrequencies(new ArrayList<>());
+                                        for (int j = 0; j < freqsDBList.size(); j++) {
+                                            freqDBObject = ((Document) freqsDBList.get(j));
+                                            if (freqDBObject != null && freqDBObject.get("refAllele") != null) {
+                                                if (freqDBObject.containsKey("study")) {
+                                                    ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                                            .getPopulationFrequencies()
+                                                            .add(new PopulationFrequency(freqDBObject.get("study").toString(),
+                                                                    freqDBObject.get("population").toString(),
+                                                                    freqDBObject.get("refAllele").toString(),
+                                                                    freqDBObject.get("altAllele").toString(),
+                                                                    Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                                                    Float.valueOf(freqDBObject.get("altAlleleFreq").toString()),
+                                                                    0.0f, 0.0f, 0.0f));
+                                                } else {
+                                                    ((VariantAnnotation) variantAnnotationResultList.get(i).getResult().get(0))
+                                                            .getPopulationFrequencies().add(new PopulationFrequency("1000G_PHASE_3",
+                                                            freqDBObject.get("population").toString(),
+                                                            freqDBObject.get("refAllele").toString(),
+                                                            freqDBObject.get("altAllele").toString(),
+                                                            Float.valueOf(freqDBObject.get("refAlleleFreq").toString()),
+                                                            Float.valueOf(freqDBObject.get("altAlleleFreq").toString()),
+                                                            0.0f, 0.0f, 0.0f));
+                                                }
                                             }
                                         }
                                     }
