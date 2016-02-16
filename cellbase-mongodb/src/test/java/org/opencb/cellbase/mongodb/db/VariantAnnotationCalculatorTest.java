@@ -64,6 +64,8 @@ public class VariantAnnotationCalculatorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("1:249240621:G:T")  // Should return cadd values
+                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("6:160990451:C:G")  // Should return drug interactions
 //                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("22:16051722:TA:T")  // Should return drug interactions
@@ -74,8 +76,8 @@ public class VariantAnnotationCalculatorTest {
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("1", 220603289, "-", "GTGT"))  // Should not return null
 //                , new QueryOptions()).get(0).getResult()).get(0));
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
-                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
+//                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16050612, "C", "G"))  // Should return any result
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Collections.singletonList(new Variant("13", 45411941, "T", "C"))  // Should return any result
