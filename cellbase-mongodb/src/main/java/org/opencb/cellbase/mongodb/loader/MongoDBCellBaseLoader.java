@@ -470,6 +470,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     public void createIndex(String data) throws LoaderException {
         Path indexFilePath = getIndexFilePath(data);
         if (indexFilePath != null) {
+            logger.info("Creating indexes...");
             try {
                 runCreateIndexProcess(indexFilePath);
             } catch (IOException | InterruptedException e) {
