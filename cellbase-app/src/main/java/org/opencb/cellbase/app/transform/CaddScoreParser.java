@@ -103,10 +103,10 @@ public class CaddScoreParser extends CellBaseParser {
                     logger.info("Parsing chr {} ", fields[0]);
                     // both raw and scaled are serialized
                     GenomicScoreRegion<Long> genomicScoreRegion =
-                            new GenomicScoreRegion<>(fields[0], start, end, "cadd_raw", rawValues);
+                            new GenomicScoreRegion<>(chromosome, start, end, "cadd_raw", rawValues);
                     serializer.serialize(genomicScoreRegion);
 
-                    genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, end, "cadd_scaled", scaledValues);
+                    genomicScoreRegion = new GenomicScoreRegion<>(chromosome, start, end, "cadd_scaled", scaledValues);
                     serializer.serialize(genomicScoreRegion);
 
                     serializedChunks++;
@@ -122,10 +122,7 @@ public class CaddScoreParser extends CellBaseParser {
 //                    lineCount = 0;
 //                    rawScoreValuesMap.clear();
 //                    scaledScoreValuesMap.clear();
-                }
-
-//                if (counter == CHUNK_SIZE) {
-                if (end < Integer.valueOf(fields[1])) {
+                } else if (end < Integer.valueOf(fields[1])) {
                     // both raw and scaled are serialized
                     GenomicScoreRegion genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, end, "cadd_raw", rawValues);
                     serializer.serialize(genomicScoreRegion);
@@ -158,6 +155,11 @@ public class CaddScoreParser extends CellBaseParser {
                         scaledLongValue = (scaledLongValue << 16) | v;
                     }
 
+                    if (rawLongValue < 0 || scaledLongValue < 0) {
+                        logger.error("raw/scaled Long Values cannot be 0");
+                        logger.error("Last read line {}", line);
+                        System.exit(1);
+                    }
                     rawValues.add(rawLongValue);
                     scaledValues.add(scaledLongValue);
 
