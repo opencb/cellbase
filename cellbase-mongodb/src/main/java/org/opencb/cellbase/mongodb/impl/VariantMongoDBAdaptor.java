@@ -278,13 +278,14 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //            BasicDBList basicDBList = (BasicDBList) dbObject.get("values");
             ArrayList basicDBList = dbObject.get("values", ArrayList.class);
 
-//            Long l1 = 0l; // TODO: delete
-//            try { // TODO: delete
-            Long l1 = (Long) basicDBList.get(offset);
-//            } catch (Exception e) {  // TODO: delete
-//                int a = 1;  // TODO: delete
-//            }
-//            System.out.println("l1 = " + l1);
+            Long l1 = 0L; // TODO: delete
+            try { // TODO: delete
+             l1 = (Long) basicDBList.get(offset);
+            } catch (Exception e) {  // TODO: delete
+                logger.error("problematic variant: {}", variant.toString());
+                throw e;
+            }
+
             if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
                 float value = 0f;
                 switch (alternate.toLowerCase()) {

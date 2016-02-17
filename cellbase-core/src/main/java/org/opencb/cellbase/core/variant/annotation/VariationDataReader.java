@@ -5,6 +5,8 @@ import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.io.DataReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +22,8 @@ public class VariationDataReader implements DataReader<Variant> {
     private Query query;
     private QueryOptions options;
     private Iterator<Variant> iterator;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private int nReadVariants = 0;
 
     public VariationDataReader(VariantDBAdaptor dbAdaptor, Query query, QueryOptions options) {
         this.dbAdaptor = dbAdaptor;
@@ -52,11 +56,14 @@ public class VariationDataReader implements DataReader<Variant> {
             List<Variant> variants = this.read();
             if (variants != null) {
                 listRecords.addAll(variants);
+                nReadVariants += variants.size();
             } else {
+                logger.info("{} variants read", nReadVariants);
                 return listRecords;
             }
         }
 
+        logger.info("{} variants read", nReadVariants);
         return listRecords;
     }
 
