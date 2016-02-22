@@ -274,19 +274,19 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         for (Object object : result.getResult()) {
 //            System.out.println("object = " + object);
             Document dbObject = (Document) object;
+            int chunkStart = dbObject.getInteger("start");
             int chunkEnd = dbObject.getInteger("end");
             // CADD positions are not continuous through the whole chromosome. Several documents may be associated with
             // the same chunk id: we have to be sure that current document contains queried position. Only two documents
             // will contain queried position - one for raw and one for scaled values
-            if (position <= chunkEnd) {
-                int chunkStart = dbObject.getInteger("start");
+            if (position >= chunkStart && position <= chunkEnd) {
                 int offset = (position - chunkStart);
                 ArrayList basicDBList = dbObject.get("values", ArrayList.class);
 
 //                long l1 = 0L; // TODO: delete
 //                try { // TODO: delete
                 long l1 = Long.parseLong(basicDBList.get(offset).toString());
-                    //             l1 = (Long) basicDBList.get(offset);
+//                                 l1 = (Long) basicDBList.get(offset);
 //                } catch (Exception e) {  // TODO: delete
 //                    logger.error("problematic variant: {}", variant.toString());
 //                    throw e;

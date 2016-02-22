@@ -120,7 +120,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                 // Position and aa were provided, return only corresponding Score objects
                 } else {
                     List<Score> scoreList = null;
-                    if (result.getNumResults() == 1) {
+                    if (result.getNumResults() == 1 && aaPositionsDocument != null) {
                         scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
                         Document positionDocument = (Document) aaPositionsDocument.get(Integer.toString(position));
                         Document aaDocument = (Document) positionDocument.get(aaShortName);

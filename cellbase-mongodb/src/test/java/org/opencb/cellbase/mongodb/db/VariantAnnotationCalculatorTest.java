@@ -64,8 +64,14 @@ public class VariantAnnotationCalculatorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:108338984:C:T")  // Should not fail
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:61482087:G:C")  // Should not fail
                 , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:56370672:A:C")  // Should not fail
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:102672886:C:A")  // Should not fail
+//                , new QueryOptions()).get(0).getResult()).get(0));
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:108338984:C:T")  // Should not fail
+//                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("1:144854598:C:T")  // Should return cadd values
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("1:69100:G:T")  // Should return cadd values
