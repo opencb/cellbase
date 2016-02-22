@@ -41,19 +41,20 @@ public class CaddScoreParserTest {
         // Next values are taken from the generated file at /tmp
         // They correspond to first and last scores in the file
         // Both raw and scaled scores ar tested
-        long l1 = 2909650398779952672L;
+//        long l1 = 2909650398779952672L;
+        long l1 = 246853554624987437L;
         long l2 = 2777354483929861664L;
         long l3 = 1701815202902769664L;
         long l4 = 421650576018505728L;
 
-        float DECIMAL_RESOLUTION = 1000f;
+        float DECIMAL_RESOLUTION = 100f;
 
 
         // raw CADD scores tests
-        float a = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
-        float c = ((short) (l1 >> 32) - 10000) / DECIMAL_RESOLUTION;
-        float g = ((short) (l1 >> 16) - 10000) / DECIMAL_RESOLUTION;
-        float t = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
+        float a = (((short) (l1 >> 48)) / DECIMAL_RESOLUTION) - 10;
+        float c = (((short) (l1 >> 32)) / DECIMAL_RESOLUTION) - 10;
+        float g = (((short) (l1 >> 16)) / DECIMAL_RESOLUTION) - 10;
+        float t = (((short) (l1 >> 0) ) / DECIMAL_RESOLUTION) - 10;
 
         assertEquals("Error getting A score value from raw CADD", 0.337f, a, 1 / DECIMAL_RESOLUTION);
         assertEquals("Error getting C score value from raw CADD", 0.143f, c, 1 / DECIMAL_RESOLUTION);

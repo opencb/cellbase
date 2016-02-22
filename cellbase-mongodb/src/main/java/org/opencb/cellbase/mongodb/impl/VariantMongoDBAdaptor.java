@@ -43,7 +43,7 @@ import java.util.function.Consumer;
 public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAdaptor<Variant> {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
-    private static final float DECIMAL_RESOLUTION = 1000f;
+    private static final float DECIMAL_RESOLUTION = 100f;
 
     private MongoDBCollection caddDBCollection;
 
@@ -270,72 +270,80 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
 //        System.out.println("result = " + result);
 
-        int offset = ((position - 1) % MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
         List<Score> scores = new ArrayList<>();
         for (Object object : result.getResult()) {
 //            System.out.println("object = " + object);
             Document dbObject = (Document) object;
-//            BasicDBList basicDBList = (BasicDBList) dbObject.get("values");
-            ArrayList basicDBList = dbObject.get("values", ArrayList.class);
+            int chunkEnd = dbObject.getInteger("end");
+            // CADD positions are not continuous through the whole chromosome. Several documents may be associated with
+            // the same chunk id: we have to be sure that current document contains queried position. Only two documents
+            // will contain queried position - one for raw and one for scaled values
+            if (position <= chunkEnd) {
+                int chunkStart = dbObject.getInteger("start");
+                int offset = (position - chunkStart);
+                ArrayList basicDBList = dbObject.get("values", ArrayList.class);
 
-            Long l1 = 0L; // TODO: delete
-            try { // TODO: delete
-             l1 = (Long) basicDBList.get(offset);
-            } catch (Exception e) {  // TODO: delete
-                logger.error("problematic variant: {}", variant.toString());
-                throw e;
-            }
+//                long l1 = 0L; // TODO: delete
+//                try { // TODO: delete
+                long l1 = Long.parseLong(basicDBList.get(offset).toString());
+                    //             l1 = (Long) basicDBList.get(offset);
+//                } catch (Exception e) {  // TODO: delete
+//                    logger.error("problematic variant: {}", variant.toString());
+//                    throw e;
+//                }
 
-            if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
-                float value = 0f;
-                switch (alternate.toLowerCase()) {
-                    case "a":
-                        value = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
-                        break;
-                    case "c":
-                        value = ((short) (l1 >> 32) - 10000) / DECIMAL_RESOLUTION;
-                        break;
-                    case "g":
-                        value = ((short) (l1 >> 16) - 10000) / DECIMAL_RESOLUTION;
-                        break;
-                    case "t":
-                        value = ((short) (l1 >> 0) - 10000) / DECIMAL_RESOLUTION;
-                        break;
-                    default:
-                        break;
+                if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
+                    float value = 0f;
+                    switch (alternate.toLowerCase()) {
+                        case "a":
+//                            value = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
+                            value = (((short) (l1 >> 48)) / DECIMAL_RESOLUTION) - 10;
+                            break;
+                        case "c":
+                            value = (((short) (l1 >> 32)) / DECIMAL_RESOLUTION) - 10;
+                            break;
+                        case "g":
+                            value = (((short) (l1 >> 16)) / DECIMAL_RESOLUTION) - 10;
+                            break;
+                        case "t":
+                            value = (((short) (l1 >> 0)) / DECIMAL_RESOLUTION) - 10;
+                            break;
+                        default:
+                            break;
+                    }
+                    scores.add(Score.newBuilder()
+                            .setScore(value)
+                            .setSource(dbObject.getString("source"))
+                            .setDescription(null)
+                            //                        .setDescription("")
+                            .build());
                 }
-                scores.add(Score.newBuilder()
-                        .setScore(value)
-                        .setSource(dbObject.getString("source"))
-                        .setDescription(null)
-//                        .setDescription("")
-                        .build());
-            }
 
-            if (dbObject.getString("source").equalsIgnoreCase("cadd_scaled")) {
-                float value = 0f;
-                switch (alternate.toLowerCase()) {
-                    case "a":
-                        value = ((short) (l1 >> 48)) / DECIMAL_RESOLUTION;
-                        break;
-                    case "c":
-                        value = ((short) (l1 >> 32)) / DECIMAL_RESOLUTION;
-                        break;
-                    case "g":
-                        value = ((short) (l1 >> 16)) / DECIMAL_RESOLUTION;
-                        break;
-                    case "t":
-                        value = ((short) (l1 >> 0)) / DECIMAL_RESOLUTION;
-                        break;
-                    default:
-                        break;
+                if (dbObject.getString("source").equalsIgnoreCase("cadd_scaled")) {
+                    float value = 0f;
+                    switch (alternate.toLowerCase()) {
+                        case "a":
+                            value = ((short) (l1 >> 48)) / DECIMAL_RESOLUTION;
+                            break;
+                        case "c":
+                            value = ((short) (l1 >> 32)) / DECIMAL_RESOLUTION;
+                            break;
+                        case "g":
+                            value = ((short) (l1 >> 16)) / DECIMAL_RESOLUTION;
+                            break;
+                        case "t":
+                            value = ((short) (l1 >> 0)) / DECIMAL_RESOLUTION;
+                            break;
+                        default:
+                            break;
+                    }
+                    scores.add(Score.newBuilder()
+                            .setScore(value)
+                            .setSource(dbObject.getString("source"))
+                            .setDescription(null)
+                            //                        .setDescription("")
+                            .build());
                 }
-                scores.add(Score.newBuilder()
-                        .setScore(value)
-                        .setSource(dbObject.getString("source"))
-                        .setDescription(null)
-//                        .setDescription("")
-                        .build());
             }
         }
 
