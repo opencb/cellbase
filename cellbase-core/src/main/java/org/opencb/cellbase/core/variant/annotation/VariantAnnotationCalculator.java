@@ -189,6 +189,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
+                    variantAnnotation.setDisplayConsequenceType(getMostSevereConsequenceType(consequenceTypeList));
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
                             normalizedVariantList.get(i).toString());
@@ -265,6 +266,22 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
         return variantAnnotationResultList;
+    }
+
+    private String getMostSevereConsequenceType(List<ConsequenceType> consequenceTypeList) {
+        int max = -1;
+        String mostSevereConsequencetype = null;
+        for (ConsequenceType consequenceType : consequenceTypeList) {
+            for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
+                int rank = VariantAnnotationUtils.SO_SEVERITY.get(sequenceOntologyTerm.getName());
+                if (rank > max) {
+                    max = rank;
+                    mostSevereConsequencetype = sequenceOntologyTerm.getName();
+                }
+            }
+        }
+
+        return mostSevereConsequencetype;
     }
 
     private Set<String> getAnnotatorSet(QueryOptions queryOptions) {
