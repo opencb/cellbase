@@ -92,8 +92,7 @@ public class CaddScoreParser extends CellBaseParser {
 
                 if (!chromosome.equals(fields[0])) {
                     // both raw and scaled are serialized
-                    GenomicScoreRegion<Long> genomicScoreRegion =
-                            new GenomicScoreRegion<>(fields[0], start, end, "cadd_raw", rawValues);
+                    GenomicScoreRegion<Long> genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, end, "cadd_raw", rawValues);
                     serializer.serialize(genomicScoreRegion);
 
                     genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, end, "cadd_scaled", scaledValues);
@@ -101,16 +100,11 @@ public class CaddScoreParser extends CellBaseParser {
 
                     chromosome = fields[0];
                     start = Integer.parseInt(fields[1]);
-//                    end = CHUNK_SIZE - 1;
                     end = start + CHUNK_SIZE - 2;
 
                     counter = 0;
                     rawValues.clear();
                     scaledValues.clear();
-//                    rawLongValue = 0;
-//                    lineCount = 0;
-//                    rawScoreValuesMap.clear();
-//                    scaledScoreValuesMap.clear();
                 }
 
                 rawScoreValuesMap.put(fields[3], Float.valueOf(fields[4]));
