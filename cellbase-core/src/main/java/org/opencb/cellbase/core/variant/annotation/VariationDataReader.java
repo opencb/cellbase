@@ -44,7 +44,14 @@ public class VariationDataReader implements DataReader<Variant> {
     public List<Variant> read() {
 
         if (iterator.hasNext()) {
-            return Collections.singletonList(iterator.next());
+            Variant variant = iterator.next();
+            // New variants in the variation collection created during the update of the frequencies may not have
+            // the variant type set and this might cause NPE
+            if (variant.getType() == null) {
+                variant.setType(variant.inferType(variant.getReference(), variant.getAlternate(),
+                        variant.getLength()));
+            }
+            return Collections.singletonList(variant);
         } else {
             return null;
         }
