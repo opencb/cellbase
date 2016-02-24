@@ -18,6 +18,7 @@ package org.opencb.cellbase.server.ws.feature;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -37,11 +38,17 @@ import java.util.Arrays;
  */
 @Path("/{version}/{species}/feature/clinical")
 @Produces("application/json")
-@Api(value = "ClinVar", description = "ClinVar RESTful Web Services API")
+@Api(value = "Clinical", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
 
 
-    public ClinicalWSServer(@PathParam("version") String version, @PathParam("species") String species,
+    public ClinicalWSServer(@PathParam("version")
+                            @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                    defaultValue = "latest") String version,
+                            @PathParam("species")
+                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                    + "of potentially available species ids, please refer to: "
+                                    + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -49,9 +56,13 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/all")
-    @ApiOperation(httpMethod = "GET", notes = "description?", value = "Retrieves all the clinvar objects", response = QueryResponse.class)
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
+            + "Output: ClinVar, COSMIC or GWAS objects as stored in the MongoDB. Please have a look at "
+            + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
+            value = "Retrieves all the clinical objects", response = QueryResponse.class)
     public Response getAll() {
         try {
+            logger.info("VERSION: {}", this.version);
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
             if (!queryOptions.containsKey("limit") || ((int) queryOptions.get("limit")) > 1000) {

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
@@ -48,17 +49,14 @@ import java.util.*;
 //@Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
-    @DefaultValue("")
-    @PathParam("version")
-    @ApiParam(name = "version", value = "Use 'latest' for last stable version", allowableValues = "v3,latest", defaultValue = "v3")
+//    @DefaultValue("")
+//    @PathParam("version")
+//    @ApiParam(name = "version", value = "Use 'latest' for last stable version",  defaultValue = "latest")
     protected String version;
 
-    @DefaultValue("")
-    @PathParam("species")
-    @ApiParam(name = "species", value = "Name of the species to query", defaultValue = "hsapiens",
-            allowableValues = "hsapiens,mmusculus,drerio,rnorvegicus,ptroglodytes,ggorilla,"
-                    + "mmulatta,sscrofa,cfamiliaris,ggallus,btaurus,cintestinalis,celegans,dmelanogaster,agambiae,pfalciparum,"
-                    + "scerevisiae,lmajor,athaliana,osativa,gmax,vvinifera,zmays,slycopersicum,csabeus,oaries,olatipes,sbicolor,afumigatus")
+//    @DefaultValue("")
+//    @PathParam("species")
+//    @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens.")
     protected String species;
 
     @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g.: grch38")
@@ -266,6 +264,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @GET
     @Path("/help")
+    @ApiOperation(httpMethod = "GET", value = "To be implemented", response = QueryResponse.class)
     public Response help() {
         return createOkResponse("No help available");
     }
