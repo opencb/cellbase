@@ -4,10 +4,7 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by fjlopez on 22/06/15.
@@ -107,6 +104,7 @@ public class VariantAnnotationUtils {
     public static final Map<Integer, String> SIFT_DESCRIPTIONS = new HashMap<>();
     public static final Map<Integer, String> POLYPHEN_DESCRIPTIONS = new HashMap<>();
     public static final Map<String, Integer> SO_SEVERITY = new HashMap<>();
+    public static final Set<String> CODING_SO_NAMES = new HashSet<>();
 
     static {
 
@@ -268,6 +266,13 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("feature_elongation", 3);
         SO_SEVERITY.put("feature_truncation", 2);
         SO_SEVERITY.put("intergenic_variant", 1);
+
+        CODING_SO_NAMES.add(STOP_RETAINED_VARIANT);
+        CODING_SO_NAMES.add(SYNONYMOUS_VARIANT);
+        CODING_SO_NAMES.add(STOP_GAINED);
+        CODING_SO_NAMES.add(INITIATOR_CODON_VARIANT);
+        CODING_SO_NAMES.add(STOP_LOST);
+        CODING_SO_NAMES.add(MISSENSE_VARIANT);
 
         SO_NAMES_CORRECTIONS.put("nc_transcript_variant", "non_coding_transcript_variant");
         SO_NAMES_CORRECTIONS.put("non_coding_exon_variant", "non_coding_transcript_exon_variant");

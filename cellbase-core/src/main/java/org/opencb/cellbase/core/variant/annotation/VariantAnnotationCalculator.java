@@ -20,6 +20,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
@@ -30,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 //import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -173,6 +176,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
          */
         List<Gene> geneList;
+        Queue<Variant> variantBuffer = new LinkedList<>();
         startTime = System.currentTimeMillis();
         for (int i = 0; i < normalizedVariantList.size(); i++) {
             // Fetch overlapping genes for this variant
@@ -189,7 +193,11 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
-                    variantAnnotation.setDisplayConsequenceType(getMostSevereConsequenceType(consequenceTypeList));
+                    normalizedVariantList.get(i).setAnnotation(variantAnnotation);
+                    checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
+                    variantAnnotation
+                            .setDisplayConsequenceType(getMostSevereConsequenceType(normalizedVariantList.get(i)
+                                    .getAnnotation().getConsequenceTypes()));
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
                             normalizedVariantList.get(i).toString());
@@ -240,6 +248,13 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             variantAnnotationResultList.add(queryResult);
 
         }
+
+        // Adjust phase of two last variants - if still anything remaining to adjust. This can happen if the two last
+        // variants in the batch are phased and the distance between them < 3nts
+        if (variantBuffer.size() > 1) {
+            adjustPhasedConsequenceTypes(variantBuffer.toArray());
+        }
+
         logger.debug("Main loop iteration annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - startTime, normalizedVariantList.size());
 
@@ -266,6 +281,268 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
         return variantAnnotationResultList;
+    }
+
+    private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer) {
+        // Only SNVs are currently considered for phase adjustment
+        if (variant.getType().equals(VariantType.SNV)) {
+            // Check and manage variantBuffer for dealing with phased variants
+            switch (variantBuffer.size()) {
+                case 0:
+                    variantBuffer.add(variant);
+                    break;
+                case 1:
+                    if (potentialCodingSNVOverlap(variantBuffer.peek(), variant)) {
+                        variantBuffer.add(variant);
+                    } else {
+                        variantBuffer.poll();
+                        variantBuffer.add(variant);
+                    }
+                    break;
+                case 2:
+                    if (potentialCodingSNVOverlap(variantBuffer.peek(), variant)) {
+                        variantBuffer.add(variant);
+                        adjustPhasedConsequenceTypes(variantBuffer.toArray());
+                        variantBuffer.poll();
+                    } else {
+                        // Adjust consequence types for the two previous variants
+                        adjustPhasedConsequenceTypes(variantBuffer.toArray());
+                        // Remove the two previous variants after adjustment
+                        variantBuffer.poll();
+                        variantBuffer.poll();
+                        variantBuffer.add(variant);
+                    }
+                default:
+                    break;
+            }
+        }
+    }
+
+//    private void checkAndAdjustPhasedConsequenceTypes(Queue<Variant> variantBuffer) {
+//        Variant[] variantArray = (Variant[]) variantBuffer.toArray();
+//        // SSACGATATCTT -> where S represents the position of the SNV
+//        if (potentialCodingSNVOverlap(variantArray[0], variantArray[1])) {
+//            // SSSACGATATCTT -> where S represents the position of the SNV. The three SNVs may affect the same codon
+//            if (potentialCodingSNVOverlap(variantArray[1], variantArray[2])) {
+//                adjustPhasedConsequenceTypes(variantArray);
+//            // SSACGATATCVTT -> where S represents the position of the SNV and V represents the position of the third
+//            // variant. Only the two first SNVs may affect the same codon.
+//            } else {
+//                adjustPhasedConsequenceTypes(Arrays.copyOfRange(variantArray, 0,3));
+//            }
+//        }
+//    }
+
+    private void adjustPhasedConsequenceTypes(Object[] variantArray) {
+        Variant variant0 = (Variant) variantArray[0];
+        for (ConsequenceType consequenceType1 : variant0.getAnnotation().getConsequenceTypes()) {
+            ProteinVariantAnnotation newProteinVariantAnnotation = null;
+            // Check if this is a coding consequence type. Also this consequence type may have been already
+            // updated if there are 3 consecutive phased SNVs affecting the same codon.
+            if (isCoding(consequenceType1)
+                    && !transcriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId())) {
+                Variant variant1 = (Variant) variantArray[1];
+                ConsequenceType consequenceType2
+                        = findCodingOverlappingConsequenceType(consequenceType1, variant1.getAnnotation().getConsequenceTypes());
+                // The two first variants affect the same codon, check the third one
+                if (variantArray.length > 2 && consequenceType2 != null) {
+                    // WARNING: assumes variants are sorted according to their coordinates
+                    int cdnaPosition = consequenceType1.getCdnaPosition();
+                    int cdsPosition = consequenceType1.getCdsPosition();
+                    String codon = null;
+                    String alternateAA = null;
+                    List<SequenceOntologyTerm> soTerms = null;
+                    Variant variant2 = (Variant) variantArray[2];
+                    ConsequenceType consequenceType3
+                            = findCodingOverlappingConsequenceType(consequenceType2, variant2.getAnnotation().getConsequenceTypes());
+                    // The three SNVs affect the same codon
+                    if (consequenceType3 != null) {
+                        String referenceCodon = consequenceType1.getCodon().split("/")[0].toUpperCase();
+                        // WARNING: assumes variants are sorted according to their coordinates
+                        String alternateCodon = variant0.getAlternate() + variant1.getAlternate()
+                                + variant2.getAlternate();
+                        codon = referenceCodon + "/" + alternateCodon;
+                        alternateAA = VariantAnnotationUtils.CODON_TO_A.get(alternateCodon);
+                        soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
+                                String.valueOf(referenceCodon), String.valueOf(alternateCodon));
+
+                        // Update consequenceType3
+                        consequenceType3.setCdnaPosition(cdnaPosition);
+                        consequenceType3.setCdsPosition(cdsPosition);
+                        consequenceType3.setCodon(codon);
+//                        consequenceType3.getProteinVariantAnnotation().setAlternate(alternateAA);
+                        newProteinVariantAnnotation = getProteinAnnotation(consequenceType3);
+                        consequenceType3.setProteinVariantAnnotation(newProteinVariantAnnotation);
+                        consequenceType3.setSequenceOntologyTerms(soTerms);
+
+                        // Flag these transcripts as already updated for this variant
+                        flagTranscriptAnnotationUpdated(variant2, consequenceType1.getEnsemblTranscriptId());
+
+                        // Only the two first SNVs affect the same codon
+                    } else {
+                        int codonIdx1 = getUpperCaseLetterPosition(consequenceType1.getCodon().split("/")[0]);
+                        int codonIdx2 = getUpperCaseLetterPosition(consequenceType2.getCodon().split("/")[0]);
+
+                        // Set referenceCodon  and alternateCodon leaving only the nts that change in uppercase.
+                        // Careful with upper/lower case letters
+                        char[] referenceCodonArray = consequenceType1.getCodon().split("/")[0].toLowerCase().toCharArray();
+                        referenceCodonArray[codonIdx1] = Character.toUpperCase(referenceCodonArray[codonIdx1]);
+                        referenceCodonArray[codonIdx2] = Character.toUpperCase(referenceCodonArray[codonIdx2]);
+                        char[] alternateCodonArray = referenceCodonArray.clone();
+                        alternateCodonArray[codonIdx1] = variant0.getAlternate().toUpperCase().toCharArray()[0];
+                        alternateCodonArray[codonIdx2] = variant1.getAlternate().toUpperCase().toCharArray()[0];
+
+                        codon = String.valueOf(referenceCodonArray) + "/" + String.valueOf(alternateCodonArray);
+                        alternateAA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(alternateCodonArray).toUpperCase());
+                        soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
+                                String.valueOf(referenceCodonArray).toUpperCase(),
+                                String.valueOf(alternateCodonArray).toUpperCase());
+                    }
+
+                    // Update consequenceType1 & 2
+                    consequenceType1.setCodon(codon);
+//                    consequenceType1.getProteinVariantAnnotation().setAlternate(alternateAA);
+                    consequenceType1.setProteinVariantAnnotation(newProteinVariantAnnotation == null
+                            ? getProteinAnnotation(consequenceType1) : newProteinVariantAnnotation);
+                    consequenceType1.setSequenceOntologyTerms(soTerms);
+                    consequenceType2.setCdnaPosition(cdnaPosition);
+                    consequenceType2.setCdsPosition(cdsPosition);
+                    consequenceType2.setCodon(codon);
+//                    consequenceType2.getProteinVariantAnnotation().setAlternate(alternateAA);
+                    consequenceType2.setProteinVariantAnnotation(consequenceType1.getProteinVariantAnnotation());
+                    consequenceType2.setSequenceOntologyTerms(soTerms);
+
+                    // Flag these transcripts as already updated for this variant
+                    flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId());
+                    flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId());
+
+                }
+            }
+        }
+    }
+
+    private void flagTranscriptAnnotationUpdated(Variant variant, String ensemblTranscriptId) {
+        Map<String, Object> additionalAttributesMap = variant.getAnnotation().getAdditionalAttributes();
+        if (additionalAttributesMap == null) {
+            additionalAttributesMap = new HashMap<>();
+            Map<String, String> transcriptsSet = new HashMap<>();
+            transcriptsSet.put(ensemblTranscriptId, null);
+            additionalAttributesMap.put("phasedTranscripts", transcriptsSet);
+            variant.getAnnotation().setAdditionalAttributes(additionalAttributesMap);
+        } else if (additionalAttributesMap.get("phasedTranscripts") == null) {
+            Map<String, String> transcriptsSet = new HashMap<>();
+            transcriptsSet.put(ensemblTranscriptId, null);
+            additionalAttributesMap.put("phasedTranscripts", transcriptsSet);
+        } else {
+            ((Map) additionalAttributesMap.get("phasedTranscripts")).put(ensemblTranscriptId, null);
+        }
+    }
+
+    private boolean transcriptAnnotationUpdated(Variant variant, String ensemblTranscriptId) {
+        if (variant.getAnnotation().getAdditionalAttributes() != null
+                && variant.getAnnotation().getAdditionalAttributes().get("phasedTranscripts") != null
+                && ((Map<String, String>) variant.getAnnotation().getAdditionalAttributes().get("phasedTranscripts"))
+                .containsKey(ensemblTranscriptId)) {
+            return true;
+        }
+        return false;
+    }
+
+    private int getUpperCaseLetterPosition(String string) {
+//        Pattern pat = Pattern.compile("G");
+        Pattern pat = Pattern.compile("[A,C,G,T]");
+        Matcher match = pat.matcher(string);
+        if (match.find()) {
+            return match.start();
+        } else {
+            return -1;
+        }
+    }
+
+    private ConsequenceType findCodingOverlappingConsequenceType(ConsequenceType consequenceType,
+                                                                 List<ConsequenceType> consequenceTypeList) {
+        for (ConsequenceType consequenceType1 : consequenceTypeList) {
+            if (isCoding(consequenceType1)
+                    && consequenceType.getEnsemblTranscriptId().equals(consequenceType1.getEnsemblTranscriptId())
+                    && consequenceType.getProteinVariantAnnotation().getPosition()
+                    .equals(consequenceType1.getProteinVariantAnnotation().getPosition())) {
+                return consequenceType1;
+            }
+        }
+        return null;
+    }
+
+    private boolean isCoding(ConsequenceType consequenceType) {
+        for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
+            if (VariantAnnotationUtils.CODING_SO_NAMES.contains(sequenceOntologyTerm.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<SequenceOntologyTerm> updatePhasedSoTerms(List<SequenceOntologyTerm> sequenceOntologyTermList,
+                                                           String referenceCodon, String alternateCodon) {
+
+        // Removes all coding-associated SO terms
+        int i = 0;
+        do {
+            if (VariantAnnotationUtils.CODING_SO_NAMES.contains(sequenceOntologyTermList.get(i).getName())) {
+                sequenceOntologyTermList.remove(i);
+            } else {
+                i++;
+            }
+        } while(i < sequenceOntologyTermList.size());
+
+        // Add the new coding SO term as appropriate
+        String newSoName = null;
+        if (VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(referenceCodon).get(alternateCodon)) {
+            if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+                newSoName = VariantAnnotationUtils.STOP_RETAINED_VARIANT;
+            } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
+                // but if the length of the cds%3=0, annotation should be synonymous variant
+                newSoName = VariantAnnotationUtils.SYNONYMOUS_VARIANT;
+            }
+        } else if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+            newSoName = VariantAnnotationUtils.STOP_LOST;
+        } else if (VariantAnnotationUtils.isStopCodon(alternateCodon)) {
+            newSoName = VariantAnnotationUtils.STOP_GAINED;
+        } else {
+            newSoName = VariantAnnotationUtils.MISSENSE_VARIANT;
+        }
+        sequenceOntologyTermList
+                .add(new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(newSoName), newSoName));
+
+        return sequenceOntologyTermList;
+    }
+
+    private boolean potentialCodingSNVOverlap(Variant variant1, Variant variant2) {
+        return Math.abs(variant1.getStart() - variant2.getStart()) < 3
+                && variant1.getChromosome().equals(variant2.getChromosome())
+                && variant1.getType().equals(VariantType.SNV) && variant2.getType().equals(VariantType.SNV)
+                && samePhase(variant1, variant2);
+    }
+
+    private boolean samePhase(Variant variant1, Variant variant2) {
+        if (variant1.getStudies() != null && !variant1.getStudies().isEmpty()) {
+            if (variant2.getStudies() != null && !variant2.getStudies().isEmpty()) {
+                int psIdx1 = variant1.getStudies().get(0).getFormat().indexOf("PS");
+                if (psIdx1 != -1) {
+                    int psIdx2 = variant2.getStudies().get(0).getFormat().indexOf("PS");
+                    if (psIdx2 != -1 &&  // variant2 does have PS set
+                            // same phase set value in both variants
+                            variant2.getStudies().get(0).getSamplesData().get(0).get(psIdx2)
+                                    .equals(variant1.getStudies().get(0).getSamplesData().get(0).get(psIdx1))
+                            // Same genotype call in both variants (e.g. 1|0=1|0).
+                            // WARNING: assuming variant1 and variant2 do have Files.
+                            && variant1.getStudies().get(0).getFiles().get(0).getCall()
+                            .equals(variant2.getStudies().get(0).getFiles().get(0).getCall())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private String getMostSevereConsequenceType(List<ConsequenceType> consequenceTypeList) {
@@ -369,18 +646,31 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
-        if (variant.getReference().isEmpty()) {
-            return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
-        } else {
-            if (variant.getAlternate().isEmpty()) {
+        switch (getVariantType(variant)) {
+            case INSERTION:
+                return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
+            case DELETION:
                 return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
-            } else {
-                if (variant.getReference().length() == 1 && variant.getAlternate().length() == 1) {
-                    return new ConsequenceTypeSNVCalculator();
-                } else {
-                    throw new UnsupportedURLVariantFormat();
-                }
-            }
+            case SNV:
+                return new ConsequenceTypeSNVCalculator();
+            default:
+                throw new UnsupportedURLVariantFormat();
+        }
+    }
+
+    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
+        return getVariantType(variant.getReference(), variant.getAlternate());
+    }
+
+    private VariantType getVariantType(String reference, String alternate) {
+        if (reference.isEmpty()) {
+            return VariantType.INSERTION;
+        } else if (alternate.isEmpty()) {
+            return VariantType.DELETION;
+        } else if (reference.length() == 1 && alternate.length() == 1) {
+            return VariantType.SNV;
+        } else {
+            throw new UnsupportedURLVariantFormat();
         }
     }
 
