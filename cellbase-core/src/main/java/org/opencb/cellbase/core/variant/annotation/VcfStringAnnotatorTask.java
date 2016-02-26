@@ -21,6 +21,7 @@ import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
 
@@ -35,6 +36,7 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, V
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
+    private static VariantNormalizer normalizer = new VariantNormalizer(false);
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version, List<VariantAnnotator> variantAnnotatorList) {
         this.vcfCodec = new FullVcfCodec();
@@ -51,10 +53,11 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, V
 
     public List<Variant> apply(List<String> batch) {
         List<Variant> variantList = parseVariantList(batch);
+        List<Variant> normalizedVariantList = normalizer.apply(variantList);
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
-            variantAnnotator.run(variantList);
+            variantAnnotator.run(normalizedVariantList);
         }
-        return variantList;
+        return normalizedVariantList;
     }
 
     private List<Variant> parseVariantList(List<String> batch) {
