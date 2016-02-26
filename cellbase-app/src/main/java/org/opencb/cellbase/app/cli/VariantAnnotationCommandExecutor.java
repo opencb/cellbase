@@ -29,7 +29,10 @@ import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
+import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.variant.annotation.*;
@@ -344,7 +347,19 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
 
-        try {
+        try (InputStream fileInputStream = customFiles.get(customFileNumber).toString().endsWith("gz")
+                    ? new GZIPInputStream(new FileInputStream(customFiles.get(customFileNumber).toFile()))
+                    : new FileInputStream(customFiles.get(customFileNumber).toFile())) {
+            FullVcfCodec codec = new FullVcfCodec();
+            LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
+            VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
+//            VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
+//            FullVcfCodec codec = new FullVcfCodec();
+//            codec.setVCFHeader(header, headerVersion);
+//
+//            codec.setVCFHeader(header, headerVersion);
+            VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
+            VariantNormalizer normalizer = new VariantNormalizer(true);
             BufferedReader reader = FileUtils.newBufferedReader(customFiles.get(customFileNumber));
             String line;
             int lineCounter = 0;
@@ -360,18 +375,24 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 // Reference positions will not be indexed
                 if (!fields[4].equals(".")) {
                     String[] alternates = line.split("\t")[4].split(",");
-                    List<Map<String, Object>> parsedInfo = parseInfoAttributes(fields[7], alternates.length, customFileNumber);
-                    for (int i = 0; i < alternates.length; i++) {
+//                    List<Map<String, Object>> parsedInfo = parseInfoAttributes(fields[7], alternates.length, customFileNumber);
+                    List<Variant> variantList = normalizer.normalize(converter.apply(Collections.singletonList(codec.decode(line))), true);
+//                    for (int i = 0; i < alternates.length; i++) {
+                    for (Variant variant : variantList) {
+                        db.put((variant.getChromosome() + "_" + variant.getStart() + "_" + variant.getReference() + "_"
+                                        + variant.getAlternate()).getBytes(),
+                                jsonObjectWriter.writeValueAsBytes(parseInfoAttributes(variant, customFileNumber)));
+
                         // INDEL
-                        if (fields[3].length() > 1 || alternates[i].length() > 1) {
-                            db.put((fields[0] + "_" + (Integer.valueOf(fields[1]) + 1) + "_" + fields[3].substring(1) + "_"
-                                    + alternates[i].substring(1)).getBytes(),
-                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
-                            // SNV
-                        } else {
-                            db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alternates[i]).getBytes(),
-                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
-                        }
+//                        if (fields[3].length() > 1 || alternates[i].length() > 1) {
+//                            db.put((fields[0] + "_" + (Integer.valueOf(fields[1]) + 1) + "_" + fields[3].substring(1) + "_"
+//                                    + alternates[i].substring(1)).getBytes(),
+//                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
+//                            // SNV
+//                        } else {
+//                            db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alternates[i]).getBytes(),
+//                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
+//                        }
                     }
                 }
                 line = reader.readLine();
@@ -381,11 +402,24 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 }
             }
             reader.close();
-        } catch (IOException | RocksDBException e) {
+        } catch (IOException | RocksDBException | NonStandardCompliantSampleField e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
+
+    protected Map<String, Object> parseInfoAttributes(Variant variant, int customFileNumber) {
+        Map<String, String> infoMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
+        Map<String, Object> parsedInfo = new HashMap<>();
+        for (String attribute : infoMap.keySet()) {
+            if (customFileFields.get(customFileNumber).contains(attribute)) {
+                parsedInfo.put(attribute, getValueFromString(infoMap.get(attribute)));
+            }
+        }
+
+        return parsedInfo;
+    }
+
 
     protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
         List<Map<String, Object>> infoAttributes = new ArrayList<>(numAlleles);
