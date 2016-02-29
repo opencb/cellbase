@@ -75,7 +75,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //    }
 
     public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory) {
-        normalizer = new VariantNormalizer(false);
+        normalizer = new VariantNormalizer(false, false, true);
 
         this.dbAdaptorFactory = dbAdaptorFactory;
 

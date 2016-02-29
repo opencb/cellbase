@@ -36,7 +36,7 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, V
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
-    private static VariantNormalizer normalizer = new VariantNormalizer(false);
+    private static VariantNormalizer normalizer = new VariantNormalizer(false, false, true);
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version, List<VariantAnnotator> variantAnnotatorList) {
         this.vcfCodec = new FullVcfCodec();

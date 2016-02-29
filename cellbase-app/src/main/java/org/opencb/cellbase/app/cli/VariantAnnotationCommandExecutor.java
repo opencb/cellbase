@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import htsjdk.tribble.readers.LineIterator;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.apache.commons.lang.math.NumberUtils;
@@ -347,61 +349,30 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
 
-        try (InputStream fileInputStream = customFiles.get(customFileNumber).toString().endsWith("gz")
-                    ? new GZIPInputStream(new FileInputStream(customFiles.get(customFileNumber).toFile()))
-                    : new FileInputStream(customFiles.get(customFileNumber).toFile())) {
-            FullVcfCodec codec = new FullVcfCodec();
-            LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
-            VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
-//            VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
-//            FullVcfCodec codec = new FullVcfCodec();
-//            codec.setVCFHeader(header, headerVersion);
-//
-//            codec.setVCFHeader(header, headerVersion);
-            VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
-            VariantNormalizer normalizer = new VariantNormalizer(true);
-            BufferedReader reader = FileUtils.newBufferedReader(customFiles.get(customFileNumber));
-            String line;
+        try {
+            VCFFileReader vcfFileReader = new VCFFileReader(customFiles.get(customFileNumber).toFile(), false);
+            Iterator<VariantContext> iterator = vcfFileReader.iterator();
+            VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "",
+                    vcfFileReader.getFileHeader().getSampleNamesInOrder());
+            VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
             int lineCounter = 0;
-            while ((line = reader.readLine()) != null) {   // && (line.trim().equals("") || line.startsWith("#"))
-                if (line.trim().equals("") || line.startsWith("#")) {
-                    lineCounter++;
-                } else {
-                    break;
-                }
-            }
-            while (line != null) {
-                String[] fields = line.split("\t");
+            while (iterator.hasNext()) {
+                VariantContext variantContext = iterator.next();
                 // Reference positions will not be indexed
-                if (!fields[4].equals(".")) {
-                    String[] alternates = line.split("\t")[4].split(",");
-//                    List<Map<String, Object>> parsedInfo = parseInfoAttributes(fields[7], alternates.length, customFileNumber);
-                    List<Variant> variantList = normalizer.normalize(converter.apply(Collections.singletonList(codec.decode(line))), true);
-//                    for (int i = 0; i < alternates.length; i++) {
+                if (variantContext.getAlternateAlleles().size() > 0) {
+                    List<Variant> variantList = normalizer.normalize(converter.apply(Collections.singletonList(variantContext)), true);
                     for (Variant variant : variantList) {
                         db.put((variant.getChromosome() + "_" + variant.getStart() + "_" + variant.getReference() + "_"
                                         + variant.getAlternate()).getBytes(),
                                 jsonObjectWriter.writeValueAsBytes(parseInfoAttributes(variant, customFileNumber)));
-
-                        // INDEL
-//                        if (fields[3].length() > 1 || alternates[i].length() > 1) {
-//                            db.put((fields[0] + "_" + (Integer.valueOf(fields[1]) + 1) + "_" + fields[3].substring(1) + "_"
-//                                    + alternates[i].substring(1)).getBytes(),
-//                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
-//                            // SNV
-//                        } else {
-//                            db.put((fields[0] + "_" + fields[1] + "_" + fields[3] + "_" + alternates[i]).getBytes(),
-//                                    jsonObjectWriter.writeValueAsBytes(parsedInfo.get(i)));
-//                        }
                     }
                 }
-                line = reader.readLine();
                 lineCounter++;
                 if (lineCounter % 100000 == 0) {
                     logger.info("{} lines indexed", lineCounter);
                 }
             }
-            reader.close();
+            vcfFileReader.close();
         } catch (IOException | RocksDBException | NonStandardCompliantSampleField e) {
             e.printStackTrace();
             System.exit(1);
@@ -420,7 +391,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return parsedInfo;
     }
 
-
+    @Deprecated
     protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
         List<Map<String, Object>> infoAttributes = new ArrayList<>(numAlleles);
         for (int i = 0; i < numAlleles; i++) {
