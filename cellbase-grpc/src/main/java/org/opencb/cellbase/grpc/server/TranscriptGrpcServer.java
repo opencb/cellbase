@@ -2,10 +2,10 @@ package org.opencb.cellbase.grpc.server;
 
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
+import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
+import org.opencb.biodata.models.core.protobuf.TranscriptModel;
+import org.opencb.biodata.models.core.protobuf.service.TranscriptServiceGrpc;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
-import org.opencb.cellbase.grpc.GenericServiceModel;
-import org.opencb.cellbase.grpc.TranscriptModel;
-import org.opencb.cellbase.grpc.TranscriptServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -18,13 +18,14 @@ import java.util.List;
  */
 public class TranscriptGrpcServer extends GenericGrpcServer implements TranscriptServiceGrpc.TranscriptService {
     @Override
-    public void count(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.LongResponse> responseObserver) {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
+    public void count(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
+        TranscriptDBAdaptor transcriptDBAdaptor =
+                dbAdaptorFactory.getTranscriptDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
 
         Query query = createQuery(request);
         QueryResult queryResult = transcriptDBAdaptor.count(query);
         Long value = Long.valueOf(queryResult.getResult().get(0).toString());
-        GenericServiceModel.LongResponse count = GenericServiceModel.LongResponse.newBuilder()
+        ServiceTypesModel.LongResponse count = ServiceTypesModel.LongResponse.newBuilder()
                 .setValue(value)
                 .build();
         responseObserver.onNext(count);
@@ -32,43 +33,44 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
     }
 
     @Override
-    public void distinct(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringArrayResponse> responseObserver) {
+    public void distinct(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
 
     }
 
     @Override
-    public void first(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+    public void first(ServiceTypesModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
 
     }
 
     @Override
-    public void next(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+    public void next(ServiceTypesModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
 
     }
 
     @Override
-    public void groupBy(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.GroupResponse> responseObserver) {
+    public void groupBy(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 
-    @Override
-    public void getCdna(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringResponse> responseObserver) {
-//        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
+//    @Override
+//    public void getCdna(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
+//        TranscriptDBAdaptor transcriptDBAdaptor =
+//                dbAdaptorFactory.getTranscriptDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
 //
 //        Query query = createQuery(request);
 //        QueryResult queryResult = transcriptDBAdaptor.getCdna(query.getString("id"));
 //        String cdna = String.valueOf(queryResult);
-//        GenericServiceModel.StringResponse value = GenericServiceModel.StringResponse.newBuilder()
+//        ServiceTypesModel.StringResponse value = ServiceTypesModel.StringResponse.newBuilder()
 //                .setValue(cdna)
 //                .build();
 //        responseObserver.onNext(value);
 //        responseObserver.onCompleted();
-    }
+//    }
 
     @Override
-    public void get(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
-
+    public void get(ServiceTypesModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+        TranscriptDBAdaptor transcriptDBAdaptor =
+                dbAdaptorFactory.getTranscriptDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
         Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
