@@ -24,16 +24,11 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.glassfish.jersey.client.ClientConfig;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureTraitType;
-import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.cellbase.core.common.core.*;
-import org.opencb.cellbase.core.common.core.Xref;
-import org.opencb.cellbase.core.common.regulatory.ConservedRegion;
-import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
-import org.opencb.cellbase.core.common.regulatory.Tfbs;
-import org.opencb.cellbase.core.common.variation.*;
+import org.opencb.biodata.models.variation.*;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -143,7 +138,7 @@ public class CellBaseClient {
 
         SUB_CATEGORY_BEAN_MAP = new HashMap<>();
         SUB_CATEGORY_BEAN_MAP.put(SubCategory.protein, Entry.class);
-        SUB_CATEGORY_BEAN_MAP.put(SubCategory.chromosome, Chromosome.class);
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.chromosome, InfoStats.class);
         SUB_CATEGORY_BEAN_MAP.put(SubCategory.exon, Exon.class);
         SUB_CATEGORY_BEAN_MAP.put(SubCategory.transcript, Transcript.class);
         SUB_CATEGORY_BEAN_MAP.put(SubCategory.gene, Gene.class);
@@ -160,11 +155,11 @@ public class CellBaseClient {
         RESOURCE_BEAN_MAP.put(Resource.mutation, Mutation.class);
         RESOURCE_BEAN_MAP.put(Resource.structuralVariation, StructuralVariation.class);
         RESOURCE_BEAN_MAP.put(Resource.sequence, GenomeSequenceFeature.class);
-        RESOURCE_BEAN_MAP.put(Resource.tfbs, Tfbs.class);
+        RESOURCE_BEAN_MAP.put(Resource.tfbs, TranscriptTfbs.class);
 //        RESOURCE_BEAN_MAP.put(Resource.mima_target, .class);
         RESOURCE_BEAN_MAP.put(Resource.cpgIsland, CpGIsland.class);
-        RESOURCE_BEAN_MAP.put(Resource.conserved_region, ConservedRegion.class);
-        RESOURCE_BEAN_MAP.put(Resource.regulatory, RegulatoryRegion.class);
+        RESOURCE_BEAN_MAP.put(Resource.conserved_region, GenomicScoreRegion.class);
+        RESOURCE_BEAN_MAP.put(Resource.regulatory, RegulatoryFeature.class);
         //genomic/variant
         RESOURCE_BEAN_MAP.put(Resource.effect, GenomicVariantEffect.class);
         RESOURCE_BEAN_MAP.put(Resource.consequenceType, ConsequenceType.class);
@@ -337,14 +332,14 @@ public class CellBaseClient {
         return get(category, subCategory, ids, Resource.reverse, queryOptions, (GenomeSequenceFeature.class));
     }
 
-    public QueryResponse<QueryResult<Tfbs>> getTfbs(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<QueryResult<TranscriptTfbs>> getTfbs(Category category, SubCategory subCategory, List<Region> ids,
                                                     QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.tfbs, queryOptions, (Tfbs.class));
+        return get(category, subCategory, ids, Resource.tfbs, queryOptions, (TranscriptTfbs.class));
     }
 
-    public QueryResponse<QueryResult<RegulatoryRegion>> getRegulatoryRegion(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<QueryResult<RegulatoryFeature>> getRegulatoryRegion(Category category, SubCategory subCategory, List<Region> ids,
                                                                             QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.regulatory, queryOptions, (RegulatoryRegion.class));
+        return get(category, subCategory, ids, Resource.regulatory, queryOptions, (RegulatoryFeature.class));
     }
 
     public QueryResponse<QueryResult<CpGIsland>> getCpgIsland(Category category, SubCategory subCategory, List<Region> ids,
@@ -352,9 +347,9 @@ public class CellBaseClient {
         return get(category, subCategory, ids, Resource.cpgIsland, queryOptions, (CpGIsland.class));
     }
 
-    public QueryResponse<QueryResult<ConservedRegion>> getConservedRegion(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<QueryResult<GenomicScoreRegion>> getConservedRegion(Category category, SubCategory subCategory, List<Region> ids,
                                                                           QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.conserved_region, queryOptions, (ConservedRegion.class));
+        return get(category, subCategory, ids, Resource.conserved_region, queryOptions, (GenomicScoreRegion.class));
     }
 
 //    public QueryResponse<QueryResult<Peptide>> getPeptide(Category category, SubCategory subCategory, List<Region> ids,

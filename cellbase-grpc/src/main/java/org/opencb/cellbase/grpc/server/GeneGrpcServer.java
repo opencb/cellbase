@@ -100,15 +100,15 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     private GeneModel.Gene convert(Document document) {
         GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
-                .setId(document.getString("id"))
-                .setName(document.getString("name"))
-                .setChromosome(document.getString("chromosome"))
+                .setId((String) document.getOrDefault("id", ""))
+                .setName((String) document.getOrDefault("name", ""))
+                .setChromosome((String) document.getOrDefault("chromosome", ""))
                 .setStart(document.getInteger("start"))
                 .setEnd(document.getInteger("end"))
-                .setBiotype(document.getString("biotype"))
-                .setStatus(document.getString("status"))
-                .setStrand(document.getString("strand"))
-                .setSource(document.getString("source"));
+                .setBiotype((String) document.getOrDefault("biotype", ""))
+                .setStatus((String) document.getOrDefault("status", ""))
+                .setStrand((String) document.getOrDefault("strand", ""))
+                .setSource((String) document.getOrDefault("source", ""));
 //                .addAllTranscripts()
 
         return builder.build();
