@@ -110,7 +110,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        QueryOptions parsedOptions = parseQueryOptions(options);
+        return mongoDBCollection.find(bson, parsedOptions);
     }
 
     @Override
@@ -131,6 +132,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         while (iterator.hasNext()) {
             action.accept(iterator.next());
         }
+    }
+
+    private QueryOptions parseQueryOptions(QueryOptions options) {
+        List<String> sortFields = options.getAsStringList("sort");
+        if (sortFields != null) {
+            Document sortDocument = new Document();
+            for (String field : sortFields) {
+                sortDocument.put(field, 1);
+            }
+            options.put("sort", sortDocument);
+        }
+        return options;
     }
 
     private Bson parseQuery(Query query) {

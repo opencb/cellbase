@@ -33,15 +33,15 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.variant.annotation.*;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.io.StringDataReader;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.opencb.commons.utils.FileUtils;
-import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -67,6 +67,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private Path output;
     private String url;
     private boolean local;
+    private boolean cellBaseAnnotation;
     private int port;
     private String species;
     private int numThreads;
@@ -81,6 +82,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private FileFormat outputFormat;
 
     private QueryOptions queryOptions;
+
+    private DBAdaptorFactory dbAdaptorFactory = null;
 
     private final int QUEUE_CAPACITY = 10;
     private final String TMP_DIR = "/tmp/";
@@ -114,11 +117,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
                 if (local) {
                     DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
-//                    VariantAnnotationDBAdaptor variantAnnotationDBAdaptor =
-//                            dbAdaptorFactory.getVariantAnnotationDBAdaptor(variantAnnotationCommandOptions.species);
-//                    List<QueryResult> annotationByVariantList =
-//                            variantAnnotationDBAdaptor.getAnnotationByVariantList(variants, queryOptions);
-
                     VariantAnnotationCalculator variantAnnotationCalculator =
                             new VariantAnnotationCalculator(this.species, variantAnnotationCommandOptions.assembly, dbAdaptorFactory);
                     List<QueryResult<VariantAnnotation>> annotationByVariantList =
@@ -141,25 +139,36 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 return;
             }
 
-            // If a variant file is provided then we annotate it
+            // If a variant file is provided then we annotate it. Lines in the input file can be computationally
+            // expensive to parse, i.e.: multisample vcf with thousands of samples. A specific task is created to enable
+            // parallel parsing of these lines
             if (input != null) {
                 DataReader dataReader = new StringDataReader(input);
-                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getTaskList();
+                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList();
                 DataWriter dataWriter = getDataWriter();
 
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
                 ParallelTaskRunner<String, Variant> runner =
-                        new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                        new ParallelTaskRunner<String, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
                 runner.run();
             } else {
                 // This will annotate the CellBase Variation collection
-                if (variantAnnotationCommandOptions.cellBaseAnnotation) {
-                    DBAdaptorFactory dbAdaptorFactory = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(configuration);
-//                    DataWriter dataWriter = getDataWriter();
-//                    ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-//                    ParallelTaskRunner<String, Variant> runner =
-// new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
-//                    runner.run();
+                if (cellBaseAnnotation) {
+                    dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+                    // TODO: enable this query in the parseQuery method within VariantMongoDBAdaptor
+//                    Query query = new Query("$match",
+//                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
+                    Query query = new Query();
+                    QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
+                    DataReader dataReader =
+                            new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
+                    List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList();
+                    DataWriter dataWriter = getDataWriter();
+
+                    ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+                    ParallelTaskRunner<Variant, Variant> runner =
+                            new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                    runner.run();
                 }
             }
 
@@ -184,7 +193,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.Task<String, Variant>> getTaskList() throws IOException {
+    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList() throws IOException {
         List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
@@ -198,7 +207,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
-                        variantAnnotatorTaskList.add(new VariantAnnotatorTask(header, headerVersion, variantAnnotatorList));
+                        variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion, variantAnnotatorList));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
@@ -207,6 +216,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     break;
             }
         }
+        return variantAnnotatorTaskList;
+    }
+
+    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList() throws IOException {
+        List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+        for (int i = 0; i < numThreads; i++) {
+            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
+            variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
+        }
+
         return variantAnnotatorTaskList;
     }
 
@@ -238,8 +257,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private VariantAnnotator createCellBaseAnnotator() {
-        if (local) {
-            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+        // Assume annotation of CellBase variation collection will always be carried out from a local installation
+        if (local || cellBaseAnnotation) {
+            // dbAdaptorFactory may have been already initialized at execute if annotating CellBase variation collection
+            if (dbAdaptorFactory == null) {
+                dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+            }
 //            return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null), queryOptions);
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, null, dbAdaptorFactory), queryOptions);
         } else {
@@ -492,6 +515,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Please check command line sintax. Provide a valid port to access CellBase web services.");
             }
         }
+
+        // Annotate variation collection in CellBase
+        cellBaseAnnotation = variantAnnotationCommandOptions.cellBaseAnnotation;
 
         // Species
         if (variantAnnotationCommandOptions.species != null) {

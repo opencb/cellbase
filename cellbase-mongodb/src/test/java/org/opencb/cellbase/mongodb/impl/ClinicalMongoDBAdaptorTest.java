@@ -9,6 +9,8 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 /**
@@ -32,7 +34,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(queryResult1.getNumTotalResults(), 85);
         assertEquals(queryResult1.getNumResults(), 30);
         assertEquals(((Document)((Document) ((Document) ((Document) queryResult1.getResult().get(17)).get("clinvarSet"))
-                .get("referenceClinVarAssertion")).get("clinVarAccession")).get("acc"), "RCV000019725");
+                .get("referenceClinVarAssertion")).get("clinVarAccession")).get("acc"), "RCV000019769");
 
         Query query2 = new Query();
         query2.put("phenotype", "myelofibrosis");
@@ -53,22 +55,30 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult queryResult4 = clinicalDBAdaptor.nativeGet(query4, queryOptions);
         // WARNING: these values may change from one ClinVar version to another
         assertEquals(queryResult4.getNumTotalResults(), 10);
-        assertEquals(((Document) queryResult4.getResult().get(4)).get("mutationID"), "COSM228320");
-        assertEquals(((Document)((Document) ((Document) ((Document) queryResult4.getResult().get(7)).get("clinvarSet"))
+        assertEquals(((Document) queryResult4.getResult().get(4)).get("mutationID"), "COSM4624460");
+        assertEquals(((Document)((Document) ((Document) ((Document) queryResult4.getResult().get(1)).get("clinvarSet"))
                 .get("referenceClinVarAssertion")).get("clinVarAccession")).get("acc"), "RCV000171500");
 
         Query query5 = new Query();
         query5.put("significance", "Likely_pathogenic");
         QueryResult queryResult5 = clinicalDBAdaptor.nativeGet(query5, queryOptions);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult5.getNumTotalResults(), 6915);
+        assertEquals(queryResult5.getNumTotalResults(), 7097);
 
         Query query6 = new Query();
         query6.put("gene", "APOE");
+        queryOptions.put("sort", "chromosome,start");
         QueryResult queryResult6 = clinicalDBAdaptor.nativeGet(query6, queryOptions);
+        // Check sorted output
+        int previousStart = -1;
+        for (Document document : (List<Document>) queryResult6.getResult()) {
+            assertTrue(previousStart < document.getInteger("start"));
+            System.out.println("document = " + document.get("chro/mosome") + ", " + document.get("start"));
+        }
         // WARNING: these values may change from one ClinVar version to another
         assertEquals(queryResult6.getNumTotalResults(), 85);
 
+        queryOptions.remove("sort");
         query6.put("source", "clinvar");
         QueryResult queryResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions);
         assertEquals(queryResult7.getNumTotalResults(), 38);

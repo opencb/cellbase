@@ -156,7 +156,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
-        Future<List<QueryResult>> variantFunctionalScoreFuture = null;
+        Future<List<QueryResult<Score>>> variantFunctionalScoreFuture = null;
         if (annotatorSet.contains("functionalScore")) {
             futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, queryOptions);
             variantFunctionalScoreFuture = fixedThreadPool.submit(futureVariantFunctionalScoreAnnotator);
@@ -189,6 +189,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
+                    variantAnnotation.setDisplayConsequenceType(getMostSevereConsequenceType(consequenceTypeList));
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
                             normalizedVariantList.get(i).toString());
@@ -265,6 +266,22 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
         return variantAnnotationResultList;
+    }
+
+    private String getMostSevereConsequenceType(List<ConsequenceType> consequenceTypeList) {
+        int max = -1;
+        String mostSevereConsequencetype = null;
+        for (ConsequenceType consequenceType : consequenceTypeList) {
+            for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
+                int rank = VariantAnnotationUtils.SO_SEVERITY.get(sequenceOntologyTerm.getName());
+                if (rank > max) {
+                    max = rank;
+                    mostSevereConsequencetype = sequenceOntologyTerm.getName();
+                }
+            }
+        }
+
+        return mostSevereConsequencetype;
     }
 
     private Set<String> getAnnotatorSet(QueryOptions queryOptions) {
@@ -547,7 +564,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     }
 
-    class FutureVariantFunctionalScoreAnnotator implements Callable<List<QueryResult>> {
+    class FutureVariantFunctionalScoreAnnotator implements Callable<List<QueryResult<Score>>> {
         private List<Variant> variantList;
 
         private QueryOptions queryOptions;
@@ -558,25 +575,25 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         @Override
-        public List<QueryResult> call() throws Exception {
+        public List<QueryResult<Score>> call() throws Exception {
             long startTime = System.currentTimeMillis();
 //            List<QueryResult> variantFunctionalScoreQueryResultList =
 //                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
-            List<QueryResult> variantFunctionalScoreQueryResultList =
+            List<QueryResult<Score>> variantFunctionalScoreQueryResultList =
                     variantDBAdaptor.getFunctionalScoreVariant(variantList, queryOptions);
             logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
                     System.currentTimeMillis() - startTime, variantList.size());
             return variantFunctionalScoreQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> variantFunctionalScoreFuture,
+        public void processResults(Future<List<QueryResult<Score>>> variantFunctionalScoreFuture,
                                    List<QueryResult<VariantAnnotation>> variantAnnotationResultList) {
             try {
                 while (!variantFunctionalScoreFuture.isDone()) {
                     Thread.sleep(1);
                 }
 
-                List<QueryResult> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
+                List<QueryResult<Score>> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
                 if (variantFunctionalScoreQueryResults != null) {
                     for (int i = 0; i < variantAnnotationResultList.size(); i++) {
                         variantAnnotationResultList.get(i).getResult().get(0)

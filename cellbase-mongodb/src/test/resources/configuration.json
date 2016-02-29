@@ -3,10 +3,10 @@
 	"apiVersion": "v4.0",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"database": {
-		"host": "${CELLBASE.DB.HOST}",
-		"port": "${CELLBASE.DB.PORT}",
-		"user": "${CELLBASE.DB.USER}",
-		"password": "${CELLBASE.DB.PASSWORD}",
+		"host": "localhost",
+		"port": "",
+		"user": "",
+		"password": "",
 		"options": {
 			"authenticationDatabase": "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}",
 			"readPreference": "${CELLBASE.DB.MONGODB.READPREFERENCE}",
@@ -71,9 +71,6 @@
 		},
 		"clinvar": {
 			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-12.xml.gz"
-		},
-		"clinvarSummary": {
-				"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"
 		},
 		"clinvarEfoTerms": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/ClinVar_Traits_EFO_Names_260615.csv"
