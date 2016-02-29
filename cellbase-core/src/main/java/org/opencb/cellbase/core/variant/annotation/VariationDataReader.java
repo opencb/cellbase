@@ -69,7 +69,7 @@ public class VariationDataReader implements DataReader<Variant> {
     }
 
     /**
-     * Checks whether a variant is valid
+     * Checks whether a variant is valid.
      *
      * @param variant Variant object to be checked.
      * @return   true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
