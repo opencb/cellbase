@@ -76,7 +76,7 @@ public class VariationDataReader implements DataReader<Variant> {
      * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Functionality of the method may be
      * improved in the future.
      */
-    public static boolean isValid(Variant variant) {
+    private boolean isValid(Variant variant) {
         return (variant.getReference().matches(VARIANT_STRING_PATTERN)
                 && variant.getAlternate().matches(VARIANT_STRING_PATTERN));
     }
