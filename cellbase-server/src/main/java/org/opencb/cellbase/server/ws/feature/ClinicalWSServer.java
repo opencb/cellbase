@@ -17,11 +17,11 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import io.swagger.annotations.*;
+import org.bson.Document;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.commons.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -58,7 +58,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the MongoDB. Please have "
             + "a look at "
             + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
-            value = "Retrieves all the clinical objects", response = QueryResponse.class)
+            value = "Retrieves all the clinical objects", response = Document.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "source",
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "
