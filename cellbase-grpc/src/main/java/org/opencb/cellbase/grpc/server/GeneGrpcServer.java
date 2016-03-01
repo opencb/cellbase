@@ -21,7 +21,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
 
     @Override
-    public void count(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
+    public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
@@ -35,7 +35,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void distinct(GenericServiceModel.CellbaseRequest request,
+    public void distinct(GenericServiceModel.Request request,
                          StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
@@ -50,7 +50,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void first(GenericServiceModel.CellbaseRequest request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void first(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         QueryOptions queryOptions = createQueryOptions(request);
@@ -60,12 +60,12 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void next(GenericServiceModel.CellbaseRequest request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void next(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
 
     }
 
     @Override
-    public void get(GenericServiceModel.CellbaseRequest request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void get(GenericServiceModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
@@ -79,24 +79,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void getJson(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
-
-        Query query = createQuery(request);
-        QueryOptions queryOptions = createQueryOptions(request);
-        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
-        while (iterator.hasNext()) {
-            Document document = (Document) iterator.next();
-            ServiceTypesModel.StringResponse response =
-                    ServiceTypesModel.StringResponse.newBuilder().setValue(document.toJson()).build();
-            responseObserver.onNext(response);
-        }
-        responseObserver.onCompleted();
-    }
-
-
-    @Override
-    public void groupBy(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 

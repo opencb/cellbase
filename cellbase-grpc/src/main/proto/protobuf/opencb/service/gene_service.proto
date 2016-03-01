@@ -3,23 +3,23 @@ syntax = "proto3";
 package protobuf.opencb.service;
 
 option java_package = "org.opencb.cellbase.grpc.service";
-option java_outer_classname = "VariantServiceModel";
+option java_outer_classname = "GeneServiceModel";
 
 import "protobuf/opencb/service/generic_service.proto";
 import "protobuf/opencb/service_types.proto";
-import "protobuf/opencb/variant.proto";
+import "protobuf/opencb/gene.proto";
 
-service VariantService {
+service GeneService {
 
     rpc count(Request) returns (LongResponse) {}
 
     rpc distinct(Request) returns (StringArrayResponse) {}
 
-    rpc first(Request) returns (Variant) {}
+    rpc first(Request) returns (Gene) {}
 
-    rpc next(Request) returns (Variant) {}
+    rpc next(Request) returns (Gene) {}
 
-    rpc get(Request) returns (stream Variant) {}
+    rpc get(Request) returns (stream Gene) {}
 
     rpc groupBy(Request) returns (GroupResponse) {}
 

@@ -5,7 +5,7 @@ package protobuf.opencb.service;
 option java_package = "org.opencb.cellbase.grpc.service";
 option java_outer_classname = "GenericServiceModel";
 
-message CellbaseRequest {
+message Request {
     string species = 1;
     string assembly = 2;
     map<string, string> query = 3;
