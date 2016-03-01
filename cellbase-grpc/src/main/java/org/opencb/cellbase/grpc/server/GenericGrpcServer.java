@@ -18,13 +18,12 @@ package org.opencb.cellbase.grpc.server;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
-import org.opencb.biodata.models.core.protobuf.service.GeneServiceGrpc;
-import org.opencb.biodata.models.core.protobuf.service.RegulatoryRegionServiceGrpc;
-import org.opencb.biodata.models.core.protobuf.service.TranscriptServiceGrpc;
-import org.opencb.biodata.models.variant.protobuf.service.VariantServiceGrpc;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.grpc.service.GeneServiceGrpc;
+import org.opencb.cellbase.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.grpc.service.RegulatoryRegionServiceGrpc;
+import org.opencb.cellbase.grpc.service.TranscriptServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -76,7 +75,7 @@ public class GenericGrpcServer {
         server = ServerBuilder.forPort(port)
                 .addService(GeneServiceGrpc.bindService(new GeneGrpcServer()))
                 .addService(TranscriptServiceGrpc.bindService(new TranscriptGrpcServer()))
-                .addService(VariantServiceGrpc.bindService(new VariantGrpcServer()))
+//                .addService(VariantServiceGrpc.bindService(new VariantGrpcServer()))
                 .addService(RegulatoryRegionServiceGrpc.bindService(new RegulatoryGrpcServer()))
                 .build()
                 .start();
@@ -104,7 +103,7 @@ public class GenericGrpcServer {
     }
 
 
-    protected Query createQuery(ServiceTypesModel.Request request) {
+    protected Query createQuery(GenericServiceModel.CellbaseRequest request) {
         Query query = new Query();
         for (String key : request.getQuery().keySet()) {
             if (request.getQuery().get(key) != null) {
@@ -114,7 +113,7 @@ public class GenericGrpcServer {
         return query;
     }
 
-    protected QueryOptions createQueryOptions(ServiceTypesModel.Request request) {
+    protected QueryOptions createQueryOptions(GenericServiceModel.CellbaseRequest request) {
         QueryOptions queryOptions = new QueryOptions();
         for (String key : request.getOptions().keySet()) {
             if (request.getOptions().get(key) != null) {
