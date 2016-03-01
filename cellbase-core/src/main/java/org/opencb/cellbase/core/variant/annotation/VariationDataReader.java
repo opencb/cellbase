@@ -1,6 +1,5 @@
 package org.opencb.cellbase.core.variant.annotation;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
@@ -25,6 +24,7 @@ public class VariationDataReader implements DataReader<Variant> {
     private Iterator<Variant> iterator;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private int nReadVariants = 0;
+    private static final String VARIANT_STRING_PATTERN = "[ACGTN]*";
 
     public VariationDataReader(VariantDBAdaptor dbAdaptor, Query query, QueryOptions options) {
         this.dbAdaptor = dbAdaptor;
@@ -48,7 +48,6 @@ public class VariationDataReader implements DataReader<Variant> {
      * @return  List of variants. It can be expected to contain only one variant.
      */
     public List<Variant> read() {
-
         Variant variant = null;
         boolean valid = false;
         while (iterator.hasNext() && !valid) {
@@ -73,11 +72,13 @@ public class VariationDataReader implements DataReader<Variant> {
      *
      * @param variant Variant object to be checked.
      * @return   true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
-     * reference/alternate attributes not being numbers is performed to detect cases such as 1:13123123:4:5. Functionality
-     * of the method may be improved in the future.
+     * reference/alternate attributes being strings of [A,C,G,T,N] of length >= 0 is performed to detect cases such as
+     * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Functionality of the method may be
+     * improved in the future.
      */
-    private boolean isValid(Variant variant) {
-        return !(NumberUtils.isNumber(variant.getReference()) || NumberUtils.isNumber(variant.getAlternate()));
+    public static boolean isValid(Variant variant) {
+        return (variant.getReference().matches(VARIANT_STRING_PATTERN)
+                && variant.getAlternate().matches(VARIANT_STRING_PATTERN));
     }
 
     public List<Variant> read(int batchSize) {
