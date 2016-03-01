@@ -4,8 +4,9 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
-import org.opencb.biodata.models.core.protobuf.service.GeneServiceGrpc;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.grpc.service.GeneServiceGrpc;
+import org.opencb.cellbase.grpc.service.GenericServiceModel;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -20,9 +21,8 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
 
     @Override
-    public void count(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor =
-                dbAdaptorFactory.getGeneDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void count(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = geneDBAdaptor.count(query);
@@ -35,9 +35,9 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void distinct(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor =
-                dbAdaptorFactory.getGeneDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void distinct(GenericServiceModel.CellbaseRequest request,
+                         StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptions().get("distinct"));
@@ -50,9 +50,8 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void first(ServiceTypesModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor =
-                dbAdaptorFactory.getGeneDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void first(GenericServiceModel.CellbaseRequest request, StreamObserver<GeneModel.Gene> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = geneDBAdaptor.first(queryOptions);
@@ -61,14 +60,13 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void next(ServiceTypesModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
+    public void next(GenericServiceModel.CellbaseRequest request, StreamObserver<GeneModel.Gene> responseObserver) {
 
     }
 
     @Override
-    public void get(ServiceTypesModel.Request request, StreamObserver<GeneModel.Gene> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor =
-                dbAdaptorFactory.getGeneDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void get(GenericServiceModel.CellbaseRequest request, StreamObserver<GeneModel.Gene> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
@@ -80,26 +78,25 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
         responseObserver.onCompleted();
     }
 
-//    @Override
-//    public void getJson(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
-//        GeneDBAdaptor geneDBAdaptor =
-//                dbAdaptorFactory.getGeneDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
-//
-//        Query query = createQuery(request);
-//        QueryOptions queryOptions = createQueryOptions(request);
-//        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
-//        while (iterator.hasNext()) {
-//            Document document = (Document) iterator.next();
-//            ServiceTypesModel.StringResponse response =
-//                    ServiceTypesModel.StringResponse.newBuilder().setValue(document.toJson()).build();
-//            responseObserver.onNext(response);
-//        }
-//        responseObserver.onCompleted();
-//    }
+    @Override
+    public void getJson(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
+        while (iterator.hasNext()) {
+            Document document = (Document) iterator.next();
+            ServiceTypesModel.StringResponse response =
+                    ServiceTypesModel.StringResponse.newBuilder().setValue(document.toJson()).build();
+            responseObserver.onNext(response);
+        }
+        responseObserver.onCompleted();
+    }
 
 
     @Override
-    public void groupBy(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 

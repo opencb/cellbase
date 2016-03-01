@@ -20,8 +20,9 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
-import org.opencb.biodata.models.variant.protobuf.service.VariantServiceGrpc;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.grpc.service.VariantServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -36,9 +37,8 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
 
     @Override
-    public void count(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
-        VariantDBAdaptor variationDBAdaptor =
-                dbAdaptorFactory.getVariationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void count(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = variationDBAdaptor.count(query);
@@ -51,10 +51,9 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void distinct(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
-        VariantDBAdaptor variationDBAdaptor =
-                dbAdaptorFactory.getVariationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
-
+    public void distinct(GenericServiceModel.CellbaseRequest request,
+                         StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
         Query query = createQuery(request);
         QueryResult queryResult = variationDBAdaptor.distinct(query, request.getOptions().get("distinct"));
         List values = queryResult.getResult();
@@ -66,9 +65,9 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void first(ServiceTypesModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
+    public void first(GenericServiceModel.CellbaseRequest request, StreamObserver<VariantProto.Variant> responseObserver) {
         VariantDBAdaptor variationDBAdaptor =
-                dbAdaptorFactory.getVariationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+                dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = variationDBAdaptor.first(queryOptions);
@@ -78,14 +77,13 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void next(ServiceTypesModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
+    public void next(GenericServiceModel.CellbaseRequest request, StreamObserver<VariantProto.Variant> responseObserver) {
 
     }
 
     @Override
-    public void get(ServiceTypesModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
-        VariantDBAdaptor variationDBAdaptor =
-                dbAdaptorFactory.getVariationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void get(GenericServiceModel.CellbaseRequest request, StreamObserver<VariantProto.Variant> responseObserver) {
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
@@ -101,26 +99,8 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
         responseObserver.onCompleted();
     }
 
-//    @Override
-//    public void getJson(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
-//        GeneDBAdaptor geneDBAdaptor =
-//                dbAdaptorFactory.getGeneDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
-//
-//        Query query = createQuery(request);
-//        QueryOptions queryOptions = createQueryOptions(request);
-//        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
-//        while (iterator.hasNext()) {
-//            Document document = (Document) iterator.next();
-//            ServiceTypesModel.StringResponse response =
-//                    ServiceTypesModel.StringResponse.newBuilder().setValue(document.toJson()).build();
-//            responseObserver.onNext(response);
-//        }
-//        responseObserver.onCompleted();
-//    }
-
-
     @Override
-    public void groupBy(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 

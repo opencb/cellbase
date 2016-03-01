@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package protobuf.opencb.service;
+
+option java_package = "org.opencb.cellbase.grpc.service";
+option java_outer_classname = "GeneServiceModel";
+
+import "protobuf/opencb/service/GenericService.proto";
+import "protobuf/opencb/service_types.proto";
+import "protobuf/opencb/gene.proto";
+
+service GeneService {
+
+    rpc count(CellbaseRequest) returns (LongResponse) {}
+
+    rpc distinct(CellbaseRequest) returns (StringArrayResponse) {}
+
+    rpc first(CellbaseRequest) returns (Gene) {}
+
+    rpc next(CellbaseRequest) returns (Gene) {}
+
+    rpc get(CellbaseRequest) returns (stream Gene) {}
+
+    rpc getJson(CellbaseRequest) returns (stream StringResponse) {}
+
+    rpc groupBy(CellbaseRequest) returns (GroupResponse) {}
+
+}

@@ -4,8 +4,9 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
-import org.opencb.biodata.models.core.protobuf.service.RegulatoryRegionServiceGrpc;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
+import org.opencb.cellbase.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.grpc.service.RegulatoryRegionServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -19,9 +20,8 @@ import java.util.List;
 public class RegulatoryGrpcServer extends GenericGrpcServer implements RegulatoryRegionServiceGrpc.RegulatoryRegionService {
 
     @Override
-    public void count(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
-        RegulationDBAdaptor regulationDBAdaptor =
-                dbAdaptorFactory.getRegulationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void count(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = regulationDBAdaptor.count(query);
@@ -34,9 +34,9 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
     }
 
     @Override
-    public void distinct(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
-        RegulationDBAdaptor regulationDBAdaptor =
-                dbAdaptorFactory.getRegulationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void distinct(GenericServiceModel.CellbaseRequest request,
+                         StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = regulationDBAdaptor.distinct(query, request.getOptions().get("distinct"));
@@ -49,9 +49,9 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
     }
 
     @Override
-    public void first(ServiceTypesModel.Request request, StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
-        RegulationDBAdaptor regulationDBAdaptor =
-                dbAdaptorFactory.getRegulationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void first(GenericServiceModel.CellbaseRequest request,
+                      StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = regulationDBAdaptor.first(queryOptions);
@@ -61,14 +61,13 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
     }
 
     @Override
-    public void next(ServiceTypesModel.Request request, StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
+    public void next(GenericServiceModel.CellbaseRequest request, StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
 
     }
 
     @Override
-    public void get(ServiceTypesModel.Request request, StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
-        RegulationDBAdaptor regulationDBAdaptor =
-                dbAdaptorFactory.getRegulationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+    public void get(GenericServiceModel.CellbaseRequest request, StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
@@ -81,9 +80,8 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
     }
 
 //    @Override
-//    public void getJson(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
-//        RegulationDBAdaptor regulationDBAdaptor =
-//                dbAdaptorFactory.getRegulationDBAdaptor(request.getOptions().get("species"), request.getOptions().get("assembly"));
+//    public void getJson(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
+//        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(request.getSpecies(), request.getAssembly());
 //
 //        Query query = createQuery(request);
 //        QueryOptions queryOptions = createQueryOptions(request);
@@ -98,7 +96,7 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
 //    }
 
     @Override
-    public void groupBy(ServiceTypesModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 

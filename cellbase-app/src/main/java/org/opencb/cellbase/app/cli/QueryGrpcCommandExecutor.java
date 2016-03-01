@@ -23,11 +23,8 @@ import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
-import org.opencb.biodata.models.core.protobuf.service.GeneServiceGrpc;
-import org.opencb.biodata.models.core.protobuf.service.RegulatoryRegionServiceGrpc;
-import org.opencb.biodata.models.core.protobuf.service.TranscriptServiceGrpc;
-import org.opencb.biodata.models.variant.protobuf.*;
-import org.opencb.biodata.models.variant.protobuf.service.VariantServiceGrpc;
+import org.opencb.biodata.models.variant.protobuf.VariantProto;
+import org.opencb.cellbase.grpc.service.*;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -78,9 +75,9 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
             }
         }
 
-        ServiceTypesModel.Request request = ServiceTypesModel.Request.newBuilder()
-//                .setSpecies(queryGrpcCommandOptions.species)
-//                .setAssembly(queryGrpcCommandOptions.assembly)
+        GenericServiceModel.CellbaseRequest request = GenericServiceModel.CellbaseRequest.newBuilder()
+                .setSpecies(queryGrpcCommandOptions.species)
+                .setAssembly(queryGrpcCommandOptions.assembly)
                 .putAllQuery(query)
                 .putAllOptions(queryOptions)
                 .build();
@@ -120,7 +117,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         output.close();
     }
 
-    private void executeGeneQuery(ServiceTypesModel.Request request, PrintStream output)
+    private void executeGeneQuery(GenericServiceModel.CellbaseRequest request, PrintStream output)
             throws JsonProcessingException {
 //        executeFeatureAggregation(geneDBAdaptor, query, queryOptions, output);
         GeneServiceGrpc.GeneServiceBlockingStub geneServiceBlockingStub = GeneServiceGrpc.newBlockingStub(channel);
@@ -159,7 +156,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeTranscriptQuery(ServiceTypesModel.Request request, PrintStream output)
+    private void executeTranscriptQuery(GenericServiceModel.CellbaseRequest request, PrintStream output)
             throws JsonProcessingException {
         TranscriptServiceGrpc.TranscriptServiceBlockingStub transcriptServiceBlockingStub = TranscriptServiceGrpc.newBlockingStub(channel);
 
@@ -182,7 +179,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeVariantQuery(ServiceTypesModel.Request request, PrintStream output) throws JsonProcessingException {
+    private void executeVariantQuery(GenericServiceModel.CellbaseRequest request, PrintStream output) throws JsonProcessingException {
         VariantServiceGrpc.VariantServiceBlockingStub variantServiceBlockingStub = VariantServiceGrpc.newBlockingStub(channel);
 
         if (queryGrpcCommandOptions.resource != null) {
@@ -212,7 +209,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
-    private  void executeRegulatoryRegionQuery(ServiceTypesModel.Request request, PrintStream output)
+    private  void executeRegulatoryRegionQuery(GenericServiceModel.CellbaseRequest request, PrintStream output)
             throws JsonProcessingException {
         RegulatoryRegionServiceGrpc.RegulatoryRegionServiceBlockingStub regulatoryServiceBlockingStub =
                 RegulatoryRegionServiceGrpc.newBlockingStub(channel);
@@ -260,12 +257,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
 
     private Map<String, String> createQueryOptionsMap() {
         Map<String, String> queryOptions = new HashMap<>();
-        if (queryGrpcCommandOptions.species != null && !queryGrpcCommandOptions.species.isEmpty()) {
-            queryOptions.put("species", queryGrpcCommandOptions.species);
-        }
-        if (queryGrpcCommandOptions.assembly != null && !queryGrpcCommandOptions.assembly.isEmpty()) {
-            queryOptions.put("assembly", queryGrpcCommandOptions.assembly);
-        }
+
         if (queryGrpcCommandOptions.include != null && !queryGrpcCommandOptions.include.isEmpty()) {
             queryOptions.put("include", queryGrpcCommandOptions.include);
         }
