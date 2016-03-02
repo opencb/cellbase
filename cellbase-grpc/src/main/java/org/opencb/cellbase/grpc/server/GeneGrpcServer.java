@@ -2,10 +2,11 @@ package org.opencb.cellbase.grpc.server;
 
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
+import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
+import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.cellbase.grpc.GeneModel;
-import org.opencb.cellbase.grpc.GeneServiceGrpc;
-import org.opencb.cellbase.grpc.GenericServiceModel;
+import org.opencb.cellbase.grpc.service.GeneServiceGrpc;
+import org.opencb.cellbase.grpc.service.GenericServiceModel;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -20,13 +21,13 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
 
     @Override
-    public void count(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.LongResponse> responseObserver) {
+    public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = geneDBAdaptor.count(query);
         Long value = Long.valueOf(queryResult.getResult().get(0).toString());
-        GenericServiceModel.LongResponse count = GenericServiceModel.LongResponse.newBuilder()
+        ServiceTypesModel.LongResponse count = ServiceTypesModel.LongResponse.newBuilder()
                 .setValue(value)
                 .build();
         responseObserver.onNext(count);
@@ -34,13 +35,14 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void distinct(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringArrayResponse> responseObserver) {
+    public void distinct(GenericServiceModel.Request request,
+                         StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptions().get("distinct"));
         List values = queryResult.getResult();
-        GenericServiceModel.StringArrayResponse distinctValues = GenericServiceModel.StringArrayResponse.newBuilder()
+        ServiceTypesModel.StringArrayResponse distinctValues = ServiceTypesModel.StringArrayResponse.newBuilder()
                 .addAllValues(values)
                 .build();
         responseObserver.onNext(distinctValues);
@@ -77,38 +79,21 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void getJson(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringResponse> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
-
-        Query query = createQuery(request);
-        QueryOptions queryOptions = createQueryOptions(request);
-        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
-        while (iterator.hasNext()) {
-            Document document = (Document) iterator.next();
-            GenericServiceModel.StringResponse response =
-                    GenericServiceModel.StringResponse.newBuilder().setValue(document.toJson()).build();
-            responseObserver.onNext(response);
-        }
-        responseObserver.onCompleted();
-    }
-
-
-    @Override
-    public void groupBy(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 
     private GeneModel.Gene convert(Document document) {
         GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
-                .setId(document.getString("id"))
-                .setName(document.getString("name"))
-                .setChromosome(document.getString("chromosome"))
+                .setId((String) document.getOrDefault("id", ""))
+                .setName((String) document.getOrDefault("name", ""))
+                .setChromosome((String) document.getOrDefault("chromosome", ""))
                 .setStart(document.getInteger("start"))
                 .setEnd(document.getInteger("end"))
-                .setBiotype(document.getString("biotype"))
-                .setStatus(document.getString("status"))
-                .setStrand(document.getString("strand"))
-                .setSource(document.getString("source"));
+                .setBiotype((String) document.getOrDefault("biotype", ""))
+                .setStatus((String) document.getOrDefault("status", ""))
+                .setStrand((String) document.getOrDefault("strand", ""))
+                .setSource((String) document.getOrDefault("source", ""));
 //                .addAllTranscripts()
 
         return builder.build();

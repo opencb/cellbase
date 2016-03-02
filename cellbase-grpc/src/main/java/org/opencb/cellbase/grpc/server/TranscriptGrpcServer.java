@@ -2,10 +2,11 @@ package org.opencb.cellbase.grpc.server;
 
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
+import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
+import org.opencb.biodata.models.core.protobuf.TranscriptModel;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
-import org.opencb.cellbase.grpc.GenericServiceModel;
-import org.opencb.cellbase.grpc.TranscriptModel;
-import org.opencb.cellbase.grpc.TranscriptServiceGrpc;
+import org.opencb.cellbase.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.grpc.service.TranscriptServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -17,14 +18,15 @@ import java.util.List;
  * Created by swaathi on 18/12/15.
  */
 public class TranscriptGrpcServer extends GenericGrpcServer implements TranscriptServiceGrpc.TranscriptService {
+
     @Override
-    public void count(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.LongResponse> responseObserver) {
+    public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = transcriptDBAdaptor.count(query);
         Long value = Long.valueOf(queryResult.getResult().get(0).toString());
-        GenericServiceModel.LongResponse count = GenericServiceModel.LongResponse.newBuilder()
+        ServiceTypesModel.LongResponse count = ServiceTypesModel.LongResponse.newBuilder()
                 .setValue(value)
                 .build();
         responseObserver.onNext(count);
@@ -32,7 +34,8 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
     }
 
     @Override
-    public void distinct(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringArrayResponse> responseObserver) {
+    public void distinct(GenericServiceModel.Request request,
+                         StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
 
     }
 
@@ -47,28 +50,27 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
     }
 
     @Override
-    public void groupBy(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 
-    @Override
-    public void getCdna(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringResponse> responseObserver) {
+//    @Override
+//    public void getCdna(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
 //        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
 //
 //        Query query = createQuery(request);
 //        QueryResult queryResult = transcriptDBAdaptor.getCdna(query.getString("id"));
 //        String cdna = String.valueOf(queryResult);
-//        GenericServiceModel.StringResponse value = GenericServiceModel.StringResponse.newBuilder()
+//        ServiceTypesModel.StringResponse value = ServiceTypesModel.StringResponse.newBuilder()
 //                .setValue(cdna)
 //                .build();
 //        responseObserver.onNext(value);
 //        responseObserver.onCompleted();
-    }
+//    }
 
     @Override
     public void get(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
-
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
         Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
@@ -134,4 +136,5 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
 
         return builder.build();
     }
+
 }

@@ -18,11 +18,11 @@ package org.opencb.cellbase.grpc.server;
 
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
-import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
+import org.opencb.biodata.models.variant.protobuf.VariantProto;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
-import org.opencb.cellbase.grpc.GenericServiceModel;
-import org.opencb.cellbase.grpc.VariantProto;
-import org.opencb.cellbase.grpc.VariantServiceGrpc;
+import org.opencb.cellbase.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.grpc.service.VariantServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -37,13 +37,13 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
 
     @Override
-    public void count(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.LongResponse> responseObserver) {
+    public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryResult queryResult = variationDBAdaptor.count(query);
         Long value = Long.valueOf(queryResult.getResult().get(0).toString());
-        GenericServiceModel.LongResponse count = GenericServiceModel.LongResponse.newBuilder()
+        ServiceTypesModel.LongResponse count = ServiceTypesModel.LongResponse.newBuilder()
                 .setValue(value)
                 .build();
         responseObserver.onNext(count);
@@ -51,13 +51,13 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void distinct(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringArrayResponse> responseObserver) {
+    public void distinct(GenericServiceModel.Request request,
+                         StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
-
         Query query = createQuery(request);
         QueryResult queryResult = variationDBAdaptor.distinct(query, request.getOptions().get("distinct"));
         List values = queryResult.getResult();
-        GenericServiceModel.StringArrayResponse distinctValues = GenericServiceModel.StringArrayResponse.newBuilder()
+        ServiceTypesModel.StringArrayResponse distinctValues = ServiceTypesModel.StringArrayResponse.newBuilder()
                 .addAllValues(values)
                 .build();
         responseObserver.onNext(distinctValues);
@@ -66,7 +66,8 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
     @Override
     public void first(GenericServiceModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
+        VariantDBAdaptor variationDBAdaptor =
+                dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = variationDBAdaptor.first(queryOptions);
@@ -99,24 +100,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void getJson(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.StringResponse> responseObserver) {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
-
-        Query query = createQuery(request);
-        QueryOptions queryOptions = createQueryOptions(request);
-        Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
-        while (iterator.hasNext()) {
-            Document document = (Document) iterator.next();
-            GenericServiceModel.StringResponse response =
-                    GenericServiceModel.StringResponse.newBuilder().setValue(document.toJson()).build();
-            responseObserver.onNext(response);
-        }
-        responseObserver.onCompleted();
-    }
-
-
-    @Override
-    public void groupBy(GenericServiceModel.Request request, StreamObserver<GenericServiceModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 

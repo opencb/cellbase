@@ -16,14 +16,12 @@
 
 package org.opencb.cellbase.server.ws.feature;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
+import org.bson.Document;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.commons.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -57,9 +55,48 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @GET
     @Path("/all")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
-            + "Output: ClinVar, COSMIC or GWAS objects as stored in the MongoDB. Please have a look at "
+            + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the MongoDB. Please have "
+            + "a look at "
             + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
-            value = "Retrieves all the clinical objects", response = QueryResponse.class)
+            value = "Retrieves all the clinical objects", response = Document.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "source",
+                    value = "Comma separated list of database sources of the documents to be returned. Possible values "
+                    + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "so",
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
+                    + "matches will be returned.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
+                        + " ENSEMBL gene ids. Exact text matches will be returned.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "phenotype",
+                    value = "String to indicate the phenotypes to query. A text search will be run.",
+                            required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "rcv",
+                    value = "Comma separated list of rcv ids, e.g.: RCV000033215",
+                            required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "rs",
+                    value = "Comma separated list of rs ids, e.g.: rs6025",
+                            required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "type",
+                    value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
+                        + "variants, e.g. \"single nucleotide variant\" ",
+                            required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "review",
+                    value = "Comma separated list of review lables (only enabled for ClinVar variants), "
+                        + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
+                            required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "significance",
+                    value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
+                        + "for ClinVar variants), e.g.: Benign",
+                            required = false, dataType = "list of strings", paramType = "query"),
+    })
     public Response getAll() {
         try {
             logger.info("VERSION: {}", this.version);
@@ -89,7 +126,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/phenotype-gene")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get all phenotype-gene relations")
+    @ApiOperation(httpMethod = "GET", value = "To be reimplemented soon. Resource to get all phenotype-gene relations")
     public Response getPhenotypeGeneRelations() {
 
         try {
