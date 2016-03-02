@@ -64,6 +64,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     private DBAdaptorFactory dbAdaptorFactory;
     //    private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
+    private boolean normalize = true;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -75,17 +76,23 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //    }
 
     public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory) {
-        normalizer = new VariantNormalizer(false, false, true);
+        this(species, assembly, dbAdaptorFactory, true);
+    }
+
+    public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory,
+                                       boolean normalize) {
+        this.normalizer = new VariantNormalizer(false, false, true);
+        this.normalize = normalize;
 
         this.dbAdaptorFactory = dbAdaptorFactory;
 
-        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-        variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
-        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
-        proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
-        conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
-        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+        this.genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+        this.variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+        this.geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        this.regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+        this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+        this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
+        this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -122,7 +129,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
 
-        List<Variant> normalizedVariantList = normalizer.apply(variantList);
+        List<Variant> normalizedVariantList;
+        if (normalize) {
+            normalizedVariantList = normalizer.apply(variantList);
+        } else {
+            normalizedVariantList = variantList;
+        }
 
         // We process include and exclude query options to know which annotators to use.
         // Include parameter has preference over exclude.
