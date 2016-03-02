@@ -173,6 +173,7 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Deprecated
     @Path("/{chrRegionId}/snp")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects")
     public Response getSnpByRegion(@PathParam("chrRegionId") String region,

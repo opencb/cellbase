@@ -27,6 +27,7 @@ import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -39,6 +40,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Path("/{version}/{species}/feature/protein")
@@ -214,8 +216,19 @@ public class ProteinWSServer extends GenericRestWSServer {
     @GET
     @Path("/{proteinId}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the sequence for the given protein")
-    public Response getSequence(@PathParam("proteinId") String query) {
-        return null;
+    public Response getSequence(@PathParam("proteinId") String proteinId) {
+        ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+        query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteinId);
+        queryOptions.put("include", "sequence.value");
+        // split by comma
+        QueryResult<Entry> queryResult = proteinDBAdaptor.get(query, queryOptions);
+//        Document sequenceDocument = (Document) ((Document)queryResult.first()).get("sequence");
+////        String sequence = sequenceDocument.getString("value");
+//        queryResult.setResult(Collections.singletonList(sequenceDocument.getString("value")));
+        QueryResult queryResult1 = new QueryResult(queryResult.getId(), queryResult.getDbTime(), queryResult.getNumResults(),
+                queryResult.getNumTotalResults(), queryResult.getWarningMsg(), queryResult.getErrorMsg(), Collections.EMPTY_LIST);
+        queryResult1.setResult(Collections.singletonList(queryResult.first().getSequence().getValue()));
+        return createOkResponse(queryResult1);
     }
 
     @GET

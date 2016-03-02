@@ -59,34 +59,41 @@ public class GenericRestWSServer implements IWSServer {
 //    @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens.")
     protected String species;
 
-    @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g.: grch38")
+    @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of"
+            + "potentially available assemblies, please refer to: "
+            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species")
     @DefaultValue("")
     @QueryParam("assembly")
     protected String assembly;
 
-    @ApiParam(name = "excluded fields", value = "Set which fields are excluded in the response, e.g.: transcripts.exons")
+    @ApiParam(name = "excluded fields", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. "
+        + " Please note that this option may not be enabled for all web services.")
     @DefaultValue("")
     @QueryParam("exclude")
     protected String exclude;
 
     @DefaultValue("")
     @QueryParam("include")
-    @ApiParam(name = "included fields", value = "Set which fields are included in the response, e.g.: transcripts.id")
+    @ApiParam(name = "included fields", value = "Set which fields are included in the response, e.g.: transcripts.id. "
+            + " Please note that this parameter may not be enabled for all web services.")
     protected String include;
 
     @DefaultValue("-1")
     @QueryParam("limit")
-    @ApiParam(name = "limit", value = "Max number of results to be returned. No limit applied when -1. No limit is set by default.")
+    @ApiParam(name = "limit", value = "Max number of results to be returned. No limit applied when -1."
+            + " Please note that this option may not be available for all web services.")
     protected int limit;
 
     @DefaultValue("-1")
     @QueryParam("skip")
-    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1. No skip by default.")
+    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1. "
+            + " Please note that this option may not be available for all web services.")
     protected int skip;
 
     @DefaultValue("false")
     @QueryParam("count")
-    @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default.",
+    @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default. "
+            + " Please note that this option may not be available for all web services.",
             defaultValue = "false", allowableValues = "false,true")
     protected String count;
 
@@ -255,6 +262,7 @@ public class GenericRestWSServer implements IWSServer {
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
             if (!queryOptions.containsKey(entry.getKey())) {
 //                logger.info("Adding '{}' to queryOptions", entry);
+                // FIXME delete this!!
                 queryOptions.put(entry.getKey(), entry.getValue().get(0));
                 query.put(entry.getKey(), entry.getValue().get(0));
             }

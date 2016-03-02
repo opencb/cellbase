@@ -19,13 +19,11 @@ package org.opencb.cellbase.core.client;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import junit.framework.TestCase;
-import org.junit.Assert;
-import org.junit.Test;
-import org.opencb.biodata.models.core.Region;
+import org.junit.*;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -37,27 +35,59 @@ import java.util.Collections;
 
 public class CellBaseClientTest extends TestCase {
 
+    private CellBaseClient cellBaseClient;
+
+    @BeforeClass
+    public static void beforeClass() {
+
+    }
+
+    @After
+    public void tearDown() {
+
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        cellBaseClient = new CellBaseClient("bioinfodev.hpc.cam.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
+    }
+
     @Test
     public void testGetGene() throws URISyntaxException, IOException {
         //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/region/3:1000-200000/gene?of=json
-        CellBaseClient cellBaseClient = new CellBaseClient("wwwdev.ebi.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
         QueryResponse<QueryResult<Gene>> gene =
                 cellBaseClient.getGene(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.region, Arrays.asList(new Region("3", 1000, 200000)), null);
+        assertEquals(gene.getResponse().get(0).getResult().get(0).getName(), "AY269186.1");
     }
+
+    @Test
+    public void testGetProtein() throws URISyntaxException, IOException {
+        QueryResponse<QueryResult<Entry>> response =
+                cellBaseClient.getInfo(CellBaseClient.Category.feature, CellBaseClient.SubCategory.protein,"ZUFSP_HUMAN", null);
+        assertEquals(response.getResponse().get(0).getResult().get(0).getName(), "ZUFSP_HUMAN");
+    }
+
+
 
     @Test
     public void testGetSequence() throws URISyntaxException, IOException {
         //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/region/3:1000-200000/gene?of=json
-        CellBaseClient cellBaseClient = new CellBaseClient("bioinfo.hpc.cam.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
         QueryResponse<QueryResult<GenomeSequenceFeature>> sequence =
                 cellBaseClient.getSequence(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.region, Collections.singletonList(new Region("20", 60522, 60622)), null);
         assertEquals(sequence.getResponse().get(0).getResult().get(0).getSequence(), "TCCCCCCTGGCACAAATGGTGCTGGACCACGAGGGGCCAGAGAACAAAGCCTTGGGCGTGGTCCCAACTCCCAAATGTTTGAACACACAAGTTGGAATATT");
     }
 
     @Test
+    public void testGetChromosome() throws URISyntaxException, IOException {
+        QueryResponse<QueryResult<InfoStats>> response =
+                cellBaseClient.getInfo(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.chromosome, "2", null);
+        assertEquals(cellBaseClient.getLastQuery().toString(), "2", response.getResponse().get(0).getResult().get(0).getChromosomes().get(0).getName());
+    }
+
+    @Test
     public void testPost() throws URISyntaxException, IOException {
         //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/22:10000000:A:T/gene?of=json
-        CellBaseClient cellBaseClient = new CellBaseClient("wwwdev.ebi.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
         QueryResponse<QueryResult<VariantAnnotation>> fullAnnotationPost =
                 cellBaseClient.getAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
                         new QueryOptions("post", true));

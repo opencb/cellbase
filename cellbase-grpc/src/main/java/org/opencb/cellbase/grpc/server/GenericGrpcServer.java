@@ -20,7 +20,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
-import org.opencb.cellbase.grpc.*;
+import org.opencb.cellbase.grpc.service.*;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -73,7 +73,7 @@ public class GenericGrpcServer {
                 .addService(GeneServiceGrpc.bindService(new GeneGrpcServer()))
                 .addService(TranscriptServiceGrpc.bindService(new TranscriptGrpcServer()))
                 .addService(VariantServiceGrpc.bindService(new VariantGrpcServer()))
-                .addService(RegulatoryServiceGrpc.bindService(new RegulatoryGrpcServer()))
+                .addService(RegulatoryRegionServiceGrpc.bindService(new RegulatoryGrpcServer()))
                 .build()
                 .start();
         logger.info("Server started, listening on {}", port);

@@ -1,10 +1,13 @@
 syntax = "proto3";
 
-package org.opencb.cellbase.grpc;
-option java_outer_classname = "VariantModel";
+package protobuf.opencb.service;
 
-import "GenericService.proto";
-import "variant.proto";
+option java_package = "org.opencb.cellbase.grpc.service";
+option java_outer_classname = "VariantServiceModel";
+
+import "protobuf/opencb/service/generic_service.proto";
+import "protobuf/opencb/service_types.proto";
+import "protobuf/opencb/variant.proto";
 
 service VariantService {
 
@@ -17,8 +20,6 @@ service VariantService {
     rpc next(Request) returns (Variant) {}
 
     rpc get(Request) returns (stream Variant) {}
-
-    rpc getJson(Request) returns (stream StringResponse) {}
 
     rpc groupBy(Request) returns (GroupResponse) {}
 
