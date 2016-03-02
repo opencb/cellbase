@@ -100,7 +100,7 @@ public class GenericGrpcServer {
     }
 
 
-    protected Query createQuery(GenericServiceModel.CellbaseRequest request) {
+    protected Query createQuery(GenericServiceModel.Request request) {
         Query query = new Query();
         for (String key : request.getQuery().keySet()) {
             if (request.getQuery().get(key) != null) {
@@ -110,7 +110,7 @@ public class GenericGrpcServer {
         return query;
     }
 
-    protected QueryOptions createQueryOptions(GenericServiceModel.CellbaseRequest request) {
+    protected QueryOptions createQueryOptions(GenericServiceModel.Request request) {
         QueryOptions queryOptions = new QueryOptions();
         for (String key : request.getOptions().keySet()) {
             if (request.getOptions().get(key) != null) {

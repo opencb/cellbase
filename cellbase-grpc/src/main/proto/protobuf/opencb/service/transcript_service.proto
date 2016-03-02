@@ -5,22 +5,22 @@ package protobuf.opencb.service;
 option java_package = "org.opencb.cellbase.grpc.service";
 option java_outer_classname = "TranscriptServiceModel";
 
-import "protobuf/opencb/service/GenericService.proto";
+import "protobuf/opencb/service/generic_service.proto";
 import "protobuf/opencb/service_types.proto";
 import "protobuf/opencb/transcript.proto";
 
 service TranscriptService {
 
-    rpc count(CellbaseRequest) returns (LongResponse) {}
+    rpc count(Request) returns (LongResponse) {}
 
-    rpc distinct(CellbaseRequest) returns (StringArrayResponse) {}
+    rpc distinct(Request) returns (StringArrayResponse) {}
 
-    rpc first(CellbaseRequest) returns (Transcript) {}
+    rpc first(Request) returns (Transcript) {}
 
-    rpc next(CellbaseRequest) returns (Transcript) {}
+    rpc next(Request) returns (Transcript) {}
 
-    rpc get(CellbaseRequest) returns (stream Transcript) {}
+    rpc get(Request) returns (stream Transcript) {}
 
-    rpc groupBy(CellbaseRequest) returns (GroupResponse) {}
+    rpc groupBy(Request) returns (GroupResponse) {}
 
 }

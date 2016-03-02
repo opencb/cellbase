@@ -20,7 +20,7 @@ import java.util.List;
 public class TranscriptGrpcServer extends GenericGrpcServer implements TranscriptServiceGrpc.TranscriptService {
 
     @Override
-    public void count(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
+    public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
@@ -34,23 +34,23 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
     }
 
     @Override
-    public void distinct(GenericServiceModel.CellbaseRequest request,
+    public void distinct(GenericServiceModel.Request request,
                          StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
 
     }
 
     @Override
-    public void first(GenericServiceModel.CellbaseRequest request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+    public void first(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
 
     }
 
     @Override
-    public void next(GenericServiceModel.CellbaseRequest request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+    public void next(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
 
     }
 
     @Override
-    public void groupBy(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 
@@ -69,7 +69,7 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
 //    }
 
     @Override
-    public void get(GenericServiceModel.CellbaseRequest request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+    public void get(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
@@ -136,4 +136,5 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
 
         return builder.build();
     }
+
 }

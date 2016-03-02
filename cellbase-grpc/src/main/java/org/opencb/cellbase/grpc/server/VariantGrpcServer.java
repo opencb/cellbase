@@ -37,7 +37,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
 
     @Override
-    public void count(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
+    public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
@@ -51,7 +51,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void distinct(GenericServiceModel.CellbaseRequest request,
+    public void distinct(GenericServiceModel.Request request,
                          StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
         Query query = createQuery(request);
@@ -65,7 +65,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void first(GenericServiceModel.CellbaseRequest request, StreamObserver<VariantProto.Variant> responseObserver) {
+    public void first(GenericServiceModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
         VariantDBAdaptor variationDBAdaptor =
                 dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
@@ -77,12 +77,12 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void next(GenericServiceModel.CellbaseRequest request, StreamObserver<VariantProto.Variant> responseObserver) {
+    public void next(GenericServiceModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
 
     }
 
     @Override
-    public void get(GenericServiceModel.CellbaseRequest request, StreamObserver<VariantProto.Variant> responseObserver) {
+    public void get(GenericServiceModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
@@ -100,7 +100,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
     }
 
     @Override
-    public void groupBy(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
+    public void groupBy(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.GroupResponse> responseObserver) {
 
     }
 

@@ -75,7 +75,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
             }
         }
 
-        GenericServiceModel.CellbaseRequest request = GenericServiceModel.CellbaseRequest.newBuilder()
+        GenericServiceModel.Request request = GenericServiceModel.Request.newBuilder()
                 .setSpecies(queryGrpcCommandOptions.species)
                 .setAssembly(queryGrpcCommandOptions.assembly)
                 .putAllQuery(query)
@@ -117,7 +117,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         output.close();
     }
 
-    private void executeGeneQuery(GenericServiceModel.CellbaseRequest request, PrintStream output)
+    private void executeGeneQuery(GenericServiceModel.Request request, PrintStream output)
             throws JsonProcessingException {
 //        executeFeatureAggregation(geneDBAdaptor, query, queryOptions, output);
         GeneServiceGrpc.GeneServiceBlockingStub geneServiceBlockingStub = GeneServiceGrpc.newBlockingStub(channel);
@@ -156,7 +156,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeTranscriptQuery(GenericServiceModel.CellbaseRequest request, PrintStream output)
+    private void executeTranscriptQuery(GenericServiceModel.Request request, PrintStream output)
             throws JsonProcessingException {
         TranscriptServiceGrpc.TranscriptServiceBlockingStub transcriptServiceBlockingStub = TranscriptServiceGrpc.newBlockingStub(channel);
 
@@ -179,7 +179,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeVariantQuery(GenericServiceModel.CellbaseRequest request, PrintStream output) throws JsonProcessingException {
+    private void executeVariantQuery(GenericServiceModel.Request request, PrintStream output) throws JsonProcessingException {
         VariantServiceGrpc.VariantServiceBlockingStub variantServiceBlockingStub = VariantServiceGrpc.newBlockingStub(channel);
 
         if (queryGrpcCommandOptions.resource != null) {
@@ -209,7 +209,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
-    private  void executeRegulatoryRegionQuery(GenericServiceModel.CellbaseRequest request, PrintStream output)
+    private  void executeRegulatoryRegionQuery(GenericServiceModel.Request request, PrintStream output)
             throws JsonProcessingException {
         RegulatoryRegionServiceGrpc.RegulatoryRegionServiceBlockingStub regulatoryServiceBlockingStub =
                 RegulatoryRegionServiceGrpc.newBlockingStub(channel);
