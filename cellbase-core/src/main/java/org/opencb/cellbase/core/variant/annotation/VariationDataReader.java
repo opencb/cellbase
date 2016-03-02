@@ -24,7 +24,7 @@ public class VariationDataReader implements DataReader<Variant> {
     private Iterator<Variant> iterator;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private int nReadVariants = 0;
-    private static final String VARIANT_STRING_PATTERN = "[ACGTN]*";
+    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
     public VariationDataReader(VariantDBAdaptor dbAdaptor, Query query, QueryOptions options) {
         this.dbAdaptor = dbAdaptor;
