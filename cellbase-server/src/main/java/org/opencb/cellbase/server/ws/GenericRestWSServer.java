@@ -255,6 +255,7 @@ public class GenericRestWSServer implements IWSServer {
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
             if (!queryOptions.containsKey(entry.getKey())) {
 //                logger.info("Adding '{}' to queryOptions", entry);
+                // FIXME delete this!!
                 queryOptions.put(entry.getKey(), entry.getValue().get(0));
                 query.put(entry.getKey(), entry.getValue().get(0));
             }

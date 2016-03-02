@@ -118,26 +118,6 @@ public class TranscriptWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{transcriptId}/info2")
-//    public Response getByEnsemblId2(@PathParam("transcriptId") String transcriptid) {
-//            parseQueryParams();
-//            TranscriptDBAdaptor  transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-//            Query query = new Query();
-//            query.append(org.opencb.cellbase.core.api.TranscriptDBAdaptor.QueryParams.ID.key(), transcriptid);
-//            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
-//    }
-
-//    @GET
-//    @Path("/{transcriptId}/fullinfo")
-//    public Response getFullInfoByEnsemblId(@PathParam("transcriptId") String transcriptid) {
-//            parseQueryParams();
-//            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            Query query = new Query();
-//            query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key(), transcriptid);
-//            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
-//    }
-
     @GET
     @Path("/{transcriptId}/gene")
     public Response getGeneById(@PathParam("transcriptId") String id) {

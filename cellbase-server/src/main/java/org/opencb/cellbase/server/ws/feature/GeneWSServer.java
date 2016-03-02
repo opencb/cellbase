@@ -23,6 +23,8 @@ import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
@@ -40,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -73,15 +76,6 @@ public class GeneWSServer extends GenericRestWSServer {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
         return createOkResponse(geneDBAdaptor.first(queryOptions));
     }
-
-//    @GET
-//    @Path("/count")
-//    @Override
-//    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
-//    public Response count() {
-//        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//        return createOkResponse(geneDBAdaptor.count());
-//    }
 
     @GET
     @Path("/count")
@@ -166,33 +160,6 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{geneId}/info2")
-//    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class)
-//    public Response getByEnsemblId2(@PathParam("geneId") String geneId) {
-//        parseQueryParams();
-//        org.opencb.cellbase.core.api.GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//
-//        Query query = new Query();
-//        query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.ID.key(), geneId);
-//
-//        return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
-//    }
-
-//    @GET
-//    @Path("/{geneId}/stats")
-//    @ApiOperation(httpMethod = "GET", value = "Get summary stats about the specified gene(s)", response = Document.class)
-//    public Response getStatsByEnsemblId(@PathParam("geneId") String geneId) {
-//        try {
-//            parseQueryParams();
-//            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            QueryResult stats = geneDBAdaptor.getStatsById(geneId, queryOptions);
-//            return createOkResponse(stats);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
     @GET
     @Path("/{geneId}/next")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)")
@@ -207,19 +174,19 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{geneId}/transcript")
-//    @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs")
-//    public Response getTranscriptsByGeneId(@PathParam("geneId") String geneId) {
-//        try {
-//            parseQueryParams();
-//            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            List<QueryResult> queryResultList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(geneId), queryOptions);
-//            return createOkResponse(queryResultList);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
+    @GET
+    @Path("/{geneId}/transcript")
+    @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs")
+    public Response getTranscriptsByGeneId(@PathParam("geneId") String geneId) {
+        try {
+            parseQueryParams();
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
+            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 
     @GET
     @Path("/biotype")
@@ -234,20 +201,20 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{geneId}/snp")
-//    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes and offset")
-//    public Response getSNPByGeneId(@PathParam("geneId") String query, @DefaultValue("5000") @QueryParam("offset") int offset) {
-//        try {
-//            parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-//            queryOptions.put("offset", offset);
-//            List<QueryResult> queryResults = variationDBAdaptor.getAllByGeneIdList(Splitter.on(",").splitToList(query), queryOptions);
-//            return createOkResponse(queryResults);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
+    @GET
+    @Path("/{geneId}/snp")
+    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes and offset")
+    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            queryOptions.put("offset", offset);
+            QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 
 
 //    @GET
@@ -284,13 +251,24 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
-    public Response getAllTfbs(@PathParam("geneId") String geneId) {
+    public Response getAllTfbs(@PathParam("geneId") String geneId, @DefaultValue("false") @QueryParam("merge") boolean merge) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            Query query = new Query(GeneDBAdaptor.QueryParams.ID.key(), geneId);
-            QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
-            return createOkResponse(queryResult);
+            if (merge) {
+                query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
+                QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+                return createOkResponse(queryResult);
+            } else {
+                String[] genes = geneId.split(",");
+                List<QueryResult> queryResults = new ArrayList<>(genes.length);
+                for (String gene : genes) {
+                    query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
+                    QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+                    queryResults.add(queryResult);
+                }
+                return createOkResponse(queryResults);
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
