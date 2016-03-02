@@ -271,10 +271,10 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         long dbTimeEnd = System.currentTimeMillis();
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
 
-        if (proteinVariantAnnotation.getSubstitutionScores() != null || proteinVariantAnnotation.getUniprotAccession() != null) {
-            queryResult.setNumResults(1);
-            queryResult.setResult(Collections.singletonList(proteinVariantAnnotation));
-        }
+//        if (proteinVariantAnnotation.getSubstitutionScores() != null || proteinVariantAnnotation.getUniprotAccession() != null) {
+        queryResult.setNumResults(1);
+        queryResult.setResult(Collections.singletonList(proteinVariantAnnotation));
+//        }
         return queryResult;
     }
 
