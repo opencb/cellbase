@@ -73,12 +73,13 @@ public class VariationDataReader implements DataReader<Variant> {
      * @param variant Variant object to be checked.
      * @return   true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
      * reference/alternate attributes being strings of [A,C,G,T,N] of length >= 0 is performed to detect cases such as
-     * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Functionality of the method may be
-     * improved in the future.
+     * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Ref and alt alleles must be different
+     * as well for the variant to be valid. Functionality of the method may be improved in the future.
      */
     private boolean isValid(Variant variant) {
         return (variant.getReference().matches(VARIANT_STRING_PATTERN)
-                && variant.getAlternate().matches(VARIANT_STRING_PATTERN));
+                && variant.getAlternate().matches(VARIANT_STRING_PATTERN)
+                && !variant.getAlternate().equals(variant.getReference()));
     }
 
     public List<Variant> read(int batchSize) {
