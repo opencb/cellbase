@@ -356,17 +356,22 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 Variant variant1 = (Variant) variantArray[1];
                 ConsequenceType consequenceType2
                         = findCodingOverlappingConsequenceType(consequenceType1, variant1.getAnnotation().getConsequenceTypes());
-                // The two first variants affect the same codon, check the third one
-                if (variantArray.length > 2 && consequenceType2 != null) {
+                // The two first variants affect the same codon
+                if (consequenceType2 != null) {
                     // WARNING: assumes variants are sorted according to their coordinates
                     int cdnaPosition = consequenceType1.getCdnaPosition();
                     int cdsPosition = consequenceType1.getCdsPosition();
                     String codon = null;
-                    String alternateAA = null;
+//                    String alternateAA = null;
                     List<SequenceOntologyTerm> soTerms = null;
-                    Variant variant2 = (Variant) variantArray[2];
-                    ConsequenceType consequenceType3
-                            = findCodingOverlappingConsequenceType(consequenceType2, variant2.getAnnotation().getConsequenceTypes());
+                    ConsequenceType consequenceType3 = null;
+                    Variant variant2 = null;
+                    // Check if the third variant also affects the same codon
+                    if (variantArray.length > 2) {
+                        variant2 = (Variant) variantArray[2];
+                        consequenceType3
+                                = findCodingOverlappingConsequenceType(consequenceType2, variant2.getAnnotation().getConsequenceTypes());
+                    }
                     // The three SNVs affect the same codon
                     if (consequenceType3 != null) {
                         String referenceCodon = consequenceType1.getCodon().split("/")[0].toUpperCase();
@@ -374,7 +379,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                         String alternateCodon = variant0.getAlternate() + variant1.getAlternate()
                                 + variant2.getAlternate();
                         codon = referenceCodon + "/" + alternateCodon;
-                        alternateAA = VariantAnnotationUtils.CODON_TO_A.get(alternateCodon);
+//                            alternateAA = VariantAnnotationUtils.CODON_TO_A.get(alternateCodon);
                         soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
                                 String.valueOf(referenceCodon), String.valueOf(alternateCodon));
 
@@ -382,7 +387,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                         consequenceType3.setCdnaPosition(cdnaPosition);
                         consequenceType3.setCdsPosition(cdsPosition);
                         consequenceType3.setCodon(codon);
-//                        consequenceType3.getProteinVariantAnnotation().setAlternate(alternateAA);
+                        //                        consequenceType3.getProteinVariantAnnotation().setAlternate(alternateAA);
                         newProteinVariantAnnotation = getProteinAnnotation(consequenceType3);
                         consequenceType3.setProteinVariantAnnotation(newProteinVariantAnnotation);
                         consequenceType3.setSequenceOntologyTerms(soTerms);
@@ -405,7 +410,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                         alternateCodonArray[codonIdx2] = variant1.getAlternate().toUpperCase().toCharArray()[0];
 
                         codon = String.valueOf(referenceCodonArray) + "/" + String.valueOf(alternateCodonArray);
-                        alternateAA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(alternateCodonArray).toUpperCase());
+//                            alternateAA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(alternateCodonArray).toUpperCase());
                         soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
                                 String.valueOf(referenceCodonArray).toUpperCase(),
                                 String.valueOf(alternateCodonArray).toUpperCase());
@@ -413,21 +418,20 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
                     // Update consequenceType1 & 2
                     consequenceType1.setCodon(codon);
-//                    consequenceType1.getProteinVariantAnnotation().setAlternate(alternateAA);
+                    //                    consequenceType1.getProteinVariantAnnotation().setAlternate(alternateAA);
                     consequenceType1.setProteinVariantAnnotation(newProteinVariantAnnotation == null
                             ? getProteinAnnotation(consequenceType1) : newProteinVariantAnnotation);
                     consequenceType1.setSequenceOntologyTerms(soTerms);
                     consequenceType2.setCdnaPosition(cdnaPosition);
                     consequenceType2.setCdsPosition(cdsPosition);
                     consequenceType2.setCodon(codon);
-//                    consequenceType2.getProteinVariantAnnotation().setAlternate(alternateAA);
+                    //                    consequenceType2.getProteinVariantAnnotation().setAlternate(alternateAA);
                     consequenceType2.setProteinVariantAnnotation(consequenceType1.getProteinVariantAnnotation());
                     consequenceType2.setSequenceOntologyTerms(soTerms);
 
                     // Flag these transcripts as already updated for this variant
                     flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId());
                     flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId());
-
                 }
             }
         }
