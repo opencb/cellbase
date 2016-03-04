@@ -8,6 +8,8 @@ option java_outer_classname = "GeneServiceModel";
 import "protobuf/opencb/service/generic_service.proto";
 import "protobuf/opencb/service_types.proto";
 import "protobuf/opencb/gene.proto";
+import "protobuf/opencb/transcript.proto";
+import "protobuf/opencb/regulatory_region.proto";
 
 service GeneService {
 
@@ -22,5 +24,11 @@ service GeneService {
     rpc get(Request) returns (stream Gene) {}
 
     rpc groupBy(Request) returns (GroupResponse) {}
+
+    rpc getTranscript(Request) returns (stream Transcript) {}
+
+    rpc getRegulation(Request) returns (stream RegulatoryRegion) {}
+
+    rpc getTranscriptTfbs(Request) returns (stream TranscriptTfbs) {}
 
 }

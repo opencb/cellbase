@@ -49,12 +49,12 @@ import java.util.*;
 //@Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
-//    @DefaultValue("")
+    //    @DefaultValue("")
 //    @PathParam("version")
 //    @ApiParam(name = "version", value = "Use 'latest' for last stable version",  defaultValue = "latest")
     protected String version;
 
-//    @DefaultValue("")
+    //    @DefaultValue("")
 //    @PathParam("species")
 //    @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens.")
     protected String species;
@@ -67,7 +67,7 @@ public class GenericRestWSServer implements IWSServer {
     protected String assembly;
 
     @ApiParam(name = "excluded fields", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. "
-        + " Please note that this option may not be enabled for all web services.")
+            + " Please note that this option may not be enabled for all web services.")
     @DefaultValue("")
     @QueryParam("exclude")
     protected String exclude;
@@ -408,13 +408,27 @@ public class GenericRestWSServer implements IWSServer {
         return false;
     }
 
-    protected List<Query> createQueries(String csvField, String queryKey) {
+//    protected List<Query> createQueries(String csvField, String queryKey) {
+//        String[] ids = csvField.split(",");
+//        List<Query> queries = new ArrayList<>(ids.length);
+//        for (String s : ids) {
+//            queries.add(new Query(queryKey, s));
+//        }
+//        return queries;
+//    }
+
+    protected List<Query> createQueries(String csvField, String queryKey, String... args) {
         String[] ids = csvField.split(",");
         List<Query> queries = new ArrayList<>(ids.length);
         for (String s : ids) {
-            queries.add(new Query(queryKey, s));
+            Query query = new Query(queryKey, s);
+            if (args != null && args.length > 0 && args.length % 2 == 0) {
+                for (int i = 0; i < args.length; i += 2) {
+                    query.put(args[i], args[i + 1]);
+                }
+            }
+            queries.add(query);
         }
         return queries;
     }
-
 }

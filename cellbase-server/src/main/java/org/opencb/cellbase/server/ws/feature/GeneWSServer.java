@@ -236,13 +236,26 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/regulation")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
-    public Response getAllRegulatoryElements(@PathParam("geneId") String geneId) {
+    public Response getAllRegulatoryElements(@PathParam("geneId") String geneId,
+                                             @DefaultValue("false") @QueryParam("merge") boolean merge) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            Query query = new Query(GeneDBAdaptor.QueryParams.ID.key(), geneId);
-            QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
-            return createOkResponse(queryResult);
+            if (merge) {
+                query.put(GeneDBAdaptor.QueryParams.ID.key(), geneId);
+                QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+                return createOkResponse(queryResult);
+            } else {
+                String[] genes = geneId.split(",");
+                List<QueryResult> queryResults = new ArrayList<>(genes.length);
+                for (String gene : genes) {
+                    query.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
+                    QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+                    queryResults.add(queryResult);
+                }
+                return createOkResponse(queryResults);
+            }
+
         } catch (Exception e) {
             return createErrorResponse(e);
         }

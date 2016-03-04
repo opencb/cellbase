@@ -81,60 +81,60 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
             List<Document> transcripts = (List<Document>) gene.get("transcripts");
             if (limit > 0) {
                 for (int i = 0; i < transcripts.size() && count < limit; i++) {
-                    responseObserver.onNext(convert(transcripts.get(i)));
+                    responseObserver.onNext(ConverterUtils.createTranscript(transcripts.get(i)));
                     count++;
                 }
             } else {
                 for (Document doc : transcripts) {
-                    responseObserver.onNext(convert(doc));
+                    responseObserver.onNext(ConverterUtils.createTranscript(doc));
                 }
             }
         }
         responseObserver.onCompleted();
     }
 
-    private TranscriptModel.Transcript convert(Document document) {
-        TranscriptModel.Transcript.Builder builder = TranscriptModel.Transcript.newBuilder()
-                .setId(document.getString("id"))
-                .setName(document.getString("name"))
-                .setBiotype(document.getString("biotype"))
-                .setStatus(document.getString("status"))
-                .setChromosome(document.getString("chromosome"))
-                .setStart(document.getInteger("start"))
-                .setEnd(document.getInteger("end"))
-                .setCdnaSequence((String) document.getOrDefault("cDnaSequence", ""));
-
-        List<Document> xrefs = (List<Document>) document.get("xrefs");
-        if (xrefs != null) {
-            for (Document doc : xrefs) {
-                TranscriptModel.Xref xrefBuilder = TranscriptModel.Xref.newBuilder()
-                        .setId(doc.getString("id"))
-                        .setDbName(doc.getString("dbName"))
-                        .setDbDisplayName(doc.getString("dbDisplayName"))
-                        .build();
-                builder.addXrefs(xrefBuilder);
-            }
-        }
-
-        List<Document> exons = (List<Document>) document.get("exons");
-        for (Document doc : exons) {
-            TranscriptModel.Exon exonBuilder = TranscriptModel.Exon.newBuilder()
-                    .setId(doc.getString("id"))
-                    .setChromosome(doc.getString("chromosome"))
-                    .setStart(doc.getInteger("start"))
-                    .setEnd(doc.getInteger("end"))
-                    .setStrand(doc.getString("strand"))
-                    .setExonNumber(doc.getInteger("exonNumber"))
-                    .setSequence(doc.getString("sequence"))
-                    .build();
-            builder.addExons(exonBuilder);
-        }
-
-//        List<org.opencb.biodata.models.core.protobuf.TranscriptModel.Exon> exonList = ...
-//        builder.addAllExons(exonList)
-
-
-        return builder.build();
-    }
+//    private TranscriptModel.Transcript convert(Document document) {
+//        TranscriptModel.Transcript.Builder builder = TranscriptModel.Transcript.newBuilder()
+//                .setId(document.getString("id"))
+//                .setName(document.getString("name"))
+//                .setBiotype(document.getString("biotype"))
+//                .setStatus(document.getString("status"))
+//                .setChromosome(document.getString("chromosome"))
+//                .setStart(document.getInteger("start"))
+//                .setEnd(document.getInteger("end"))
+//                .setCdnaSequence((String) document.getOrDefault("cDnaSequence", ""));
+//
+//        List<Document> xrefs = (List<Document>) document.get("xrefs");
+//        if (xrefs != null) {
+//            for (Document doc : xrefs) {
+//                TranscriptModel.Xref xrefBuilder = TranscriptModel.Xref.newBuilder()
+//                        .setId(doc.getString("id"))
+//                        .setDbName(doc.getString("dbName"))
+//                        .setDbDisplayName(doc.getString("dbDisplayName"))
+//                        .build();
+//                builder.addXrefs(xrefBuilder);
+//            }
+//        }
+//
+//        List<Document> exons = (List<Document>) document.get("exons");
+//        for (Document doc : exons) {
+//            TranscriptModel.Exon exonBuilder = TranscriptModel.Exon.newBuilder()
+//                    .setId(doc.getString("id"))
+//                    .setChromosome(doc.getString("chromosome"))
+//                    .setStart(doc.getInteger("start"))
+//                    .setEnd(doc.getInteger("end"))
+//                    .setStrand(doc.getString("strand"))
+//                    .setExonNumber(doc.getInteger("exonNumber"))
+//                    .setSequence(doc.getString("sequence"))
+//                    .build();
+//            builder.addExons(exonBuilder);
+//        }
+//
+////        List<org.opencb.biodata.models.core.protobuf.TranscriptModel.Exon> exonList = ...
+////        builder.addAllExons(exonList)
+//
+//
+//        return builder.build();
+//    }
 
 }

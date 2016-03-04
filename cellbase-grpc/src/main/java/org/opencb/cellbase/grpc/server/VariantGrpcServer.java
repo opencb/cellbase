@@ -71,7 +71,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = variationDBAdaptor.first(queryOptions);
-        responseObserver.onNext(convert((Document) first.getResult().get(0)));
+        responseObserver.onNext(ConverterUtils.createVariant((Document) first.getResult().get(0)));
         responseObserver.onCompleted();
 
     }
@@ -91,7 +91,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
         int count = 0;
         while (iterator.hasNext()) {
             Document document = (Document) iterator.next();
-            responseObserver.onNext(convert(document));
+            responseObserver.onNext(ConverterUtils.createVariant(document));
             if (++count % 1000 == 0) {
                 System.out.println(count);
             }
@@ -104,21 +104,21 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
     }
 
-    private VariantProto.Variant convert(Document document) {
-        VariantProto.Variant.Builder builder = VariantProto.Variant.newBuilder()
-                .setChromosome(document.getString("chromosome"))
-                .setStart(document.getInteger("start"))
-                .setEnd(document.getInteger("end"))
-                .setReference((String) document.getOrDefault("reference", ""))
-                .setReference((String) document.getOrDefault("alternate", ""))
-                .setStrand(document.getString("strand"));
-//                .setId(document.getString("id"))
-//                .setName(document.getString("name"))
-//                .setBiotype(document.getString("biotype"))
-//                .setStatus(document.getString("status"))
-//                .setSource(document.getString("source"));
-//                .addAllTranscripts()
-
-        return builder.build();
-    }
+//    private VariantProto.Variant convert(Document document) {
+//        VariantProto.Variant.Builder builder = VariantProto.Variant.newBuilder()
+//                .setChromosome(document.getString("chromosome"))
+//                .setStart(document.getInteger("start"))
+//                .setEnd(document.getInteger("end"))
+//                .setReference((String) document.getOrDefault("reference", ""))
+//                .setReference((String) document.getOrDefault("alternate", ""))
+//                .setStrand(document.getString("strand"));
+////                .setId(document.getString("id"))
+////                .setName(document.getString("name"))
+////                .setBiotype(document.getString("biotype"))
+////                .setStatus(document.getString("status"))
+////                .setSource(document.getString("source"));
+////                .addAllTranscripts()
+//
+//        return builder.build();
+//    }
 }

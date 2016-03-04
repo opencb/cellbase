@@ -119,7 +119,6 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
 
     private void executeGeneQuery(GenericServiceModel.Request request, PrintStream output)
             throws JsonProcessingException {
-//        executeFeatureAggregation(geneDBAdaptor, query, queryOptions, output);
         GeneServiceGrpc.GeneServiceBlockingStub geneServiceBlockingStub = GeneServiceGrpc.newBlockingStub(channel);
 
         if (queryGrpcCommandOptions.resource != null) {
@@ -130,13 +129,27 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                         GeneModel.Gene next = geneIterator.next();
                         output.println(next.toString());
                     }
-
-//                    Iterator<GenericServiceModel.StringResponse> geneIterator = geneServiceBlockingStub.getJson(request);
-//                    while (geneIterator.hasNext()) {
-//                        GenericServiceModel.StringResponse next = geneIterator.next();
-//                        output.println(next.toString());
-//                    }
-
+                    break;
+                case "transcript":
+                    Iterator<TranscriptModel.Transcript> transcriptIterator = geneServiceBlockingStub.getTranscript(request);
+                    while (transcriptIterator.hasNext()) {
+                        TranscriptModel.Transcript next = transcriptIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                case "regulatory":
+                    Iterator<RegulatoryRegionModel.RegulatoryRegion> regulationIterator = geneServiceBlockingStub.getRegulation(request);
+                    while (regulationIterator.hasNext()) {
+                        RegulatoryRegionModel.RegulatoryRegion next = regulationIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                case "tfbs":
+                    Iterator<TranscriptModel.TranscriptTfbs> tfbsIterator = geneServiceBlockingStub.getTranscriptTfbs(request);
+                    while (tfbsIterator.hasNext()) {
+                        TranscriptModel.TranscriptTfbs next = tfbsIterator.next();
+                        output.println(next.toString());
+                    }
                     break;
                 case "first":
                     GeneModel.Gene first = geneServiceBlockingStub.first(request);
@@ -209,7 +222,7 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
-    private  void executeRegulatoryRegionQuery(GenericServiceModel.Request request, PrintStream output)
+    private void executeRegulatoryRegionQuery(GenericServiceModel.Request request, PrintStream output)
             throws JsonProcessingException {
         RegulatoryRegionServiceGrpc.RegulatoryRegionServiceBlockingStub regulatoryServiceBlockingStub =
                 RegulatoryRegionServiceGrpc.newBlockingStub(channel);
@@ -247,6 +260,9 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         // we first append region CLI parameter, if specified in 'options' it will be overwritten
         if (queryGrpcCommandOptions.region != null) {
             query.put("region", queryGrpcCommandOptions.region);
+        }
+        if (queryGrpcCommandOptions.id != null) {
+            query.put("id", queryGrpcCommandOptions.id);
         }
 
         for (String key : queryGrpcCommandOptions.options.keySet()) {

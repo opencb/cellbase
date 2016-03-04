@@ -4,6 +4,8 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
+import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
+import org.opencb.biodata.models.core.protobuf.TranscriptModel;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.grpc.service.GeneServiceGrpc;
 import org.opencb.cellbase.grpc.service.GenericServiceModel;
@@ -55,7 +57,51 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = geneDBAdaptor.first(queryOptions);
-        responseObserver.onNext(convert((Document) first.getResult().get(0)));
+        responseObserver.onNext(ConverterUtils.createGene((Document) first.getResult().get(0)));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getTranscript(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        QueryResult<Document> queryResult = geneDBAdaptor.nativeGet(query, queryOptions);
+            Document gene = (Document) queryResult.getResult().get(0);
+            List<Document> transcripts = (List<Document>) gene.get("transcripts");
+            for (Document doc : transcripts) {
+                responseObserver.onNext(ConverterUtils.createTranscript(doc));
+            }
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getRegulation(GenericServiceModel.Request request,
+                              StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        QueryResult<Document> queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+        List<Document> regulations = queryResult.getResult();
+        for (Document document : regulations) {
+            responseObserver.onNext(ConverterUtils.createRegulatoryRegion(document));
+        }
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getTranscriptTfbs(GenericServiceModel.Request request, StreamObserver<TranscriptModel.TranscriptTfbs> responseObserver) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        QueryResult<Document> queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+        List<Document> tfbs = queryResult.getResult();
+        for (Document document : tfbs) {
+            responseObserver.onNext(ConverterUtils.createTranscriptTfbs(document));
+        }
         responseObserver.onCompleted();
     }
 
@@ -73,7 +119,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
         Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
         while (iterator.hasNext()) {
             Document document = (Document) iterator.next();
-            responseObserver.onNext(convert(document));
+            responseObserver.onNext(ConverterUtils.createGene(document));
         }
         responseObserver.onCompleted();
     }
@@ -83,19 +129,23 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     }
 
-    private GeneModel.Gene convert(Document document) {
-        GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
-                .setId((String) document.getOrDefault("id", ""))
-                .setName((String) document.getOrDefault("name", ""))
-                .setChromosome((String) document.getOrDefault("chromosome", ""))
-                .setStart(document.getInteger("start"))
-                .setEnd(document.getInteger("end"))
-                .setBiotype((String) document.getOrDefault("biotype", ""))
-                .setStatus((String) document.getOrDefault("status", ""))
-                .setStrand((String) document.getOrDefault("strand", ""))
-                .setSource((String) document.getOrDefault("source", ""));
-//                .addAllTranscripts()
-
-        return builder.build();
-    }
+//    private GeneModel.Gene convert(Document document) {
+//        GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
+//                .setId((String) document.getOrDefault("id", ""))
+//                .setName((String) document.getOrDefault("name", ""))
+//                .setChromosome((String) document.getOrDefault("chromosome", ""))
+//                .setStart(document.getInteger("start"))
+//                .setEnd(document.getInteger("end"))
+//                .setBiotype((String) document.getOrDefault("biotype", ""))
+//                .setStatus((String) document.getOrDefault("status", ""))
+//                .setStrand((String) document.getOrDefault("strand", ""))
+//                .setSource((String) document.getOrDefault("source", ""));
+////                .addAllTranscripts()
+////        ArrayList<Document> tr = document.get("transcripts", ArrayList.class);
+////        for (Document document1 : tr) {
+////            convert(doc)
+////        }
+//
+//        return builder.build();
+//    }
 }
