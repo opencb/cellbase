@@ -55,7 +55,7 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = regulationDBAdaptor.first(queryOptions);
-        responseObserver.onNext(ConverterUtils.createRegulatoryRegion((Document) first.getResult().get(0)));
+        responseObserver.onNext(ProtoConverterUtils.createRegulatoryRegion((Document) first.getResult().get(0)));
         responseObserver.onCompleted();
 
     }
@@ -74,7 +74,7 @@ public class RegulatoryGrpcServer extends GenericGrpcServer implements Regulator
         Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
         while (iterator.hasNext()) {
             Document document = (Document) iterator.next();
-            responseObserver.onNext(ConverterUtils.createRegulatoryRegion(document));
+            responseObserver.onNext(ProtoConverterUtils.createRegulatoryRegion(document));
         }
         responseObserver.onCompleted();
     }

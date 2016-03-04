@@ -12,7 +12,8 @@ import java.util.List;
 /**
  * Created by swaathi on 03/03/16.
  */
-public class ConverterUtils {
+public class ProtoConverterUtils {
+
     public static GeneModel.Gene createGene(Document document) {
         GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
                 .setId((String) document.getOrDefault("id", ""))
@@ -24,14 +25,15 @@ public class ConverterUtils {
                 .setStatus((String) document.getOrDefault("status", ""))
                 .setStrand((String) document.getOrDefault("strand", ""))
                 .setSource((String) document.getOrDefault("source", ""));
-        ArrayList<Document> transcripts = document.get("transcripts", ArrayList.class);
+
+        ArrayList transcripts = document.get("transcripts", ArrayList.class);
         if (transcripts != null) {
-            for (Document transcript : transcripts) {
-                builder.addTranscripts(createTranscript(transcript));
+            for (Object transcript : transcripts) {
+                builder.addTranscripts(createTranscript((Document) transcript));
             }
         }
-            return builder.build();
-        }
+        return builder.build();
+    }
 
     public static TranscriptModel.Transcript createTranscript(Document document) {
         TranscriptModel.Transcript.Builder builder = TranscriptModel.Transcript.newBuilder()
@@ -43,16 +45,18 @@ public class ConverterUtils {
                 .setStart(document.getInteger("start"))
                 .setEnd(document.getInteger("end"))
                 .setCdnaSequence((String) document.getOrDefault("cDnaSequence", ""));
-        ArrayList<Document> xrefs = document.get("xrefs", ArrayList.class);
+
+        ArrayList xrefs = document.get("xrefs", ArrayList.class);
         if (xrefs != null) {
-            for (Document xref : xrefs) {
-                builder.addXrefs(createXref(xref));
+            for (Object xref : xrefs) {
+                builder.addXrefs(createXref((Document) xref));
             }
         }
-        ArrayList<Document> exons = document.get("exons", ArrayList.class);
+
+        ArrayList exons = document.get("exons", ArrayList.class);
         if (exons != null) {
-            for (Document exon : exons) {
-                builder.addExons(createExon(exon));
+            for (Object exon : exons) {
+                builder.addExons(createExon((Document) exon));
             }
         }
         return builder.build();
@@ -107,8 +111,9 @@ public class ConverterUtils {
                 .setName((String) document.getOrDefault("name", ""))
                 .setFeatureClass((String) document.getOrDefault("featureClass", ""))
                 .setAlias((String) document.getOrDefault("alias", ""));
-        List<String> cellTypes = (List<String>) document.get("cellTypes");
-        if (cellTypes != null) {
+
+        List<String> cellTypes = document.get("cellTypes", ArrayList.class);
+        if (cellTypes != null && cellTypes.size() > 0) {
             builder.addAllCellTypes(cellTypes);
         }
         builder.setMatrix((String) document.getOrDefault("matrix", ""));

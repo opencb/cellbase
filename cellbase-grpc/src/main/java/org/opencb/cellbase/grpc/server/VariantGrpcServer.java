@@ -71,7 +71,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = variationDBAdaptor.first(queryOptions);
-        responseObserver.onNext(ConverterUtils.createVariant((Document) first.getResult().get(0)));
+        responseObserver.onNext(ProtoConverterUtils.createVariant((Document) first.getResult().get(0)));
         responseObserver.onCompleted();
 
     }
@@ -91,7 +91,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
         int count = 0;
         while (iterator.hasNext()) {
             Document document = (Document) iterator.next();
-            responseObserver.onNext(ConverterUtils.createVariant(document));
+            responseObserver.onNext(ProtoConverterUtils.createVariant(document));
             if (++count % 1000 == 0) {
                 System.out.println(count);
             }

@@ -25,9 +25,9 @@ service GeneService {
 
     rpc groupBy(Request) returns (GroupResponse) {}
 
-    rpc getTranscript(Request) returns (stream Transcript) {}
+    rpc getTranscripts(Request) returns (stream Transcript) {}
 
-    rpc getRegulation(Request) returns (stream RegulatoryRegion) {}
+    rpc getRegulatoryRegions(Request) returns (stream RegulatoryRegion) {}
 
     rpc getTranscriptTfbs(Request) returns (stream TranscriptTfbs) {}
 

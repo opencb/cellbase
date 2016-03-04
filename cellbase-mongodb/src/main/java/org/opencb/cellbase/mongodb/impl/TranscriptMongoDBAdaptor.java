@@ -1,8 +1,10 @@
 package org.opencb.cellbase.mongodb.impl;
 
+import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
@@ -56,14 +58,30 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
-//        Bson match = Aggregates.match(document);
-//        Bson include = Aggregates.project(Projections.include("transcripts.id"));
-//        Bson unwind = Aggregates.unwind("$transcripts");
-//        Bson group = Aggregates.group("$transcripts", Accumulators.sum("count", 1));
-//        QueryResult queryResult = mongoDBCollection.aggregate(Arrays.asList(match, include, unwind, group), null);
-//        return queryResult;
+        Bson match = Aggregates.match(document);
 
+        List<String> includeFields = new ArrayList<>();
+        for (String s : query.keySet()) {
+            if (StringUtils.isNotEmpty(query.getString(s))) {
+                includeFields.add(s);
+            }
+        }
+
+        Bson include;
+        if (includeFields.size() > 0) {
+            include = Aggregates.project(Projections.include(includeFields));
+        } else {
+            include = Aggregates.project(Projections.include("transcripts.id"));
+        }
+
+        Bson unwind = Aggregates.unwind("$transcripts");
+        Bson match2 = Aggregates.match(document);
+        Bson project = Aggregates.project(new Document("transcripts", "$transcripts.id"));
+
+        Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
+
+        QueryResult queryResult = mongoDBCollection.aggregate(Arrays.asList(match, include, unwind, match2, project, group), null);
+        return queryResult;
     }
 
     @Override
@@ -108,6 +126,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         }
         Bson excludeAndInclude = Aggregates.project(Projections.fields(Projections.excludeId(), include));
         Bson unwind = Aggregates.unwind("$transcripts");
+        Bson match2 = Aggregates.match(bson);
 
         // This project the three fields of Xref to the top of the object
         Document document = new Document("id", "$transcripts.id");
@@ -123,7 +142,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         document.put("annotationFlags", "$transcripts.annotationFlags");
         Bson project = Aggregates.project(document);
 
-        return mongoDBCollection.aggregate(Arrays.asList(match, excludeAndInclude, unwind, project), options);
+        return mongoDBCollection.aggregate(Arrays.asList(match, excludeAndInclude, unwind, match2, project), options);
     }
 
     @Override

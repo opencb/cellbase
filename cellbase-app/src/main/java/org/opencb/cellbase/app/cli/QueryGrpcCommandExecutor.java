@@ -131,14 +131,15 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                     }
                     break;
                 case "transcript":
-                    Iterator<TranscriptModel.Transcript> transcriptIterator = geneServiceBlockingStub.getTranscript(request);
+                    Iterator<TranscriptModel.Transcript> transcriptIterator = geneServiceBlockingStub.getTranscripts(request);
                     while (transcriptIterator.hasNext()) {
                         TranscriptModel.Transcript next = transcriptIterator.next();
                         output.println(next.toString());
                     }
                     break;
                 case "regulatory":
-                    Iterator<RegulatoryRegionModel.RegulatoryRegion> regulationIterator = geneServiceBlockingStub.getRegulation(request);
+                    Iterator<RegulatoryRegionModel.RegulatoryRegion> regulationIterator =
+                            geneServiceBlockingStub.getRegulatoryRegions(request);
                     while (regulationIterator.hasNext()) {
                         RegulatoryRegionModel.RegulatoryRegion next = regulationIterator.next();
                         output.println(next.toString());

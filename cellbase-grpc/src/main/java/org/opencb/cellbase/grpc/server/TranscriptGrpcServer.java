@@ -81,12 +81,12 @@ public class TranscriptGrpcServer extends GenericGrpcServer implements Transcrip
             List<Document> transcripts = (List<Document>) gene.get("transcripts");
             if (limit > 0) {
                 for (int i = 0; i < transcripts.size() && count < limit; i++) {
-                    responseObserver.onNext(ConverterUtils.createTranscript(transcripts.get(i)));
+                    responseObserver.onNext(ProtoConverterUtils.createTranscript(transcripts.get(i)));
                     count++;
                 }
             } else {
                 for (Document doc : transcripts) {
-                    responseObserver.onNext(ConverterUtils.createTranscript(doc));
+                    responseObserver.onNext(ProtoConverterUtils.createTranscript(doc));
                 }
             }
         }

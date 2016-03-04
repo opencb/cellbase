@@ -13,6 +13,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,8 +38,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
     }
 
     @Override
-    public void distinct(GenericServiceModel.Request request,
-                         StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
+    public void distinct(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
@@ -57,36 +57,36 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
         QueryOptions queryOptions = createQueryOptions(request);
         QueryResult first = geneDBAdaptor.first(queryOptions);
-        responseObserver.onNext(ConverterUtils.createGene((Document) first.getResult().get(0)));
+        responseObserver.onNext(ProtoConverterUtils.createGene((Document) first.getResult().get(0)));
         responseObserver.onCompleted();
     }
 
     @Override
-    public void getTranscript(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+    public void getTranscripts(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
-        QueryResult<Document> queryResult = geneDBAdaptor.nativeGet(query, queryOptions);
+        QueryResult queryResult = geneDBAdaptor.nativeGet(query, queryOptions);
             Document gene = (Document) queryResult.getResult().get(0);
-            List<Document> transcripts = (List<Document>) gene.get("transcripts");
-            for (Document doc : transcripts) {
-                responseObserver.onNext(ConverterUtils.createTranscript(doc));
+            ArrayList transcripts = gene.get("transcripts", ArrayList.class);
+            for (Object doc : transcripts) {
+                responseObserver.onNext(ProtoConverterUtils.createTranscript((Document) doc));
             }
         responseObserver.onCompleted();
     }
 
     @Override
-    public void getRegulation(GenericServiceModel.Request request,
-                              StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
+    public void getRegulatoryRegions(GenericServiceModel.Request request,
+                                     StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
-        QueryResult<Document> queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
-        List<Document> regulations = queryResult.getResult();
-        for (Document document : regulations) {
-            responseObserver.onNext(ConverterUtils.createRegulatoryRegion(document));
+        QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+        List regulations = queryResult.getResult();
+        for (Object document : regulations) {
+            responseObserver.onNext(ProtoConverterUtils.createRegulatoryRegion((Document) document));
         }
         responseObserver.onCompleted();
     }
@@ -100,7 +100,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
         QueryResult<Document> queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
         List<Document> tfbs = queryResult.getResult();
         for (Document document : tfbs) {
-            responseObserver.onNext(ConverterUtils.createTranscriptTfbs(document));
+            responseObserver.onNext(ProtoConverterUtils.createTranscriptTfbs(document));
         }
         responseObserver.onCompleted();
     }
@@ -119,7 +119,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
         Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
         while (iterator.hasNext()) {
             Document document = (Document) iterator.next();
-            responseObserver.onNext(ConverterUtils.createGene(document));
+            responseObserver.onNext(ProtoConverterUtils.createGene(document));
         }
         responseObserver.onCompleted();
     }
