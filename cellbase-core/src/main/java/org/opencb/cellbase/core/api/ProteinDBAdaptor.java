@@ -34,7 +34,7 @@ public interface ProteinDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         ACCESSION("accession", TEXT_ARRAY, ""),
         NAME("name", TEXT_ARRAY, ""),
         GENE("gene", TEXT_ARRAY, ""),
-        XREF("xref", TEXT_ARRAY, ""),
+        XREFS("xrefs", TEXT_ARRAY, ""),
         KEYWORD("keyword", TEXT_ARRAY, ""),
         FEATURE_ID("feature.id", TEXT_ARRAY, ""),
         FEATURE_TYPE("feature.type", TEXT_ARRAY, "");

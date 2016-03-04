@@ -45,7 +45,7 @@ import java.util.List;
  * @author imedina
  */
 @Path("/{version}/{species}/feature/transcript")
-@Api(value = "Gene", description = "Gene RESTful Web Services API")
+@Api(value = "Transcript", description = "Transcript RESTful Web Services API")
 @Produces(MediaType.APPLICATION_JSON)
 public class TranscriptWSServer extends GenericRestWSServer {
 
@@ -75,25 +75,14 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/count")
-    @Override
     @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
-    public Response count() {
+    public Response count(@DefaultValue("") @QueryParam("region") String region,
+                          @DefaultValue("") @QueryParam("biotype") String biotype,
+                          @DefaultValue("") @QueryParam("xrefs") String xrefs) throws Exception {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-        return createOkResponse(transcriptDBAdaptor.count());
-    }
-
-    @GET
-    @Path("/count2")
-    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
-    public Response count2(@DefaultValue("") @QueryParam("region") String region,
-                           @DefaultValue("") @QueryParam("biotype") String biotype,
-                           @DefaultValue("") @QueryParam("xrefs") String xrefs) {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-
         query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
         query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
         query.append(TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
-
         return createOkResponse(transcriptDBAdaptor.count(query));
     }
 
@@ -165,6 +154,19 @@ public class TranscriptWSServer extends GenericRestWSServer {
 //                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
             List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
             return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{transcriptId}/protein")
+    public Response getProtein(@PathParam("transcriptId") String transcriptId) {
+        try {
+            parseQueryParams();
+            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), transcriptId);
+            return createOkResponse(proteinDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

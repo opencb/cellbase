@@ -309,7 +309,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(geneId, ProteinDBAdaptor.QueryParams.XREF.key());
+            List<Query> queries = createQueries(geneId, ProteinDBAdaptor.QueryParams.XREFS.key());
             return createOkResponse(proteinDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);

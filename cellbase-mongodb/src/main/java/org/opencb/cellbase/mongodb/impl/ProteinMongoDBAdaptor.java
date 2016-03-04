@@ -271,10 +271,10 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         long dbTimeEnd = System.currentTimeMillis();
         queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
 
-        if (proteinVariantAnnotation.getSubstitutionScores() != null || proteinVariantAnnotation.getUniprotAccession() != null) {
-            queryResult.setNumResults(1);
-            queryResult.setResult(Collections.singletonList(proteinVariantAnnotation));
-        }
+//        if (proteinVariantAnnotation.getSubstitutionScores() != null || proteinVariantAnnotation.getUniprotAccession() != null) {
+        queryResult.setNumResults(1);
+        queryResult.setResult(Collections.singletonList(proteinVariantAnnotation));
+//        }
         return queryResult;
     }
 
@@ -351,7 +351,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         createOrQuery(query, QueryParams.ACCESSION.key(), "accession", andBsonList);
         createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
         createOrQuery(query, QueryParams.GENE.key(), "gene", andBsonList);
-        createOrQuery(query, QueryParams.XREF.key(), "xref", andBsonList);
+        createOrQuery(query, QueryParams.XREFS.key(), "dbReference.id", andBsonList);
         createOrQuery(query, QueryParams.KEYWORD.key(), "keyword", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);

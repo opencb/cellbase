@@ -64,8 +64,14 @@ public class VariantAnnotationCalculatorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:61482087:G:C")  // Should not fail
-                , new QueryOptions()).get(0).getResult()).get(0));
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("2:48025849:CGCCAAATAAA:CCACAAATAAA")  // Should return drug interactions
+                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("2:48025849:CGCCAAATAAA:CTGTTTATAAA")  // Should return drug interactions
+//                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("2:114340663:GCTGGGTATT:ACTGGGCATCCT")  // Should return drug interactions
+//                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:61482087:G:C")  // Should not fail
+//                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:56370672:A:C")  // Should not fail
 //                , new QueryOptions()).get(0).getResult()).get(0));
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("10:102672886:C:A")  // Should not fail
@@ -301,6 +307,8 @@ public class VariantAnnotationCalculatorTest {
 //        // TODO: check differences against Web VEP
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
 ////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "G", "A"), new QueryOptions());  // should return ENST 00000454360 splice donor
 ////        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 30913143, "T", ""), new QueryOptions());  // should not return String Index Out of Bounds
