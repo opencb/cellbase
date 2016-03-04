@@ -54,8 +54,7 @@ public class TfWSServer extends RegulatoryWSServer {
             query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site);
             return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllByTfbs", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -68,8 +67,7 @@ public class TfWSServer extends RegulatoryWSServer {
             query.put(GeneDBAdaptor.QueryParams.NAME.key(), tfId);
             return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getEnsemblGenes", e.toString());
+            return createErrorResponse(e);
         }
     }
 //

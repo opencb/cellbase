@@ -97,7 +97,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     public Response getSubstitutionScores(@PathParam("proteinId") String id) {
         try {
             parseQueryParams();
-            query.put(ProteinDBAdaptor.QueryParams.XREF.key(), id);
+            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
 
             // Fetch Ensembl transcriptId to query substiturion scores
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
@@ -179,7 +179,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 //        try {
 //            parseQueryParams();
 //            ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-//            return generateResponse(proteinId, "XREF",
+//            return generateResponse(proteinId, "XREFS",
 // adaptor.getAllProteinXrefsByProteinNameList(Splitter.on(",").splitToList(proteinId)));
 //        } catch (Exception e) {
 //            e.printStackTrace();
