@@ -38,7 +38,11 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
         for (int i = 0; i < queryResultList.size(); i++) {
             if (queryResultList.get(i).getResult().size() > 0) {
-                variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+                try {
+                    variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+                } catch (Exception e) {
+                    int a = 1;
+                }
             } else {
                 logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
             }

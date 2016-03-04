@@ -24,6 +24,7 @@ public class VariationDataReader implements DataReader<Variant> {
     private Iterator<Variant> iterator;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private int nReadVariants = 0;
+    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
     public VariationDataReader(VariantDBAdaptor dbAdaptor, Query query, QueryOptions options) {
         this.dbAdaptor = dbAdaptor;
@@ -41,13 +42,44 @@ public class VariationDataReader implements DataReader<Variant> {
         return this.iterator != null;
     }
 
+    /**
+     * Performs one read of from a CellBase variation collection.
+     *
+     * @return  List of variants. It can be expected to contain only one variant.
+     */
     public List<Variant> read() {
-
-        if (iterator.hasNext()) {
-            return Collections.singletonList(iterator.next());
+        Variant variant = null;
+        boolean valid = false;
+        while (iterator.hasNext() && !valid) {
+            variant = iterator.next();
+            valid = isValid(variant);
+        }
+        if (valid) {
+            // New variants in the variation collection created during the update of the frequencies may not have
+            // the variant type set and this might cause NPE
+            if (variant.getType() == null) {
+                variant.setType(variant.inferType(variant.getReference(), variant.getAlternate(),
+                        variant.getLength()));
+            }
+            return Collections.singletonList(variant);
         } else {
             return null;
         }
+    }
+
+    /**
+     * Checks whether a variant is valid.
+     *
+     * @param variant Variant object to be checked.
+     * @return   true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
+     * reference/alternate attributes being strings of [A,C,G,T,N] of length >= 0 is performed to detect cases such as
+     * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Ref and alt alleles must be different
+     * as well for the variant to be valid. Functionality of the method may be improved in the future.
+     */
+    private boolean isValid(Variant variant) {
+        return (variant.getReference().matches(VARIANT_STRING_PATTERN)
+                && variant.getAlternate().matches(VARIANT_STRING_PATTERN)
+                && !variant.getAlternate().equals(variant.getReference()));
     }
 
     public List<Variant> read(int batchSize) {

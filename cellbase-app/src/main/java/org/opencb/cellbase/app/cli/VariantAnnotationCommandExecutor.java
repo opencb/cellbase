@@ -27,6 +27,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.apache.commons.lang.math.NumberUtils;
+import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
@@ -36,6 +37,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.variant.annotation.*;
 import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
@@ -75,6 +77,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private boolean cellBaseAnnotation;
     private int port;
     private String species;
+    private String assembly;
     private int numThreads;
     private int batchSize;
     private List<Path> customFiles;
@@ -92,6 +95,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private final int QUEUE_CAPACITY = 10;
     private final String TMP_DIR = "/tmp/";
+    private static final String VARIATION_ANNOTATION_FILE_PREFIX = "variation_annotation_";
 
     public VariantAnnotationCommandExecutor(CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions) {
         super(variantAnnotationCommandOptions.commonOptions.logLevel, variantAnnotationCommandOptions.commonOptions.verbose,
@@ -123,7 +127,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 if (local) {
                     DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
-                            new VariantAnnotationCalculator(this.species, variantAnnotationCommandOptions.assembly, dbAdaptorFactory);
+                            new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
                     List<QueryResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, queryOptions);
 
@@ -150,7 +154,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             if (input != null) {
                 DataReader dataReader = new StringDataReader(input);
                 List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList();
-                DataWriter dataWriter = getDataWriter();
+                DataWriter dataWriter = getDataWriter(output.toString());
 
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
                 ParallelTaskRunner<String, Variant> runner =
@@ -163,17 +167,23 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     // TODO: enable this query in the parseQuery method within VariantMongoDBAdaptor
 //                    Query query = new Query("$match",
 //                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
-                    Query query = new Query();
+//                    Query query = new Query();
                     QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
-                    DataReader dataReader =
-                            new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
-                    List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList();
-                    DataWriter dataWriter = getDataWriter();
-
+                    List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList(false);
                     ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-                    ParallelTaskRunner<Variant, Variant> runner =
-                            new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
-                    runner.run();
+                    List<String> chromosomeList = getChromosomeNames();
+
+                    for (String chromosome : chromosomeList) {
+                        logger.info("Annotating chromosome {}", chromosome);
+                        Query query = new Query("chromosome", chromosome);
+                        DataReader dataReader =
+                                new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
+                        DataWriter dataWriter = getDataWriter(output.toString() + "/"
+                                + VARIATION_ANNOTATION_FILE_PREFIX + chromosome + ".json.gz");
+                        ParallelTaskRunner<Variant, Variant> runner =
+                                new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                        runner.run();
+                    }
                 }
             }
 
@@ -188,12 +198,27 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private DataWriter getDataWriter() {
+    private List<String> getChromosomeNames() {
+        logger.info("Getting full list of chromosome names in the database");
+        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+        QueryResult queryResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
+
+        List<Document> chromosomeDocumentList = (List<Document>)((List<Document>) queryResult.getResult()).get(0).get("chromosomes");
+        List<String> chromosomeList = new ArrayList<>(chromosomeDocumentList.size());
+        for (Document chromosomeDocument : chromosomeDocumentList) {
+            chromosomeList.add((String) chromosomeDocument.get("name"));
+        }
+        logger.info("Available chromosomes: {}", chromosomeList.toString());
+
+        return chromosomeList;
+    }
+
+    private DataWriter getDataWriter(String filename) {
         DataWriter dataWriter = null;
         if (outputFormat.equals(FileFormat.JSON)) {
-            dataWriter = new JsonAnnotationWriter(output.toString());
+            dataWriter = new JsonAnnotationWriter(filename);
         } else if (outputFormat.equals(FileFormat.VEP)) {
-            dataWriter = new VepFormatWriter(output.toString());
+            dataWriter = new VepFormatWriter(filename);
         }
         return dataWriter;
     }
@@ -225,9 +250,13 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList() throws IOException {
+        return this.getVariantTaskList(true);
+    }
+
+    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList(boolean normalize) throws IOException {
         List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
-            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
+            List<VariantAnnotator> variantAnnotatorList = createAnnotators(normalize);
             variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
         }
 
@@ -242,11 +271,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private List<VariantAnnotator> createAnnotators() {
+        return this.createAnnotators(true);
+    }
+
+    private List<VariantAnnotator> createAnnotators(boolean normalize) {
         List<VariantAnnotator> variantAnnotatorList;
         variantAnnotatorList = new ArrayList<>();
 
         // CellBase annotator is always called
-        variantAnnotatorList.add(createCellBaseAnnotator());
+        variantAnnotatorList.add(createCellBaseAnnotator(normalize));
 
         // Include custom annotators if required
         if (customFiles != null) {
@@ -261,7 +294,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorList;
     }
 
-    private VariantAnnotator createCellBaseAnnotator() {
+    private VariantAnnotator createCellBaseAnnotator(boolean normalize) {
         // Assume annotation of CellBase variation collection will always be carried out from a local installation
         if (local || cellBaseAnnotation) {
             // dbAdaptorFactory may have been already initialized at execute if annotating CellBase variation collection
@@ -269,7 +302,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
             }
 //            return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null), queryOptions);
-            return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, null, dbAdaptorFactory), queryOptions);
+            return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
+                    dbAdaptorFactory, normalize), queryOptions);
         } else {
             try {
                 String path = "/cellbase/webservices/rest/";
@@ -284,6 +318,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 }
                 logger.debug("URL set to: {}", url + ":" + port + path);
 
+                // TODO: enable normalize flag for the WS annotator
                 return new CellBaseWSVariantAnnotator(cellBaseClient, queryOptions);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
@@ -528,7 +563,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         if (variantAnnotationCommandOptions.species != null) {
             species = variantAnnotationCommandOptions.species;
         } else {
-            throw new ParameterException("Please check command line syntax. Provide a valid species name to access CellBase web services.");
+            throw new ParameterException("Please check command line syntax. Provide a valid species name.");
+        }
+
+        // Assembly
+        if (variantAnnotationCommandOptions.assembly != null) {
+            assembly = variantAnnotationCommandOptions.assembly;
+        } else {
+            assembly = null;
+            logger.warn("No assembly provided. Using default assembly for {}", species);
         }
 
         // Custom files

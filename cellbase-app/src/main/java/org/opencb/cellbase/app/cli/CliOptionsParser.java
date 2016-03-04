@@ -287,7 +287,9 @@ public class CliOptionsParser {
         @Parameter(names = {"--variant"}, description = "A comma separated variant list in the format chr:pos:ref:alt, ie. 1:451941:A:T,19:45411941:T:C", required = false, arity = 1)
         public String variant;
 
-        @Parameter(names = {"-o", "--output-file"}, description = "Output file with the annotations", required = false, arity = 1)
+        @Parameter(names = {"-o", "--output"}, description = "Output file/directory where annotations will be saved. "
+                + "Set here a directory if flag \"--input-variation-collection\" is activated (see below). Set a file "
+                + "name otherwise.", required = true, arity = 1)
         public String output;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
