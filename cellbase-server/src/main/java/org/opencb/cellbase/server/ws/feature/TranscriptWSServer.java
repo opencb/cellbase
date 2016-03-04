@@ -90,7 +90,6 @@ public class TranscriptWSServer extends GenericRestWSServer {
                            @DefaultValue("") @QueryParam("xrefs") String xrefs) {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
 
-        Query query = new Query();
         query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
         query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
         query.append(TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);

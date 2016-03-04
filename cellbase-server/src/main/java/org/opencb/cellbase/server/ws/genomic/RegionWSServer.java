@@ -370,14 +370,22 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the regulatory elements")
     public Response getFeatureMap(@PathParam("chrRegionId") String region,
                                   @DefaultValue("") @QueryParam("type") String featureType,
-                                  @DefaultValue("") @QueryParam("class") String featureClass) {
+                                  @DefaultValue("") @QueryParam("class") String featureClass,
+                                  @DefaultValue("") @QueryParam("name") String name) {
         try {
             parseQueryParams();
             RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
-            query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
-            query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType);
-            query.put(RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass);
-            return createOkResponse(regRegionDBAdaptor.nativeGet(query, queryOptions));
+            List<Query> queries = createQueries(region, RegulationDBAdaptor.QueryParams.REGION.key(),
+                    RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType,
+                    RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass,
+                    RegulationDBAdaptor.QueryParams.NAME.key(), name);
+            List<QueryResult> queryResults = regRegionDBAdaptor.nativeGet(queries, queryOptions);
+            return createOkResponse(queryResults);
+//            query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
+//            query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType);
+//            query.put(RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass);
+//            query.put(RegulationDBAdaptor.QueryParams.NAME.key(), name);
+//            return createOkResponse(regRegionDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -386,7 +394,8 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{chrRegionId}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the TFBS")
-    public Response getTfByRegion(@PathParam("chrRegionId") String regionId) {
+    public Response getTfByRegion(@PathParam("chrRegionId") String regionId,
+                                  @DefaultValue("") @QueryParam("name") String name) {
         try {
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
@@ -397,9 +406,15 @@ public class RegionWSServer extends GenericRestWSServer {
                         regulationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
                 return createOkResponse(intervalFrequencies);
             } else {
-                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), regionId);
-                query.put("featureType", "TF_binding_site_motif");
-                return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
+                List<Query> queries = createQueries(regionId, RegulationDBAdaptor.QueryParams.REGION.key(),
+                        RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), "TF_binding_site_motif",
+                        RegulationDBAdaptor.QueryParams.NAME.key(), name);
+                List<QueryResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
+                return createOkResponse(queryResults);
+//                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), regionId);
+//                query.put("featureType", "TF_binding_site_motif");
+//                query.put(RegulationDBAdaptor.QueryParams.NAME.key(), name);
+//                return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
             }
         } catch (Exception e) {
             return createErrorResponse(e);

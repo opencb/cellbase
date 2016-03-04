@@ -57,6 +57,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
         return mongoDBCollection.count(document);
+//        Bson match = Aggregates.match(document);
+//        Bson include = Aggregates.project(Projections.include("transcripts.id"));
+//        Bson unwind = Aggregates.unwind("$transcripts");
+//        Bson group = Aggregates.group("$transcripts", Accumulators.sum("count", 1));
+//        QueryResult queryResult = mongoDBCollection.aggregate(Arrays.asList(match, include, unwind, group), null);
+//        return queryResult;
+
     }
 
     @Override
