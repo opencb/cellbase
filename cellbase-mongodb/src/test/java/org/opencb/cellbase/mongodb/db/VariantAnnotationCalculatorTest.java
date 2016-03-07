@@ -64,8 +64,10 @@ public class VariantAnnotationCalculatorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("2:48025849:CGCCAAATAAA:CCACAAATAAA")  // Should return drug interactions
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("MT:7443:A:G")  // Should not raise NPE
                 , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("2:48025849:CGCCAAATAAA:CCACAAATAAA")  // Should return drug interactions
+//                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("2:48025849:CGCCAAATAAA:CTGTTTATAAA")  // Should return drug interactions
 //                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationDBAdaptor.getAnnotationByVariantList(Variant.parseVariants("2:114340663:GCTGGGTATT:ACTGGGCATCCT")  // Should return drug interactions

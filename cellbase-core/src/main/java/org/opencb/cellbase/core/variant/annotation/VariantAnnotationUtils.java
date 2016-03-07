@@ -97,9 +97,12 @@ public class VariantAnnotationUtils {
     public static final String CDS_END_NF = "cds_end_NF";
 
     public static final Map<String, Map<String, Boolean>> IS_SYNONYMOUS_CODON = new HashMap<>();
+    public static final Map<String, Map<String, Boolean>> MT_IS_SYNONYMOUS_CODON = new HashMap<>();
     public static final Map<String, String> SO_NAMES_CORRECTIONS = new HashMap<>();
     public static final Map<String, List<String>> A_TO_CODON = new HashMap<>();
+    public static final Map<String, List<String>> MT_A_TO_CODON = new HashMap<>();
     public static final Map<String, String> CODON_TO_A = new HashMap<>();
+    public static final Map<String, String> MT_CODON_TO_A = new HashMap<>();
     public static final Map<Character, Character> COMPLEMENTARY_NT = new HashMap<>();
     public static final Map<Integer, String> SIFT_DESCRIPTIONS = new HashMap<>();
     public static final Map<Integer, String> POLYPHEN_DESCRIPTIONS = new HashMap<>();
@@ -217,6 +220,115 @@ public class VariantAnnotationUtils {
             }
         }
 
+        ///////////////////////////////////////////////////////////////////////
+        /////   MITOCHONDRIAL GENETIC CODE   //////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+        MT_A_TO_CODON.put("ALA", new ArrayList<String>());
+        MT_A_TO_CODON.get("ALA").add("GCT");
+        MT_A_TO_CODON.get("ALA").add("GCC");
+        MT_A_TO_CODON.get("ALA").add("GCA");
+        MT_A_TO_CODON.get("ALA").add("GCG");
+        MT_A_TO_CODON.put("ARG", new ArrayList<String>());
+        MT_A_TO_CODON.get("ARG").add("CGT");
+        MT_A_TO_CODON.get("ARG").add("CGC");
+        MT_A_TO_CODON.get("ARG").add("CGA");
+        MT_A_TO_CODON.get("ARG").add("CGG");
+        MT_A_TO_CODON.put("ASN", new ArrayList<String>());
+        MT_A_TO_CODON.get("ASN").add("AAT");
+        MT_A_TO_CODON.get("ASN").add("AAC");
+        MT_A_TO_CODON.put("ASP", new ArrayList<String>());
+        MT_A_TO_CODON.get("ASP").add("GAT");
+        MT_A_TO_CODON.get("ASP").add("GAC");
+        MT_A_TO_CODON.put("CYS", new ArrayList<String>());
+        MT_A_TO_CODON.get("CYS").add("TGT");
+        MT_A_TO_CODON.get("CYS").add("TGC");
+        MT_A_TO_CODON.put("GLN", new ArrayList<String>());
+        MT_A_TO_CODON.get("GLN").add("CAA");
+        MT_A_TO_CODON.get("GLN").add("CAG");
+        MT_A_TO_CODON.put("GLU", new ArrayList<String>());
+        MT_A_TO_CODON.get("GLU").add("GAA");
+        MT_A_TO_CODON.get("GLU").add("GAG");
+        MT_A_TO_CODON.put("GLY", new ArrayList<String>());
+        MT_A_TO_CODON.get("GLY").add("GGT");
+        MT_A_TO_CODON.get("GLY").add("GGC");
+        MT_A_TO_CODON.get("GLY").add("GGA");
+        MT_A_TO_CODON.get("GLY").add("GGG");
+        MT_A_TO_CODON.put("HIS", new ArrayList<String>());
+        MT_A_TO_CODON.get("HIS").add("CAT");
+        MT_A_TO_CODON.get("HIS").add("CAC");
+        MT_A_TO_CODON.put("ILE", new ArrayList<String>());
+        MT_A_TO_CODON.get("ILE").add("ATT");
+        MT_A_TO_CODON.get("ILE").add("ATC");
+        MT_A_TO_CODON.put("LEU", new ArrayList<String>());
+        MT_A_TO_CODON.get("LEU").add("TTA");
+        MT_A_TO_CODON.get("LEU").add("TTG");
+        MT_A_TO_CODON.get("LEU").add("CTT");
+        MT_A_TO_CODON.get("LEU").add("CTC");
+        MT_A_TO_CODON.get("LEU").add("CTA");
+        MT_A_TO_CODON.get("LEU").add("CTG");
+        MT_A_TO_CODON.put("LYS", new ArrayList<String>());
+        MT_A_TO_CODON.get("LYS").add("AAA");
+        MT_A_TO_CODON.get("LYS").add("AAG");
+        MT_A_TO_CODON.put("MET", new ArrayList<String>());
+        MT_A_TO_CODON.get("MET").add("ATG");
+        MT_A_TO_CODON.get("MET").add("ATA");
+        MT_A_TO_CODON.put("PHE", new ArrayList<String>());
+        MT_A_TO_CODON.get("PHE").add("TTT");
+        MT_A_TO_CODON.get("PHE").add("TTC");
+        MT_A_TO_CODON.put("PRO", new ArrayList<String>());
+        MT_A_TO_CODON.get("PRO").add("CCT");
+        MT_A_TO_CODON.get("PRO").add("CCC");
+        MT_A_TO_CODON.get("PRO").add("CCA");
+        MT_A_TO_CODON.get("PRO").add("CCG");
+        MT_A_TO_CODON.put("SER", new ArrayList<String>());
+        MT_A_TO_CODON.get("SER").add("TCT");
+        MT_A_TO_CODON.get("SER").add("TCC");
+        MT_A_TO_CODON.get("SER").add("TCA");
+        MT_A_TO_CODON.get("SER").add("TCG");
+        MT_A_TO_CODON.get("SER").add("AGT");
+        MT_A_TO_CODON.get("SER").add("AGC");
+        MT_A_TO_CODON.put("THR", new ArrayList<String>());
+        MT_A_TO_CODON.get("THR").add("ACT");
+        MT_A_TO_CODON.get("THR").add("ACC");
+        MT_A_TO_CODON.get("THR").add("ACA");
+        MT_A_TO_CODON.get("THR").add("ACG");
+        MT_A_TO_CODON.put("TRP", new ArrayList<String>());
+        MT_A_TO_CODON.get("TRP").add("TGG");
+        MT_A_TO_CODON.get("TRP").add("TGA");
+        MT_A_TO_CODON.put("TYR", new ArrayList<String>());
+        MT_A_TO_CODON.get("TYR").add("TAT");
+        MT_A_TO_CODON.get("TYR").add("TAC");
+        MT_A_TO_CODON.put("VAL", new ArrayList<String>());
+        MT_A_TO_CODON.get("VAL").add("GTT");
+        MT_A_TO_CODON.get("VAL").add("GTC");
+        MT_A_TO_CODON.get("VAL").add("GTA");
+        MT_A_TO_CODON.get("VAL").add("GTG");
+        MT_A_TO_CODON.put("STOP", new ArrayList<String>());
+        MT_A_TO_CODON.get("STOP").add("TAA");
+        MT_A_TO_CODON.get("STOP").add("TAG");
+        MT_A_TO_CODON.get("STOP").add("AGA");
+        MT_A_TO_CODON.get("STOP").add("AGG");
+
+        for (String aa : MT_A_TO_CODON.keySet()) {
+            for (String codon : MT_A_TO_CODON.get(aa)) {
+                MT_IS_SYNONYMOUS_CODON.put(codon, new HashMap<String, Boolean>());
+                MT_CODON_TO_A.put(codon, aa);
+            }
+        }
+        for (String codon1 : MT_IS_SYNONYMOUS_CODON.keySet()) {
+            Map<String, Boolean> codonEntry = MT_IS_SYNONYMOUS_CODON.get(codon1);
+            for (String codon2 : MT_IS_SYNONYMOUS_CODON.keySet()) {
+                codonEntry.put(codon2, false);
+            }
+        }
+        for (String aa : MT_A_TO_CODON.keySet()) {
+            for (String codon1 : MT_A_TO_CODON.get(aa)) {
+                for (String codon2 : MT_A_TO_CODON.get(aa)) {
+                    MT_IS_SYNONYMOUS_CODON.get(codon1).put(codon2, true);
+                }
+            }
+        }
+
         COMPLEMENTARY_NT.put('A', 'T');
         COMPLEMENTARY_NT.put('C', 'G');
         COMPLEMENTARY_NT.put('G', 'C');
@@ -278,11 +390,42 @@ public class VariantAnnotationUtils {
         SO_NAMES_CORRECTIONS.put("non_coding_exon_variant", "non_coding_transcript_exon_variant");
     }
 
+    public static Boolean isSynonymousCodon(String codon1, String codon2) {
+        return isSynonymousCodon(false, codon1, codon2);
+    }
+
+    public static Boolean isSynonymousCodon(Boolean mitochondrialCode, String codon1, String codon2) {
+        Map<String, String> geneticCode = null;
+        if (mitochondrialCode) {
+            return MT_IS_SYNONYMOUS_CODON.get(codon1).get(codon2);
+        } else {
+            return IS_SYNONYMOUS_CODON.get(codon1).get(codon2);
+        }
+    }
+
     public static Boolean isStopCodon(String codon) {
-        if (codon.equals("TAA") || codon.equals("TGA") || codon.equals("TAG")) {
-            return true;
+        return isStopCodon(false, codon);
+    }
+
+    public static Boolean isStopCodon(boolean mitochondrialCode, String codon) {
+        if (mitochondrialCode) {
+            if (codon.equals("TAA") || codon.equals("TAG") || codon.equals("AGA") || codon.equals("AGG")) {
+                return true;
+            }
+        } else {
+            if (codon.equals("TAA") || codon.equals("TGA") || codon.equals("TAG")) {
+                return true;
+            }
         }
         return false;
+    }
+
+    public static String getAminoacid(boolean mitochondrialCode, String codon) {
+        if (mitochondrialCode) {
+            return MT_CODON_TO_A.get(codon);
+        } else {
+            return CODON_TO_A.get(codon);
+        }
     }
 
     public static List<SequenceOntologyTerm> getSequenceOntologyTerms(Iterable<String> soNames) throws SOTermNotAvailableException {

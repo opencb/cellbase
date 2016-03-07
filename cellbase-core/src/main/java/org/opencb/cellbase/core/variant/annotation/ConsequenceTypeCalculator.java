@@ -53,20 +53,26 @@ public abstract class ConsequenceTypeCalculator {
         }
     }
 
-    protected void decideStopCodonModificationAnnotation(Set<String> soNames, String referenceCodon, char[] modifiedCodonArray) {
+    protected void decideStopCodonModificationAnnotation(Set<String> soNames, String referenceCodon,
+                                                         char[] modifiedCodonArray, boolean useMitochondrialCode) {
 
-        Map<String, Boolean> replacementMap = VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(referenceCodon);
+        Map<String, Boolean> replacementMap;
+        if (useMitochondrialCode) {
+            replacementMap = VariantAnnotationUtils.MT_IS_SYNONYMOUS_CODON.get(referenceCodon);
+        } else {
+            replacementMap = VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(referenceCodon);
+        }
         if (replacementMap != null) {
             Boolean isSynonymous = replacementMap.get(String.valueOf(modifiedCodonArray));
             if (isSynonymous != null) {
                 if (isSynonymous) {
-                    if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+                    if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon)) {
                         soNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
                     }
                 } else {
-                    if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
+                    if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, String.valueOf(referenceCodon))) {
                         soNames.add(VariantAnnotationUtils.STOP_LOST);
-                    } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
+                    } else if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, String.valueOf(modifiedCodonArray))) {
                         soNames.add(VariantAnnotationUtils.STOP_GAINED);
                     }
                 }

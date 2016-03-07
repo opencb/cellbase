@@ -75,6 +75,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private String url;
     private boolean local;
     private boolean cellBaseAnnotation;
+    private String[] chromosomeList;
     private int port;
     private String species;
     private String assembly;
@@ -171,7 +172,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
                     List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList(false);
                     ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-                    List<String> chromosomeList = getChromosomeNames();
 
                     for (String chromosome : chromosomeList) {
                         logger.info("Annotating chromosome {}", chromosome);
@@ -198,19 +198,26 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private List<String> getChromosomeNames() {
-        logger.info("Getting full list of chromosome names in the database");
-        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-        QueryResult queryResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
+    private void setChromosomeList() {
 
-        List<Document> chromosomeDocumentList = (List<Document>)((List<Document>) queryResult.getResult()).get(0).get("chromosomes");
-        List<String> chromosomeList = new ArrayList<>(chromosomeDocumentList.size());
-        for (Document chromosomeDocument : chromosomeDocumentList) {
-            chromosomeList.add((String) chromosomeDocument.get("name"));
+        if (variantAnnotationCommandOptions.chromosomeList != null
+                && !variantAnnotationCommandOptions.chromosomeList.isEmpty()) {
+            chromosomeList = variantAnnotationCommandOptions.chromosomeList.split(",");
+            logger.info("Setting chromosomes {} for variant annotation", chromosomeList.toString());
+        // If the user does not provide any chromosome, fill chromosomeList with all available chromosomes in the
+        // database
+        } else {
+            logger.info("Getting full list of chromosome names in the database");
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+            QueryResult queryResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
+
+            List<Document> chromosomeDocumentList = (List<Document>) ((List<Document>) queryResult.getResult()).get(0).get("chromosomes");
+            List<String> chromosomeList = new ArrayList<>(chromosomeDocumentList.size());
+            for (Document chromosomeDocument : chromosomeDocumentList) {
+                chromosomeList.add((String) chromosomeDocument.get("name"));
+            }
+            logger.info("Available chromosomes: {}", chromosomeList.toString());
         }
-        logger.info("Available chromosomes: {}", chromosomeList.toString());
-
-        return chromosomeList;
     }
 
     private DataWriter getDataWriter(String filename) {
@@ -558,6 +565,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         // Annotate variation collection in CellBase
         cellBaseAnnotation = variantAnnotationCommandOptions.cellBaseAnnotation;
+
+        // The list of chromosomes will only be used if annotating the variation collection
+        if (cellBaseAnnotation) {
+            // This will set chromosomeList with the list of chromosomes to annotate
+            setChromosomeList();
+        }
 
         // Species
         if (variantAnnotationCommandOptions.species != null) {
