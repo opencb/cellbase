@@ -134,7 +134,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                                     "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(aaDocument.get("pe"))));
                         }
                     }
-                    result.setResult(Collections.singletonList(scoreList));
+                    result.setResult(scoreList);
+//                    result.setResult(Collections.singletonList(scoreList));
                 }
 //            // Return empty QueryResult if the query did not return any result
 //            } else {
