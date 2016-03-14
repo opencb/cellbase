@@ -129,6 +129,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
 
+        if (variantList == null || variantList.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<Variant> normalizedVariantList;
         if (normalize) {
             normalizedVariantList = normalizer.apply(variantList);
