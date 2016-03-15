@@ -163,7 +163,7 @@
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
-                                    <arg value="${project.basedir}/../cellbase-server/target/cellbase.war"/>
+                                    <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${project.basedir}/../LICENSE"/>
                                     <arg value="${build.dir}"/>
