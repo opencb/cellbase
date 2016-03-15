@@ -302,8 +302,9 @@ public class CliOptionsParser {
         public boolean local;
 
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
-        public String url = "bioinfodev.hpc.cam.ac.uk";
+        public String url = "bioinfodev.hpc.cam.ac.uk/cellbase/webservices/rest";
 
+        @Deprecated
         @Parameter(names = {"--remote-port"}, description = "The port where REST web services are listening", required = false, arity = 1)
         public int port = 80;
 

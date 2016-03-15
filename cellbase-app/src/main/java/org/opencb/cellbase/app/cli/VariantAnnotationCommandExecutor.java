@@ -159,7 +159,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
                 ParallelTaskRunner<String, Variant> runner =
-                        new ParallelTaskRunner<String, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                        new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
                 runner.run();
             } else {
                 // This will annotate the CellBase Variation collection
@@ -313,17 +313,17 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     dbAdaptorFactory, normalize), queryOptions);
         } else {
             try {
-                String path = "/cellbase/webservices/rest/";
+//                String path = "/cellbase/webservices/rest/";
                 CellBaseClient cellBaseClient;
                 if (url.contains(":")) {
                     String[] hostAndPort = url.split(":");
                     url = hostAndPort[0];
                     port = Integer.parseInt(hostAndPort[1]);
-                    cellBaseClient = new CellBaseClient(url, port, path, configuration.getVersion(), species);
+                    cellBaseClient = new CellBaseClient(url, port, configuration.getVersion(), species);
                 } else {
-                    cellBaseClient = new CellBaseClient(url, port, path, configuration.getVersion(), species);
+                    cellBaseClient = new CellBaseClient(url, port, configuration.getVersion(), species);
                 }
-                logger.debug("URL set to: {}", url + ":" + port + path);
+                logger.debug("URL set to: {}", url + ":" + port);
 
                 // TODO: enable normalize flag for the WS annotator
                 return new CellBaseWSVariantAnnotator(cellBaseClient, queryOptions);

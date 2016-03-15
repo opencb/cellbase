@@ -187,6 +187,11 @@ public class CellBaseClient {
 
     }
 
+    public CellBaseClient(String url, int port, String version, String species) throws URISyntaxException {
+        this(new URI("http", null, url.split("/", 2)[0], port, url.endsWith("/") ? url.split("/", 2)[1] : url.split("/", 2)[1] + "/", null,
+                null), version, species);
+    }
+
     public CellBaseClient(String host, int port, String path, String version, String species) throws URISyntaxException {
         this(new URI("http", null, host, port, path.endsWith("/") ? path : path + "/", null, null), version, species);
     }
