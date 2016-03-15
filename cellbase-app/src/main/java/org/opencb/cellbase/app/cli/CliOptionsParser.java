@@ -337,9 +337,16 @@ public class CliOptionsParser {
         @Parameter(names = {"--gzip"}, description = "Whether the output file is gzipped", required = false, arity = 0)
         public boolean gzip;
 
-
-        @Parameter(names = {"--input-variation-collection"}, description = "", required = false, arity = 0)
+        @Parameter(names = {"--input-variation-collection"}, description = "Input will be a local installation of the"
+                + "CellBase variation collection. Connection details must be properly specified at a configuration.json file",
+                required = false, arity = 0)
         public boolean cellBaseAnnotation;
+
+        @Parameter(names = {"--chromosomes"}, description = "Comma separated list (no empty spaces in between) of"
+                + " chromosomes to annotate. One may use this parameter only when the --input-variation-collection"
+                + " flag is activated. Variants from all chromosomes will be annotated by default. E.g.: 1,22,X,Y",
+                required = false, arity = 1)
+        public String chromosomeList;
 
     }
 

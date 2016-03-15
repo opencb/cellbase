@@ -304,12 +304,15 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     modifiedCodonArray[variantPhaseShift] =
                             VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant.getAlternate().toCharArray()[0]);
                     codingAnnotationAdded = true;
-                    String referenceA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(referenceCodon));
-                    String alternativeA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(modifiedCodonArray));
+                    String referenceA = VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
+                            String.valueOf(referenceCodon));
+                    String alternativeA = VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
+                            String.valueOf(modifiedCodonArray));
 
-                    if (VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(String.valueOf(referenceCodon))
-                            .get(String.valueOf(modifiedCodonArray))) {
-                        if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
+                    if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
+                            String.valueOf(referenceCodon), String.valueOf(referenceCodon))) {
+                        if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                                String.valueOf(referenceCodon))) {
                             SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
                         } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
                             // but if the length of the cds%3=0, annotation should be synonymous variant
@@ -319,14 +322,17 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
-                            if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
+                            if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                                    String.valueOf(modifiedCodonArray))) {
                                 // Gary - initiator codon SO terms not compatible with the terms below
                                 SoNames.add(VariantAnnotationUtils.STOP_GAINED);
                             }
-                        } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
+                        } else if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                                String.valueOf(referenceCodon))) {
                             SoNames.add(VariantAnnotationUtils.STOP_LOST);
                         } else {
-                            SoNames.add(VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))
+                            SoNames.add(VariantAnnotationUtils
+                                    .isStopCodon(variant.getChromosome().equals("MT"), String.valueOf(modifiedCodonArray))
                                     ? VariantAnnotationUtils.STOP_GAINED : VariantAnnotationUtils.MISSENSE_VARIANT);
                         }
                     }
@@ -539,11 +545,14 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
                     char[] modifiedCodonArray = referenceCodon.toCharArray();
                     modifiedCodonArray[variantPhaseShift] = variant.getAlternate().toCharArray()[0];
-                    String referenceA = VariantAnnotationUtils.CODON_TO_A.get(referenceCodon);
-                    String alternativeA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(modifiedCodonArray));
+                    String referenceA =
+                            VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"), referenceCodon);
+                    String alternativeA =
+                            VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
+                                    String.valueOf(modifiedCodonArray));
                     codingAnnotationAdded = true;
-                    if (VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(referenceCodon).get(String.valueOf(modifiedCodonArray))) {
-                        if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+                    if (VariantAnnotationUtils.isSynonymousCodon(referenceCodon, String.valueOf(modifiedCodonArray))) {
+                        if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon)) {
                             SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
                         } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
                             // but if the length of the cds%3=0, annotation should be synonymous variant
@@ -553,14 +562,17 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
-                            if (VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))) {
+                            if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                                    String.valueOf(modifiedCodonArray))) {
                                 // Gary - initiator codon SO terms not compatible with the terms below
                                 SoNames.add(VariantAnnotationUtils.STOP_GAINED);
                             }
-                        } else if (VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon))) {
+                        } else if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                                String.valueOf(referenceCodon))) {
                             SoNames.add(VariantAnnotationUtils.STOP_LOST);
                         } else {
-                            SoNames.add(VariantAnnotationUtils.isStopCodon(String.valueOf(modifiedCodonArray))
+                            SoNames.add(VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                                    String.valueOf(modifiedCodonArray))
                                     ? VariantAnnotationUtils.STOP_GAINED : VariantAnnotationUtils.MISSENSE_VARIANT);
                         }
                     }

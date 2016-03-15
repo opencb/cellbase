@@ -129,6 +129,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
 
+        if (variantList == null || variantList.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<Variant> normalizedVariantList;
         if (normalize) {
             normalizedVariantList = normalizer.apply(variantList);
@@ -381,7 +384,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                         codon = referenceCodon + "/" + alternateCodon;
 //                            alternateAA = VariantAnnotationUtils.CODON_TO_A.get(alternateCodon);
                         soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
-                                String.valueOf(referenceCodon), String.valueOf(alternateCodon));
+                                String.valueOf(referenceCodon), String.valueOf(alternateCodon),
+                                variant1.getChromosome().equals("MT"));
 
                         // Update consequenceType3
                         consequenceType3.setCdnaPosition(cdnaPosition);
@@ -413,7 +417,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //                            alternateAA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(alternateCodonArray).toUpperCase());
                         soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
                                 String.valueOf(referenceCodonArray).toUpperCase(),
-                                String.valueOf(alternateCodonArray).toUpperCase());
+                                String.valueOf(alternateCodonArray).toUpperCase(), variant1.getChromosome().equals("MT"));
                     }
 
                     // Update consequenceType1 & 2
@@ -498,7 +502,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private List<SequenceOntologyTerm> updatePhasedSoTerms(List<SequenceOntologyTerm> sequenceOntologyTermList,
-                                                           String referenceCodon, String alternateCodon) {
+                                                           String referenceCodon, String alternateCodon,
+                                                           Boolean useMitochondrialCode) {
 
         // Removes all coding-associated SO terms
         int i = 0;
@@ -512,16 +517,16 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         // Add the new coding SO term as appropriate
         String newSoName = null;
-        if (VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(referenceCodon).get(alternateCodon)) {
-            if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+        if (VariantAnnotationUtils.isSynonymousCodon(useMitochondrialCode, referenceCodon, alternateCodon)) {
+            if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon)) {
                 newSoName = VariantAnnotationUtils.STOP_RETAINED_VARIANT;
             } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
                 // but if the length of the cds%3=0, annotation should be synonymous variant
                 newSoName = VariantAnnotationUtils.SYNONYMOUS_VARIANT;
             }
-        } else if (VariantAnnotationUtils.isStopCodon(referenceCodon)) {
+        } else if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon)) {
             newSoName = VariantAnnotationUtils.STOP_LOST;
-        } else if (VariantAnnotationUtils.isStopCodon(alternateCodon)) {
+        } else if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, alternateCodon)) {
             newSoName = VariantAnnotationUtils.STOP_GAINED;
         } else {
             newSoName = VariantAnnotationUtils.MISSENSE_VARIANT;
@@ -635,14 +640,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //        return geneList;
     }
 
-    private boolean nonSynonymous(ConsequenceType consequenceType) {
+    private boolean nonSynonymous(ConsequenceType consequenceType, boolean useMitochondrialCode) {
         if (consequenceType.getCodon() == null) {
             return false;
         } else {
             String[] parts = consequenceType.getCodon().split("/");
             String ref = String.valueOf(parts[0]).toUpperCase();
             String alt = String.valueOf(parts[1]).toUpperCase();
-            return !VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(ref).get(alt) && !VariantAnnotationUtils.isStopCodon(ref);
+            return !VariantAnnotationUtils.isSynonymousCodon(useMitochondrialCode, ref, alt)
+                    && !VariantAnnotationUtils.isStopCodon(useMitochondrialCode, ref);
         }
     }
 
@@ -725,7 +731,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
         for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (nonSynonymous(consequenceType)) {
+            if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
                 consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
             }
         }

@@ -459,8 +459,10 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 i++;
             }
 
-            decideStopCodonModificationAnnotation(SoNames, VariantAnnotationUtils.isStopCodon(String.valueOf(referenceCodon2Array))
-                    ? String.valueOf(referenceCodon2Array) : String.valueOf(referenceCodon1Array), modifiedCodonArray);
+            decideStopCodonModificationAnnotation(SoNames,
+                    VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), String.valueOf(referenceCodon2Array))
+                    ? String.valueOf(referenceCodon2Array) : String.valueOf(referenceCodon1Array), modifiedCodonArray,
+                                                                                variant.getChromosome().equals("MT"));
         }
     }
 
@@ -745,8 +747,9 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                 }
                 i++;
             }
-            decideStopCodonModificationAnnotation(SoNames, VariantAnnotationUtils.isStopCodon(referenceCodon2)
-                    ? referenceCodon2 : referenceCodon1, modifiedCodonArray);
+            decideStopCodonModificationAnnotation(SoNames,
+                    VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon2)
+                    ? referenceCodon2 : referenceCodon1, modifiedCodonArray, variant.getChromosome().equals("MT"));
         }
     }
 

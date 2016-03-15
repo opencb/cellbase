@@ -230,7 +230,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
                             + bulkWriteResult.first().getModifiedCount())));
 
 //            return bulkWriteResult.first().getUpserts().size() + bulkWriteResult.first().getModifiedCount();
-//            return longQueryResult;
+            return longQueryResult;
         }
         logger.info("no object updated");
         return null;
