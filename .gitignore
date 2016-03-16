@@ -1,5 +1,8 @@
 
+build
+
 node_modules
+private
 
 # General
 *.jar
@@ -11,6 +14,7 @@ node_modules
 *.so.*
 *.out
 *.log
+sonar-project.properties
 
 # Maven
 target/
@@ -50,4 +54,5 @@ local.properties
 # PDT-specific
 .buildpath
 
-
+# Python
+*.pyc

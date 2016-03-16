@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.core.common.variation;
 
 /**
@@ -7,6 +23,7 @@ package org.opencb.cellbase.core.common.variation;
  * Time: 7:37 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class Mutation {
 
     private String id;
@@ -43,7 +60,11 @@ public class Mutation {
 
     }
 
-    public Mutation(String id, String chromosome, int start, int end, String strand, String protein, int proteinStart, int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName, String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity, String status, String pubmed, String tumourOrigin, String description, String source) {
+    public Mutation(String id, String chromosome, int start, int end, String strand, String protein, int proteinStart,
+                    int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName,
+                    String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology,
+                    String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity,
+                    String status, String pubmed, String tumourOrigin, String description, String source) {
         this.id = id;
         this.chromosome = chromosome;
         this.start = start;

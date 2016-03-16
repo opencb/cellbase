@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package protobuf.opencb.service;
+
+option java_package = "org.opencb.cellbase.grpc.service";
+option java_outer_classname = "RegulatoryRegionServiceModel";
+
+import "protobuf/opencb/service/generic_service.proto";
+import "protobuf/opencb/service_types.proto";
+import "protobuf/opencb/regulatory_region.proto";
+
+service RegulatoryRegionService {
+
+    rpc count(Request) returns (LongResponse) {}
+
+    rpc distinct(Request) returns (StringArrayResponse) {}
+
+    rpc first(Request) returns (RegulatoryRegion) {}
+
+    rpc next(Request) returns (RegulatoryRegion) {}
+
+    rpc get(Request) returns (stream RegulatoryRegion) {}
+
+    rpc groupBy(Request) returns (GroupResponse) {}
+}

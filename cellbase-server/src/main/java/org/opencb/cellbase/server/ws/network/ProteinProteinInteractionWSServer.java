@@ -1,11 +1,28 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.server.ws.network;
 
-import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.api.network.ProteinProteinInteractionDBAdaptor;
-import org.opencb.cellbase.core.lib.dbquery.QueryResult;
+import org.opencb.biodata.models.protein.Interaction;
+import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -14,7 +31,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,10 +45,16 @@ import java.util.List;
 public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
 
     public ProteinProteinInteractionWSServer(@PathParam("version") String version, @PathParam("species") String species,
-                                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
+                                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
+    @GET
+    @Path("/model")
+    public Response getModel() {
+        return createModelResponse(Interaction.class);
+    }
 
     @GET
     @Path("/all")
@@ -42,53 +64,27 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                               @DefaultValue("") @QueryParam("status") String status,
                               @DefaultValue("") @QueryParam("detectionMethod") String detectionMethod) {
         try {
-            checkVersionAndSpecies();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.version);
-
-            if(interactor != null && !interactor.equals("")) {
-                queryOptions.put("interactor", Splitter.on(",").splitToList(interactor));
-            }
-
-            if(type != null && !type.equals("")) {
-                queryOptions.put("type", Splitter.on(",").splitToList(type));
-            }
-
-            if(database != null && !database.equals("")) {
-                queryOptions.put("database", Splitter.on(",").splitToList(database));
-            }
-
-            if(detectionMethod != null && !detectionMethod.equals("")) {
-                queryOptions.put("detectionMethod", Splitter.on(",").splitToList(detectionMethod));
-            }
-
-            if(status != null && !status.equals("")) {
-                queryOptions.put("status", Splitter.on(",").splitToList(status));
-            }
-
-//            if(type != null && !type.equals("")) {
-//                queryOptions.put("type", type);
-//            }
-
-            return createOkResponse(ppiDBAdaptor.getAll(queryOptions));
-        } catch (VersionException | SpeciesException e) {
-            e.printStackTrace();
-            return createErrorResponse("getAllPPI", e.toString());
+            parseQueryParams();
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            return createOkResponse(ppiDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
-
     }
 
     @GET
     @Path("/{interaction}/info")
     public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
         try {
-            checkVersionAndSpecies();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.version);
-
-            List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
+            parseQueryParams();
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
+            List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPPIByInteractionId", e.toString());
+            return createErrorResponse(e);
         }
     }
 
@@ -98,17 +94,15 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     public Response getInteractorsByInteractionId(@PathParam("interaction") String interaction,
                                                   @DefaultValue("interactorA,interactorB") @QueryParam("include") String include) {
         try {
-            checkVersionAndSpecies();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.version);
-
-//            queryOptions.put("include", Splitter.on(",").splitToList(include));
-            queryOptions.put("include", include);
-
-            List<QueryResult> queryResults = ppiDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(interaction), queryOptions);
+            parseQueryParams();
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            queryOptions.put("include", "interactorA,interactorB");
+            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
+            List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getPPIByInteractionId", e.toString());
+            return createErrorResponse(e);
         }
     }
 }
