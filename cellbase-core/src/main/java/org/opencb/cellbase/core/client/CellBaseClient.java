@@ -55,10 +55,10 @@ import java.util.Map;
  */
 public class CellBaseClient {
 
-    private final String species;
-    private final String version;
-    private final UriBuilder uriBuilder;
-    private final Client client;
+    private String species;
+    private String version;
+    private UriBuilder uriBuilder;
+    private Client client;
     private Map<String, ObjectReader> readers = new HashMap<>();
     private ObjectMapper mapper;
     private URI lastQuery = null;
@@ -124,6 +124,7 @@ public class CellBaseClient {
 
     private static final Map<Resource, Class<?>> RESOURCE_BEAN_MAP;
     private static final Map<Resource, String> RESOURCE_STRING_MAP;
+    private static final int DEFAULT_PORT = 80;
 
     static {
         CATEGORY_STRING_MAP = new HashMap<>();
@@ -187,12 +188,24 @@ public class CellBaseClient {
 
     }
 
-    public CellBaseClient(String url, int port, String version, String species) throws URISyntaxException {
-//        this(new URI("http", null, url.split("/", 2)[0], port,
-//                "/" + (url.endsWith("/") ? url.split("/", 2)[1] : url.split("/", 2)[1] + "/"), null, null), version,
-//                species);
-        this(url.split("/", 2)[0], port, "/" + (url.endsWith("/") ? url.split("/", 2)[1] : url.split("/", 2)[1] + "/"),
-                version, species);
+    public CellBaseClient(String url, String version, String species) throws URISyntaxException {
+        String hostAndPort =  url.split("/", 2)[0];
+        String path = "/" + (url.endsWith("/") ? url.split("/", 2)[1] : url.split("/", 2)[1] + "/");
+        String host = null;
+        int port = DEFAULT_PORT;
+        if (hostAndPort.contains(":")) {
+            String[] parts = hostAndPort.split(":");
+            host = parts[0];
+            port = Integer.parseInt(parts[1]);
+        } else {
+            host = hostAndPort;
+        }
+        logger.info("Remote point access details:");
+        logger.info("   host: {}", host);
+        logger.info("   port: {}", port);
+        logger.info("   path: {}", path);
+
+        init(UriBuilder.fromUri(new URI("http", null, host, port, path, null, null)), version, species);
     }
 
     public CellBaseClient(String host, int port, String path, String version, String species) throws URISyntaxException {
@@ -204,11 +217,13 @@ public class CellBaseClient {
     }
 
     public CellBaseClient(UriBuilder uriBuilder, String version, String species) {
+        init(uriBuilder, version, species);
+    }
+
+    private void init(UriBuilder uriBuilder, String version, String species) {
         this.species = species;
         ClientConfig clientConfig = new ClientConfig();
-//        clientConfig.register()
         client = ClientBuilder.newClient(clientConfig);
-//        client.register()
 
         if (version == null) {
             this.version = "latest";

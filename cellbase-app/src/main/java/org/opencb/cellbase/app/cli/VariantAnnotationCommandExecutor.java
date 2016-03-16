@@ -313,16 +313,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     dbAdaptorFactory, normalize), queryOptions);
         } else {
             try {
-//                String path = "/cellbase/webservices/rest/";
                 CellBaseClient cellBaseClient;
-                if (url.contains(":")) {
-                    String[] hostAndPort = url.split(":");
-                    url = hostAndPort[0];
-                    port = Integer.parseInt(hostAndPort[1]);
-                    cellBaseClient = new CellBaseClient(url, port, configuration.getVersion(), species);
-                } else {
-                    cellBaseClient = new CellBaseClient(url, port, configuration.getVersion(), species);
-                }
+                cellBaseClient = new CellBaseClient(url, configuration.getVersion(), species);
                 logger.debug("URL set to: {}", url + ":" + port);
 
                 // TODO: enable normalize flag for the WS annotator
@@ -554,12 +546,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 url = variantAnnotationCommandOptions.url;
             } else {
                 throw new ParameterException("Please check command line sintax. Provide a valid URL to access CellBase web services.");
-            }
-            // port
-            if (variantAnnotationCommandOptions.port > 0) {
-                port = variantAnnotationCommandOptions.port;
-            } else {
-                throw new ParameterException("Please check command line sintax. Provide a valid port to access CellBase web services.");
             }
         }
 
