@@ -1,87 +1,130 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.server.ws;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
-import org.opencb.cellbase.core.lib.DBAdaptorFactory;
-import org.opencb.cellbase.core.lib.dbquery.QueryOptions;
-import org.opencb.cellbase.lib.mongodb.MongoDBAdaptorFactory;
-import org.opencb.cellbase.server.QueryResponse;
-import org.opencb.cellbase.server.Species;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.commons.datastore.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.util.*;
 
-@Path("/{version}")
+@Path("/{version}/{species}")
 @Produces("text/plain")
+//@Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
-    // Common application parameters
+    //    @DefaultValue("")
+//    @PathParam("version")
+//    @ApiParam(name = "version", value = "Use 'latest' for last stable version",  defaultValue = "latest")
     protected String version;
+
+    //    @DefaultValue("")
+//    @PathParam("species")
+//    @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens.")
     protected String species;
+
+    @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of"
+            + "potentially available assemblies, please refer to: "
+            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species")
+    @DefaultValue("")
+    @QueryParam("assembly")
+    protected String assembly;
+
+    @ApiParam(name = "excluded fields", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. "
+            + " Please note that this option may not be enabled for all web services.")
+    @DefaultValue("")
+    @QueryParam("exclude")
+    protected String exclude;
+
+    @DefaultValue("")
+    @QueryParam("include")
+    @ApiParam(name = "included fields", value = "Set which fields are included in the response, e.g.: transcripts.id. "
+            + " Please note that this parameter may not be enabled for all web services.")
+    protected String include;
+
+    @DefaultValue("-1")
+    @QueryParam("limit")
+    @ApiParam(name = "limit", value = "Max number of results to be returned. No limit applied when -1."
+            + " Please note that this option may not be available for all web services.")
+    protected int limit;
+
+    @DefaultValue("-1")
+    @QueryParam("skip")
+    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1. "
+            + " Please note that this option may not be available for all web services.")
+    protected int skip;
+
+    @DefaultValue("false")
+    @QueryParam("count")
+    @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default. "
+            + " Please note that this option may not be available for all web services.",
+            defaultValue = "false", allowableValues = "false,true")
+    protected String count;
+
+    @DefaultValue("json")
+    @QueryParam("of")
+    @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json",
+            allowableValues = "json,pb (Not implemented yet)")
+    protected String outputFormat;
+
+
+    protected Query query;
+    protected QueryOptions queryOptions;
+    protected QueryResponse queryResponse;
+
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
 
-    // Common output parameters
-    protected String resultSeparator;
-    protected String querySeparator;
-
-    protected QueryOptions queryOptions;
-    //	protected List<String> exclude = new ArrayList<>();
-    //	protected List<String> include = new ArrayList<>();
-
-    // output format file type: null or txt or text, xml, excel
-    protected String fileFormat;
-
-    // file name without extension which server will give back when file format
-    // is !null
-    private String filename;
-
-    // output content format: txt or text, json, xml, das
-    protected String outputFormat;
-
-    // in file output produces a zip file, in text outputs generates a gzipped
-    // output
-    protected String outputCompress;
-
-    // only in text format
-    protected String outputRowNames;
-    protected String outputHeader;
-
-    protected String user;
-    protected String password;
-
-    protected Type listType;
-
-    //	protected static Gson gson;
     protected static ObjectMapper jsonObjectMapper;
     protected static ObjectWriter jsonObjectWriter;
 
-    // protected Logger logger;
-//    protected Logger logger = Logger.getLogger(this.getClass());
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private static final String NEW_LINE = "newline";
-    private static final String TAB = "tab";
-
-    protected QueryResponse queryResponse;
     protected long startTime;
     protected long endTime;
 
+    protected static Logger logger;
+
+    /**
+     * Loading properties file just one time to be more efficient. All methods
+     * will check parameters so to avoid extra operations this config can load
+     * versions and species
+     */
+    protected static CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
 
     /**
      * DBAdaptorFactory creation, this object can be initialize with an
@@ -89,265 +132,79 @@ public class GenericRestWSServer implements IWSServer {
      * factory for creating adaptors like GeneDBAdaptor
      */
     protected static DBAdaptorFactory dbAdaptorFactory;
+    protected static org.opencb.cellbase.core.api.DBAdaptorFactory dbAdaptorFactory2;
+
+    private static final int LIMIT_DEFAULT = 1000;
+    private static final int LIMIT_MAX = 5000;
 
     static {
-//        BasicConfigurator.configure();
+        logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
+        logger.info("Static block, creating MongoDBAdapatorFactory");
+        try {
+            if (System.getenv("CELLBASE_HOME") != null) {
+                logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME") + "/configuration.json");
+                cellBaseConfiguration = CellBaseConfiguration
+                        .load(new FileInputStream(new File(System.getenv("CELLBASE_HOME") + "/configuration.json")));
+            } else {
+                logger.info("Loading configuration from '{}'",
+                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
+                cellBaseConfiguration = CellBaseConfiguration
+                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+            }
 
-        // dbAdaptorFactory = new HibernateDBAdaptorFactory();
-        dbAdaptorFactory = new MongoDBAdaptorFactory();
-        System.out.println("static1");
+            // If Configuration has been loaded we can create the DBAdaptorFactory
+//            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+            dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-//		gson = new GsonBuilder().serializeNulls().setExclusionStrategies(new FeatureExclusionStrategy()).create();
         jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 
-    /**
-     * Loading properties file just one time to be more efficient. All methods
-     * will check parameters so to avoid extra operations this config can load
-     * versions and species
-     */
-    protected static Properties properties;
-    protected static Map<String, Set<String>> availableVersionSpeciesMap; // stores
 
-    /** species for each version**/
-    static {
-        InputStream is = GenericRestWSServer.class.getClassLoader().getResourceAsStream("application.properties");
-        properties = new Properties();
-        availableVersionSpeciesMap = new HashMap<>();
-        try {
-            properties.load(is);
-            if (properties != null && properties.containsKey("CELLBASE.AVAILABLE.VERSIONS")) {
-                // read all versions available
-                List<String> versionList = Splitter.on(",").splitToList(properties.getProperty("CELLBASE.AVAILABLE.VERSIONS"));
-                if (versionList != null) {
-                    for (String version : versionList) {
-                        availableVersionSpeciesMap.put(version.trim(), new HashSet<String>());
-                        String versionKey = "CELLBASE." + version.toUpperCase() + ".AVAILABLE.SPECIES";
-                        if (properties.containsKey(versionKey)) {
-                            // read the species available for each version
-                            List<String> speciesList = Splitter.on(",").splitToList(properties.getProperty(versionKey));
-                            if (speciesList != null) {
-                                for (String species : speciesList) {
-                                    availableVersionSpeciesMap.get(version.trim()).add(species.trim());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
-
-        // System.out.println("static2: "+availableVersions.toString());
-        System.out.println("static2: " + availableVersionSpeciesMap.toString());
-    }
-
-    /**
-     * Preparing headers columns for text output
-     */
-    protected static Map<String, String> headers;
-
-    static {
-        System.out.println("static 3: Adding headers to static Map...");
-        headers = new HashMap<String, String>();
-        headers.put("GENE",
-                "Ensembl gene,external name,external name source,biotype,status,chromosome,start,end,strand,source,description"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "TRANSCRIPT",
-                "Ensembl ID,external name,external name source,biotype,status,chromosome,start,end,strand,coding region start,coding region end,cdna coding start,cdna coding end,description"
-                        .replaceAll(",", "\t"));
-        headers.put("EXON", "Ensembl ID,chromosome,start,end,strand".replaceAll(",", "\t"));
-        headers.put("SNP",
-                "rsID,chromosome,position,Ensembl consequence type,SO consequence type,sequence".replaceAll(",", "\t"));
-        headers.put(
-                "SNP_PHENOTYPE",
-                "SNP name,source,associated gene name,risk allele,risk allele freq in controls,p-value,phenotype name,phenotype description,study name,study type,study URL,study description"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "SNP_POPULATION_FREQUENCY",
-                "SNP name,population,source,ref allele,ref allele freq,other allele,other allele freq,ref allele homozygote,ref allele homozygote freq,allele heterozygote,allele heterozygote freq,ref other allele homozygote, ref other allele homozygote freq"
-                        .replaceAll(",", "\t"));
-        headers.put("SNP_REGULATORY",
-                "SNP name,feature name,feature type,chromsome,start,end,strand,Ensembl transcript ID,Ensembl gene ID,gene name,biotype"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "GENOMIC_VARIANT_EFFECT",
-                "chromosome,position,reference allele,alternative allele,feature ID,feature name,feature type,feature chromsomome,feature start,feature end,feature strand,SNP name,ancestral allele,alternative allele,Ensembl gene ID,Ensembl transcript ID,gene name,SO consequence type ID,SO consequence type name,consequence type description,consequence type category,aminoacid position,aminoacid change,codon change"
-                        .replaceAll(",", "\t"));
-        headers.put("SNP_CONSEQUENCE_TYPE",
-                "SNP name,chromosome,start,end,strand,allele,transcript ID,gene,SO accession,SO term,label,description"
-                        .replaceAll(",", "\t"));
-        headers.put(
-                "MUTATION",
-                "chromosome,start,end,gene_name,uniprot_name,ensembl_transcript,primary_site,site_subtype,primary_histology,mutation_cds,mutation_aa,mutation_description,mutation_zigosity,pubmed_id,description,source"
-                        .replaceAll(",", "\t"));
-        headers.put("STRUCTURAL_VARIATION",
-                "display_id,chromosome,start,end,strand,so_term,study_name,study_url,study_description,source,source_description"
-                        .replaceAll(",", "\t"));
-        headers.put("TFBS",
-                "TF name,target gene name,chromosome,start,end,cell type,sequence,score".replaceAll(",", "\t"));
-        headers.put("MIRNA_GENE", "miRBase accession,miRBase ID,status,sequence,source".replaceAll(",", "\t"));
-        headers.put("MIRNA_MATURE", "miRBase accession,miRBase ID,sequence".replaceAll(",", "\t"));
-        headers.put("MIRNA_TARGET",
-                "miRBase ID,gene target name,chromosome,start,end,strand,pubmed ID,source".replaceAll(",", "\t"));
-        headers.put("MIRNA_DISEASE", "miRBase ID,disease name,pubmed ID,description".replaceAll(",", "\t"));
-        headers.put("REGULATORY_REGION", "name,type,chromosome,start,end,cell type,source".replaceAll(",", "\t"));
-        headers.put("PROTEIN", "UniProt accession,protein name,full name,gene name,organism".replaceAll(",", "\t"));
-        headers.put("PROTEIN_FEATURE",
-                "feature type,aa start,aa end,original,variation,identifier,description".replaceAll(",", "\t"));
-        headers.put("XREF", "ID,description".replaceAll(",", "\t"));
-        headers.put("PATHWAY", "".replaceAll(",", "\t"));
-    }
-
-    @Deprecated
-    public GenericRestWSServer(@PathParam("version") String version) {
+    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException {
         this.version = version;
-    }
-
-    @Deprecated
-    public GenericRestWSServer(@PathParam("version") String version,
-                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
-        this.version = version;
-        this.species = "";
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
 
-        init(version, this.species, uriInfo);
-        // if(version != null && this.species != null) {
-        // }
-        // System.out.println("constructor");
+        logger.debug("Executing GenericRestWSServer constructor with no Species");
+        init(false);
     }
 
-    public GenericRestWSServer(@PathParam("version") String version,
-                               @PathParam("species") String species,
-                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException {
-
-
+    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException {
         this.version = version;
         this.species = species;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
 
-        init(version, species, uriInfo);
-
-        logger.info("GenericrestWSServer: in 'constructor'");
-
-        // if(version != null && species != null) {
-        // }
+        logger.debug("Executing GenericRestWSServer constructor");
+        init(true);
     }
 
-    protected void init(String version, String species, UriInfo uriInfo) throws VersionException, IOException {
 
+    protected void init(boolean checkSpecies) throws VersionException, SpeciesException {
         startTime = System.currentTimeMillis();
+
+        query = new Query();
+        // This needs to be an ArrayList since it may be added some extra fields later
+        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         queryResponse = new QueryResponse();
 
-
-        // load properties file
-        // ResourceBundle databaseConfig =
-        // ResourceBundle.getBundle("org.bioinfo.infrared.ws.application");
-        // config = new Config(databaseConfig);
-
-
-        // mediaType = MediaType.valueOf("text/plain");
-        queryOptions = new QueryOptions();
-        // logger = new Logger();
-        // logger.setLevel(Logger.DEBUG_LEVEL);
-        logger.info("GenericrestWSServer: in 'init' method");
-
-        /**
-         * Check version parameter, must be: v1, v2, ... If 'latest' then is
-         * converted to appropriate version
-         */
-        // if(version != null && version.equals("latest") &&
-        // config.getProperty("CELLBASE.LATEST.VERSION") != null) {
-        // version = config.getProperty("CELLBASE.LATEST.VERSION");
-        // System.out.println("version init: "+version);
-        // }
-
-        // this code MUST be run before the checking
-        parseCommonQueryParameters(uriInfo.getQueryParameters());
+        checkPathParams(checkSpecies);
     }
 
-    /**
-     * This method parse common query parameters from the URL
-     *
-     * @param multivaluedMap
-     */
-    private void parseCommonQueryParameters(MultivaluedMap<String, String> multivaluedMap) {
-        if (multivaluedMap.get("result_separator") != null) {
-            if (multivaluedMap.get("result_separator").get(0).equalsIgnoreCase(NEW_LINE)) {
-                resultSeparator = "\n";
-            } else {
-                if (multivaluedMap.get("result_separator").get(0).equalsIgnoreCase(TAB)) {
-                    resultSeparator = "\t";
-                } else {
-                    resultSeparator = multivaluedMap.get("result_separator").get(0);
-                }
-            }
-        } else {
-            resultSeparator = "//";
-        }
-
-        if (multivaluedMap.get("query_separator") != null) {
-            if (multivaluedMap.get("query_separator").get(0).equalsIgnoreCase(NEW_LINE)) {
-                querySeparator = "\n";
-            } else {
-                if (multivaluedMap.get("query_separator").get(0).equalsIgnoreCase(TAB)) {
-                    querySeparator = "\t";
-                } else {
-                    querySeparator = multivaluedMap.get("query_separator").get(0);
-                }
-            }
-        } else {
-            querySeparator = "\n";
-        }
-
-//		queryOptions.put("exclude", (multivaluedMap.get("exclude") != null) ? Arrays.asList(multivaluedMap.get("exclude").get(0).split(",")) : new ArrayList<String>());
-//		queryOptions.put("include", (multivaluedMap.get("include") != null) ? Arrays.asList(multivaluedMap.get("include").get(0).split(",")) : new ArrayList<String>());
-        queryOptions.put("limit", (multivaluedMap.get("limit") != null) ? multivaluedMap.get("limit").get(0) : 0);
-        queryOptions.put("exclude", (multivaluedMap.get("exclude") != null) ? multivaluedMap.get("exclude").get(0) : "");
-        queryOptions.put("include", (multivaluedMap.get("include") != null) ? multivaluedMap.get("include").get(0) : "");
-        queryOptions.put("metadata", (multivaluedMap.get("metadata") != null) ? multivaluedMap.get("metadata").get(0).equals("true") : true);
-
-        fileFormat = (multivaluedMap.get("fileformat") != null) ? multivaluedMap.get("fileformat").get(0) : "";
-        outputFormat = (multivaluedMap.get("of") != null) ? multivaluedMap.get("of").get(0) : "json";
-        // outputFormat = (multivaluedMap.get("contentformat") != null) ?
-        // multivaluedMap.get("contentformat").get(0) : "txt";
-        filename = (multivaluedMap.get("filename") != null) ? multivaluedMap.get("filename").get(0) : "result";
-        outputRowNames = (multivaluedMap.get("outputrownames") != null) ? multivaluedMap.get("outputrownames").get(0) : "false";
-        outputHeader = (multivaluedMap.get("header") != null) ? multivaluedMap.get("header").get(0) : "true";
-        outputCompress = (multivaluedMap.get("outputcompress") != null) ? multivaluedMap.get("outputcompress").get(0) : "false";
-
-        user = (multivaluedMap.get("user") != null) ? multivaluedMap.get("user").get(0) : "anonymous";
-        password = (multivaluedMap.get("password") != null) ? multivaluedMap.get("password").get(0) : "";
-    }
-
-    protected QueryOptions addExcludeReturnFields(String returnField, QueryOptions options) {
-        if (options != null && !options.getBoolean(returnField, true)) {
-            if (options.get("exclude") != null) {
-                options.put("exclude", options.get("exclude") + "," + returnField);
-            } else {
-                options.put("exclude", returnField);
-            }
-        }
-        return options;
-    }
-
-    /**
-     * Overriden methods
-     */
-
-    @Override
-    public void checkVersionAndSpecies() throws VersionException, SpeciesException {
+    private void checkPathParams(boolean checkSpecies) throws VersionException, SpeciesException {
         if (version == null) {
             throw new VersionException("Version not valid: '" + version + "'");
         }
-        if (species == null) {
+
+        if (checkSpecies && species == null) {
             throw new SpeciesException("Species not valid: '" + species + "'");
         }
 
@@ -355,344 +212,144 @@ public class GenericRestWSServer implements IWSServer {
          * Check version parameter, must be: v1, v2, ... If 'latest' then is
          * converted to appropriate version
          */
-//        // TODO uncomment
-//        if (version != null && version.equals("latest") && config.getProperty("CELLBASE.LATEST.VERSION") != null) {
-//            version = config.getProperty("CELLBASE.LATEST.VERSION");
-//            System.out.println("version: " + version);
-//        }
-
-        if (availableVersionSpeciesMap.containsKey(version)) {
-            if (!availableVersionSpeciesMap.get(version).contains(species)) {
-                throw new SpeciesException("Species not valid: '" + species + "' for version: '" + version + "'");
-            }
+        if (version.equalsIgnoreCase("latest")) {
+            version = cellBaseConfiguration.getVersion();
+            logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
         } else {
+            // FIXME this will only work when no database schemas are done, in version 3 and 4 this can raise some problems
+            // we set the version from the URL, this will decide which database is queried,
+            cellBaseConfiguration.setVersion(version);
+        }
+
+        if (!version.equalsIgnoreCase("v3") && !cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
+            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new VersionException("Version not valid: '" + version + "'");
         }
     }
 
     @Override
-    public String stats() {
-        return null;
+    public void parseQueryParams() {
+        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+
+        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
+
+        if (exclude != null && !exclude.isEmpty()) {
+            // We add the user's 'exclude' fields to the default values _id and _chunks
+            if (queryOptions.containsKey("exclude")) {
+                queryOptions.getAsStringList("exclude").addAll(Splitter.on(",").splitToList(exclude));
+            }
+        }
+//        else {
+//            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
+//                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
+//                    : null);
+//        }
+
+        if (include != null && !include.isEmpty()) {
+            queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
+        } else {
+            queryOptions.put("include", (multivaluedMap.get("include") != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get("include").get(0))
+                    : null);
+        }
+
+        queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
+        queryOptions.put("skip", (skip > 0) ? skip : -1);
+        queryOptions.put("count", (count != null && !count.equals("")) && Boolean.parseBoolean(count));
+//        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
+
+        // Add all the others QueryParams from the URL
+        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+            if (!queryOptions.containsKey(entry.getKey())) {
+//                logger.info("Adding '{}' to queryOptions", entry);
+                // FIXME delete this!!
+                queryOptions.put(entry.getKey(), entry.getValue().get(0));
+                query.put(entry.getKey(), entry.getValue().get(0));
+            }
+        }
     }
+
 
     @GET
     @Path("/help")
+    @ApiOperation(httpMethod = "GET", value = "To be implemented", response = QueryResponse.class)
     public Response help() {
         return createOkResponse("No help available");
     }
 
-    /**
-     * Auxiliar methods
-     */
-
     @GET
-    @Path("/{species}")
-    public Response getCategories(@PathParam("species") String species) {
-        if (isSpecieAvailable(species)) {
-            return createOkResponse("feature\ngenomic\nnetwork\nregulatory");
+    public Response defaultMethod() {
+        switch (species) {
+            case "echo":
+                return createStringResponse("Status active");
+            default:
+                break;
         }
-        return getSpecies();
+        return createOkResponse("Not valid option");
     }
 
-    @GET
-    @Path("/{species}/{category}")
-    public Response getCategory(@PathParam("species") String species, @PathParam("category") String category) {
-        if (isSpecieAvailable(species)) {
-            if ("feature".equalsIgnoreCase(category)) {
-                return createOkResponse("exon\ngene\nkaryotype\nprotein\nsnp\ntranscript");
-            }
-            if ("genomic".equalsIgnoreCase(category)) {
-                return createOkResponse("position\nregion\nvariant");
-            }
-            if ("network".equalsIgnoreCase(category)) {
-                return createOkResponse("pathway");
-            }
-            if ("regulatory".equalsIgnoreCase(category)) {
-                return createOkResponse("mirna_gene\nmirna_mature\ntf");
-            }
-            return createOkResponse("feature\ngenomic\nnetwork\nregulatory");
-        } else {
-            return getSpecies();
+
+    protected Response createModelResponse(Class clazz) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+            mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
+            JsonSchema jsonSchema = visitor.finalSchema();
+
+            return createOkResponse(jsonSchema);
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/{species}/{category}/{subcategory}")
-    public Response getSubcategory(@PathParam("species") String species, @PathParam("category") String category,
-                                   @PathParam("subcategory") String subcategory) {
-        return getCategory(species, category);
+    protected Response createErrorResponse(Exception e) {
+        // First we print the exception in Server logs
+        e.printStackTrace();
+
+        // Now we prepare the response to client
+        queryResponse = new QueryResponse();
+        queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
+        queryResponse.setApiVersion(version);
+        queryResponse.setQueryOptions(queryOptions);
+        queryResponse.setError(e.toString());
+
+        QueryResult<ObjectMap> result = new QueryResult();
+        result.setWarningMsg("Future errors will ONLY be shown in the QueryResponse body");
+        result.setErrorMsg("DEPRECATED: " + e.toString());
+        queryResponse.setResponse(Arrays.asList(result));
+
+        return Response
+                .fromResponse(createJsonResponse(queryResponse))
+                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .build();
     }
-
-    @GET
-    @Path("/version")
-    public Response getVersion() {
-        StringBuilder versionMessage = new StringBuilder();
-        versionMessage.append("Homo sapiens").append("\t").append("Ensembl 64").append("\n");
-        versionMessage.append("Mus musculus").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Rattus norvegicus").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Drosophila melanogaster").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("Canis familiaris").append("\t").append("Ensembl 65").append("\n");
-        versionMessage.append("...").append("\n\n");
-        versionMessage
-                .append("The rest of nfo will be added soon, sorry for the inconveniences. You can find mor info at:")
-                .append("\n\n").append("http://docs.bioinfo.cipf.es/projects/variant/wiki/Databases");
-        return createOkResponse(versionMessage.toString(), MediaType.valueOf("text/plain"));
-    }
-
-    @GET
-    @Path("/species")
-    public Response getSpecies() {
-        List<Species> speciesList = getSpeciesList();
-        MediaType mediaType = MediaType.valueOf("application/javascript");
-        if (uriInfo.getQueryParameters().get("of") != null
-                && uriInfo.getQueryParameters().get("of").get(0).equalsIgnoreCase("json")) {
-            try {
-                return createOkResponse(jsonObjectWriter.writeValueAsString(speciesList), mediaType);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        } else {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (Species sp : speciesList) {
-                stringBuilder.append(sp.toString()).append("\n");
-            }
-            mediaType = MediaType.valueOf("text/plain");
-            return createOkResponse(stringBuilder.toString(), mediaType);
-        }
-    }
-
-    @GET
-    @Path("/{species}/chromosomes")
-    public Response getChromosomes(@PathParam("species") String species) {
-        return null;
-//        // TODO uncomment
-//        return createOkResponse(config.getProperty("CELLBASE." + species.toUpperCase() + ".CHROMOSOMES"),
-//                MediaType.valueOf("text/plain"));
-    }
-
-    @GET
-    @Path("/echo/{msg}")
-    public Response echo(@PathParam("msg") String msg) {
-        logger.info(msg);
-        logger.warn(msg);
-        logger.debug(msg);
-        logger.error(msg);
-        return createStringResponse(msg);
-    }
-
-
-    @Deprecated
-    protected Response generateResponse(String queryString, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
-    }
-
-    @Deprecated
-    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is drepecated");
-    }
-//    @SuppressWarnings("unchecked")
-//    protected Response generateResponse(String queryString, List features) throws IOException {
-//        return generateResponse(queryString, null, features);
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-//        logger.debug("CellBase - GenerateResponse, QueryString: "
-//                + ((queryString.length() > 50) ? queryString.substring(0, 49) + "..." : queryString));
-//
-//        // default mediaType
-//        MediaType mediaType = MediaType.valueOf("text/plain");
-//        String response = "outputformat 'of' parameter not valid: " + outputFormat;
-//
-//        switch (outputFormat.toLowerCase()) {
-//            case "txt":
-//            case "text":
-//                // TODO
-//                break;
-//            case "xml":
-//                mediaType = MediaType.TEXT_XML_TYPE;
-////                response = ListUtils.toString(features, resultSeparator);
-//                response = Joiner.on(resultSeparator).join(features);
-//            case "das":
-//                mediaType = MediaType.TEXT_XML_TYPE;
-////                response = ListUtils.toString(features, resultSeparator);
-//                response = Joiner.on(resultSeparator).join(features);
-//            case "json":
-//                //			mediaType = MediaType.valueOf("application/json");
-//                //			response = gson.toJson(features);
-//                createJsonResponse(queryString);
-//                break;
-//        }
-//
-//        // if (outputFormat != null) {
-//        // // if((outputFormat.equalsIgnoreCase("json") ||
-//        // // outputFormat.equalsIgnoreCase("jsonp"))) {
-//        // if (outputFormat.equalsIgnoreCase("json")) {
-//        // // mediaType = MediaType.APPLICATION_JSON_TYPE;
-//        // mediaType = MediaType.valueOf("application/javascript");
-//        // response = gson.toJson(features);
-//        // // if(features != null && features.size() > 0) {
-//        // // response = gson.toJson(features);
-//        // // o:
-//        // // JsonWriter jsonWriter = new JsonWriter(new
-//        // // FeatureExclusionStrategy());
-//        // // response = jsonWriter.serialize(features);
-//        // // }
-//        //
-//        // // if(outputFormat.equals("jsonp")) {
-//        // // mediaType = MediaType.valueOf("application/javascript");
-//        // // response = convertToJson(response);
-//        // // }GENE
-//        // } else {
-//        // if (outputFormat.equalsIgnoreCase("txt") ||
-//        // outputFormat.equalsIgnoreCase("text")) { // ||
-//        // // outputFormat.equalsIgnoreCase("jsontext")
-//        // // if(outputFormat.equalsIgnoreCase("jsontext")) {
-//        // // mediaType = MediaType.valueOf("application/javascript");
-//        // // response = convertToJsonText(response);
-//        // // }else {
-//        // // mediaType = MediaType.TEXT_PLAIN_TYPE;
-//        //
-//        // // CONCATENAR el nombre de la query
-//        // // String[] query.split(",");
-//        // mediaType = MediaType.valueOf("text/plain");
-//        // if (headerTag != null && headers.containsKey(headerTag) &&
-//        // outputHeader != null
-//        // && outputHeader.equalsIgnoreCase("true")) {
-//        // // response = "#" + headers.get(headerTag) + "\n" +
-//        // // StringWriter.serialize(features);
-//        // } else {
-//        // // response = StringWriter.serialize(features);
-//        // }
-//        // // }
-//        // }
-//        //
-//        // if (outputFormat.equalsIgnoreCase("xml")) {
-//        // mediaType = MediaType.TEXT_XML_TYPE;
-//        // response = ListUtils.toString(features, resultSeparator);
-//        // }
-//        //
-//        // if (outputFormat.equalsIgnoreCase("das")) {
-//        // mediaType = MediaType.TEXT_XML_TYPE;
-//        // response = ListUtils.toString(features, resultSeparator);
-//        // }
-//        // }
-//        // }
-//
-//        return createResponse(response, mediaType);
-//    }
-
-    @Deprecated
-//    protected Response createResponse(String response, MediaType mediaType) throws IOException {
-//        logger.debug("CellBase - CreateResponse, QueryParams: FileFormat => " + fileFormat + ", OutputFormat => " + outputFormat + ", Compress => " + outputCompress);
-//        logger.debug("CellBase - CreateResponse, Inferred media type: " + mediaType.toString());
-//        logger.debug("CellBase - CreateResponse, Response: " + ((response.length() > 50) ? response.substring(0, 49) + "..." : response));
-//
-//        if (fileFormat == null || fileFormat.equalsIgnoreCase("")) {
-//            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")
-//                    && !outputFormat.equalsIgnoreCase("jsonp") && !outputFormat.equalsIgnoreCase("jsontext")) {
-//                response = Arrays.toString(StringUtils.gzipToBytes(response)).replace(" ", "");
-//            }
-//        } else {
-//            mediaType = MediaType.APPLICATION_OCTET_STREAM_TYPE;
-//            logger.debug("\t\t - Creating byte stream ");
-//
-//            if (outputCompress != null && outputCompress.equalsIgnoreCase("true")) {
-//                OutputStream bos = new ByteArrayOutputStream();
-//                bos.write(response.getBytes());
-//
-//                ZipOutputStream zipstream = new ZipOutputStream(bos);
-//                zipstream.setLevel(9);
-//
-//                logger.debug("CellBase - CreateResponse, zipping... Final media Type: " + mediaType.toString());
-//
-//                return this.createOkResponse(zipstream, mediaType, filename + ".zip");
-//
-//            } else {
-//                if (fileFormat.equalsIgnoreCase("xml")) {
-//                    // mediaType = MediaType.valueOf("application/xml");
-//                }
-//
-//                if (fileFormat.equalsIgnoreCase("excel")) {
-//                    // mediaType =
-//                    // MediaType.valueOf("application/vnd.ms-excel");
-//                }
-//                if (fileFormat.equalsIgnoreCase("txt") || fileFormat.equalsIgnoreCase("text")) {
-//                    logger.debug("\t\t - text File ");
-//
-//                    byte[] streamResponse = response.getBytes();
-//                    // return Response.ok(streamResponse,
-//                    // mediaType).header("content-disposition","attachment; filename = "+
-//                    // filename + ".txt").build();
-//                    return this.createOkResponse(streamResponse, mediaType, filename + ".txt");
-//                }
-//            }
-//        }
-//        logger.debug("CellBase - CreateResponse, Final media Type: " + mediaType.toString());
-//        // return Response.ok(response, mediaType).build();
-//        return this.createOkResponse(response, mediaType);
-//    }
 
     protected Response createErrorResponse(String method, String errorMessage) {
-        if (!errorMessage.contains("Species") && !errorMessage.contains("Version")) {
-            // StringBuilder message = new StringBuilder();
-            // message.append("URI: "+uriInfo.getAbsolutePath().toString()).append("\n");
-            // message.append("Method: "+httpServletRequest.getMethod()+" "+method).append("\n");
-            // message.append("Message: "+errorMessage).append("\n");
-            // message.append("Remote Addr: http://ipinfodb.com/ip_locator.php?ip="+httpServletRequest.getRemoteAddr()).append("\n");
-            // HttpUtils.send("correo.cipf.es", "fsalavert@cipf.es",
-            // "babelomics@cipf.es", "Infrared error notice",
-            // message.toString());
-        }
-        if (outputFormat.equalsIgnoreCase("json")) {
-            try {
-                return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("error", errorMessage)), MediaType.APPLICATION_JSON_TYPE));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        } else {
-            String error = "An error occurred: " + errorMessage;
-            return buildResponse(Response.ok(error, MediaType.valueOf("text/plain")));
-        }
-        return null;
-    }
-
-    protected Response createErrorResponse(Object o) {
-        String objMsg = o.toString();
-        if (objMsg.startsWith("ERROR:")) {
-            return buildResponse(Response.ok("" + o));
-        } else {
-            return buildResponse(Response.ok("ERROR: " + o));
+        try {
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)),
+                    MediaType.APPLICATION_JSON_TYPE));
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
     }
 
     protected Response createOkResponse(Object obj) {
-        switch (outputFormat.toLowerCase()) {
-            case "json":
-                return createJsonResponse(obj);
-            case "xml":
-                return createOkResponse(obj, MediaType.APPLICATION_XML_TYPE);
-            default:
-                return buildResponse(Response.ok(obj));
-        }
-    }
+        queryResponse = new QueryResponse();
+        queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
+        queryResponse.setApiVersion(version);
+        queryResponse.setQueryOptions(queryOptions);
 
-    protected Response createJsonResponse(Object obj) {
-        endTime = System.currentTimeMillis() - startTime;
-        queryResponse.put("time", endTime);
-        queryResponse.put("version", version);
-        queryResponse.put("species", species);
-        queryResponse.put("queryOptions", queryOptions);
-        queryResponse.put("response", obj);
-
-        try {
-            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            logger.error("Error parsing queryResponse object");
-            return null;
+        // Guarantee that the QueryResponse object contains a list of results
+        List list;
+        if (obj instanceof List) {
+            list = (List) obj;
+        } else {
+            list = new ArrayList(1);
+            list.add(obj);
         }
+        queryResponse.setResponse(list);
+
+        return createJsonResponse(queryResponse);
     }
 
     protected Response createOkResponse(Object obj, MediaType mediaType) {
@@ -707,127 +364,71 @@ public class GenericRestWSServer implements IWSServer {
         return buildResponse(Response.ok(str));
     }
 
+    protected Response createJsonResponse(QueryResponse queryResponse) {
+        try {
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            logger.error("Error parsing queryResponse object");
+            return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
     private Response buildResponse(ResponseBuilder responseBuilder) {
-        return responseBuilder.header("Access-Control-Allow-Origin", "*").build();
+        return responseBuilder
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "x-requested-with, content-type")
+                .build();
     }
 
-    @GET
-    public Response getHelp() {
-        return getSpecies();
-    }
 
-    private List<Species> getSpeciesList() {
-        List<Species> speciesList = new ArrayList<Species>(11);
-        speciesList.add(new Species("hsa", "human", "Homo sapiens", "GRCh37.p7"));
-        speciesList.add(new Species("mmu", "mouse", "Mus musculus", "NCBIM37"));
-        speciesList.add(new Species("rno", "rat", "Rattus norvegicus", "RGSC 3.4"));
-        speciesList.add(new Species("dre", "zebrafish", "Danio rerio", "Zv9"));
-        speciesList.add(new Species("cel", "worm", "Caenorhabditis elegans", "WS230"));
-        speciesList.add(new Species("dme", "fruitfly", "Drosophila melanogaster", "BDGP 5.39"));
-        speciesList.add(new Species("sce", "yeast", "Saccharomyces cerevisiae", "EF 4"));
-        speciesList.add(new Species("cfa", "dog", "Canis familiaris", "CanFam 2.0"));
-        speciesList.add(new Species("ssc", "pig", "Sus scrofa", "Sscrofa10.2"));
-        speciesList.add(new Species("aga", "mosquito", "Anopheles gambiae", "AgamP3"));
-        speciesList.add(new Species("pfa", "malaria parasite", "Plasmodium falciparum", "3D7"));
-
-        speciesList.add(new Species("hsapiens", "", "", ""));
-        speciesList.add(new Species("mmusculus", "", "", ""));
-        speciesList.add(new Species("rnorvegicus", "", "", ""));
-        speciesList.add(new Species("ptroglodytes", "", "", ""));
-        speciesList.add(new Species("ggorilla", "", "", ""));
-        speciesList.add(new Species("pabelii", "", "", ""));
-        speciesList.add(new Species("mmulatta", "", "", ""));
-        speciesList.add(new Species("sscrofa", "", "", ""));
-        speciesList.add(new Species("cfamiliaris", "", "", ""));
-        speciesList.add(new Species("ecaballus", "", "", ""));
-        speciesList.add(new Species("ocuniculus", "", "", ""));
-        speciesList.add(new Species("ggallus", "", "", ""));
-        speciesList.add(new Species("btaurus", "", "", ""));
-        speciesList.add(new Species("fcatus", "", "", ""));
-        speciesList.add(new Species("drerio", "", "", ""));
-        speciesList.add(new Species("cintestinalis", "", "", ""));
-        speciesList.add(new Species("dmelanogaster", "", "", ""));
-        speciesList.add(new Species("dsimulans", "", "", ""));
-        speciesList.add(new Species("dyakuba", "", "", ""));
-        speciesList.add(new Species("agambiae", "", "", ""));
-        speciesList.add(new Species("celegans", "", "", ""));
-        speciesList.add(new Species("scerevisiae", "", "", ""));
-        speciesList.add(new Species("spombe", "", "", ""));
-        speciesList.add(new Species("afumigatus", "", "", ""));
-        speciesList.add(new Species("aniger", "", "", ""));
-        speciesList.add(new Species("anidulans", "", "", ""));
-        speciesList.add(new Species("aoryzae", "", "", ""));
-        speciesList.add(new Species("pfalciparum", "", "", ""));
-        speciesList.add(new Species("lmajor", "", "", ""));
-        speciesList.add(new Species("athaliana", "", "", ""));
-        speciesList.add(new Species("alyrata", "", "", ""));
-        speciesList.add(new Species("bdistachyon", "", "", ""));
-        speciesList.add(new Species("osativa", "", "", ""));
-        speciesList.add(new Species("gmax", "", "", ""));
-        speciesList.add(new Species("vvinifera", "", "", ""));
-        speciesList.add(new Species("zmays", "", "", ""));
-
-        return speciesList;
-    }
-
-    /**
+    /*
      * TO DELETE
      */
+    @Deprecated
+    protected Response generateResponse(String queryString, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is deprecated");
+    }
+
+    @Deprecated
+    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is deprecated");
+    }
 
     @Deprecated
     private boolean isSpecieAvailable(String species) {
-        List<Species> speciesList = getSpeciesList();
+        List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
         for (int i = 0; i < speciesList.size(); i++) {
             // This only allows to show the information if species is in 3
             // letters format
-            if (species.equalsIgnoreCase(speciesList.get(i).getSpecies())) {
+            if (species.equalsIgnoreCase(speciesList.get(i).getId())) {
                 return true;
             }
         }
         return false;
     }
 
-    @Deprecated
-    protected Response generateErrorResponse(String errorMessage) {
-        return Response.ok("An error occurred: " + errorMessage, MediaType.valueOf("text/plain")).build();
+//    protected List<Query> createQueries(String csvField, String queryKey) {
+//        String[] ids = csvField.split(",");
+//        List<Query> queries = new ArrayList<>(ids.length);
+//        for (String s : ids) {
+//            queries.add(new Query(queryKey, s));
+//        }
+//        return queries;
+//    }
+
+    protected List<Query> createQueries(String csvField, String queryKey, String... args) {
+        String[] ids = csvField.split(",");
+        List<Query> queries = new ArrayList<>(ids.length);
+        for (String s : ids) {
+            Query query = new Query(queryKey, s);
+            if (args != null && args.length > 0 && args.length % 2 == 0) {
+                for (int i = 0; i < args.length; i += 2) {
+                    query.put(args[i], args[i + 1]);
+                }
+            }
+            queries.add(query);
+        }
+        return queries;
     }
-
-    @Deprecated
-    protected List<String> getPathsNicePrint() {
-        return new ArrayList<String>();
-    }
-
-    // protected Response generateResponse(Criteria criteria) throws IOException
-    // {
-    // List result = criteria.list();
-    // this.getSession().close();
-    // return generateResponse("", result);
-    // }
-    //
-    // protected Response generateResponse(Query query) throws IOException {
-    // List result = query.list();
-    // this.getSession().close();
-    // return generateResponse("", result);
-    // }
-
-    @Deprecated
-    private String convertToJsonText(String response) {
-        String jsonpQueryParam = (uriInfo.getQueryParameters().get("callbackParam") != null) ? uriInfo
-                .getQueryParameters().get("callbackParam").get(0) : "callbackParam";
-        response = "var " + jsonpQueryParam + " = \"" + response + "\"";
-        return response;
-    }
-
-    @Deprecated
-    protected String convertToJson(String response) {
-        String jsonpQueryParam = (uriInfo.getQueryParameters().get("callbackParam") != null) ? uriInfo
-                .getQueryParameters().get("callbackParam").get(0) : "callbackParam";
-        response = "var " + jsonpQueryParam + " = (" + response + ")";
-        return response;
-    }
-
-    // protected Session getSession(){
-    // return HibernateUtil.getSessionFactory().openSession();
-    // }
-
 }

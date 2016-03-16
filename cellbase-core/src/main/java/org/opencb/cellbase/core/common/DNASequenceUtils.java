@@ -1,86 +1,202 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.core.common;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class DNASequenceUtils {
-	
-	public static Map<String, String> complement = new HashMap<String, String>();
-	
-	public static Map<String, String> codonToAminoacid = new HashMap<String, String>();
-	public static Map<String, String> codonToAminoacidShort = new HashMap<String, String>();
-	
-	static {
-		complement.put("A", "T");complement.put("T", "A");complement.put("C", "G");complement.put("G", "C");
-	}
-	
-	static {
-		codonToAminoacid.put("UUU", "Phe");codonToAminoacid.put("UUC", "Phe");codonToAminoacid.put("UUA", "Leu");codonToAminoacid.put("UUG", "Leu");
-		codonToAminoacid.put("UCU", "Ser");codonToAminoacid.put("UCC", "Ser");codonToAminoacid.put("UCA", "Ser");codonToAminoacid.put("UCG", "Ser");
-		codonToAminoacid.put("UAU", "Tyr");codonToAminoacid.put("UAC", "Tyr");codonToAminoacid.put("UAA", "Stop");codonToAminoacid.put("UAG", "Stop");
-		codonToAminoacid.put("UGU", "Cys");codonToAminoacid.put("UGC", "Cys");codonToAminoacid.put("UGA", "Stop");codonToAminoacid.put("UGG", "Trp");
-		codonToAminoacid.put("CUU", "Leu");codonToAminoacid.put("CUC", "Leu");codonToAminoacid.put("CUA", "Leu");codonToAminoacid.put("CUG", "Leu");
-		codonToAminoacid.put("CCU", "Pro");codonToAminoacid.put("CCC", "Pro");codonToAminoacid.put("CCA", "Pro");codonToAminoacid.put("CCG", "Pro");
-		codonToAminoacid.put("CAU", "His");codonToAminoacid.put("CAC", "His");codonToAminoacid.put("CAA", "Gln");codonToAminoacid.put("CAG", "Gln");
-		codonToAminoacid.put("CGU", "Arg");codonToAminoacid.put("CGC", "Arg");codonToAminoacid.put("CGA", "Arg");codonToAminoacid.put("CGG", "Arg");
-		codonToAminoacid.put("AUU", "Ile");codonToAminoacid.put("AUC", "Ile");codonToAminoacid.put("AUA", "Ile");codonToAminoacid.put("AUG", "Met");
-		codonToAminoacid.put("ACU", "Thr");codonToAminoacid.put("ACC", "Thr");codonToAminoacid.put("ACA", "Thr");codonToAminoacid.put("ACG", "Thr");
-		codonToAminoacid.put("AAU", "Asn");codonToAminoacid.put("AAC", "Asn");codonToAminoacid.put("AAA", "Lys");codonToAminoacid.put("AAG", "Lys");
-		codonToAminoacid.put("AGU", "Ser");codonToAminoacid.put("AGC", "Ser");codonToAminoacid.put("AGA", "Arg");codonToAminoacid.put("AGG", "Arg");
-		codonToAminoacid.put("GUU", "Val");codonToAminoacid.put("GUC", "Val");codonToAminoacid.put("GUA", "Val");codonToAminoacid.put("GUG", "Val");
-		codonToAminoacid.put("GCU", "Ala");codonToAminoacid.put("GCC", "Ala");codonToAminoacid.put("GCA", "Ala");codonToAminoacid.put("GCG", "Ala");
-		codonToAminoacid.put("GAU", "Asp");codonToAminoacid.put("GAC", "Asp");codonToAminoacid.put("GAA", "Glu");codonToAminoacid.put("GAG", "Glu");
-		codonToAminoacid.put("GGU", "Gly");codonToAminoacid.put("GGC", "Gly");codonToAminoacid.put("GGA", "Gly");codonToAminoacid.put("GGG", "Gly");
-	}
-	
-	static {
-		codonToAminoacidShort.put("UUU", "F");codonToAminoacidShort.put("UUC", "F");codonToAminoacidShort.put("UUA", "L");codonToAminoacidShort.put("UUG", "L");
-		codonToAminoacidShort.put("UCU", "S");codonToAminoacidShort.put("UCC", "S");codonToAminoacidShort.put("UCA", "S");codonToAminoacidShort.put("UCG", "S");
-		codonToAminoacidShort.put("UAU", "Y");codonToAminoacidShort.put("UAC", "Y");codonToAminoacidShort.put("UAA", "Stop");codonToAminoacidShort.put("UAG", "Stop");
-		codonToAminoacidShort.put("UGU", "C");codonToAminoacidShort.put("UGC", "C");codonToAminoacidShort.put("UGA", "Stop");codonToAminoacidShort.put("UGG", "W");
-		
-		codonToAminoacidShort.put("CUU", "L");codonToAminoacidShort.put("CUC", "L");codonToAminoacidShort.put("CUA", "L");codonToAminoacidShort.put("CUG", "L");
-		codonToAminoacidShort.put("CCU", "P");codonToAminoacidShort.put("CCC", "P");codonToAminoacidShort.put("CCA", "P");codonToAminoacidShort.put("CCG", "P");
-		codonToAminoacidShort.put("CAU", "H");codonToAminoacidShort.put("CAC", "H");codonToAminoacidShort.put("CAA", "Q");codonToAminoacidShort.put("CAG", "Q");
-		codonToAminoacidShort.put("CGU", "R");codonToAminoacidShort.put("CGC", "R");codonToAminoacidShort.put("CGA", "R");codonToAminoacidShort.put("CGG", "R");
-		
-		codonToAminoacidShort.put("AUU", "I");codonToAminoacidShort.put("AUC", "I");codonToAminoacidShort.put("AUA", "I");codonToAminoacidShort.put("AUG", "M");
-		codonToAminoacidShort.put("ACU", "T");codonToAminoacidShort.put("ACC", "T");codonToAminoacidShort.put("ACA", "T");codonToAminoacidShort.put("ACG", "T");
-		codonToAminoacidShort.put("AAU", "N");codonToAminoacidShort.put("AAC", "N");codonToAminoacidShort.put("AAA", "K");codonToAminoacidShort.put("AAG", "K");
-		codonToAminoacidShort.put("AGU", "S");codonToAminoacidShort.put("AGC", "S");codonToAminoacidShort.put("AGA", "R");codonToAminoacidShort.put("AGG", "R");
-		
-		codonToAminoacidShort.put("GUU", "V");codonToAminoacidShort.put("GUC", "V");codonToAminoacidShort.put("GUA", "V");codonToAminoacidShort.put("GUG", "V");
-		codonToAminoacidShort.put("GCU", "A");codonToAminoacidShort.put("GCC", "A");codonToAminoacidShort.put("GCA", "A");codonToAminoacidShort.put("GCG", "A");
-		codonToAminoacidShort.put("GAU", "D");codonToAminoacidShort.put("GAC", "D");codonToAminoacidShort.put("GAA", "E");codonToAminoacidShort.put("GAG", "E");
-		codonToAminoacidShort.put("GGU", "G");codonToAminoacidShort.put("GGC", "G");codonToAminoacidShort.put("GGA", "G");codonToAminoacidShort.put("GGG", "G");
-	}
-	
-	
-	public static String translate(String dnaSequence) {
-		return translate(dnaSequence, "-");
-	}
-	
-	public static String translate(String dnaSequence, String separator) {
-		StringBuilder aaSequence = new StringBuilder();
-		dnaSequence = dnaSequence.toUpperCase();
-		dnaSequence.replaceAll("T", "U");
-		for(int i=0; i<dnaSequence.length(); i+=3) {
-			if(i+2 < dnaSequence.length()){
-				aaSequence.append(codonToAminoacid.get(dnaSequence.charAt(i)+dnaSequence.charAt(i+1)+dnaSequence.charAt(i+2)));
-				if(i+3 < dnaSequence.length()) {
-					aaSequence.append(separator);
-				}
-			}
-		}
-		return aaSequence.toString();
-	}
-	
-	public String reverseComplement(String dnaSequence) {
-		StringBuilder revComplSequence = new StringBuilder(dnaSequence.length());
-		for(int i=dnaSequence.length()-1; i>=0; i--) {
-			revComplSequence.append(complement.get(dnaSequence.charAt(i)));
-		}
-		return revComplSequence.toString();
-	}
-	
+
+    public static final Map<Character, Character> COMPLEMENT = new HashMap<>();
+
+    public static final Map<String, String> CODON_TO_AMINOACID = new HashMap<>();
+    public static final Map<String, String> CODON_TO_AMINOACID_SHORT = new HashMap<>();
+
+    static {
+        COMPLEMENT.put('A', 'T');
+        COMPLEMENT.put('T', 'A');
+        COMPLEMENT.put('C', 'G');
+        COMPLEMENT.put('G', 'C');
+        COMPLEMENT.put('N', 'N');
+    }
+
+    static {
+        CODON_TO_AMINOACID.put("UUU", "Phe");
+        CODON_TO_AMINOACID.put("UUC", "Phe");
+        CODON_TO_AMINOACID.put("UUA", "Leu");
+        CODON_TO_AMINOACID.put("UUG", "Leu");
+        CODON_TO_AMINOACID.put("UCU", "Ser");
+        CODON_TO_AMINOACID.put("UCC", "Ser");
+        CODON_TO_AMINOACID.put("UCA", "Ser");
+        CODON_TO_AMINOACID.put("UCG", "Ser");
+        CODON_TO_AMINOACID.put("UAU", "Tyr");
+        CODON_TO_AMINOACID.put("UAC", "Tyr");
+        CODON_TO_AMINOACID.put("UAA", "Stop");
+        CODON_TO_AMINOACID.put("UAG", "Stop");
+        CODON_TO_AMINOACID.put("UGU", "Cys");
+        CODON_TO_AMINOACID.put("UGC", "Cys");
+        CODON_TO_AMINOACID.put("UGA", "Stop");
+        CODON_TO_AMINOACID.put("UGG", "Trp");
+        CODON_TO_AMINOACID.put("CUU", "Leu");
+        CODON_TO_AMINOACID.put("CUC", "Leu");
+        CODON_TO_AMINOACID.put("CUA", "Leu");
+        CODON_TO_AMINOACID.put("CUG", "Leu");
+        CODON_TO_AMINOACID.put("CCU", "Pro");
+        CODON_TO_AMINOACID.put("CCC", "Pro");
+        CODON_TO_AMINOACID.put("CCA", "Pro");
+        CODON_TO_AMINOACID.put("CCG", "Pro");
+        CODON_TO_AMINOACID.put("CAU", "His");
+        CODON_TO_AMINOACID.put("CAC", "His");
+        CODON_TO_AMINOACID.put("CAA", "Gln");
+        CODON_TO_AMINOACID.put("CAG", "Gln");
+        CODON_TO_AMINOACID.put("CGU", "Arg");
+        CODON_TO_AMINOACID.put("CGC", "Arg");
+        CODON_TO_AMINOACID.put("CGA", "Arg");
+        CODON_TO_AMINOACID.put("CGG", "Arg");
+        CODON_TO_AMINOACID.put("AUU", "Ile");
+        CODON_TO_AMINOACID.put("AUC", "Ile");
+        CODON_TO_AMINOACID.put("AUA", "Ile");
+        CODON_TO_AMINOACID.put("AUG", "Met");
+        CODON_TO_AMINOACID.put("ACU", "Thr");
+        CODON_TO_AMINOACID.put("ACC", "Thr");
+        CODON_TO_AMINOACID.put("ACA", "Thr");
+        CODON_TO_AMINOACID.put("ACG", "Thr");
+        CODON_TO_AMINOACID.put("AAU", "Asn");
+        CODON_TO_AMINOACID.put("AAC", "Asn");
+        CODON_TO_AMINOACID.put("AAA", "Lys");
+        CODON_TO_AMINOACID.put("AAG", "Lys");
+        CODON_TO_AMINOACID.put("AGU", "Ser");
+        CODON_TO_AMINOACID.put("AGC", "Ser");
+        CODON_TO_AMINOACID.put("AGA", "Arg");
+        CODON_TO_AMINOACID.put("AGG", "Arg");
+        CODON_TO_AMINOACID.put("GUU", "Val");
+        CODON_TO_AMINOACID.put("GUC", "Val");
+        CODON_TO_AMINOACID.put("GUA", "Val");
+        CODON_TO_AMINOACID.put("GUG", "Val");
+        CODON_TO_AMINOACID.put("GCU", "Ala");
+        CODON_TO_AMINOACID.put("GCC", "Ala");
+        CODON_TO_AMINOACID.put("GCA", "Ala");
+        CODON_TO_AMINOACID.put("GCG", "Ala");
+        CODON_TO_AMINOACID.put("GAU", "Asp");
+        CODON_TO_AMINOACID.put("GAC", "Asp");
+        CODON_TO_AMINOACID.put("GAA", "Glu");
+        CODON_TO_AMINOACID.put("GAG", "Glu");
+        CODON_TO_AMINOACID.put("GGU", "Gly");
+        CODON_TO_AMINOACID.put("GGC", "Gly");
+        CODON_TO_AMINOACID.put("GGA", "Gly");
+        CODON_TO_AMINOACID.put("GGG", "Gly");
+    }
+
+    static {
+        CODON_TO_AMINOACID_SHORT.put("UUU", "F");
+        CODON_TO_AMINOACID_SHORT.put("UUC", "F");
+        CODON_TO_AMINOACID_SHORT.put("UUA", "L");
+        CODON_TO_AMINOACID_SHORT.put("UUG", "L");
+        CODON_TO_AMINOACID_SHORT.put("UCU", "S");
+        CODON_TO_AMINOACID_SHORT.put("UCC", "S");
+        CODON_TO_AMINOACID_SHORT.put("UCA", "S");
+        CODON_TO_AMINOACID_SHORT.put("UCG", "S");
+        CODON_TO_AMINOACID_SHORT.put("UAU", "Y");
+        CODON_TO_AMINOACID_SHORT.put("UAC", "Y");
+        CODON_TO_AMINOACID_SHORT.put("UAA", "Stop");
+        CODON_TO_AMINOACID_SHORT.put("UAG", "Stop");
+        CODON_TO_AMINOACID_SHORT.put("UGU", "C");
+        CODON_TO_AMINOACID_SHORT.put("UGC", "C");
+        CODON_TO_AMINOACID_SHORT.put("UGA", "Stop");
+        CODON_TO_AMINOACID_SHORT.put("UGG", "W");
+
+        CODON_TO_AMINOACID_SHORT.put("CUU", "L");
+        CODON_TO_AMINOACID_SHORT.put("CUC", "L");
+        CODON_TO_AMINOACID_SHORT.put("CUA", "L");
+        CODON_TO_AMINOACID_SHORT.put("CUG", "L");
+        CODON_TO_AMINOACID_SHORT.put("CCU", "P");
+        CODON_TO_AMINOACID_SHORT.put("CCC", "P");
+        CODON_TO_AMINOACID_SHORT.put("CCA", "P");
+        CODON_TO_AMINOACID_SHORT.put("CCG", "P");
+        CODON_TO_AMINOACID_SHORT.put("CAU", "H");
+        CODON_TO_AMINOACID_SHORT.put("CAC", "H");
+        CODON_TO_AMINOACID_SHORT.put("CAA", "Q");
+        CODON_TO_AMINOACID_SHORT.put("CAG", "Q");
+        CODON_TO_AMINOACID_SHORT.put("CGU", "R");
+        CODON_TO_AMINOACID_SHORT.put("CGC", "R");
+        CODON_TO_AMINOACID_SHORT.put("CGA", "R");
+        CODON_TO_AMINOACID_SHORT.put("CGG", "R");
+
+        CODON_TO_AMINOACID_SHORT.put("AUU", "I");
+        CODON_TO_AMINOACID_SHORT.put("AUC", "I");
+        CODON_TO_AMINOACID_SHORT.put("AUA", "I");
+        CODON_TO_AMINOACID_SHORT.put("AUG", "M");
+        CODON_TO_AMINOACID_SHORT.put("ACU", "T");
+        CODON_TO_AMINOACID_SHORT.put("ACC", "T");
+        CODON_TO_AMINOACID_SHORT.put("ACA", "T");
+        CODON_TO_AMINOACID_SHORT.put("ACG", "T");
+        CODON_TO_AMINOACID_SHORT.put("AAU", "N");
+        CODON_TO_AMINOACID_SHORT.put("AAC", "N");
+        CODON_TO_AMINOACID_SHORT.put("AAA", "K");
+        CODON_TO_AMINOACID_SHORT.put("AAG", "K");
+        CODON_TO_AMINOACID_SHORT.put("AGU", "S");
+        CODON_TO_AMINOACID_SHORT.put("AGC", "S");
+        CODON_TO_AMINOACID_SHORT.put("AGA", "R");
+        CODON_TO_AMINOACID_SHORT.put("AGG", "R");
+
+        CODON_TO_AMINOACID_SHORT.put("GUU", "V");
+        CODON_TO_AMINOACID_SHORT.put("GUC", "V");
+        CODON_TO_AMINOACID_SHORT.put("GUA", "V");
+        CODON_TO_AMINOACID_SHORT.put("GUG", "V");
+        CODON_TO_AMINOACID_SHORT.put("GCU", "A");
+        CODON_TO_AMINOACID_SHORT.put("GCC", "A");
+        CODON_TO_AMINOACID_SHORT.put("GCA", "A");
+        CODON_TO_AMINOACID_SHORT.put("GCG", "A");
+        CODON_TO_AMINOACID_SHORT.put("GAU", "D");
+        CODON_TO_AMINOACID_SHORT.put("GAC", "D");
+        CODON_TO_AMINOACID_SHORT.put("GAA", "E");
+        CODON_TO_AMINOACID_SHORT.put("GAG", "E");
+        CODON_TO_AMINOACID_SHORT.put("GGU", "G");
+        CODON_TO_AMINOACID_SHORT.put("GGC", "G");
+        CODON_TO_AMINOACID_SHORT.put("GGA", "G");
+        CODON_TO_AMINOACID_SHORT.put("GGG", "G");
+    }
+
+
+    public static String translate(String dnaSequence) {
+        return translate(dnaSequence, "-");
+    }
+
+    public static String translate(String dnaSequence, String separator) {
+        StringBuilder aaSequence = new StringBuilder();
+        dnaSequence = dnaSequence.toUpperCase();
+        dnaSequence.replaceAll("T", "U");
+        for (int i = 0; i < dnaSequence.length(); i += 3) {
+            if (i + 2 < dnaSequence.length()) {
+                aaSequence.append(CODON_TO_AMINOACID.get(dnaSequence.charAt(i) + dnaSequence.charAt(i + 1) + dnaSequence.charAt(i + 2)));
+                if (i + 3 < dnaSequence.length()) {
+                    aaSequence.append(separator);
+                }
+            }
+        }
+        return aaSequence.toString();
+    }
+
+    public static String reverseComplement(String dnaSequence) {
+        StringBuilder revComplSequence = new StringBuilder(dnaSequence.length());
+        for (int i = dnaSequence.length() - 1; i >= 0; i--) {
+            revComplSequence.append(COMPLEMENT.get(dnaSequence.charAt(i)));
+        }
+        return revComplSequence.toString();
+    }
+
 }

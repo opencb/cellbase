@@ -1,303 +1,282 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.core.common.variation;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class Variation {
 
-	// private String _id;
-	private String id; 			//0
-	private String chromosome; 		//1
-	private int start; 				//2
-	private int end; 				//3
-	private String strand; 			//4
-	private String type;		// Types: SNV, MUT, INDEL, SV
-	private String reference;
-	private String alternate;
-	private String alleleString;
-	private String ancestralAllele;
-	private String displayConsequenceType;
-	
-	private String species; 
-	private String assembly;
-	private String source;
-	private String version;
- 
-	private List<String> consequenceTypes;
-	private List<TranscriptVariation> transcriptVariations = new ArrayList<>();
-	private Phenotype phenotype;
-	private List<SampleGenotype> samples = new ArrayList<>();
-	private List<PopulationFrequency> populationFrequencies;
-	private List<Xref> xrefs = new ArrayList<>();
-	
-	// Required
-	private String featureId;
+    // private String _id;
+    private String id;            //0
+    private String chromosome;        //1
+    private int start;                //2
+    private int end;                //3
+    private String strand;            //4
+    private String type;            // Allowed type values: SNV, MUT, INDEL, SV
+    private String reference;
+    private String alternate;
+    private String alleleString;
+    private String ancestralAllele;
+    private String displayConsequenceType;
+    private List<String> consequenceTypes;
 
-	// Optional
-	private String minorAllele;
-	private String minorAlleleFreq;
-	private String validationStatus;
-	private String evidence;
-	// private String variantSeSeq;
-	// private String variantReads;
-	
-	// private List<String> variantEffect
+// private String species;
+// private String assembly;
+// private String source;
+// private String version;
 
-	public Variation() {
-		consequenceTypes = new ArrayList<>();
-		transcriptVariations = new ArrayList<>();
-		samples = new ArrayList<>();
-		populationFrequencies = new ArrayList<>();
-		xrefs = new ArrayList<>();
-	}
+    private List<TranscriptVariation> transcriptVariations = new ArrayList<>();
+    private Phenotype phenotype;
+    private List<SampleGenotype> samples = new ArrayList<>();
+    private List<PopulationFrequency> populationFrequencies;
+    private List<Xref> xrefs = new ArrayList<>();
 
-	public Variation(String id, String chromosome, String type, int start, int end, String strand, String reference,
-			String alternate, String alleleString, String ancestralAllele, String displayConsequenceType, String species, String assembly, String source, String version,
-			List<String> consequencesTypes, List<TranscriptVariation> transcriptVariations, Phenotype phenotype, List<SampleGenotype> samples,
-			List<PopulationFrequency> populationFrequencies, List<Xref> xrefs, String featureId, String minorAllele,
-			String minorAlleleFreq, String validationStatus, String evidence) {
-		this.id = id;
-		this.chromosome = chromosome;
-		this.type = type;
-		this.start = start;
-		this.end = end;
-		this.strand = strand;
-		this.reference = reference;
-		this.alternate = alternate;
-		this.alleleString = alleleString;
-		this.ancestralAllele = ancestralAllele;
-		this.displayConsequenceType = displayConsequenceType;
+    // Required
+    // private String featureId;
 
-		this.species = species;
-		this.assembly = assembly;
-		this.source = source;
-		this.version = version;
+    // Optional
+    private String minorAllele;
+    private String minorAlleleFreq;
+    private String validationStatus;
+    private String evidence;
+    // private String variantSeSeq;
+    // private String variantReads;
 
-		this.consequenceTypes = consequencesTypes;
-		this.transcriptVariations = transcriptVariations;
-		this.phenotype = phenotype;
-		this.samples = samples;
-		this.populationFrequencies = populationFrequencies;
-		this.xrefs = xrefs;
-		
-		this.featureId = featureId;
-		this.minorAllele = minorAllele;
-		this.minorAlleleFreq = minorAlleleFreq;
-		this.validationStatus = validationStatus;
-		this.evidence = evidence;
-	}
+    // private List<String> variantEffect
+
+    public Variation() {
+        consequenceTypes = new ArrayList<>();
+        transcriptVariations = new ArrayList<>();
+        samples = new ArrayList<>();
+        populationFrequencies = new ArrayList<>();
+        xrefs = new ArrayList<>();
+    }
+
+    public Variation(String id, String chromosome, String type, int start, int end, String strand, String reference,
+                     String alternate, String alleleString, String ancestralAllele, String displayConsequenceType,
+                     /*String species, String assembly, String source, String version,*/
+                     List<String> consequencesTypes, List<TranscriptVariation> transcriptVariations, Phenotype phenotype,
+                     List<SampleGenotype> samples, List<PopulationFrequency> populationFrequencies, List<Xref> xrefs,
+                     /*String featureId,*/ String minorAllele, String minorAlleleFreq, String validationStatus, String evidence) {
+        this.id = id;
+        this.chromosome = chromosome;
+        this.type = type;
+        this.start = start;
+        this.end = end;
+        this.strand = strand;
+        this.reference = reference;
+        this.alternate = alternate;
+        this.alleleString = alleleString;
+        this.ancestralAllele = ancestralAllele;
+        this.displayConsequenceType = displayConsequenceType;
+
+// this.species = species;
+// this.assembly = assembly;
+// this.source = source;
+// this.version = version;
+
+        this.consequenceTypes = consequencesTypes;
+        this.transcriptVariations = transcriptVariations;
+        this.phenotype = phenotype;
+        this.samples = samples;
+        this.populationFrequencies = populationFrequencies;
+        this.xrefs = xrefs;
+
+// this.featureId = featureId;
+        this.minorAllele = minorAllele;
+        this.minorAlleleFreq = minorAlleleFreq;
+        this.validationStatus = validationStatus;
+        this.evidence = evidence;
+    }
 
 
-	public String getSpecies() {
-		return species;
-	}
+    public List<SampleGenotype> getSamples() {
+        return samples;
+    }
 
-	public void setSpecies(String species) {
-		this.species = species;
-	}
+    public void setSamples(List<SampleGenotype> samples) {
+        this.samples = samples;
+    }
 
-	public String getAssembly() {
-		return assembly;
-	}
+    public void setXrefs(List<Xref> xrefs) {
+        this.xrefs = xrefs;
+    }
 
-	public void setAssembly(String assembly) {
-		this.assembly = assembly;
-	}
+    public String getChromosome() {
+        return chromosome;
+    }
 
-	public String getSource() {
-		return source;
-	}
+    public void setChromosome(String chromosome) {
+        this.chromosome = chromosome;
+    }
 
-	public void setSource(String source) {
-		this.source = source;
-	}
+    public int getStart() {
+        return start;
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    public void setStart(int start) {
+        this.start = start;
+    }
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
+    public int getEnd() {
+        return end;
+    }
 
-	public List<SampleGenotype> getSamples() {
-		return samples;
-	}
+    public void setEnd(int end) {
+        this.end = end;
+    }
 
-	public void setSamples(List<SampleGenotype> samples) {
-		this.samples = samples;
-	}
+    public String getStrand() {
+        return strand;
+    }
 
-	public void setXrefs(List<Xref> xrefs) {
-		this.xrefs = xrefs;
-	}
+    public void setStrand(String strand) {
+        this.strand = strand;
+    }
 
-	public String getName() {
-		return id;
-	}
+    public List<PopulationFrequency> getPopulationFrequencies() {
+        return populationFrequencies;
+    }
 
-	public void setName(String name) {
-		this.id = name;
-	}
+    public void setPopulationFrequencies(List<PopulationFrequency> populationFrequencies) {
+        this.populationFrequencies = populationFrequencies;
+    }
 
-	public String getChromosome() {
-		return chromosome;
-	}
 
-	public void setChromosome(String chromosome) {
-		this.chromosome = chromosome;
-	}
+    public String getMinorAllele() {
+        return minorAllele;
+    }
 
-	public int getStart() {
-		return start;
-	}
+    public void setMinorAllele(String minorAllele) {
+        this.minorAllele = minorAllele;
+    }
 
-	public void setStart(int start) {
-		this.start = start;
-	}
+    public String getMinorAlleleFreq() {
+        return minorAlleleFreq;
+    }
 
-	public int getEnd() {
-		return end;
-	}
+    public void setMinorAlleleFreq(String variantFreq) {
+        this.minorAlleleFreq = variantFreq;
+    }
 
-	public void setEnd(int end) {
-		this.end = end;
-	}
+    public String getValidationStatus() {
+        return validationStatus;
+    }
 
-	public String getStrand() {
-		return strand;
-	}
+    public void setValidationStatus(String validationStatus) {
+        this.validationStatus = validationStatus;
+    }
 
-	public void setStrand(String strand) {
-		this.strand = strand;
-	}
+    public String getReference() {
+        return reference;
+    }
 
-	public List<PopulationFrequency> getPopulationFrequencies() {
-		return populationFrequencies;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setPopulationFrequencies(List<PopulationFrequency> populationFrequencies) {
-		this.populationFrequencies = populationFrequencies;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public String getFeatureId() {
-		return featureId;
-	}
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
 
-	public void setFeatureId(String featureId) {
-		this.featureId = featureId;
-	}
+    public String getAlternate() {
+        return alternate;
+    }
 
-	public String getMinorAllele() {
-		return minorAllele;
-	}
+    public void setAlternate(String alternate) {
+        this.alternate = alternate;
+    }
 
-	public void setMinorAllele(String minorAllele) {
-		this.minorAllele = minorAllele;
-	}
+    public List<Xref> getXrefs() {
+        return xrefs;
+    }
 
-	public String getMinorAlleleFreq() {
-		return minorAlleleFreq;
-	}
+    public void setXrefs(Xref xrefs) {
+        this.xrefs.add(xrefs);
+    }
 
-	public void setMinorAlleleFreq(String variantFreq) {
-		this.minorAlleleFreq = variantFreq;
-	}
+    public String getAlleleString() {
+        return alleleString;
+    }
 
-	public String getValidationStatus() {
-		return validationStatus;
-	}
+    public void setAlleleString(String alleleString) {
+        this.alleleString = alleleString;
+    }
 
-	public void setValidationStatus(String validationStatus) {
-		this.validationStatus = validationStatus;
-	}
+    public List<TranscriptVariation> getTranscriptVariations() {
+        return transcriptVariations;
+    }
 
-	public String getReference() {
-		return reference;
-	}
+    public void setTranscriptVariations(List<TranscriptVariation> transcriptVariations) {
+        this.transcriptVariations = transcriptVariations;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public List<String> getConsequenceTypes() {
+        return consequenceTypes;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setConsequenceTypes(List<String> consequenceTypes) {
+        this.consequenceTypes = consequenceTypes;
+    }
 
-	public void setReference(String reference) {
-		this.reference = reference;
-	}
+    public String getDisplayConsequenceType() {
+        return displayConsequenceType;
+    }
 
-	public String getAlternate() {
-		return alternate;
-	}
+    public void setDisplayConsequenceType(String displayConsequenceType) {
+        this.displayConsequenceType = displayConsequenceType;
+    }
 
-	public void setAlternate(String alternate) {
-		this.alternate = alternate;
-	}
+    public String getEvidence() {
+        return evidence;
+    }
 
-	public List<Xref> getXrefs() {
-		return xrefs;
-	}
+    public void setEvidence(String evidence) {
+        this.evidence = evidence;
+    }
 
-	public void setXrefs(Xref xrefs) {
-		this.xrefs.add(xrefs);
-	}
+    public String getAncestralAllele() {
+        return ancestralAllele;
+    }
 
-	public String getAlleleString() {
-		return alleleString;
-	}
+    public void setAncestralAllele(String ancestralAllele) {
+        this.ancestralAllele = ancestralAllele;
+    }
 
-	public void setAlleleString(String alleleString) {
-		this.alleleString = alleleString;
-	}
+    public Phenotype getPhenotype() {
+        return phenotype;
+    }
 
-	public List<TranscriptVariation> getTranscriptVariations() {
-		return transcriptVariations;
-	}
+    public void setPhenotype(Phenotype phenotype) {
+        this.phenotype = phenotype;
+    }
 
-	public void setTranscriptVariations(List<TranscriptVariation> transcriptVariations) {
-		this.transcriptVariations = transcriptVariations;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public List<String> getConsequenceTypes() {
-		return consequenceTypes;
-	}
-
-	public void setConsequenceTypes(List<String> consequenceTypes) {
-		this.consequenceTypes = consequenceTypes;
-	}
-
-	public String getDisplayConsequenceType() {
-		return displayConsequenceType;
-	}
-
-	public void setDisplayConsequenceType(String displayConsequenceType) {
-		this.displayConsequenceType = displayConsequenceType;
-	}
-
-	public String getEvidence() {
-		return evidence;
-	}
-
-	public void setEvidence(String evidence) {
-		this.evidence = evidence;
-	}
-
-	public String getAncestralAllele() {
-		return ancestralAllele;
-	}
-
-	public void setAncestralAllele(String ancestralAllele) {
-		this.ancestralAllele = ancestralAllele;
-	}
-
-	public Phenotype getPhenotype() {
-		return phenotype;
-	}
-
-	public void setPhenotype(Phenotype phenotype) {
-		this.phenotype = phenotype;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
 }

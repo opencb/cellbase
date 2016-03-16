@@ -1,0 +1,157 @@
+{
+    "text": "Species",
+    "version": "v3",
+    "items":
+        [
+            {
+                "text": "Vertebrates",
+                "databaseHost": "ensembldb.ensembl.org",
+                "databasePort": "3306",
+                "items": [
+                    {"text": "Homo sapiens", "assembly": "GRCh38", "database": "homo_sapiens_core_76_38", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/homo_sapiens_variation_76_37/", "regulation_url": "ftp://ftp.ensembl.org/pub/release-76/regulation/"},
+                    {"text": "Mus musculus", "assembly": "GRCm38.p1", "database": "mus_musculus_core_76_38", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "X", "Y", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/mus_musculus_variation_76_38/", "regulation_url": "ftp://ftp.ensembl.org/pub/release-76/regulation/"},
+                    {"text": "Danio rerio", "assembly": "Zv9", "database": "danio_rerio_core_76_9", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "X", "Y", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/danio_rerio_variation_76_9/"},
+                    {"text": "Rattus norvegicus", "assembly": "Rnor_5.0", "database": "rattus_norvegicus_core_76_5", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/rattus_norvegicus_variation_76_5/"},
+                    {"text": "Pan troglodytes", "assembly": "CHIMP2.1.4", "database": "pan_troglodytes_core_76_214", "chromosomes": ["1", "2A", "2B", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22","X", "Y", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/pan_troglodytes_variation_76_214/"},
+                    {"text": "Gorilla gorilla", "assembly": "gorGor3.1", "database": "gorilla_gorilla_core_76_31", "chromosomes": ["1", "2a", "2b", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22","X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Pongo abelii", "assembly": "PPYG2", "database": "pongo_abelii_core_76_1", "chromosomes": ["1", "2a", "2b", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22","X", "Un", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/pongo_abelii_variation_76_1/"},
+                    {"text": "Macaca mulatta", "assembly": "MMUL_1", "database": "macaca_mulatta_core_76_10", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/macaca_mulatta_variation_76_10/"},
+                    {"text": "Sus scrofa", "assembly": "Sscrofa10.2", "database": "sus_scrofa_core_76_102", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "X", "Y", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/sus_scrofa_variation_76_102/"},
+                    {"text": "Canis familiaris", "assembly": "CanFam3.1", "database": "canis_familiaris_core_76_31", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/canis_familiaris_variation_76_31/"},
+                    {"text": "Equus caballus", "assembly": "EquCab2", "database": "equus_caballus_core_76_2", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/equus_caballus_variation_76_2/"},
+                    {"text": "Oryctolagus cuniculus", "assembly": "oryCun2", "database": "oryctolagus_cuniculus_core_76_2", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Gallus gallus", "assembly": "Galgal4", "database": "gallus_gallus_core_76_4", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "32", "W", "Z", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/gallus_gallus_variation_76_4/"},
+                    {"text": "Bos taurus", "assembly": "UMD3.1", "database": "bos_taurus_core_76_31", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/bos_taurus_variation_76_31/"},
+                    {"text": "Felis catus", "assembly": "Felis_catus_6.2", "database": "felis_catus_core_76_62", "chromosomes": ["A1", "A2", "A3", "B1", "B2", "B3", "B4", "C1", "C2", "D1", "D2", "D3", "D4", "E1", "E2", "E3", "F1", "F2", "X", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/", "variation_url": "ftp://ftp.ensembl.org/pub/release-76/mysql/felis_catus_variation_76_62/"},
+                    {"text": "Ciona intestinalis", "assembly": "KH", "database": "ciona_intestinalis_core_76_3", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "MT"], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Tursiops truncatus", "assembly": "turTru1", "database": "tursiops_truncatus_core_76_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Loxodonta africana", "assembly": "loxAfr3", "database": "loxodonta_africana_core_76_3", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Callithrix jacchus", "assembly": "C_jacchus3.2.1", "database": "callithrix_jacchus_core_76_321", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Nomascus leucogenys", "assembly": "Nleu1.0", "database": "nomascus_leucogenys_core_76_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Anas platyrhynchos", "assembly": "BGI_duck_1.0", "database": "anas_platyrhynchos_core_76_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"},
+                    {"text": "Ficedula albicollis", "assembly": "FicAlb_1.4", "database": "ficedula_albicollis_core_76_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensembl.org/pub/release-76/fasta/"}
+
+                ]
+            },
+            {
+                "text": "Metazoa",
+                "databaseHost": "mysql.ebi.ac.uk",
+                "databasePort": "4157",
+                "items": [
+                    {"text": "Caenorhabditis elegans", "assembly": "WBcel240", "database": "caenorhabditis_elegans_core_22_77_240", "chromosomes": ["I", "II", "III", "IV", "V", "X", "MtDNA"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Drosophila melanogaster", "assembly": "BDGP5", "database": "drosophila_melanogaster_core_22_77_546", "chromosomes": ["2L", "2LHet", "2R", "2RHet", "3L", "3LHet", "3R", "3RHet", "4", "U", "Uextra", "X", "XHet", "YHet", "dmel_mitochondrion_genome"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/", "variation_url": "ftp://ftp.ensemblgenomes.org/pub/release-24/metazoa/mysql/drosophila_melanogaster_variation_22_77_546/"},
+                    {"text": "Drosophila simulans", "assembly": "WUGSC1", "database": "drosophila_simulans_core_22_77_14", "chromosomes": ["2L", "2R", "3L", "3R", "4", "X"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Drosophila yakuba", "assembly": "dyak_r1.3", "database": "drosophila_yakuba_core_22_77_13", "chromosomes": ["2L", "2R", "3L", "3R", "4", "chr2h", "chr3h", "chrXh", "chrYh","X"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Anopheles gambiae", "assembly": "AgamP3", "database": "anopheles_gambiae_core_22_77_3", "chromosomes": ["2L", "2R", "3L", "3R", "X"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/", "variation_url": "ftp://ftp.ensemblgenomes.org/pub/release-24/metazoa/mysql/anopheles_gambiae_variation_22_77_3/"},
+                    {"text": "Anopheles darlingi", "assembly": "AdarC1", "database": "anopheles_darlingi_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Nematostella vectensis", "assembly": "ASM20922v1", "database": "nematostella_vectensis_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Strongylocentrotus purpuratus", "assembly": "GCA_000002235.2", "database": "strongylocentrotus_purpuratus_core_22_77_3", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Bombyx mori", "assembly": "Bmor1", "database": "bombyx_mori_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Aedes aegypti", "assembly": "AaegL1", "database": "aedes_aegypti_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"},
+                    {"text": "Acyrthosiphon pisum", "assembly": "GCA_000142985.2", "database": "acyrthosiphon_pisum_core_22_77_2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-24/fasta/"}
+                ]
+            },
+            {
+                "text": "Fungi",
+                "databaseHost": "mysql.ebi.ac.uk",
+                "databasePort": "4157",
+                "items": [
+                    {"text": "Saccharomyces cerevisiae", "assembly": "SacCer_Apr2011", "database": "saccharomyces_cerevisiae_core_22_77_4", "database": "", "chromosomes": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "Mito"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/", "variation_url": "ftp://ftp.ensemblgenomes.org/pub/release-24/fungi/mysql/saccharomyces_cerevisiae_variation_22_77_4/"},
+                    {"text": "Schizosaccharomyces pombe", "assembly": "ASM294v2", "database": "schizosaccharomyces_pombe_core_22_77_2", "chromosomes": ["AB325691", "I", "II", "III", "MT", "MTR"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Aspergillus fumigatus", "assembly": "CADRE", "database": "aspergillus_fumigatus_core_22_77_2", "chromosomes": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "MT"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Aspergillus niger", "assembly": "CADRE", "database": "aspergillus_niger_core_22_77_1", "chromosomes": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Aspergillus nidulans", "assembly": "ASM1142v1", "database": "aspergillus_nidulans_core_22_77_6", "chromosomes": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Aspergillus oryzae", "assembly": "CADRE2", "database": "aspergillus_oryzae_core_22_77_2", "chromosomes": ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Fusarium oxysporum", "assembly": "FO2", "database": "fusarium_oxysporum_core_22_77_2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Puccinia graminis", "assembly": "ASM14992v1", "database": "puccinia_graminis_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Puccinia triticina", "assembly": "ASM15152v1", "database": "puccinia_triticina_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Magnaporthe oryzae", "assembly": "MG8", "database": "magnaporthe_oryzae_core_22_77_8", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Ustilago maydis", "assembly": "UM1", "database": "ustilago_maydis_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Sclerotinia sclerotiorum", "assembly": "ASM14694v1", "database": "sclerotinia_sclerotiorum_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Cryptococcus neoformans", "assembly": "GCA_000091045.1", "database": "cryptococcus_neoformans_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"},
+                    {"text": "Zymoseptoria tritici", "assembly": "MG2", "database": "zymoseptoria_tritici_core_22_77_2", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/fungi/release-24/fasta/"}
+                ]
+            },
+            {
+                "text": "Protist",
+                "databaseHost": "mysql.ebi.ac.uk",
+                "databasePort": "4157",
+                "items": [
+                    {"text": "Plasmodium falciparum", "assembly": "ASM276v1", "database": "plasmodium_falciparum_core_22_77_3", "chromosomes": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/", "variation_url": "ftp://ftp.ensemblgenomes.org/pub/release-24/protists/mysql/plasmodium_falciparum_variation_22_77_3/"},
+                    {"text": "Leishmania major", "assembly": "ASM272v2", "database": "leishmania_major_core_22_77_2", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/"},
+                    {"text": "Dictyostelium discoideum", "assembly": "dictybase.01", "database": "dictyostelium_discoideum_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/"},
+                    {"text": "Phytophthora infestans", "assembly": "ASM14294v1", "database": "phytophthora_infestans_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/"},
+                    {"text": "Giardia lamblia", "assembly": "GCA_000002435.1", "database": "giardia_lamblia_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/"},
+                    {"text": "Pythium ultimum", "assembly": "pug", "database": "pythium_ultimum_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/"},
+                    {"text": "Albugo laibachii", "assembly": "ENA1", "database": "albugo_laibachii_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/protists/release-24/fasta/"}
+                ]
+            },
+            {
+                "text": "Plants",
+                "databaseHost": "mysql.ebi.ac.uk",
+                "databasePort": "4157",
+                "items": [
+                    {"text": "Arabidopsis thaliana", "assembly": "TAIR10", "database": "arabidopsis_thaliana_core_22_77_10", "chromosomes": ["1", "2", "3", "4", "5", "Mt", "Pt"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/", "variation_url": "ftp://ftp.ensemblgenomes.org/pub/release-24/plants/mysql/arabidopsis_thaliana_variation_22_77_10/"},
+                    {"text": "Arabidopsis lyrata", "assembly": "v.1.0", "database": "arabidopsis_lyrata_core_22_77_10", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Brachypodium distachyon", "assembly": "v1.0", "database": "brachypodium_distachyon_core_22_77_12", "chromosomes": ["1", "2", "3", "4", "5"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Oryza sativa", "assembly": "IRGSP-1.0", "database": "oryza_sativa_core_22_77_7", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "Mt", "Pt", "Sy", "Un"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Glycine max", "assembly": "V1.0", "database": "glycine_max_core_22_77_1", "chromosomes": ["Gm01", "Gm02", "Gm03", "Gm04", "Gm05", "Gm06", "Gm07", "Gm08", "Gm09", "Gm10", "Gm11", "Gm12", "Gm13", "Gm14", "Gm15", "Gm16", "Gm17", "Gm18", "Gm19", "Gm20"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Vitis vinifera", "assembly": "IGGP_12x", "database": "vitis_vinifera_core_22_77_3", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "Un"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/", "variation_url": "ftp://ftp.ensemblgenomes.org/pub/release-24/plants/mysql/vitis_vinifera_variation_22_77_3/"},
+                    {"text": "Zea mays", "assembly": "AGPv3", "database": "zea_mays_core_22_77_6", "chromosomes": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "Mt", "Pt"], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/", "variation_url": "ftp://ftp.ensemblgenomes.org/pub/release-24/plants/mysql/zea_mays_variation_22_77_6/"},
+                    {"text": "Hordeum vulgare", "assembly": "030312v2", "database": "hordeum_vulgare_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Musa acuminata", "assembly": "MA1", "database": "musa_acuminata_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Sorghum bicolor", "assembly": "Sorbi1", "database": "sorghum_bicolor_core_22_77_14", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Setaria italica", "assembly": "JGIv2.0", "database": "setaria_italica_core_22_77_21", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Triticum aestivum", "assembly": "IWGSP1", "database": "triticum_aestivum_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Brassica rapa", "assembly": "IVFCAASv1", "database": "brassica_rapa_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Populus trichocarpa", "assembly": "JGI2.0", "database": "populus_trichocarpa_core_22_77_20", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Solanum lycopersicum", "assembly": "SL2.40", "database": "solanum_lycopersicum_core_22_77_240", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Solanum tuberosum", "assembly": "3.0", "database": "solanum_tuberosum_core_22_77_4", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Selaginella moellendorffii", "assembly": "v1.0", "database": "selaginella_moellendorffii_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Chlamydomonas reinhardtii", "assembly": "v3.0", "database": "chlamydomonas_reinhardtii_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"},
+                    {"text": "Cyanidioschyzon merolae", "assembly": "ASM9120v1", "database": "cyanidioschyzon_merolae_core_22_77_1", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/plants/release-24/fasta/"}
+                ]
+            },
+            {
+                "text": "Bacteria",
+                "databaseHost": "mysql.ebi.ac.uk",
+                "databasePort": "4157",
+                "items": [
+                    {"text": "Escherichia coli str. K-12 substr. MG1655", "assembly": "GCA_000005845.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_22_collection/"},
+                    {"text": "Streptococcus pneumoniae 70585", "assembly": "GCA_000018965.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_22_collection/"},
+                    {"text": "Streptococcus agalactiae NEM316", "assembly": "GCA_000196055.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_1_collection/"},
+                    {"text": "Staphylococcus aureus subsp. aureus ST398", "assembly": "GCA_000009585.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_18_collection/"},
+                    {"text": "Staphylococcus aureus subsp. aureus N315", "assembly": "GCA_000009645.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_4_collection/"},
+                    {"text": "Sinorhizobium meliloti AK83", "assembly": "GCA_000147795.3", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_9_collection/"},
+                    {"text": "Sinorhizobium fredii NGR234", "assembly": "GCA_000018545.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_3_collection/"},
+                    {"text": "Salmonella enterica subsp. enterica serovar Typhi str. CT18", "assembly": "GCA_000195995.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_17_collection/"},
+                    {"text": "Salmonella enterica subsp. enterica serovar Typhimurium str. LT2", "assembly": "GCA_000006945.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_19_collection/"},
+                    {"text": "Photorhabdus luminescens subsp. laumondii TTO1", "assembly": "GCA_000196155.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_14_collection/"},
+                    {"text": "Neisseria meningitidis Z2491", "assembly": "GCA_000009105.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_18_collection/"},
+                    {"text": "Mycoplasma genitalium G37", "assembly": "GCA_000027325.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_13_collection/"},
+                    {"text": "Mycobacterium tuberculosis H37Rv (ASM19595v2)", "assembly": "GCA_000195955.2", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_27_collection/"},
+                    {"text": "Mycobacterium avium 104", "assembly": "GCA_000014985.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_8_collection/"},
+                    {"text": "Listeria monocytogenes EGD-e", "assembly": "GCA_000196035.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_7_collection/"},
+                    {"text": "Lactobacillus plantarum WCFS1", "assembly": "GCA_000203855.2", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_2_collection/"},
+                    {"text": "Haemophilus influenzae Rd KW20", "assembly": "GCA_000027305.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_23_collection/"},
+                    {"text": "Corynebacterium glutamicum ATCC 13032 (ASM19633v1)", "assembly": "GCA_000196335.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_7_collection/"},
+                    {"text": "Clostridium botulinum A str. Hall", "assembly": "GCA_000017045.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_3_collection/"},
+                    {"text": "Chlamydia trachomatis D/UW-3/CX", "assembly": "GCA_000008725.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_7_collection/"},
+                    {"text": "Bifidobacterium longum NCC2705", "assembly": "GCA_000007525.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_24_collection/"},
+                    {"text": "Bacillus subtilis subsp. subtilis str. 168", "assembly": "GCA_000009045.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_18_collection/"},
+                    {"text": "Bacillus licheniformis DSM 13 = ATCC 14580 (ASM1164v1)", "assembly": "GCA_000011645.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_22_collection/"},
+                    {"text": "Acinetobacter baumannii AYE", "assembly": "GCA_000069245.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_5_collection/"},
+                    {"text": "Pseudomonas aeruginosa PA7", "assembly": "GCA_000017205.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_9_collection/"},
+                    {"text": "Pseudomonas aeruginosa PA14", "assembly": "GCA_000404265.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_35_collection/"},
+                    {"text": "Pseudomonas aeruginosa MPAO1/P1", "assembly": "GCA_000247435.2", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_4_collection/"},
+                    {"text": "Pseudomonas aeruginosa MPAO1/P2", "assembly": "GCA_000247455.2", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_12_collection/"},
+                    {"text": "Chlamydophila pneumoniae CWL029", "assembly": "GCA_000008745.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_22_collection/"},
+                    {"text": "Parachlamydia acanthamoebae UV-7", "assembly": "GCA_000253035.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_3_collection/"},
+                    {"text": "Waddlia chondrophila WSU 86-1044", "assembly": "GCA_000092785.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_14_collection/"},
+                    {"text": "Candidatus Protochlamydia amoebophila UWE25", "assembly": "GCA_000011565.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_12_collection/"},
+                    {"text": "Simkania negevensis Z", "assembly": "GCA_000237205.1", "database": "", "chromosomes": [], "sequence_url": "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-24/fasta/bacteria_13_collection/"}
+                ]
+            }
+        ]
+}
+

@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ReleaseSet Dated="2014-04-01" Type="full">
+
+<ClinVarSet ID="1608878">
+  <RecordStatus>current</RecordStatus>
+  <Title>NC_000024.10:g.26583557C&gt;G AND Lung cancer</Title>
+  <ReferenceClinVarAssertion DateCreated="2014-03-18" DateLastUpdated="2014-03-30" ID="215312">
+    <ClinVarAccession Acc="RCV000088625" Version="1" Type="RCV" DateUpdated="2014-04-01"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance>
+      <ReviewStatus>classified by single submitter</ReviewStatus>
+      <Description>Uncertain significance</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>somatic</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+        <NumberTested>1</NumberTested>
+      </Sample>
+      <Method>
+        <MethodType>not provided</MethodType>
+      </Method>
+      <ObservedData ID="1338666">
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="102397">
+      <Measure Type="single nucleotide variant" ID="108140">
+        <Name>
+          <ElementValue Type="preferred name">NC_000024.10:g.26583557C&gt;G</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, top level" Change="g.26583557C&gt;G">NC_000024.10:g.26583557C&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, top level" Change="g.28729704C&gt;G">NC_000024.9:g.28729704C&gt;G</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, top level, previous" Change="g.28729704C&gt;G">NC_000024.9:g.28729704C&gt;G</Attribute>
+        </AttributeSet>
+        <CytogeneticLocation>Yq11.23</CytogeneticLocation>
+        <SequenceLocation Assembly="GRCh38" Chr="Y" Accession="NC_000024.10" start="26583556" stop="26583557"/>
+        <SequenceLocation Assembly="GRCh37" Chr="Y" Accession="NC_000024.9" start="28729704" stop="28729704"/>
+        <XRef Type="rs" ID="207482185" DB="dbSNP"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="preferred name">NC_000024.10:g.26583557C&gt;G</ElementValue>
+      </Name>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="6276">
+      <Trait ID="2615" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Lung cancer</ElementValue>
+          <XRef ID="Lung+Cancer/4334" DB="Genetic Alliance"/>
+          <XRef ID="187875007" DB="SNOMED CT"/>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">Lung cancer</ElementValue>
+          <XRef ID="GTR000503099" DB="Centogene AG  - the Rare Disease Company,Centogene AG"/>
+        </Name>
+        <XRef ID="NBK1108" DB="GeneReviews"/>
+        <XRef ID="C0684249" DB="MedGen"/>
+        <XRef Type="MIM" ID="211980" DB="OMIM"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="213794">
+    <ClinVarSubmissionID localKey="NC_000024.9:g.28729704C&gt;G|LIMM_YCR_PGG" submitterDate="2012-06-20" submitter="Leeds Institute of Molecular Medicine (LIMM)"/>
+    <ClinVarAccession Acc="SCV000121545" Version="1" Type="SCV" OrgID="500266" DateUpdated="2014-03-19"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance>
+      <ReviewStatus>classified by single submitter</ReviewStatus>
+      <Description>unknown</Description>
+      <Comment>Converted during submission to Uncertain significance.</Comment>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <ObservedIn>
+      <Sample>
+        <Origin>somatic</Origin>
+        <Species>human</Species>
+        <AffectedStatus>not provided</AffectedStatus>
+        <NumberTested>1</NumberTested>
+      </Sample>
+      <Method>
+        <MethodType>not provided</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="Description">not provided</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="Variation">
+        <AttributeSet>
+          <Attribute Type="HGVS">NC_000024.9:g.28729704C&gt;G</Attribute>
+        </AttributeSet>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Lung cancer</ElementValue>
+        </Name>
+        <XRef DB="OMIM" ID="211980" Type="MIM"/>
+      </Trait>
+    </TraitSet>
+    <Comment>Lung squamous cell carcinoma</Comment>
+  </ClinVarAssertion>
+</ClinVarSet>
+<ClinVarSet ID="1464598">
+  <RecordStatus>current</RecordStatus>
+  <Title>IFNGR2:c.879+19delC AND Interferon gamma receptor deficiency</Title>
+  <ReferenceClinVarAssertion DateCreated="2012-08-13" DateLastUpdated="2014-03-22" ID="87549">
+    <ClinVarAccession Acc="RCV000030046" Version="1" Type="RCV" DateUpdated="2014-03-23"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2011-08-18">
+      <ReviewStatus>classified by single submitter</ReviewStatus>
+      <Description>Uncertain significance</Description>
+    </ClinicalSignificance>
+    <Assertion Type="variation to disease"/>
+    <AttributeSet>
+      <Attribute Type="ModeOfInheritance" integerValue="483">Autosomal unknown</Attribute>
+    </AttributeSet>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>yes</AffectedStatus>
+      </Sample>
+      <Method>
+        <Purpose>assert pathogenicity</Purpose>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData ID="1221971">
+        <Attribute integerValue="1" Type="VariantAlleles"/>
+      </ObservedData>
+    </ObservedIn>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <Purpose>assert pathogenicity</Purpose>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData ID="1272259">
+        <Attribute integerValue="4" Type="VariantAlleles"/>
+      </ObservedData>
+    </ObservedIn>
+    <MeasureSet Type="Variant" ID="36377">
+      <Measure Type="Deletion" ID="45040">
+        <Name>
+          <ElementValue Type="Preferred">IFNGR2:c.879+19delC</ElementValue>
+        </Name>
+        <AttributeSet>
+          <Attribute Type="GlobalMinorAlleleFrequency">0.3471</Attribute>
+          <XRef ID="193922682" DB="dbSNP"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="MolecularConsequence">intron</Attribute>
+          <XRef ID="193922682" DB="dbSNP"/>
+          <XRef ID="SO:0001627" DB="Sequence Ontology"/>
+          <XRef ID="NM_005534.3:c.879+19delC" DB="RefSeq"/>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, coding, LRG" Change="c.879+19delC">LRG_67t1:c.879+19delC</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, coding, RefSeq" Change="c.879+19delC">NM_005534.3:c.879+19delC</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, LRG" Change="g.52899delC">LRG_67:g.52899delC</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, RefSeqGene" Change="g.52899delC">NG_007570.2:g.52899delC</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="HGVS, genomic, top level" Change="g.34805197delC">NC_000021.8:g.34805197delC</Attribute>
+        </AttributeSet>
+        <CytogeneticLocation>21q22.1</CytogeneticLocation>
+        <SequenceLocation Assembly="GRCh37" Chr="21" Accession="NC_000021.8" start="34805197" stop="34805197"/>
+        <MeasureRelationship Type="variant in gene">
+          <Name>
+            <ElementValue Type="Preferred">interferon gamma receptor 2 (interferon gamma transducer 1)</ElementValue>
+          </Name>
+          <Symbol>
+            <ElementValue Type="Preferred">IFNGR2</ElementValue>
+          </Symbol>
+          <SequenceLocation Assembly="GRCh37" Chr="21" Accession="NC_000021.8" start="34775201" stop="34809827" Strand="+"/>
+          <XRef ID="3460" DB="Gene"/>
+          <XRef Type="MIM" ID="147569" DB="OMIM"/>
+        </MeasureRelationship>
+        <XRef Type="rs" ID="193922682" DB="dbSNP"/>
+      </Measure>
+      <Name>
+        <ElementValue Type="preferred name">IFNGR2:c.879+19delC</ElementValue>
+      </Name>
+    </MeasureSet>
+    <TraitSet Type="Disease" ID="8773">
+      <Trait ID="16505" Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Interferon gamma receptor deficiency</ElementValue>
+        </Name>
+        <Name>
+          <ElementValue Type="Alternate">Interferon gamma receptor deficiency</ElementValue>
+        </Name>
+        <Symbol>
+          <ElementValue Type="Preferred">IFNGRD</ElementValue>
+        </Symbol>
+        <XRef ID="C1112429" DB="MedGen"/>
+      </Trait>
+    </TraitSet>
+  </ReferenceClinVarAssertion>
+  <ClinVarAssertion ID="56851">
+    <ClinVarSubmissionID title="IFNGR2:c.879+19delC and Interferon Gamma Receptor  Deficiency" localKey="IFNGR2_879+19delC_012111" submitter="LabCorp"/>
+    <ClinVarAccession Acc="SCV000052701" Version="1" Type="SCV" OrgID="500026" DateUpdated="2014-03-06"/>
+    <RecordStatus>current</RecordStatus>
+    <ClinicalSignificance DateLastEvaluated="2011-08-18">
+      <ReviewStatus>classified by single submitter</ReviewStatus>
+      <Description>uncertain</Description>
+    </ClinicalSignificance>
+    <CustomAssertionScore Type="QOD" Value="0"/>
+    <CustomAssertionScore Type="aFXN" Value="NA"/>
+    <CustomAssertionScore Type="pFXN" Value="0"/>
+    <CustomAssertionScore Type="pbGP" Value="NA"/>
+    <CustomAssertionScore Type="tbGP" Value="NA"/>
+    <Assertion Type="variation to disease"/>
+    <AttributeSet>
+      <Attribute Type="ModeOfInheritance">autosomal unknown</Attribute>
+    </AttributeSet>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Tissue>Blood</Tissue>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>yes</AffectedStatus>
+      </Sample>
+      <Method>
+        <Purpose>assert pathogenicity</Purpose>
+        <MethodType>literature only</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="VariantAlleles">1</Attribute>
+      </ObservedData>
+    </ObservedIn>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Tissue>Blood</Tissue>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <Purpose>assert pathogenicity</Purpose>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="VariantAlleles">1</Attribute>
+      </ObservedData>
+      <Co-occurrenceSet>
+        <Zygosity>Homozygote</Zygosity>
+        <AlleleDescSet>
+          <Name>IFNGR1:c.85+10T&gt;C</Name>
+          <Zygosity>SingleHeterozygote</Zygosity>
+        </AlleleDescSet>
+        <AlleleDescSet>
+          <Name>IFNGR2:c.561+11C&gt;G</Name>
+          <Zygosity>Homozygote</Zygosity>
+        </AlleleDescSet>
+        <Count>1</Count>
+      </Co-occurrenceSet>
+    </ObservedIn>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Tissue>Blood</Tissue>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <Purpose>assert pathogenicity</Purpose>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="VariantAlleles">1</Attribute>
+      </ObservedData>
+      <Co-occurrenceSet>
+        <Zygosity>SingleHeterozygote</Zygosity>
+        <AlleleDescSet>
+          <Name>IFNGR1:c.1050T&gt;G</Name>
+          <Zygosity>SingleHeterozygote</Zygosity>
+        </AlleleDescSet>
+        <AlleleDescSet>
+          <Name>IFNGR1:c.85+10T&gt;C</Name>
+          <Zygosity>Homozygote</Zygosity>
+        </AlleleDescSet>
+        <AlleleDescSet>
+          <Name>IFNGR2:c.561+11C&gt;G</Name>
+          <Zygosity>Homozygote</Zygosity>
+        </AlleleDescSet>
+        <Count>1</Count>
+      </Co-occurrenceSet>
+    </ObservedIn>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Tissue>Blood</Tissue>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <Purpose>assert pathogenicity</Purpose>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="VariantAlleles">1</Attribute>
+      </ObservedData>
+      <Co-occurrenceSet>
+        <Zygosity>Homozygote</Zygosity>
+        <AlleleDescSet>
+          <Name>IFNGR2:c.561+11C&gt;G</Name>
+          <Zygosity>Homozygote</Zygosity>
+        </AlleleDescSet>
+        <Count>1</Count>
+      </Co-occurrenceSet>
+    </ObservedIn>
+    <ObservedIn>
+      <Sample>
+        <Origin>germline</Origin>
+        <Tissue>Blood</Tissue>
+        <Species TaxonomyId="9606">human</Species>
+        <AffectedStatus>unknown</AffectedStatus>
+      </Sample>
+      <Method>
+        <Purpose>assert pathogenicity</Purpose>
+        <MethodType>clinical testing</MethodType>
+      </Method>
+      <ObservedData>
+        <Attribute Type="VariantAlleles">1</Attribute>
+      </ObservedData>
+      <Co-occurrenceSet>
+        <Zygosity>Homozygote</Zygosity>
+        <AlleleDescSet>
+          <Name>IFNGR1:c.85+10T&gt;C</Name>
+          <Zygosity>Homozygote</Zygosity>
+        </AlleleDescSet>
+        <AlleleDescSet>
+          <Name>IFNGR2:c.561+11C&gt;G</Name>
+          <Zygosity>Homozygote</Zygosity>
+        </AlleleDescSet>
+        <Count>1</Count>
+      </Co-occurrenceSet>
+    </ObservedIn>
+    <MeasureSet Type="Variant">
+      <Measure Type="single nucleotide variant">
+        <AttributeSet>
+          <Attribute Type="HGVS">NM_005534.3:c.879+19delC</Attribute>
+        </AttributeSet>
+        <AttributeSet>
+          <Attribute Type="Description">intronic mutation</Attribute>
+        </AttributeSet>
+        <MeasureRelationship Type="variant in gene">
+          <Symbol>
+            <ElementValue Type="Preferred">IFNGR2</ElementValue>
+          </Symbol>
+        </MeasureRelationship>
+      </Measure>
+    </MeasureSet>
+    <TraitSet Type="Disease">
+      <Trait Type="Disease">
+        <Name>
+          <ElementValue Type="Preferred">Interferon Gamma Receptor  Deficiency</ElementValue>
+        </Name>
+        <Symbol>
+          <ElementValue Type="Preferred">IFNGRD</ElementValue>
+        </Symbol>
+      </Trait>
+    </TraitSet>
+  </ClinVarAssertion>
+</ClinVarSet>
+
+</ReleaseSet>

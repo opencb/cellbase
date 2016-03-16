@@ -13,7 +13,7 @@
         </p>
         <p class="ocb-line-height-5">
             <span class="text-primary ocb-text-width-80">Location:</span>
-            <span class="ocb-text-width-400"> {{data.chromosome}}:{{data.start}}-{{data.end}}</span>
+            <span class="ocb-text-width-400"> {{data.sequenceName}}:{{data.start}}-{{data.end}}</span>
 
             <span class="text-primary ocb-text-width-50">Source:</span>
             <span> {{data.source}}</span>
@@ -46,7 +46,7 @@
                 <tbody ng-repeat="transc in data.transcripts">
                     <td ng-click="functionDirective(transc.name)"><a style="cursor:pointer"><small>{{transc.name}} ( {{transc.id}} )</small></a></td>
                     <td><small>{{transc.biotype}}</small></td>
-                    <td><small>{{transc.chromosome}}:{{transc.start}}-{{transc.end}}</small></td>
+                    <td><small>{{transc.sequenceName}}:{{transc.start}}-{{transc.end}}</small></td>
                     <td><small>{{transc.status}}</small></td>
                     <td><small>{{transc.strand}}</small></td>
                     <td><small>{{transc.proteinID}}</small></td>
