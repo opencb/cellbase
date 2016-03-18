@@ -154,7 +154,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // parallel parsing of these lines
             if (input != null) {
                 DataReader dataReader = new StringDataReader(input);
-                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList();
+                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList(false);
                 DataWriter dataWriter = getDataWriter(output.toString());
 
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
@@ -230,10 +230,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList() throws IOException {
+    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList(boolean normalize) throws IOException {
         List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
-            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
+            List<VariantAnnotator> variantAnnotatorList = createAnnotators(normalize);
             switch (inputFormat) {
                 case VCF:
                     logger.info("Using HTSJDK to read variants.");
@@ -254,10 +254,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
         }
         return variantAnnotatorTaskList;
-    }
-
-    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList() throws IOException {
-        return this.getVariantTaskList(true);
     }
 
     private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList(boolean normalize) throws IOException {
