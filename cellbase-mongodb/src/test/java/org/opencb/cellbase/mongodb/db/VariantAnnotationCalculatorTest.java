@@ -328,6 +328,7 @@ public class VariantAnnotationCalculatorTest {
 //        // TODO: check differences against Web VEP
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16057210, "C", "T"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
@@ -774,7 +775,7 @@ public class VariantAnnotationCalculatorTest {
         List<AnnotationComparisonObject> uvaSpecificAnnotationList = new ArrayList(uvaAnnotationSet);
         Collections.sort(uvaSpecificAnnotationList, new AnnotationComparisonObjectComparator());
         for(AnnotationComparisonObject comparisonObject : uvaSpecificAnnotationList) {
-            if(comparisonObject.getSOname().equals("regulatory_region_variant")) {
+            if(!comparisonObject.getSOname().equals("regulatory_region_variant")) {
                 bw.write(comparisonObject.toString());
             }
         }
