@@ -310,7 +310,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             String.valueOf(modifiedCodonArray));
 
                     if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
-                            String.valueOf(referenceCodon), String.valueOf(referenceCodon))) {
+                            String.valueOf(referenceCodon), String.valueOf(modifiedCodonArray))) {
                         if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
                                 String.valueOf(referenceCodon))) {
                             SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
