@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 
 import java.util.List;
 
@@ -12,9 +11,7 @@ public interface VariantAnnotator {
 
     boolean open();
 
-    List<VariantAnnotation> run(List<Variant> variantList);
-
-    void setVariantAnnotationList(List<VariantAnnotation> variantAnnotationList);
+    void run(List<Variant> variantList);
 
     boolean close();
 

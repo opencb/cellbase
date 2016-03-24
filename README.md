@@ -39,9 +39,10 @@ CellBase is an open-source and collaborative project. We appreciate any help and
 
 
 # How to build 
-CellBase is mainly developed in Java and it uses [Apache Maven](http://maven.apache.org/) as building tool. CellBase requires Java 7+ and others OpenCB Java dependencies that can be found in [Maven Central Repository](http://search.maven.org/).
+CellBase is mainly developed in Java and it uses [Apache Maven](http://maven.apache.org/) as building tool. CellBase requires Java 8+ and others OpenCB Java dependencies that can be found in [Maven Central Repository](http://search.maven.org/).
 
 Stable releases are merged and tagged at **_master_** branch, you are encourage to use latest stable release for production. Current active development is carried out at **_develop_** branch, only compilation is guaranteed and bugs are expected, use this branch for development or for testing new functionalities. Only dependencies of **_master_** branch are ensured to be deployed at [Maven Central Repository](http://search.maven.org/), **_develop_** branch may require users to download and install other active OpenCB repositories:
+* _java-common-libs_: https://github.com/opencb/java-common-libs (branch 'develop')
 * _biodata_: https://github.com/opencb/biodata (branch 'develop')
 * _datastore_: https://github.com/opencb/datastore (branch 'develop')
 
@@ -96,9 +97,14 @@ Remember that **_develop_** branch dependencies are not ensured to be deployed a
 
     cellbase-app/build/
     ├── bin
+    ├── cellbase.war
+    ├── configuration.json
     ├── example
     ├── libs
+    ├── LICENSE
     ├── mongodb-scripts
+    └── README.md
+
 
 You can copy the content of the _build_ folder into any directory such as _/opt/cellbase_.
 

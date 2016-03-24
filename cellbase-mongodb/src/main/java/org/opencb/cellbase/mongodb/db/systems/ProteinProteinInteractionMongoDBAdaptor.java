@@ -16,12 +16,13 @@
 
 package org.opencb.cellbase.mongodb.db.systems;
 
-import com.mongodb.*;
+import com.mongodb.QueryBuilder;
+import org.bson.Document;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ import java.util.List;
  * Time: 4:57 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor implements ProteinProteinInteractionDBAdaptor {
+public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor implements ProteinProteinInteractionDBAdaptor {
 
 
     public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
@@ -47,7 +48,7 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
 
     @Override
     public QueryResult first() {
-        return mongoDBCollection.find(new BasicDBObject(), new QueryOptions("limit", 1));
+        return mongoDBCollection.find(new Document(), new QueryOptions("limit", 1));
     }
 
     @Override
@@ -62,86 +63,69 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
 
     @Override
     public QueryResult getAll(QueryOptions options) {
-        QueryBuilder builder = new QueryBuilder();
-
-        // Fiilter all by interactor ID
-        List<Object> interactors = options.getList("interactor", null);
-        if (interactors != null && interactors.size() > 0) {
-            BasicDBList interactorDBList = new BasicDBList();
-            interactorDBList.addAll(interactors);
-
-            BasicDBList or = new BasicDBList();
-            DBObject orA = new BasicDBObject("interactorA.xrefs.id", new BasicDBObject("$in", interactorDBList));
-            DBObject orB = new BasicDBObject("interactorB.xrefs.id", new BasicDBObject("$in", interactorDBList));
-            or.add(orA);
-            or.add(orB);
-//            builder = builder.or(orA, orB);
-            builder = builder.and(new BasicDBObject("$or", or));
-        }
-
-        // Filter all by Interaction Type (name and PSIMI)
-        List<Object> type = options.getList("type", null);
-        if (type != null && type.size() > 0) {
-            BasicDBList typeDBList = new BasicDBList();
-            typeDBList.addAll(type);
-
-            BasicDBList or = new BasicDBList();
-            DBObject orName = new BasicDBObject("type.name", new BasicDBObject("$in", typeDBList));
-            DBObject orPsimi = new BasicDBObject("type.psimi", new BasicDBObject("$in", typeDBList));
-            or.add(orName);
-            or.add(orPsimi);
-//            builder = builder.or(orName, orPsimi);
-            builder = builder.and(new BasicDBObject("$or", or));
-        }
-
-        // Filter all by source database
-        List<Object> database = options.getList("database", null);
-        if (database != null && database.size() > 0) {
-            BasicDBList databaseDBList = new BasicDBList();
-            databaseDBList.addAll(database);
-            builder = builder.and("source.name").in(databaseDBList);
-        }
-
-        // Filter all by detection method (name and PSIMI)
-        List<Object> detectionMethod = options.getList("detectionMethod", null);
-        if (detectionMethod != null && detectionMethod.size() > 0) {
-            BasicDBList detectionMethodDBList = new BasicDBList();
-            detectionMethodDBList.addAll(detectionMethod);
-
-            BasicDBList or = new BasicDBList();
-            DBObject orName = new BasicDBObject("detectionMethod.name", new BasicDBObject("$in", detectionMethodDBList));
-            DBObject orPsimi = new BasicDBObject("detectionMethod.psimi", new BasicDBObject("$in", detectionMethodDBList));
-            or.add(orName);
-            or.add(orPsimi);
-//            builder = builder.or(orName, orPsimi);
-            builder = builder.and(new BasicDBObject("$or", or));
-        }
-
-        // Filter all by status
-        List<Object> status = options.getList("status", null);
-        if (status != null && status.size() > 0) {
-            BasicDBList statusDBList = new BasicDBList();
-            statusDBList.addAll(status);
-            builder = builder.and("status").in(statusDBList);
-        }
-
+//        QueryBuilder builder = new QueryBuilder();
+//
+//        // Fiilter all by interactor ID
+//        List<Object> interactors = options.getList("interactor", null);
+//        if (interactors != null && interactors.size() > 0) {
+//            BasicDBList interactorDBList = new BasicDBList();
+//            interactorDBList.addAll(interactors);
+//
+//            BasicDBList or = new BasicDBList();
+//            Document orA = new Document("interactorA.xrefs.id", new Document("$in", interactorDBList));
+//            Document orB = new Document("interactorB.xrefs.id", new Document("$in", interactorDBList));
+//            or.add(orA);
+//            or.add(orB);
+//            builder = builder.and(new Document("$or", or));
+//        }
+//
+//        // Filter all by Interaction Type (name and PSIMI)
 //        List<Object> type = options.getList("type", null);
 //        if (type != null && type.size() > 0) {
 //            BasicDBList typeDBList = new BasicDBList();
 //            typeDBList.addAll(type);
-//            builder = builder.and("type.name").in(typeDBList);
+//
+//            BasicDBList or = new BasicDBList();
+//            Document orName = new Document("type.name", new Document("$in", typeDBList));
+//            Document orPsimi = new Document("type.psimi", new Document("$in", typeDBList));
+//            or.add(orName);
+//            or.add(orPsimi);
+//            builder = builder.and(new Document("$or", or));
 //        }
-
-//        String type = options.getString("type", null);
-//        if (type != null && !type.equals("")) {
-//            builder = builder.and("type.name").is(type);
+//
+//        // Filter all by source database
+//        List<Object> database = options.getList("database", null);
+//        if (database != null && database.size() > 0) {
+//            BasicDBList databaseDBList = new BasicDBList();
+//            databaseDBList.addAll(database);
+//            builder = builder.and("source.name").in(databaseDBList);
 //        }
-
-
-
-        System.out.println(builder.get().toString());
-        //		options = addExcludeReturnFields("transcripts", options);
-        return executeQuery("result", builder.get(), options);
+//
+//        // Filter all by detection method (name and PSIMI)
+//        List<Object> detectionMethod = options.getList("detectionMethod", null);
+//        if (detectionMethod != null && detectionMethod.size() > 0) {
+//            BasicDBList detectionMethodDBList = new BasicDBList();
+//            detectionMethodDBList.addAll(detectionMethod);
+//
+//            BasicDBList or = new BasicDBList();
+//            Document orName = new Document("detectionMethod.name", new Document("$in", detectionMethodDBList));
+//            Document orPsimi = new Document("detectionMethod.psimi", new Document("$in", detectionMethodDBList));
+//            or.add(orName);
+//            or.add(orPsimi);
+//            builder = builder.and(new Document("$or", or));
+//        }
+//
+//        // Filter all by status
+//        List<Object> status = options.getList("status", null);
+//        if (status != null && status.size() > 0) {
+//            BasicDBList statusDBList = new BasicDBList();
+//            statusDBList.addAll(status);
+//            builder = builder.and("status").in(statusDBList);
+//        }
+//
+//        System.out.println(new Document(builder.get().toMap()).toString());
+//        return executeQuery("result", new Document(builder.get().toMap()), options);
+        return null;
     }
 
     @Override
@@ -151,10 +135,10 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
 
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>(idList.size());
+        List<Document> queries = new ArrayList<>(idList.size());
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("xrefs.id").is(id);
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
 //        options = addExcludeReturnFields("transcripts", options);
         return executeQueryList2(idList, queries, options);
@@ -168,11 +152,19 @@ public class ProteinProteinInteractionMongoDBAdaptor  extends MongoDBAdaptor imp
     @Override
     public List<QueryResult> getAllByInteractorIdList(List<String> idList, QueryOptions options) {
         List<QueryResult> resultList = new ArrayList<>(idList.size());
-        for(String id: idList) {
+        for (String id : idList) {
             options.put("interactor", Arrays.asList(id));
             resultList.add(getAll(options));
         }
         return resultList;
+    }
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
     }
 
 }

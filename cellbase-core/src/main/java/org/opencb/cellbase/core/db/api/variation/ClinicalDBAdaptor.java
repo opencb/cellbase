@@ -16,12 +16,11 @@
 
 package org.opencb.cellbase.core.db.api.variation;
 
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.Position;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.List;
 
@@ -38,15 +37,17 @@ public interface ClinicalDBAdaptor extends FeatureDBAdaptor {
 //
 //    List<QueryResult> getAllByPositionList(List<Position> positionList, QueryOptions options);
 
-    QueryResult getAllByGenomicVariant(GenomicVariant variant, QueryOptions options);
+    QueryResult getAllByGenomicVariant(Variant variant, QueryOptions options);
 
-    List<QueryResult> getAllByGenomicVariantList(List<GenomicVariant> variantList, QueryOptions options);
+    List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options);
 
     QueryResult getListClinvarAccessions(QueryOptions queryOptions);
 
 //    public QueryResult getChromosomeById(String id, QueryOptions options);
 
-    QueryResult getAllClinvar(QueryOptions options);
+//    QueryResult getAllClinvar(QueryOptions options);
+
+    QueryResult getByGeneId(String geneId, QueryOptions queryOptions);
 
     QueryResult updateAnnotations(List<VariantAnnotation> variantAnnotations, QueryOptions queryOptions);
 

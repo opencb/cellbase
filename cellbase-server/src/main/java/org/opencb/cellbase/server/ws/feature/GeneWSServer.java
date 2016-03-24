@@ -17,44 +17,41 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import com.mongodb.BasicDBObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.feature.Region;
-import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
-import org.opencb.cellbase.core.db.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.ProteinDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
-import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResponse;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author imedina
  */
 @Path("/{version}/{species}/feature/gene")
-@Produces("application/json")
+@Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Gene", description = "Gene RESTful Web Services API")
 public class GeneWSServer extends GenericRestWSServer {
 
@@ -66,6 +63,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
     public Response getModel() {
         return createModelResponse(Gene.class);
     }
@@ -73,18 +71,30 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
     public Response first() {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-        return createOkResponse(geneDBAdaptor.first());
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+        return createOkResponse(geneDBAdaptor.first(queryOptions));
     }
 
     @GET
     @Path("/count")
-    @Override
-    public Response count() {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-        return createOkResponse(geneDBAdaptor.count());
+    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
+    public Response count(@DefaultValue("") @QueryParam("region") String region,
+                          @DefaultValue("") @QueryParam("biotype") String biotype,
+                          @DefaultValue("") @QueryParam("xrefs") String xrefs) {
+        try {
+            parseQueryParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            query.put(GeneDBAdaptor.QueryParams.REGION.key(), region);
+            query.put(GeneDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
+            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), xrefs);
+            return createOkResponse(geneDBAdaptor.count(query));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
     }
+
 
     @GET
     @Path("/stats")
@@ -94,14 +104,26 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/group")
+    public Response groupBy(@DefaultValue("") @QueryParam("fields") String fields) {
+        try {
+            parseQueryParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            return createOkResponse(geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
     @Path("/all")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects", response = QueryResponse.class)
     public Response getAll(@ApiParam(value = "String with the list of biotypes to return")
                            @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.getAll(queryOptions));
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -114,9 +136,9 @@ public class GeneWSServer extends GenericRestWSServer {
                               @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            queryOptions.put("include", Arrays.asList("id"));
-            return createOkResponse(geneDBAdaptor.getAll(queryOptions));
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            queryOptions.put("include", Collections.singletonList("id"));
+            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -128,9 +150,11 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<QueryResult> genes = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(geneId), queryOptions);
-            return createOkResponse(genes);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+//            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
+            List<Query> queries = createQueries(geneId, GeneDBAdaptor.QueryParams.XREFS.key());
+            List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -142,8 +166,8 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getNextByEnsemblId(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            QueryResult genes = geneDBAdaptor.next(Splitter.on(",").splitToList(geneId).get(0), queryOptions);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            QueryResult genes = geneDBAdaptor.next(query, queryOptions);
             return createOkResponse(genes);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -156,9 +180,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getTranscriptsByGeneId(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResultList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(geneId), queryOptions);
-            return createOkResponse(queryResultList);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
+            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -170,8 +194,8 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAllBiotypes() {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.getAllBiotypes(queryOptions));
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            return createOkResponse(geneDBAdaptor.distinct(query, "biotype"));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -179,56 +203,59 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/snp")
-    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified gene(s)")
-    public Response getSNPByGeneId(@PathParam("geneId") String query) {
+    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes and offset")
+    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
         try {
             parseQueryParams();
-
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-
-            List<QueryResult> qrList;
-            if (queryOptions.containsKey("count") && queryOptions.getBoolean("count")) {
-                queryOptions.remove("count");
-                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
-                queryOptions.put("count", true);
-            } else {
-                qrList = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(query), queryOptions);
-            }
-
-            List<QueryResult> queryResults = new ArrayList<>();
-            for (QueryResult qr : qrList) {
-                QueryResult queryResult = new QueryResult();
-                queryResult.setId(qr.getId());
-
-                // FIXME MongoDB code should not be here
-                BasicDBObject gene = (BasicDBObject) qr.getResult().get(0);
-                QueryResult variationQueryResult = variationDBAdaptor.getAllByRegion(gene.getString("chromosome"), gene.getInt("start"), gene.getInt("end"), queryOptions);
-
-                queryResult.setNumResults(variationQueryResult.getNumResults());
-                queryResult.setResult(variationQueryResult.getResult());
-                queryResults.add(queryResult);
-            }
-
-            return createOkResponse(queryResults);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            queryOptions.put("offset", offset);
+            QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
 
+//    @GET
+//    @Path("/{geneId}/mutation")
+////    @ApiOperation(httpMethod = "GET", value = "[DEPRECATED] Get all variants within the specified gene(s)")
+//    @Deprecated
+//    public Response getMutationByGene(@PathParam("geneId") String query) {
+//        try {
+//            parseQueryParams();
+//            MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
+//            List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
+////            return generateResponse(query, "MUTATION", queryResults);
+//            return createOkResponse(queryResults);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
+
     @GET
-    @Path("/{geneId}/mutation")
-    @ApiOperation(httpMethod = "GET", value = "[DEPRECATED] Get all variants within the specified gene(s)")
-    @Deprecated
-    public Response getMutationByGene(@PathParam("geneId") String query) {
+    @Path("/{geneId}/regulation")
+    @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
+    public Response getAllRegulatoryElements(@PathParam("geneId") String geneId,
+                                             @DefaultValue("false") @QueryParam("merge") boolean merge) {
         try {
             parseQueryParams();
-            MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
-//            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor.getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
-            List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(Splitter.on(",").splitToList(query), queryOptions);
-//            return generateResponse(query, "MUTATION", queryResults);
-            return createOkResponse(queryResults);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            if (merge) {
+                query.put(GeneDBAdaptor.QueryParams.ID.key(), geneId);
+                QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+                return createOkResponse(queryResult);
+            } else {
+                String[] genes = geneId.split(",");
+                List<QueryResult> queryResults = new ArrayList<>(genes.length);
+                for (String gene : genes) {
+                    query.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
+                    QueryResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+                    queryResults.add(queryResult);
+                }
+                return createOkResponse(queryResults);
+            }
+
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -237,12 +264,24 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)")
-    public Response getAllTfbs(@PathParam("geneId") String query) {
+    public Response getAllTfbs(@PathParam("geneId") String geneId, @DefaultValue("false") @QueryParam("merge") boolean merge) {
         try {
             parseQueryParams();
-            TfbsDBAdaptor tfbsDBAdaptor = dbAdaptorFactory.getTfbsDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = tfbsDBAdaptor.getAllByTargetGeneIdList(Splitter.on(",").splitToList(query), queryOptions);
-            return createOkResponse(queryResults);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            if (merge) {
+                query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
+                QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+                return createOkResponse(queryResult);
+            } else {
+                String[] genes = geneId.split(",");
+                List<QueryResult> queryResults = new ArrayList<>(genes.length);
+                for (String gene : genes) {
+                    query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
+                    QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+                    queryResults.add(queryResult);
+                }
+                return createOkResponse(queryResults);
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -262,20 +301,6 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{geneId}/exon")
-    @ApiOperation(httpMethod = "GET", value = "Get all exons for this gene(s)")
-    public Response getExonByGene(@PathParam("geneId") String geneId) {
-        try {
-            parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = geneDBAdaptor.getAllByIdList(Splitter.on(",").splitToList(geneId), queryOptions);
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
 
     @GET
     @Path("/{geneId}/protein")
@@ -283,9 +308,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getProteinById(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            List<QueryResult> queryResults = proteinDBAdaptor.getAllByXrefList(Splitter.on(",").splitToList(geneId), queryOptions);
-            return createOkResponse(queryResults);
+            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            List<Query> queries = createQueries(geneId, ProteinDBAdaptor.QueryParams.XREFS.key());
+            return createOkResponse(proteinDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -297,8 +322,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getPPIByEnsemblId(@PathParam("geneId") String query) {
         try {
             parseQueryParams();
-            ProteinProteinInteractionDBAdaptor PPIDBAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-            return createOkResponse(PPIDBAdaptor.getAllByInteractorIdList(Splitter.on(",").splitToList(query), queryOptions));
+            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+            return createOkResponse(ppiDBAdaptor.getAllByInteractorIdList(Splitter.on(",").splitToList(query), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -321,7 +347,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
             queryOptions.add("source", "clinvar");
             queryOptions.add("gene", geneId);
-            if(phenotype != null && !phenotype.isEmpty()) {
+            if (phenotype != null && !phenotype.isEmpty()) {
                 queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
             }
             return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
@@ -343,9 +369,11 @@ public class GeneWSServer extends GenericRestWSServer {
         sb.append("all id formats are accepted.\n\n\n");
         sb.append("Resources:\n");
         sb.append("- info: Get gene information: name, position, biotype.\n");
-        sb.append(" Output columns: Ensembl gene, external name, external name source, biotype, status, chromosome, start, end, strand, source, description.\n\n");
+        sb.append(" Output columns: Ensembl gene, external name, external name source, biotype, status, chromosome, start, end, strand, "
+                + "source, description.\n\n");
         sb.append("- transcript: Get all transcripts for this gene.\n");
-        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, coding region start, coding region end, cdna coding start, cdna coding end, description.\n\n");
+        sb.append(" Output columns: Ensembl ID, external name, external name source, biotype, status, chromosome, start, end, strand, "
+                + "coding region start, coding region end, cdna coding start, cdna coding end, description.\n\n");
         sb.append("- tfbs: Get transcription factor binding sites (TFBSs) that map to the promoter region of this gene.\n");
         sb.append(" Output columns: TF name, target gene name, chromosome, start, end, cell type, sequence, score.\n\n");
         sb.append("- mirna_target: Get all microRNA target sites for this gene.\n");

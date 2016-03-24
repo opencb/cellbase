@@ -17,7 +17,7 @@
 package org.opencb.cellbase.core.db.api;
 
 import org.opencb.biodata.models.core.Cytoband;
-import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
 
 import java.util.List;
@@ -25,23 +25,22 @@ import java.util.List;
 @Deprecated
 public interface CytobandDBAdaptor extends FeatureDBAdaptor {
 
-	
-	public List<Cytoband> getAllByRegion(String chromosome);
 
-	public List<Cytoband> getAllByRegion(String chromosome, int start);
+    List<Cytoband> getAllByRegion(String chromosome);
 
-	public List<Cytoband> getAllByRegion(String chromosome, int start, int end);
+    List<Cytoband> getAllByRegion(String chromosome, int start);
 
-	public List<Cytoband> getAllByRegion(Region region);
+    List<Cytoband> getAllByRegion(String chromosome, int start, int end);
 
-	public List<List<Cytoband>> getAllByRegionList(List<Region> regionList);
+    List<Cytoband> getAllByRegion(Region region);
 
-	
-	public List<String> getAllChromosomeNames();
+    List<List<Cytoband>> getAllByRegionList(List<Region> regionList);
 
-	public List<Cytoband> getAllByChromosome(String chromosome);
 
-	public List<List<Cytoband>> getAllByChromosomeList(List<String> chromosome);
+    List<String> getAllChromosomeNames();
 
-	
+    List<Cytoband> getAllByChromosome(String chromosome);
+
+    List<List<Cytoband>> getAllByChromosomeList(List<String> chromosome);
+
 }

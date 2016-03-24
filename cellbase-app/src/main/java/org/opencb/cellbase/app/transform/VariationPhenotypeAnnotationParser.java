@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Splitter;
 import org.opencb.biodata.models.variation.VariationPhenotypeAnnotation;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.app.transform.utils.FileUtils;
 import org.opencb.cellbase.app.transform.utils.VariationUtils;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -64,7 +64,8 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
     }
 
 
-    // Ensembl: phenotype_feature_id 0| phenotype_id 1| source_id 2| study_id 3| type 4| object_id 5      | is_significant 6| seq_region_id 7| seq_region_start 8| seq_region_end 9| seq_region_strand 10
+    // Ensembl: phenotype_feature_id 0| phenotype_id 1| source_id 2| study_id 3| type 4| object_id 5      | is_significant 6|
+    // seq_region_id 7| seq_region_start 8| seq_region_end 9| seq_region_strand 10
     @Override
     public void parse() throws IOException, InterruptedException, SQLException, ClassNotFoundException {
         Map<String, String> seqRegionMap = VariationUtils.parseSeqRegionToMap(ensemblVariationDir);
@@ -133,13 +134,17 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
                             riskAllele = rafFields[2];
                             break;
                         case "15":  // pValue
-                            pValue = (rafFields[2] != null && !rafFields[2].equalsIgnoreCase("null")) ? Float.parseFloat(rafFields[2]) : -1f;
+                            pValue = (rafFields[2] != null && !rafFields[2].equalsIgnoreCase("null"))
+                                    ? Float.parseFloat(rafFields[2])
+                                    : -1f;
                             break;
                         case "22":  // pValue
                             externalId = rafFields[2];
                             break;
                         case "23":  // pValue
                             oddsRatio = Float.parseFloat(rafFields[2]);
+                            break;
+                        default:
                             break;
                     }
 
@@ -150,17 +155,9 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
                 }
                 phenotypeToGeneList.get(phenotype).addAll(associatedGenes);
 
-                //Mutation(String id, String chromosome, int start, int end,
-                //String strand, String protein, int proteinStart, int proteinEnd, String gene, String transcriptId, String hgncId, String sampleId, String sampleName, String sampleSource, String tumourId, String primarySite, String siteSubtype, String primaryHistology, String histologySubtype, String genomeWideScreen, String mutationCDS, String mutationAA, String mutationZygosity, String status, String pubmed, String tumourOrigin, String description) {
-//                mutation = new VariationPhenotypeAnnotation(fields[5], seqRegion, Integer.parseInt(fields[8]), Integer.parseInt(fields[9]),
-//                        fields[10], "", 0, 0, "gene", "transcript", "", "", "", "", "",
-//                        "6", "7", phenotype, "9", "10", "12",
-//                        "13", "15", "20", "21", "23", "14", source);
-//
-//              VariationPhenotypeAnnotation(String id, String chromosome, int start, int end, String strand, String phenotype, String source, String study,
-//                        String clinicalSignificance, String associatedGene, String riskAllele, float pValue, float oddsRatio, String inheritanceType, String externalId) {
-                mutation = new VariationPhenotypeAnnotation(fields[5], seqRegion, Integer.parseInt(fields[8]), Integer.parseInt(fields[9]), fields[10],
-                        phenotype, source, study, clinSignificance, associatedGenes, riskAllele, pValue, oddsRatio, "", externalId);
+                mutation = new VariationPhenotypeAnnotation(fields[5], seqRegion, Integer.parseInt(fields[8]),
+                        Integer.parseInt(fields[9]), fields[10], phenotype, source, study, clinSignificance, associatedGenes,
+                        riskAllele, pValue, oddsRatio, "", externalId);
                 int chunkStart = (mutation.getStart()) / CHUNK_SIZE;
                 int chunkEnd = (mutation.getEnd()) / CHUNK_SIZE;
 
@@ -182,7 +179,9 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
 //            jsonObjectWriter.writeValueAsString(phenotypeToGeneList);
 //        }
         for (Map.Entry<String, Set<String>> elem : phenotypeToGeneList.entrySet()) {
-            bw.write(jsonObjectWriter.writeValueAsString(elem).replace("\"key\"", "\"phenotype\"").replace("\"value\"", "\"associatedGenes\""));
+            bw.write(jsonObjectWriter.writeValueAsString(elem)
+                    .replace("\"key\"", "\"phenotype\"")
+                    .replace("\"value\"", "\"associatedGenes\""));
             bw.newLine();
         }
         bw.close();
@@ -193,8 +192,8 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
     public List<String> queryByVariationId(int variationId, Path variationFilePath) throws IOException, SQLException {
         // First query SQLite to get offset position
         List<Long> offsets = new ArrayList<>();
-        //		PreparedStatement pst = sqlConn.statement(sql)
-        //		ResultSet rs = pst.executeQuery("select offset from "+tableName+" where variation_id = " + variationId + "");
+        // PreparedStatement pst = sqlConn.statement(sql)
+        // ResultSet rs = pst.executeQuery("select offset from "+tableName+" where variation_id = " + variationId + "");
         ResultSet rs = null;
 
         prepStmVariationFeature.setInt(1, variationId);
@@ -229,7 +228,8 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
         String tableName = "phen_feat_attrib";
         Class.forName("org.sqlite.JDBC");
         sqlConn = DriverManager.getConnection("jdbc:sqlite:" + variationDirectoryPath.resolve("variation_phenotype.db").toString());
-        if (!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db")) || Files.size(variationDirectoryPath.resolve("variation_phenotype.db")) == 0) {
+        if (!Files.exists(variationDirectoryPath.resolve("variation_phenotype.db"))
+                || Files.size(variationDirectoryPath.resolve("variation_phenotype.db")) == 0) {
             sqlConn.setAutoCommit(false);
 
             Statement createTables = sqlConn.createStatement();
@@ -240,9 +240,9 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
 
             long offset = 0;
             int count = 0;
-            String[] fields = null;
-            String line = null;
-            BufferedReader br = FileUtils.newBufferedReader(variationDirectoryPath.resolve("phenotype_feature_attrib.txt"), Charset.defaultCharset());
+            String[] fields;
+            String line;
+            BufferedReader br = FileUtils.newBufferedReader(variationDirectoryPath.resolve("phenotype_feature_attrib.txt"));
             while ((line = br.readLine()) != null) {
                 fields = line.split("\t");
 
@@ -254,10 +254,7 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
                 if (count % LIMIT_ROWS == 0 && count != 0) {
                     ps.executeBatch();
                     sqlConn.commit();
-//                    logger.info("Inserting in " + tableName + ": " + count);
-//                if(count > 1000000) break;
                 }
-
                 offset += line.length() + 1;
             }
             br.close();
@@ -269,19 +266,22 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
             stm.executeUpdate("CREATE INDEX " + tableName + "_idx on " + tableName + "(variation_id)");
             sqlConn.commit();
         }
-        prepStmVariationFeature = sqlConn.prepareStatement("select offset from " + tableName + " where variation_id = ? order by offset ASC ");
+        prepStmVariationFeature = sqlConn
+                .prepareStatement("select offset from " + tableName + " where variation_id = ? order by offset ASC ");
     }
 
     private void prepare(Path variationDirectoryPath) throws IOException, InterruptedException {
         if (Files.exists(variationDirectoryPath.resolve("phenotype_feature_attrib.txt.gz"))) {
-            Process process = Runtime.getRuntime().exec("gunzip " + variationDirectoryPath.resolve("phenotype_feature_attrib.txt.gz").toAbsolutePath());
+            Process process = Runtime.getRuntime().exec("gunzip "
+                    + variationDirectoryPath.resolve("phenotype_feature_attrib.txt.gz").toAbsolutePath());
             process.waitFor();
         }
     }
 
     private void clean(Path variationDirectoryPath) throws IOException, InterruptedException {
         if (Files.exists(variationDirectoryPath.resolve("phenotype_feature_attrib.txt"))) {
-            Process process = Runtime.getRuntime().exec("gzip " + variationDirectoryPath.resolve("phenotype_feature_attrib.txt").toAbsolutePath());
+            Process process = Runtime.getRuntime().exec("gzip "
+                    + variationDirectoryPath.resolve("phenotype_feature_attrib.txt").toAbsolutePath());
             process.waitFor();
         }
     }

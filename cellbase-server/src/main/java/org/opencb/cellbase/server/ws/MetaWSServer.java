@@ -19,7 +19,7 @@ package org.opencb.cellbase.server.ws;
 import io.swagger.annotations.Api;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -59,7 +59,7 @@ public class MetaWSServer extends GenericRestWSServer {
         return getAllSpecies();
     }
 
-    /**
+    /*
      * Auxiliar methods
      */
     @GET

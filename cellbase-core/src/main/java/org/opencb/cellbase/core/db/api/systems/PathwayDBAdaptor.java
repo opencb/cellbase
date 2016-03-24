@@ -19,16 +19,16 @@ package org.opencb.cellbase.core.db.api.systems;
 
 public interface PathwayDBAdaptor {
 
-	public String getPathways() ;
-	
-	public String getTree() ;
-	
-	public String getPathway(String pathwayId) ;
-	
-	public String search(String searchBy, String searchText, boolean returnOnlyIds);
-	
-	/*
-	public boolean isDna(PhysicalEntity physicalEntity) ;
+    String getPathways();
+
+    String getTree();
+
+    String getPathway(String pathwayId);
+
+    String search(String searchBy, String searchText, boolean returnOnlyIds);
+
+    /*
+    public boolean isDna(PhysicalEntity physicalEntity) ;
 
     public boolean isDna(int physicalEntityId) ;
 
@@ -191,20 +191,7 @@ public interface PathwayDBAdaptor {
     public String toJson(Pathway input) ;
 
     public String toJsonPathways(List<Pathway> input);
-    
+
     public int getNumberOfCellularLocations(DataSource ds);
-    
-    // PublicationXref
-    public int getNumberOfPublicationXrefs(DataSource ds);
-    
-    public List<DataSource> getDataSources();
-    
-    public DataSource getDataSource(String name);
-    
-    public DataSourceStats getDataSourceStats(String dataSourceName);
-    
-    public DataSourceStats getDataSourceStats(DataSource ds);
-    
-    public String getFirstName(BioEntity entity);
     */
 }

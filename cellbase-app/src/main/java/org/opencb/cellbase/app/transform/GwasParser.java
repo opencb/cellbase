@@ -19,11 +19,11 @@ package org.opencb.cellbase.app.transform;
 import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.lang.math.NumberUtils;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.common.clinical.gwas.Gwas;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasStudy;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasTest;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasTrait;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.core.common.clinical.gwas.Gwas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * @author Luis Miguel Cruz
  * @version 1.2.3
- * @since October 08, 2014 
+ * @since October 08, 2014
  */
 public class GwasParser extends CellBaseParser {
 
@@ -60,14 +60,14 @@ public class GwasParser extends CellBaseParser {
         this.gwasLinesNotFoundInDbsnp = 0;
     }
 
-	public void parse() {
-		if (Files.exists(gwasFile) && Files.exists(dbSnpTabixFilePath)) {
-			try {
+    public void parse() {
+        if (Files.exists(gwasFile) && Files.exists(dbSnpTabixFilePath)) {
+            try {
                 logger.info("Opening gwas file " + gwasFile + " ...");
                 BufferedReader inputReader = new BufferedReader(new FileReader(gwasFile.toFile()));
 
                 logger.info("Ignoring gwas file header line ...");
-				inputReader.readLine();
+                inputReader.readLine();
 
                 Map<Variant, Gwas> variantMap = new HashMap<>();
                 logger.info("Opening dbSNP tabix file " + dbSnpTabixFilePath + " ...");
@@ -76,7 +76,8 @@ public class GwasParser extends CellBaseParser {
                 long processedGwasLines = 0;
 
                 logger.info("Parsing gwas file ...");
-                for (String line; (line = inputReader.readLine())!= null;) {
+                String line;
+                while ((line = inputReader.readLine()) != null) {
                     if (!line.isEmpty()) {
                         processedGwasLines++;
                         Gwas gwasRecord = buildGwasObject(line.split("\t"), dbsnpTabixReader);
@@ -99,8 +100,8 @@ public class GwasParser extends CellBaseParser {
             } catch (IOException e) {
                 logger.error("Unable to parse " + gwasFile + " using dbSNP file " + dbSnpTabixFilePath + ": " + e.getMessage());
             }
-		}
-	}
+        }
+    }
 
     private Gwas buildGwasObject(String[] values, TabixReader dbsnpTabixReader) {
         Gwas gwas = null;
@@ -143,8 +144,8 @@ public class GwasParser extends CellBaseParser {
 
     private String parseChromosome(String chromosome) {
         String transformedChromosome = null;
-        if(!chromosome.isEmpty()){
-            switch(chromosome) {
+        if (!chromosome.isEmpty()) {
+            switch (chromosome) {
                 case "23":
                     transformedChromosome = "X";
                     break;
@@ -235,10 +236,10 @@ public class GwasParser extends CellBaseParser {
 
     private void addGwasRecordToVariantMap(Map<Variant, Gwas> variantMap, Gwas gwasRecord) {
         String[] alternates = gwasRecord.getAlternate().split(",");
-        for (int i=0; i < alternates.length; i++) {
+        for (int i = 0; i < alternates.length; i++) {
             String alternate = alternates[i];
-            Variant variantKey =
-                    new Variant(gwasRecord.getChromosome(), gwasRecord.getStart(), gwasRecord.getEnd(), gwasRecord.getReference(), alternate);
+            Variant variantKey = new Variant(
+                    gwasRecord.getChromosome(), gwasRecord.getStart(), gwasRecord.getEnd(), gwasRecord.getReference(), alternate);
             if (variantMap.containsKey(variantKey)) {
                 updateGwasEntry(variantMap, gwasRecord, variantKey);
             } else {

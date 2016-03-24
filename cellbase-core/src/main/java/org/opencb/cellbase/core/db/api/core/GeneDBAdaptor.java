@@ -17,8 +17,8 @@
 package org.opencb.cellbase.core.db.api.core;
 
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.List;
 
@@ -33,12 +33,6 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
     List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options);
 
 
-    /**
-     * This method search the given 'id' in the XRefs array
-     * @param id Any possible XRef id
-     * @param options
-     * @return Any gene found having that Xref id
-     */
     QueryResult getAllByXref(String id, QueryOptions options);
 
     List<QueryResult> getAllByXrefList(List<String> idList, QueryOptions options);
@@ -51,11 +45,6 @@ public interface GeneDBAdaptor extends FeatureDBAdaptor {
 
     List<QueryResult> getAllTargetsByTfList(List<String> tfIdList, QueryOptions queryOptions);
 
-
-//	QueryResult getAllByTfName(String tfName);
-//	List<QueryResult> getAllByTfNameList(List<String> tfNameList);
-
-//	public List<Gene> getAllByMiRnaMature(String mirbaseId);
-//	public List<List<Gene>> getAllByMiRnaMatureList(List<String> mirbaseIds);
+    QueryResult getStatsById(String id, QueryOptions queryOptions);
 
 }

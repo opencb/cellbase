@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.serializer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -39,6 +40,7 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
 
     private boolean serializeEmptyValues;
     private ObjectWriter jsonObjectWriter;
+    private ObjectWriter clinvarJsonObjectWriter;
 
     public CellBaseJsonFileSerializer(Path outdir) {
         this(outdir, null);
@@ -69,21 +71,32 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
     }
 
     private void init() {
-         ObjectMapper jsonObjectMapper = new ObjectMapper();
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
         if (!serializeEmptyValues) {
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         }
+        clinvarJsonObjectWriter = jsonObjectMapper.writer();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 
     public void serialize(Object elem, String filename) {
         try {
-            if(bufferedWriters.get(filename) == null) {
+            if (bufferedWriters.get(filename) == null) {
                 Path outputFilePath = outdir.resolve(filename + ".json.gz");
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outputFilePath))));
+                BufferedWriter bw = new BufferedWriter(
+                        new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outputFilePath))));
                 bufferedWriters.put(filename, bw);
             }
-            bufferedWriters.get(filename).write(jsonObjectWriter.writeValueAsString(elem));
+            // ClinVar objects require their own jsonObjectWriter since the property REQUIRE_SETTERS_FOR_GETTERS cannot
+            // be activated for getting ClinVar objects properly serialized
+            // clinvarSet.referenceClinVarAssertion.measureSet.measure.xref records which contain rs ids are not
+            // serialized otherwise
+            if (filename.equals("clinvar")) {
+                bufferedWriters.get(filename).write(clinvarJsonObjectWriter.writeValueAsString(elem));
+            } else {
+                bufferedWriters.get(filename).write(jsonObjectWriter.writeValueAsString(elem));
+            }
             bufferedWriters.get(filename).newLine();
         } catch (IOException e) {
             e.printStackTrace();

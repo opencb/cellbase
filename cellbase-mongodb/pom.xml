@@ -6,12 +6,13 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>3.2.0</version>
-        <relativePath>..</relativePath>
+        <version>4.0.0-rc</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>cellbase-mongodb</artifactId>
     <version>${cellbase.version}</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -19,8 +20,8 @@
             <artifactId>cellbase-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opencb.datastore</groupId>
-            <artifactId>datastore-mongodb</artifactId>
+            <groupId>org.opencb.commons</groupId>
+            <artifactId>commons-datastore-mongodb</artifactId>
         </dependency>
 
         <dependency>
@@ -52,13 +53,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
 </project>

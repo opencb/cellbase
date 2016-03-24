@@ -22,24 +22,17 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.glassfish.jersey.client.ClientConfig;
-
-
-import org.opencb.biodata.formats.protein.uniprot.v140jaxb.Protein;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.formats.variant.clinvar.v19jaxb.MeasureTraitType;
-import org.opencb.biodata.models.feature.Region;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.biodata.models.variation.GenomicVariant;
-import org.opencb.cellbase.core.common.GenomeSequenceFeature;
-import org.opencb.cellbase.core.common.core.*;
-import org.opencb.cellbase.core.common.core.Xref;
-import org.opencb.cellbase.core.common.regulatory.ConservedRegion;
-import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
-import org.opencb.cellbase.core.common.regulatory.Tfbs;
-import org.opencb.cellbase.core.common.variation.*;
-import org.opencb.datastore.core.ObjectMap;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResponse;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variation.*;
+import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,10 +55,10 @@ import java.util.Map;
  */
 public class CellBaseClient {
 
-    private final String species;
-    private final String version;
-    private final UriBuilder uriBuilder;
-    private final Client client;
+    private String species;
+    private String version;
+    private UriBuilder uriBuilder;
+    private Client client;
     private Map<String, ObjectReader> readers = new HashMap<>();
     private ObjectMapper mapper;
     private URI lastQuery = null;
@@ -91,27 +84,27 @@ public class CellBaseClient {
         all, list, info, help,
 
         //genomic/region
-            gene, transcript, exon, snp, mutation, structuralVariation, sequence, tfbs, mimaTarget, cpgIsland,
-            conserved_region, regulatory, reverse,
+        gene, transcript, exon, snp, mutation, structuralVariation, sequence, tfbs, mimaTarget, cpgIsland,
+        conserved_region, regulatory, reverse,
         //genomic/variant
-            effect, consequenceType, phenotype, snp_phenotype, mutation_phenotype, fullAnnotation, annotation,
+        effect, consequenceType, phenotype, snp_phenotype, mutation_phenotype, annotation,
         //genomic/position
-            //gene, snp, transcript, consequence_type, functional
+        //gene, snp, transcript, consequence_type, functional
         //genomic/chromosome
             /*all, list, info, */ size, cytoband,
 
         //feature/clinvar
             /*info, */ /*TODO: listAcc??*/
         //feature/exon
-            bysnp, aminos, /*sequence, */region, /*transcript,*/
+        bysnp, aminos, /*sequence, */region, /*transcript,*/
         //feature/gene
             /*list, info, transcript, snp, mutation, tfbs, mima_target, */ protein,
         //feature/id,
-            xref, /*gene, snp, */ starts_with,
+        xref, /*gene, snp, */ starts_with,
         //feature/karyotype
-            chromosome,
+        chromosome,
         //feature/mutation
-            diseases,
+        diseases,
         //feature/snp
             /*info, consequence_type, regulatory, xref, phenotype,*/ population_frequency,
         //feature/transcript
@@ -125,75 +118,94 @@ public class CellBaseClient {
     }
 
     //StringMap. Only needed if the enum.name() doesn't match with the rest
-    private static final Map<Category, String> categoryStringMap;
-    private static final Map<SubCategory, String> subCategoryStringMap;
-    private static final Map<SubCategory, Class<?>> subCategoryBeanMap;
+    private static final Map<Category, String> CATEGORY_STRING_MAP;
+    private static final Map<SubCategory, String> SUB_CATEGORY_STRING_MAP;
+    private static final Map<SubCategory, Class<?>> SUB_CATEGORY_BEAN_MAP;
 
-    private static final Map<Resource, Class<?>> resourceBeanMap;
-    private static final Map<Resource, String> resourceStringMap;
+    private static final Map<Resource, Class<?>> RESOURCE_BEAN_MAP;
+    private static final Map<Resource, String> RESOURCE_STRING_MAP;
+    private static final int DEFAULT_PORT = 80;
 
     static {
-        categoryStringMap = new HashMap<>();
-        subCategoryStringMap = new HashMap<>();
-        resourceStringMap = new HashMap<>();
-        resourceStringMap.put(Resource.structuralVariation, "structural_variation");
-        resourceStringMap.put(Resource.cpgIsland, "cpg_island");
-        resourceStringMap.put(Resource.mimaTarget, "mima_target");
-        resourceStringMap.put(Resource.consequenceType, "consequence_type");
-        resourceStringMap.put(Resource.fullAnnotation, "full_annotation");
+        CATEGORY_STRING_MAP = new HashMap<>();
+        SUB_CATEGORY_STRING_MAP = new HashMap<>();
+        RESOURCE_STRING_MAP = new HashMap<>();
+        RESOURCE_STRING_MAP.put(Resource.structuralVariation, "structural_variation");
+        RESOURCE_STRING_MAP.put(Resource.cpgIsland, "cpg_island");
+        RESOURCE_STRING_MAP.put(Resource.mimaTarget, "mima_target");
+        RESOURCE_STRING_MAP.put(Resource.consequenceType, "consequence_type");
+        RESOURCE_STRING_MAP.put(Resource.annotation, "annotation");
 
 
-        subCategoryBeanMap = new HashMap<>();
-        subCategoryBeanMap.put(SubCategory.protein, Protein.class);
-        subCategoryBeanMap.put(SubCategory.chromosome, Chromosome.class);
-        subCategoryBeanMap.put(SubCategory.exon, Exon.class);
-        subCategoryBeanMap.put(SubCategory.transcript, Transcript.class);
-        subCategoryBeanMap.put(SubCategory.gene, Gene.class);
-        subCategoryBeanMap.put(SubCategory.clinvar, MeasureTraitType.ClinVarAccession.class);
-        subCategoryBeanMap.put(SubCategory.mutation, Mutation.class);
+        SUB_CATEGORY_BEAN_MAP = new HashMap<>();
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.protein, Entry.class);
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.chromosome, InfoStats.class);
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.exon, Exon.class);
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.transcript, Transcript.class);
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.gene, Gene.class);
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.clinvar, MeasureTraitType.ClinVarAccession.class);
+        SUB_CATEGORY_BEAN_MAP.put(SubCategory.mutation, Mutation.class);
 
 
-        resourceBeanMap = new HashMap<>();
+        RESOURCE_BEAN_MAP = new HashMap<>();
         //genomic/region
-        resourceBeanMap.put(Resource.gene, Gene.class);
-        resourceBeanMap.put(Resource.transcript, Transcript.class);
-        resourceBeanMap.put(Resource.exon, Exon.class);
-        resourceBeanMap.put(Resource.snp, Variation.class);
-        resourceBeanMap.put(Resource.mutation, Mutation.class);
-        resourceBeanMap.put(Resource.structuralVariation, StructuralVariation.class);
-        resourceBeanMap.put(Resource.sequence, GenomeSequenceFeature.class);
-        resourceBeanMap.put(Resource.tfbs, Tfbs.class);
-//        resourceBeanMap.put(Resource.mima_target, .class);
-        resourceBeanMap.put(Resource.cpgIsland, CpGIsland.class);
-        resourceBeanMap.put(Resource.conserved_region, ConservedRegion.class);
-        resourceBeanMap.put(Resource.regulatory, RegulatoryRegion.class);
+        RESOURCE_BEAN_MAP.put(Resource.gene, Gene.class);
+        RESOURCE_BEAN_MAP.put(Resource.transcript, Transcript.class);
+        RESOURCE_BEAN_MAP.put(Resource.exon, Exon.class);
+        RESOURCE_BEAN_MAP.put(Resource.snp, Variation.class);
+        RESOURCE_BEAN_MAP.put(Resource.mutation, Mutation.class);
+        RESOURCE_BEAN_MAP.put(Resource.structuralVariation, StructuralVariation.class);
+        RESOURCE_BEAN_MAP.put(Resource.sequence, GenomeSequenceFeature.class);
+        RESOURCE_BEAN_MAP.put(Resource.tfbs, TranscriptTfbs.class);
+//        RESOURCE_BEAN_MAP.put(Resource.mima_target, .class);
+        RESOURCE_BEAN_MAP.put(Resource.cpgIsland, CpGIsland.class);
+        RESOURCE_BEAN_MAP.put(Resource.conserved_region, GenomicScoreRegion.class);
+        RESOURCE_BEAN_MAP.put(Resource.regulatory, RegulatoryFeature.class);
         //genomic/variant
-        resourceBeanMap.put(Resource.effect, GenomicVariantEffect.class);
-        resourceBeanMap.put(Resource.consequenceType, ConsequenceType.class);
-        resourceBeanMap.put(Resource.phenotype, Phenotype.class);
-        resourceBeanMap.put(Resource.snp_phenotype, String.class);  //TODO
-        resourceBeanMap.put(Resource.mutation_phenotype, Mutation.class);
-        resourceBeanMap.put(Resource.annotation, VariantAnnotation.class);  //TODO
-        resourceBeanMap.put(Resource.fullAnnotation, VariantAnnotation.class);  //TODO
+        RESOURCE_BEAN_MAP.put(Resource.effect, GenomicVariantEffect.class);
+        RESOURCE_BEAN_MAP.put(Resource.consequenceType, ConsequenceType.class);
+        RESOURCE_BEAN_MAP.put(Resource.phenotype, Phenotype.class);
+        RESOURCE_BEAN_MAP.put(Resource.snp_phenotype, String.class);  //TODO
+        RESOURCE_BEAN_MAP.put(Resource.mutation_phenotype, Mutation.class);
+        RESOURCE_BEAN_MAP.put(Resource.annotation, VariantAnnotation.class);  //TODO
         //genomic/chromosome
-        resourceBeanMap.put(Resource.size, Chromosome.class);
-        resourceBeanMap.put(Resource.cytoband, Cytoband.class);
+        RESOURCE_BEAN_MAP.put(Resource.size, Chromosome.class);
+        RESOURCE_BEAN_MAP.put(Resource.cytoband, Cytoband.class);
 
         //feature/clinvar
         //feature/exon
-        resourceBeanMap.put(Resource.bysnp, Exon.class);    //FIXME Won't work. CellBase returns "List<List<List<Exon>>>"
-        resourceBeanMap.put(Resource.aminos, String.class);
-        resourceBeanMap.put(Resource.region, Region.class);
+        RESOURCE_BEAN_MAP.put(Resource.bysnp, Exon.class);    //FIXME Won't work. CellBase returns "List<List<List<Exon>>>"
+        RESOURCE_BEAN_MAP.put(Resource.aminos, String.class);
+        RESOURCE_BEAN_MAP.put(Resource.region, Region.class);
         //feature/id
-        resourceBeanMap.put(Resource.xref, Xref.class);
-        resourceBeanMap.put(Resource.starts_with, Xref.class);
+        RESOURCE_BEAN_MAP.put(Resource.xref, Xref.class);
+        RESOURCE_BEAN_MAP.put(Resource.starts_with, Xref.class);
         //feature/karyotype //Deprecated
         //feature/mutation
-//        resourceBeanMap.put(Resource.diseases, .class); //Without Id
+//        RESOURCE_BEAN_MAP.put(Resource.diseases, .class); //Without Id
         //feature/gene
 
 
+    }
 
+    public CellBaseClient(String url, String version, String species) throws URISyntaxException {
+        String hostAndPort =  url.split("/", 2)[0];
+        String path = "/" + (url.endsWith("/") ? url.split("/", 2)[1] : url.split("/", 2)[1] + "/");
+        String host = null;
+        int port = DEFAULT_PORT;
+        if (hostAndPort.contains(":")) {
+            String[] parts = hostAndPort.split(":");
+            host = parts[0];
+            port = Integer.parseInt(parts[1]);
+        } else {
+            host = hostAndPort;
+        }
+        logger.info("Remote point access details:");
+        logger.info("   host: {}", host);
+        logger.info("   port: {}", port);
+        logger.info("   path: {}", path);
+
+        init(UriBuilder.fromUri(new URI("http", null, host, port, path, null, null)), version, species);
     }
 
     public CellBaseClient(String host, int port, String path, String version, String species) throws URISyntaxException {
@@ -205,13 +217,15 @@ public class CellBaseClient {
     }
 
     public CellBaseClient(UriBuilder uriBuilder, String version, String species) {
+        init(uriBuilder, version, species);
+    }
+
+    private void init(UriBuilder uriBuilder, String version, String species) {
         this.species = species;
         ClientConfig clientConfig = new ClientConfig();
-//        clientConfig.register()
         client = ClientBuilder.newClient(clientConfig);
-//        client.register()
 
-        if(version == null) {
+        if (version == null) {
             this.version = "latest";
         } else {
             this.version = version;
@@ -234,21 +248,21 @@ public class CellBaseClient {
     /////////////////////////
     public <T> QueryResponse<QueryResult<T>> getAll(Category category, SubCategory subCategory,
                                                     QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, "", Resource.all, queryOptions, (Class<T>)subCategoryBeanMap.get(subCategory));
+        return get(category, subCategory, "", Resource.all, queryOptions, (Class<T>) SUB_CATEGORY_BEAN_MAP.get(subCategory));
     }
 
     public <T> QueryResponse<QueryResult<T>> getList(Category category, SubCategory subCategory,
-                                                    QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, "", Resource.list, queryOptions, (Class<T>)subCategoryBeanMap.get(subCategory));
+                                                     QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, "", Resource.list, queryOptions, (Class<T>) SUB_CATEGORY_BEAN_MAP.get(subCategory));
     }
 
     public <T> QueryResponse<QueryResult<T>> getInfo(Category category, SubCategory subCategory, String id,
-                                                    QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, id, Resource.info, queryOptions, (Class<T>)subCategoryBeanMap.get(subCategory));
+                                                     QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, id, Resource.info, queryOptions, (Class<T>) SUB_CATEGORY_BEAN_MAP.get(subCategory));
     }
 
     public QueryResponse<QueryResult<String>> getHelp(Category category, SubCategory subCategory,
-                                                    QueryOptions queryOptions) throws IOException {
+                                                      QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, "", Resource.help, queryOptions, String.class);
     }
 
@@ -259,7 +273,7 @@ public class CellBaseClient {
     public <T> QueryResponse<QueryResult<T>> get(
             Category category, SubCategory subCategory, List<?> ids, Resource resource, QueryOptions queryOptions)
             throws IOException {
-        return get(category, subCategory, ids, resource, queryOptions, (Class<T>)resourceBeanMap.get(resource));
+        return get(category, subCategory, ids, resource, queryOptions, (Class<T>) RESOURCE_BEAN_MAP.get(resource));
     }
 
     public QueryResponse<QueryResult<ObjectMap>> getObjectMap(
@@ -290,7 +304,7 @@ public class CellBaseClient {
     }
 
     public QueryResponse<QueryResult<Transcript>> getTranscript(Category category, SubCategory subCategory, List<Region> ids,
-                                                    QueryOptions queryOptions) throws IOException {
+                                                                QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.transcript, queryOptions, Transcript.class);
     }
 
@@ -300,12 +314,12 @@ public class CellBaseClient {
     }
 
     public QueryResponse<QueryResult<Variation>> getSnp(Category category, SubCategory subCategory, List<Region> ids,
-                                                    QueryOptions queryOptions) throws IOException {
+                                                        QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.snp, queryOptions, (Variation.class));
     }
 
     public QueryResponse<QueryResult<Mutation>> getMutation(Category category, SubCategory subCategory, List<Region> ids,
-                                                    QueryOptions queryOptions) throws IOException {
+                                                            QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.mutation, queryOptions, (Mutation.class));
     }
 
@@ -319,8 +333,9 @@ public class CellBaseClient {
         return get(category, subCategory, ids, Resource.phenotype, queryOptions, (Phenotype.class));
     }
 
-    public QueryResponse<QueryResult<StructuralVariation>> getStructuralVariation(Category category, SubCategory subCategory, List<Region> ids,
-                                                                                  QueryOptions queryOptions) throws IOException {
+    public QueryResponse<QueryResult<StructuralVariation>> getStructuralVariation(Category category, SubCategory subCategory,
+                                                                                  List<Region> ids, QueryOptions queryOptions)
+            throws IOException {
         return get(category, subCategory, ids, Resource.structuralVariation, queryOptions, (StructuralVariation.class));
     }
 
@@ -330,23 +345,24 @@ public class CellBaseClient {
     }
 
     public QueryResponse<QueryResult<GenomeSequenceFeature>> getSequence(Category category, SubCategory subCategory, List<Region> ids,
-                                                              QueryOptions queryOptions) throws IOException {
+                                                                         QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.sequence, queryOptions, (GenomeSequenceFeature.class));
     }
 
-    public QueryResponse<QueryResult<GenomeSequenceFeature>> getReverseSequence(Category category, SubCategory subCategory, List<Region> ids,
-                                                              QueryOptions queryOptions) throws IOException {
+    public QueryResponse<QueryResult<GenomeSequenceFeature>> getReverseSequence(Category category, SubCategory subCategory,
+                                                                                List<Region> ids,
+                                                                                QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.reverse, queryOptions, (GenomeSequenceFeature.class));
     }
 
-    public QueryResponse<QueryResult<Tfbs>> getTfbs(Category category, SubCategory subCategory, List<Region> ids,
-                                                              QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.tfbs, queryOptions, (Tfbs.class));
+    public QueryResponse<QueryResult<TranscriptTfbs>> getTfbs(Category category, SubCategory subCategory, List<Region> ids,
+                                                    QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, ids, Resource.tfbs, queryOptions, (TranscriptTfbs.class));
     }
 
-    public QueryResponse<QueryResult<RegulatoryRegion>> getRegulatoryRegion(Category category, SubCategory subCategory, List<Region> ids,
-                                                              QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.regulatory, queryOptions, (RegulatoryRegion.class));
+    public QueryResponse<QueryResult<RegulatoryFeature>> getRegulatoryRegion(Category category, SubCategory subCategory, List<Region> ids,
+                                                                            QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, ids, Resource.regulatory, queryOptions, (RegulatoryFeature.class));
     }
 
     public QueryResponse<QueryResult<CpGIsland>> getCpgIsland(Category category, SubCategory subCategory, List<Region> ids,
@@ -354,9 +370,9 @@ public class CellBaseClient {
         return get(category, subCategory, ids, Resource.cpgIsland, queryOptions, (CpGIsland.class));
     }
 
-    public QueryResponse<QueryResult<ConservedRegion>> getConservedRegion(Category category, SubCategory subCategory, List<Region> ids,
-                                                              QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.conserved_region, queryOptions, (ConservedRegion.class));
+    public QueryResponse<QueryResult<GenomicScoreRegion>> getConservedRegion(Category category, SubCategory subCategory, List<Region> ids,
+                                                                          QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, ids, Resource.conserved_region, queryOptions, (GenomicScoreRegion.class));
     }
 
 //    public QueryResponse<QueryResult<Peptide>> getPeptide(Category category, SubCategory subCategory, List<Region> ids,
@@ -364,19 +380,19 @@ public class CellBaseClient {
 //        return get(category, subCategory, ids, "peptide", queryOptions, (.class));
 //    }
 
-    public QueryResponse<QueryResult<GenomicVariantEffect>> getEffect(Category category, SubCategory subCategory, List<GenomicVariant> ids,
-                                                              QueryOptions queryOptions) throws IOException {
+    public QueryResponse<QueryResult<GenomicVariantEffect>> getEffect(Category category, SubCategory subCategory, List<Variant> ids,
+                                                                      QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.effect, queryOptions, (GenomicVariantEffect.class));
     }
 
-    public QueryResponse<QueryResult<ConsequenceType>> getConsequenceType(Category category, SubCategory subCategory, List<GenomicVariant> ids,
+    public QueryResponse<QueryResult<ConsequenceType>> getConsequenceType(Category category, SubCategory subCategory, List<Variant> ids,
                                                                           QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.consequenceType, queryOptions, (ConsequenceType.class));
     }
 
-    public QueryResponse<QueryResult<VariantAnnotation>> getFullAnnotation(Category category, SubCategory subCategory, List<GenomicVariant> ids,
-                                                                          QueryOptions queryOptions) throws IOException {
-        return get(category, subCategory, ids, Resource.fullAnnotation, queryOptions, (VariantAnnotation.class));
+    public QueryResponse<QueryResult<VariantAnnotation>> getAnnotation(Category category, SubCategory subCategory, List<Variant> ids,
+                                                                       QueryOptions queryOptions) throws IOException {
+        return get(category, subCategory, ids, Resource.annotation, queryOptions, (VariantAnnotation.class));
     }
 
     public QueryResponse<QueryResult<Phenotype>> getPhenotype(Category category, SubCategory subCategory, String phenotype,
@@ -385,7 +401,7 @@ public class CellBaseClient {
     }
 
     public QueryResponse<QueryResult<Xref>> getXref(Category category, SubCategory subCategory, List<String> ids,
-                                                            QueryOptions queryOptions) throws IOException {
+                                                    QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.xref, queryOptions, (Xref.class));
     }
 
@@ -413,7 +429,7 @@ public class CellBaseClient {
                                                   QueryOptions queryOptions, Class<T> c)
             throws IOException {
 
-        if(queryOptions == null) {
+        if (queryOptions == null) {
             queryOptions = new QueryOptions();
         }
         ObjectReader responseReader;
@@ -428,30 +444,31 @@ public class CellBaseClient {
         }
 
         boolean post = queryOptions.getBoolean("post", false);
-        queryOptions.remove("post");
 
-        String categoryStr = categoryStringMap.containsKey(category) ? categoryStringMap.get(category) : category.name();
-        String subCategoryStr = subCategoryStringMap.containsKey(subCategory) ? subCategoryStringMap.get(subCategory) : subCategory.name();
-        String resourceStr = resourceStringMap.containsKey(resource) ? resourceStringMap.get(resource) : resource.name();
+        String categoryStr = CATEGORY_STRING_MAP.containsKey(category) ? CATEGORY_STRING_MAP.get(category) : category.name();
+        String subCategoryStr = SUB_CATEGORY_STRING_MAP.containsKey(subCategory)
+                ? SUB_CATEGORY_STRING_MAP.get(subCategory) : subCategory.name();
+        String resourceStr = RESOURCE_STRING_MAP.containsKey(resource) ? RESOURCE_STRING_MAP.get(resource) : resource.name();
 
-        QueryResponse<QueryResult<T>> qr = restGetter(categoryStr, subCategoryStr, idsCvs, resourceStr, post, queryOptions, responseReader);
-        return qr;
+        return restGetter(categoryStr, subCategoryStr, idsCvs, resourceStr, post, queryOptions, responseReader);
     }
 
     private <T> QueryResponse<QueryResult<T>> restGetter(
-            String categoryStr, String subCategoryStr, String idsCvs, String resourceStr, boolean post, QueryOptions queryOptions, ObjectReader responseReader)
-            throws IOException {
+            String categoryStr, String subCategoryStr, String idsCvs, String resourceStr, boolean post, QueryOptions queryOptions,
+            ObjectReader responseReader) throws IOException {
 
         UriBuilder clone = uriBuilder.clone()
                 .path(categoryStr)
                 .path(subCategoryStr);
-        if(idsCvs != null && !idsCvs.isEmpty() && !post) {
+        if (idsCvs != null && !idsCvs.isEmpty() && !post) {
             clone = clone.path(idsCvs);
         }
 
         clone = clone.path(resourceStr);
         for (Map.Entry<String, Object> entry : queryOptions.entrySet()) {
-            clone.queryParam(entry.getKey(), entry.getValue());
+            if (!entry.getKey().equals("post")) {
+                clone.queryParam(entry.getKey(), entry.getValue());
+            }
         }
 
         lastQuery = clone.build();
@@ -474,7 +491,7 @@ public class CellBaseClient {
     }
 
     private ObjectReader getJsonReader(Class<?> c) {
-        if(c == null) {
+        if (c == null) {
             c = ObjectMap.class;
         }
         if (!readers.containsKey(c.getName())) {

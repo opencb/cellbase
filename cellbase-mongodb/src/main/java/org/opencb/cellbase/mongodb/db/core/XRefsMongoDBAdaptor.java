@@ -17,16 +17,14 @@
 package org.opencb.cellbase.mongodb.db.core;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.opencb.biodata.models.core.DBName;
-import org.opencb.biodata.models.core.Xref;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.db.api.core.XRefsDBAdaptor;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,11 +68,11 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 
     @Override
     public List<QueryResult> getByStartsWithQueryList(List<String> ids, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
 
         for (String id : ids) {
-            QueryBuilder qb = QueryBuilder.start("transcripts.xrefs.id").regex(Pattern.compile("^" + id));
-            queries.add(qb.get());
+            QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").regex(Pattern.compile("^" + id));
+            queries.add(new Document(builder.get().toMap()));
         }
         int limit = options.getInt("limit", 50);
         if (limit > 50) {
@@ -100,36 +98,6 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
     }
 
 
-//	@Override
-//	public List<Xref> getByDBName(String id, List<String> dbnames) {
-//
-//		QueryBuilder builder = QueryBuilder.start("transcripts.xrefs.id").is(id.toUpperCase());
-//		List<Xref> xrefQuery = new ArrayList<>();//;executeQuery(builder.get());
-//		logger.info("->>>>>>>>>>>>>>>>"+xrefQuery.size());
-//		if(dbnames == null) {
-//			dbnames = Collections.emptyList();
-//		}
-//		Set<String> dbnameSet = new HashSet<String>(dbnames);
-//
-//		List<Xref> xrefReturnList = new ArrayList<Xref>(xrefQuery.size());
-//		for(Xref xref: xrefQuery) {
-//			if(dbnameSet.size() == 0 || dbnameSet.contains(xref.getDbName())) {
-//				logger.info("->>>>>>>>>>>>>>>>"+xref.getId());
-//				xrefReturnList.add(xref);
-//			}
-//		}
-//		return xrefReturnList;
-//	}
-//
-//	@Override
-//	public List<List<Xref>> getAllByDBNameList(List<String> ids, List<String> dbnames) {
-//		List<List<Xref>> xrefs = new ArrayList<List<Xref>>(ids.size());
-//		for (String id : ids) {
-//			xrefs.add(getByDBName(id, dbnames));
-//		}
-//		return xrefs;
-//	}
-
     @Override
     public QueryResult getByDBName(String id, QueryOptions options) {
         return getAllByDBNameList(Arrays.asList(id), options).get(0);
@@ -148,14 +116,16 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
 //{$project:{"_id":0,"id":"$_id.id","dbNameShort":"$_id.dbNameShort","description":"$_id.description"}})
 
 // Biotype if gene given: db.core.find({"transcripts.xrefs.id": "BRCA2"}, {"biotype":1})
-// Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}}, {$project:{"transcripts.biotype":1}})
-        List<List<DBObject>> commandsList = new ArrayList<>(ids.size());
+// Biotype if protein/transcript given: db.core.aggregate({$match: {"transcripts.xrefs.id": "ENST00000470094"}},
+// {$unwind: "$transcripts"}, {$match: {"transcripts.xrefs.id": "ENST00000470094"}}, {$group:{_id:{biotype:"$transcripts.biotype"}}},
+// {$project:{"transcripts.biotype":1}})
+        List<List<Bson>> commandsList = new ArrayList<>(ids.size());
         for (String id : ids) {
-            List<DBObject> commands = new ArrayList<>(ids.size());
+            List<Bson> commands = new ArrayList<>(ids.size());
 
-            DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.id", id));
-            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
-            DBObject unwind2 = new BasicDBObject("$unwind", "$transcripts.xrefs");
+            Document match = new Document("$match", new Document("transcripts.xrefs.id", id));
+            Document unwind = new Document("$unwind", "$transcripts");
+            Document unwind2 = new Document("$unwind", "$transcripts.xrefs");
 
             commands.add(match);
             commands.add(unwind);
@@ -167,20 +137,21 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
             if (list != null && list.size() > 0) {
                 BasicDBList dbnameDBList = new BasicDBList();
                 dbnameDBList.addAll(list);
-                DBObject dbnameMatch = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.dbName", new BasicDBObject("$in", dbnameDBList)));
+                Document dbnameMatch = new Document("$match",
+                        new Document("transcripts.xrefs.dbName", new Document("$in", dbnameDBList)));
                 commands.add(dbnameMatch);
             }
 
-            DBObject group = new BasicDBObject("$group", new BasicDBObject("_id",
-                    new BasicDBObject("id", "$transcripts.xrefs.id")
+            Document group = new Document("$group", new Document("_id",
+                    new Document("id", "$transcripts.xrefs.id")
                             .append("dbName", "$transcripts.xrefs.dbName")
                             .append("dbDisplayName", "$transcripts.xrefs.dbDisplayName")
                             .append("description", "$transcripts.xrefs.description")
             ));
             commands.add(group);
 
-            DBObject project = new BasicDBObject("$project",
-                    new BasicDBObject("_id", 0)
+            Document project = new Document("$project",
+                    new Document("_id", 0)
                             .append("id", "$_id.id")
                             .append("dbName", "$_id.dbName")
                             .append("dbDisplayName", "$_id.dbDisplayName")
@@ -189,38 +160,11 @@ public class XRefsMongoDBAdaptor extends MongoDBAdaptor implements XRefsDBAdapto
             commands.add(project);
 
             //ArrayList to array
-//            DBObject[] commandsArray = commands.toArray(new DBObject[0]);
+//            Document[] commandsArray = commands.toArray(new Document[0]);
 
             commandsList.add(commands);
         }
         return executeAggregationList2(ids, commandsList, options);
     }
-
-    //	private List<Xref> executeQuery(DBObject query) {
-//		List<Xref> result = null;
-//		Set<Xref> xrefSet = new LinkedHashSet<Xref>();
-//
-//		BasicDBObject returnFields = new BasicDBObject("transcripts", 1);
-//		DBCursor cursor = mongoDBCollection.find(query, returnFields);
-//
-//		try {
-//			if (cursor != null) {
-////				Gson jsonObjectMapper = new Gson();
-//				Gene gene;
-//				while (cursor.hasNext()) {
-////					gene = (Gene) jsonObjectMapper.fromJson(cursor.next().toString(), Gene.class);
-//					gene = (Gene) jsonObjectMapper.writeValueAsBytes(cursor.next().toString(), Gene.class);
-//					for (Transcript transcript : gene.getTranscripts()) {
-//						xrefSet.addAll(transcript.getXrefs());
-//					}
-//				}
-//			}
-//			result = new ArrayList<Xref>(xrefSet);
-//		} finally {
-//			cursor.close();
-//		}
-//
-//		return result;
-//	}
 
 }

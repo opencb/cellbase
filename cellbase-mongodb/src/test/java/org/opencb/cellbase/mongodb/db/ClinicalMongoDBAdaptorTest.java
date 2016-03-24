@@ -17,16 +17,19 @@
 package org.opencb.cellbase.mongodb.db;
 
 import org.junit.Test;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
+import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.cellbase.mongodb.GenericMongoDBAdaptorTest;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.io.IOException;
 import java.util.List;
 
-public class ClinicalMongoDBAdaptorTest {
+public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testGetAllByRegionList() throws Exception {
@@ -49,9 +52,9 @@ public class ClinicalMongoDBAdaptorTest {
 //                queryResult.setNumResults(clinvarQueryResult.getNumResults());
 //                BasicDBList basicDBList = new BasicDBList();
 //
-//                for (BasicDBObject clinicalRecord : (List<BasicDBObject>) clinvarQueryResult.getResult()) {
+//                for (Document clinicalRecord : (List<Document>) clinvarQueryResult.getResult()) {
 //                    if (clinicalRecord.containsKey("clinvarList")) {
-//                        for (BasicDBObject clinvarRecord : (List<BasicDBObject>) clinicalRecord.get("clinvarList")) {
+//                        for (Document clinvarRecord : (List<Document>) clinicalRecord.get("clinvarList")) {
 //                            basicDBList.add(clinvarRecord);
 //                        }
 //                    }
@@ -97,12 +100,14 @@ public class ClinicalMongoDBAdaptorTest {
 
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions();
-        queryOptions.addToListOption("include", "clinvar");
+//        queryOptions.add("source", "gwas");
 //        queryOptions.add("phenotype", "ALZHEIMER DISEASE 2, DUE TO APOE4 ISOFORM");
 //        queryOptions.addToListOption("phenotype", "ALZHEIMER");
         queryOptions.addToListOption("phenotype", "alzheimer");
+//        queryOptions.addToListOption("phenotype", "retinitis");
 //        queryOptions.addToListOption("phenotype", "diabetes");
 //        queryOptions.addToListOption("region", new Region("3", 550000, 1166666));
+//        queryOptions.add("region", "5:13759611-13799611");
 //        queryOptions.addToListOption("region", new Region("1", 550000, 1166666));
 //        queryOptions.addToListOption("gene", "APOE");
 //        queryOptions.addToListOption("significance", "Likely_pathogenic");
@@ -111,7 +116,7 @@ public class ClinicalMongoDBAdaptorTest {
 //        queryOptions.addToListOption("so", "missense_variant");
 //        queryOptions.addToListOption("rs", "rs429358");
 //        queryOptions.addToListOption("rcv", "RCV000019455");
-        queryOptions.add("limit", 100);
+        queryOptions.add("limit", 30);
 
 //        ((List<String>) queryOptions.get("include")).remove(0);
 
@@ -145,4 +150,14 @@ public class ClinicalMongoDBAdaptorTest {
         a=1;
 
     }
+
+//    @Test
+//    public void testGetByGeneId() throws Exception {
+//        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+//        QueryOptions queryOptions = new QueryOptions();
+////        QueryOptions queryOptions = new QueryOptions("phenotype", "carcinoma");
+//        queryOptions.add("limit",3);
+//        QueryResult queryResult = clinicalDBAdaptor.getByGeneId("BRCA2", queryOptions);
+//    }
+
 }

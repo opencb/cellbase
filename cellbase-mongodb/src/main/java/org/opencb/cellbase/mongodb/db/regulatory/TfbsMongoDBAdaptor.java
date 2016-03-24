@@ -16,15 +16,17 @@
 
 package org.opencb.cellbase.mongodb.db.regulatory;
 
-import com.mongodb.*;
-import org.opencb.biodata.models.feature.Region;
+import com.mongodb.BasicDBList;
+import com.mongodb.QueryBuilder;
+import org.bson.Document;
+import org.opencb.biodata.models.core.Position;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
-import org.opencb.cellbase.core.common.Position;
 import org.opencb.cellbase.core.db.api.regulatory.TfbsDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +48,7 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
-        logger.info("RegulatoryRegionMongoDBAdaptor: in 'constructor'");
+        logger.info("RegulationMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
@@ -62,11 +64,11 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
 
     @Override
     public QueryResult next(String id, QueryOptions options) {
-        QueryOptions _options = new QueryOptions();
-        _options.put("include", Arrays.asList("chromosome", "start"));
-        QueryResult queryResult = getAllById(id, _options);
-        if(queryResult != null && queryResult.getResult() != null) {
-            DBObject gene = (DBObject)queryResult.getResult().get(0);
+        QueryOptions options1 = new QueryOptions();
+        options1.put("include", Arrays.asList("chromosome", "start"));
+        QueryResult queryResult = getAllById(id, options1);
+        if (queryResult != null && queryResult.getResult() != null) {
+            Document gene = (Document) queryResult.getResult().get(0);
             String chromosome = gene.get("chromosome").toString();
             int start = Integer.parseInt(gene.get("start").toString());
             return next(chromosome, start, options);
@@ -101,16 +103,16 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
         return getAllByIdList(Arrays.asList(id), options).get(0);
     }
 
-    /**
+    /*
      * PARTICULAR METHODS FOR TFBS CLASS
      */
     @Override
     public List<QueryResult> getAllByIdList(List<String> idList, QueryOptions options) {
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         for (String id : idList) {
             QueryBuilder builder = QueryBuilder.start("name").is(id).and("featureType").is("TF_binding_site_motif");
 //            System.out.println("Query: " + builder.get());
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
         }
         options = addExcludeReturnFields("chunkIds", options);
         return executeQueryList2(idList, queries, options);
@@ -125,15 +127,15 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
     public List<QueryResult> getAllByTargetGeneIdList(List<String> targetGeneIdList, QueryOptions options) {
 //        DBCollection coreMongoDBCollection = db.getCollection("gene");
 
-        List<DBObject[]> commandList = new ArrayList<>();
+        List<Document[]> commandList = new ArrayList<>();
         for (String targetGeneId : targetGeneIdList) {
-            DBObject[] commands = new DBObject[3];
-            DBObject match = new BasicDBObject("$match", new BasicDBObject("transcripts.xrefs.id", targetGeneId));
-            DBObject unwind = new BasicDBObject("$unwind", "$transcripts");
-            BasicDBObject projectObj = new BasicDBObject("_id", 0);
+            Document[] commands = new Document[3];
+            Document match = new Document("$match", new Document("transcripts.xrefs.id", targetGeneId));
+            Document unwind = new Document("$unwind", "$transcripts");
+            Document projectObj = new Document("_id", 0);
             projectObj.append("transcripts.id", 1);
             projectObj.append("transcripts.tfbs", 1);
-            DBObject project = new BasicDBObject("$project", projectObj);
+            Document project = new Document("$project", projectObj);
             commands[0] = match;
             commands[1] = unwind;
             commands[2] = project;
@@ -149,8 +151,8 @@ public class TfbsMongoDBAdaptor extends RegulatoryRegionMongoDBAdaptor implement
             BasicDBList list = (BasicDBList) queryResult.getResult();
 
             for (int j = 0; j < list.size(); j++) {
-                BasicDBObject gene = (BasicDBObject) list.get(j);
-                BasicDBObject transcript = (BasicDBObject) gene.get("transcripts");
+                Document gene = (Document) list.get(j);
+                Document transcript = (Document) gene.get("transcripts");
                 String transcriptId = transcript.getString("id");
                 if (transcriptId.toUpperCase().equals(targetGeneId)) {
                     BasicDBList tfbs = (BasicDBList) transcript.get("tfbs");

@@ -1,10 +1,13 @@
 package org.opencb.cellbase.core.common.genedisease;
 
+import org.opencb.biodata.models.core.Disease;
+
 import java.util.List;
 
 /**
  * Created by fjlopez on 20/05/15.
  */
+@Deprecated
 public class Disgenet {
 
     // gene HUGO symbol

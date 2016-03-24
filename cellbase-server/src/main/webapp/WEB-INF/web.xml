@@ -73,7 +73,6 @@
         <init-param>
             <param-name>swagger.api.basepath</param-name>
             <param-value>/cellbase/webservices/rest</param-value>
-            <!--<param-value>/webservices/api</param-value>-->
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>

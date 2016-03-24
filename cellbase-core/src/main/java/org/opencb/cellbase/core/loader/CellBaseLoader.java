@@ -34,20 +34,23 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     protected String data;
     protected String database;
 
+    protected String field;
+
     protected CellBaseConfiguration cellBaseConfiguration;
 
     protected final Logger logger;
 
 
-    public CellBaseLoader (BlockingQueue<List<String>> blockingQueue, String data, String database,
-                           CellBaseConfiguration cellBaseConfiguration) {
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, String field,
+                          CellBaseConfiguration configuration) {
         this.blockingQueue = blockingQueue;
         this.data = data;
         this.database = database;
+        this.field = field;
 
-        if(cellBaseConfiguration != null) {
-            this.cellBaseConfiguration = cellBaseConfiguration;
-        }else {
+        if (configuration != null) {
+            this.cellBaseConfiguration = configuration;
+        } else {
             try {
                 this.cellBaseConfiguration = CellBaseConfiguration
                         .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));

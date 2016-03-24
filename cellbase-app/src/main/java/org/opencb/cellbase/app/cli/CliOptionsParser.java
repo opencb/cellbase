@@ -17,10 +17,9 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
+import org.opencb.commons.utils.CommandLineUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by imedina on 03/02/15.
@@ -36,6 +35,7 @@ public class CliOptionsParser {
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private QueryCommandOptions queryCommandOptions;
+    private QueryGrpcCommandOptions queryGrpcCommandOptions;
     private VariantAnnotationCommandOptions variantAnnotationCommandOptions;
     private PostLoadCommandOptions postLoadCommandOptions;
 
@@ -52,6 +52,7 @@ public class CliOptionsParser {
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         queryCommandOptions = new QueryCommandOptions();
+        queryGrpcCommandOptions = new QueryGrpcCommandOptions();
         variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
         postLoadCommandOptions = new PostLoadCommandOptions();
 
@@ -59,6 +60,7 @@ public class CliOptionsParser {
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("query", queryCommandOptions);
+        jCommander.addCommand("query-grpc", queryGrpcCommandOptions);
         jCommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
         jCommander.addCommand("post-load", postLoadCommandOptions);
     }
@@ -105,7 +107,7 @@ public class CliOptionsParser {
         @Parameter(names = {"-v", "--verbose"}, description = "[Deprecated] Set the level of the logging", required = false, arity = 1)
         public boolean verbose;
 
-        @Parameter(names = {"-C", "--conf"}, description = "CellBase configuration.json file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.json for an example", required = false, arity = 1)
+        @Parameter(names = {"-C", "--config"}, description = "CellBase configuration.json file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.json for an example", required = false, arity = 1)
         public String conf;
 
     }
@@ -118,7 +120,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, variation, regulation, protein, conservation, clinical and gene2disease. 'all' to download everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, clinical and . 'all' to download everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -143,7 +145,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, variation, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -174,11 +176,17 @@ public class CliOptionsParser {
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded. Can also be used to specify a" +
+                "custom json file to be loaded (look at the --field parameter).", required = true, arity = 1)
         public String input;
 
         @Parameter(names = {"--database"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
         public String database;
+
+        @Parameter(names = {"--field"}, description = "Use this parameter when an custom update of the database documents is required. Indicate here" +
+                "the full path to the document field that must be updated, e.g. annotation.populationFrequencies. This parameter must be used together" +
+                "with a custom file provided at --input and the data to update indicated at --data.", required = false, arity = 1)
+        public String field;
 
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
         public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";
@@ -199,38 +207,72 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
         public String assembly = "GRCh37";
 
-        @Parameter(names = {"--type"}, description = "", required = false, arity = 1)
+        @Parameter(names = {"-o", "--output"}, description = "Write result into the file path", required = false, arity = 1)
+        public String output;
+
+        @Parameter(names = {"-t", "--type"}, description = "", required = true, arity = 1)
         public String category;
 
         @Parameter(names = {"--id"}, description = "", required = false, arity = 1)
         public String id;
 
-        @Parameter(names = {"--resource"}, description = "", required = false, arity = 1)
+        @Parameter(names = {"-r", "--resource"}, description = "", required = false, arity = 1)
         public String resource;
 
-        @Parameter(names = {"-o", "--output-file"}, description = "", required = false, arity = 1)
-        public String outputFile;
+        @Parameter(names = {"--region"}, description = "", required = false, arity = 1)
+        public String region;
 
-        @Deprecated
-        @Parameter(names = {"--variant-annot"}, description = "[DEPRECATED]", required = false)
-        public boolean annotate;
+        @Parameter(names = {"--group-by"}, description = "", required = false, arity = 1)
+        public String groupBy;
 
-        @Deprecated
-        @Parameter(names = {"-i", "--input-file"}, description = "[DEPRECATED]", required = false, arity = 1)
-        public String inputFile;
+        @Parameter(names = {"--rank"}, description = "", required = false, arity = 1)
+        public String rank;
 
-        @Deprecated
-        @Parameter(names = {"--host-url"}, description = "[DEPRECATED]", required = false, arity = 1)
-        public String url;
+        @Parameter(names = {"--distinct"}, description = "", required = false, arity = 1)
+        public String distinct;
+
+        @Parameter(names = {"--histogram"}, description = "", required = false, arity = 0)
+        public boolean histogram;
+
+        @Parameter(names = {"--interval"}, description = "", required = false, arity = 1)
+        public int interval = 100000;
+
+        @DynamicParameter(names = {"-O", "--options"}, description = "Filter options in the form of -Oa=b, eg. -Obiotype=protein_coding,pseudogene -Oregion=3:44444-55555", required = false)
+        public Map<String, String> options = new HashMap<>();
+
+        // QueryOptions parameters
+        @Parameter(names = {"-i", "--include"}, description = "Comma separated list of fields to be included, eg. chromsome,start,end", required = false)
+        public String include;
+
+        @Parameter(names = {"-e", "--exclude"}, description = "Comma separated list of fields to be excluded, eg. chromsome,start,end", required = false)
+        public String exclude;
+
+        @Parameter(names = {"--skip"}, description = "Skip the number of records specified", required = false)
+        public int skip;
+
+        @Parameter(names = {"--limit"}, description = "Return the number of records specified", required = false)
+        public int limit;
+
+        @Parameter(names = {"-c", "--count"}, description = "Comma separated list of annotators to be excluded", required = false, arity = 0)
+        public boolean count;
 
     }
 
+    @Parameters(commandNames = {"query-grpc"}, commandDescription = "Query and fetch data from CellBase database using gRPC server")
+    public class QueryGrpcCommandOptions extends QueryCommandOptions {
+
+        @Parameter(names = {"--host"}, description = "", required = false, arity = 1)
+        public String host = "localhost";
+
+        @Parameter(names = {"--port"}, description = "", required = false, arity = 1)
+        public int port = 9090;
+    }
 
     @Parameters(commandNames = {"variant-annotation"}, commandDescription = "Annotate variants from VCF files using CellBase and other custom files")
     public class VariantAnnotationCommandOptions {
@@ -239,10 +281,15 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-i", "--input-file"}, description = "Input file with the data file to be annotated", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input-file"}, description = "Input file with the data file to be annotated", required = false, arity = 1)
         public String input;
 
-        @Parameter(names = {"-o", "--output-file"}, description = "Output file with the annotations", required = false, arity = 1)
+        @Parameter(names = {"--variant"}, description = "A comma separated variant list in the format chr:pos:ref:alt, ie. 1:451941:A:T,19:45411941:T:C", required = false, arity = 1)
+        public String variant;
+
+        @Parameter(names = {"-o", "--output"}, description = "Output file/directory where annotations will be saved. "
+                + "Set here a directory if flag \"--input-variation-collection\" is activated (see below). Set a file "
+                + "name otherwise.", required = true, arity = 1)
         public String output;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
@@ -255,10 +302,13 @@ public class CliOptionsParser {
         public boolean local;
 
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
-        public String url = "bioinfodev.hpc.cam.ac.uk";
+        public String url = "bioinfodev.hpc.cam.ac.uk:80/cellbase/webservices/rest";
 
-        @Parameter(names = {"--remote-port"}, description = "The port where REST web services are listening", required = false, arity = 1)
-        public int port = 80;
+        @Parameter(names = {"--include"}, description = "Comma separated list of annotators to be included", required = false)
+        public String include;
+
+        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotators to be excluded", required = false)
+        public String exclude;
 
         @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used for loading", required = false, arity = 1)
         public int numThreads = 4;
@@ -284,6 +334,17 @@ public class CliOptionsParser {
         @Parameter(names = {"--gzip"}, description = "Whether the output file is gzipped", required = false, arity = 0)
         public boolean gzip;
 
+        @Parameter(names = {"--input-variation-collection"}, description = "Input will be a local installation of the"
+                + "CellBase variation collection. Connection details must be properly specified at a configuration.json file",
+                required = false, arity = 0)
+        public boolean cellBaseAnnotation;
+
+        @Parameter(names = {"--chromosomes"}, description = "Comma separated list (no empty spaces in between) of"
+                + " chromosomes to annotate. One may use this parameter only when the --input-variation-collection"
+                + " flag is activated. Variants from all chromosomes will be annotated by default. E.g.: 1,22,X,Y",
+                required = false, arity = 1)
+        public String chromosomeList;
+
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
@@ -300,10 +361,20 @@ public class CliOptionsParser {
 
     }
 
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
     public void printUsage(){
         if(getCommand().isEmpty()) {
             System.err.println("");
-            System.err.println("Program:     CellBase (OpenCB)");
+            System.err.println("Program:     " + ANSI_WHITE + "CellBase (OpenCB)" + ANSI_RESET);
             System.err.println("Version:     3.2.0");
             System.err.println("Description: High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
             System.err.println("");
@@ -318,7 +389,7 @@ public class CliOptionsParser {
             System.err.println("Usage:   cellbase.sh " + parsedCommand + " [options]");
             System.err.println("");
             System.err.println("Options:");
-            printCommandUsage(jCommander.getCommands().get(parsedCommand));
+            CommandLineUtils.printCommandUsage(jCommander.getCommands().get(parsedCommand));
             System.err.println("");
         }
     }
@@ -326,32 +397,6 @@ public class CliOptionsParser {
     private void printMainUsage() {
         for (String s : jCommander.getCommands().keySet()) {
             System.err.printf("%20s  %s\n", s, jCommander.getCommandDescription(s));
-        }
-    }
-
-    private void printCommandUsage(JCommander commander) {
-        for (ParameterDescription parameterDescription : commander.getParameters()) {
-            String type = "";
-            if (parameterDescription.getParameterized().getParameter() != null && parameterDescription.getParameterized().getParameter().arity() > 0) {
-                type = parameterDescription.getParameterized().getGenericType().getTypeName().replace("java.lang.", "").toUpperCase();
-            }
-            if(!parameterDescription.isHelp()) {
-                System.err.printf("%5s %-20s %-10s %s [%s]\n",
-                        (parameterDescription.getParameterized().getParameter() != null
-                                && parameterDescription.getParameterized().getParameter().required()) ? "*": "",
-                        parameterDescription.getNames(),
-                        type,
-                        parameterDescription.getDescription(),
-                        parameterDescription.getDefault());
-            } else {
-                // This prints 'help' usage with no default [false] value
-                System.err.printf("%5s %-20s %-10s %s\n",
-                        (parameterDescription.getParameterized().getParameter() != null
-                                && parameterDescription.getParameterized().getParameter().required()) ? "*": "",
-                        parameterDescription.getNames(),
-                        type,
-                        parameterDescription.getDescription());
-            }
         }
     }
 
@@ -377,6 +422,10 @@ public class CliOptionsParser {
 
     public QueryCommandOptions getQueryCommandOptions() {
         return queryCommandOptions;
+    }
+
+    public QueryGrpcCommandOptions getQueryGrpcCommandOptions() {
+        return queryGrpcCommandOptions;
     }
 
     public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }

@@ -17,12 +17,13 @@
 package org.opencb.cellbase.core.db.api.core;
 
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.List;
 
 
+@Deprecated
 public interface ExonDBAdaptor extends FeatureDBAdaptor {
 
 
@@ -35,13 +36,12 @@ public interface ExonDBAdaptor extends FeatureDBAdaptor {
 
     QueryResult getAllByGeneId(String geneId);
 
-	List<QueryResult> getAllByGeneIdList(List<String> geneIdList);
+    List<QueryResult> getAllByGeneIdList(List<String> geneIdList);
 
 
     QueryResult getAllByTranscriptId(String transcriptId);
 
-	List<QueryResult> getAllByTranscriptIdList(List<String> transcriptIdList);
-
+    List<QueryResult> getAllByTranscriptIdList(List<String> transcriptIdList);
 
 
 }

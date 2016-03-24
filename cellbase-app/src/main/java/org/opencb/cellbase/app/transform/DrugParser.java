@@ -20,8 +20,6 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBException;
-import java.io.IOException;
 import java.nio.file.Path;
 
 //import org.opencb.commons.bioformats.drug.drugbank.DrugbankParser;
@@ -38,19 +36,19 @@ import java.nio.file.Path;
  * Time: 4:43 PM
  * To change this template use File | Settings | File Templates.
  */
-
-public class DrugParser extends CellBaseParser{
+@Deprecated
+public class DrugParser {
 
     private final Path drugbankPath;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public DrugParser(Path drugbankPath, CellBaseSerializer serializer) {
-        super(serializer);
+//        super(serializer);
         this.drugbankPath = drugbankPath;
     }
 
-    public void parse() throws JAXBException, IOException {
+//    public void parse() throws JAXBException, IOException {
 //
 ////        System.out.println("Number of drugs: "+ drugs.getDrug().size());
 ////        System.out.println("Number of partners: "+ drugs.getPartners().getPartner().size());
@@ -394,5 +392,5 @@ public class DrugParser extends CellBaseParser{
 //        }
 ////        bw.close();
 //
-    }
+//    }
 }

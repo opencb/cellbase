@@ -27,6 +27,7 @@ import java.util.zip.GZIPOutputStream;
  * Time: 2:10 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class StringUtils {
 
     public static byte[] gzip(String text) throws IOException {
@@ -34,10 +35,10 @@ public class StringUtils {
         BufferedOutputStream bufos = new BufferedOutputStream(new GZIPOutputStream(bos));
         try {
             bufos.write(text.getBytes());
-        }finally {
+        } finally {
             bufos.close();
         }
-        byte[] retval= bos.toByteArray();
+        byte[] retval = bos.toByteArray();
         bos.close();
         return retval;
     }
@@ -48,7 +49,7 @@ public class StringUtils {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int len;
-        while((len = bufis.read(buffer)) >= 0) {
+        while ((len = bufis.read(buffer)) >= 0) {
             bos.write(buffer, 0, len);
         }
         String retval = bos.toString();

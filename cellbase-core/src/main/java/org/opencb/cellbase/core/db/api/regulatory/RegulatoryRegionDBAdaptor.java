@@ -16,11 +16,11 @@
 
 package org.opencb.cellbase.core.db.api.regulatory;
 
-import org.opencb.biodata.models.feature.Region;
-import org.opencb.cellbase.core.common.Position;
+import org.opencb.biodata.models.core.Position;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.List;
 
@@ -52,9 +52,9 @@ public interface RegulatoryRegionDBAdaptor extends FeatureDBAdaptor {
     List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options);
 
 
-//	public List<Tfbs> getAllByTfGeneName(String tfGeneName, String celltype, int start, int end);
+// public List<Tfbs> getAllByTfGeneName(String tfGeneName, String celltype, int start, int end);
 //
-//	public List<List<Tfbs>> getAllByTfGeneNameList(List<String> tfGeneNameList, String celltype, int start, int end);
+// public List<List<Tfbs>> getAllByTfGeneNameList(List<String> tfGeneNameList, String celltype, int start, int end);
 
 //    public QueryResponse getAllByTargetGeneId(String targetGeneId, QueryOptions options);
 
@@ -66,31 +66,31 @@ public interface RegulatoryRegionDBAdaptor extends FeatureDBAdaptor {
 //    public QueryResponse getAllByJasparIdList(List<String> jasparIdList, QueryOptions options);
 
 
-//	public List<Protein> getTfInfoByTfGeneName(String tfGeneName);
+// public List<Protein> getTfInfoByTfGeneName(String tfGeneName);
 //
-//	public List<List<Protein>> getTfInfoByTfGeneNameList(List<String> tfGeneNameList);
+// public List<List<Protein>> getTfInfoByTfGeneNameList(List<String> tfGeneNameList);
 
-//	public List<Pwm> getAllPwmByTfGeneName(String tfName);
+// public List<Pwm> getAllPwmByTfGeneName(String tfName);
 //
-//	public List<List<Pwm>> getAllPwmByTfGeneNameList(List<String> tfNameList);
-
-
-//	public List<Tfbs> getAllByRegion(String chromosome);
-//
-//	public List<Tfbs> getAllByRegion(String chromosome, int start);
-//
-//	public List<Tfbs> getAllByRegion(String chromosome, int start, int end);
-//
-//	public List<Tfbs> getAllByRegion(Region region);
-//
-//	public List<List<Tfbs>> getAllSequencesByRegionList(List<Region> regionList);
-
-//	public QueryResponse getAllByPosition(String chromosome, int position, QueryOptions options);
+// public List<List<Pwm>> getAllPwmByTfGeneNameList(List<String> tfNameList);
 
 
-//	public List<Tfbs> getAllByInternalIdList(List<String> idList);
+// public List<Tfbs> getAllByRegion(String chromosome);
 //
-//	public List<Tfbs> getAllByInternalId(String id);
+// public List<Tfbs> getAllByRegion(String chromosome, int start);
+//
+// public List<Tfbs> getAllByRegion(String chromosome, int start, int end);
+//
+// public List<Tfbs> getAllByRegion(Region region);
+//
+// public List<List<Tfbs>> getAllSequencesByRegionList(List<Region> regionList);
+
+// public QueryResponse getAllByPosition(String chromosome, int position, QueryOptions options);
+
+
+// public List<Tfbs> getAllByInternalIdList(List<String> idList);
+//
+// public List<Tfbs> getAllByInternalId(String id);
 
 
 //    public List<Object> getAllAnnotation();
@@ -99,4 +99,5 @@ public interface RegulatoryRegionDBAdaptor extends FeatureDBAdaptor {
 
 
 //    public List<IntervalFeatureFrequency> getAllTfIntervalFrequencies(Region region, int interval);
+
 }

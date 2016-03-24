@@ -16,16 +16,18 @@
 
 package org.opencb.cellbase.mongodb.db.core;
 
-import com.mongodb.*;
-import org.opencb.biodata.models.feature.Region;
+import com.mongodb.BasicDBList;
+import com.mongodb.QueryBuilder;
+import org.bson.Document;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.annotation.Score;
-import org.opencb.cellbase.core.common.ConservedRegionFeature;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.mongodb.db.MongoDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
-import org.opencb.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 
@@ -54,6 +56,18 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //        return (id * chunkSize) + chunkSize - 1;
 //    }
 
+    public QueryResult first() {
+        return null;
+    }
+
+    public QueryResult count() {
+        return null;
+    }
+
+    public QueryResult stats() {
+        return null;
+    }
+
     private int getOffset(int position) {
         return ((position) % chunkSize);
     }
@@ -68,7 +82,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     @Override
     public List<QueryResult> getAllByRegionList(List<Region> regions, QueryOptions options) {
         //TODO not finished yet
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
         List<String> integerChunkIds;
         for (Region region : regions) {
@@ -82,7 +96,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             }
 
             // Max region size is 10000bp
-            if(region.getEnd() - region.getStart() > 10000) {
+            if (region.getEnd() - region.getStart() > 10000) {
                 region.setEnd(region.getStart() + 10000);
             }
 
@@ -95,20 +109,20 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             } else {
 //                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
 ////                    integerChunkIds.add(chunkId);
-//                    integerChunkIds.add(region.getChromosome() + "_" + chunkId + "_" + this.chunkSize/1000 + "k");
+//                    integerChunkIds.add(region.getChromosomeInfo() + "_" + chunkId + "_" + this.chunkSize/1000 + "k");
 //                }
-//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(integerChunkIds);
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(hunkIds);
             /****/
 
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
 
 
-            logger.debug(builder.get().toString());
+//            logger.debug(builder.get().toString());
         }
 
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
@@ -125,41 +139,45 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
 
             for (int j = 0; j < list.size(); j++) {
-                BasicDBObject chunk = (BasicDBObject) list.get(j);
-                String type = chunk.getString("type");
+                Document chunk = (Document) list.get(j);
+                String source = chunk.getString("source");
                 List<Float> valuesList;
-                if (!typeMap.containsKey(type)) {
+                if (!typeMap.containsKey(source)) {
                     valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
                     for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
                         valuesList.add(null);
                     }
-                    typeMap.put(type, valuesList);
+                    typeMap.put(source, valuesList);
                 } else {
-                    valuesList = typeMap.get(type);
+                    valuesList = typeMap.get(source);
                 }
 
                 BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
 
                 int pos = 0;
-                if( region.getStart() > chunk.getInt("start")){
-                    pos = region.getStart() - chunk.getInt("start");
+                if (region.getStart() > chunk.getInteger("start")) {
+                    pos = region.getStart() - chunk.getInteger("start");
                 }
 
 
-                for (; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
+                for (; pos < valuesChunk.size() && (pos + chunk.getInteger("start") <= region.getEnd()); pos++) {
 //                    System.out.println("valuesList SIZE = " + valuesList.size());
 //                    System.out.println("pos = " + pos);
 //                    System.out.println("DIV " + (chunk.getInt("start") - region.getStart()));
 //                    System.out.println("valuesChunk = " + valuesChunk.get(pos));
 //                    System.out.println("indexFinal = " + (pos + chunk.getInt("start") - region.getStart()));
-                    valuesList.set(pos + chunk.getInt("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                    valuesList.set(pos + chunk.getInteger("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
                 }
             }
 //
             BasicDBList resultList = new BasicDBList();
-            ConservedRegionFeature conservedRegionChunk;
+//            ConservationScoreRegion conservedRegionChunk;
+            GenomicScoreRegion<Float> conservedRegionChunk;
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                conservedRegionChunk = new ConservedRegionFeature(region.getChromosome(), region.getStart(), region.getEnd(), elem.getKey(), elem.getValue());
+//                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(),
+//                        region.getEnd(), elem.getKey(), elem.getValue());
+                conservedRegionChunk = new GenomicScoreRegion<>(region.getChromosome(), region.getStart(),
+                        region.getEnd(), elem.getKey(), elem.getValue());
                 resultList.add(conservedRegionChunk);
             }
             queryResult.setResult(resultList);
@@ -173,7 +191,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     @Override
     public List<QueryResult> getAllScoresByRegionList(List<Region> regions, QueryOptions options) {
         //TODO not finished yet
-        List<DBObject> queries = new ArrayList<>();
+        List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regions.size());
         List<Integer> integerChunkIds;
         for (Region region : regions) {
@@ -190,25 +208,25 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
             QueryBuilder builder;
             int regionChunkStart = getChunkId(region.getStart(), this.chunkSize);
             int regionChunkEnd = getChunkId(region.getEnd(), this.chunkSize);
-            if(regionChunkStart == regionChunkEnd) {
+            if (regionChunkStart == regionChunkEnd) {
                 builder = QueryBuilder.start("_chunkIds")
                         .is(getChunkIdPrefix(region.getChromosome(), region.getStart(), chunkSize));
             } else {
 //                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
 //                    integerChunkIds.add(chunkId);
 //                }
-//    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(hunkIds);
-//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("chunkId").in(integerChunkIds);
+//    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(hunkIds);
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(integerChunkIds);
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }
             /****/
 
 
-            queries.add(builder.get());
+            queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
 
-            logger.debug(builder.get().toString());
+//            logger.debug(builder.get().toString());
 
         }
         List<QueryResult> queryResults = executeQueryList2(ids, queries, options);
@@ -218,7 +236,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
             QueryResult queryResult = queryResults.get(i);
-            List<BasicDBObject> list = (List<BasicDBObject>) queryResult.getResult();
+            List<Document> list = (List<Document>) queryResult.getResult();
 
             Map<String, List<Float>> typeMap = new HashMap();
 
@@ -227,49 +245,65 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 
 
             for (int j = 0; j < list.size(); j++) {
-                BasicDBObject chunk = (BasicDBObject) list.get(j);
-                String type = chunk.getString("type");
-                List<Float> valuesList;
-                if (!typeMap.containsKey(type)) {
-                    valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
-                    for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
-                        valuesList.add(null);
+                Document chunk = list.get(j);
+
+                if (!chunk.isEmpty()) {
+                    BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
+                    if (valuesChunk != null) {  // TODO: temporary patch to skip empty chunks - remove as soon as conservation is reloaded
+                        String source = chunk.getString("source");
+                        List<Float> valuesList;
+                        if (!typeMap.containsKey(source)) {
+                            valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
+                            for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
+                                valuesList.add(null);
+                            }
+                            typeMap.put(source, valuesList);
+                        } else {
+                            valuesList = typeMap.get(source);
+                        }
+
+                        valuesChunk = (BasicDBList) chunk.get("values");
+                        int pos = 0;
+                        if (region.getStart() > chunk.getInteger("start")) {
+                            pos = region.getStart() - chunk.getInteger("start");
+                        }
+
+                        for (; pos < valuesChunk.size() && (pos + chunk.getInteger("start") <= region.getEnd()); pos++) {
+                            valuesList.set(pos + chunk.getInteger("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                        }
+                    } else {
+                        continue;
                     }
-                    typeMap.put(type, valuesList);
+
+                }
+
+                BasicDBList resultList = new BasicDBList();
+                for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
+                    for (Float value : elem.getValue()) {
+                        if (value != null) {
+                            resultList.add(new Score(new Double(value), elem.getKey()));
+                        }
+                    }
+                }
+                if (!resultList.isEmpty()) {
+                    queryResult.setResult(resultList);
                 } else {
-                    valuesList = typeMap.get(type);
+                    queryResult.setResult(null);
                 }
-
-                BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
-
-                int pos = 0;
-                if( region.getStart() > chunk.getInt("start")){
-                    pos = region.getStart() - chunk.getInt("start");
-                }
-
-
-                for (; pos < valuesChunk.size() && (pos + chunk.getInt("start") <= region.getEnd()); pos++) {
-                    valuesList.set(pos + chunk.getInt("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
-                }
-            }
-
-            BasicDBList resultList = new BasicDBList();
-            for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-                for(Float value : elem.getValue()) {
-                    if(value!=null) {
-                        resultList.add(new Score(new Double(value), elem.getKey()));
-                    }
-                }
-            }
-            if(!resultList.isEmpty()) {
-                queryResult.setResult(resultList);
-            } else {
-                queryResult.setResult(null);
             }
         }
-
         return queryResults;
     }
+
+
+    public int insert(List objectList) {
+        return -1;
+    }
+
+    public int update(List objectList, String field) {
+        return -1;
+    }
+
 
 
 //    private List<ConservedRegion> executeQuery(DBObject query) {
@@ -304,7 +338,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //        QueryBuilder builder = QueryBuilder.start("chromosome").is(chromosome).and("end")
 //                .greaterThan(start).and("start").lessThan(end);
 //
-//        System.out.println(builder.get().toString());
+//        System.out.println(new Document(builder.get().toMap()).toString());
 //        List<ConservedRegion> conservedRegionList = executeQuery(builder.get());
 //
 //        return conservedRegionList;

@@ -16,11 +16,11 @@
 
 package org.opencb.cellbase.core.db.api.variation;
 
-import org.opencb.biodata.models.feature.Region;
-import org.opencb.cellbase.core.common.Position;
+import org.opencb.biodata.models.core.Position;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.db.FeatureDBAdaptor;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.List;
 
@@ -69,27 +69,4 @@ public interface MutationDBAdaptor extends FeatureDBAdaptor {
 
     List<QueryResult> getAllIntervalFrequencies(List<Region> regions, QueryOptions options);
 
-
-//	public List<MutationPhenotypeAnnotation> getAllMutationPhenotypeAnnotationByGeneName(String geneName);
-//
-//	public List<List<MutationPhenotypeAnnotation>> getAllMutationPhenotypeAnnotationByGeneNameList(List<String> geneNameList);
-//
-//	public List<MutationPhenotypeAnnotation> getAllMutationPhenotypeAnnotationByEnsemblTranscript(String ensemblTranscript);
-//
-//	public List<List<MutationPhenotypeAnnotation>> getAllMutationPhenotypeAnnotationByEnsemblTranscriptList(List<String> ensemblTranscriptList);
-//
-//
-//	public List<MutationPhenotypeAnnotation> getAllMutationPhenotypeAnnotationByPosition(Position position);
-//
-//	public List<List<MutationPhenotypeAnnotation>> getAllMutationPhenotypeAnnotationByPositionList(List<Position> position);
-//
-//
-//
-//	public List<MutationPhenotypeAnnotation> getAllByRegion(Region region);
-//
-//	public List<List<MutationPhenotypeAnnotation>> getAllSequencesByRegionList(List<Region> regionList);
-//
-//
-//	public List<IntervalFeatureFrequency> getIntervalFrequencies(Region region, int interval);
-	
 }

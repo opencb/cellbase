@@ -18,20 +18,16 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
-import org.opencb.biodata.models.variation.GenomicVariant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResponse;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 
 /**
  * Created by fjlopez on 02/03/15.
@@ -39,12 +35,15 @@ import java.util.concurrent.Callable;
 public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
     private CellBaseClient cellBaseClient;
-    private List<VariantAnnotation> variantAnnotationList;
+
+    private QueryOptions queryOptions;
 
     private Logger logger;
 
-    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient) {
+    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient, QueryOptions queryOptions) {
         this.cellBaseClient = cellBaseClient;
+        this.queryOptions = new QueryOptions(queryOptions);
+        this.queryOptions.put("post", true);
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -56,67 +55,53 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         return false;
     }
 
-    public List<VariantAnnotation> run(List<Variant> variantList) {
-
-        List<GenomicVariant> batch = convertVariantsToGenomicVariants(variantList);
-        logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", batch.size());
+    public void run(List<Variant> variantList) {
+        logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
         QueryResponse<QueryResult<VariantAnnotation>> response;
         try {
-            response = cellBaseClient.getFullAnnotation(CellBaseClient.Category.genomic,
-                    CellBaseClient.SubCategory.variant, batch, new QueryOptions("post", true));
+            response = cellBaseClient.getAnnotation(CellBaseClient.Category.genomic,
+                    CellBaseClient.SubCategory.variant, variantList, queryOptions);
         } catch (IOException e) {
-            return null;
+            e.printStackTrace();
+            return;
         }
 
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
-        for (QueryResult<VariantAnnotation> queryResult : response.getResponse()) {
-            if (queryResult.getResult().size() > 0) {
-                variantAnnotationList.add(queryResult.getResult().get(0));
+        List<QueryResult<VariantAnnotation>> queryResultList = response.getResponse();
+        for (int i = 0; i < queryResultList.size(); i++) {
+            if (queryResultList.get(i).getResult().size() > 0) {
+                variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
             } else {
-                logger.warn("Emtpy result for '{}'", queryResult.getId());
+                logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
             }
         }
-        return variantAnnotationList;
     }
 
-
-    private List<GenomicVariant> convertVariantsToGenomicVariants(List<Variant> vcfBatch) {
-        List<GenomicVariant> genomicVariants = new ArrayList<>(vcfBatch.size());
-        for (Variant variant : vcfBatch) {
-            GenomicVariant genomicVariant;
-            if ((genomicVariant = getGenomicVariant(variant)) != null) {
-                genomicVariants.add(genomicVariant);
-            }
-        }
-        return genomicVariants;
-    }
 
     // TODO: use a external class for this (this method could be added to GenomicVariant class)
-    private GenomicVariant getGenomicVariant(Variant variant) {
-        if(variant.getAlternate().equals(".")) {  // reference positions are not variants
+    private Variant getGenomicVariant(Variant variant) {
+        if (variant.getAlternate().equals(".")) {  // reference positions are not variants
             return null;
         } else {
             String ref;
-            if (variant.getAlternate().equals("<DEL>")) {  // large deletion
-                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));  // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
+            // large deletion
+            if (variant.getAlternate().equals("<DEL>")) {
+                // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
+                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));
                 ref = StringUtils.repeat("N", end - variant.getStart());
-                return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+                return new Variant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
                 // TODO: structural variants are not yet properly handled. Implement and remove this patch asap
-            } else if(variant.getAlternate().startsWith("<") || (variant.getAlternate().length()>1 && variant.getReference().length()>1)) {
+            } else if (variant.getAlternate().startsWith("<")
+                    || (variant.getAlternate().length() > 1 && variant.getReference().length() > 1)) {
                 return null;
             } else {
                 ref = variant.getReference().equals("") ? "-" : variant.getReference();
-                return new GenomicVariant(variant.getChromosome(), variant.getStart(),
+                return new Variant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
             }
-//            return new GenomicVariant(variant.getChromosome(), variant.getStart(),
-//                    ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());
         }
     }
 
-    public void setVariantAnnotationList(List<VariantAnnotation> variantAnnotationList) {
-        this.variantAnnotationList = variantAnnotationList;
-    }
 }

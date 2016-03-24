@@ -19,7 +19,7 @@ package org.opencb.cellbase.core.common;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Deprecated
 public class Region {
 
     private String chromosome;
@@ -34,13 +34,13 @@ public class Region {
 
     public static Region parseRegion(String regionString) {
         Region region = null;
-        if(regionString != null && !regionString.equals("")) {
-            if(regionString.indexOf(':') != -1) {
+        if (regionString != null && !regionString.equals("")) {
+            if (regionString.indexOf(':') != -1) {
                 String[] fields = regionString.split("[:-]", -1);
-                if(fields.length == 3) {
+                if (fields.length == 3) {
                     region = new Region(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2]));
                 }
-            }else {
+            } else {
                 region = new Region(regionString, 0, Integer.MAX_VALUE);
             }
         }
@@ -49,19 +49,19 @@ public class Region {
 
     public static List<Region> parseRegions(String regionsString) {
         List<Region> regions = null;
-        if(regionsString != null && !regionsString.equals("")) {
+        if (regionsString != null && !regionsString.equals("")) {
             String[] regionItems = regionsString.split(",");
             regions = new ArrayList<Region>(regionItems.length);
             String[] fields;
-            for(String regionString: regionItems) {
-                if(regionString.indexOf(':') != -1) {
+            for (String regionString : regionItems) {
+                if (regionString.indexOf(':') != -1) {
                     fields = regionString.split("[:-]", -1);
-                    if(fields.length == 3) {
+                    if (fields.length == 3) {
                         regions.add(new Region(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2])));
-                    }else {
+                    } else {
                         regions.add(null);
                     }
-                }else {
+                } else {
                     regions.add(new Region(regionString, 0, Integer.MAX_VALUE));
                 }
             }
@@ -69,26 +69,21 @@ public class Region {
         return regions;
     }
 
-    /**
-     *
-     * @param regions
-     * @return A comma separated string with all the regions. If parameter is null then a null objects is returned, an empty string is returned if parameter size list is 0
-     */
     public static String parseRegionList(List<Region> regions) {
-        if(regions == null) {
+        if (regions == null) {
             return null;
-        }else {
+        } else {
             StringBuilder sb = new StringBuilder();
-            for(int i=0; i<regions.size()-1; i++) {
-                if(regions.get(i) != null) {
+            for (int i = 0; i < regions.size() - 1; i++) {
+                if (regions.get(i) != null) {
                     sb.append(regions.get(i).toString()).append(",");
-                }else {
+                } else {
                     sb.append("null,");
                 }
             }
-            if(regions.get(regions.size()-1) != null) {
-                sb.append(regions.get(regions.size()-1).toString());
-            }else {
+            if (regions.get(regions.size() - 1) != null) {
+                sb.append(regions.get(regions.size() - 1).toString());
+            } else {
                 sb.append("null");
             }
 
@@ -99,7 +94,7 @@ public class Region {
 
     @Override
     public String toString() {
-        return chromosome+":"+start+"-"+end;
+        return chromosome + ":" + start + "-" + end;
     }
 
 
@@ -180,11 +175,7 @@ public class Region {
     }
 
     public boolean contains(String chr, int pos) {
-        if (this.chromosome.equals(chr) && this.start <= pos && this.end >= pos) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.chromosome.equals(chr) && this.start <= pos && this.end >= pos;
     }
 
 }

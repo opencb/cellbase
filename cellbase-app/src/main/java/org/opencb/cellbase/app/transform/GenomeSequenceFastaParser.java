@@ -18,9 +18,10 @@ package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.models.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.app.transform.utils.FileUtils;
+import org.opencb.commons.utils.FileUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.Path;
 
 public class GenomeSequenceFastaParser extends CellBaseParser {
@@ -79,7 +80,8 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
         }
     }
 
-    private void serializeGenomeSequence(String chromosome, String sequenceType, String sequenceAssembly, String sequence) throws IOException {
+    private void serializeGenomeSequence(String chromosome, String sequenceType, String sequenceAssembly, String sequence)
+            throws IOException {
         int chunk = 0;
         int start = 1;
         int end = CHUNK_SIZE - 1;
@@ -88,9 +90,10 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
         String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
         GenomeSequenceChunk genomeSequenceChunk;
 
-        if (sequence.length() < CHUNK_SIZE) {//chromosome sequence length can be less than CHUNK_SIZE
+        if (sequence.length() < CHUNK_SIZE) { //chromosome sequence length can be less than CHUNK_SIZE
             chunkSequence = sequence;
-            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + 0 + "_" + chunkIdSuffix, start, sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
+            genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + 0 + "_" + chunkIdSuffix, start,
+                    sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
             serializer.serialize(genomeSequenceChunk);
             start += CHUNK_SIZE - 1;
         } else {
@@ -102,7 +105,8 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
                 if (start == 1) {
                     // First chunk contains CHUNK_SIZE-1 nucleotides as index start at position 1 but must end at 1999
                     chunkSequence = sequence.substring(start - 1, CHUNK_SIZE - 1);
-                    genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+                    genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start,
+                            end, sequenceType, sequenceAssembly, chunkSequence);
                     serializer.serialize(genomeSequenceChunk);
                     start += CHUNK_SIZE - 1;
 
@@ -110,13 +114,15 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
                     // Regular chunk
                     if ((start + CHUNK_SIZE) < sequence.length()) {
                         chunkSequence = sequence.substring(start - 1, start + CHUNK_SIZE - 1);
-                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start, end, sequenceType, sequenceAssembly, chunkSequence);
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start,
+                                end, sequenceType, sequenceAssembly, chunkSequence);
                         serializer.serialize(genomeSequenceChunk);
                         start += CHUNK_SIZE;
                     } else {
                         // Last chunk of the chromosome
                         chunkSequence = sequence.substring(start - 1, sequence.length());
-                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start, sequence.length(), sequenceType, sequenceAssembly, chunkSequence);
+                        genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + chunk + "_" + chunkIdSuffix, start,
+                                sequence.length(), sequenceType, sequenceAssembly, chunkSequence);
                         serializer.serialize(genomeSequenceChunk);
                         start = sequence.length();
                     }
