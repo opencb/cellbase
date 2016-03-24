@@ -50,7 +50,7 @@ public class CellBaseClientTest extends TestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        cellBaseClient = new CellBaseClient("bioinfodev.hpc.cam.ac.uk", 80, "/cellbase/webservices/rest", "v3", "hsapiens");
+        cellBaseClient = new CellBaseClient("bioinfodev.hpc.cam.ac.uk", 80, "/cellbase-dev-v4.0/webservices/rest", "v4", "hsapiens");
     }
 
     @Test
@@ -61,12 +61,13 @@ public class CellBaseClientTest extends TestCase {
         assertEquals(gene.getResponse().get(0).getResult().get(0).getName(), "AY269186.1");
     }
 
-    @Test
-    public void testGetProtein() throws URISyntaxException, IOException {
-        QueryResponse<QueryResult<Entry>> response =
-                cellBaseClient.getInfo(CellBaseClient.Category.feature, CellBaseClient.SubCategory.protein,"ZUFSP_HUMAN", null);
-        assertEquals(response.getResponse().get(0).getResult().get(0).getName(), "ZUFSP_HUMAN");
-    }
+    // TODO: to be reimplemented. CellBaseClient will soon be refactored
+//    @Test
+//    public void testGetProtein() throws URISyntaxException, IOException {
+//        QueryResponse<QueryResult<Entry>> response =
+//              cellBaseClient.getInfo(CellBaseClient.Category.feature, CellBaseClient.SubCategory.protein,"ZUFSP_HUMAN", null);
+//        assertEquals(response.getResponse().get(0).getResult().get(0).getName(), "ZUFSP_HUMAN");
+//    }
 
 
 
@@ -94,9 +95,8 @@ public class CellBaseClientTest extends TestCase {
         QueryResponse<QueryResult<VariantAnnotation>> fullAnnotationGet =
                 cellBaseClient.getAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
                         new QueryOptions("post", false));
-        ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-        Assert.assertEquals(mapper.writeValueAsString(fullAnnotationGet.getResponse().iterator().next().first()),
-                mapper.writeValueAsString(fullAnnotationPost.getResponse().iterator().next().first()));
+        Assert.assertEquals(fullAnnotationGet.getResponse().iterator().next().first().toString(),
+                fullAnnotationPost.getResponse().iterator().next().first().toString());
     }
 
 }
