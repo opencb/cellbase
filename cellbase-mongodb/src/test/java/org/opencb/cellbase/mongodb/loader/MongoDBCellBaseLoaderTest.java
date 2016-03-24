@@ -18,6 +18,7 @@ package org.opencb.cellbase.mongodb.loader;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.cellbase.core.loader.LoadRunner;
 
@@ -69,6 +70,7 @@ public class MongoDBCellBaseLoaderTest {
         loader.close();
     }
 
+    @Ignore
     @Test
     public void testRun() throws Exception {
         loader.call();
