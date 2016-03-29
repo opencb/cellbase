@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.CellBaseConfiguration;
@@ -56,6 +57,8 @@ public class VariantMongoDBAdaptorTest {
     public static void setUp() throws Exception {
     }
 
+    // TODO: to be finished - properly implemented
+    @Ignore
     @Test
     public void testGetFunctionalScoreVariant() throws Exception {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
