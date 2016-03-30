@@ -163,8 +163,14 @@ public class VariantWSServer extends GenericRestWSServer {
 //                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 //            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
-            VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+            VariantAnnotationCalculator variantAnnotationCalculator = null;
+            if (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true")) {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, true);
+            } else {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
+            }
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
@@ -211,8 +217,17 @@ public class VariantWSServer extends GenericRestWSServer {
 //                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 //            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
-            VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+//            VariantAnnotationCalculator variantAnnotationCalculator =
+//                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+
+            VariantAnnotationCalculator variantAnnotationCalculator = null;
+            if (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true")) {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, true);
+            } else {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
+            }
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
