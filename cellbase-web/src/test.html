@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="cellbase-client.js"></script>
+    <script src="cellbase-client-config.js"></script>
+    <script src="indexeddb-cache.js"></script>
+    <script src="http://underscorejs.org/underscore.js"></script>
+    <script src="http://crypto-js.googlecode.com/files/2.0.0-crypto-sha1.js"></script>
+</head>
+<body>
+
+<script>
+
+    var cellBaseClientConfig = new CellBaseClientConfig();
+    var cellBaseClient = new CellBaseClient(cellBaseClientConfig);
+//    cellBaseClient.setHosts('bioinfo.hpc.cam.ac.uk/cellbase');
+    cellBaseClient.setVersion('v3');
+
+    var d1;
+    var success = function (response) {
+        console.log("Success from user:")
+        console.log(response)
+        console.log(response.response[0].result[0].start)
+    };
+    var error = function (response) {
+        console.log("Error from user:")
+        console.log(response)
+    };
+
+//    cellBaseClient.getGeneClient('BRCA2,BRCA1,TP53', 'info', {"include": "start"}, {success: success, error: error, async: true, hosts: 'www.ebi.ac.uk/cellbase'});
+    cellBaseClient.getGeneClient('BRCA2,BRCA1,TP53', 'info', {}, {success: success, error: error, async: true, cache: false});
+    cellBaseClient.getGeneClient('BRCA2,BRCA1,TP53', 'info', {}, {success: success, error: error, async: true, cache: true});
+
+//    var indexedDBCache = new IndexedDBCache("swaathi");
+//    indexedDBCache.add("hsapiens-f-gene-v4", "key-d", "value-b");
+//    indexedDBCache.put("hsapiens-f-gene-v4", "key-d", "value-d");
+//    indexedDBCache.foreach("hsapiens-f-gene-v4", ["key-a", "key-b"], function (obj1) {
+//        console.log(obj1)
+//    });
+//
+//    indexedDBCache.get("hsapiens-f-gene-v4", "key-d", function (obj) {
+//        console.log("In GET")
+//        console.log(obj)
+//    });
+//
+//    indexedDBCache.delete("hsapiens-f-gene-v4", "key-a");
+//    indexedDBCache.getAll("hsapiens-f-gene-v4", ["key-b", "xxxxx", "key-d"], function (obj) {
+//        console.log(obj);
+//    });
+//
+//    indexedDBCache.clear("hsapiens-f-gene-v4");
+//    indexedDBCache.count("hsapiens-f-gene-v4", function (obj) {
+//        console.log(obj)
+//    });
+//
+////    indexedDBCache.deleteDatabase();
+</script>
+
+</body>
+</html>
