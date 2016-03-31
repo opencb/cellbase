@@ -1,0 +1,114 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--Paper-elements-->
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<!--iron-elements-->
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
+<dom-module id="cellbase-gene-filter">
+    <style>
+        .filter {
+            height: 100%;
+        }
+        paper-tabs.tabview {
+            --paper-tabs-selection-bar-color: blue;
+        }
+        #clear {
+            float: left;
+        }
+        #run {
+            float: right;
+        }
+        .constraints {
+            text-align: left;
+        }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 15px;
+        }
+
+    </style>
+    <template>
+        <div class="filter">
+            <div class="tabs">
+                <paper-tabs class="tabview" selected={{selected}}>
+                    <paper-tab id="filerTab">Filter</paper-tab>
+                    <paper-tab id="result">Result</paper-tab>
+                </paper-tabs>
+            </div>
+
+            <div class="content">
+                <iron-pages id="selectedTab" selected="{{selected}}">
+                    <div class="filter-content">
+                        <paper-button id="clear" on-click="clearAllFields" raised>clear</paper-button>
+                        <paper-button id="run" on-click="changePage" raised>run</paper-button>
+                        <br><br>
+                        <div class="constraints">
+                            <paper-textarea type="text" value={{region}} label="Region"></paper-textarea>
+                        </div>
+                        <div class="constraints">
+                            <paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>
+                        </div>
+                        <div class="constraints">
+                            <p>Biotype:</p>
+                            <paper-checkbox>pseudogene</paper-checkbox>
+                            <!--<template is="dom-repeat" items="{{biotype}}">-->
+                            <!--<paper-checkbox>{{item}}</paper-checkbox>-->
+                            <!--</template>-->
+                        </div>
+                    </div>
+                    <div class="result-content">
+                        <table>
+                            <tr>
+                                <th>Region</th>
+                                <th>ID</th>
+                                <th>biotype</th>
+                            </tr>
+                            <tr>
+                                <td>{{region}}</td>
+                                <td>{{ids}}</td>
+                                <td>{{biotype}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </iron-pages>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+           is: 'cellbase-gene-filter',
+            properties: {
+                selected: {
+                    type: String,
+                    value: 0
+                },
+                region: {
+                    type: String
+                },
+                ids: {
+                    type: String
+                },
+                biotype: {
+                    type: String
+                }
+            },
+            clearAllFields: function (e) {
+                this.region = "";
+                this.ids = "";
+            },
+            changePage: function (e) {
+                var pages = document.querySelector('iron-pages#selectedTab');
+                pages.selectNext();
+            }
+        });
+    </script>
+</dom-module>

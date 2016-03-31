@@ -16,12 +16,14 @@
 
 package org.opencb.cellbase.app.cli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class PostLoadCommandExecutorTest {
 
+    @Ignore
     @Test
     public void testLoadClinicalAnnotation() {
         PostLoadCommandExecutor postLoadCommandExecutor = new PostLoadCommandExecutor();

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.mongodb.db;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.CellBaseConfiguration;
@@ -31,62 +32,23 @@ import java.util.List;
 
 public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
+    // TODO: to be finished - properly implemented
+    @Ignore
     @Test
     public void testGetAllByRegionList() throws Exception {
-//        try {
-//            CellbaseConfiguration config = new CellbaseConfiguration();
-            CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
-//            config.addSpeciesAlias("hsapiens", "hsapiens");
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+        QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
 
-            DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-            QueryOptions queryOptions = new QueryOptions("include", "clinvarList");
-//            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllClinvarByRegionList(Arrays.asList(new Region("3", 550000, 1166666)), queryOptions);
-//            List<QueryResult> queryResultList = new ArrayList<>();
-//            for (QueryResult clinvarQueryResult : clinicalQueryResultList) {
-//                QueryResult queryResult = new QueryResult();
-//                queryResult.setId(clinvarQueryResult.getId());
-//                queryResult.setDbTime(clinvarQueryResult.getDbTime());
-//                queryResult.setNumResults(clinvarQueryResult.getNumResults());
-//                BasicDBList basicDBList = new BasicDBList();
-//
-//                for (Document clinicalRecord : (List<Document>) clinvarQueryResult.getResult()) {
-//                    if (clinicalRecord.containsKey("clinvarList")) {
-//                        for (Document clinvarRecord : (List<Document>) clinicalRecord.get("clinvarList")) {
-//                            basicDBList.add(clinvarRecord);
-//                        }
-//                    }
-//                }
-//                queryResult.setResult(basicDBList);
-//                queryResultList.add(queryResult);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
     }
 
-//    @Test
-//    public void testGetClinvarById() throws Exception {
-//
-////        CellbaseConfiguration config = new CellbaseConfiguration();
-//        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-//
-////        config.addSpeciesAlias("hsapiens", "hsapiens");
-//
-//        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-//
-//        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-//
-////        clinicalDBAdaptor.getAllClinvarByIdList(Splitter.on(",").splitToList("RCV000091359"), new QueryOptions());
-//    }
-
+    // TODO: to be finished - properly implemented
+    @Ignore
     @Test
     public void testGetAll() {
 
-//        CellbaseConfiguration config = new CellbaseConfiguration();
         CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
 
         try {
@@ -118,15 +80,12 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions.addToListOption("rcv", "RCV000019455");
         queryOptions.add("limit", 30);
 
-//        ((List<String>) queryOptions.get("include")).remove(0);
-
         QueryResult queryResult = clinicalDBAdaptor.getAll(queryOptions);
-        int a;
-        a = 1;
-
 
     }
 
+    // TODO: to be finished - properly implemented
+    @Ignore
     @Test
     public void testGetPhenotypeGeneRelations() throws Exception {
 
@@ -146,18 +105,6 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions.addToListOption("include", "clinvar");
 //        queryOptions.addToListOption("include", "gwas");
         List<QueryResult> queryResultList = clinicalDBAdaptor.getPhenotypeGeneRelations(queryOptions);
-        int a;
-        a=1;
 
     }
-
-//    @Test
-//    public void testGetByGeneId() throws Exception {
-//        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-//        QueryOptions queryOptions = new QueryOptions();
-////        QueryOptions queryOptions = new QueryOptions("phenotype", "carcinoma");
-//        queryOptions.add("limit",3);
-//        QueryResult queryResult = clinicalDBAdaptor.getByGeneId("BRCA2", queryOptions);
-//    }
-
 }

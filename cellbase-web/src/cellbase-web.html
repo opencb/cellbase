@@ -1,0 +1,156 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<!--cellbase-elements-->
+<link rel="import" href="cellbase-gene-panel.html">
+
+<dom-module id="cellbase-web">
+    <style>
+        paper-item {
+            --paper-item: {
+                cursor: pointer;
+            };
+        }
+        .paper-header {
+            float: left;
+            width: 50%;
+            text-align: left;
+        }
+        .about {
+            float: right;
+            width: 50%;
+            text-align: right;
+
+        }
+    </style>
+
+    <template>
+        <paper-drawer-panel id="paperDrawerPanel" force-narrow>
+
+            <paper-scroll-header-panel drawer>
+
+                <paper-toolbar><span>Menu</span></paper-toolbar>
+
+                <paper-dropdown-menu label="Version">
+                    <paper-menu class="dropdown-content" selected={{selectedVersion}}>
+                        <template is="dom-repeat" items="{{versions}}">
+                            <paper-item>{{item}}</paper-item>
+                        </template>
+                    </paper-menu>
+                </paper-dropdown-menu>
+
+                <paper-dropdown-menu label="Species">
+                    <paper-menu class="dropdown-content" selected="">
+                        <template is="dom-repeat" items="{{speciesList}}">
+                            <paper-item>{{item}}</paper-item>
+                        </template>
+                    </paper-menu>
+                </paper-dropdown-menu>
+
+                <hr>
+                <paper-menu attr-for-selected="selectedMenu" selected="{{selectedMenu}}">
+                    <paper-item selectedMenu="gene">Gene</paper-item>
+                    <paper-item selectedMenu="transcript">Transcript</paper-item>
+                    <paper-item selectedMenu="protein">Protein</paper-item>
+                    <paper-item selectedMenu="SNP">SNP</paper-item>
+                    <paper-item selectedMenu="clinical-variant">Clinical Variants</paper-item>
+                    <paper-item selectedMenu="TFBS">TFBS</paper-item>
+                    <paper-item selectedMenu="miRNA-targets">miRNA Targets</paper-item>
+                </paper-menu>
+                <hr>
+
+                <paper-icon-item>
+                    <paper-icon-button icon="info"></paper-icon-button>
+                    About <br>
+                    <paper-icon-button icon="code"></paper-icon-button>
+                    Github <br>
+                    <paper-icon-button icon="description"></paper-icon-button>
+                    Documentation
+                </paper-icon-item>
+
+
+            </paper-scroll-header-panel>
+            <paper-scroll-header-panel main>
+                <paper-toolbar>
+                    <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
+                    <h4 class="paper-header">CELLBASE</h4>
+                    <div class="about">
+                        <paper-icon-button id="setting" icon="settings" on-click="clickHandler"></paper-icon-button>
+                        <paper-tooltip for="setting">Settings</paper-tooltip>
+                    </div>
+                    <paper-dialog id="modal" modal>
+                        <div>
+                            CellBase Host: <br>
+                            <input type="text" value="{{host::input}}" size="35">
+                            <!--<paper-dropdown-menu label="Host">-->
+                                <!--<paper-menu class="dropdown-content" selected={{selectedHost}}>-->
+                                    <!--<template is="dom-repeat" items="{{hosts}}">-->
+                                        <!--<paper-item>{{item}}</paper-item>-->
+                                    <!--</template>-->
+                                <!--</paper-menu>-->
+                            <!--</paper-dropdown-menu>-->
+                            </div>
+                            <div>
+                                <input type="checkbox" checked>Cache
+                            </div>
+                        <paper-button dialog-confirm autofocus>OK</paper-button>
+                    </paper-dialog>
+                </paper-toolbar>
+                <div class="content">
+                    <iron-pages attr-for-selected="selectedMenu" selected="{{selectedMenu}}">
+                        <div selectedMenu="gene">
+                            <cellbase-gene-panel></cellbase-gene-panel>
+                        </div>
+                        <div selectedMenu="transcript">
+                            <p>second page for transcript</p>
+                        </div>
+                        <div selectedMenu="protein">
+                            Protein
+                        </div>
+                        </iron-pages>
+                    <!--<cellbase-gene-panel></cellbase-gene-panel>-->
+
+                </div>
+            </paper-scroll-header-panel>
+
+        </paper-drawer-panel>
+
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'cellbase-web',
+            properties: {
+                host: {
+                    type: String,
+                    value: "http://bioinfo.hpc.cam.ac.uk/cellbase"
+                },
+                selectedMenu: {
+                    type: String,
+                    observer: 'selectedMenuChanged'
+                }
+            },
+            clickHandler: function (e) {
+                var dialog = document.getElementById("modal");
+                if (dialog) {
+                    dialog.open();
+                }
+            },
+            selectedMenuChanged: function(neo, old) {
+
+            }
+        });
+    </script>
+</dom-module>

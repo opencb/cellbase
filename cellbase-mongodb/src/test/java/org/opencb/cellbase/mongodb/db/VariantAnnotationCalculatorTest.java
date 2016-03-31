@@ -64,8 +64,10 @@ public class VariantAnnotationCalculatorTest {
 
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>();
 
-        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("22:16275272:C:T")  // Should not raise NPE
+        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("1:40768842:C:G")  // Should not raise NPE
                 , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
+//        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("22:16275272:C:T")  // Should not raise NPE
+//                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("22:16050654:A:<CN0>")  // Should not raise NPE
 //                , new QueryOptions()).get(0).getResult()).get(0));  // should not return NPE
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Variant.parseVariants("MT:7443:A:G")  // Should not raise NPE
@@ -270,9 +272,9 @@ public class VariantAnnotationCalculatorTest {
 
     }
 
-//    @Ignore
-//    @Test
-//    public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
+    @Ignore
+    @Test
+    public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 //
 ////        URI uri = new URI("http", null, "172.22.68.41", 8080, "/cellbase/webservices/rest/", null, null);
 ////        UriBuilder uriBuilder = UriBuilder.fromUri(uri).path("v3").path("hsapiens").path("genomic").path("variant").path("full_annotation");
@@ -307,12 +309,27 @@ public class VariantAnnotationCalculatorTest {
 ////        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = dbAdaptorFactory.getVariantAnnotationDBAdaptor("agambiae", "GRCh37");
 //
 //        String line = null;
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+
+        try {
+            cellBaseConfiguration = CellBaseConfiguration
+                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+
+        VariantAnnotationCalculator variantAnnotationDBAdaptor = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
+
 //
 //
 //        // Use ebi cellbase to test these
 //        // TODO: check differences against Web VEP
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCC:ACTGGGCATCC/full_annotation
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
+        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16287261, "G", "A"), new QueryOptions());  // should not return things like {"score":0.0,"source":null,"description":null}  for ENST00000343518 substitution scores
+//        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("22", 16057210, "C", "T"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("2", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
 //        variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant("18", 163395, "C", "G"), new QueryOptions());  // should return ENST 00000454360 splice donor
@@ -475,14 +492,14 @@ public class VariantAnnotationCalculatorTest {
 ////            e.printStackTrace();
 ////        }
 //
-//        /**
-//         * Calculates annotation for vcf file variants, loads vep annotations, compares batches and writes results
-//         */
-////        String DIROUT = "/home/fjlopez/tmp/";
+        /**
+         * Calculates annotation for vcf file variants, loads vep annotations, compares batches and writes results
+         */
+        String DIROUT = "/tmp/";
 //        String DIROUT = "/homes/fjlopez/tmp/";
-//        List<String> VCFS = new ArrayList<>();
+        List<String> VCFS = new ArrayList<>();
 ////        VCFS.add("/tmp/test.vcf");
-////        VCFS.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
+        VCFS.add("/media/shared/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 ////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 ////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 ////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
@@ -507,9 +524,9 @@ public class VariantAnnotationCalculatorTest {
 ////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chr9.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 ////        VCFS.add("/nfs/production2/eva/release-2015-pag/1000g-phase1/vcf_accessioned/ALL.chrX.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned.vcf");
 //
-//        List<String> VEPFILENAMES = new ArrayList<>();
+        List<String> VEPFILENAMES = new ArrayList<>();
 ////        VEPFILENAMES.add("/tmp/test.txt");
-////        VEPFILENAMES.add("/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
+        VEPFILENAMES.add("/media/shared/tmp/ALL.chr22.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 ////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr10.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 ////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr11.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
 ////        VEPFILENAMES.add("/nfs/production2/eva/VEP/Old/eva_output_by_study/release-2015-pag/Complete/1000g-phase1/vcf_accessioned/ALL.chr12.integrated_phase1_v3.20101123.snps_indels_svs.genotypes_accessioned_VEPprocessed.txt");
@@ -536,252 +553,252 @@ public class VariantAnnotationCalculatorTest {
 //
 //
 //
-//        Set<AnnotationComparisonObject> uvaAnnotationSet = new HashSet<>();
-//        Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
-//        int vepFileIndex = 0;
-//        int nNonRegulatoryAnnotations = 0;
-//        int nVariants = 0;
-//        for (String vcfFilename : VCFS) {
-//            System.out.println("Processing "+vcfFilename+" lines...");
-//            VcfRawReader vcfReader = new VcfRawReader(vcfFilename);
-//            File file = new File(VEPFILENAMES.get(vepFileIndex));
-//            RandomAccessFile raf = new RandomAccessFile(file, "r");
-//            if (vcfReader.open()) {
-//                vcfReader.pre();
-//                skipVepFileHeader(raf);
-//                int nLines = countLines(vcfFilename);
-//                int nReadVariants;
-//                int lineCounter=0;
-//                do {
-//                    nReadVariants = getVcfAnnotationBatch(vcfReader, variantAnnotationDBAdaptor, uvaAnnotationSet);
-//                    nNonRegulatoryAnnotations += getVepAnnotationBatch(raf, nReadVariants, vepAnnotationSet);
-//                    nVariants += nReadVariants;
-//                    compareAndWrite(uvaAnnotationSet, vepAnnotationSet, lineCounter, nLines, nNonRegulatoryAnnotations,
-//                            nVariants, DIROUT);
-//                    lineCounter += nReadVariants;
-//                    System.out.print(lineCounter+"/"+nLines+" - non-regulatory annotations: "+nNonRegulatoryAnnotations+"\r");
-//                } while (nReadVariants > 0);
-//                vcfReader.post();
-//                vcfReader.close();
-//                raf.close();
-//            }
-//            vepFileIndex++;
+        Set<AnnotationComparisonObject> uvaAnnotationSet = new HashSet<>();
+        Set<AnnotationComparisonObject> vepAnnotationSet = new HashSet<>();
+        int vepFileIndex = 0;
+        int nNonRegulatoryAnnotations = 0;
+        int nVariants = 0;
+        for (String vcfFilename : VCFS) {
+            System.out.println("Processing "+vcfFilename+" lines...");
+            VcfRawReader vcfReader = new VcfRawReader(vcfFilename);
+            File file = new File(VEPFILENAMES.get(vepFileIndex));
+            RandomAccessFile raf = new RandomAccessFile(file, "r");
+            if (vcfReader.open()) {
+                vcfReader.pre();
+                skipVepFileHeader(raf);
+                int nLines = countLines(vcfFilename);
+                int nReadVariants;
+                int lineCounter=0;
+                do {
+                    nReadVariants = getVcfAnnotationBatch(vcfReader, variantAnnotationDBAdaptor, uvaAnnotationSet);
+                    nNonRegulatoryAnnotations += getVepAnnotationBatch(raf, nReadVariants, vepAnnotationSet);
+                    nVariants += nReadVariants;
+                    compareAndWrite(uvaAnnotationSet, vepAnnotationSet, lineCounter, nLines, nNonRegulatoryAnnotations,
+                            nVariants, DIROUT);
+                    lineCounter += nReadVariants;
+                    System.out.print(lineCounter+"/"+nLines+" - non-regulatory annotations: "+nNonRegulatoryAnnotations+"\r");
+                } while (nReadVariants > 0);
+                vcfReader.post();
+                vcfReader.close();
+                raf.close();
+            }
+            vepFileIndex++;
+        }
+    }
+
+    private void skipVepFileHeader(RandomAccessFile raf) throws IOException {
+        String line;
+        long pos;
+        do {
+            pos = raf.getFilePointer();
+            line = raf.readLine();
+        }while(line.startsWith("#"));
+        raf.seek(pos);
+    }
+
+    private int getVcfAnnotationBatch(VcfRawReader vcfReader, VariantAnnotationCalculator variantAnnotationDBAdaptor,
+                                      Set<AnnotationComparisonObject> uvaAnnotationSet) {
+        QueryResult queryResult = null;
+        String pos;
+        String ref;
+        String cellbaseRef;
+        String alt;
+        String cellbaseAlt;
+        String SoNameToTest;
+
+        List<VcfRecord> vcfRecordList = vcfReader.read(1000);
+        int ensemblPos;
+        int processedVariants = 0;
+
+        for (VcfRecord vcfRecord : vcfRecordList) {
+//            boolean isSnv = false;
+            // Short deletion
+            if (vcfRecord.getReference().length() > 1) {
+                ref = vcfRecord.getReference().substring(1);
+                cellbaseRef = vcfRecord.getReference().substring(1);
+                alt = "-";
+                cellbaseAlt = "";
+                ensemblPos = vcfRecord.getPosition() + 1;
+                int end = getEndFromInfoField(vcfRecord);
+                if(end==-1) {
+                    if (ref.length() > 1) {
+                        pos = (vcfRecord.getPosition() + 1) + "-" + (vcfRecord.getPosition() + ref.length());
+                    } else {
+                        pos = Integer.toString(vcfRecord.getPosition() + 1);
+                    }
+                } else {
+                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
+                }
+                // Alternate length may be > 1 if it contains <DEL>
+            } else if (vcfRecord.getAlternate().length() > 1) {
+                // Large deletion
+                if (vcfRecord.getAlternate().equals("<DEL>")) {
+                    ensemblPos = vcfRecord.getPosition() + 1;
+                    int end = getEndFromInfoField(vcfRecord);
+                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
+                    ref = StringUtils.repeat("N", end - vcfRecord.getPosition());
+                    cellbaseRef = StringUtils.repeat("N", end - vcfRecord.getPosition());
+                    alt = "-";
+                    cellbaseAlt = "";
+                    // Short insertion
+                } else {
+                    ensemblPos = vcfRecord.getPosition() + 1;
+                    ref = "-";
+                    cellbaseRef = "";
+                    alt = vcfRecord.getAlternate().substring(1);
+                    cellbaseAlt = vcfRecord.getAlternate().substring(1);
+                    pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + 1);
+                }
+                // SNV
+            } else {
+                ref = vcfRecord.getReference();
+                cellbaseRef = vcfRecord.getReference();
+                alt = vcfRecord.getAlternate();
+                cellbaseAlt = vcfRecord.getAlternate();
+                ensemblPos = vcfRecord.getPosition();
+                pos = Integer.toString(ensemblPos);
+//                isSnv = true;
+            }
+            // TODO: Remove this if as refactoring implements consequence types for other variant types
+//            if(isSnv) {
+                processedVariants++;
+                try {
+                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt), new QueryOptions());
+                } catch (Exception e) {
+                    System.out.println("new Variant = " + new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt));
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+
+                int i;
+                List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
+                for (i = 0; i < consequenceTypeList.size(); i++) {
+                    for (SequenceOntologyTerm soTerm : consequenceTypeList.get(i).getSequenceOntologyTerms()) {
+                        if (soTerm.getName().equals("2KB_upstream_gene_variant")) {
+                            SoNameToTest = "upstream_gene_variant";
+                        } else if (soTerm.getName().equals("2KB_downstream_gene_variant")) {
+                            SoNameToTest = "downstream_gene_variant";
+                        } else {
+                            SoNameToTest = soTerm.getName();
+                        }
+                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
+                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
+                                consequenceTypeList.get(i).getEnsemblTranscriptId() == null ? "-" : consequenceTypeList.get(i).getEnsemblTranscriptId(),
+                                consequenceTypeList.get(i).getBiotype() == null ? "-" : consequenceTypeList.get(i).getBiotype(),
+                                SoNameToTest));
+                    }
+                }
+            }
 //        }
-//    }
-//
-//    private void skipVepFileHeader(RandomAccessFile raf) throws IOException {
-//        String line;
-//        long pos;
-//        do {
-//            pos = raf.getFilePointer();
-//            line = raf.readLine();
-//        }while(line.startsWith("#"));
-//        raf.seek(pos);
-//    }
-//
-//    private int getVcfAnnotationBatch(VcfRawReader vcfReader, VariantAnnotationDBAdaptor variantAnnotationDBAdaptor,
-//                                      Set<AnnotationComparisonObject> uvaAnnotationSet) {
-//        QueryResult queryResult = null;
-//        String pos;
-//        String ref;
-//        String cellbaseRef;
-//        String alt;
-//        String cellbaseAlt;
-//        String SoNameToTest;
-//
-//        List<VcfRecord> vcfRecordList = vcfReader.read(1000);
-//        int ensemblPos;
-//        int processedVariants = 0;
-//
-//        for (VcfRecord vcfRecord : vcfRecordList) {
-////            boolean isSnv = false;
-//            // Short deletion
-//            if (vcfRecord.getReference().length() > 1) {
-//                ref = vcfRecord.getReference().substring(1);
-//                cellbaseRef = vcfRecord.getReference().substring(1);
-//                alt = "-";
-//                cellbaseAlt = "";
-//                ensemblPos = vcfRecord.getPosition() + 1;
-//                int end = getEndFromInfoField(vcfRecord);
-//                if(end==-1) {
-//                    if (ref.length() > 1) {
-//                        pos = (vcfRecord.getPosition() + 1) + "-" + (vcfRecord.getPosition() + ref.length());
-//                    } else {
-//                        pos = Integer.toString(vcfRecord.getPosition() + 1);
-//                    }
-//                } else {
-//                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
+        return processedVariants;
+//        return vcfRecordList.size();
+    }
+
+    private int getEndFromInfoField(VcfRecord vcfRecord) {
+        String[] infoFields = vcfRecord.getInfo().split(";");
+        int i = 0;
+        while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
+            i++;
+        }
+
+        if(i<infoFields.length) {
+            return Integer.parseInt(infoFields[i].split("=")[1]);
+        } else {
+            return -1;
+        }
+    }
+
+    private int getVepAnnotationBatch(RandomAccessFile raf, int nVariantsToRead,
+                                       Set<AnnotationComparisonObject> vepAnnotationSet) throws IOException {
+        /**
+         * Loads VEP annotation
+         */
+        String newLine;
+        int nNonRegulatoryAnnotations = 0;
+        int nReadVariants = 0;
+        String previousChr = "";
+        String previousPosition = "";
+        String previousAlt = "";
+        String alt;
+        long filePointer=0;
+
+        if(nVariantsToRead>0) {
+            while (((newLine = raf.readLine()) != null) && nReadVariants <= nVariantsToRead) {
+                String[] lineFields = newLine.split("\t");
+                String[] coordinatesParts = lineFields[1].split(":");
+                if (lineFields[2].equals("deletion")) {
+                    alt = "-";
+                } else {
+                    alt = lineFields[2];
+                }
+                // TODO: Remove this if as refactoring implements consequence types for other variant types
+//                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
+                    if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
+                            !previousAlt.equals(alt)) {
+                        nReadVariants++;
+                    }
+                    if (nReadVariants <= nVariantsToRead) {
+                        for (String SOname : lineFields[6].split(",")) {
+                            if (SOname.equals("nc_transcript_variant")) {
+                                SOname = "non_coding_transcript_variant";
+                            }
+                            if (!SOname.equals("regulatory_region_variant")) {
+                                nNonRegulatoryAnnotations++;
+                            }
+                            vepAnnotationSet.add(new AnnotationComparisonObject(coordinatesParts[0], coordinatesParts[1], alt, lineFields[3],
+                                    lineFields[4], SOname));
+                        }
+                        previousChr = coordinatesParts[0];
+                        previousPosition = coordinatesParts[1];
+                        previousAlt = alt;
+                        filePointer = raf.getFilePointer();
+                    }
 //                }
-//                // Alternate length may be > 1 if it contains <DEL>
-//            } else if (vcfRecord.getAlternate().length() > 1) {
-//                // Large deletion
-//                if (vcfRecord.getAlternate().equals("<DEL>")) {
-//                    ensemblPos = vcfRecord.getPosition() + 1;
-//                    int end = getEndFromInfoField(vcfRecord);
-//                    pos = (vcfRecord.getPosition() + 1) + "-" + end;
-//                    ref = StringUtils.repeat("N", end - vcfRecord.getPosition());
-//                    cellbaseRef = StringUtils.repeat("N", end - vcfRecord.getPosition());
-//                    alt = "-";
-//                    cellbaseAlt = "";
-//                    // Short insertion
-//                } else {
-//                    ensemblPos = vcfRecord.getPosition() + 1;
-//                    ref = "-";
-//                    cellbaseRef = "";
-//                    alt = vcfRecord.getAlternate().substring(1);
-//                    cellbaseAlt = vcfRecord.getAlternate().substring(1);
-//                    pos = vcfRecord.getPosition() + "-" + (vcfRecord.getPosition() + 1);
-//                }
-//                // SNV
-//            } else {
-//                ref = vcfRecord.getReference();
-//                cellbaseRef = vcfRecord.getReference();
-//                alt = vcfRecord.getAlternate();
-//                cellbaseAlt = vcfRecord.getAlternate();
-//                ensemblPos = vcfRecord.getPosition();
-//                pos = Integer.toString(ensemblPos);
-////                isSnv = true;
-//            }
-//            // TODO: Remove this if as refactoring implements consequence types for other variant types
-////            if(isSnv) {
-//                processedVariants++;
-//                try {
-//                    queryResult = variantAnnotationDBAdaptor.getAllConsequenceTypesByVariant(new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt), new QueryOptions());
-//                } catch (Exception e) {
-//                    System.out.println("new Variant = " + new Variant(vcfRecord.getChromosome(), ensemblPos, cellbaseRef, cellbaseAlt));
-//                    e.printStackTrace();
-//                    System.exit(1);
-//                }
-//
-//                int i;
-//                List<ConsequenceType> consequenceTypeList = (List<ConsequenceType>) queryResult.getResult();
-//                for (i = 0; i < consequenceTypeList.size(); i++) {
-//                    for (SequenceOntologyTerm soTerm : consequenceTypeList.get(i).getSequenceOntologyTerms()) {
-//                        if (soTerm.getName().equals("2KB_upstream_gene_variant")) {
-//                            SoNameToTest = "upstream_gene_variant";
-//                        } else if (soTerm.getName().equals("2KB_downstream_gene_variant")) {
-//                            SoNameToTest = "downstream_gene_variant";
-//                        } else {
-//                            SoNameToTest = soTerm.getName();
-//                        }
-//                        uvaAnnotationSet.add(new AnnotationComparisonObject(vcfRecord.getChromosome(), pos, alt,
-//                                consequenceTypeList.get(i).getEnsemblGeneId() == null ? "-" : consequenceTypeList.get(i).getEnsemblGeneId(),
-//                                consequenceTypeList.get(i).getEnsemblTranscriptId() == null ? "-" : consequenceTypeList.get(i).getEnsemblTranscriptId(),
-//                                consequenceTypeList.get(i).getBiotype() == null ? "-" : consequenceTypeList.get(i).getBiotype(),
-//                                SoNameToTest));
-//                    }
-//                }
-//            }
-////        }
-//        return processedVariants;
-////        return vcfRecordList.size();
-//    }
-//
-//    private int getEndFromInfoField(VcfRecord vcfRecord) {
-//        String[] infoFields = vcfRecord.getInfo().split(";");
-//        int i = 0;
-//        while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
-//            i++;
-//        }
-//
-//        if(i<infoFields.length) {
-//            return Integer.parseInt(infoFields[i].split("=")[1]);
-//        } else {
-//            return -1;
-//        }
-//    }
-//
-//    private int getVepAnnotationBatch(RandomAccessFile raf, int nVariantsToRead,
-//                                       Set<AnnotationComparisonObject> vepAnnotationSet) throws IOException {
-//        /**
-//         * Loads VEP annotation
-//         */
-//        String newLine;
-//        int nNonRegulatoryAnnotations = 0;
-//        int nReadVariants = 0;
-//        String previousChr = "";
-//        String previousPosition = "";
-//        String previousAlt = "";
-//        String alt;
-//        long filePointer=0;
-//
-//        if(nVariantsToRead>0) {
-//            while (((newLine = raf.readLine()) != null) && nReadVariants <= nVariantsToRead) {
-//                String[] lineFields = newLine.split("\t");
-//                String[] coordinatesParts = lineFields[1].split(":");
-//                if (lineFields[2].equals("deletion")) {
-//                    alt = "-";
-//                } else {
-//                    alt = lineFields[2];
-//                }
-//                // TODO: Remove this if as refactoring implements consequence types for other variant types
-////                if(!alt.equals("-") && coordinatesParts[1].split("-").length==1) {
-//                    if (!previousChr.equals(coordinatesParts[0]) || !previousPosition.equals(coordinatesParts[1]) ||
-//                            !previousAlt.equals(alt)) {
-//                        nReadVariants++;
-//                    }
-//                    if (nReadVariants <= nVariantsToRead) {
-//                        for (String SOname : lineFields[6].split(",")) {
-//                            if (SOname.equals("nc_transcript_variant")) {
-//                                SOname = "non_coding_transcript_variant";
-//                            }
-//                            if (!SOname.equals("regulatory_region_variant")) {
-//                                nNonRegulatoryAnnotations++;
-//                            }
-//                            vepAnnotationSet.add(new AnnotationComparisonObject(coordinatesParts[0], coordinatesParts[1], alt, lineFields[3],
-//                                    lineFields[4], SOname));
-//                        }
-//                        previousChr = coordinatesParts[0];
-//                        previousPosition = coordinatesParts[1];
-//                        previousAlt = alt;
-//                        filePointer = raf.getFilePointer();
-//                    }
-////                }
-//            }
-//
-//            raf.seek(filePointer);
-//        }
-//
-//        return nNonRegulatoryAnnotations;
-//    }
-//
-//    private void compareAndWrite(Set<AnnotationComparisonObject> uvaAnnotationSet,
-//                                 Set<AnnotationComparisonObject> vepAnnotationSet, int lineCounter, int nLines,
-//                                 int nNonRegulatoryAnnotations, int nVariants, String dirout) throws IOException {
-//
-//        /**
-//         * Compare both annotation sets and get UVA specific annotations
-//         */
-//        BufferedWriter bw = Files.newBufferedWriter(Paths.get(dirout+"/uva.specific.txt"), Charset.defaultCharset());
-//        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
-//        Set<AnnotationComparisonObject> uvaAnnotationSetBck = new HashSet<>(uvaAnnotationSet);
-//        uvaAnnotationSet.removeAll(vepAnnotationSet);
-//        List<AnnotationComparisonObject> uvaSpecificAnnotationList = new ArrayList(uvaAnnotationSet);
-//        Collections.sort(uvaSpecificAnnotationList, new AnnotationComparisonObjectComparator());
-//        for(AnnotationComparisonObject comparisonObject : uvaSpecificAnnotationList) {
-//            if(comparisonObject.getSOname().equals("regulatory_region_variant")) {
-//                bw.write(comparisonObject.toString());
-//            }
-//        }
-//        bw.close();
-//
-//        /**
-//         * Compare both annotation sets and get VEP specific annotations
-//         */
-//        bw = Files.newBufferedWriter(Paths.get(dirout+"vep.specific.txt"), Charset.defaultCharset());
-//        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
-//        vepAnnotationSet.removeAll(uvaAnnotationSetBck);
-//        List<AnnotationComparisonObject> vepSpecificAnnotationList = new ArrayList<>(vepAnnotationSet);
-//        Collections.sort(vepSpecificAnnotationList, new AnnotationComparisonObjectComparator());
-//        for(AnnotationComparisonObject comparisonObject : vepSpecificAnnotationList) {
-//            bw.write(comparisonObject.toString());
-//        }
-//        bw.write("\n\n\n");
-//        bw.write(lineCounter+"/"+nLines+"\n");
-//        bw.write("# processed variants: "+nVariants+"\n");
-//        bw.write("# non-regulatory annotations: "+nNonRegulatoryAnnotations+"\n");
-//
-//        bw.close();
-//    }
-//
+            }
+
+            raf.seek(filePointer);
+        }
+
+        return nNonRegulatoryAnnotations;
+    }
+
+    private void compareAndWrite(Set<AnnotationComparisonObject> uvaAnnotationSet,
+                                 Set<AnnotationComparisonObject> vepAnnotationSet, int lineCounter, int nLines,
+                                 int nNonRegulatoryAnnotations, int nVariants, String dirout) throws IOException {
+
+        /**
+         * Compare both annotation sets and get UVA specific annotations
+         */
+        BufferedWriter bw = Files.newBufferedWriter(Paths.get(dirout+"/uva.specific.txt"), Charset.defaultCharset());
+        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
+        Set<AnnotationComparisonObject> uvaAnnotationSetBck = new HashSet<>(uvaAnnotationSet);
+        uvaAnnotationSet.removeAll(vepAnnotationSet);
+        List<AnnotationComparisonObject> uvaSpecificAnnotationList = new ArrayList(uvaAnnotationSet);
+        Collections.sort(uvaSpecificAnnotationList, new AnnotationComparisonObjectComparator());
+        for(AnnotationComparisonObject comparisonObject : uvaSpecificAnnotationList) {
+            if(!comparisonObject.getSOname().equals("regulatory_region_variant")) {
+                bw.write(comparisonObject.toString());
+            }
+        }
+        bw.close();
+
+        /**
+         * Compare both annotation sets and get VEP specific annotations
+         */
+        bw = Files.newBufferedWriter(Paths.get(dirout+"vep.specific.txt"), Charset.defaultCharset());
+        bw.write("#CHR\tPOS\tALT\tENSG\tENST\tBIOTYPE\tCT\n");
+        vepAnnotationSet.removeAll(uvaAnnotationSetBck);
+        List<AnnotationComparisonObject> vepSpecificAnnotationList = new ArrayList<>(vepAnnotationSet);
+        Collections.sort(vepSpecificAnnotationList, new AnnotationComparisonObjectComparator());
+        for(AnnotationComparisonObject comparisonObject : vepSpecificAnnotationList) {
+            bw.write(comparisonObject.toString());
+        }
+        bw.write("\n\n\n");
+        bw.write(lineCounter+"/"+nLines+"\n");
+        bw.write("# processed variants: "+nVariants+"\n");
+        bw.write("# non-regulatory annotations: "+nNonRegulatoryAnnotations+"\n");
+
+        bw.close();
+    }
+
 }
