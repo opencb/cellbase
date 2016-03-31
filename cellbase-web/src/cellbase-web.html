@@ -137,11 +137,19 @@
                     type: String,
                     value: "http://bioinfo.hpc.cam.ac.uk/cellbase"
                 },
+                versions: {
+                    type: String
+//                    computed: 'computeVersion'
+                },
                 selectedMenu: {
                     type: String,
                     observer: 'selectedMenuChanged'
                 }
             },
+//            computeVersion: function () {
+//                var client = new CellBaseClient();
+//
+//            },
             clickHandler: function (e) {
                 var dialog = document.getElementById("modal");
                 if (dialog) {
