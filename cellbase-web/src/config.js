@@ -18,4 +18,3 @@ var CELLBASE_HOSTS = ["bioinf.hpc.cam.ac.uk/cellbase", "www.ebi.ac.uk/cellbase"]
 var CELLBASE_VERSION = "v4";
 var CELLBASE_SPECIES = "hsapiens";
 
-var cellBaseClient;

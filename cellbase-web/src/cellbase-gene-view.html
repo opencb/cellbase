@@ -19,7 +19,7 @@
             <paper-tabs class="tabview" selected="0">
                 <paper-tab id="view">Genome Map</paper-tab>
                 <paper-tab id="transcript">Transcript</paper-tab>
-                <paper-tab>{{cellbase}}</paper-tab>
+                <paper-tab id="tfbs">{{cellbase}}</paper-tab>
                 <paper-tab id="exons">Exons</paper-tab>
             </paper-tabs>
 
@@ -38,13 +38,21 @@
                     type: String
                 },
                 cellbase: {
-                    type: String,
-                    value: "empty"
+                    type: Object
                 }
             },
             ready: function() {
                 console.log(this.localName + '#' + this.id + ' has local DOM initialized');
                 console.log(cellBaseClient)
+                console.log(this.$.tfbs.textContent)
+                this.cellbase = cellBaseClient._config.version;
+//                this.$.tfbs.textContent = cellBaseClient._config.version;
+                var success = function (response) {
+                    console.log("Success from user:")
+                    console.log(response)
+                    console.log(response.response[0].result[0].start)
+                };
+                cellBaseClient.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
             }
         });
     </script>
