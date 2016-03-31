@@ -18,20 +18,21 @@
     </style>
     <template>
         <div class="panel">
-                <cellbase-gene-filter id="filter" fpro={{name}}></cellbase-gene-filter>
-                <cellbase-gene-view id="view" vpro={{name}} cellbase="{{cellbase}}"></cellbase-gene-view>
+                <cellbase-gene-filter id="filter" geneName={{geneId}}></cellbase-gene-filter>
+                <cellbase-gene-view id="view" geneView={{geneId}} cellbase="{{cellbase}}"></cellbase-gene-view>
         </div>
     </template>
     <script>
         Polymer({
             is: 'cellbase-gene-panel',
             properties: {
-                name: {
-                    type: String
+                geneId: {
+                    type: String,
+                    notify: true
                 },
                 cellbase: {
                     type: String,
-                    notify: true
+                    value: "empty"
                 }
             }
         });

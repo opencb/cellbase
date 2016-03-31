@@ -50,13 +50,20 @@
                     </paper-menu>
                 </paper-dropdown-menu>
 
-                <paper-dropdown-menu label="Species">
-                    <paper-menu class="dropdown-content" selected="">
-                        <template is="dom-repeat" items="{{speciesList}}">
-                            <paper-item>{{item}}</paper-item>
-                        </template>
-                    </paper-menu>
+                <paper-dropdown-menu label="Species" verticalAlign="bottom" placeholder="aaa">
+                    <paper-listbox class="dropdown-content">
+                        <paper-item>aaa</paper-item>
+                        <paper-item>bbb</paper-item>
+                    </paper-listbox>
+                    <!--<paper-menu class="dropdown-content">-->
+                    <!--<template is="dom-repeat" items="{{speciesList}}">-->
+                    <!--<paper-item>{{item}}</paper-item>-->
+                    <!--</template>-->
+                    <!--</paper-menu>-->
                 </paper-dropdown-menu>
+
+                <!--<cellbase-species-menu title="Select a species" cellBaseClientObj=""></cellbase-species-menu>-->
+
 
                 <hr>
                 <paper-menu attr-for-selected="selectedMenu" selected="{{selectedMenu}}">
@@ -94,16 +101,16 @@
                             CellBase Host: <br>
                             <input type="text" value="{{host::input}}" size="35">
                             <!--<paper-dropdown-menu label="Host">-->
-                                <!--<paper-menu class="dropdown-content" selected={{selectedHost}}>-->
-                                    <!--<template is="dom-repeat" items="{{hosts}}">-->
-                                        <!--<paper-item>{{item}}</paper-item>-->
-                                    <!--</template>-->
-                                <!--</paper-menu>-->
+                            <!--<paper-menu class="dropdown-content" selected={{selectedHost}}>-->
+                            <!--<template is="dom-repeat" items="{{hosts}}">-->
+                            <!--<paper-item>{{item}}</paper-item>-->
+                            <!--</template>-->
+                            <!--</paper-menu>-->
                             <!--</paper-dropdown-menu>-->
-                            </div>
-                            <div>
-                                <input type="checkbox" checked>Cache
-                            </div>
+                        </div>
+                        <div>
+                            <input type="checkbox" checked>Cache
+                        </div>
                         <paper-button dialog-confirm autofocus>OK</paper-button>
                     </paper-dialog>
                 </paper-toolbar>
@@ -118,7 +125,7 @@
                         <div selectedMenu="protein">
                             Protein
                         </div>
-                        </iron-pages>
+                    </iron-pages>
                     <!--<cellbase-gene-panel></cellbase-gene-panel>-->
 
                 </div>
@@ -137,11 +144,19 @@
                     type: String,
                     value: "http://bioinfo.hpc.cam.ac.uk/cellbase"
                 },
+                versions: {
+                    type: String
+//                    computed: 'computeVersion'
+                },
                 selectedMenu: {
                     type: String,
                     observer: 'selectedMenuChanged'
                 }
             },
+//            computeVersion: function () {
+//                var client = new CellBaseClient();
+//
+//            },
             clickHandler: function (e) {
                 var dialog = document.getElementById("modal");
                 if (dialog) {
