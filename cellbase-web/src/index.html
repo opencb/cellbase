@@ -12,6 +12,7 @@
 
         <!--<link rel="stylesheet" href="css/main.css">-->
 
+        <script type="text/javascript" src="config.js"></script>
 
         <!-- build:js vendors.min.js -->
         <script type="text/javascript" src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
@@ -42,6 +43,19 @@
                 You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
             </p>
         <![endif]-->
+
+        <script>
+
+            function init() {
+                console.log("aaa")
+                console.log(CELLBASE_HOSTS)
+
+                this.cellBaseClient = new CellBaseClient();
+
+            }
+            window.addEventListener("load", init());
+
+        </script>
 
         <!-- Add your site or application content here -->
         <cellbase-web></cellbase-web>

@@ -4,7 +4,6 @@
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 
-
 <dom-module id="cellbase-gene-view">
     <style>
         .view {
@@ -20,10 +19,11 @@
             <paper-tabs class="tabview" selected="0">
                 <paper-tab id="view">Genome Map</paper-tab>
                 <paper-tab id="transcript">Transcript</paper-tab>
-                <paper-tab>TFBS</paper-tab>
+                <paper-tab>{{cellbase}}</paper-tab>
                 <paper-tab id="exons">Exons</paper-tab>
             </paper-tabs>
 
+            <span>aaaaa</span>
             <paper-card style="width: 100%;height: 100%;">
                 <div class="card-content" style="margin: 10px;">{{vpro}}</div>
             </paper-card>
@@ -32,10 +32,19 @@
     <script>
         Polymer({
             is: 'cellbase-gene-view',
+
             properties: {
                 vpro: {
                     type: String
+                },
+                cellbase: {
+                    type: String,
+                    value: "empty"
                 }
+            },
+            ready: function() {
+                console.log(this.localName + '#' + this.id + ' has local DOM initialized');
+                console.log(cellBaseClient)
             }
         });
     </script>

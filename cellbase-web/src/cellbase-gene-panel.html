@@ -19,7 +19,7 @@
     <template>
         <div class="panel">
                 <cellbase-gene-filter id="filter" fpro={{name}}></cellbase-gene-filter>
-                <cellbase-gene-view id="view" vpro={{name}}></cellbase-gene-view>
+                <cellbase-gene-view id="view" vpro={{name}} cellbase="{{cellbase}}"></cellbase-gene-view>
         </div>
     </template>
     <script>
@@ -28,6 +28,10 @@
             properties: {
                 name: {
                     type: String
+                },
+                cellbase: {
+                    type: String,
+                    notify: true
                 }
             }
         });

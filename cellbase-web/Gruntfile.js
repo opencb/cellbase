@@ -65,7 +65,8 @@ module.exports = function(grunt) {
                     // {   expand: true, cwd: './bower_components', src: ['iron-*/**'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['paper-*/**'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['webcomponentsjs/webcomponents-lite.min.js'], dest: '<%= build.vendor %>' },
-                    {   expand: true, cwd: './src', src: ['index.html'], dest: '<%= build.path %>/' },
+                    {   expand: true, cwd: 'src', src: ['index.html'], dest: '<%= build.path %>/' },
+                    {   expand: true, cwd: 'src', src: ['config.js'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: './', src: ['LICENSE'], dest: '<%= build.path %>/' },
                 ]
             }
