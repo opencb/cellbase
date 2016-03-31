@@ -1,0 +1,42 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--Paper-elements-->
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+
+
+<dom-module id="cellbase-gene-view">
+    <style>
+        .view {
+            height: 100%;
+        }
+        paper-tabs.tabview {
+            --paper-tabs-selection-bar-color: blue;
+        }
+
+    </style>
+    <template>
+        <div class="view">
+            <paper-tabs class="tabview" selected="0">
+                <paper-tab id="view">Genome Map</paper-tab>
+                <paper-tab id="transcript">Transcript</paper-tab>
+                <paper-tab>TFBS</paper-tab>
+                <paper-tab id="exons">Exons</paper-tab>
+            </paper-tabs>
+
+            <paper-card style="width: 100%;height: 100%;">
+                <div class="card-content" style="margin: 10px;">{{vpro}}</div>
+            </paper-card>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-gene-view',
+            properties: {
+                vpro: {
+                    type: String
+                }
+            }
+        });
+    </script>
+</dom-module>

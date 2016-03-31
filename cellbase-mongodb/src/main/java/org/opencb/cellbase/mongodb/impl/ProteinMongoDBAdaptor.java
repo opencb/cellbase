@@ -183,7 +183,10 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //            if (ensemblTranscriptId.equals("ENST00000383037") || ensemblTranscriptId.equals("ENST00000428666")) {
 //                int a = 1;
 //            }
-        proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+        // Stop_gain/lost variants do not have SIFT/POLYPHEN scores
+        if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
+            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+        }
 //        } catch (Exception e) {
 //            int a = 1;
 //        }
