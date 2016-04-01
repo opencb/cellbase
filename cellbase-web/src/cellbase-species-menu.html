@@ -1,0 +1,59 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-submenu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+<dom-module id="cellbase-species-menu">
+    <style>
+
+    </style>
+    <template>
+        <paper-dropdown-menu label="Species">
+        <paper-menu class="dropdown-content">
+
+            <paper-submenu label="Properties">
+                <paper-item class="menu-trigger">Properties</paper-item>
+                <paper-menu class="menu-content sublist2">
+                    <paper-item>focusedItem</paper-item>
+                    <paper-item>attrForItemTitle</paper-item>
+                </paper-menu>
+            </paper-submenu>
+
+        </paper-menu>
+
+        <!--<template is="dom-repeat" items="{{speciesList}}">-->
+        <!--<paper-item>{{item}}</paper-item>-->
+        <!--</template>-->
+        <!--</paper-menu>-->
+        </paper-dropdown-menu>
+
+                    <!--<template is="dom-repeat" items="taxonomoies">-->
+                        <!--<li>{{item}}-->
+                        <!--<ul>-->
+                            <!--<template is="dom-repeat" items="speciesList">-->
+                                <!--<li>{{item}}</li>-->
+                            <!--</template>-->
+                        <!--</ul>-->
+                        <!--</li>-->
+                    <!--</template>-->
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-species-menu',
+
+            properties: {
+                taxonomies: {
+                    type: Array
+                },
+
+                speciesList: {
+                    type: Array
+                }
+
+            }
+        });
+    </script>
+</dom-module>

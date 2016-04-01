@@ -13,6 +13,7 @@
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <!--cellbase-elements-->
+<link rel="import" href="cellbase-species-menu.html">
 <link rel="import" href="cellbase-gene-panel.html">
 
 <dom-module id="cellbase-web">
@@ -50,17 +51,19 @@
                     </paper-menu>
                 </paper-dropdown-menu>
 
-                <paper-dropdown-menu label="Species" verticalAlign="bottom" placeholder="aaa">
-                    <paper-listbox class="dropdown-content">
-                        <paper-item>aaa</paper-item>
-                        <paper-item>bbb</paper-item>
-                    </paper-listbox>
-                    <!--<paper-menu class="dropdown-content">-->
-                    <!--<template is="dom-repeat" items="{{speciesList}}">-->
-                    <!--<paper-item>{{item}}</paper-item>-->
-                    <!--</template>-->
-                    <!--</paper-menu>-->
-                </paper-dropdown-menu>
+                <cellbase-species-menu></cellbase-species-menu>
+
+                <!--<paper-dropdown-menu label="Species" verticalAlign="bottom" placeholder="aaa">-->
+                    <!--<paper-listbox class="dropdown-content">-->
+                        <!--<paper-item>aaa</paper-item>-->
+                        <!--<paper-item>bbb</paper-item>-->
+                    <!--</paper-listbox>-->
+                    <!--&lt;!&ndash;<paper-menu class="dropdown-content">&ndash;&gt;-->
+                    <!--&lt;!&ndash;<template is="dom-repeat" items="{{speciesList}}">&ndash;&gt;-->
+                    <!--&lt;!&ndash;<paper-item>{{item}}</paper-item>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</template>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</paper-menu>&ndash;&gt;-->
+                <!--</paper-dropdown-menu>-->
 
                 <!--<cellbase-species-menu title="Select a species" cellBaseClientObj=""></cellbase-species-menu>-->
 
