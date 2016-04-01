@@ -8,6 +8,7 @@
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <!--iron-elements-->
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="cellbase-biotype-options.html">
 
 <dom-module id="cellbase-gene-filter">
     <style>
@@ -41,7 +42,7 @@
             <div class="tabs">
                 <paper-tabs class="tabview" selected={{selected}}>
                     <paper-tab id="filerTab">Filter</paper-tab>
-                    <paper-tab id="result">Result</paper-tab>
+                    <paper-tab id="result">Results</paper-tab>
                 </paper-tabs>
             </div>
 
@@ -57,13 +58,9 @@
                         <div class="constraints">
                             <paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>
                         </div>
-                        <div class="constraints">
-                            <p>Biotype:</p>
-                            <paper-checkbox>pseudogene</paper-checkbox>
-                            <!--<template is="dom-repeat" items="{{biotype}}">-->
-                            <!--<paper-checkbox>{{item}}</paper-checkbox>-->
-                            <!--</template>-->
-                        </div>
+
+                        <cellbase-biotype-options title="AAAAAAAAA" cellbaseclient={{cellBaseClienttt}} biotypes="{{biotypes}}"></cellbase-biotype-options>
+
                     </div>
                     <div class="result-content">
                         <table>
@@ -89,7 +86,7 @@
             properties: {
                 selected: {
                     type: String,
-                    value: 0
+                    value: ""
                 },
                 region: {
                     type: String
@@ -99,7 +96,14 @@
                 },
                 biotype: {
                     type: String
-                }
+                },
+                biotypes: {
+                    type: Array,
+                    value: []
+                },
+                cellBaseClienttt: {
+                    type: Object
+                },
             },
             clearAllFields: function (e) {
                 this.region = "";
@@ -108,6 +112,15 @@
             changePage: function (e) {
                 var pages = document.querySelector('iron-pages#selectedTab');
                 pages.selectNext();
+
+                console.log("In Run:")
+                console.log(this.biotypes)
+            },
+            ready: function() {
+                console.log("aaaaaaaaaaaaa")
+                console.log(cellBaseClient)
+                this.cellBaseClienttt = cellBaseClient;
+                console.log(this.cellBaseClienttt)
             }
         });
     </script>
