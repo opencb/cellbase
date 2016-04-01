@@ -11,8 +11,8 @@
 
         <div>{{title}}</div>
         <template is="dom-repeat" items="{{data}}">
-            <paper-checkbox on-change="aaa">{{item}}</paper-checkbox>
-            <br />
+            <paper-checkbox on-change="add">{{item}}</paper-checkbox>
+            <br>
         </template>
 
     </template>
@@ -24,8 +24,9 @@
                     type: String,
                     value: "Select biotypes"
                 },
-                cellbaseclient: {
-                    type: Object
+                cellbaseclienta: {
+                    type: Object,
+                    notify: true
                 },
                 data: {
                     type: Array,
@@ -38,21 +39,19 @@
                 }
             },
 
-            ready: function () {
+            attached: function () {
                 var _this = this;
-                console.log("works?")
-                console.log(this.cellbaseclient)
+                console.log(this.cellbaseclienta)
                 var success = function (response) {
                     console.log(response)
                     _this.data = response.response[0].result;
                 };
-                cellBaseClient.getGeneClient(null, 'biotype', {}, {success: success, async: true});
+                this.cellbaseclienta.getGeneClient(null, 'biotype', {}, {success: success, async: true});
             },
 
-            aaa: function (event) {
-                console.log(event)
+            add: function (event) {
                 if (event.target.active) {
-                    this.push('biotypes', 'c');
+                    this.push('biotypes', event.target.innerText);
                     console.log(this.biotypes)
                 }
             }
