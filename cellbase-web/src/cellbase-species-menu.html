@@ -8,36 +8,27 @@
 <dom-module id="cellbase-species-menu">
     <style>
 
+
     </style>
     <template>
-        <paper-dropdown-menu label="Species">
-        <paper-menu class="dropdown-content">
-
-            <paper-submenu label="Properties">
-                <paper-item class="menu-trigger">Properties</paper-item>
-                <paper-menu class="menu-content sublist2">
-                    <paper-item>focusedItem</paper-item>
-                    <paper-item>attrForItemTitle</paper-item>
-                </paper-menu>
-            </paper-submenu>
-
-        </paper-menu>
-
-        <!--<template is="dom-repeat" items="{{speciesList}}">-->
-        <!--<paper-item>{{item}}</paper-item>-->
-        <!--</template>-->
-        <!--</paper-menu>-->
-        </paper-dropdown-menu>
-
                     <!--<template is="dom-repeat" items="taxonomoies">-->
-                        <!--<li>{{item}}-->
                         <!--<ul>-->
-                            <!--<template is="dom-repeat" items="speciesList">-->
-                                <!--<li>{{item}}</li>-->
-                            <!--</template>-->
+                            <!--<li>{{item}}-->
+                                <!--<ul>-->
+                                    <!--<template is="dom-repeat" items="speciesList">-->
+                                        <!--<li>{{item}}</li>-->
+                                    <!--</template>-->
+                                <!--</ul>-->
+                            <!--</li>-->
                         <!--</ul>-->
-                        <!--</li>-->
                     <!--</template>-->
+        <paper-dropdown-menu label="Species">
+            <paper-menu class="dropdown-content">
+                <template is="dom-repeat" items="{{speciesList}}">
+                    <paper-item>{{item}}</paper-item>
+                </template>
+            </paper-menu>
+        </paper-dropdown-menu>
 
     </template>
     <script>
@@ -50,9 +41,18 @@
                 },
 
                 speciesList: {
-                    type: Array
+                    type: Array,
+                    value: []
                 }
 
+            },
+            ready: function () {
+                for (var key in SPECIES) {
+                    var _temp = SPECIES[key];
+                    for (var i = 0; i < _temp.length; i++) {
+                        this.push("speciesList",_temp[i].scientificName)
+                    }
+                }
             }
         });
     </script>

@@ -59,7 +59,7 @@
                             <paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>
                         </div>
 
-                        <cellbase-biotype-options title="AAAAAAAAA" cellbaseclient={{cellBaseClienttt}} biotypes="{{biotypes}}"></cellbase-biotype-options>
+                        <cellbase-biotype-options cellbaseclienta={{cellBaseClient1}} biotypes={{biotype}}></cellbase-biotype-options>
 
                     </div>
                     <div class="result-content">
@@ -95,15 +95,12 @@
                     type: String
                 },
                 biotype: {
-                    type: String
-                },
-                biotypes: {
                     type: Array,
-                    value: []
+                    notify: true
                 },
-                cellBaseClienttt: {
-                    type: Object
-                },
+                cellBaseClient1: {
+                    type: Object,
+                    notify: true                }
             },
             clearAllFields: function (e) {
                 this.region = "";
@@ -114,13 +111,12 @@
                 pages.selectNext();
 
                 console.log("In Run:")
-                console.log(this.biotypes)
+                console.log(this.biotype)
             },
             ready: function() {
-                console.log("aaaaaaaaaaaaa")
-                console.log(cellBaseClient)
-                this.cellBaseClienttt = cellBaseClient;
-                console.log(this.cellBaseClienttt)
+                this.cellBaseClient1 = cellBaseClient;
+                console.log(this.cellBaseClient1)
+                console.log(this.biotype)
             }
         });
     </script>
