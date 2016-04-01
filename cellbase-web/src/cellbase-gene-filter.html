@@ -59,7 +59,7 @@
                             <paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>
                         </div>
 
-                        <cellbase-biotype-options cellbaseclienta={{cellBaseClient1}} biotypes={{biotype}}></cellbase-biotype-options>
+                        <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
 
                     </div>
                     <div class="result-content">
@@ -98,7 +98,7 @@
                     type: Array,
                     notify: true
                 },
-                cellBaseClient1: {
+                cellBaseClient: {
                     type: Object,
                     notify: true                }
             },
@@ -114,8 +114,8 @@
                 console.log(this.biotype)
             },
             ready: function() {
-                this.cellBaseClient1 = cellBaseClient;
-                console.log(this.cellBaseClient1)
+                this.cellBaseClient = CELLBASE_CLIENT;
+                console.log(this.cellBaseClient)
                 console.log(this.biotype)
             }
         });

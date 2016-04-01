@@ -23,7 +23,6 @@
                 <paper-tab id="exons">Exons</paper-tab>
             </paper-tabs>
 
-            <span>aaaaa</span>
             <paper-card style="width: 100%;height: 100%;">
                 <div class="card-content" style="margin: 10px;">{{vpro}}</div>
             </paper-card>
@@ -43,16 +42,16 @@
             },
             ready: function() {
                 console.log(this.localName + '#' + this.id + ' has local DOM initialized');
-                console.log(cellBaseClient)
+                console.log(CELLBASE_CLIENT)
                 console.log(this.$.tfbs.textContent)
-                this.cellbase = cellBaseClient._config.version;
+                this.cellbase = CELLBASE_CLIENT._config.version;
 //                this.$.tfbs.textContent = cellBaseClient._config.version;
                 var success = function (response) {
                     console.log("Success from user:")
                     console.log(response)
                     console.log(response.response[0].result[0].start)
                 };
-                cellBaseClient.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
+                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
             }
         });
     </script>
