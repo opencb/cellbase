@@ -18,6 +18,49 @@ var CELLBASE_HOSTS = ["bioinfo.hpc.cam.ac.uk/cellbase", "www.ebi.ac.uk/cellbase"
 var CELLBASE_VERSION = "v4";
 var CELLBASE_SPECIES = "hsapiens";
 
+
+var DEFAULT_SPECIES = {
+    "vertebrates": [
+        {
+
+            "id": "hsapiens",
+            "scientificName": "Homo sapiens",
+            "assembly": {
+
+                "name": "GRCh37",
+                "ensemblVersion": "75_37"
+
+            },
+            "assemblies": [
+
+                {
+
+                    "name": "GRCh37",
+                    "ensemblVersion": "75_37"
+
+                },
+
+                {
+                    "name": "GRCh38",
+                    "ensemblVersion": "79_38"
+                }
+
+            ],
+            "data": [
+                "genome",
+                "gene",
+                "variation",
+                "regulation",
+                "protein",
+                "conservation",
+                "clinical",
+                "gene2disease"
+            ]
+
+        }
+    ]
+};
+
 var SPECIES = {
 
     "vertebrates":
@@ -28,6 +71,13 @@ var SPECIES = {
 
                 "id": "hsapiens",
                 "scientificName": "Homo sapiens",
+
+                "assembly": {
+
+                    "name": "GRCh37",
+                    "ensemblVersion": "75_37"
+
+                },
                 "assemblies":
 
                     [
@@ -1790,4 +1840,4 @@ var SPECIES = {
             }
         ]
 
-}
+};

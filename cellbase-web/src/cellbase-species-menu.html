@@ -1,34 +1,52 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../bower_components/paper-menu/paper-submenu.html">
-<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="cellbase-shared-styles.html">
 
 <dom-module id="cellbase-species-menu">
-    <style>
-
-
-    </style>
     <template>
-                    <!--<template is="dom-repeat" items="taxonomoies">-->
-                        <!--<ul>-->
-                            <!--<li>{{item}}-->
-                                <!--<ul>-->
-                                    <!--<template is="dom-repeat" items="speciesList">-->
-                                        <!--<li>{{item}}</li>-->
-                                    <!--</template>-->
-                                <!--</ul>-->
-                            <!--</li>-->
-                        <!--</ul>-->
-                    <!--</template>-->
-        <paper-dropdown-menu label="Species">
-            <paper-menu class="dropdown-content">
-                <template is="dom-repeat" items="{{speciesList}}">
-                    <paper-item>{{item}}</paper-item>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <!--<div>Species</div>-->
+        <!--<div class="ocb-dropdown">-->
+        <!--<div tabindex="-1" id="speciesButton" class="ocb-ctrl"><span id="speciesText"></span> <i class="fa fa-caret-down"></i></div>-->
+        <!--<ul>-->
+        <!--<template is="dom-repeat" items={{taxonomies}} as="taxon">-->
+        <!--<li data-sub=true>{{taxon}}-->
+        <!--<ul>-->
+        <!--<template is="dom-repeat" items="speciesList">-->
+        <!--<li>{{item}}</li>-->
+        <!--</template>-->
+        <!--</ul>-->
+        <!--</li>-->
+        <!--</template>-->
+        <!--</ul>-->
+        <!--</div>-->
+
+        <!--<paper-dropdown-menu label="Species">-->
+        <!--<paper-menu class="dropdown-content" selected="0">-->
+        <!--<template is="dom-repeat" items="{{speciesList}}">-->
+        <!--<paper-item>{{item}}</paper-item>-->
+        <!--</template>-->
+        <!--</paper-menu>-->
+        <!--</paper-dropdown-menu>-->
+
+        <!--btn-group-->
+        <div class="dropdown" style="background-color: transparent">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                {{title}} <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu cellbase-species-menu">
+                <template is="dom-repeat" items="{{keys}}" as="taxon">
+                    <li class="dropdown-submenu">
+                        <a href="#">{{taxon}}</a>
+                        <ul class="dropdown-menu">
+                            <template is="dom-repeat" items="{{_getSpeciesArrayByTaxon(taxon)}}" as="species">
+                                <li><a href="#">{{species}}</a></li>
+                            </template>
+                        </ul>
+                    </li>
                 </template>
-            </paper-menu>
-        </paper-dropdown-menu>
+            </ul>
+        </div>
 
     </template>
     <script>
@@ -36,6 +54,10 @@
             is: 'cellbase-species-menu',
 
             properties: {
+                title: {
+                    tyoe: String,
+                    value: "Select species"
+                },
                 taxonomies: {
                     type: Array
                 },
@@ -43,16 +65,41 @@
                 speciesList: {
                     type: Array,
                     value: []
+                },
+                class: {
+                    type: String,
+                    value: ""
                 }
-
             },
             ready: function () {
-                for (var key in SPECIES) {
-                    var _temp = SPECIES[key];
-                    for (var i = 0; i < _temp.length; i++) {
-                        this.push("speciesList",_temp[i].scientificName)
+                this.speciesList = SPECIES;
+                this.keys = Object.keys(SPECIES);
+
+//                for (var key in SPECIES) {
+//                    var _temp = SPECIES[key];
+//                    for (var i = 0; i < _temp.length; i++) {
+//                        this.push("speciesList", _temp[i].scientificName);
+////                        this.push(key, _temp[i].scientificName);
+//                    }
+//                }
+
+                let _this = this;
+                $(document).on('click', '.cellbase-species-menu li a', function() {
+                    console.log("event")
+                    _this.title = $(this).text();
+//                    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
+                });
+            },
+            _getSpeciesArrayByTaxon: function(taxon) {
+                var speciesArray = [];
+                let taxonSpecies = SPECIES[taxon];
+                for (let speciesIdx in taxonSpecies) {
+                    let assemblies = taxonSpecies[speciesIdx].assemblies;
+                    for (let assemblyIdx in assemblies) {
+                        speciesArray.push(taxonSpecies[speciesIdx].scientificName + " " + assemblies[assemblyIdx].name)
                     }
                 }
+                return speciesArray;
             }
         });
     </script>

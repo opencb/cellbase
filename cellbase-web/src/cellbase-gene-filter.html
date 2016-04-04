@@ -1,14 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<!--Paper-elements-->
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<!--iron-elements-->
-<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="cellbase-biotype-options.html">
+
+<link rel="import" href="cellbase-shared-styles.html">
 
 <dom-module id="cellbase-gene-filter">
     <style>
@@ -38,51 +30,74 @@
 
     </style>
     <template>
-        <div class="filter">
-            <div class="tabs">
-                <paper-tabs class="tabview" selected={{selected}}>
-                    <paper-tab id="filerTab">Filter</paper-tab>
-                    <paper-tab id="result">Results</paper-tab>
-                </paper-tabs>
-            </div>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
 
-            <div class="content">
-                <iron-pages id="selectedTab" selected="{{selected}}">
-                    <div class="filter-content">
-                        <paper-button id="clear" on-click="clearAllFields" raised>clear</paper-button>
-                        <paper-button id="run" on-click="changePage" raised>run</paper-button>
-                        <br><br>
-                        <div class="constraints">
-                            <paper-textarea type="text" value={{region}} label="Region"></paper-textarea>
-                        </div>
-                        <div class="constraints">
-                            <paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>
-                        </div>
+        <!--<div class="filter">-->
+        <!--<div class="tabs">-->
+        <!--<paper-tabs class="tabview" selected={{selected}}>-->
+        <!--<paper-tab id="filerTab">Filter</paper-tab>-->
+        <!--<paper-tab id="result">Results</paper-tab>-->
+        <!--</paper-tabs>-->
+        <!--</div>-->
 
-                        <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
+        <!--<div class="content">-->
+        <!--<iron-pages id="selectedTab" selected="{{selected}}">-->
+        <!--<div class="filter-content">-->
+        <!--<paper-button id="clear" on-click="clearAllFields" raised>clear</paper-button>-->
+        <!--<paper-button id="run" on-click="changePage" raised>run</paper-button>-->
+        <!--<br><br>-->
+        <!--<div class="constraints">-->
+        <!--<paper-textarea type="text" value={{region}} label="Region"></paper-textarea>-->
+        <!--</div>-->
+        <!--<div class="constraints">-->
+        <!--<paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>-->
+        <!--</div>-->
 
-                    </div>
-                    <div class="result-content">
-                        <table>
-                            <tr>
-                                <th>Region</th>
-                                <th>ID</th>
-                                <th>biotype</th>
-                            </tr>
-                            <tr>
-                                <td>{{region}}</td>
-                                <td>{{ids}}</td>
-                                <td>{{biotype}}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </iron-pages>
+        <!--<cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>-->
+
+        <div>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#filter1" role="tab" data-toggle="tab">Filter</a></li>
+                <li role="presentation"><a href="#result1" role="tab" data-toggle="tab">Result</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="filter1">
+                    <!--<input id="clear" on-click="clearAllFields" raised>clear</input>-->
+                    <!--<input id="run" on-click="changePage" raised>run</input>-->
+                    <button type="button" class="btn btn-default" on-click="clearAllFields" >Clear</button>
+                    <button type="button" class="btn btn-default" on-click="changePage">Run</button>
+                    <br>
+                    <label class="control-label">Gene IDs</label>
+                    <textarea class="form-control" rows="3"></textarea>
+
+                    <label class="control-label">Region</label>
+                    <textarea class="form-control" rows="3"></textarea>
+
+                    <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="result1">
+                    <table>
+                        <tr>
+                            <th>Region</th>
+                            <th>ID</th>
+                            <th>biotype</th>
+                        </tr>
+                        <tr>
+                            <td>{{region}}</td>
+                            <td>{{ids}}</td>
+                            <td>{{biotype}}</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
+
     </template>
     <script>
         Polymer({
-           is: 'cellbase-gene-filter',
+            is: 'cellbase-gene-filter',
             properties: {
                 selected: {
                     type: String,
@@ -107,16 +122,21 @@
                 this.ids = "";
             },
             changePage: function (e) {
-                var pages = document.querySelector('iron-pages#selectedTab');
-                pages.selectNext();
+//                var pages = document.querySelector('iron-pages#selectedTab');
+//                pages.selectNext();
+                $('.nav-tabs a[href="#result1"]').tab('show')
 
                 console.log("In Run:")
                 console.log(this.biotype)
             },
             ready: function() {
+//                $('#myTabs a').click(function (e) {
+//                    console.log("taaaaaaaaaabs")
+//                    e.preventDefault()
+//                    $(this).tab('show')
+//                });
                 this.cellBaseClient = CELLBASE_CLIENT;
                 console.log(this.cellBaseClient)
-                console.log(this.biotype)
             }
         });
     </script>

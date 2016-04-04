@@ -1,50 +1,77 @@
 <!doctype html>
 <html class="no-js" lang="">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <!--<link rel="apple-touch-icon" href="apple-touch-icon.png">-->
-        <!-- Place favicon.ico in the root directory -->
+    <!--<link rel="apple-touch-icon" href="apple-touch-icon.png">-->
+    <!-- Place favicon.ico in the root directory -->
 
-        <!--<link rel="stylesheet" href="css/main.css">-->
+    <!--<link rel="stylesheet" href="css/main.css">-->
 
-        <script type="text/javascript" src="config.js"></script>
+    <script type="text/javascript" src="config.js"></script>
 
-        <!-- build:js vendors.min.js -->
-        <script type="text/javascript" src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-        <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
-        <script type="text/javascript" src="../bower_components/underscore/underscore.js"></script>
-        <script type="text/javascript" src="../bower_components/backbone/backbone.js"></script>
-        <!-- /build -->
+    <link rel="stylesheet" href="../bower_components/fontawesome/css/font-awesome.css">
+    <link rel="stylesheet" href="../bower_components/qtip2/jquery.qtip.min.css">
 
-        <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client.js"></script>
-        <script type="text/javascript" src="../lib/jsorolla/src/lib/cache/indexeddb-cache.js"></script>
-        <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client-config.js"></script>
+    <!-- build:js vendors.min.js -->
+    <script type="text/javascript" src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <script type="text/javascript" src="../bower_components/underscore/underscore.js"></script>
+    <script type="text/javascript" src="../bower_components/backbone/backbone.js"></script>
+    <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="../bower_components/qtip2/jquery.qtip.js"></script>
+    <script type="text/javascript" src="../bower_components/uri.js/src/URI.js"></script>
+    <!-- /build -->
 
-        <!-- These dependencies must go AFTER jquery -->
-        <!--<script type="text/javascript" src="../bower_components/vendor/bootstrap-scoped-dist/js/bootstrap.min.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/typeahead.min.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/jquery.qtip.min.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/jquery.cookie.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/jquery.sha1.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/purl.min.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/jquery.mousewheel.min.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/gl-matrix-min.js"></script>-->
-        <!--<script type="text/javascript" src="../bower_components/vendor/ChemDoodleWeb.js"></script>-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client.js"></script>
+    <script type="text/javascript" src="../lib/jsorolla/src/lib/cache/indexeddb-cache.js"></script>
+    <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client-config.js"></script>
+
+    <link rel="stylesheet" href="../lib/jsorolla/styles/css/style.css">
+    <script type="text/javascript" src="../lib/jsorolla/build/1.1.9/genome-viewer/gv-config.js"></script>
+    <script type="text/javascript" src="../lib/jsorolla/build/1.1.9/genome-viewer/genome-viewer.js"></script>
+
+    <!-- These dependencies must go AFTER jquery -->
+    <!--<script type="text/javascript" src="../bower_components/vendor/bootstrap-scoped-dist/js/bootstrap.min.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/typeahead.min.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/jquery.qtip.min.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/jquery.cookie.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/jquery.sha1.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/purl.min.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/jquery.mousewheel.min.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/gl-matrix-min.js"></script>-->
+    <!--<script type="text/javascript" src="../bower_components/vendor/ChemDoodleWeb.js"></script>-->
 
 
-        <!--Paper-elements-->
-        <link rel="import" href="cellbase-web.html">
-    </head>
-    <body>
+    <!--Paper-elements-->
+    <link rel="import" href="cellbase-web.html">
+
+    <style>
+        a.cellbase-species-menu {
+            color: #9d9d9d;
+        }
+        a.cellbase-species-menu:hover {
+            color: white;
+            text-decoration: none;
+        }
+
+        .center {
+            margin: auto;
+            width: 98%;
+        }
+    </style>
+</head>
+    <body >
         <!--[if lt IE 8]>
-            <p class="browserupgrade">
-                You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
-            </p>
+        <p class="browserupgrade">
+            You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
+        </p>
         <![endif]-->
 
         <script>
@@ -53,12 +80,183 @@
                 console.log(CELLBASE_HOSTS)
 
                 this.CELLBASE_CLIENT = new CellBaseClient();
-            }
-            window.addEventListener("load", init());
 
+
+                $(".dropdown a").on('click', function(e) {
+                    e.preventDefault(); // stops link form loading
+                    $('.content').hide(); // hides all content divs
+                    $( $(this).attr('href') ).show(); //get the href and use it find which div to show
+                });
+
+                $(".dropdown-menu a").on('click', function(e) {
+                    console.log("ssssssssssss")
+                    console.log($( $(this).attr('href') ))
+                    e.preventDefault(); // stops link form loading
+                    $('.content').hide(); // hides all content divs
+                    $( $(this).attr('href') ).show(); //get the href and use it find which div to show
+                });
+                $('#home1').show();
+            }
+
+            window.addEventListener("load", init());
         </script>
 
-        <!-- Add your site or application content here -->
-        <cellbase-web></cellbase-web>
+        <!--<cellbase-web></cellbase-web>-->
+
+        <div>
+            <div style="height: 60px;">
+                <nav class="navbar navbar-inverse navbar-fixed-top">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">CellBase Data Portal</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <ul class="nav navbar-nav">
+                                <li class="dropdown">
+                                    <a href="#home1"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Core <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#genePanel">Gene</a></li>
+                                        <li><a href="#transcriptPanel">Transcript</a></li>
+                                        <li><a href="#">Protein</a></li>
+                                        <li><a href="#">XRefs</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Variant <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">Variation</a></li>
+                                        <li><a href="#">Clinical</a></li>
+                                        <li role="separator" class="divider"></li>
+                                        <li><a href="#">Variant Annotation</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Regulatory <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">Variation</a></li>
+                                        <li><a href="#">Conservation</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Networks <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">Variation</a></li>
+                                        <li><a href="#">Clinical</a></li>
+                                        <li role="separator" class="divider"></li>
+                                        <li><a href="#">Variant Annotation</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualization <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">Genome Browser (Genome Maps)</a></li>
+                                        <li><a href="#">Network viewer (Cell Maps)</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <!-- Controls aligned to the right: version, species, search, settings and about-->
+                            <ul class="nav navbar-nav navbar-right">
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Version <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">v3</a></li>
+                                        <li><a href="#">v4</a></li>
+                                    </ul>
+                                </li>
+
+                                <div class="navbar-form navbar-left" style="padding-top: 7px">
+                                    <cellbase-species-menu></cellbase-species-menu>
+                                </div>
+
+                                <form class="navbar-form navbar-left" role="search">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="BRCA2,rs666,3:4444-6666">
+                                        <a href="#"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
+                                    </div>
+                                    <!--<button type="submit" class="btn btn-default">Submit</button>-->
+                                </form>
+
+                                <!--<li><a href="#">Settings</a></li>-->
+                                <li><a href="#" data-toggle="modal" role="button" data-placement="bottom" data-target="#myModal" title="Settings ..."><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a></li>
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">About</a></li>
+                                        <li><a href="#">GitHub</a></li>
+                                        <li><a href="#">Documentation</a></li>
+                                        <li><a href="#">Contact</a></li>
+                                        <li><a href="#">FAQ</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div><!-- /.navbar-collapse -->
+                    </div><!-- /.container-fluid -->
+                </nav>
+            </div>
+
+            <!-- This is where main application is rendered -->
+            <div class="center">
+                <div class="collapse content" id="home1">
+                    <h2>Welcome to CellBase data portal tool!</h2>
+                </div>
+                <div class="collapse content" id="genePanel">
+                    <h3>Gene</h3>
+                    <cellbase-gene-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-gene-panel>
+                </div>
+                <div class="collapse content" id="transcriptPanel">
+                    Transcript
+                    <cellbase-species-menu></cellbase-species-menu>
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <!-- Modal dialog for Settings -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Settings</h4>
+                    </div>
+                    <div class="modal-body">
+                        <!--<div class="input-group">-->
+                        <!--<span class="input-group-addon" id="basic-addon">Select Species</span>-->
+                        <!--<cellbase-species-menu class="btn btn-default"></cellbase-species-menu>-->
+                        <!--</div>-->
+                        <p></p>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">Hosts</span>
+                            <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1" value="bioinfo.hpc.cam.ac.uk/cellbase, www.ebi.ac.uk/cellbase">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </body>
 </html>

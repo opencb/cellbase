@@ -25,6 +25,7 @@ module.exports = function(grunt) {
             vendors: {
                 src: [
                     './bower_components/webcomponentsjs/webcomponents-lite.js',
+                    './bower_components/jquery/dist/jquery.js',
                     './bower_components/underscore/underscore.js',
                     './bower_components/backbone/backbone.js'
                 ],

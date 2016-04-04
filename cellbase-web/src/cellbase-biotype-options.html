@@ -1,18 +1,17 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<!--Paper-elements-->
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="cellbase-shared-styles.html">
 
 <dom-module id="cellbase-biotype-options">
     <style>
 
     </style>
     <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
 
-        <div>{{title}}</div>
+        <label class="control-label">{{title}}</label><br>
         <template is="dom-repeat" items="{{data}}">
-            <paper-checkbox on-change="add">{{item}}</paper-checkbox>
-            <br>
+            <input type="checkbox" on-change="add" name="{{item}}" value="{{item}}"> {{item}}<br>
         </template>
 
     </template>
@@ -53,9 +52,10 @@
                 if (event.target.active) {
                     this.push('biotypes', event.target.innerText);
                     console.log(this.biotypes)
+                } else {
+
                 }
             }
-
         });
     </script>
 </dom-module>
