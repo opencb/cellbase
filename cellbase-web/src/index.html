@@ -49,8 +49,10 @@
     <!--<script type="text/javascript" src="../bower_components/vendor/ChemDoodleWeb.js"></script>-->
 
 
-    <!--Paper-elements-->
-    <link rel="import" href="cellbase-web.html">
+    <!--custom-elements-->
+    <link rel="import" href="cellbase-species-menu.html">
+    <link rel="import" href="cellbase-gene-panel.html">
+
 
     <style>
         a.cellbase-species-menu {
@@ -126,9 +128,11 @@
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Core <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
+                                        <li><a href="#">Genomic Region</a></li>
                                         <li><a href="#genePanel">Gene</a></li>
                                         <li><a href="#transcriptPanel">Transcript</a></li>
                                         <li><a href="#">Protein</a></li>
+                                        <li><a href="#">Regulation</a></li>
                                         <li><a href="#">XRefs</a></li>
                                     </ul>
                                 </li>
@@ -144,20 +148,9 @@
                                 </li>
 
                                 <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Regulatory <span class="caret"></span></a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="#">Variation</a></li>
-                                        <li><a href="#">Conservation</a></li>
-                                    </ul>
-                                </li>
-
-                                <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Networks <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
-                                        <li><a href="#">Variation</a></li>
-                                        <li><a href="#">Clinical</a></li>
-                                        <li role="separator" class="divider"></li>
-                                        <li><a href="#">Variant Annotation</a></li>
+                                        <li><a href="#">Protein Protein Interaction</a></li>
                                     </ul>
                                 </li>
 

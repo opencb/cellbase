@@ -65,19 +65,115 @@
 
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="filter1">
-                    <!--<input id="clear" on-click="clearAllFields" raised>clear</input>-->
-                    <!--<input id="run" on-click="changePage" raised>run</input>-->
                     <button type="button" class="btn btn-default" on-click="clearAllFields" >Clear</button>
                     <button type="button" class="btn btn-default" on-click="changePage">Run</button>
                     <br>
-                    <label class="control-label">Gene IDs</label>
-                    <textarea class="form-control" rows="3"></textarea>
 
-                    <label class="control-label">Region</label>
-                    <textarea class="form-control" rows="3"></textarea>
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h4 class="panel-title">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#geneId"
+                                       aria-expanded="true" aria-controls="geneId">
+                                        Gene IDs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel"
+                                 aria-labelledby="headingOne">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
 
-                    <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingTwo">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#region" aria-expanded="false" aria-controls="region">
+                                        Region
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="region" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingTwo">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#biotype" aria-expanded="false" aria-controls="biotype">
+                                        Select biotypes
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="biotype" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingThree">
+                                <div class="panel-body">
+                                    <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFour">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#drug" aria-expanded="false" aria-controls="drug">
+                                        Drugs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="drug" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingFour">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFive">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#phenotype" aria-expanded="false" aria-controls="phenotype">
+                                        Phenotype
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="phenotype" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingFive">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingSix">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#expression" aria-expanded="false" aria-controls="expression">
+                                        Expression
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="expression" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingSix">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <div role="tabpanel" class="tab-pane" id="result1">
                     <table>
                         <tr>
