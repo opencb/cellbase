@@ -173,8 +173,6 @@ public class VariantAnnotationCalculatorTest {
             VariantAnnotation expected = jsonObjectMapper.convertValue(((List) ((Map) expectedObjectList.get(i)).get("result")).get(0),
                     VariantAnnotation.class);
             VariantAnnotation actual = actualQueryResultList.get(i).getResult().get(0);
-            expected.setPopulationFrequencies(null);
-            actual.setPopulationFrequencies(null);
             assertEquals(expected, actual);
         }
     }
