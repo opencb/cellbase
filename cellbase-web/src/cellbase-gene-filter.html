@@ -8,7 +8,7 @@
         <style is="custom-style" include="cellbase-shared-styles">
             .biotype-scroll{
                 max-height: 300px;
-                overflow-y:scroll;
+                overflow-y: scroll;
             }
         </style>
 
@@ -44,7 +44,7 @@
 
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="filter1">
-                    <button type="button" class="btn btn-default" on-click="clearAllFields" >Clear</button>
+                    <button type="button" class="btn btn-default" on-click="clearAllFields">Clear</button>
                     <button type="button" class="btn btn-default" on-click="changePage">Run</button>
                     <br>
 
@@ -58,22 +58,23 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel"
-                                 aria-labelledby="headingOne">
+                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
                                 <div class="panel-body">
-                                    Search: <input id="geneIDText" type="type" list="json-datalist" value=""
-                                                   on-keydown="callAutocomplete">
-                                    <datalist id="json-datalist">
-                                        <template is="dom-repeat" items="{{autocompleteData}}">
-                                            <option value="{{item.name}}">
-                                        </template>
-                                    </datalist>
-                                    <button type="button" class="btn btn-default btn-sm" on-click="addGeneId">
-                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                    </button>
-                                    <textarea id="XXX" class="form-control" rows="3">
-
-                                    </textarea>
+                                    <form class="form-inline">
+                                        Search:
+                                        <div style="float: right">
+                                            <input id="geneIDText" type="text" class="form-control" list="json-datalist" value="" on-keyup="callAutocomplete">
+                                            <datalist id="json-datalist">
+                                                <template is="dom-repeat" items="{{autocompleteData}}">
+                                                    <option value="{{item.name}}">
+                                                </template>
+                                            </datalist>
+                                            <button type="button" class="btn btn-default btn-sm form-control" on-click="addGeneId">
+                                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <textarea id="XXX" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -103,8 +104,7 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="biotype" class="panel-collapse collapse" role="tabpanel"
-                                 aria-labelledby="headingThree">
+                            <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body biotype-scroll">
                                     <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
                                 </div>
@@ -120,8 +120,7 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="drug" class="panel-collapse collapse" role="tabpanel"
-                                 aria-labelledby="headingFour">
+                            <div id="drug" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
                                 <div class="panel-body">
                                     <textarea class="form-control" rows="3"></textarea>
                                 </div>
@@ -137,8 +136,7 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="phenotype" class="panel-collapse collapse" role="tabpanel"
-                                 aria-labelledby="headingFive">
+                            <div id="phenotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
                                 <div class="panel-body">
                                     <textarea class="form-control" rows="3"></textarea>
                                 </div>
@@ -154,8 +152,7 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="expression" class="panel-collapse collapse" role="tabpanel"
-                                 aria-labelledby="headingSix">
+                            <div id="expression" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
                                 <div class="panel-body">
                                     <textarea class="form-control" rows="3"></textarea>
                                 </div>
@@ -230,14 +227,14 @@
             changePage: function (e) {
 //                this.geneId = this.$$('#XXX').value;
                 if (this.$$('#XXX') != null && typeof this.$$('#XXX').value !== "undefined") {
-                    this.result=[];
+                    this.result= [];
+//                    this.geneId = this.$$('#XXX').value;
                     let _this = this;
-                    _this.geneId = this.$$('#XXX').value;
                     let success = function (response) {
-                        for(var i in response.response) {
+                        for(let i in response.response) {
                             _this.push('result',response.response[i].result[0]);
                         }
-                       console.log(_this.result)
+                        console.log(_this.result)
                     };
                     this.cellBaseClient.get('feature','gene', this.$$('#XXX').value, 'info', {}, {success: success, async: true});
                 }
@@ -266,24 +263,23 @@
                 console.log(e)
                 this.geneId = e.srcElement.id;
             },
-            addGeneId: function (e) {
+            addGeneId: function(e) {
                 var temp = $('#geneIDText').val();
-                var _this=this;
-                if (_this.allIds.indexOf(temp) == -1){
+                if (this.allIds.indexOf(temp) == -1){
                     this.push('allIds', temp);
                 }
                 console.log(this.allIds)
                 $('#geneIDText').val('');
                 $('textarea#XXX').val(this.allIds);
             },
-            callAutocomplete: function (e) {
-                let _this = this;
+            callAutocomplete: function(e) {
                 if (this.$$('#geneIDText').value.length > 2) {
+                    let _this = this;
                     let success = function (response) {
                         _this.autocompleteData = response.response[0].result;
                         console.log(_this.autocompleteData)
                     };
-                    _this.cellBaseClient.get('feature', 'id', this.$$('#geneIDText').value, 'starts_with', {}, {success:success, async: true});
+                    _this.cellBaseClient.get('feature', 'id', this.$$('#geneIDText').value, 'starts_with', {}, {success: success, async: true});
                 }
 
             }

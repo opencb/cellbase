@@ -174,13 +174,18 @@
                                 <form class="navbar-form navbar-left" role="search">
                                     <div class="form-group">
                                         <input type="text" class="form-control" placeholder="BRCA2,rs666,3:4444-6666">
-                                        <a href="#"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
+                                        <a href="#">
+                                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        </a>
                                     </div>
                                     <!--<button type="submit" class="btn btn-default">Submit</button>-->
                                 </form>
 
                                 <li>
-                                    <a href="#" data-toggle="modal" role="button" data-placement="bottom" data-target="#myModal" title="Settings ..."><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></a>
+                                    <a href="#" data-toggle="modal" role="button" data-placement="bottom" data-target="#myModal" title="Settings ...">
+                                        <i class="fa fa-cog"></i>
+                                        <!--<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>-->
+                                    </a>
                                 </li>
 
                                 <li class="dropdown">
@@ -205,7 +210,7 @@
                     <h2>Welcome to CellBase data portal tool!</h2>
                 </div>
                 <div class="collapse content" id="genePanel">
-                    <h3>Gene</h3>
+                    <h2>Gene</h2>
                     <cellbase-gene-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-gene-panel>
                 </div>
                 <div class="collapse content" id="transcriptPanel">
