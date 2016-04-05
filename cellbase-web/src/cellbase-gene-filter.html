@@ -58,13 +58,22 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel"
+                                 aria-labelledby="headingOne">
                                 <div class="panel-body">
-<<<<<<< HEAD
-                                    <textarea class="form-control" rows="3">{{ids}}</textarea>
-=======
-                                    <textarea id="XXX" class="form-control" rows="3"></textarea>
->>>>>>> c0ea0c3873a9479ed0aae712a2f79c57db446bce
+                                    Search: <input id="geneIDText" type="type" list="json-datalist" value=""
+                                                   on-keydown="callAutocomplete">
+                                    <datalist id="json-datalist">
+                                        <template is="dom-repeat" items="{{autocompleteData}}">
+                                            <option value="{{item.name}}">
+                                        </template>
+                                    </datalist>
+                                    <button type="button" class="btn btn-default btn-sm" on-click="addGeneId">
+                                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                    </button>
+                                    <textarea id="XXX" class="form-control" rows="3">
+
+                                    </textarea>
                                 </div>
                             </div>
                         </div>
@@ -80,11 +89,7 @@
                             </div>
                             <div id="region" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                 <div class="panel-body">
-<<<<<<< HEAD
-                                    <textarea class="form-control" rows="3">{{region}}</textarea>
-=======
                                     <textarea id="regionList" class="form-control" rows="3"></textarea>
->>>>>>> c0ea0c3873a9479ed0aae712a2f79c57db446bce
                                 </div>
                             </div>
                         </div>
@@ -98,14 +103,9 @@
                                     </a>
                                 </h4>
                             </div>
-<<<<<<< HEAD
                             <div id="biotype" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="headingThree">
                                 <div class="panel-body biotype-scroll">
-=======
-                            <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                                <div class="panel-body">
->>>>>>> c0ea0c3873a9479ed0aae712a2f79c57db446bce
                                     <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
                                 </div>
                             </div>
@@ -198,6 +198,10 @@
                 ids: {
                     type: String
                 },
+                allIds: {
+                    type: Array,
+                    value: []
+                },
                 biotype: {
                     type: Array,
                     notify: true
@@ -213,6 +217,10 @@
                 result: {
                     type: Array,
                     value: []
+                },
+                autocompleteData: {
+                    type:Array,
+                    value: []
                 }
             },
             clearAllFields: function (e) {
@@ -220,9 +228,19 @@
                 this.ids = "";
             },
             changePage: function (e) {
-                console.log("In Run:")
-                console.log(this.biotype)
 //                this.geneId = this.$$('#XXX').value;
+                if (this.$$('#XXX') != null && typeof this.$$('#XXX').value !== "undefined") {
+                    this.result=[];
+                    let _this = this;
+                    _this.geneId = this.$$('#XXX').value;
+                    let success = function (response) {
+                        for(var i in response.response) {
+                            _this.push('result',response.response[i].result[0]);
+                        }
+                       console.log(_this.result)
+                    };
+                    this.cellBaseClient.get('feature','gene', this.$$('#XXX').value, 'info', {}, {success: success, async: true});
+                }
 
                 if (this.$$('#regionList') != null && typeof this.$$('#regionList').value !== "undefined") {
                     let _this = this;
@@ -247,6 +265,27 @@
             _updateGeneView: function(e) {
                 console.log(e)
                 this.geneId = e.srcElement.id;
+            },
+            addGeneId: function (e) {
+                var temp = $('#geneIDText').val();
+                var _this=this;
+                if (_this.allIds.indexOf(temp) == -1){
+                    this.push('allIds', temp);
+                }
+                console.log(this.allIds)
+                $('#geneIDText').val('');
+                $('textarea#XXX').val(this.allIds);
+            },
+            callAutocomplete: function (e) {
+                let _this = this;
+                if (this.$$('#geneIDText').value.length > 2) {
+                    let success = function (response) {
+                        _this.autocompleteData = response.response[0].result;
+                        console.log(_this.autocompleteData)
+                    };
+                    _this.cellBaseClient.get('feature', 'id', this.$$('#geneIDText').value, 'starts_with', {}, {success:success, async: true});
+                }
+
             }
         });
     </script>

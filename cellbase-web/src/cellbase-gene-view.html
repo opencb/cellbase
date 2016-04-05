@@ -21,7 +21,7 @@
                 <li role="presentation"><a href="#transcripts" role="tab" data-toggle="tab">Transcripts</a></li>
                 <li role="presentation"><a href="#tfbs" role="tab" data-toggle="tab">TFBS</a></li>
                 <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#phenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation"><a href="#viewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
@@ -29,7 +29,12 @@
                     <div id="genomeviewer" style="width: 800px"></div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="transcripts">
-                    Transcripts
+                    <template is="dom-repeat" items="{{geneObj.transcripts}}">
+                        Name:{{item.name}}
+                        ID:{{item.id}}
+                        biotype:{{item.biotype}}
+                        <br>
+                    </template>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="tfbs">
                     TFBS
@@ -38,7 +43,7 @@
                     Drugs
                     <!--<cellbase-view-drugs drugs="{{geneObj.drugs}}"></cellbase-view-drugs>-->
                 </div>
-                <div role="tabpanel" class="tab-pane" id="phenotype">
+                <div role="tabpanel" class="tab-pane" id="viewPhenotype">
                     Phenotype
                 </div>
             </div>
@@ -50,9 +55,6 @@
             is: 'cellbase-gene-view',
 
             properties: {
-                vpro: {
-                    type: String
-                },
                 cellbase: {
                     type: Object
                 },
@@ -60,6 +62,9 @@
                     type: String,
                     notify: true,
                     observer: '_geneIdChanged'
+                },
+                geneObj: {
+                    type: Object
                 }
             },
             _geneIdChanged: function(newValue, oldValue) {
@@ -73,12 +78,12 @@
                         } else {
                             alert("Gene ID not valid: " + _this.geneId);
                         }
-//                        this.geneObj = firstGene;
+                        _this.geneObj = firstGene;
                     };
                     let error = function (response) {
                         alert("Gene ID not valid: " + _this.geneId)
                     };
-                    CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {include: "chromosome,start,end"}, {success: success, error: error, async: true});
+                    CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
                 }
             },
             ready: function() {
