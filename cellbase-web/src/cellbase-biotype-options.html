@@ -37,20 +37,21 @@
 
             attached: function () {
                 var _this = this;
-                console.log(this.cellbaseclienta)
                 var success = function (response) {
-                    console.log(response)
                     _this.data = response.response[0].result;
                 };
                 this.cellbaseclienta.getGeneClient(null, 'biotype', {}, {success: success, async: true});
             },
 
             add: function (event) {
-                if (event.target.active) {
-                    this.push('biotypes', event.target.innerText);
+                console.log(event)
+                if (event.target.checked) {
+                    this.push('biotypes', event.target.name);
                     console.log(this.biotypes)
                 } else {
-
+                    var index = this.biotypes.indexOf(event.target.name);
+                    this.splice('biotypes', index, 1);
+                    console.log(this.biotypes)
                 }
             }
         });

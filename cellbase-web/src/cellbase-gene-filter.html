@@ -5,7 +5,12 @@
 
 <dom-module id="cellbase-gene-filter">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .biotype-scroll{
+                max-height: 300px;
+                overflow-y:scroll;
+            }
+        </style>
 
         <!--<div class="filter">-->
         <!--<div class="tabs">-->
@@ -56,7 +61,7 @@
                             <div id="geneId" class="panel-collapse collapse in" role="tabpanel"
                                  aria-labelledby="headingOne">
                                 <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                    <textarea class="form-control" rows="3">{{ids}}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -73,7 +78,7 @@
                             <div id="region" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="headingTwo">
                                 <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                    <textarea class="form-control" rows="3">{{region}}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -89,7 +94,7 @@
                             </div>
                             <div id="biotype" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="headingThree">
-                                <div class="panel-body">
+                                <div class="panel-body biotype-scroll">
                                     <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
                                 </div>
                             </div>
@@ -149,17 +154,23 @@
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="result1">
-                    <table>
+                    <table class="table">
+                        <thead>
                         <tr>
+                            <th>#</th>
                             <th>Region</th>
                             <th>ID</th>
                             <th>biotype</th>
                         </tr>
+                        </thead>
+                        <tbody>
                         <tr>
+                            <th scope="row">1</th>
                             <td>{{region}}</td>
                             <td>{{ids}}</td>
                             <td>{{biotype}}</td>
                         </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -186,7 +197,8 @@
                 },
                 cellBaseClient: {
                     type: Object,
-                    notify: true                }
+                    notify: true
+                }
             },
             clearAllFields: function (e) {
                 this.region = "";
