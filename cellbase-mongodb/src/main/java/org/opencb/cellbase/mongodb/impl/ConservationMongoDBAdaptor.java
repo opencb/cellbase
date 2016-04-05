@@ -22,7 +22,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.variant.annotation.Score;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.ConservationDBAdaptor;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
@@ -334,7 +334,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                 for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
                     for (Float value : elem.getValue()) {
                         if (value != null) {
-                            resultList.add(new Score(new Double(value), elem.getKey()));
+                            resultList.add(new Score(new Double(value), elem.getKey(), null));
                         }
                     }
                 }
