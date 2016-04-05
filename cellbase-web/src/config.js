@@ -18,6 +18,7 @@ var CELLBASE_HOSTS = ["bioinfo.hpc.cam.ac.uk/cellbase", "www.ebi.ac.uk/cellbase"
 var CELLBASE_VERSION = "v4";
 var CELLBASE_SPECIES = "hsapiens";
 
+var CELLBASE_CLIENT;
 
 var DEFAULT_SPECIES = {
     "vertebrates": [

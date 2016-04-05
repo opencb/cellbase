@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+
 <link rel="import" href="cellbase-gene-filter.html">
 <link rel="import" href="cellbase-gene-view.html">
 
@@ -17,8 +18,9 @@
             }
         </style>
         <div class="panel">
-                <cellbase-gene-filter id="filter" geneName={{geneId}}></cellbase-gene-filter>
-                <cellbase-gene-view id="view" geneView={{geneId}} cellbase="{{cellbase}}"></cellbase-gene-view>
+            {{cellbaseClient}}
+            <cellbase-gene-filter id="filter" gene-id={{geneId}}></cellbase-gene-filter>
+            <cellbase-gene-view id="view" gene-id={{geneId}} cellbase="{{cellbase}}"></cellbase-gene-view>
         </div>
     </template>
     <script>
@@ -26,13 +28,18 @@
             is: 'cellbase-gene-panel',
             properties: {
                 geneId: {
-                    type: String,
-                    notify: true
+                    type: String
+                },
+                cellBaseClient: {
+                    type: Object
                 },
                 cellbase: {
                     type: String,
                     value: "empty"
                 }
+            },
+            ready: function() {
+                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

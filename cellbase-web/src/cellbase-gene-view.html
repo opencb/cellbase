@@ -14,18 +14,18 @@
         <!--</paper-tabs>-->
 
         <div style="width: 90%">
+            <span>{{geneId}}</span>
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#genomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
                 <li role="presentation"><a href="#transcripts" role="tab" data-toggle="tab">Transcripts</a></li>
                 <li role="presentation"><a href="#tfbs" role="tab" data-toggle="tab">TFBS</a></li>
-                <li role="presentation"><a href="#drug" role="tab" data-toggle="tab">Drugs</a></li>
+                <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
                 <li role="presentation"><a href="#phenotype" role="tab" data-toggle="tab">Phenotype</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
                 <div role="tabpanel" class="tab-pane active" id="genomeContext">
-                    Genome Context
                     <div id="genomeviewer" style="width: 800px"></div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="transcripts">
@@ -34,8 +34,9 @@
                 <div role="tabpanel" class="tab-pane" id="tfbs">
                     TFBS
                 </div>
-                <div role="tabpanel" class="tab-pane" id="drug">
+                <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
                     Drugs
+                    <!--<cellbase-view-drugs drugs="{{geneObj.drugs}}"></cellbase-view-drugs>-->
                 </div>
                 <div role="tabpanel" class="tab-pane" id="phenotype">
                     Phenotype
@@ -54,6 +55,30 @@
                 },
                 cellbase: {
                     type: Object
+                },
+                geneId: {
+                    type: String,
+                    notify: true,
+                    observer: '_geneIdChanged'
+                }
+            },
+            _geneIdChanged: function(newValue, oldValue) {
+                if (typeof this.genomeViewer !== "undefined") {
+                    let _this = this;
+                    let success = function (response) {
+                        let firstGene = response.response[0].result[0];
+                        if (typeof firstGene !== "undefined") {
+                            let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
+                            _this.genomeViewer.setRegion(region);
+                        } else {
+                            alert("Gene ID not valid: " + _this.geneId);
+                        }
+//                        this.geneObj = firstGene;
+                    };
+                    let error = function (response) {
+                        alert("Gene ID not valid: " + _this.geneId)
+                    };
+                    CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {include: "chromosome,start,end"}, {success: success, error: error, async: true});
                 }
             },
             ready: function() {
@@ -68,13 +93,14 @@
                 };
                 CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
 
+                this.genomeViewer;
                 console.log(document.querySelector('#genomeviewer'))
                 console.log(this.$$('#genomeviewer'))
                 this.renderGenomeViewer();
             },
             renderGenomeViewer: function() {
                 var region = new Region({chromosome: "13", start: 32889611, end: 32889611});
-                var genomeViewer = new GenomeViewer({
+                this.genomeViewer = new GenomeViewer({
                     cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
                     cellBaseVersion: 'v3',
                     target: this.$$('#genomeviewer'),
@@ -137,7 +163,7 @@
                         subCategory: "region",
                         resource: "sequence",
                         params: {},
-                        species: genomeViewer.species,
+                        species: this.genomeViewer.species,
                         cacheConfig: {
                             chunkSize: 100
                         }
@@ -161,7 +187,7 @@
                         category: "genomic",
                         subCategory: "region",
                         resource: "gene",
-                        species: genomeViewer.species,
+                        species: this.genomeViewer.species,
                         params: {
                             exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
                         },
@@ -191,13 +217,13 @@
                         params: {
                             exclude: 'transcripts,chunkIds'
                         },
-                        species: genomeViewer.species,
+                        species: this.genomeViewer.species,
                         cacheConfig: {
                             chunkSize: 100000
                         }
                     })
                 });
-                genomeViewer.addOverviewTrack(gene);
+                this.genomeViewer.addOverviewTrack(gene);
                 this.snp = new FeatureTrack({
                     title: 'SNP',
                     featureType: 'SNP',
@@ -212,7 +238,7 @@
                         params: {
                             exclude: 'transcriptVariations,xrefs,samples'
                         },
-                        species: genomeViewer.species,
+                        species: this.genomeViewer.species,
                         cacheConfig: {
                             chunkSize: 10000
                         }
@@ -237,8 +263,8 @@
 //                });
 //                tracks.push(customTrack);
                 /*************************/
-                genomeViewer.addTrack(tracks);
-                genomeViewer.draw();
+                this.genomeViewer.addTrack(tracks);
+                this.genomeViewer.draw();
 
             }
         });
