@@ -53,10 +53,9 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel"
-                                 aria-labelledby="headingOne">
+                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
                                 <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                    <textarea id="XXX" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -70,10 +69,9 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="region" class="panel-collapse collapse" role="tabpanel"
-                                 aria-labelledby="headingTwo">
+                            <div id="region" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                 <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                    <textarea id="regionList" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -87,8 +85,7 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="biotype" class="panel-collapse collapse" role="tabpanel"
-                                 aria-labelledby="headingThree">
+                            <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body">
                                     <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
                                 </div>
@@ -155,11 +152,13 @@
                             <th>ID</th>
                             <th>biotype</th>
                         </tr>
-                        <tr>
-                            <td>{{region}}</td>
-                            <td>{{ids}}</td>
-                            <td>{{biotype}}</td>
-                        </tr>
+                        <template is="dom-repeat" items="{{result}}">
+                            <tr>
+                                <td>{{item.chromosome}}</td>
+                                <td on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.name}}</td>
+                                <td>{{item.biotype}}</td>
+                            </tr>
+                        </template>
                     </table>
                 </div>
             </div>
@@ -184,21 +183,38 @@
                     type: Array,
                     notify: true
                 },
+                geneId: {
+                    type: String,
+                    notify: true
+                },
                 cellBaseClient: {
                     type: Object,
-                    notify: true                }
+                    notify: true
+                },
+                result: {
+                    type: Array,
+                    value: []
+                }
             },
             clearAllFields: function (e) {
                 this.region = "";
                 this.ids = "";
             },
             changePage: function (e) {
-//                var pages = document.querySelector('iron-pages#selectedTab');
-//                pages.selectNext();
-                $('.nav-tabs a[href="#result1"]').tab('show')
-
                 console.log("In Run:")
                 console.log(this.biotype)
+//                this.geneId = this.$$('#XXX').value;
+
+                if (this.$$('#regionList') != null && typeof this.$$('#regionList').value !== "undefined") {
+                    let _this = this;
+                    let success = function (response) {
+                        _this.result = response.response[0].result;
+                        console.log(_this.result)
+                    };
+                    this.cellBaseClient.get('genomic','region', this.$$('#regionList').value, 'gene', {include: "chromosome,start,end"}, {success: success, async: true});
+                }
+
+                $('.nav-tabs a[href="#result1"]').tab('show')
             },
             ready: function() {
 //                $('#myTabs a').click(function (e) {
@@ -208,6 +224,10 @@
 //                });
                 this.cellBaseClient = CELLBASE_CLIENT;
                 console.log(this.cellBaseClient)
+            },
+            _updateGeneView: function(e) {
+                console.log(e)
+                this.geneId = e.srcElement.id;
             }
         });
     </script>
