@@ -12,31 +12,7 @@
             }
         </style>
 
-        <!--<div class="filter">-->
-        <!--<div class="tabs">-->
-        <!--<paper-tabs class="tabview" selected={{selected}}>-->
-        <!--<paper-tab id="filerTab">Filter</paper-tab>-->
-        <!--<paper-tab id="result">Results</paper-tab>-->
-        <!--</paper-tabs>-->
-        <!--</div>-->
-
-        <!--<div class="content">-->
-        <!--<iron-pages id="selectedTab" selected="{{selected}}">-->
-        <!--<div class="filter-content">-->
-        <!--<paper-button id="clear" on-click="clearAllFields" raised>clear</paper-button>-->
-        <!--<paper-button id="run" on-click="changePage" raised>run</paper-button>-->
-        <!--<br><br>-->
-        <!--<div class="constraints">-->
-        <!--<paper-textarea type="text" value={{region}} label="Region"></paper-textarea>-->
-        <!--</div>-->
-        <!--<div class="constraints">-->
-        <!--<paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>-->
-        <!--</div>-->
-
-        <!--<cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>-->
-
         <div>
-
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#filter1" role="tab" data-toggle="tab">Filter</a></li>
                 <li role="presentation"><a href="#result1" role="tab" data-toggle="tab">Result</a></li>
@@ -44,8 +20,9 @@
 
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="filter1">
-                    <button type="button" class="btn btn-default" on-click="clearAllFields">Clear</button>
-                    <button type="button" class="btn btn-default" on-click="changePage">Run</button>
+                    <button type="button" class="btn btn-default" on-click="clear">Clear</button>
+                    <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
+                    <button type="button" class="btn btn-default" on-click="executeQuery">Submit</button>
                     <br>
 
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -70,11 +47,11 @@
                                                 </template>
                                             </datalist>
                                             <button type="button" class="btn btn-default btn-sm form-control" on-click="addGeneId">
-                                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                                <i class="fa fa-plus"></i>
                                             </button>
                                         </div>
                                     </form>
-                                    <textarea id="geneIDTextArea" class="form-control" rows="3"></textarea>
+                                    <textarea id="geneFilterIdsTextarea" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +67,7 @@
                             </div>
                             <div id="region" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                 <div class="panel-body">
-                                    <textarea id="regionList" class="form-control" rows="3"></textarea>
+                                    <textarea id="regionList" class="form-control clearable" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -111,6 +88,7 @@
                             </div>
                         </div>
 
+                        <!-- DRUG filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingFour">
                                 <h4 class="panel-title">
@@ -122,7 +100,7 @@
                             </div>
                             <div id="drug" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
                                 <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                    <textarea id="geneFilterDrugsTextarea" class="form-control clearable" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -185,10 +163,6 @@
         Polymer({
             is: 'cellbase-gene-filter',
             properties: {
-                selected: {
-                    type: String,
-                    value: ""
-                },
                 region: {
                     type: String
                 },
@@ -220,35 +194,50 @@
                     value: []
                 }
             },
-            clearAllFields: function (e) {
+            clear: function (e) {
+                console.log("clear")
                 this.region = "";
                 this.ids = "";
+
+                // we empty the textareas
+                this.$.geneFilterIdsTextarea.value = "";
+                this.$.geneFilterDrugsTextarea.value = "";
             },
-            changePage: function (e) {
-//                this.geneId = this.$$('#geneIDTextArea').value;
-                if (this.$$('#geneIDTextArea') != null && typeof this.$$('#geneIDTextArea').value !== "undefined") {
-                    this.result= [];
-//                    this.geneId = this.$$('#geneIDTextArea').value;
-                    let _this = this;
-                    let success = function (response) {
-                        for(let i in response.response) {
-                            _this.push('result',response.response[i].result[0]);
-                        }
-                        console.log(_this.result)
-                    };
-                    this.cellBaseClient.get('feature','gene', this.$$('#geneIDTextArea').value, 'info', {}, {success: success, async: true});
+            loadExample: function (e) {
+                this.$.geneFilterIdsTextarea.value = "BRCA2";
+            },
+            executeQuery: function (e) {
+                // activate the GIF
+
+                // We first build the query params object
+                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
+                if (this.biotype.length > 0) {
+                    queryParams.biotype = this.biotype.join(",");
+                }
+                if (this.$.geneFilterDrugsTextarea.value != "") {
+                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
                 }
 
-                if (this.$$('#regionList') != null && typeof this.$$('#regionList').value !== "undefined") {
-                    let _this = this;
-                    let success = function (response) {
-                        _this.result = response.response[0].result;
-                        console.log(_this.result)
-                    };
-                    this.cellBaseClient.get('genomic','region', this.$$('#regionList').value, 'gene', {include: "chromosome,start,end"}, {success: success, async: true});
+                //
+                this.result= [];
+                let _this = this;
+                let success = function (response) {
+                    for(let i in response.response) {
+                        _this.push('result',response.response[i].result[0]);
+                    }
+                    // remove the GIF
+                };
+
+                // Now we execute the query. Note that ID are preferred
+                if (this.$.geneFilterIdsTextarea.value !== "") {
+                    this.cellBaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                } else {
+                    if (this.$.regionList.value !== "") {
+                        this.cellBaseClient.get('genomic','region', this.$.regionList.value, 'gene', queryParams, {success: success, async: true});
+                    }
                 }
 
-                $('.nav-tabs a[href="#result1"]').tab('show')
+                $('.nav-tabs a[href="#result1"]').tab('show');
             },
             ready: function() {
 //                $('#myTabs a').click(function (e) {
@@ -257,10 +246,8 @@
 //                    $(this).tab('show')
 //                });
                 this.cellBaseClient = CELLBASE_CLIENT;
-                console.log(this.cellBaseClient)
             },
             _updateGeneView: function(e) {
-                console.log(e)
                 this.geneId = e.srcElement.id;
             },
             addGeneId: function(e) {
@@ -268,18 +255,14 @@
                 if (this.allIds.indexOf(temp) == -1){
                     this.push('allIds', temp);
                 }
-                console.log(this.allIds)
-//                $('#geneIDText').val('');
-//                $('textarea#geneIDTextArea').val(this.allIds);
                 this.$$('#geneIDText').value = '';
-                this.$$('#geneIDTextArea').value = this.allIds;
+                this.$.geneFilterIdsTextarea.value = this.allIds;
             },
             callAutocomplete: function(e) {
                 if (this.$$('#geneIDText').value.length > 2) {
                     let _this = this;
                     let success = function (response) {
                         _this.autocompleteData = response.response[0].result;
-                        console.log(_this.autocompleteData)
                     };
                     _this.cellBaseClient.get('feature', 'id', this.$$('#geneIDText').value, 'starts_with', {}, {success: success, async: true});
                 }
