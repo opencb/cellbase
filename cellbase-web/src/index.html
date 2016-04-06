@@ -50,8 +50,10 @@
 
 
     <!--custom-elements-->
-    <link rel="import" href="cellbase-species-menu.html">
-    <link rel="import" href="cellbase-gene-panel.html">
+    <link rel="import" href="components/cellbase-species-menu.html">
+    <link rel="import" href="components/core/cellbase-gene-panel.html">
+    <link rel="import" href="components/variation/cellbase-variation-panel.html">
+    <link rel="import" href="components/variation/cellbase-variantannotation-panel.html">
 
 
     <style>
@@ -132,12 +134,12 @@
                                 </li>
 
                                 <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Variant <span class="caret"></span></a>
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Variation <span class="caret"></span></a>
                                     <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#">Variation</a></li>
+                                        <li><a href="#variationPanel">Variation (SNV)</a></li>
                                         <li><a href="#">Clinical</a></li>
                                         <li role="separator" class="divider"></li>
-                                        <li><a href="#">Variant Annotation</a></li>
+                                        <li><a href="#variationAnnotationPanel">Variant Annotation</a></li>
                                     </ul>
                                 </li>
 
@@ -216,6 +218,14 @@
                 <div class="collapse content" id="transcriptPanel">
                     Transcript
                     <cellbase-species-menu></cellbase-species-menu>
+                </div>
+                <div class="collapse content" id="variationPanel">
+                    Variation
+                    <cellbase-variation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variation-panel>
+                </div>
+                <div class="collapse content" id="variationAnnotationPanel">
+                    Variation Annotation
+                    <cellbase-variantannotation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variantannotation-panel>
                 </div>
             </div>
 
