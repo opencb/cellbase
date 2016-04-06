@@ -36,7 +36,7 @@
         <div class="panel">
             {{cellbaseClient}}
             <cellbase-variation-filter id="filter" gene-id={{geneId}}></cellbase-variation-filter>
-            <cellbase-variation-view id="view" gene-id={{geneId}} cellbase="{{cellbase}}"></cellbase-variation-view>
+            <cellbase-variation-view id="view" gene-id={{geneId}} cellbase="{{cellBaseClient}}"></cellbase-variation-view>
         </div>
     </template>
     <script>
@@ -48,10 +48,6 @@
                 },
                 cellBaseClient: {
                     type: Object
-                },
-                cellbase: {
-                    type: String,
-                    value: "empty"
                 }
             },
             ready: function() {

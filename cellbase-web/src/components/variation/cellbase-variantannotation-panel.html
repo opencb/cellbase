@@ -36,7 +36,7 @@
         <div class="panel">
             {{cellbaseClient}}
             <cellbase-variantannotation-filter id="filter" gene-id={{geneId}}></cellbase-variantannotation-filter>
-            <cellbase-variantannotation-view id="view" gene-id={{geneId}} cellbase="{{cellbase}}"></cellbase-variantannotation-view>
+            <cellbase-variantannotation-view id="view" gene-id={{geneId}} cellbase="{{cellBaseClient}}"></cellbase-variantannotation-view>
         </div>
     </template>
     <script>
@@ -48,10 +48,6 @@
                 },
                 cellBaseClient: {
                     type: Object
-                },
-                cellbase: {
-                    type: String,
-                    value: "empty"
                 }
             },
             ready: function() {

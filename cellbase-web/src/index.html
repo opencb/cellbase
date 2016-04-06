@@ -81,8 +81,6 @@
         <script>
 
             function init() {
-                console.log(CELLBASE_HOSTS)
-
                 this.CELLBASE_CLIENT = new CellBaseClient();
 
                 $(".cellbase-menu a").on('click', function(e) {
@@ -95,8 +93,6 @@
 
             window.addEventListener("load", init());
         </script>
-
-        <!--<cellbase-web></cellbase-web>-->
 
         <div>
             <div style="height: 60px;">
@@ -224,7 +220,7 @@
                     <cellbase-variation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variation-panel>
                 </div>
                 <div class="collapse content" id="variationAnnotationPanel">
-                    Variation Annotation
+                    Variant Annotation
                     <cellbase-variantannotation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variantannotation-panel>
                 </div>
             </div>

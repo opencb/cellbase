@@ -21,13 +21,6 @@
 <dom-module id="cellbase-variation-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
-        <!--<div class="view">-->
-        <!--<paper-tabs class="tabview" selected="0">-->
-        <!--<paper-tab id="view">Genome Map</paper-tab>-->
-        <!--<paper-tab id="transcript">Transcript</paper-tab>-->
-        <!--<paper-tab id="tfbs">{{cellbase}}</paper-tab>-->
-        <!--<paper-tab id="exons">Exons</paper-tab>-->
-        <!--</paper-tabs>-->
 
         <div style="width: 90%">
             <span>{{geneId}}</span>
@@ -114,21 +107,17 @@
                 }
             },
             ready: function() {
-                console.log(this.localName + '#' + this.id + ' has local DOM initialized');
-                console.log(CELLBASE_CLIENT)
                 this.cellbase = CELLBASE_CLIENT._config.version;
-//                this.$.tfbs.textContent = cellBaseClient._config.version;
-                var success = function (response) {
-                    console.log("Success from user:")
-                    console.log(response)
-                    console.log(response.response[0].result[0].start)
-                };
-                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
-
-                this.genomeViewer;
-                console.log(document.querySelector('#genomeviewer'))
-                console.log(this.$$('#genomeviewer'))
-                this.renderGenomeViewer();
+//                var success = function (response) {
+//                    console.log("Success from user:")
+//                    console.log(response)
+//                };
+//                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
+//
+//                this.genomeViewer;
+//                console.log(document.querySelector('#genomeviewer'))
+//                console.log(this.$$('#genomeviewer'))
+//                this.renderGenomeViewer();
             },
             renderGenomeViewer: function() {
                 var region = new Region({chromosome: "13", start: 32889611, end: 32889611});

@@ -60,14 +60,11 @@
             },
 
             add: function (event) {
-                console.log(event)
                 if (event.target.checked) {
                     this.push('biotypes', event.target.name);
-                    console.log(this.biotypes)
                 } else {
                     var index = this.biotypes.indexOf(event.target.name);
                     this.splice('biotypes', index, 1);
-                    console.log(this.biotypes)
                 }
             }
         });

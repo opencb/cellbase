@@ -34,13 +34,16 @@
                 <li role="presentation"><a href="#result1" role="tab" data-toggle="tab">Result</a></li>
             </ul>
 
+            <!--Filter tab content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="filter1">
                     <button type="button" class="btn btn-default" on-click="clear">Clear</button>
                     <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
-                    <button type="button" class="btn btn-default" on-click="executeQuery">Submit</button>
+                    <button type="button" id="submitButton" class="btn btn-default" on-click="executeQuery">
+                        Submit</button>
                     <br>
 
+                    <!--GeneID filter menu-->
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingOne">
@@ -72,6 +75,7 @@
                             </div>
                         </div>
 
+                        <!--Region filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingTwo">
                                 <h4 class="panel-title">
@@ -83,7 +87,7 @@
                             </div>
                             <div id="region" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                 <div class="panel-body">
-                                    <textarea id="regionList" class="form-control clearable" rows="3"></textarea>
+                                    <textarea id="geneFilterRegionTextarea" class="form-control clearable" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -104,7 +108,7 @@
                             </div>
                         </div>
 
-                        <!-- DRUG filter menu-->
+                        <!-- Drug filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingFour">
                                 <h4 class="panel-title">
@@ -121,6 +125,7 @@
                             </div>
                         </div>
 
+                        <!--Phenotype filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingFive">
                                 <h4 class="panel-title">
@@ -137,6 +142,7 @@
                             </div>
                         </div>
 
+                        <!--Expression filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingSix">
                                 <h4 class="panel-title">
@@ -155,7 +161,9 @@
                     </div>
                 </div>
 
+                <!--Result tab content-->
                 <div role="tabpanel" class="tab-pane" id="result1">
+                    <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                     <table>
                         <tr>
                             <th>Region</th>
@@ -179,12 +187,6 @@
         Polymer({
             is: 'cellbase-gene-filter',
             properties: {
-                region: {
-                    type: String
-                },
-                ids: {
-                    type: String
-                },
                 allIds: {
                     type: Array,
                     value: []
@@ -211,12 +213,9 @@
                 }
             },
             clear: function (e) {
-                console.log("clear")
-                this.region = "";
-                this.ids = "";
-
                 // we empty the textareas
                 this.$.geneFilterIdsTextarea.value = "";
+                this.$.geneFilterRegionTextarea.value = "";
                 this.$.geneFilterDrugsTextarea.value = "";
             },
             loadExample: function (e) {
@@ -224,6 +223,7 @@
             },
             executeQuery: function (e) {
                 // activate the GIF
+                $('#spinImg').show();
 
                 // We first build the query params object
                 let queryParams = {include: "id,name,biotype,chromosome,start,end"};
@@ -242,45 +242,40 @@
                         _this.push('result',response.response[i].result[0]);
                     }
                     // remove the GIF
+                    $('#spinImg').hide();
                 };
 
                 // Now we execute the query. Note that ID are preferred
                 if (this.$.geneFilterIdsTextarea.value !== "") {
                     this.cellBaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
                 } else {
-                    if (this.$.regionList.value !== "") {
-                        this.cellBaseClient.get('genomic','region', this.$.regionList.value, 'gene', queryParams, {success: success, async: true});
+                    if (this.$.geneFilterRegionTextarea.value !== "") {
+                        this.cellBaseClient.get('genomic','region', this.$.geneFilterRegionTextarea.value, 'gene', queryParams, {success: success, async: true});
                     }
                 }
-
                 $('.nav-tabs a[href="#result1"]').tab('show');
             },
             ready: function() {
-//                $('#myTabs a').click(function (e) {
-//                    console.log("taaaaaaaaaabs")
-//                    e.preventDefault()
-//                    $(this).tab('show')
-//                });
                 this.cellBaseClient = CELLBASE_CLIENT;
             },
             _updateGeneView: function(e) {
                 this.geneId = e.srcElement.id;
             },
             addGeneId: function(e) {
-                var temp = this.$$('#geneIDText').value;
+                var temp = this.$.geneIDText.value;
                 if (this.allIds.indexOf(temp) == -1){
                     this.push('allIds', temp);
                 }
-                this.$$('#geneIDText').value = '';
+                this.$.geneIDText.value = '';
                 this.$.geneFilterIdsTextarea.value = this.allIds;
             },
             callAutocomplete: function(e) {
-                if (this.$$('#geneIDText').value.length > 2) {
+                if (this.$.geneIDText.value.length > 2) {
                     let _this = this;
                     let success = function (response) {
                         _this.autocompleteData = response.response[0].result;
                     };
-                    _this.cellBaseClient.get('feature', 'id', this.$$('#geneIDText').value, 'starts_with', {}, {success: success, async: true});
+                    _this.cellBaseClient.get('feature', 'id', this.$.geneIDText.value, 'starts_with', {}, {success: success, async: true});
                 }
 
             }

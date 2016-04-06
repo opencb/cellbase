@@ -21,7 +21,7 @@
 <dom-module id="cellbase-drugs-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
-        <div role="tabpanel" class="tab-pane" id="transcripts">
+        <div role="tabpanel" class="tab-pane">
             <table class="table table-hover">
                 <thead>
                 <tr>
@@ -54,12 +54,8 @@
                 },
                 drugs: {
                     type: Array,
-                    value: [],
-                    notify: true
+                    value: []
                 }
-            },
-            ready: function () {
-                console.log(this.drugs)
             }
         });
     </script>

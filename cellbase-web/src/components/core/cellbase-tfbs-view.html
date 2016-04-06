@@ -21,7 +21,7 @@
 <dom-module id="cellbase-tfbs-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
-        <div role="tabpanel" class="tab-pane" id="transcripts">
+        <div role="tabpanel" class="tab-pane">
             <template is="dom-repeat" items="{{transcripts}}" as="transcript">
                 <h3>{{transcript.id}} ({{transcript.name}})</h3>
 
@@ -68,8 +68,7 @@
                 },
                 transcripts: {
                     type: Array,
-                    value: [],
-                    notify: true
+                    value: []
                 }
             }
         });

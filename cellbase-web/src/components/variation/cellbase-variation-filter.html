@@ -98,7 +98,7 @@
                             </div>
                             <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body biotype-scroll">
-                                    <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
+                                    <!--<cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>-->
                                 </div>
                             </div>
                         </div>
@@ -178,12 +178,6 @@
         Polymer({
             is: 'cellbase-variation-filter',
             properties: {
-                region: {
-                    type: String
-                },
-                ids: {
-                    type: String
-                },
                 allIds: {
                     type: Array,
                     value: []
@@ -210,10 +204,6 @@
                 }
             },
             clear: function (e) {
-                console.log("clear")
-                this.region = "";
-                this.ids = "";
-
                 // we empty the textareas
                 this.$.geneFilterIdsTextarea.value = "";
                 this.$.geneFilterDrugsTextarea.value = "";
@@ -255,11 +245,6 @@
                 $('.nav-tabs a[href="#result1"]').tab('show');
             },
             ready: function() {
-//                $('#myTabs a').click(function (e) {
-//                    console.log("taaaaaaaaaabs")
-//                    e.preventDefault()
-//                    $(this).tab('show')
-//                });
                 this.cellBaseClient = CELLBASE_CLIENT;
             },
             _updateGeneView: function(e) {
