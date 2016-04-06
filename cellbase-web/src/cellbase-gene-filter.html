@@ -74,7 +74,7 @@
                                             </button>
                                         </div>
                                     </form>
-                                    <textarea id="XXX" class="form-control" rows="3"></textarea>
+                                    <textarea id="geneIDTextArea" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -225,10 +225,10 @@
                 this.ids = "";
             },
             changePage: function (e) {
-//                this.geneId = this.$$('#XXX').value;
-                if (this.$$('#XXX') != null && typeof this.$$('#XXX').value !== "undefined") {
+//                this.geneId = this.$$('#geneIDTextArea').value;
+                if (this.$$('#geneIDTextArea') != null && typeof this.$$('#geneIDTextArea').value !== "undefined") {
                     this.result= [];
-//                    this.geneId = this.$$('#XXX').value;
+//                    this.geneId = this.$$('#geneIDTextArea').value;
                     let _this = this;
                     let success = function (response) {
                         for(let i in response.response) {
@@ -236,7 +236,7 @@
                         }
                         console.log(_this.result)
                     };
-                    this.cellBaseClient.get('feature','gene', this.$$('#XXX').value, 'info', {}, {success: success, async: true});
+                    this.cellBaseClient.get('feature','gene', this.$$('#geneIDTextArea').value, 'info', {}, {success: success, async: true});
                 }
 
                 if (this.$$('#regionList') != null && typeof this.$$('#regionList').value !== "undefined") {
@@ -264,13 +264,15 @@
                 this.geneId = e.srcElement.id;
             },
             addGeneId: function(e) {
-                var temp = $('#geneIDText').val();
+                var temp = this.$$('#geneIDText').value;
                 if (this.allIds.indexOf(temp) == -1){
                     this.push('allIds', temp);
                 }
                 console.log(this.allIds)
-                $('#geneIDText').val('');
-                $('textarea#XXX').val(this.allIds);
+//                $('#geneIDText').val('');
+//                $('textarea#geneIDTextArea').val(this.allIds);
+                this.$$('#geneIDText').value = '';
+                this.$$('#geneIDTextArea').value = this.allIds;
             },
             callAutocomplete: function(e) {
                 if (this.$$('#geneIDText').value.length > 2) {

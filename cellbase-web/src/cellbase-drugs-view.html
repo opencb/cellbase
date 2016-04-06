@@ -1,0 +1,50 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="cellbase-shared-styles.html">
+
+<dom-module id="cellbase-drugs-view">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <div role="tabpanel" class="tab-pane" id="transcripts">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Drug Name</th>
+                    <th>Source</th>
+                    <th>Study Type</th>
+                    <th>Type</th>
+                </tr>
+                </thead>
+                <tbody>
+                <template is="dom-repeat" items="{{drugs}}">
+                    <tr>
+                        <td>{{item.drugName}}</td>
+                        <td>{{item.source}}</td>
+                        <td>{{item.studyType}}</td>
+                        <td>{{item.type}}</td>
+                    </tr>
+                </template>
+                </tbody>
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-drugs-view',
+
+            properties: {
+                cellbase: {
+                    type: Object
+                },
+                drugs: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                }
+            },
+            ready: function () {
+                console.log(this.drugs)
+            }
+        });
+    </script>
+</dom-module>

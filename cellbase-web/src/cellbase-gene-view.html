@@ -1,6 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
 <link rel="import" href="cellbase-shared-styles.html">
+<link rel="import" href="cellbase-tfbs-view.html">
+<link rel="import" href="cellbase-drugs-view.html">
 
 <dom-module id="cellbase-gene-view">
     <template>
@@ -29,19 +31,30 @@
                     <div id="genomeviewer" style="width: 800px"></div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="transcripts">
-                    <template is="dom-repeat" items="{{geneObj.transcripts}}">
-                        Name:{{item.name}}
-                        ID:{{item.id}}
-                        biotype:{{item.biotype}}
-                        <br>
-                    </template>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>Biotype</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{geneObj.transcripts}}">
+                            <tr>
+                                <td>{{item.name}}</td>
+                                <td>{{item.id}}</td>
+                                <td>{{item.biotype}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="tfbs">
-                    TFBS
+                    <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
-                    Drugs
-                    <!--<cellbase-view-drugs drugs="{{geneObj.drugs}}"></cellbase-view-drugs>-->
+                    <!--<cellbase-drugs-view cellbase="{{cellbase}}" drugs="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>-->
                 </div>
                 <div role="tabpanel" class="tab-pane" id="viewPhenotype">
                     Phenotype
