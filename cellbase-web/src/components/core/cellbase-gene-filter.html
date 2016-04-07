@@ -26,6 +26,10 @@
                 max-height: 300px;
                 overflow-y: scroll;
             }
+            .gene-names-display{
+                max-height: 800px;
+                overflow: auto;
+            }
         </style>
 
         <div>
@@ -92,12 +96,13 @@
                             </div>
                         </div>
 
+                        <!--Biotype filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingThree">
                                 <h4 class="panel-title">
                                     <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                        href="#biotype" aria-expanded="false" aria-controls="biotype">
-                                        Select biotypes
+                                        Biotypes
                                     </a>
                                 </h4>
                             </div>
@@ -163,21 +168,35 @@
 
                 <!--Result tab content-->
                 <div role="tabpanel" class="tab-pane" id="result1">
-                    <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
-                    <table>
-                        <tr>
-                            <th>Region</th>
-                            <th>ID</th>
-                            <th>biotype</th>
-                        </tr>
+                    <div class="gene-names-display">
+                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <br>
                         <template is="dom-repeat" items="{{result}}">
-                            <tr>
-                                <td>{{item.chromosome}}</td>
-                                <td on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.name}}</td>
-                                <td>{{item.biotype}}</td>
-                            </tr>
+                            <div>
+                                <b on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.name}}</b>
+                                <i>{{item.biotype}}</i><br>
+                                {{item.chromosome}}:{{item.start}}-{{item.end}}
+                                <hr>
+                            </div>
                         </template>
-                    </table>
+                    </div>
+
+
+
+                    <!--<table>-->
+                    <!--<tr>-->
+                    <!--<th>Region</th>-->
+                    <!--<th>ID</th>-->
+                    <!--<th>biotype</th>-->
+                    <!--</tr>-->
+                    <!--<template is="dom-repeat" items="{{result}}">-->
+                    <!--<tr>-->
+                    <!--<td>{{item.chromosome}}</td>-->
+                    <!--<td on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.name}}</td>-->
+                    <!--<td>{{item.biotype}}</td>-->
+                    <!--</tr>-->
+                    <!--</template>-->
+                    <!--</table>-->
                 </div>
             </div>
         </div>

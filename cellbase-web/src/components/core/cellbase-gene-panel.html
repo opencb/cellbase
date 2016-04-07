@@ -21,24 +21,14 @@
 
 <dom-module id="cellbase-gene-panel">
     <template>
-        <style>
-            #filter {
-                float: left;
-                width:20%;
-                margin-right: 5px;
-            }
-            #view {
-                float: right;
-                width:75%;
-                margin-right: 5px;
-            }
-        </style>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
         <div class="panel">
-            <div>
-                <cellbase-gene-filter id="filter" gene-id={{geneId}}></cellbase-gene-filter>
+            <div class="col-md-2">
+                <cellbase-gene-filter gene-id={{geneId}}></cellbase-gene-filter>
             </div>
-            <div>
-                <cellbase-gene-view id="view" gene-id={{geneId}} cellbase="{{cellbaseClient}}"></cellbase-gene-view>
+            <div class="col-md-10">
+                <cellbase-gene-view gene-id={{geneId}} cellbase="{{cellbaseClient}}"></cellbase-gene-view>
             </div>
         </div>
     </template>

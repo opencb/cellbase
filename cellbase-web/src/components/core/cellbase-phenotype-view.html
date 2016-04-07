@@ -1,0 +1,51 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../cellbase-shared-styles.html">
+
+<dom-module id="cellbase-phenotype-view">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div>
+            <br>
+                <table id="phenotypeTable" data-pagination="true" data-page-list="[10, 25, 50]">
+                    <thead>
+                    <tr>
+                        <th data-field="id">id</th>
+                        <th data-field="name">name</th>
+                        <th data-field="hpo">hpo</th>
+                        <th data-field="score">score</th>
+                        <th data-field="source">source</th>
+                        <th data-field="numberOfPubmeds">numberOfPubmeds</th>
+                        <th data-field="associationTypes">associationTypes</th>
+                        <th data-field="sources">sources</th>
+                    </tr>
+                    </thead>
+                </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-phenotype-view',
+            properties: {
+                cellbase: {
+                    type: Object,
+                    notify: true
+                },
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'phenotypeChanged'
+                }
+            },
+            phenotypeChanged: function() {
+                console.log("RENDER:")
+                console.log(this.data)
+                $('#phenotypeTable').bootstrapTable('destroy');
+                $('#phenotypeTable').bootstrapTable({
+                    data: this.data
+                });
+            }
+        });
+    </script>
+</dom-module>

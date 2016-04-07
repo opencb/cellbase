@@ -21,7 +21,8 @@
 <dom-module id="cellbase-drugs-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
-        <div role="tabpanel" class="tab-pane">
+        <div>
+            <template is="dom-if" if="{{data}}">
             <table class="table table-hover">
                 <thead>
                 <tr>
@@ -42,6 +43,12 @@
                 </template>
                 </tbody>
             </table>
+            </template>
+
+            <template is="dom-if" if="{{!data}}">
+                No Drugs
+                <br/>
+            </template>
         </div>
     </template>
     <script>
