@@ -1,0 +1,105 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../cellbase-shared-styles.html">
+
+<dom-module id="cellbase-variation-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <label class="control-label">{{title}}</label><br>
+        <!--<template is="dom-repeat" items="{{data}}">-->
+            <!--<input type="checkbox" on-change="add" name="{{item.start}}" value="{{item.start}}"> {{item.start}}<br>-->
+        <!--</template>-->
+
+        <div style="padding: 10px; ">
+            <br>
+            <table id="table" data-search="true" data-show-columns="true" data-pagination="true" data-height="540" data-page-list="[10, 25, 50]" data-detail-view="true" data-detail-formatter="detailFormatter">
+                <thead>
+                <tr>
+                    <th data-field="detail-view"></th>
+                    <th data-field="chromosome" data-sortable="true">chromosome</th>
+                    <th data-field="start" data-sortable="true" width="200">start</th>
+                    <th data-field="ends" data-sortable="true">end</th>
+                    <th data-field="ids" data-sortable="true">ids</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-variation-grid',
+            properties: {
+                title: {
+                    type: String,
+                    value: "Select biotypes"
+                },
+                cellbaseClient: {
+                    type: Object,
+                    notify: true
+                },
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'render'
+                }
+            },
+            render: function() {
+//                var data = [{
+//                    "name": "bootstrap-table",
+//                    "stargazers_count": "10",
+//                    "forks_count": "122",
+//                    "description": "An extended Bootstrap table"
+//                }, {
+//                    "name": "multiple-select",
+//                    "stargazers_count": "288",
+//                    "forks_count": "20",
+//                    "description": "A jQuery plugin to select multiple elements with checkboxes :)"
+//                }, {
+//                    "name": "bootstrap-table",
+//                    "stargazers_count": "32",
+//                    "forks_count": "11",
+//                    "description": "Show/hide password plugin for twitter bootstrap."
+//                }, {
+//                    "name": "bootstrap-table",
+//                    "stargazers_count": "1",
+//                    "forks_count": "4",
+//                    "description": "my blog"
+//                }, {
+//                    "name": "scutech-redmine 1",
+//                    "stargazers_count": "50",
+//                    "forks_count": "3",
+//                    "description": "Redmine notification tools for chrome extension."
+//                }];
+
+                $('#table').bootstrapTable({
+                    data: this.data
+                });
+            },
+            detailFormatter: function (index, row, element) {
+                console.log(element)
+                var html = [];
+                $.each(row, function (key, value) {
+                    html.push('<p><b>' + key + ':</b> ' + value + '</p>');
+                });
+                return html.join('');
+            }
+        });
+    </script>
+</dom-module>
