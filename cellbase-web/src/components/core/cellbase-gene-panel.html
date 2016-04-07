@@ -34,8 +34,12 @@
             }
         </style>
         <div class="panel">
-            <cellbase-gene-filter id="filter" gene-id={{geneId}}></cellbase-gene-filter>
-            <cellbase-gene-view id="view" gene-id={{geneId}} cellbase="{{cellbaseClient}}"></cellbase-gene-view>
+            <div>
+                <cellbase-gene-filter id="filter" gene-id={{geneId}}></cellbase-gene-filter>
+            </div>
+            <div>
+                <cellbase-gene-view id="view" gene-id={{geneId}} cellbase="{{cellbaseClient}}"></cellbase-gene-view>
+            </div>
         </div>
     </template>
     <script>

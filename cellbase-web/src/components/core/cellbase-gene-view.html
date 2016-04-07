@@ -17,6 +17,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../cellbase-shared-styles.html">
+
+<link rel="import" href="cellbase-variation-grid.html">
 <link rel="import" href="cellbase-tfbs-view.html">
 <link rel="import" href="cellbase-drugs-view.html">
 
@@ -25,21 +27,30 @@
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div style="width: 90%">
-            <span>{{geneId}}</span>
+            <!--<span>{{geneId}}</span>-->
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#geneViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
-                <li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
+                <li role="presentation" class="active"><a href="#geneViewInfoTab" role="tab" data-toggle="tab">{{geneId}} Info</a></li>
+                <li role="presentation"><a href="#geneViewGenomeContextTab" role="tab" data-toggle="tab">Genome Context</a></li>
+                <li role="presentation"><a href="#geneViewTranscriptsTab" role="tab" data-toggle="tab">Transcripts</a></li>
+                <li role="presentation"><a href="#geneViewVariationTab" role="tab" data-toggle="tab">Variation</a></li>
                 <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
                 <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation"><a href="#geneViewPhenotypeTab" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation"><a href="#geneViewPpiTab" role="tab" data-toggle="tab">PPI</a></li>
+                <li role="presentation"><a href="#viewPDB" role="tab" data-toggle="tab">PDB</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
-                <div role="tabpanel" class="tab-pane active" id="geneViewGenomeContext">
-                    <div id="genomeviewer" style="width: 800px"></div>
+                <div id="geneViewInfoTab" role="tabpanel" class="tab-pane active">
+                    {{geneId}} information
                 </div>
-                <div role="tabpanel" class="tab-pane" id="geneViewTranscripts">
+
+                <div id="geneViewGenomeContextTab" role="tabpanel" class="tab-pane">
+                    <div id="genomeviewer"></div>
+                </div>
+
+                <div id="geneViewTranscriptsTab" role="tabpanel" class="tab-pane">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -59,14 +70,30 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="geneViewVariationTab" role="tabpanel" class="tab-pane">
+                    <cellbase-variation-grid cellbase-client="{{cellBaseClient}}" data="{{variations}}"></cellbase-variation-grid>
+                </div>
                 <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
                     <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
-                    <cellbase-drugs-view cellbase="{{cellbase}}" drugs="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
+                    <!-- CellBase v4 has the drug information in a new field called 'annotation', for v4 execute: -->
+                    <!--    data="{{geneObj.annotation.drugs}} -->
+                    <cellbase-drugs-view cellbase="{{cellbase}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="geneViewPhenotype">
+
+                <div id="geneViewPhenotypeTab" role="tabpanel" class="tab-pane">
                     Phenotype
+                </div>
+                <div id="geneViewPpiTab" role="tabpanel" class="tab-pane">
+                    PPI
+                    <cell-maps-element></cell-maps-element>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="viewPDB">
+                    PDB
+                    <canvas class="ChemDoodleWebComponent" id="pdb_canvas" width="600" height="600" style="width: 800px; height: 800px; ">
+                        This browser does not support HTML5/Canvas.
+                    </canvas>
                 </div>
             </div>
         </div>
@@ -90,8 +117,8 @@
                 }
             },
             _geneIdChanged: function(newValue, oldValue) {
+                let _this = this;
                 if (typeof this.genomeViewer !== "undefined") {
-                    let _this = this;
                     let success = function (response) {
                         let firstGene = response.response[0].result[0];
                         if (typeof firstGene !== "undefined") {
@@ -101,12 +128,28 @@
                             alert("Gene ID not valid: " + _this.geneId);
                         }
                         _this.geneObj = firstGene;
+
+                        // testing 3D
+                        _this.display3D();
+                        _this.displayNetworkViewer();
                     };
                     let error = function (response) {
                         alert("Gene ID not valid: " + _this.geneId)
                     };
                     CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
                 }
+
+                // Variation
+                let success = function (response) {
+                    let variations = response.response[0].result;
+                    console.log(variations)
+                    _this.variations = variations;
+                };
+                let error = function (response) {
+                    alert("Gene ID not valid: " + _this.geneId)
+                };
+                CELLBASE_CLIENT.getGeneClient(this.geneId, 'snp', {}, {success: success, error: error, async: true});
+
             },
             ready: function() {
                 this.cellbase = CELLBASE_CLIENT._config.version;
@@ -116,6 +159,7 @@
                 };
                 CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
 
+                this.cellBaseClient = CELLBASE_CLIENT;
                 this.genomeViewer;
                 this.renderGenomeViewer();
             },
@@ -287,6 +331,75 @@
                 this.genomeViewer.addTrack(tracks);
                 this.genomeViewer.draw();
 
+            },
+            displayNetworkViewer: function() {
+//                var networkViewer = new NetworkViewer({
+//                    target: target,
+//                    autoRender: true,
+//                    sidePanel: false,
+//                    border: false,
+//                    width: this.width,
+//                    height: this.height - topOffset,
+//                    session: this.session,
+//                    handlers: {
+//                        'select:vertices': function (e) {
+//                            _this.vertexAttributeEditWidget.checkSelectedFilter();
+//                        },
+//                        'select:edges': function (e) {
+//                            _this.edgeAttributeEditWidget.checkSelectedFilter();
+//                        },
+//                        'change:vertexAttributes': function (e) {
+//                            _this.toolbar.setVertexAttributes(e.sender.attributes);
+//                        },
+//                        'change:edgeAttributes': function (e) {
+//
+//                        }
+//                    }
+//                });
+
+//                alchemy.begin({
+//                    dataSource: "actors.json",
+//                    nodeCaption: 'name',
+//                    nodeMouseOver: 'name',
+//                    cluster: true,
+//                    clusterColours: ["#1B9E77","#D95F02","#7570B3","#E7298A","#66A61E","#E6AB02"]});
+            },
+            display3D: function() {
+//                var pdb_name=este.title;
+
+                ChemDoodle.default_backgroundColor = '#000000';
+
+//                                        var pdb = new ChemDoodle.TransformCanvas3D('pdb_canvas_'+pdb_name, 300, 300);
+                var pdb = new ChemDoodle.TransformCanvas3D('pdb_canvas', 600, 600);
+                if(!pdb.gl){
+                    pdb.emptyMessage = 'Your browser does not support WebGL';
+                    pdb.displayMessage();
+                }else{
+                    pdb.specs.set3DRepresentation('Ball and Stick');
+                    pdb.specs.proteins_ribbonCartoonize = true;
+                    pdb.handle = null;
+                    pdb.timeout = 15;
+                    pdb.startAnimation = ChemDoodle._AnimatorCanvas.prototype.startAnimation;
+                    pdb.stopAnimation = ChemDoodle._AnimatorCanvas.prototype.stopAnimation;
+                    pdb.isRunning = ChemDoodle._AnimatorCanvas.prototype.isRunning;
+                    pdb.dblclick = ChemDoodle.RotatorCanvas.prototype.dblclick;
+                    pdb.nextFrame = function(delta){
+                        var matrix = [];
+                        mat4.identity(matrix);
+                        var change = delta/1000;
+                        var increment = Math.PI/15;
+                        mat4.rotate(matrix, increment*change, [ 1, 0, 0 ]);
+                        mat4.rotate(matrix, increment*change, [ 0, 1, 0 ]);
+                        mat4.rotate(matrix, increment*change, [ 0, 0, 1 ]);
+                        mat4.multiply(this.rotationMatrix, matrix);
+                    };
+
+                    $.get('http://www.rcsb.org/pdb/files/1N0W.pdb', function(data) {
+                        var mol = ChemDoodle.readPDB(data);
+                        pdb.loadMolecule(mol);
+                        pdb.startAnimation();
+                    });
+                }
             }
         });
     </script>

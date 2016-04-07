@@ -32,7 +32,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <template is="dom-repeat" items="{{drugs}}">
+                <template is="dom-repeat" items="{{data}}">
                     <tr>
                         <td>{{item.drugName}}</td>
                         <td>{{item.source}}</td>
@@ -52,7 +52,7 @@
                 cellbase: {
                     type: Object
                 },
-                drugs: {
+                data: {
                     type: Array,
                     value: []
                 }
