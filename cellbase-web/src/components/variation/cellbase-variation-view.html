@@ -26,18 +26,18 @@
             <span>{{geneId}}</span>
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#genomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
-                <li role="presentation"><a href="#transcripts" role="tab" data-toggle="tab">Transcripts</a></li>
-                <li role="presentation"><a href="#tfbs" role="tab" data-toggle="tab">TFBS</a></li>
-                <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#viewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation" class="active"><a href="#variationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
+                <li role="presentation"><a href="#variationTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
+                <li role="presentation"><a href="#variationTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                <li role="presentation"><a href="#variationViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
+                <li role="presentation"><a href="#variationViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
-                <div role="tabpanel" class="tab-pane active" id="genomeContext">
+                <div role="tabpanel" class="tab-pane active" id="variationGenomeContext">
                     <div id="genomeviewer" style="width: 800px"></div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="transcripts">
+                <div role="tabpanel" class="tab-pane" id="variationTranscripts">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -57,13 +57,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="tfbs">
+                <div role="tabpanel" class="tab-pane" id="variationTfbs">
                     <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
+                <div role="tabpanel" class="tab-pane" id="variationViewDrugs">
                     <!--<cellbase-drugs-view cellbase="{{cellbase}}" drugs="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>-->
                 </div>
-                <div role="tabpanel" class="tab-pane" id="viewPhenotype">
+                <div role="tabpanel" class="tab-pane" id="variationViewPhenotype">
                     Phenotype
                 </div>
             </div>

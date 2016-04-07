@@ -59,13 +59,13 @@
                         </tbody>
                     </table>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="tfbs">
+                <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
                     <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
                     <cellbase-drugs-view cellbase="{{cellbase}}" drugs="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="viewPhenotype">
+                <div role="tabpanel" class="tab-pane" id="geneViewPhenotype">
                     Phenotype
                 </div>
             </div>
@@ -113,13 +113,10 @@
                 var success = function (response) {
                     console.log("Success from user:")
                     console.log(response)
-                    console.log(response.response[0].result[0].start)
                 };
                 CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
 
                 this.genomeViewer;
-                console.log(document.querySelector('#genomeviewer'))
-                console.log(this.$$('#genomeviewer'))
                 this.renderGenomeViewer();
             },
             renderGenomeViewer: function() {
