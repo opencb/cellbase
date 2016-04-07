@@ -17,14 +17,21 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
+import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -64,6 +71,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
             put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
         }
     };
+    private static final String ENSEMBL_NAME = "ENSEMBL";
+    private static final String GENE_EXPRESSION_ATLAS_NAME = "Gene Expression Atlas";
+    private static final String HPO_NAME = "HPO";
+    private static final String DISGENET_NAME = "DisGeNET";
+    private static final String DGIDB_NAME = "DGIdb";
+    private static final String UNIPROT_NAME = "DGIdb";
+    private static final String GENOME_DATA = "genome";
+    private static final String GENE_DATA = "gene";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -177,10 +192,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             for (String data : dataList) {
                 switch (data) {
-                    case "genome":
+                    case GENOME_DATA:
                         downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         break;
-                    case "gene":
+                    case GENE_DATA:
                         downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         break;
                     case "gene_disease_association":
@@ -276,6 +291,37 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
+        logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("version.json"));
+        saveVersionData(GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
+                Collections.singletonList(url), sequenceFolder.resolve("version.json"));
+    }
+
+    private String getTimeStamp() {
+        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+    }
+
+    private void saveVersionData(String data, String source, String version, String date, List<String> url,
+                                 Path outputFilePath) {
+        Map versionData = new HashedMap();
+        versionData.put("Data", data);
+        versionData.put("Source", source);
+        versionData.put("Version", version);
+        versionData.put("Download date", date);
+        versionData.put("URL", url);
+        writeVersionDataFile(versionData, outputFilePath);
+    }
+
+    private void writeVersionDataFile(Map versionData, Path outputFilePath) {
+        try {
+            OutputStream os = Files.newOutputStream(outputFilePath);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+            bw.write(jsonObjectWriter.writeValueAsString(versionData) + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder, String host)
@@ -302,12 +348,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String url = configuration.getDownload().getDgidb().getHost();
             downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
 
+            saveVersionData(GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    geneDrugFolder.resolve("dgidbVersion.json"));
+
         }
     }
 
     private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
+        List<String> downloadedUrls = new ArrayList<>(4);
 
         String ensemblHost = host + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(sp)) {
@@ -320,18 +370,25 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String url = ensemblHost + "/gtf/" + spShortName + "/*" + version + ".gtf.gz";
         String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
         downloadFile(url, fileName);
+        downloadedUrls.add(url);
 
         url = ensemblHost + "/fasta/" + spShortName + "/pep/*.pep.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".pep.all.fa.gz").toString();
         downloadFile(url, fileName);
+        downloadedUrls.add(url);
 
         url = ensemblHost + "/fasta/" + spShortName + "/cdna/*.cdna.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".cdna.all.fa.gz").toString();
         downloadFile(url, fileName);
+        downloadedUrls.add(url);
 
         url = ensemblHost + "/regulation/" + spShortName + "/MotifFeatures.gff.gz";
         Path outputFile = geneFolder.resolve("MotifFeatures.gff.gz");
         downloadFile(url, outputFile.toString());
+        downloadedUrls.add(url);
+
+        saveVersionData(GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+                geneFolder.resolve("ensemblVersion.json"));
     }
 
     private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
@@ -341,7 +398,32 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String geneGtfUrl = configuration.getDownload().getGeneUniprotXref().getHost() + "/"
                     + GENE_UNIPROT_XREF_FILES.get(sp.getScientificName());
             downloadFile(geneGtfUrl, geneFolder.resolve("idmapping_selected.tab.gz").toString());
+            downloadFile(getUniProtReleaseNotesUrl(), geneFolder.resolve("uniprotRelnotes.txt").toString());
+
+            saveVersionData(GENE_DATA, UNIPROT_NAME,
+                    getUniProtRelease(geneFolder.resolve("uniprotRelnotes.txt").toString()), getTimeStamp(),
+                    Collections.singletonList(geneGtfUrl), geneFolder.resolve("uniprotVersion.json"));
         }
+    }
+
+    private String getUniProtRelease(String relnotesFilename) {
+        Path path = Paths.get(relnotesFilename);
+        Files.exists(path);
+        try {
+            // The first line at the relnotes.txt file contains the UniProt release
+            BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
+            String release = reader.readLine().split(" ")[2];
+            reader.close();
+            return  release;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String getUniProtReleaseNotesUrl() {
+        return URI.create(configuration.getDownload().getGeneUniprotXref().getHost()).resolve("../../../").toString()
+                + "/relnotes.txt";
     }
 
     private void downloadGeneExpressionAtlas() throws IOException, InterruptedException {
@@ -354,7 +436,15 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             String geneGtfUrl = configuration.getDownload().getGeneExpressionAtlas().getHost();
             downloadFile(geneGtfUrl, expression.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
+
+            saveVersionData(GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, getGeneExpressionAtlasVersion(), getTimeStamp(),
+                    Collections.singletonList(geneGtfUrl), expression.resolve("geneExpressionAtlasVersion.json"));
         }
+    }
+
+    private String getGeneExpressionAtlasVersion() {
+        return FilenameUtils.getBaseName(configuration.getDownload().getGeneExpressionAtlas().getHost())
+                .split("_")[5].replace(".tab.gz", "");
     }
 
     private void downloadGeneDiseaseAnnotation(Path geneFolder) throws IOException, InterruptedException {
@@ -363,10 +453,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String host = configuration.getDownload().getHpo().getHost();
         String fileName = StringUtils.substringAfterLast(host, "/");
         downloadFile(host, geneFolder.resolve(fileName).toString());
+        saveVersionData(GENE_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(host),
+                geneFolder.resolve("hpoVersion.json"));
 
         host = configuration.getDownload().getDisgenet().getHost();
         fileName = StringUtils.substringAfterLast(host, "/");
         downloadFile(host, geneFolder.resolve(fileName).toString());
+        saveVersionData(GENE_DATA, DISGENET_NAME, null, getTimeStamp(), Collections.singletonList(host),
+                geneFolder.resolve("disgenetVersion.json"));
     }
 
 
