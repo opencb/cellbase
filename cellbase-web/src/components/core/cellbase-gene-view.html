@@ -24,6 +24,7 @@
 <link rel="import" href="cellbase-drugs-view.html">
 <link rel="import" href="cellbase-phenotype-grid.html">
 <link rel="import" href="cellbase-expression-grid.html">
+<link rel="import" href="../variation/cellbase-variantannotation-view.html">
 
 
 <dom-module id="cellbase-gene-view">
@@ -70,6 +71,8 @@
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
                     <cellbase-variation-grid cellbase-client="{{cellBase}}" data="{{variations}}"></cellbase-variation-grid>
+                    <br>
+                    <cellbase-variantannotation-view></cellbase-variantannotation-view>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="geneViewTfbs">

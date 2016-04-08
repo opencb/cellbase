@@ -117,7 +117,7 @@
                     <br>
                         <template is="dom-repeat" items="{{selected.exons}}" as="exonObject">
                             Exon ID: {{exonObject.id}} <br>
-                            Sequence:<textarea class="form-control" rows="3">{{exonObject.sequence}}</textarea>  <br>
+                            Sequence:<textarea class="form-control" rows="3" readonly>{{exonObject.sequence}}</textarea>  <br>
                         </template>
                 </div>
             </div>

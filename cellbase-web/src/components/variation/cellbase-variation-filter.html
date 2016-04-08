@@ -59,8 +59,10 @@
                                         <div style="float: right">
                                             <input id="variationIdText" type="text" class="form-control" list="variation-datalist" value="" on-keyup="callVariationAutocomplete">
                                             <datalist id="variation-datalist">
-                                                <template is="dom-repeat" items="{{autocompleteData}}">
-                                                    <option value="{{item.start}}">
+                                                <template is="dom-repeat" items="{{autocompleteData}}" as="object">
+                                                    <template is="dom-repeat" items="{{object.ids}}">
+                                                        <option value="{{item}}">
+                                                    </template>
                                                 </template>
                                             </datalist>
                                             <button type="button" class="btn btn-default btn-sm form-control" on-click="addVariationId">
@@ -228,6 +230,7 @@
                     let _this = this;
                     let success = function (response) {
                         _this.autocompleteData = response.response[0].result;
+                        console.log(_this.autocompleteData)
                     };
                     _this.cellBaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
                 }
