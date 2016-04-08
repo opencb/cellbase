@@ -23,49 +23,34 @@
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div style="width: 90%">
-            <span>{{geneId}}</span>
+            <span>{{variationId}}</span>
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#variationViewInfo" role="tab" data-toggle="tab">{{variationId}} Info</a></li>
                 <li role="presentation" class="active"><a href="#variationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
-                <li role="presentation"><a href="#variationTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
-                <li role="presentation"><a href="#variationTfbs" role="tab" data-toggle="tab">TFBS</a></li>
-                <li role="presentation"><a href="#variationViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#variationViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <!--<li role="presentation" class="active"><a href="#variationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>-->
             </ul>
 
             <div class="tab-content" style="width: 90%">
+                <div id="variationViewInfo" role="tabpanel" class="tab-pane active">
+                    <br>
+                    Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>
+                    Biotype: {{geneObj.biotype}}<br>
+                    Location: {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   Strand: {{geneObj.strand}}<br>
+                    Source: {{geneObj.source}} - Status: {{geneObj.status}}<br>
+                    Description: {{geneObj.description}}<br>
+
+                    <!--<h3>Transcripts</h3>-->
+                    <!--<cellbase-variation-annotation-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>-->
+                </div>
+
                 <div role="tabpanel" class="tab-pane active" id="variationGenomeContext">
                     <div id="genomeviewer" style="width: 800px"></div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="variationTranscripts">
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>ID</th>
-                            <th>Biotype</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <template is="dom-repeat" items="{{geneObj.transcripts}}">
-                            <tr>
-                                <td>{{item.name}}</td>
-                                <td>{{item.id}}</td>
-                                <td>{{item.biotype}}</td>
-                            </tr>
-                        </template>
-                        </tbody>
-                    </table>
-                </div>
-                <div role="tabpanel" class="tab-pane" id="variationTfbs">
-                    <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
-                </div>
-                <div role="tabpanel" class="tab-pane" id="variationViewDrugs">
-                    <!--<cellbase-drugs-view cellbase="{{cellbase}}" drugs="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>-->
-                </div>
-                <div role="tabpanel" class="tab-pane" id="variationViewPhenotype">
-                    Phenotype
-                </div>
+
+                <!--<div role="tabpanel" class="tab-pane" id="variationTfbs">-->
+                    <!--<cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>-->
+                <!--</div>-->
             </div>
         </div>
 
@@ -78,16 +63,16 @@
                 cellbase: {
                     type: Object
                 },
-                geneId: {
+                variationId: {
                     type: String,
                     notify: true,
-                    observer: '_geneIdChanged'
+                    observer: '_variationIdChanged'
                 },
                 geneObj: {
                     type: Object
                 }
             },
-            _geneIdChanged: function(newValue, oldValue) {
+            _variationIdChanged: function(newValue, oldValue) {
                 if (typeof this.genomeViewer !== "undefined") {
                     let _this = this;
                     let success = function (response) {
@@ -96,14 +81,14 @@
                             let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
                             _this.genomeViewer.setRegion(region);
                         } else {
-                            alert("Gene ID not valid: " + _this.geneId);
+                            alert("Gene ID not valid: " + _this.variationId);
                         }
                         _this.geneObj = firstGene;
                     };
                     let error = function (response) {
-                        alert("Gene ID not valid: " + _this.geneId)
+                        alert("Gene ID not valid: " + _this.variationId)
                     };
-                    CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                    CELLBASE_CLIENT.getGeneClient(this.variationId, 'info', {}, {success: success, error: error, async: true});
                 }
             },
             ready: function() {
