@@ -1,0 +1,89 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../cellbase-shared-styles.html">
+
+<dom-module id="cellbase-transcripts-view">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Ensembl ID</th>
+                    <th>Biotype</th>
+                    <th>Location</th>
+                    <!--<th>Strand</th>-->
+                    <th>Coding</th>
+                    <th>cDNA</th>
+                    <!--<th>cDNA Sequence</th>-->
+                    <th>CDS Length</th>
+                    <!--<th>Protein ID</th>-->
+                    <th>Annotation Flags</th>
+                </tr>
+                </thead>
+                <tbody>
+                <template is="dom-repeat" items="{{data}}" as="transcript">
+                    <tr>
+                        <td>{{transcript.name}}</td>
+                        <td>
+                            <a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;t={{transcript.id}}">{{transcript.id}}</a>
+                        </td>
+                        <td>{{transcript.biotype}}</td>
+                        <td>
+                            <a target="_blank" href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}">
+                                {{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}
+                            </a>
+                        </td>
+                        <!--<td>{{transcript.strand}}</td>-->
+                        <td>
+                            <a target="_blank" href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}">
+                                {{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}
+                            </a>
+                        </td>
+                        <td>
+                            {{transcript.cdnaCodingStart}}-{{transcript.cdnaCodingEnd}}
+                        </td>
+                        <!--<td>{{transcript.cDnaSequence}}</td>-->
+                        <td>{{transcript.cdsLength}}</td>
+                        <!--<td>{{transcript.proteinID}}</td>-->
+                        <td>{{transcript.annotationFlags}}</td>
+                    </tr>
+                </template>
+                </tbody>
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-transcripts-view',
+
+            properties: {
+                cellbase: {
+                    type: Object
+                },
+                data: {
+                    type: Array,
+                    value: []
+                }
+            }
+        });
+    </script>
+</dom-module>

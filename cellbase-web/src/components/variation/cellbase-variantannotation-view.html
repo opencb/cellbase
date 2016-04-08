@@ -1,0 +1,298 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../cellbase-shared-styles.html">
+
+<dom-module id="cellbase-variantannotation-view">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <!--<div class="view">-->
+        <!--<paper-tabs class="tabview" selected="0">-->
+        <!--<paper-tab id="view">Genome Map</paper-tab>-->
+        <!--<paper-tab id="transcript">Transcript</paper-tab>-->
+        <!--<paper-tab id="tfbs">{{cellbase}}</paper-tab>-->
+        <!--<paper-tab id="exons">Exons</paper-tab>-->
+        <!--</paper-tabs>-->
+
+        <div style="width: 90%">
+            <span>{{geneId}}</span>
+
+            <ul id="myTabs" class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#variantannotationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
+                <li role="presentation"><a href="#variantannotationTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
+                <li role="presentation"><a href="#variantannotationTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                <li role="presentation"><a href="#variantannotationViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
+                <li role="presentation"><a href="#variantannotationViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+            </ul>
+
+            <div class="tab-content" style="width: 90%">
+                <div role="tabpanel" class="tab-pane active" id="variantannotationGenomeContext">
+                    <div id="genomeviewer" style="width: 800px"></div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="variantannotationTranscripts">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>Biotype</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{geneObj.transcripts}}">
+                            <tr>
+                                <td>{{item.name}}</td>
+                                <td>{{item.id}}</td>
+                                <td>{{item.biotype}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="variantannotationTfbs">
+                    <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="variantannotationViewDrugs">
+                    <!--<cellbase-drugs-view cellbase="{{cellbase}}" drugs="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>-->
+                </div>
+                <div role="tabpanel" class="tab-pane" id="variantannotationViewPhenotype">
+                    Phenotype
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-variantannotation-view',
+
+            properties: {
+                cellbase: {
+                    type: Object
+                },
+                geneId: {
+                    type: String,
+                    notify: true,
+                    observer: '_geneIdChanged'
+                },
+                geneObj: {
+                    type: Object
+                }
+            },
+            _geneIdChanged: function(newValue, oldValue) {
+                if (typeof this.genomeViewer !== "undefined") {
+                    let _this = this;
+                    let success = function (response) {
+                        let firstGene = response.response[0].result[0];
+                        if (typeof firstGene !== "undefined") {
+                            let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
+                            _this.genomeViewer.setRegion(region);
+                        } else {
+                            alert("Gene ID not valid: " + _this.geneId);
+                        }
+                        _this.geneObj = firstGene;
+                    };
+                    let error = function (response) {
+                        alert("Gene ID not valid: " + _this.geneId)
+                    };
+                    CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                }
+            },
+            ready: function() {
+                this.cellbase = CELLBASE_CLIENT._config.version;
+//                var success = function (response) {
+//                    console.log("Success from user:")
+//                    console.log(response)
+//                };
+//                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
+//
+//                this.genomeViewer;
+//                this.renderGenomeViewer();
+            },
+            renderGenomeViewer: function() {
+                var region = new Region({chromosome: "13", start: 32889611, end: 32889611});
+                this.genomeViewer = new GenomeViewer({
+                    cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
+                    cellBaseVersion: 'v3',
+                    target: this.$$('#genomeviewer'),
+//                    width: this.$$('#genomeviewer').getBoundingClientRect().width,
+                    width: 1200,
+                    region: region,
+                    availableSpecies: DEFAULT_SPECIES.vertebrates,
+                    species: DEFAULT_SPECIES.vertebrates[0],
+                    sidePanel: false,
+                    autoRender: true,
+                    resizable: true,
+//        quickSearchResultFn:quickSearchResultFn,
+//        quickSearchDisplayKey:,
+                    karyotypePanelConfig: {
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    chromosomePanelConfig: {
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    navigationBarConfig: {
+                        componentsConfig: {
+//                restoreDefaultRegionButton:false,
+//                regionHistoryButton:false,
+//                speciesButton:false,
+//                chromosomesButton:false,
+//                karyotypeButton:false,
+//                chromosomeButton:false,
+//                regionButton:false,
+//                zoomControl:false,
+//                windowSizeControl:false,
+//                positionControl:false,
+//                moveControl:false,
+//                autoheightButton:false,
+//                compactButton:false,
+//                searchControl:false
+                        }
+                    },
+                    handlers: {
+                        'region:change': function(e) {
+                            console.log(e)
+                        }
+                    }
+//        chromosomeList:[]
+//            trackListTitle: ''
+//            drawNavigationBar = true;
+//            drawKaryotypePanel: false,
+//            drawChromosomePanel: false,
+//            drawOverviewTrackListPanel: false
+                });
+                var tracks = [];
+                this.sequence = new FeatureTrack({
+                    title: 'Sequence',
+                    height: 25,
+                    visibleRegionSize: 200,
+                    renderer: new SequenceRenderer(),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "sequence",
+                        params: {},
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 100
+                        }
+                    })
+                });
+                tracks.push(this.sequence);
+                this.gene = new GeneTrack({
+                    title: 'Gene',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    minTranscriptRegionSize: 200000,
+                    height: 100,
+                    renderer: new GeneRenderer({
+                        handlers: {
+                            'feature:click': function(e) {
+                                console.log(e)
+                            }
+                        }
+                    }),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        species: this.genomeViewer.species,
+                        params: {
+                            exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
+                        },
+                        cacheConfig: {
+                            chunkSize: 100000
+                        }
+                    })
+                });
+                tracks.push(this.gene);
+                var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
+                renderer.on({
+                    'feature:click': function(event) {
+                        // feature click event example
+                        console.log(event)
+                    }
+                });
+                var gene = new FeatureTrack({
+//        title: 'Gene overview',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    height: 100,
+                    renderer: renderer,
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        params: {
+                            exclude: 'transcripts,chunkIds'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 100000
+                        }
+                    })
+                });
+                this.genomeViewer.addOverviewTrack(gene);
+                this.snp = new FeatureTrack({
+                    title: 'SNP',
+                    featureType: 'SNP',
+                    minHistogramRegionSize: 12000,
+                    maxLabelRegionSize: 3000,
+                    height: 120,
+                    renderer: new FeatureRenderer(FEATURE_TYPES.snp),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "snp",
+                        params: {
+                            exclude: 'transcriptVariations,xrefs,samples'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 10000
+                        }
+                    })
+                });
+                tracks.push(this.snp);
+                /*************************/
+//                var customTrack = new FeatureTrack({
+//                    title: 'custom track',
+//                    minHistogramRegionSize: 12000,
+//                    maxLabelRegionSize: 3000,
+//                    height: 120,
+//                    renderer: new FeatureRenderer(),
+//                    dataAdapter: new FeatureTemplateAdapter({
+//                        multiRegions: true,
+//                        histogramMultiRegions: false,
+//                        uriTemplate: 'https://dcc.icgc.org/api/browser/gene?segment={region}&resource=gene',
+//                        cacheConfig: {
+//                            chunkSize: 100000
+//                        }
+//                    })
+//                });
+//                tracks.push(customTrack);
+                /*************************/
+                this.genomeViewer.addTrack(tracks);
+                this.genomeViewer.draw();
+
+            }
+        });
+    </script>
+</dom-module>

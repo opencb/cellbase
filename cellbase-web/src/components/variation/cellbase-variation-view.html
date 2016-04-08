@@ -1,49 +1,69 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 
-<link rel="import" href="cellbase-shared-styles.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<dom-module id="cellbase-gene-view">
+<link rel="import" href="../cellbase-shared-styles.html">
+
+<dom-module id="cellbase-variation-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
-        <!--<div class="view">-->
-        <!--<paper-tabs class="tabview" selected="0">-->
-        <!--<paper-tab id="view">Genome Map</paper-tab>-->
-        <!--<paper-tab id="transcript">Transcript</paper-tab>-->
-        <!--<paper-tab id="tfbs">{{cellbase}}</paper-tab>-->
-        <!--<paper-tab id="exons">Exons</paper-tab>-->
-        <!--</paper-tabs>-->
 
         <div style="width: 90%">
             <span>{{geneId}}</span>
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#genomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
-                <li role="presentation"><a href="#transcripts" role="tab" data-toggle="tab">Transcripts</a></li>
-                <li role="presentation"><a href="#tfbs" role="tab" data-toggle="tab">TFBS</a></li>
-                <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#viewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation" class="active"><a href="#variationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
+                <li role="presentation"><a href="#variationTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
+                <li role="presentation"><a href="#variationTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                <li role="presentation"><a href="#variationViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
+                <li role="presentation"><a href="#variationViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
-                <div role="tabpanel" class="tab-pane active" id="genomeContext">
+                <div role="tabpanel" class="tab-pane active" id="variationGenomeContext">
                     <div id="genomeviewer" style="width: 800px"></div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="transcripts">
-                    <template is="dom-repeat" items="{{geneObj.transcripts}}">
-                        Name:{{item.name}}
-                        ID:{{item.id}}
-                        biotype:{{item.biotype}}
-                        <br>
-                    </template>
+                <div role="tabpanel" class="tab-pane" id="variationTranscripts">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>Biotype</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{geneObj.transcripts}}">
+                            <tr>
+                                <td>{{item.name}}</td>
+                                <td>{{item.id}}</td>
+                                <td>{{item.biotype}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="tfbs">
-                    TFBS
+                <div role="tabpanel" class="tab-pane" id="variationTfbs">
+                    <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
-                    Drugs
-                    <!--<cellbase-view-drugs drugs="{{geneObj.drugs}}"></cellbase-view-drugs>-->
+                <div role="tabpanel" class="tab-pane" id="variationViewDrugs">
+                    <!--<cellbase-drugs-view cellbase="{{cellbase}}" drugs="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>-->
                 </div>
-                <div role="tabpanel" class="tab-pane" id="viewPhenotype">
+                <div role="tabpanel" class="tab-pane" id="variationViewPhenotype">
                     Phenotype
                 </div>
             </div>
@@ -52,7 +72,7 @@
     </template>
     <script>
         Polymer({
-            is: 'cellbase-gene-view',
+            is: 'cellbase-variation-view',
 
             properties: {
                 cellbase: {
@@ -87,21 +107,17 @@
                 }
             },
             ready: function() {
-                console.log(this.localName + '#' + this.id + ' has local DOM initialized');
-                console.log(CELLBASE_CLIENT)
                 this.cellbase = CELLBASE_CLIENT._config.version;
-//                this.$.tfbs.textContent = cellBaseClient._config.version;
-                var success = function (response) {
-                    console.log("Success from user:")
-                    console.log(response)
-                    console.log(response.response[0].result[0].start)
-                };
-                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
-
-                this.genomeViewer;
-                console.log(document.querySelector('#genomeviewer'))
-                console.log(this.$$('#genomeviewer'))
-                this.renderGenomeViewer();
+//                var success = function (response) {
+//                    console.log("Success from user:")
+//                    console.log(response)
+//                };
+//                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
+//
+//                this.genomeViewer;
+//                console.log(document.querySelector('#genomeviewer'))
+//                console.log(this.$$('#genomeviewer'))
+//                this.renderGenomeViewer();
             },
             renderGenomeViewer: function() {
                 var region = new Region({chromosome: "13", start: 32889611, end: 32889611});
