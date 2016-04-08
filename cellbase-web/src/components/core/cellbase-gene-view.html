@@ -22,7 +22,8 @@
 <link rel="import" href="cellbase-transcripts-view.html">
 <link rel="import" href="cellbase-transcripts-tfbs-view.html">
 <link rel="import" href="cellbase-drugs-view.html">
-<link rel="import" href="cellbase-phenotype-view.html">
+<link rel="import" href="cellbase-phenotype-grid.html">
+<link rel="import" href="cellbase-expression-grid.html">
 
 
 <dom-module id="cellbase-gene-view">
@@ -47,14 +48,14 @@
 
             <div class="tab-content" style="width: 90%">
                 <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
-                    <br>
+                    <h3>Summary</h3>
                     Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>
                     Biotype: {{geneObj.biotype}}<br>
                     Location: {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   Strand: {{geneObj.strand}}<br>
                     Source: {{geneObj.source}} - Status: {{geneObj.status}}<br>
                     Description: {{geneObj.description}}<br>
-                    <!--<h3>Transcripts</h3>-->
-                    <!--<cellbase-transcripts-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>-->
+                    <h3>Transcripts ({{geneObj.transcripts.length}})</h3>
+                    <cellbase-transcripts-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
                 </div>
 
                 <div id="geneViewGenomeContext" role="tabpanel" class="tab-pane">
@@ -64,11 +65,11 @@
 
                 <div id="geneViewTranscripts" role="tabpanel" class="tab-pane">
                     <br>
-                    <cellbase-transcripts-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
+                    <cellbase-transcripts-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
                 </div>
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellBaseClient}}" data="{{variations}}"></cellbase-variation-grid>
+                    <cellbase-variation-grid cellbase-client="{{cellBase}}" data="{{variations}}"></cellbase-variation-grid>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
@@ -77,11 +78,12 @@
                 </div>
 
                 <div id="geneViewExpression" role="tabpanel" class="tab-pane">
-                    Expression
+                    <br>
+                    <cellbase-expression-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.expression}}"></cellbase-expression-grid>
                 </div>
 
                 <div id="geneViewPhenotype" role="tabpanel" class="tab-pane">
-                    <cellbase-phenotype-view cellbase="{{cellbase}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-view>
+                    <cellbase-phenotype-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-grid>
                 </div>
 
                 <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
