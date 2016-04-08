@@ -1,0 +1,59 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="cellbase-shared-styles.html">
+
+<dom-module id="cellbase-biotype-options">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <label class="control-label">{{title}}</label><br>
+        <template is="dom-repeat" items="{{data}}">
+            <input type="checkbox" on-change="add" name="{{item}}" value="{{item}}"> {{item}}<br>
+        </template>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-biotype-options',
+            properties: {
+                title: {
+                    type: String,
+                    value: "Select biotypes"
+                },
+                cellbaseclienta: {
+                    type: Object,
+                    notify: true
+                },
+                data: {
+                    type: Array,
+                    value: []
+                },
+                biotypes: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                }
+            },
+
+            attached: function () {
+                var _this = this;
+                var success = function (response) {
+                    _this.data = response.response[0].result;
+                };
+                this.cellbaseclienta.getGeneClient(null, 'biotype', {}, {success: success, async: true});
+            },
+
+            add: function (event) {
+                console.log(event)
+                if (event.target.checked) {
+                    this.push('biotypes', event.target.name);
+                    console.log(this.biotypes)
+                } else {
+                    var index = this.biotypes.indexOf(event.target.name);
+                    this.splice('biotypes', index, 1);
+                    console.log(this.biotypes)
+                }
+            }
+        });
+    </script>
+</dom-module>

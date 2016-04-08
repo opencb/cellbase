@@ -1,34 +1,45 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<!--cellbase-elements-->
+
 <link rel="import" href="cellbase-gene-filter.html">
 <link rel="import" href="cellbase-gene-view.html">
 
 <dom-module id="cellbase-gene-panel">
-    <style>
-        #filter {
-            float: left;
-            width:20%;
-            margin-right: 5px;
-        }
-        #view {
-            float: right;
-            width:75%;
-            margin-right: 5px;
-        }
-    </style>
     <template>
+        <style>
+            #filter {
+                float: left;
+                width:20%;
+                margin-right: 5px;
+            }
+            #view {
+                float: right;
+                width:75%;
+                margin-right: 5px;
+            }
+        </style>
         <div class="panel">
-                <cellbase-gene-filter id="filter" fpro={{name}}></cellbase-gene-filter>
-                <cellbase-gene-view id="view" vpro={{name}}></cellbase-gene-view>
+            {{cellbaseClient}}
+            <cellbase-gene-filter id="filter" gene-id={{geneId}}></cellbase-gene-filter>
+            <cellbase-gene-view id="view" gene-id={{geneId}} cellbase="{{cellbase}}"></cellbase-gene-view>
         </div>
     </template>
     <script>
         Polymer({
             is: 'cellbase-gene-panel',
             properties: {
-                name: {
+                geneId: {
                     type: String
+                },
+                cellBaseClient: {
+                    type: Object
+                },
+                cellbase: {
+                    type: String,
+                    value: "empty"
                 }
+            },
+            ready: function() {
+                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

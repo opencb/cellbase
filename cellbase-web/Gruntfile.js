@@ -18,10 +18,6 @@ module.exports = function(grunt) {
                 }
             }
         },
-        watch: {
-            files: ['<%= jshint.files %>'],
-            tasks: ['jshint']
-        },
         concat: {
             options: {
                 sourceMap: true
@@ -29,17 +25,20 @@ module.exports = function(grunt) {
             vendors: {
                 src: [
                     './bower_components/webcomponentsjs/webcomponents-lite.js',
+                    './bower_components/jquery/dist/jquery.js',
                     './bower_components/underscore/underscore.js',
                     './bower_components/backbone/backbone.js'
                 ],
                 dest: '<%= build.path %>/vendors.js'
-            },
-            jsorolla: {
-                src: [
-                    './bower_components/webcomponentsjs/webcomponents-lite.js',
-                ],
-                dest: '<%= build.path %>/jsorolla.js'
             }
+            // jsorolla: {
+            //     src: [
+            //         './lib//jsorolla/src/lib/clients/cellbase-client.js',
+            //         './lib/jsorolla/src/lib/cache/indexeddb-cache.js',
+            //         '/lib/jsorolla/src/lib/clients/cellbase-client-config.js'
+            //     ],
+            //     dest: '<%= build.path %>/jsorolla.js'
+            // }
         },
         uglify: {
             options: {
@@ -47,7 +46,8 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    '<%= build.path %>/vendors.min.js': ['<%= build.path %>/vendors.js']
+                    '<%= build.path %>/vendors.min.js': ['<%= build.path %>/vendors.js'],
+                    // '<%= build.path %>/jsorolla.min.js': ['<%= build.path %>/jsorolla.js']
                 }
             }
         },
@@ -65,7 +65,8 @@ module.exports = function(grunt) {
                     // {   expand: true, cwd: './bower_components', src: ['iron-*/**'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['paper-*/**'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['webcomponentsjs/webcomponents-lite.min.js'], dest: '<%= build.vendor %>' },
-                    {   expand: true, cwd: './src', src: ['index.html'], dest: '<%= build.path %>/' },
+                    {   expand: true, cwd: 'src', src: ['index.html'], dest: '<%= build.path %>/' },
+                    {   expand: true, cwd: 'src', src: ['config.js'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: './', src: ['LICENSE'], dest: '<%= build.path %>/' },
                 ]
             }
@@ -79,6 +80,22 @@ module.exports = function(grunt) {
                     '<%= build.path %>/index.html': ['src/index.html']
                 }
             }
+        },
+        vulcanize: {
+            default: {
+                options: {
+                    // Task-specific options go here.
+                    stripComments: true
+                },
+                files: {
+                    // Target-specific file lists and/or options go here.
+                    '<%= build.path %>/cellbase-web.html': 'src/cellbase-web.html'
+                }
+            }
+        },
+        watch: {
+            files: ['<%= jshint.files %>'],
+            tasks: ['jshint']
         },
         replace: {
             dist: {
@@ -95,30 +112,18 @@ module.exports = function(grunt) {
                     // {expand: true, flatten: true, src: ['<%= build.path %>/cellbase-web.html'], dest: '<%= build.path %>'}
                 ]
             }
-        },
-        vulcanize: {
-            default: {
-                options: {
-                    // Task-specific options go here.
-                    stripComments: true
-                },
-                files: {
-                    // Target-specific file lists and/or options go here.
-                    '<%= build.path %>/cellbase-web.html': 'src/cellbase-web.html'
-                }
-            }
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-processhtml');
-    grunt.loadNpmTasks('grunt-replace');
     grunt.loadNpmTasks('grunt-vulcanize');
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-replace');
 
     grunt.registerTask('default', ['clean', 'jshint', 'copy', 'concat', 'uglify', 'processhtml', 'vulcanize']);
     grunt.registerTask('cl', ['clean']);

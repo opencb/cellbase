@@ -13,29 +13,34 @@
 <link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <!--cellbase-elements-->
+<link rel="import" href="cellbase-species-menu.html">
 <link rel="import" href="cellbase-gene-panel.html">
 
 <dom-module id="cellbase-web">
-    <style>
-        paper-item {
-            --paper-item: {
-                cursor: pointer;
-            };
-        }
-        .paper-header {
-            float: left;
-            width: 50%;
-            text-align: left;
-        }
-        .about {
-            float: right;
-            width: 50%;
-            text-align: right;
-
-        }
-    </style>
 
     <template>
+        <style>
+            paper-item {
+                --paper-item: {
+                    cursor: pointer;
+                };
+            }
+            .paper-header {
+                float: left;
+                width: 50%;
+                text-align: left;
+            }
+            .about {
+                float: right;
+                width: 50%;
+                text-align: right;
+
+            }
+        </style>
+
+        <cellbase-species-menu></cellbase-species-menu>
+
+
         <paper-drawer-panel id="paperDrawerPanel" force-narrow>
 
             <paper-scroll-header-panel drawer>
@@ -50,13 +55,10 @@
                     </paper-menu>
                 </paper-dropdown-menu>
 
-                <paper-dropdown-menu label="Species">
-                    <paper-menu class="dropdown-content" selected="">
-                        <template is="dom-repeat" items="{{speciesList}}">
-                            <paper-item>{{item}}</paper-item>
-                        </template>
-                    </paper-menu>
-                </paper-dropdown-menu>
+                <cellbase-species-menu></cellbase-species-menu>
+
+                <!--<cellbase-species-menu title="Select a species" cellBaseClientObj=""></cellbase-species-menu>-->
+
 
                 <hr>
                 <paper-menu attr-for-selected="selectedMenu" selected="{{selectedMenu}}">
@@ -94,23 +96,23 @@
                             CellBase Host: <br>
                             <input type="text" value="{{host::input}}" size="35">
                             <!--<paper-dropdown-menu label="Host">-->
-                                <!--<paper-menu class="dropdown-content" selected={{selectedHost}}>-->
-                                    <!--<template is="dom-repeat" items="{{hosts}}">-->
-                                        <!--<paper-item>{{item}}</paper-item>-->
-                                    <!--</template>-->
-                                <!--</paper-menu>-->
+                            <!--<paper-menu class="dropdown-content" selected={{selectedHost}}>-->
+                            <!--<template is="dom-repeat" items="{{hosts}}">-->
+                            <!--<paper-item>{{item}}</paper-item>-->
+                            <!--</template>-->
+                            <!--</paper-menu>-->
                             <!--</paper-dropdown-menu>-->
-                            </div>
-                            <div>
-                                <input type="checkbox" checked>Cache
-                            </div>
+                        </div>
+                        <div>
+                            <input type="checkbox" checked>Cache
+                        </div>
                         <paper-button dialog-confirm autofocus>OK</paper-button>
                     </paper-dialog>
                 </paper-toolbar>
                 <div class="content">
                     <iron-pages attr-for-selected="selectedMenu" selected="{{selectedMenu}}">
                         <div selectedMenu="gene">
-                            <cellbase-gene-panel></cellbase-gene-panel>
+                            <cellbase-gene-panel cellbase={{host}}></cellbase-gene-panel>
                         </div>
                         <div selectedMenu="transcript">
                             <p>second page for transcript</p>
@@ -118,8 +120,7 @@
                         <div selectedMenu="protein">
                             Protein
                         </div>
-                        </iron-pages>
-                    <!--<cellbase-gene-panel></cellbase-gene-panel>-->
+                    </iron-pages>
 
                 </div>
             </paper-scroll-header-panel>
@@ -137,11 +138,19 @@
                     type: String,
                     value: "http://bioinfo.hpc.cam.ac.uk/cellbase"
                 },
+                versions: {
+                    type: String
+//                    computed: 'computeVersion'
+                },
                 selectedMenu: {
                     type: String,
                     observer: 'selectedMenuChanged'
                 }
             },
+//            computeVersion: function () {
+//                var client = new CellBaseClient();
+//
+//            },
             clickHandler: function (e) {
                 var dialog = document.getElementById("modal");
                 if (dialog) {

@@ -1,95 +1,193 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<!--Paper-elements-->
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
-<!--iron-elements-->
-<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="cellbase-biotype-options.html">
+
+<link rel="import" href="cellbase-shared-styles.html">
 
 <dom-module id="cellbase-gene-filter">
-    <style>
-        .filter {
-            height: 100%;
-        }
-        paper-tabs.tabview {
-            --paper-tabs-selection-bar-color: blue;
-        }
-        #clear {
-            float: left;
-        }
-        #run {
-            float: right;
-        }
-        .constraints {
-            text-align: left;
-        }
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            padding: 15px;
-        }
-
-    </style>
     <template>
-        <div class="filter">
-            <div class="tabs">
-                <paper-tabs class="tabview" selected={{selected}}>
-                    <paper-tab id="filerTab">Filter</paper-tab>
-                    <paper-tab id="result">Result</paper-tab>
-                </paper-tabs>
-            </div>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .biotype-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
+            }
+        </style>
 
-            <div class="content">
-                <iron-pages id="selectedTab" selected="{{selected}}">
-                    <div class="filter-content">
-                        <paper-button id="clear" on-click="clearAllFields" raised>clear</paper-button>
-                        <paper-button id="run" on-click="changePage" raised>run</paper-button>
-                        <br><br>
-                        <div class="constraints">
-                            <paper-textarea type="text" value={{region}} label="Region"></paper-textarea>
+        <!--<div class="filter">-->
+        <!--<div class="tabs">-->
+        <!--<paper-tabs class="tabview" selected={{selected}}>-->
+        <!--<paper-tab id="filerTab">Filter</paper-tab>-->
+        <!--<paper-tab id="result">Results</paper-tab>-->
+        <!--</paper-tabs>-->
+        <!--</div>-->
+
+        <!--<div class="content">-->
+        <!--<iron-pages id="selectedTab" selected="{{selected}}">-->
+        <!--<div class="filter-content">-->
+        <!--<paper-button id="clear" on-click="clearAllFields" raised>clear</paper-button>-->
+        <!--<paper-button id="run" on-click="changePage" raised>run</paper-button>-->
+        <!--<br><br>-->
+        <!--<div class="constraints">-->
+        <!--<paper-textarea type="text" value={{region}} label="Region"></paper-textarea>-->
+        <!--</div>-->
+        <!--<div class="constraints">-->
+        <!--<paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>-->
+        <!--</div>-->
+
+        <!--<cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>-->
+
+        <div>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#filter1" role="tab" data-toggle="tab">Filter</a></li>
+                <li role="presentation"><a href="#result1" role="tab" data-toggle="tab">Result</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="filter1">
+                    <button type="button" class="btn btn-default" on-click="clearAllFields">Clear</button>
+                    <button type="button" class="btn btn-default" on-click="changePage">Run</button>
+                    <br>
+
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h4 class="panel-title">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#geneId"
+                                       aria-expanded="true" aria-controls="geneId">
+                                        Gene IDs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                                <div class="panel-body">
+                                    <form class="form-inline">
+                                        Search:
+                                        <div style="float: right">
+                                            <input id="geneIDText" type="text" class="form-control" list="json-datalist" value="" on-keyup="callAutocomplete">
+                                            <datalist id="json-datalist">
+                                                <template is="dom-repeat" items="{{autocompleteData}}">
+                                                    <option value="{{item.name}}">
+                                                </template>
+                                            </datalist>
+                                            <button type="button" class="btn btn-default btn-sm form-control" on-click="addGeneId">
+                                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <textarea id="XXX" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div class="constraints">
-                            <paper-textarea type="text" value={{ids}} label="ID"></paper-textarea>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingTwo">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#region" aria-expanded="false" aria-controls="region">
+                                        Region
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="region" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                <div class="panel-body">
+                                    <textarea id="regionList" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div class="constraints">
-                            <p>Biotype:</p>
-                            <paper-checkbox>pseudogene</paper-checkbox>
-                            <!--<template is="dom-repeat" items="{{biotype}}">-->
-                            <!--<paper-checkbox>{{item}}</paper-checkbox>-->
-                            <!--</template>-->
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#biotype" aria-expanded="false" aria-controls="biotype">
+                                        Select biotypes
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                <div class="panel-body biotype-scroll">
+                                    <cellbase-biotype-options cellbaseclienta={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFour">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#drug" aria-expanded="false" aria-controls="drug">
+                                        Drugs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="drug" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFive">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#phenotype" aria-expanded="false" aria-controls="phenotype">
+                                        Phenotype
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="phenotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingSix">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#expression" aria-expanded="false" aria-controls="expression">
+                                        Expression
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="expression" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="result-content">
-                        <table>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="result1">
+                    <table>
+                        <tr>
+                            <th>Region</th>
+                            <th>ID</th>
+                            <th>biotype</th>
+                        </tr>
+                        <template is="dom-repeat" items="{{result}}">
                             <tr>
-                                <th>Region</th>
-                                <th>ID</th>
-                                <th>biotype</th>
+                                <td>{{item.chromosome}}</td>
+                                <td on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.name}}</td>
+                                <td>{{item.biotype}}</td>
                             </tr>
-                            <tr>
-                                <td>{{region}}</td>
-                                <td>{{ids}}</td>
-                                <td>{{biotype}}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </iron-pages>
+                        </template>
+                    </table>
+                </div>
             </div>
         </div>
+
     </template>
     <script>
         Polymer({
-           is: 'cellbase-gene-filter',
+            is: 'cellbase-gene-filter',
             properties: {
                 selected: {
                     type: String,
-                    value: 0
+                    value: ""
                 },
                 region: {
                     type: String
@@ -97,8 +195,29 @@
                 ids: {
                     type: String
                 },
+                allIds: {
+                    type: Array,
+                    value: []
+                },
                 biotype: {
-                    type: String
+                    type: Array,
+                    notify: true
+                },
+                geneId: {
+                    type: String,
+                    notify: true
+                },
+                cellBaseClient: {
+                    type: Object,
+                    notify: true
+                },
+                result: {
+                    type: Array,
+                    value: []
+                },
+                autocompleteData: {
+                    type:Array,
+                    value: []
                 }
             },
             clearAllFields: function (e) {
@@ -106,8 +225,63 @@
                 this.ids = "";
             },
             changePage: function (e) {
-                var pages = document.querySelector('iron-pages#selectedTab');
-                pages.selectNext();
+//                this.geneId = this.$$('#XXX').value;
+                if (this.$$('#XXX') != null && typeof this.$$('#XXX').value !== "undefined") {
+                    this.result= [];
+//                    this.geneId = this.$$('#XXX').value;
+                    let _this = this;
+                    let success = function (response) {
+                        for(let i in response.response) {
+                            _this.push('result',response.response[i].result[0]);
+                        }
+                        console.log(_this.result)
+                    };
+                    this.cellBaseClient.get('feature','gene', this.$$('#XXX').value, 'info', {}, {success: success, async: true});
+                }
+
+                if (this.$$('#regionList') != null && typeof this.$$('#regionList').value !== "undefined") {
+                    let _this = this;
+                    let success = function (response) {
+                        _this.result = response.response[0].result;
+                        console.log(_this.result)
+                    };
+                    this.cellBaseClient.get('genomic','region', this.$$('#regionList').value, 'gene', {include: "chromosome,start,end"}, {success: success, async: true});
+                }
+
+                $('.nav-tabs a[href="#result1"]').tab('show')
+            },
+            ready: function() {
+//                $('#myTabs a').click(function (e) {
+//                    console.log("taaaaaaaaaabs")
+//                    e.preventDefault()
+//                    $(this).tab('show')
+//                });
+                this.cellBaseClient = CELLBASE_CLIENT;
+                console.log(this.cellBaseClient)
+            },
+            _updateGeneView: function(e) {
+                console.log(e)
+                this.geneId = e.srcElement.id;
+            },
+            addGeneId: function(e) {
+                var temp = $('#geneIDText').val();
+                if (this.allIds.indexOf(temp) == -1){
+                    this.push('allIds', temp);
+                }
+                console.log(this.allIds)
+                $('#geneIDText').val('');
+                $('textarea#XXX').val(this.allIds);
+            },
+            callAutocomplete: function(e) {
+                if (this.$$('#geneIDText').value.length > 2) {
+                    let _this = this;
+                    let success = function (response) {
+                        _this.autocompleteData = response.response[0].result;
+                        console.log(_this.autocompleteData)
+                    };
+                    _this.cellBaseClient.get('feature', 'id', this.$$('#geneIDText').value, 'starts_with', {}, {success: success, async: true});
+                }
+
             }
         });
     </script>
