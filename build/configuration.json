@@ -5,11 +5,11 @@
 	"database": {
 		"host": "localhost:27017",
 		"port": "${CELLBASE.DB.PORT}",
-		"user": "biouser",
-		"password": "biopass",
+		"user": "",
+		"password": "",
 		"options": {
-			"authenticationDatabase": "admin",
-			"readPreference": "nearest",
+			"authenticationDatabase": "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}",
+			"readPreference": "${CELLBASE.DB.MONGODB.READPREFERENCE}",
 			"replicaSet": "${CELLBASE.DB.MONGODB.REPLICASET}"
 		}
 	},
