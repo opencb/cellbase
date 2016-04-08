@@ -19,7 +19,8 @@
 <link rel="import" href="../cellbase-shared-styles.html">
 
 <link rel="import" href="cellbase-variation-grid.html">
-<link rel="import" href="cellbase-tfbs-view.html">
+<link rel="import" href="cellbase-transcripts-view.html">
+<link rel="import" href="cellbase-transcripts-tfbs-view.html">
 <link rel="import" href="cellbase-drugs-view.html">
 <link rel="import" href="cellbase-phenotype-view.html">
 
@@ -29,7 +30,6 @@
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div style="width: 90%">
-            <!--<span>{{geneId}}</span>-->
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#geneViewInfo" role="tab" data-toggle="tab">{{geneId}} Info</a></li>
@@ -39,95 +39,61 @@
                 <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
                 <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
                 <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation"><a href="#geneViewExpression" role="tab" data-toggle="tab">Expression</a></li>
                 <li role="presentation"><a href="#geneViewPpi" role="tab" data-toggle="tab">PPI</a></li>
-                <li role="presentation"><a href="#geneViewPDB" role="tab" data-toggle="tab">PDB</a></li>
+                <li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
                 <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
-
-                    Name: {{geneObj.name}}<br>
-                    ID: {{geneObj.id}}<br>
+                    <br>
+                    Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>
                     Biotype: {{geneObj.biotype}}<br>
-                    Region: {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}<br>
-                    Status: {{geneObj.status}}<br>
-                    Strand: {{geneObj.strand}}<br>
-                    Source: {{geneObj.source}}<br>
+                    Location: {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   Strand: {{geneObj.strand}}<br>
+                    Source: {{geneObj.source}} - Status: {{geneObj.status}}<br>
                     Description: {{geneObj.description}}<br>
+                    <!--<h3>Transcripts</h3>-->
+                    <!--<cellbase-transcripts-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>-->
                 </div>
 
                 <div id="geneViewGenomeContext" role="tabpanel" class="tab-pane">
+                    <br>
                     <div id="genomeviewer"></div>
                 </div>
 
                 <div id="geneViewTranscripts" role="tabpanel" class="tab-pane">
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>ID</th>
-                            <th>Biotype</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <template is="dom-repeat" items="{{geneObj.transcripts}}">
-                            <tr>
-                                <td>{{item.name}}</td>
-                                <td>{{item.id}}</td>
-                                <td>{{item.biotype}}</td>
-                            </tr>
-                        </template>
-                        </tbody>
-                    </table>
+                    <br>
+                    <cellbase-transcripts-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
                 </div>
+
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
                     <cellbase-variation-grid cellbase-client="{{cellBaseClient}}" data="{{variations}}"></cellbase-variation-grid>
                 </div>
+
                 <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
-                    <cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>
+                    <br>
+                    <cellbase-transcritps-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
                 </div>
+
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
-                    <!-- CellBase v4 has the drug information in a new field called 'annotation', for v4 execute: -->
-                    <!--    data="{{geneObj.annotation.drugs}} -->
+                    <br>
                     <cellbase-drugs-view cellbase="{{cellbase}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
                 </div>
 
                 <div id="geneViewPhenotype" role="tabpanel" class="tab-pane">
                     <cellbase-phenotype-view cellbase="{{cellbase}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-view>
-                    <!--<table class="table table-hover">-->
-                        <!--<thead>-->
-                        <!--<tr>-->
-                            <!--<th>ID</th>-->
-                            <!--<th>Name</th>-->
-                            <!--<th>Hpo</th>-->
-                            <!--<th>Score</th>-->
-                            <!--<th>Source</th>-->
-                            <!--<th>NumberOfPubmeds</th>-->
-                            <!--<th>Association Types</th>-->
-                            <!--<th>Sources</th>-->
-                        <!--</tr>-->
-                        <!--</thead>-->
-                        <!--<tbody>-->
-                        <!--<template is="dom-repeat" items="{{geneObj.annotation.diseases}}">-->
-                            <!--<tr>-->
-                                <!--<td>{{item.id}}</td>-->
-                                <!--<td>{{item.name}}</td>-->
-                                <!--<td>{{item.hpo}}</td>-->
-                                <!--<td>{{item.score}}</td>-->
-                                <!--<td>{{item.source}}</td>-->
-                                <!--<td>{{item.numberOfPubmeds}}</td>-->
-                                <!--<td>{{item.associationTypes}}</td>-->
-                                <!--<td>{{item.sources}}</td>-->
-                            <!--</tr>-->
-                        <!--</template>-->
-                        <!--</tbody>-->
-                    <!--</table>-->
                 </div>
+
+                <div id="geneViewExpression" role="tabpanel" class="tab-pane">
+                    Expression
+                </div>
+
                 <div id="geneViewPpi" role="tabpanel" class="tab-pane">
                     PPI
-                    <cell-maps-element></cell-maps-element>
+                    <!--<cell-maps-element></cell-maps-element>-->
                 </div>
-                <div role="tabpanel" class="tab-pane" id="geneViewPDB">
+
+                <div role="tabpanel" class="tab-pane" id="geneViewPdb">
                     PDB
                     <canvas class="ChemDoodleWebComponent" id="pdb_canvas" width="600" height="600" style="width: 800px; height: 800px; ">
                         This browser does not support HTML5/Canvas.

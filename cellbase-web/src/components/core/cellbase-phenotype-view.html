@@ -8,20 +8,21 @@
 
         <div>
             <br>
-                <table id="phenotypeTable" data-pagination="true" data-page-list="[10, 25, 50]">
-                    <thead>
-                    <tr>
-                        <th data-field="id">id</th>
-                        <th data-field="name">name</th>
-                        <th data-field="hpo">hpo</th>
-                        <th data-field="score">score</th>
-                        <th data-field="source">source</th>
-                        <th data-field="numberOfPubmeds">numberOfPubmeds</th>
-                        <th data-field="associationTypes">associationTypes</th>
-                        <th data-field="sources">sources</th>
-                    </tr>
-                    </thead>
-                </table>
+            <table id="phenotypeTable" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+                <thead>
+                <tr>
+                    <th data-field="id">Id</th>
+                    <th data-field="name" data-sortable="true">Name</th>
+                    <th data-field="hpo" data-sortable="true">HPO</th>
+                    <th data-field="score" data-sortable="true">Score</th>
+                    <th data-field="source">Source</th>
+                    <th data-field="numberOfPubmeds" data-sortable="true">Number of Pubmeds</th>
+                    <th data-field="associationTypes">Association Types</th>
+                    <th data-field="sources">Sources</th>
+                </tr>
+                </thead>
+            </table>
         </div>
     </template>
     <script>
@@ -39,8 +40,6 @@
                 }
             },
             phenotypeChanged: function() {
-                console.log("RENDER:")
-                console.log(this.data)
                 $('#phenotypeTable').bootstrapTable('destroy');
                 $('#phenotypeTable').bootstrapTable({
                     data: this.data

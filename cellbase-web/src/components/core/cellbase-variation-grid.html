@@ -22,23 +22,20 @@
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
-        <!--<label class="control-label">{{title}}</label><br>-->
-        <!--<template is="dom-repeat" items="{{data}}">-->
-            <!--<input type="checkbox" on-change="add" name="{{item.start}}" value="{{item.start}}"> {{item.start}}<br>-->
-        <!--</template>-->
-
         <div style="padding: 10px; ">
             <br>
-            <table id="table" data-search="true" data-show-columns="true" data-pagination="true" data-height="540" data-page-list="[10, 25, 50]" data-detail-view="true" data-detail-formatter="detailFormatter">
-                <thead>
-                <tr>
-                    <th data-field="detail-view"></th>
-                    <th data-field="chromosome" data-sortable="true">chromosome</th>
-                    <th data-field="start" data-sortable="true" width="200">start</th>
-                    <th data-field="ends" data-sortable="true">end</th>
-                    <th data-field="ids" data-sortable="true">ids</th>
-                </tr>
-                </thead>
+            <table id="table" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+                   <!--data-detail-view="true" data-detail-formatter="detailFormatter">-->
+                <!--<thead>-->
+                <!--<tr>-->
+                <!--<th data-field="detail-view"></th>-->
+                <!--<th data-field="chromosome" data-sortable="true">chromosome</th>-->
+                <!--<th data-field="start" data-sortable="true" width="200">start</th>-->
+                <!--<th data-field="ends" data-sortable="true">end</th>-->
+                <!--<th data-field="ids" data-sortable="true">ids</th>-->
+                <!--</tr>-->
+                <!--</thead>-->
             </table>
         </div>
     </template>
@@ -61,44 +58,61 @@
                 }
             },
             render: function() {
-//                var data = [{
-//                    "name": "bootstrap-table",
-//                    "stargazers_count": "10",
-//                    "forks_count": "122",
-//                    "description": "An extended Bootstrap table"
-//                }, {
-//                    "name": "multiple-select",
-//                    "stargazers_count": "288",
-//                    "forks_count": "20",
-//                    "description": "A jQuery plugin to select multiple elements with checkboxes :)"
-//                }, {
-//                    "name": "bootstrap-table",
-//                    "stargazers_count": "32",
-//                    "forks_count": "11",
-//                    "description": "Show/hide password plugin for twitter bootstrap."
-//                }, {
-//                    "name": "bootstrap-table",
-//                    "stargazers_count": "1",
-//                    "forks_count": "4",
-//                    "description": "my blog"
-//                }, {
-//                    "name": "scutech-redmine 1",
-//                    "stargazers_count": "50",
-//                    "forks_count": "3",
-//                    "description": "Redmine notification tools for chrome extension."
-//                }];
-
                 $('#table').bootstrapTable({
-                    data: this.data
+                    data: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'ID',
+//                                field: 'ids',
+                                formatter: this.idFormatter,
+                                sortable: true
+                            },
+                            {
+                                title: 'Alleles',
+                                formatter: this.refAltFormatter
+                            },
+                            {
+                                title: 'Location',
+                                formatter: this.locationFormatter
+                            },
+                            {
+                                title: 'Type',
+                                field: 'type'
+                            },
+                            {
+                                title: 'HGVS',
+                                field: 'hgvs.genomic'
+                            },
+                            {
+                                title: 'Display Consequence Type',
+                                field: 'annotation.displayConsequenceType',
+                                sortable: true
+                            },
+                            {
+                                title: 'Ancestral Allele',
+                                field: 'annotation.ancestralAllele'
+                            },
+                            {
+                                title: 'MAF',
+                                formatter: this.mafFormatter
+                            }
+                        ]
+                    ]
                 });
             },
-            detailFormatter: function (index, row, element) {
-                console.log(element)
-                var html = [];
-                $.each(row, function (key, value) {
-                    html.push('<p><b>' + key + ':</b> ' + value + '</p>');
-                });
-                return html.join('');
+            idFormatter: function (value, row, index) {
+                return '<a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + row.ids[0] + '">' + row.ids + '</a>'
+            },
+            refAltFormatter: function (value, row, index) {
+                return row.reference + "/" + row.alternate;
+            },
+            locationFormatter: function (value, row, index) {
+                let location = row.chromosome + ":" + row.start + "-" + row.end;
+                return '<a target="_blank" href="http://genomemaps.org/?region=' + location + '">' + location + '</a>'
+            },
+            mafFormatter: function (value, row, index) {
+                return row.annotation.minorAlleleFreq + " (" + row.annotation.minorAllele + ")";
             }
         });
     </script>

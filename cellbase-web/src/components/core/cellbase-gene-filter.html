@@ -258,7 +258,9 @@
                 let _this = this;
                 let success = function (response) {
                     for(let i in response.response) {
-                        _this.push('result',response.response[i].result[0]);
+                        for(let j in response.response[i].result) {
+                            _this.push('result',response.response[i].result[j]);
+                        }
                     }
                     // remove the GIF
                     $('#spinImg').hide();
