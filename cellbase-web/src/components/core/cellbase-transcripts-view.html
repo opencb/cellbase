@@ -22,6 +22,7 @@
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
+        <!--Transcripts table-->
         <div>
             <table class="table table-hover">
                 <thead>
@@ -40,8 +41,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <template is="dom-repeat" items="{{data}}" as="transcript">
-                    <tr>
+                <template is="dom-repeat" id="transcriptList" items="{{data}}" as="transcript">
+                    <tr on-click="loadTabs">
                         <td>{{transcript.name}}</td>
                         <td>
                             <a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;t={{transcript.id}}">{{transcript.id}}</a>
@@ -69,6 +70,58 @@
                 </template>
                 </tbody>
             </table>
+
+            <array-selector id="selector" items="{{data}}" selected="{{selected}}"></array-selector>
+
+        <!--Tab representation for Exons, Xrefs, Sequence-->
+            <div>
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#transcriptViewExons" role="tab" data-toggle="tab">Exons</a></li>
+                <li role="presentation"><a href="#transcriptViewXrefs" role="tab" data-toggle="tab">Xrefs</a></li>
+                <li role="presentation"><a href="#transcriptViewSequence" role="tab" data-toggle="tab">Sequence</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="transcriptViewExons" role="tabpanel" class="tab-pane active">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Location</th>
+                            <th>strand</th>
+                            <th>cDNA</th>
+                            <th>phase</th>
+                            <th>exonNumber</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{selected.exons}}" as="exon">
+                            <tr>
+                                <td>{{exon.id}}</td>
+                                <td>{{exon.chromosome}}:{{exon.start}}-{{exon.end}}</td>
+                                <td>{{exon.strand}}</td>
+                                <td>{{exon.cDNA}}</td>
+                                <td>{{exon.phase}}</td>
+                                <td>{{exon.exonNumber}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="transcriptViewXrefs" role="tabpanel" class="tab-pane">
+                    XRefs
+                </div>
+
+                <div id="transcriptViewSequence" role="tabpanel" class="tab-pane">
+                    <br>
+                        <template is="dom-repeat" items="{{selected.exons}}" as="exonObject">
+                            Exon ID: {{exonObject.id}} <br>
+                            Sequence:<textarea class="form-control" rows="3">{{exonObject.sequence}}</textarea>  <br>
+                        </template>
+                </div>
+            </div>
+            </div>
         </div>
     </template>
     <script>
@@ -82,7 +135,15 @@
                 data: {
                     type: Array,
                     value: []
+                },
+                exons: {
+                    type: Array,
+                    value: []
                 }
+            },
+            loadTabs: function (e){
+                var item = this.$.transcriptList.itemForElement(e.target);
+                this.$.selector.select(item);
             }
         });
     </script>

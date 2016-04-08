@@ -58,6 +58,7 @@
                 }
             },
             render: function() {
+                $('#table').bootstrapTable('destroy');
                 $('#table').bootstrapTable({
                     data: this.data,
                     columns: [
