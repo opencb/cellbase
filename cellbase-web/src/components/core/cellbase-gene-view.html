@@ -37,9 +37,10 @@
                 <li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
                 <li role="presentation"><a href="#geneViewVariation" role="tab" data-toggle="tab">Variation</a></li>
                 <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
-                <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
                 <li role="presentation"><a href="#geneViewExpression" role="tab" data-toggle="tab">Expression</a></li>
+                <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation"><a href="#geneViewClinicalVariants" role="tab" data-toggle="tab">Clinical Variants</a></li>
+                <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
                 <li role="presentation"><a href="#geneViewPpi" role="tab" data-toggle="tab">PPI</a></li>
                 <li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>
             </ul>
@@ -75,18 +76,23 @@
                     <cellbase-transcritps-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
-                    <br>
-                    <cellbase-drugs-view cellbase="{{cellbase}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
+                <div id="geneViewExpression" role="tabpanel" class="tab-pane">
+                    Expression
                 </div>
 
                 <div id="geneViewPhenotype" role="tabpanel" class="tab-pane">
                     <cellbase-phenotype-view cellbase="{{cellbase}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-view>
                 </div>
 
-                <div id="geneViewExpression" role="tabpanel" class="tab-pane">
-                    Expression
+                <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
+                    Clinical Variants
                 </div>
+
+                <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
+                    <br>
+                    <cellbase-drugs-view cellbase="{{cellbase}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
+                </div>
+
 
                 <div id="geneViewPpi" role="tabpanel" class="tab-pane">
                     PPI

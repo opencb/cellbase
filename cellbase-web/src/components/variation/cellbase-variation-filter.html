@@ -29,12 +29,12 @@
 
         <div>
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#filter1" role="tab" data-toggle="tab">Filter</a></li>
-                <li role="presentation"><a href="#result1" role="tab" data-toggle="tab">Result</a></li>
+                <li role="presentation" class="active"><a href="#variationFilter" role="tab" data-toggle="tab">Filter</a></li>
+                <li role="presentation"><a href="#variationResult" role="tab" data-toggle="tab">Result</a></li>
             </ul>
 
             <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="filter1">
+                <div role="tabpanel" class="tab-pane active" id="variationFilter">
                     <button type="button" class="btn btn-default" on-click="clear">Clear</button>
                     <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
                     <button type="button" class="btn btn-default" on-click="executeQuery">Submit</button>
@@ -154,7 +154,7 @@
                     </div>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="result1">
+                <div role="tabpanel" class="tab-pane" id="variationResult">
                     <table>
                         <tr>
                             <th>Region</th>
@@ -182,11 +182,7 @@
                     type: Array,
                     value: []
                 },
-                biotype: {
-                    type: Array,
-                    notify: true
-                },
-                geneId: {
+                variationId: {
                     type: String,
                     notify: true
                 },
@@ -209,16 +205,13 @@
                 this.$.geneFilterDrugsTextarea.value = "";
             },
             loadExample: function (e) {
-                this.$.geneFilterIdsTextarea.value = "BRCA2";
+                this.$.geneFilterIdsTextarea.value = "rs666";
             },
             executeQuery: function (e) {
                 // activate the GIF
 
                 // We first build the query params object
-                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
-                if (this.biotype.length > 0) {
-                    queryParams.biotype = this.biotype.join(",");
-                }
+                let queryParams = {include: "ids,chromosome,start,end"};
                 if (this.$.geneFilterDrugsTextarea.value != "") {
                     queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
                 }
@@ -235,20 +228,20 @@
 
                 // Now we execute the query. Note that ID are preferred
                 if (this.$.geneFilterIdsTextarea.value !== "") {
-                    this.cellBaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                    this.cellBaseClient.get('feature','snp', this.$.geneFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
                 } else {
                     if (this.$.regionList.value !== "") {
-                        this.cellBaseClient.get('genomic','region', this.$.regionList.value, 'gene', queryParams, {success: success, async: true});
+                        this.cellBaseClient.get('genomic','region', this.$.regionList.value, 'variation', queryParams, {success: success, async: true});
                     }
                 }
 
-                $('.nav-tabs a[href="#result1"]').tab('show');
+                $('.nav-tabs a[href="#variationResult"]').tab('show');
             },
             ready: function() {
                 this.cellBaseClient = CELLBASE_CLIENT;
             },
             _updateGeneView: function(e) {
-                this.geneId = e.srcElement.id;
+                this.variationId = e.srcElement.id;
             },
             addGeneId: function(e) {
                 var temp = this.$$('#geneIDText').value;
