@@ -27,8 +27,10 @@ import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
+import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
@@ -36,6 +38,9 @@ import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
+import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkDataWriter;
+import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkTask;
+import org.opencb.cellbase.app.cli.variant.annotation.VariantAnnotationDiff;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.client.CellBaseClient;
@@ -55,6 +60,7 @@ import org.rocksdb.RocksDBException;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -125,24 +131,45 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             } else {
                 runAnnotation();
             }
+            logger.info("Finished");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void runBenchmark() {
-        // TODO: reader - VEP READER
-        // TODO: benchmarkTaskList produces comparison result objects
-        // TODO: writes comparison result objects, gathers statistics, writes summary
-        DataReader dataReader = new StringDataReader(input);
-        List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList(false);
-        DataWriter dataWriter = getDataWriter(output.toString());
+        try {
 
-        ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-        ParallelTaskRunner<String, Variant> runner =
-                new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
-        runner.run();
+            DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+                return entry.getFileName().toString().endsWith("VEPprocessed.txt");
+            });
 
+            for (Path entry : stream) {
+                logger.info("Processing file '{}'", entry.toString());
+                DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
+                List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>> variantAnnotatorTaskList
+                        = getBenchmarkTaskList();
+                DataWriter dataWriter = getDataWriter(output.toString());
+
+                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+                ParallelTaskRunner<Variant, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
+                        = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                runner.run();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>> getBenchmarkTaskList()
+            throws IOException {
+        List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>> benchmarkTaskList
+                = new ArrayList<>(numThreads);
+        for (int i = 0; i < numThreads; i++) {
+            // Benchmark variants are read from a VEP file, must not normalize
+            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator(false)));
+        }
+        return benchmarkTaskList;
     }
 
     private boolean runAnnotation() throws Exception {
@@ -246,10 +273,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private DataWriter getDataWriter(String filename) {
         DataWriter dataWriter = null;
-        if (outputFormat.equals(FileFormat.JSON)) {
-            dataWriter = new JsonAnnotationWriter(filename);
-        } else if (outputFormat.equals(FileFormat.VEP)) {
-            dataWriter = new VepFormatWriter(filename);
+        if (benchmark) {
+            dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
+        } else {
+            if (outputFormat.equals(FileFormat.JSON)) {
+                dataWriter = new JsonAnnotationWriter(filename);
+            } else if (outputFormat.equals(FileFormat.VEP)) {
+                dataWriter = new VepFormatWriter(filename);
+            }
         }
         return dataWriter;
     }
