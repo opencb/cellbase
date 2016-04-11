@@ -22,7 +22,7 @@
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
         <div>
-            <template is="dom-repeat" items="{{transcripts}}" as="transcript">
+            <template is="dom-repeat" items="{{data}}" as="transcript">
                 <h3>{{transcript.id}} ({{transcript.name}})</h3>
 
                 <template is="dom-if" if="{{transcript.tfbs}}">
@@ -66,7 +66,7 @@
                 cellbase: {
                     type: Object
                 },
-                transcripts: {
+                data: {
                     type: Array,
                     value: []
                 }

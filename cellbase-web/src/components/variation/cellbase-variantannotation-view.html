@@ -34,6 +34,32 @@
                 </div>
                 <div role="tabpanel" class="tab-pane" id="variantAnnotationPopulationFrequencies">
                     Population Frequencies
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Study</th>
+                            <th>Population</th>
+                            <th>RefAllele</th>
+                            <th>AltAllele</th>
+                            <th>RefAlleleFreq</th>
+                            <th>AltAlleleFreq</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{data}}" as="variation">
+                            <template is="dom-repeat" items="variation.annotation.populationFrequencies">
+                            <tr>
+                                <td>{{item.study}}</td>
+                                <td>{{item.population}}</td>
+                                <td>{{item.refAllele}}</td>
+                                <td>{{item.altAllele}}</td>
+                                <td>{{item.refAlleleFreq}}</td>
+                                <td>{{item.altAlleleFreq}}</td>
+                            </tr>
+                            </template>
+                        </template>
+                        </tbody>
+                    </table>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="variantAnnotationClinical">
                     Clinical
@@ -44,7 +70,14 @@
     </template>
     <script>
         Polymer({
-            is: 'cellbase-variantannotation-view'
+            is: 'cellbase-variantannotation-view',
+
+            properties: {
+                data: {
+                    type: Array,
+                    value: []
+                }
+            }
         });
     </script>
 </dom-module>

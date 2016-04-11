@@ -31,12 +31,9 @@
                     <th>Ensembl ID</th>
                     <th>Biotype</th>
                     <th>Location</th>
-                    <!--<th>Strand</th>-->
                     <th>Coding</th>
                     <th>cDNA</th>
-                    <!--<th>cDNA Sequence</th>-->
                     <th>CDS Length</th>
-                    <!--<th>Protein ID</th>-->
                     <th>Annotation Flags</th>
                 </tr>
                 </thead>
@@ -53,7 +50,6 @@
                                 {{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}
                             </a>
                         </td>
-                        <!--<td>{{transcript.strand}}</td>-->
                         <td>
                             <a target="_blank" href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}">
                                 {{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}
@@ -62,9 +58,7 @@
                         <td>
                             {{transcript.cdnaCodingStart}}-{{transcript.cdnaCodingEnd}}
                         </td>
-                        <!--<td>{{transcript.cDnaSequence}}</td>-->
                         <td>{{transcript.cdsLength}}</td>
-                        <!--<td>{{transcript.proteinID}}</td>-->
                         <td>{{transcript.annotationFlags}}</td>
                     </tr>
                 </template>

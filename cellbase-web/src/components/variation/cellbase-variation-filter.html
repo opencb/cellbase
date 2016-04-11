@@ -18,6 +18,7 @@
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
+<link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-variation-filter">
     <template>
@@ -36,9 +37,7 @@
 
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="variationFilter">
-                    <button type="button" class="btn btn-default" on-click="clear">Clear</button>
-                    <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
-                    <button type="button" class="btn btn-default" on-click="executeQuery">Submit</button>
+                    <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">

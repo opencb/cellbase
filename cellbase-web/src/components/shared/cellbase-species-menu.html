@@ -21,31 +21,7 @@
 <dom-module id="cellbase-species-menu">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
-        <!--<div>Species</div>-->
-        <!--<div class="ocb-dropdown">-->
-        <!--<div tabindex="-1" id="speciesButton" class="ocb-ctrl"><span id="speciesText"></span> <i class="fa fa-caret-down"></i></div>-->
-        <!--<ul>-->
-        <!--<template is="dom-repeat" items={{taxonomies}} as="taxon">-->
-        <!--<li data-sub=true>{{taxon}}-->
-        <!--<ul>-->
-        <!--<template is="dom-repeat" items="speciesList">-->
-        <!--<li>{{item}}</li>-->
-        <!--</template>-->
-        <!--</ul>-->
-        <!--</li>-->
-        <!--</template>-->
-        <!--</ul>-->
-        <!--</div>-->
 
-        <!--<paper-dropdown-menu label="Species">-->
-        <!--<paper-menu class="dropdown-content" selected="0">-->
-        <!--<template is="dom-repeat" items="{{speciesList}}">-->
-        <!--<paper-item>{{item}}</paper-item>-->
-        <!--</template>-->
-        <!--</paper-menu>-->
-        <!--</paper-dropdown-menu>-->
-
-        <!--btn-group-->
         <div class="dropdown" style="background-color: transparent">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 {{title}} <span class="caret"></span>
@@ -90,14 +66,6 @@
             ready: function () {
                 this.speciesList = SPECIES;
                 this.keys = Object.keys(SPECIES);
-
-//                for (var key in SPECIES) {
-//                    var _temp = SPECIES[key];
-//                    for (var i = 0; i < _temp.length; i++) {
-//                        this.push("speciesList", _temp[i].scientificName);
-////                        this.push(key, _temp[i].scientificName);
-//                    }
-//                }
 
                 let _this = this;
                 $(document).on('click', '.cellbase-species-menu li a', function() {

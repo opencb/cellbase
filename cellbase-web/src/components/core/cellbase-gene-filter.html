@@ -43,9 +43,6 @@
             <!--Filter tab content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="filter1">
-                    <!--<button type="button" class="btn btn-default" on-click="clear">Clear</button>-->
-                    <!--<button type="button" class="btn btn-default" on-click="loadExample">Example</button>-->
-                    <!--<button type="button" id="submitButton" class="btn btn-default" on-click="executeQuery">Submit</button>-->
                     <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
@@ -198,7 +195,6 @@
                 biotypes: {
                     type: Array,
                     value: []
-//                    notify: true
                 },
                 geneId: {
                     type: String,
@@ -219,12 +215,8 @@
             },
             ready: function() {
                 this.cellBaseClient = CELLBASE_CLIENT;
-
-//                this.getBiotypes();
             },
             clear: function (e) {
-                console.log("on Clear!!!")
-                console.log(e)
                 // we empty the textareas
                 this.$.geneFilterIdsTextarea.value = "";
                 this.$.geneFilterRegionTextarea.value = "";
@@ -234,7 +226,6 @@
                 this.$.geneFilterIdsTextarea.value = "BRCA2";
             },
             executeQuery: function (e) {
-                console.log(this.biotypes)
                 // activate the GIF
                 $('#spinImg').show();
 
@@ -292,15 +283,6 @@
                 }
 
             }
-//            ,
-//            getBiotypess: function () {
-//                console.log("em getBiotypes")
-//                var _this = this;
-//                var success = function (response) {
-//                    _this.biotypes = response.response[0].result;
-//                };
-//                this.cellBaseClient.getGeneClient(null, 'biotype', {}, {success: success, async: true});
-//            }
         });
     </script>
 </dom-module>
