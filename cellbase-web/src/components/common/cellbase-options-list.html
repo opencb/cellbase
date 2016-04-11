@@ -1,0 +1,96 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-options-list">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <template is="dom-if" if="{{title}}">
+            <label class="control-label">{{title}}</label><br>
+        </template>
+        <template is="dom-repeat" items="{{data}}">
+            <input type="checkbox" name="{{dataType}}" value="{{item}}" on-change="addSelected"> {{item}}<br>
+        </template>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-options-list',
+            properties: {
+                title: {
+                    type: String,
+                    value: ""
+                },
+                cellbaseClient: {
+                    type: Object,
+                    value: null
+                },
+                data: {
+                    type: Array,
+                    value: []
+                },
+                dataType: {
+                    type: String,
+                    value: ""
+                },
+                selected: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                }
+            },
+            attached: function () {
+                // If data array is passed we use those values:
+                //      <cellbase-options-list data={{data}} data-type="custom" selected={{biotypes}}></cellbase-options-list>
+                if (typeof this.data === "undefined" || this.data == null || this.data.length == 0) {
+                    if (typeof this.cellbaseClient !== "undefined" && this.cellbaseClient != null) {
+                        var _this = this;
+                        var success = function (response) {
+                            _this.data = response.response[0].result;
+                        };
+
+                        // we used the dataType param to fill the options
+                        switch (this.dataType) {
+                            case "biotype":
+                                this.cellbaseClient.getGeneClient(null, this.dataType, {}, {success: success, async: true});
+                                break;
+                            case "consequence_types":
+                            case "consequence-types":
+                                this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {success: success, async: true});
+                                break;
+                            default:
+                                console.error("No valid 'dataType'provided, select one of: biotype, consequence_type, ...")
+                        }
+                    } else {
+                        console.error("Both 'data' and 'cellbaseClient' are not defined or null")
+                    }
+                }
+            },
+            addSelected: function (event) {
+                if (event.target.checked) {
+                    this.push('selected', event.target.value);
+                } else {
+                    var index = this.selected.indexOf(event.target.value);
+                    this.splice('selected', index, 1);
+                }
+            }
+        });
+    </script>
+</dom-module>

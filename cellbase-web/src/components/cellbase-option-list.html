@@ -14,11 +14,11 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../cellbase-shared-styles.html">
+<link rel="import" href="shared/cellbase-shared-styles.html">
 
-<dom-module id="cellbase-consequence-types-options">
+<dom-module id="cellbase-option-list">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
@@ -30,11 +30,11 @@
     </template>
     <script>
         Polymer({
-            is: 'cellbase-consequence-types-options',
+            is: 'cellbase-option-list',
             properties: {
                 title: {
                     type: String,
-                    value: ""
+                    value: "Select biotypes"
                 },
                 cellbaseClient: {
                     type: Object,
@@ -44,29 +44,26 @@
                     type: Array,
                     value: []
                 },
-                consequenceTypes: {
+                biotypes: {
                     type: Array,
                     value: [],
                     notify: true
                 }
             },
-
-            attached: function () {
-                var _this = this;
-                var success = function (response) {
-                    _this.data = response.response[0].result;
-                    console.log(_this.data)
-                };
-                console.log(this.cellbaseClient)
-                this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {success: success, async: true});
-            },
+//            attached: function () {
+//                var _this = this;
+//                var success = function (response) {
+//                    _this.data = response.response[0].result;
+//                };
+//                this.cellbaseClient.getGeneClient(null, 'biotype', {}, {success: success, async: true});
+//            },
 
             add: function (event) {
                 if (event.target.checked) {
-                    this.push('consequenceTypes', event.target.name);
+                    this.push('biotypes', event.target.name);
                 } else {
-                    var index = this.consequenceTypes.indexOf(event.target.name);
-                    this.splice('consequenceTypes', index, 1);
+                    var index = this.biotypes.indexOf(event.target.name);
+                    this.splice('biotypes', index, 1);
                 }
             }
         });
