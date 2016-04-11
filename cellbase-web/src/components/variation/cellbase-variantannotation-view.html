@@ -25,15 +25,42 @@
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#variantAnnotationConsequenceTypes" role="tab" data-toggle="tab">Consequence Types</a></li>
                 <li role="presentation"><a href="#variantAnnotationPopulationFrequencies" role="tab" data-toggle="tab">Population Frequencies</a></li>
-                <li role="presentation"><a href="#variantAnnotationClinical" role="tab" data-toggle="tab">Clinical</a></li>
+                <li role="presentation"><a href="#variantAnnotationClinical" role="tab" data-toggle="tab">Gene Trait Association</a></li>
+                <li role="presentation"><a href="#variantAnnotationConservation" role="tab" data-toggle="tab">Conservation</a></li>
+                <li role="presentation"><a href="#variantAnnotationCadd" role="tab" data-toggle="tab">CADD</a></li>
             </ul>
 
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="variantAnnotationConsequenceTypes">
-                    Consequence Types
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Gene</th>
+                            <th>Ensembl Gene</th>
+                            <th>Ensembl Transcript</th>
+                            <th>Biotype</th>
+                            <th>SO term</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{variantAnnotation.consequenceTypes}}" as="ct">
+                            <tr>
+                                <td>{{ct.geneName}}</td>
+                                <td>{{ct.ensemblGeneId}}</td>
+                                <td>{{ct.ensemblTranscriptId}}</td>
+                                <td>{{ct.biotype}}</td>
+                                <td>
+                                    <template is="dom-repeat" items="{{ct.sequenceOntologyTerms}}">
+                                        {{item.name}} ({{item.accession}})<br>
+                                    </template>
+                                </td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
                 </div>
+
                 <div role="tabpanel" class="tab-pane" id="variantAnnotationPopulationFrequencies">
-                    Population Frequencies
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -46,8 +73,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <template is="dom-repeat" items="{{data}}" as="variation">
-                            <template is="dom-repeat" items="variation.annotation.populationFrequencies">
+                        <template is="dom-repeat" items="{{variantAnnotation.populationFrequencies}}">
                             <tr>
                                 <td>{{item.study}}</td>
                                 <td>{{item.population}}</td>
@@ -56,13 +82,72 @@
                                 <td>{{item.refAlleleFreq}}</td>
                                 <td>{{item.altAlleleFreq}}</td>
                             </tr>
-                            </template>
                         </template>
                         </tbody>
                     </table>
                 </div>
+
                 <div role="tabpanel" class="tab-pane" id="variantAnnotationClinical">
-                    Clinical
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Score</th>
+                            <th>HPO</th>
+                            <th>Source</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{variantAnnotation.geneTraitAssociation}}">
+                            <tr>
+                                <td>{{item.id}}</td>
+                                <td>{{item.name}}</td>
+                                <td>{{item.score}}</td>
+                                <td>{{item.hpo}}</td>
+                                <td>{{item.source}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="variantAnnotationConservation">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Score</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{variantAnnotation.conservation}}">
+                            <tr>
+                                <td>{{item.source}}</td>
+                                <td>{{item.score}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="variantAnnotationCadd">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Score</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{variantAnnotation.functionalScore}}">
+                            <tr>
+                                <td>{{item.source}}</td>
+                                <td>{{item.score}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -74,9 +159,26 @@
 
             properties: {
                 data: {
-                    type: Array,
-                    value: []
+                    type: String,
+                    observer: '_variantChanged'
+                },
+                geneObj: {
+                    type: Object
+                },
+                variantAnnotation: {
+                    type: String
                 }
+            },
+            ready: function() {
+                this.cellBaseClient = CELLBASE_CLIENT;
+            },
+            _variantChanged: function() {
+                let _this = this;
+                var success = function (response) {
+                    console.log(response)
+                    _this.variantAnnotation = response.response[0].result[0];
+                };
+                this.cellBaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {success: success, async: true});
             }
         });
     </script>

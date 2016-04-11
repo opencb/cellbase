@@ -26,7 +26,7 @@
             <br>
             <table id="table" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
-                   <!--data-detail-view="true" data-detail-formatter="detailFormatter">-->
+                <!--data-detail-view="true" data-detail-formatter="detailFormatter">-->
                 <!--<thead>-->
                 <!--<tr>-->
                 <!--<th data-field="detail-view"></th>-->
@@ -58,6 +58,7 @@
                 }
             },
             render: function() {
+                let _this = this;
                 $('#table').bootstrapTable('destroy');
                 $('#table').bootstrapTable({
                     data: this.data,
@@ -99,7 +100,13 @@
                                 formatter: this.mafFormatter
                             }
                         ]
-                    ]
+                    ],
+                    onClickRow: function (row, $element) {
+                        console.log("rrrrrrrrrrrrrrrrrrrr")
+                        console.log(row)
+                        console.log($element)
+                        _this.fire('selected', {variant: row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate});
+                    }
                 });
             },
             idFormatter: function (value, row, index) {
