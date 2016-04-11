@@ -19,6 +19,7 @@
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
+<link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-gene-filter">
     <template>
@@ -42,10 +43,10 @@
             <!--Filter tab content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="filter1">
-                    <button type="button" class="btn btn-default" on-click="clear">Clear</button>
-                    <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
-                    <button type="button" id="submitButton" class="btn btn-default" on-click="executeQuery">
-                        Submit</button>
+                    <!--<button type="button" class="btn btn-default" on-click="clear">Clear</button>-->
+                    <!--<button type="button" class="btn btn-default" on-click="loadExample">Example</button>-->
+                    <!--<button type="button" id="submitButton" class="btn btn-default" on-click="executeQuery">Submit</button>-->
+                    <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
                     <!--GeneID filter menu-->
@@ -218,9 +219,12 @@
             },
             ready: function() {
                 this.cellBaseClient = CELLBASE_CLIENT;
+
 //                this.getBiotypes();
             },
             clear: function (e) {
+                console.log("on Clear!!!")
+                console.log(e)
                 // we empty the textareas
                 this.$.geneFilterIdsTextarea.value = "";
                 this.$.geneFilterRegionTextarea.value = "";
@@ -230,13 +234,14 @@
                 this.$.geneFilterIdsTextarea.value = "BRCA2";
             },
             executeQuery: function (e) {
+                console.log(this.biotypes)
                 // activate the GIF
                 $('#spinImg').show();
 
                 // We first build the query params object
                 let queryParams = {include: "id,name,biotype,chromosome,start,end"};
-                if (this.biotype.length > 0) {
-                    queryParams.biotype = this.biotype.join(",");
+                if (this.biotypes.length > 0) {
+                    queryParams.biotype = this.biotypes.join(",");
                 }
                 if (this.$.geneFilterDrugsTextarea.value != "") {
                     queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
