@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var CELLBASE_HOSTS = ["localhost:8080/cellbase-dev-v4.0", "bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0", "www.ebi.ac.uk/cellbase"];
+var CELLBASE_HOSTS = ["bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0", "localhost:8080/cellbase-dev-v4.0", "www.ebi.ac.uk/cellbase"];
 var CELLBASE_VERSION = "v4";
 var CELLBASE_SPECIES = "hsapiens";
 

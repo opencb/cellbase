@@ -15,9 +15,10 @@
   -->
 
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="cellbase-biotype-options.html">
+<link rel="import" href="../old/cellbase-biotype-options.html">
 
-<link rel="import" href="../cellbase-shared-styles.html">
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="../common/cellbase-options-list.html">
 
 <dom-module id="cellbase-gene-filter">
     <template>
@@ -108,7 +109,7 @@
                             </div>
                             <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body biotype-scroll">
-                                    <cellbase-biotype-options cellbase={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>
+                                    <cellbase-options-list cellbase-client={{cellBaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -193,9 +194,10 @@
                     type: Array,
                     value: []
                 },
-                biotype: {
+                biotypes: {
                     type: Array,
-                    notify: true
+                    value: []
+//                    notify: true
                 },
                 geneId: {
                     type: String,
@@ -213,6 +215,10 @@
                     type:Array,
                     value: []
                 }
+            },
+            ready: function() {
+                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.getBiotypes();
             },
             clear: function (e) {
                 // we empty the textareas
@@ -252,15 +258,13 @@
                 // Now we execute the query. Note that ID are preferred
                 if (this.$.geneFilterIdsTextarea.value !== "") {
                     this.cellBaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+//                    this.cellBaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams).then(success, error);
                 } else {
                     if (this.$.geneFilterRegionTextarea.value !== "") {
                         this.cellBaseClient.get('genomic','region', this.$.geneFilterRegionTextarea.value, 'gene', queryParams, {success: success, async: true});
                     }
                 }
                 $('.nav-tabs a[href="#result1"]').tab('show');
-            },
-            ready: function() {
-                this.cellBaseClient = CELLBASE_CLIENT;
             },
             _updateGeneView: function(e) {
                 this.geneId = e.srcElement.id;
@@ -283,6 +287,15 @@
                 }
 
             }
+//            ,
+//            getBiotypess: function () {
+//                console.log("em getBiotypes")
+//                var _this = this;
+//                var success = function (response) {
+//                    _this.biotypes = response.response[0].result;
+//                };
+//                this.cellBaseClient.getGeneClient(null, 'biotype', {}, {success: success, async: true});
+//            }
         });
     </script>
 </dom-module>

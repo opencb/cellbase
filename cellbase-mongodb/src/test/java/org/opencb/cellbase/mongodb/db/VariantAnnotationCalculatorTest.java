@@ -79,8 +79,7 @@ public class VariantAnnotationCalculatorTest {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(getClass().getResource("/variant-annotation-test.json.gz").getFile()))));
 
-        String[] variantArray = {"1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC"};
-//        String[] variantArray = {"1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC", "19:45411941:T:C"};
+        String[] variantArray = {"1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC", "19:45411941:T:C"};
         String line = reader.readLine();
         int i = 0;
         while (line !=null ) {
