@@ -102,9 +102,6 @@
                         ]
                     ],
                     onClickRow: function (row, $element) {
-                        console.log("rrrrrrrrrrrrrrrrrrrr")
-                        console.log(row)
-                        console.log($element)
                         _this.fire('selected', {variant: row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate});
                     }
                 });
