@@ -108,8 +108,8 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
         writeSequenceOntologyTerms(diff1Bw, variantAnnotationDiffPair.getLeft().getSequenceOntology());
         writeSequenceOntologyTerms(diff2Bw, variantAnnotationDiffPair.getRight().getSequenceOntology());
         try {
-            annotation1Bw.write(jsonObjectWriter.writeValueAsString(variantAnnotationDiffPair.getLeft().getVariant()) + "\n");
-            annotation2Bw.write(jsonObjectWriter.writeValueAsString(variantAnnotationDiffPair.getRight().getVariant()) + "\n");
+            annotation1Bw.write(jsonObjectWriter.writeValueAsString(variantAnnotationDiffPair.getLeft().getVariantAnnotation()) + "\n");
+            annotation2Bw.write(jsonObjectWriter.writeValueAsString(variantAnnotationDiffPair.getRight().getVariantAnnotation()) + "\n");
         } catch (IOException e) {
             e.printStackTrace();
             return false;

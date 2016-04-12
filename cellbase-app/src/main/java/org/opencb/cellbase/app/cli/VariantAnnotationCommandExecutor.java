@@ -141,7 +141,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         try {
 
             DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-                return entry.getFileName().toString().endsWith("VEPprocessed.txt");
+                return entry.getFileName().toString().endsWith(".vep");
             });
 
             for (Path entry : stream) {
@@ -152,7 +152,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 DataWriter dataWriter = getDataWriter(output.toString());
 
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-                ParallelTaskRunner<Variant, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
+                ParallelTaskRunner<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
                         = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
                 runner.run();
             }

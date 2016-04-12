@@ -81,11 +81,11 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
         return set;
     }
 
-    private List<Variant> createEmptyVariantList(List<VariantAnnotation> variantList) {
-        List<Variant> newVariantList = new ArrayList<>(variantList.size());
-        for (Variant variant : variantList) {
-            newVariantList.add(new Variant(variant.getChromosome(), variant.getStart(), variant.getReference(),
-                    variant.getAlternate()));
+    private List<Variant> createEmptyVariantList(List<VariantAnnotation> variantAnnotationList) {
+        List<Variant> newVariantList = new ArrayList<>(variantAnnotationList.size());
+        for (VariantAnnotation variantAnnotation : variantAnnotationList) {
+            newVariantList.add(new Variant(variantAnnotation.getChromosome(), variantAnnotation.getStart(),
+                    variantAnnotation.getReference(), variantAnnotation.getAlternate()));
         }
 
         return newVariantList;
