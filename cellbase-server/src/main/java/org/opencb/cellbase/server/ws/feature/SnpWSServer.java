@@ -20,10 +20,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.variation.Variation;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -34,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author imedina
@@ -118,9 +121,17 @@ public class SnpWSServer extends GenericRestWSServer {
     public Response getAllConsequenceTypes() {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            query.put(VariantDBAdaptor.QueryParams.REGION.key(), "22:1-50000000");
-            return createOkResponse(variationDBAdaptor.distinct(query, "displayConsequenceType"));
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//            query.put(VariantDBAdaptor.QueryParams.REGION.key(), "22:1-50000000");
+//            return createOkResponse(variationDBAdaptor.distinct(query, "displayConsequenceType"));
+
+            List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+            QueryResult<String> queryResult = new QueryResult<>("consequence_types");
+            queryResult.setNumResults(consequenceTypes.size());
+            queryResult.setResult(consequenceTypes);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -251,6 +262,19 @@ public class SnpWSServer extends GenericRestWSServer {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
             return null;
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{snpId}/starts_with")
+    @ApiOperation(httpMethod = "GET", value = "Get the genes that match the beginning of the given string")
+    public Response getByLikeQuery(@PathParam("snpId") String id) {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            return createOkResponse(variationDBAdaptor.startsWith(id, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

@@ -1,50 +1,111 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 
-<link rel="import" href="cellbase-shared-styles.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<link rel="import" href="cellbase-variation-grid.html">
+<link rel="import" href="cellbase-transcripts-view.html">
+<link rel="import" href="cellbase-transcripts-tfbs-view.html">
+<link rel="import" href="cellbase-drugs-view.html">
+<link rel="import" href="cellbase-phenotype-grid.html">
+<link rel="import" href="cellbase-expression-grid.html">
+
 
 <dom-module id="cellbase-gene-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
-        <!--<div class="view">-->
-        <!--<paper-tabs class="tabview" selected="0">-->
-        <!--<paper-tab id="view">Genome Map</paper-tab>-->
-        <!--<paper-tab id="transcript">Transcript</paper-tab>-->
-        <!--<paper-tab id="tfbs">{{cellbase}}</paper-tab>-->
-        <!--<paper-tab id="exons">Exons</paper-tab>-->
-        <!--</paper-tabs>-->
 
         <div style="width: 90%">
-            <span>{{geneId}}</span>
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#genomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
-                <li role="presentation"><a href="#transcripts" role="tab" data-toggle="tab">Transcripts</a></li>
-                <li role="presentation"><a href="#tfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                <li role="presentation" class="active"><a href="#geneViewInfo" role="tab" data-toggle="tab">{{geneId}} Info</a></li>
+                <li role="presentation"><a href="#geneViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
+                <li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
+                <li role="presentation"><a href="#geneViewVariation" role="tab" data-toggle="tab">Variation</a></li>
+                <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                <li role="presentation"><a href="#geneViewExpression" role="tab" data-toggle="tab">Expression</a></li>
+                <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation"><a href="#geneViewClinicalVariants" role="tab" data-toggle="tab">Clinical Variants</a></li>
                 <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#viewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                <li role="presentation"><a href="#geneViewPpi" role="tab" data-toggle="tab">PPI</a></li>
+                <li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
-                <div role="tabpanel" class="tab-pane active" id="genomeContext">
-                    <div id="genomeviewer" style="width: 800px"></div>
+                <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
+                    <h3>Summary</h3>
+                    Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>
+                    Biotype: {{geneObj.biotype}}<br>
+                    Location: {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   Strand: {{geneObj.strand}}<br>
+                    Source: {{geneObj.source}} - Status: {{geneObj.status}}<br>
+                    Description: {{geneObj.description}}<br>
+                    <h3>Transcripts ({{geneObj.transcripts.length}})</h3>
+                    <cellbase-transcripts-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="transcripts">
-                    <template is="dom-repeat" items="{{geneObj.transcripts}}">
-                        Name:{{item.name}}
-                        ID:{{item.id}}
-                        biotype:{{item.biotype}}
-                        <br>
-                    </template>
+
+                <div id="geneViewGenomeContext" role="tabpanel" class="tab-pane">
+                    <br>
+                    <div id="genomeviewer"></div>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="tfbs">
-                    TFBS
+
+                <div id="geneViewTranscripts" role="tabpanel" class="tab-pane">
+                    <br>
+                    <cellbase-transcripts-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
                 </div>
+
+                <div id="geneViewVariation" role="tabpanel" class="tab-pane">
+                    <cellbase-variation-grid cellbase-client="{{cellBase}}" data="{{variations}}"></cellbase-variation-grid>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
+                    <br>
+                    <cellbase-transcritps-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
+                </div>
+
+                <div id="geneViewExpression" role="tabpanel" class="tab-pane">
+                    <br>
+                    <cellbase-expression-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.expression}}"></cellbase-expression-grid>
+                </div>
+
+                <div id="geneViewPhenotype" role="tabpanel" class="tab-pane">
+                    <cellbase-phenotype-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-grid>
+                </div>
+
+                <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
+                    Clinical Variants
+                </div>
+
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
-                    Drugs
-                    <!--<cellbase-view-drugs drugs="{{geneObj.drugs}}"></cellbase-view-drugs>-->
+                    <br>
+                    <cellbase-drugs-view cellbase="{{cellbase}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
                 </div>
-                <div role="tabpanel" class="tab-pane" id="viewPhenotype">
-                    Phenotype
+
+
+                <div id="geneViewPpi" role="tabpanel" class="tab-pane">
+                    PPI
+                    <!--<cell-maps-element></cell-maps-element>-->
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="geneViewPdb">
+                    PDB
+                    <canvas class="ChemDoodleWebComponent" id="pdb_canvas" width="600" height="600" style="width: 800px; height: 800px; ">
+                        This browser does not support HTML5/Canvas.
+                    </canvas>
                 </div>
             </div>
         </div>
@@ -65,11 +126,14 @@
                 },
                 geneObj: {
                     type: Object
+                },
+                variations: {
+                    type: Array
                 }
             },
             _geneIdChanged: function(newValue, oldValue) {
+                let _this = this;
                 if (typeof this.genomeViewer !== "undefined") {
-                    let _this = this;
                     let success = function (response) {
                         let firstGene = response.response[0].result[0];
                         if (typeof firstGene !== "undefined") {
@@ -79,28 +143,39 @@
                             alert("Gene ID not valid: " + _this.geneId);
                         }
                         _this.geneObj = firstGene;
+                        console.log(_this.geneObj)
+                        // testing 3D
+                        _this.display3D();
+                        _this.displayNetworkViewer();
                     };
                     let error = function (response) {
                         alert("Gene ID not valid: " + _this.geneId)
                     };
                     CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
                 }
+
+                // Variation
+                let success = function (response) {
+                    let variations = response.response[0].result;
+                    console.log(variations)
+                    _this.variations = variations;
+                };
+                let error = function (response) {
+                    alert("Gene ID not valid: " + _this.geneId)
+                };
+                CELLBASE_CLIENT.getGeneClient(this.geneId, 'snp', {}, {success: success, error: error, async: true});
+
             },
             ready: function() {
-                console.log(this.localName + '#' + this.id + ' has local DOM initialized');
-                console.log(CELLBASE_CLIENT)
                 this.cellbase = CELLBASE_CLIENT._config.version;
-//                this.$.tfbs.textContent = cellBaseClient._config.version;
                 var success = function (response) {
                     console.log("Success from user:")
                     console.log(response)
-                    console.log(response.response[0].result[0].start)
                 };
                 CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
 
+                this.cellBaseClient = CELLBASE_CLIENT;
                 this.genomeViewer;
-                console.log(document.querySelector('#genomeviewer'))
-                console.log(this.$$('#genomeviewer'))
                 this.renderGenomeViewer();
             },
             renderGenomeViewer: function() {
@@ -271,6 +346,75 @@
                 this.genomeViewer.addTrack(tracks);
                 this.genomeViewer.draw();
 
+            },
+            displayNetworkViewer: function() {
+//                var networkViewer = new NetworkViewer({
+//                    target: target,
+//                    autoRender: true,
+//                    sidePanel: false,
+//                    border: false,
+//                    width: this.width,
+//                    height: this.height - topOffset,
+//                    session: this.session,
+//                    handlers: {
+//                        'select:vertices': function (e) {
+//                            _this.vertexAttributeEditWidget.checkSelectedFilter();
+//                        },
+//                        'select:edges': function (e) {
+//                            _this.edgeAttributeEditWidget.checkSelectedFilter();
+//                        },
+//                        'change:vertexAttributes': function (e) {
+//                            _this.toolbar.setVertexAttributes(e.sender.attributes);
+//                        },
+//                        'change:edgeAttributes': function (e) {
+//
+//                        }
+//                    }
+//                });
+
+//                alchemy.begin({
+//                    dataSource: "actors.json",
+//                    nodeCaption: 'name',
+//                    nodeMouseOver: 'name',
+//                    cluster: true,
+//                    clusterColours: ["#1B9E77","#D95F02","#7570B3","#E7298A","#66A61E","#E6AB02"]});
+            },
+            display3D: function() {
+//                var pdb_name=este.title;
+
+                ChemDoodle.default_backgroundColor = '#000000';
+
+//                                        var pdb = new ChemDoodle.TransformCanvas3D('pdb_canvas_'+pdb_name, 300, 300);
+                var pdb = new ChemDoodle.TransformCanvas3D('pdb_canvas', 600, 600);
+                if(!pdb.gl){
+                    pdb.emptyMessage = 'Your browser does not support WebGL';
+                    pdb.displayMessage();
+                }else{
+                    pdb.specs.set3DRepresentation('Ball and Stick');
+                    pdb.specs.proteins_ribbonCartoonize = true;
+                    pdb.handle = null;
+                    pdb.timeout = 15;
+                    pdb.startAnimation = ChemDoodle._AnimatorCanvas.prototype.startAnimation;
+                    pdb.stopAnimation = ChemDoodle._AnimatorCanvas.prototype.stopAnimation;
+                    pdb.isRunning = ChemDoodle._AnimatorCanvas.prototype.isRunning;
+                    pdb.dblclick = ChemDoodle.RotatorCanvas.prototype.dblclick;
+                    pdb.nextFrame = function(delta){
+                        var matrix = [];
+                        mat4.identity(matrix);
+                        var change = delta/1000;
+                        var increment = Math.PI/15;
+                        mat4.rotate(matrix, increment*change, [ 1, 0, 0 ]);
+                        mat4.rotate(matrix, increment*change, [ 0, 1, 0 ]);
+                        mat4.rotate(matrix, increment*change, [ 0, 0, 1 ]);
+                        mat4.multiply(this.rotationMatrix, matrix);
+                    };
+
+                    $.get('http://www.rcsb.org/pdb/files/1N0W.pdb', function(data) {
+                        var mol = ChemDoodle.readPDB(data);
+                        pdb.loadMolecule(mol);
+                        pdb.startAnimation();
+                    });
+                }
             }
         });
     </script>

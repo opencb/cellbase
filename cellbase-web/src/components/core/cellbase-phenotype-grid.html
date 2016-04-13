@@ -1,0 +1,50 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-phenotype-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div>
+            <br>
+            <table id="phenotypeTable" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+                <thead>
+                <tr>
+                    <th data-field="id">Id</th>
+                    <th data-field="name" data-sortable="true">Name</th>
+                    <th data-field="hpo" data-sortable="true">HPO</th>
+                    <th data-field="score" data-sortable="true">Score</th>
+                    <th data-field="source">Source</th>
+                    <th data-field="numberOfPubmeds" data-sortable="true">Number of Pubmeds</th>
+                    <th data-field="associationTypes">Association Types</th>
+                    <th data-field="sources">Sources</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-phenotype-grid',
+            properties: {
+                cellbase: {
+                    type: Object,
+                    notify: true
+                },
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'phenotypeChanged'
+                }
+            },
+            phenotypeChanged: function() {
+                $('#phenotypeTable').bootstrapTable('destroy');
+                $('#phenotypeTable').bootstrapTable({
+                    data: this.data
+                });
+            }
+        });
+    </script>
+</dom-module>

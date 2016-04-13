@@ -1,0 +1,243 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="../common/cellbase-options-list.html">
+
+<dom-module id="cellbase-variation-filter">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .biotype-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
+            }
+        </style>
+
+        <div>
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#variationFilter" role="tab" data-toggle="tab">Filter</a></li>
+                <li role="presentation"><a href="#variationResult" role="tab" data-toggle="tab">Result</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="variationFilter">
+                    <button type="button" class="btn btn-default" on-click="clear">Clear</button>
+                    <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
+                    <button type="button" class="btn btn-default" on-click="executeQuery">Submit</button>
+                    <br>
+
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h4 class="panel-title">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#variationIdSearch"
+                                       aria-expanded="true" aria-controls="variationIdSearch">
+                                        Variation IDs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="variationIdSearch" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                                <div class="panel-body">
+                                    <form class="form-inline">
+                                        Search:
+                                        <div style="float: right">
+                                            <input id="variationIdText" type="text" class="form-control" list="variation-datalist" value="" on-keyup="callVariationAutocomplete">
+                                            <datalist id="variation-datalist">
+                                                <template is="dom-repeat" items="{{autocompleteData}}">
+                                                    <option value="{{item.start}}">
+                                                </template>
+                                            </datalist>
+                                            <button type="button" class="btn btn-default btn-sm form-control" on-click="addVariationId">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <textarea id="variationFilterIdsTextarea" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingTwo">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#variationRegion" aria-expanded="false" aria-controls="region">
+                                        Region
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="variationRegion" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                <div class="panel-body">
+                                    <textarea id="regionList" class="form-control clearable" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#consequenceTypes" aria-expanded="false" aria-controls="consequenceTypes">
+                                        Select Consequence Types
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="consequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                <div class="panel-body biotype-scroll">
+                                    <!--<cellbase-consequence-types-options cellbase-client={{cellBaseClient}} biotypes={{biotype}}></cellbase-consequence-types-options>-->
+                                    <cellbase-options-list cellbase-client={{cellBaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFive">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#variationPopulationFrequency" aria-expanded="false" aria-controls="phenotype">
+                                        Population Frequencies
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="variationPopulationFrequency" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+                                <div class="panel-body">
+                                    <textarea class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Result tab content -->
+                <div role="tabpanel" class="tab-pane" id="variationResult">
+                    <div class="gene-names-display">
+                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <br>
+                        <template is="dom-repeat" items="{{result}}">
+                            <div>
+                                <b on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.ids}}</b>
+                                <i>{{item.annotation.displayConsequenceType}}</i><br>
+                                {{item.chromosome}}:{{item.start}}-{{item.end}}
+                                <hr>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-variation-filter',
+            properties: {
+                allIds: {
+                    type: Array,
+                    value: []
+                },
+                variationId: {
+                    type: String,
+                    notify: true
+                },
+                cellBaseClient: {
+                    type: Object,
+                    notify: true
+                },
+                result: {
+                    type: Array,
+                    value: []
+                },
+                autocompleteData: {
+                    type: Array,
+                    value: []
+                },
+                consequenceTypes: {
+                    type: Array,
+                    value: []
+                }
+            },
+            clear: function (e) {
+                // we empty the textareas
+                this.$.variationFilterIdsTextarea.value = "";
+                this.$.geneFilterDrugsTextarea.value = "";
+            },
+            loadExample: function (e) {
+                this.$.variationFilterIdsTextarea.value = "rs666";
+            },
+            executeQuery: function (e) {
+                // activate the GIF
+
+                // We first build the query params object
+                let queryParams = {include: "ids,chromosome,start,end,annotation.displayConsequenceType"};
+//                if (this.$.geneFilterDrugsTextarea.value != "") {
+//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
+//                }
+
+                //
+                this.result= [];
+                let _this = this;
+                let success = function (response) {
+                    for(let i in response.response) {
+                        for(let j in response.response[i].result) {
+                            _this.push('result',response.response[i].result[j]);
+                        }
+                    }
+                    console.log(_this.result)
+                    // remove the GIF
+                };
+
+                // Now we execute the query. Note that ID are preferred
+                if (this.$.variationFilterIdsTextarea.value !== "") {
+                    this.cellBaseClient.get('feature','snp', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                } else {
+                    if (this.$.regionList.value !== "") {
+                        this.cellBaseClient.get('genomic','region', this.$.regionList.value, 'variation', queryParams, {success: success, async: true});
+                    }
+                }
+
+                $('.nav-tabs a[href="#variationResult"]').tab('show');
+            },
+            ready: function() {
+                this.cellBaseClient = CELLBASE_CLIENT;
+            },
+            _updateGeneView: function(e) {
+                this.variationId = e.srcElement.id;
+            },
+            addVariationId: function(e) {
+                var temp = this.$$('#variationIdText').value;
+                if (this.allIds.indexOf(temp) == -1){
+                    this.push('allIds', temp);
+                }
+                this.$$('#variationIdText').value = '';
+                this.$.variationFilterIdsTextarea.value = this.allIds;
+            },
+            callVariationAutocomplete: function(e) {
+                if (this.$$('#variationIdText').value.length > 6) {
+                    let _this = this;
+                    let success = function (response) {
+                        _this.autocompleteData = response.response[0].result;
+                    };
+                    _this.cellBaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
+                }
+
+            }
+        });
+    </script>
+</dom-module>

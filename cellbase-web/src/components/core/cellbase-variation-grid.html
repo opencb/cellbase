@@ -1,0 +1,120 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-variation-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div style="padding: 10px; ">
+            <br>
+            <table id="table" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+                   <!--data-detail-view="true" data-detail-formatter="detailFormatter">-->
+                <!--<thead>-->
+                <!--<tr>-->
+                <!--<th data-field="detail-view"></th>-->
+                <!--<th data-field="chromosome" data-sortable="true">chromosome</th>-->
+                <!--<th data-field="start" data-sortable="true" width="200">start</th>-->
+                <!--<th data-field="ends" data-sortable="true">end</th>-->
+                <!--<th data-field="ids" data-sortable="true">ids</th>-->
+                <!--</tr>-->
+                <!--</thead>-->
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-variation-grid',
+            properties: {
+                title: {
+                    type: String,
+                    value: "Select biotypes"
+                },
+                cellbaseClient: {
+                    type: Object,
+                    notify: true
+                },
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'render'
+                }
+            },
+            render: function() {
+                $('#table').bootstrapTable('destroy');
+                $('#table').bootstrapTable({
+                    data: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'ID',
+//                                field: 'ids',
+                                formatter: this.idFormatter,
+                                sortable: true
+                            },
+                            {
+                                title: 'Alleles',
+                                formatter: this.refAltFormatter
+                            },
+                            {
+                                title: 'Location',
+                                formatter: this.locationFormatter
+                            },
+                            {
+                                title: 'Type',
+                                field: 'type'
+                            },
+                            {
+                                title: 'HGVS',
+                                field: 'hgvs.genomic'
+                            },
+                            {
+                                title: 'Display Consequence Type',
+                                field: 'annotation.displayConsequenceType',
+                                sortable: true
+                            },
+                            {
+                                title: 'Ancestral Allele',
+                                field: 'annotation.ancestralAllele'
+                            },
+                            {
+                                title: 'MAF',
+                                formatter: this.mafFormatter
+                            }
+                        ]
+                    ]
+                });
+            },
+            idFormatter: function (value, row, index) {
+                return '<a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + row.ids[0] + '">' + row.ids + '</a>'
+            },
+            refAltFormatter: function (value, row, index) {
+                return row.reference + "/" + row.alternate;
+            },
+            locationFormatter: function (value, row, index) {
+                let location = row.chromosome + ":" + row.start + "-" + row.end;
+                return '<a target="_blank" href="http://genomemaps.org/?region=' + location + '">' + location + '</a>'
+            },
+            mafFormatter: function (value, row, index) {
+                return row.annotation.minorAlleleFreq + " (" + row.annotation.minorAllele + ")";
+            }
+        });
+    </script>
+</dom-module>

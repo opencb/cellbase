@@ -116,8 +116,8 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getByLikeQuery(@PathParam("id") String id) {
         try {
             parseQueryParams();
-            XRefDBAdaptor x = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
-            return createOkResponse(x.startsWith(id, queryOptions));
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            return createOkResponse(xRefDBAdaptor.startsWith(id, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

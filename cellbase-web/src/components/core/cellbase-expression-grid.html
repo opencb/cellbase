@@ -1,0 +1,49 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-expression-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div>
+            <br>
+            <table id="expressionTable" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+                <thead>
+                <tr>
+                    <th data-field="experimentalFactor" data-sortable="true">Experimental Factor</th>
+                    <th data-field="factorValue" data-sortable="true">Factor Value</th>
+                    <th data-field="experimentId" data-sortable="true">Experiment ID</th>
+                    <th data-field="technologyPlatform">Technology Platform</th>
+                    <th data-field="expression" data-sortable="true">Expression</th>
+                    <th data-field="associationTypes">Association Types</th>
+                    <th data-field="pvalue">Pvalue</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-expression-grid',
+            properties: {
+                cellbase: {
+                    type: Object,
+                    notify: true
+                },
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'expressionChanged'
+                }
+            },
+            expressionChanged: function() {
+                $('#expressionTable').bootstrapTable('destroy');
+                $('#expressionTable').bootstrapTable({
+                    data: this.data
+                });
+            }
+        });
+    </script>
+</dom-module>
