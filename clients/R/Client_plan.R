@@ -13,7 +13,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, species=species,
   skip=0
   num_results=1000
   container=list()
-  while(is.null(file)&all(num_results==server_limit)){
+  while(is.null(file)&all(unlist(num_results)==server_limit)){
     grls <- createURL(host=host, version=version, species=species, categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip = skip)
     skip=skip+1000
     content <- callREST(grls = grls)
@@ -36,8 +36,7 @@ readIds <- function(file=file)
   demo <- Rsamtools::TabixFile(file,yieldSize = batch_size*num_threads)
   tbx <- open(demo)
   i <- 1
-  while (i <=num_iter)
-    {
+  while (i <=num_iter) {
     inter <- scanTabix(tbx)[[1]]
     if(length(inter)==0)break
     whim <- lapply(inter, function(x){strsplit(x[1],split = "\t")[[1]][c(1,2,4,5)]})
@@ -128,7 +127,3 @@ parseResponse <- function(content,parallel=FALSE){
   }
   return(list(result=ds,num_results=nums))
 }
-
-
-
-More work to be done
