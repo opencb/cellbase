@@ -47,11 +47,8 @@
 
             properties: {
                 title: {
-                    tyoe: String,
+                    type: String,
                     value: "Select species"
-                },
-                taxonomies: {
-                    type: Array
                 },
                 speciesList: {
                     type: Array,
@@ -60,13 +57,27 @@
                 class: {
                     type: String,
                     value: ""
+                },
+                keys: {
+                    type: Array,
+                    value: []
                 }
             },
             ready: function () {
-                this.speciesList = SPECIES;
-                this.keys = Object.keys(SPECIES);
 
+//                this.speciesList = SPECIES;
+//                this.keys = Object.keys(SPECIES);
                 let _this = this;
+                var success = function (response) {
+                    console.log("OMG!!!!")
+                    _this.speciesList = response.response[0].result[0];
+                    _this.keys = Object.keys(_this.speciesList);
+                };
+
+//                CELLBASE_CLIENT.getMeta("species", {success: success, async: true});
+                CELLBASE_CLIENT.getMeta("species", {async: true}).then(success);
+
+//                let _this = this;
                 $(document).on('click', '.cellbase-species-menu li a', function() {
                     console.log("event")
                     _this.title = $(this).text();
@@ -75,7 +86,7 @@
             },
             _getSpeciesArrayByTaxon: function(taxon) {
                 var speciesArray = [];
-                let taxonSpecies = SPECIES[taxon];
+                let taxonSpecies = this.speciesList[taxon];
                 for (let speciesIdx in taxonSpecies) {
                     let assemblies = taxonSpecies[speciesIdx].assemblies;
                     for (let assemblyIdx in assemblies) {

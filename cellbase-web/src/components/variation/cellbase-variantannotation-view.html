@@ -23,15 +23,15 @@
         <style is="custom-style" include="cellbase-shared-styles"></style>
         <div>
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#variantAnnotationConsequenceTypes" role="tab" data-toggle="tab">Consequence Types</a></li>
-                <li role="presentation"><a href="#variantAnnotationPopulationFrequencies" role="tab" data-toggle="tab">Population Frequencies</a></li>
-                <li role="presentation"><a href="#variantAnnotationClinical" role="tab" data-toggle="tab">Gene Trait Association</a></li>
-                <li role="presentation"><a href="#variantAnnotationConservation" role="tab" data-toggle="tab">Conservation</a></li>
-                <li role="presentation"><a href="#variantAnnotationCadd" role="tab" data-toggle="tab">CADD</a></li>
+                <li role="presentation" class="active"><a href="#{{prefix}}variantAnnotationConsequenceTypes" role="tab" data-toggle="tab">Consequence Types</a></li>
+                <li role="presentation"><a href="#{{prefix}}variantAnnotationPopulationFrequencies" role="tab" data-toggle="tab">Population Frequencies</a></li>
+                <li role="presentation"><a href="#{{prefix}}variantAnnotationClinical" role="tab" data-toggle="tab">Gene Trait Association</a></li>
+                <li role="presentation"><a href="#{{prefix}}variantAnnotationConservation" role="tab" data-toggle="tab">Conservation</a></li>
+                <li role="presentation"><a href="#{{prefix}}variantAnnotationCadd" role="tab" data-toggle="tab">CADD</a></li>
             </ul>
 
             <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="variantAnnotationConsequenceTypes">
+                <div role="tabpanel" class="tab-pane active" id="{{prefix}}variantAnnotationConsequenceTypes">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -60,7 +60,7 @@
                     </table>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="variantAnnotationPopulationFrequencies">
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationPopulationFrequencies">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -87,7 +87,7 @@
                     </table>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="variantAnnotationClinical">
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationClinical">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -112,7 +112,7 @@
                     </table>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="variantAnnotationConservation">
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationConservation">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -131,7 +131,7 @@
                     </table>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="variantAnnotationCadd">
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationCadd">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -163,6 +163,9 @@
                     observer: '_variantChanged'
                 },
                 variantAnnotation: {
+                    type: String
+                },
+                prefix: {
                     type: String
                 }
             },

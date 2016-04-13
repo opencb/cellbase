@@ -40,11 +40,10 @@
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.css">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.js"></script>
 
-    <!-- build:js jsorolla.js -->
     <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client.js"></script>
     <script type="text/javascript" src="../lib/jsorolla/src/lib/cache/indexeddb-cache.js"></script>
     <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client-config.js"></script>
-    <!-- /build -->
+    <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/rest-client.js"></script>
 
     <link rel="stylesheet" href="../lib/jsorolla/styles/css/style.css">
     <script type="text/javascript" src="../lib/jsorolla/build/1.1.9/genome-viewer/gv-config.js"></script>
@@ -64,6 +63,7 @@
     <!--<script type="text/javascript" src="../bower_components/vendor/ChemDoodleWeb.js"></script>-->
 
 
+    <!--<link rel="import" href="build.html">-->
     <!--custom-elements-->
     <link rel="import" href="components/shared/cellbase-species-menu.html">
     <link rel="import" href="components/core/cellbase-gene-panel.html">
@@ -245,7 +245,6 @@
                 </div>
                 <div class="collapse content" id="transcriptPanel">
                     Transcript
-                    <cellbase-species-menu></cellbase-species-menu>
                 </div>
                 <div class="collapse content" id="variationPanel">
                     <h2>Variation</h2>
