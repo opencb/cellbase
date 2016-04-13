@@ -92,7 +92,7 @@ module.exports = function(grunt) {
                 },
                 files: {
                     // Target-specific file lists and/or options go here.
-                    '<%= build.path %>/build.html': 'src/build.html'
+                    '<%= build.path %>/build.html': 'src/index.html'
                 }
             }
         },
@@ -105,11 +105,11 @@ module.exports = function(grunt) {
                 options: {
                     patterns: [
                         {
-                            match: /..\/bower_components/g,
+                            match: /\.\.\/bower_components/g,
                             replacement: 'vendor'
                         },
                         {
-                            match: /..\/lib\//g,
+                            match: /\.\.\/lib\//g,
                             replacement: ''
                         },
                     ]
@@ -131,7 +131,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-replace');
 
-    grunt.registerTask('default', ['clean', 'jshint', 'copy', 'concat', 'uglify', 'processhtml', 'replace', 'vulcanize']);
+    grunt.registerTask('default', ['clean', 'jshint', 'copy', 'concat'  , 'processhtml', 'replace', 'vulcanize']);
     grunt.registerTask('cl', ['clean']);
     // grunt.registerTask('test', ['clean']);
 };
