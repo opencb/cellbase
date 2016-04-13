@@ -1,18 +1,29 @@
 fetchCellbase <- function(file=NULL,host=host, version=version, species=species, categ, subcateg,ids,resource,filter=NULL,...){
-  #ids <- ids
   categ <- paste0(categ,"/",sep="")
   subcateg <- paste0(subcateg,"/",sep="")
   if(is.null(file)){
+    ids <- toupper(ids)
     ids <- paste0(ids,collapse = ",")
     ids <- paste0(ids,"/",collapse = "")
   }else{
     ids <- readIds(file)
   }
-  
-  grls <- createURL(host=host, version=version, species=species, categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL) 
-  content <- callREST(grls = grls)
-  cell <- parseResponse(content=content)
-  return(cell)
+  i=1
+  server_limit=1000
+  skip=0
+  num_results=1000
+  container=list()
+  while(is.null(file)&all(num_results==server_limit)&i<50){
+    grls <- createURL(host=host, version=version, species=species, categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip = skip)
+    skip=skip+1000
+    content <- callREST(grls = grls)
+    res_list <- parseResponse(content=content)
+    num_results <- res_list$num_results
+    cell <- res_list$result
+    container[[i]] <- cell
+    i=i+1
+  }
+  return(rbind.pages(container))
 }
 
 readIds <- function(file=file)
@@ -41,10 +52,11 @@ readIds <- function(file=file)
 }
   
   #create a list of character vectors of urls
-createURL <- function(file=NULL,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL)
+createURL <- function(file=NULL,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip=0)
   {
+  skip=paste0("?","skip=",skip)
   if(is.null(file)){
-    grls <- paste0(host,version,species,categ,subcateg,ids,resource,filter,collapse = "")
+    grls <- paste0(host,version,species,categ,subcateg,ids,resource,filter,skip,collapse = "")
     
   }else{
     grls <- list()
@@ -56,20 +68,7 @@ createURL <- function(file=NULL,host=host,version=version,species=species,categ=
       grls[[i]] <- gsub("chr","",tmp)
     }
   }
-  # host <- "http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"
-  # #host <- paste0(host,"/",sep="")
-  # version <- "v3"
-  # version <- paste0(version,"/",sep="")
-  # species <- "hsapiens"
-  # species <- paste0(species,"/",sep="")
-  # categ <- "genomic"
-  # categ <- paste0(categ,"/",sep="")
-  # # subcateg <- "variant"
-  # subcateg <- paste0(subcateg,"/",sep="")
-  # ids <- paste0(ids,collapse = ",")
-  # ids <- paste0(ids,"/",collapse = "")
-  # resource <- "/full_annotation"
-  # filter <- list()
+
   
   #grls <- paste0(host,version,species,categ,subcateg,ids,resource,filter,collapse = "")
   #gbase <- "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/"
@@ -77,6 +76,8 @@ createURL <- function(file=NULL,host=host,version=version,species=species,categ=
   return(grls)
 }
 callREST <- function(grls,async=FALSE){
+  content <- list()
+  
   require(RCurl)
   if(is.null(file)){
     content <- getURI(grls)
@@ -98,13 +99,14 @@ callREST <- function(grls,async=FALSE){
   
   return(content)
 }
-parseResponse <- function(content,parallel=TRUE){
+parseResponse <- function(content,parallel=FALSE){
+ 
   require(jsonlite)
   if(parallel==TRUE){
     library(parallel)
     library(doMC)
-    numcores <- 4
-    registerDoMC(numcores)
+    num_threads <- 4
+    registerDoMC(num_threads)
     ### Extracting the content in parallel
     js <- mclapply(content, function(x)fromJSON(x),mc.cores=num_threads)
     res <- mclapply(js, function(x)x$response$result,mc.cores=num_threads)
@@ -118,15 +120,14 @@ parseResponse <- function(content,parallel=TRUE){
   }else{
   js <- lapply(content, function(x)fromJSON(x))
   ares <- lapply(js, function(x)x$response$result)
+  nums <- lapply(js, function(x)x$response$numResults)
   ds <- pblapply(ares,function(x)rbind.pages(x))
-  ### Important to get correct merging of dataframe
+  ### Important to get correct vertical binding of dataframes
   names(ds) <- NULL
   ds <- rbind.pages(ds)
   }
-  return(ds)
-  
+  return(list(result=ds,num_results=nums))
 }
-
 
 
 
