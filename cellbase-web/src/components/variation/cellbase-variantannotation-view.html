@@ -85,6 +85,7 @@
                         </template>
                         </tbody>
                     </table>
+                    <div id="container"></div>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationClinical">
@@ -177,6 +178,69 @@
                 var success = function (response) {
                     console.log(response)
                     _this.variantAnnotation = response.response[0].result[0];
+
+                    let popArray = [];
+                    let mafArray = [];
+                    for (let i = 0; i < _this.variantAnnotation.populationFrequencies.length; i++) {
+                        popArray.push(_this.variantAnnotation.populationFrequencies[i].study + "-" + _this.variantAnnotation.populationFrequencies[i].population);
+                        mafArray.push(Math.min(_this.variantAnnotation.populationFrequencies[i].refAlleleFreq, _this.variantAnnotation.populationFrequencies[i].altAlleleFreq))
+                    }
+                    console.log(mafArray)
+
+                    $('#container').highcharts({
+                        chart: {
+                            type: 'bar'
+                        },
+                        title: {
+                            text: 'Population Frequencies'
+                        },
+                        xAxis: {
+                            categories: popArray,
+                            title: {
+                                text: null
+                            }
+                        },
+                        yAxis: {
+                            min: 0,
+                            title: {
+                                text: 'Minor Allele Frequency (MAF)',
+                                align: 'high'
+                            },
+                            labels: {
+                                overflow: 'justify'
+                            },
+                            max: 0.5
+                        },
+//                        tooltip: {
+//                            valueSuffix: ' millions'
+//                        },
+                        plotOptions: {
+                            bar: {
+                                dataLabels: {
+                                    enabled: true
+                                }
+                            }
+                        },
+                        legend: {
+                            layout: 'vertical',
+                            align: 'right',
+                            verticalAlign: 'top',
+                            x: -40,
+                            y: 80,
+                            floating: true,
+                            borderWidth: 1,
+                            backgroundColor: ((Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'),
+                            shadow: true
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        series: [{
+                            name: 'Minor Allele Frequency (MAF)',
+                            data: mafArray
+                        }]
+                    });
+
                 };
                 this.cellBaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {success: success, async: true});
             }

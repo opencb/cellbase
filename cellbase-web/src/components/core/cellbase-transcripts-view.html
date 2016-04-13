@@ -70,13 +70,13 @@
         <!--Tab representation for Exons, Xrefs, Sequence-->
             <div>
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#transcriptViewExons" role="tab" data-toggle="tab">Exons</a></li>
-                <li role="presentation"><a href="#transcriptViewXrefs" role="tab" data-toggle="tab">Xrefs</a></li>
-                <li role="presentation"><a href="#transcriptViewSequence" role="tab" data-toggle="tab">Sequence</a></li>
+                <li role="presentation" class="active"><a href="#{{prefix}}transcriptViewExons" role="tab" data-toggle="tab">Exons</a></li>
+                <li role="presentation"><a href="#{{prefix}}transcriptViewXrefs" role="tab" data-toggle="tab">Xrefs</a></li>
+                <li role="presentation"><a href="#{{prefix}}transcriptViewSequence" role="tab" data-toggle="tab">Sequence</a></li>
             </ul>
 
             <div class="tab-content">
-                <div id="transcriptViewExons" role="tabpanel" class="tab-pane active">
+                <div id="{{prefix}}transcriptViewExons" role="tabpanel" class="tab-pane active">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -103,11 +103,26 @@
                     </table>
                 </div>
 
-                <div id="transcriptViewXrefs" role="tabpanel" class="tab-pane">
-                    XRefs
+                <div id="{{prefix}}transcriptViewXrefs" role="tabpanel" class="tab-pane">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Display Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{selected.xrefs}}" as="xref">
+                            <tr>
+                                <td>{{xref.id}}</td>
+                                <td>{{xref.dbDisplayName}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div id="transcriptViewSequence" role="tabpanel" class="tab-pane">
+                <div id="{{prefix}}transcriptViewSequence" role="tabpanel" class="tab-pane">
                     <br>
                         <template is="dom-repeat" items="{{selected.exons}}" as="exonObject">
                             Exon ID: {{exonObject.id}} <br>
@@ -133,6 +148,9 @@
                 exons: {
                     type: Array,
                     value: []
+                },
+                prefix: {
+                    type: String
                 }
             },
             loadTabs: function (e){

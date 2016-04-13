@@ -56,7 +56,7 @@
                     Source: {{geneObj.source}} - Status: {{geneObj.status}}<br>
                     Description: {{geneObj.description}}<br>
                     <h3>Transcripts ({{geneObj.transcripts.length}})</h3>
-                    <cellbase-transcripts-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
+                    <cellbase-transcripts-view data="{{geneObj.transcripts}}" prefix="geneViewInfo"></cellbase-transcripts-view>
                 </div>
 
                 <div id="geneViewGenomeContext" role="tabpanel" class="tab-pane">
@@ -66,7 +66,7 @@
 
                 <div id="geneViewTranscripts" role="tabpanel" class="tab-pane">
                     <br>
-                    <cellbase-transcripts-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}"></cellbase-transcripts-view>
+                    <cellbase-transcripts-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}" prefix="geneView"></cellbase-transcripts-view>
                 </div>
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
