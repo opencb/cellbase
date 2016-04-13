@@ -345,6 +345,12 @@ public class CliOptionsParser {
                 required = false, arity = 1)
         public String chromosomeList;
 
+        @Parameter(names = {"--benchmark"}, description = "Run variant annotation benchmark. If this flag is enabled,"
+                + "a directory containing a list of Variant Effect Predictor (VEP) files is expected at the -i parameter." +
+                "All .txt files within the directory will be processed - the directory must contain only .txt files that " +
+                "should be tested",
+                required = false, arity = 0)
+        public boolean benchmark;
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
