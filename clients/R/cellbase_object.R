@@ -1,22 +1,22 @@
 library(methods)
 source("Client_plan.R")
 #####################################################################################################
- # The CellbaseQuery class defintion 
+# The CellbaseQuery class defintion 
 CellbaseQuery <- setClass("CellbaseQuery",
-            slots = c(config="list",hosts="vector",species="list",categories="vector"),
-            prototype = prototype(
-  config=list(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
-              version = "v4/",species="hsapiens/",batch_size=200,num_threads=4),
-  hosts=c("http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"),
-  species=list(human="hsapiens",mouse="mmusculus",rat="rnorvegicus",chimp="ptroglodytes",
-               gorilla="ggorilla", orangutan="pabelii",macaque="mmulatta",pig="sscrofa",
-               dog="cfamiliaris",horse="ecaballus",rabbit="ocuniculus",chicken="ggallus",
-               cow="btaurus",cat="fcatus",zebrafish="drerio",fruitfly="dmelanogaster",
-               mosquito="agambiae",worm="celegans",yeast="scerevisiae",
-               malaria_parasite="pfalciparum"),
-  categories=c("Genomic","Feature","Regulatory","Network")
-               )
-  )
+                          slots = c(config="list",hosts="vector",species="list",categories="vector"),
+                          prototype = prototype(
+                            config=list(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
+                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=4),
+                            hosts=c("http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"),
+                            species=list(human="hsapiens",mouse="mmusculus",rat="rnorvegicus",chimp="ptroglodytes",
+                                         gorilla="ggorilla", orangutan="pabelii",macaque="mmulatta",pig="sscrofa",
+                                         dog="cfamiliaris",horse="ecaballus",rabbit="ocuniculus",chicken="ggallus",
+                                         cow="btaurus",cat="fcatus",zebrafish="drerio",fruitfly="dmelanogaster",
+                                         mosquito="agambiae",worm="celegans",yeast="scerevisiae",
+                                         malaria_parasite="pfalciparum"),
+                            categories=c("Genomic","Feature","Regulatory","Network")
+                          )
+)
 
 ##### Methods for CellbaseQuery objects
 #  The show method for cellbaseQuery class
@@ -46,17 +46,81 @@ setMethod("getCellbase", "CellbaseQuery",  definition = function(object,file=NUL
 setGeneric("getSnpsByGene", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getSnpsByGene"))
 setMethod("getSnpsByGene", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
   
-    host <- object@config$host
-    version <- object@config$version
-    species <- object@config$species
-    categ <- "feature"
-    subcateg<- "gene"
-    ids <- ids
-    resource <- "snp"
-    result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
-    data <- CellbaseResult(cellbaseData=result)
-    return(data)
- 
+  host <- object@config$host
+  version <- object@config$version
+  species <- object@config$species
+  categ <- "feature"
+  subcateg<- "gene"
+  ids <- ids
+  resource <- "snp"
+  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+  
+})
+# A convienance method to get all snps that are associated withspecific disease or phenotype
+setGeneric("getSnpsByPhenotype", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getSnpsByPhenotype"))
+setMethod("getSnpsByPhenotype", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+  
+  host <- object@config$host
+  version <- object@config$version
+  species <- object@config$species
+  categ <- "genomic"
+  subcateg<- "variant"
+  ids <- ids
+  resource <- "phenotype"
+  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+  
+})
+
+# A convienance method to get all gene that are associated with specific clinical condition
+setGeneric("getGenesByClinical", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getGenesByClinical"))
+setMethod("getGenesByClinical", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+  
+  host <- object@config$host
+  version <- object@config$version
+  species <- object@config$species
+  categ <- "feature"
+  subcateg<- "gene"
+  ids <- ids
+  resource <- "clinical"
+  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+  
+})
+# A convienance method to get all clinical variants in a specific region
+setGeneric("getClinvarByRegion", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getClinvarByRegion"))
+setMethod("getClinvarByRegion", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+  
+  host <- object@config$host
+  version <- object@config$version
+  species <- object@config$species
+  categ <- "genomic"
+  subcateg<- "region"
+  ids <- ids
+  resource <- "clinical"
+  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+  
+})
+setGeneric("getGenesByRegion", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getGenesByRegion"))
+setMethod("getGenesByRegion", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+  
+  host <- object@config$host
+  version <- object@config$version
+  species <- object@config$species
+  categ <- "genomic"
+  subcateg<- "region"
+  ids <- ids
+  resource <- "gene"
+  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+  
 })
 
 # A method to allow for updating the species of the CellbaseQuery config

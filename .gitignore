@@ -15,6 +15,9 @@ private
 *.so.*
 *.out
 *.log
+*.Rproj
+*.RData
+*.Rhistory
 sonar-project.properties
 
 # Maven
