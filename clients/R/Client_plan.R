@@ -13,7 +13,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, species=species,
   skip=0
   num_results=1000
   container=list()
-  while(is.null(file)&all(num_results==server_limit)&i<50){
+  while(is.null(file)&all(num_results==server_limit)){
     grls <- createURL(host=host, version=version, species=species, categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip = skip)
     skip=skip+1000
     content <- callREST(grls = grls)
