@@ -94,17 +94,17 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
 
        try {
            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(outdir.resolve("summary.tsv"))));
-           bw.write("Total number of checked variants\t" + totalVariants);
-           bw.write("Total number of annotations provided by " + annotator1Name + "\t" + totalAnnotations1);
-           bw.write("Total number of annotations provided by " + annotator2Name + "\t" + totalAnnotations2);
-           bw.write("Total number of variants with conflicting annotation\t" + totalDiffVariants + "/"
-                   + totalDiffVariants * 100.0 / totalVariants);
+           bw.write("Total number of checked variants\t" + totalVariants + "\n");
+           bw.write("Total number of annotations provided by " + annotator1Name + "\t" + totalAnnotations1 + "\n");
+           bw.write("Total number of annotations provided by " + annotator2Name + "\t" + totalAnnotations2 + "\n");
+           bw.write("Total number of variants with conflicting annotation\t" + totalDiffVariants + "/" + totalVariants
+                   + "\t" + (100 - totalDiffVariants * 100.0 / totalVariants) + "% coincidence\n");
            bw.write("Total annotations provided by " + annotator1Name + " and not provided by " + annotator2Name + "\t"
                    + totalDiff1SequenceOntologyTerms + "/" + totalAnnotations1 + "\t"
-                   + totalDiff1SequenceOntologyTerms * 100.0 / totalAnnotations1 + "%");
+                   + (100 - totalDiff1SequenceOntologyTerms * 100.0 / totalAnnotations1) + "% coincidence\n");
            bw.write("Total annotations provided by " + annotator2Name + " and not provided by " + annotator1Name + "\t"
                    + totalDiff2SequenceOntologyTerms + "/" + totalAnnotations2 + "\t"
-                   + totalDiff2SequenceOntologyTerms * 100.0 / totalAnnotations2 + "%");
+                   + (100 - totalDiff2SequenceOntologyTerms * 100.0 / totalAnnotations2) + "% coincidence\n");
            bw.close();
         } catch (IOException e) {
             e.printStackTrace();
