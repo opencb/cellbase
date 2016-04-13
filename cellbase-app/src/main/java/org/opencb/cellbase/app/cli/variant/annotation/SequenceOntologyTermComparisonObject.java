@@ -17,31 +17,52 @@ public class SequenceOntologyTermComparisonObject {
         this.name = sequenceOntologyTerm.getName();
         this.accession = sequenceOntologyTerm.getAccession();
     }
+//
+//    public boolean equals(SequenceOntologyTermComparisonObject o) {
+//        if (this == o) {
+//            return true;
+//        }
+//        if (o == null) {
+//            return false;
+//        }
+//
+//        if (getTranscriptId() != null ? !getTranscriptId().equals(o.getTranscriptId()) : o.getTranscriptId() != null) {
+//            return false;
+//        }
+//        if (getAccession() != null ? !getAccession().equals(o.getAccession()) : o.getAccession() != null) {
+//            return false;
+//        }
+//        if (getName() != null ? !equalsName(getName(), o.getName()) : o.getName() != null) {
+//            return false;
+//        }
+//
+//        return true;
+//    }
 
-    public boolean equals(SequenceOntologyTermComparisonObject o) {
+
+    @Override
+    public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
-        if (getTranscriptId() != null ? !getTranscriptId().equals(o.getTranscriptId()) : o.getTranscriptId() != null) {
-            return false;
-        }
-        if (getAccession() != null ? !getAccession().equals(o.getAccession()) : o.getAccession() != null) {
-            return false;
-        }
-        if (getName() != null ? !equalsName(getName(), o.getName()) : o.getName() != null) {
-            return false;
-        }
+        SequenceOntologyTermComparisonObject that = (SequenceOntologyTermComparisonObject) o;
 
-        return true;
+        if (getTranscriptId() != null ? !getTranscriptId().equals(that.getTranscriptId()) : that.getTranscriptId() != null) {
+            return false;
+        }
+        return getAccession() != null ? getAccession().equals(that.getAccession()) : that.getAccession() == null;
+
     }
 
     @Override
     public int hashCode() {
-        return -1;
+        int result = getTranscriptId() != null ? getTranscriptId().hashCode() : 0;
+        result = 31 * result + (getAccession() != null ? getAccession().hashCode() : 0);
+        return result;
     }
 
     private boolean equalsName(String name1, String name2) {

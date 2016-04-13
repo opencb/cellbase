@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.commons.io.DataWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,9 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
     private BufferedWriter annotation1Bw;
     private BufferedWriter annotation2Bw;
     private ObjectWriter jsonObjectWriter;
+    private int totalVariants = 0;
+    private int totalAnnotations1 = 0;
+    private int totalAnnotations2 = 0;
     private int totalDiffVariants = 0;
     private int totalDiff1SequenceOntologyTerms = 0;
     private int totalDiff2SequenceOntologyTerms = 0;
@@ -90,11 +94,18 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
 
        try {
            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(outdir.resolve("summary.tsv"))));
-           bw.write("Total variants with at least one different annotation\t" + totalDiffVariants);
+           bw.write("Total number of checked variants\t" + totalVariants);
+           bw.write("Total number of annotations provided by " + annotator1Name + "\t" + totalAnnotations1);
+           bw.write("Total number of annotations provided by " + annotator2Name + "\t" + totalAnnotations2);
+           bw.write("Total number of variants with conflicting annotation\t" + totalDiffVariants + "/"
+                   + totalDiffVariants * 100.0 / totalVariants);
            bw.write("Total annotations provided by " + annotator1Name + " and not provided by " + annotator2Name + "\t"
-                   + totalDiff1SequenceOntologyTerms);
+                   + totalDiff1SequenceOntologyTerms + "/" + totalAnnotations1 + "\t"
+                   + totalDiff1SequenceOntologyTerms * 100.0 / totalAnnotations1 + "%");
            bw.write("Total annotations provided by " + annotator2Name + " and not provided by " + annotator1Name + "\t"
-                   + totalDiff2SequenceOntologyTerms);
+                   + totalDiff2SequenceOntologyTerms + "/" + totalAnnotations2 + "\t"
+                   + totalDiff2SequenceOntologyTerms * 100.0 / totalAnnotations2 + "%");
+           bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,28 +116,57 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
 
     @Override
     public boolean write(Pair<VariantAnnotationDiff, VariantAnnotationDiff> variantAnnotationDiffPair) {
-        writeSequenceOntologyTerms(diff1Bw, variantAnnotationDiffPair.getLeft().getSequenceOntology());
-        writeSequenceOntologyTerms(diff2Bw, variantAnnotationDiffPair.getRight().getSequenceOntology());
-        try {
-            annotation1Bw.write(jsonObjectWriter.writeValueAsString(variantAnnotationDiffPair.getLeft().getVariantAnnotation()) + "\n");
-            annotation2Bw.write(jsonObjectWriter.writeValueAsString(variantAnnotationDiffPair.getRight().getVariantAnnotation()) + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+        // Write differing sequence ontology terms
+        writeSequenceOntologyTerms(diff1Bw, variantAnnotationDiffPair.getLeft());
+        writeSequenceOntologyTerms(diff2Bw, variantAnnotationDiffPair.getRight());
+        // Write full variant annotations for conflicting variants only - i.e. variants with differing annotations
+        if (!(variantAnnotationDiffPair.getLeft().isEmpty() && variantAnnotationDiffPair.getRight().isEmpty())) {
+            try {
+                annotation1Bw.write(jsonObjectWriter
+                        .writeValueAsString(variantAnnotationDiffPair.getLeft().getVariantAnnotation()) + "\n");
+                annotation2Bw.write(jsonObjectWriter
+                        .writeValueAsString(variantAnnotationDiffPair.getRight().getVariantAnnotation()) + "\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            // Count total number of conflicting variants
+            totalDiffVariants++;
+        }
+        // Count total number of conflicting annotations provided by each annotator
+        if (variantAnnotationDiffPair.getLeft().getSequenceOntology() != null) {
+            totalDiff1SequenceOntologyTerms += variantAnnotationDiffPair.getLeft().getSequenceOntology().size();
+        }
+        if (variantAnnotationDiffPair.getRight().getSequenceOntology() != null) {
+            totalDiff2SequenceOntologyTerms += variantAnnotationDiffPair.getRight().getSequenceOntology().size();
         }
 
-        totalDiffVariants++;
-        totalDiff1SequenceOntologyTerms +=  variantAnnotationDiffPair.getLeft().getSequenceOntology().size();
-        totalDiff2SequenceOntologyTerms +=  variantAnnotationDiffPair.getRight().getSequenceOntology().size();
+        // Add number of total annotations provided by each annotator
+        for (ConsequenceType consequenceType : variantAnnotationDiffPair.getLeft().getVariantAnnotation().getConsequenceTypes()) {
+            totalAnnotations1 += consequenceType.getSequenceOntologyTerms().size();
+        }
+        for (ConsequenceType consequenceType : variantAnnotationDiffPair.getRight().getVariantAnnotation().getConsequenceTypes()) {
+            totalAnnotations2 += consequenceType.getSequenceOntologyTerms().size();
+        }
+        // Count total number of processed variants
+        totalVariants++;
 
         return true;
     }
 
-    private void writeSequenceOntologyTerms(BufferedWriter bw, List<SequenceOntologyTermComparisonObject> comparisonObjectList) {
+    private void writeSequenceOntologyTerms(BufferedWriter bw, VariantAnnotationDiff variantAnnotationDiff) {
         try {
-            if (comparisonObjectList != null) {
-                for (SequenceOntologyTermComparisonObject comparisonObject : comparisonObjectList) {
-                    StringBuilder stringBuilder = new StringBuilder(comparisonObject.getTranscriptId());
+            if (variantAnnotationDiff.getSequenceOntology() != null) {
+                for (SequenceOntologyTermComparisonObject comparisonObject : variantAnnotationDiff.getSequenceOntology()) {
+                    StringBuilder stringBuilder = new StringBuilder(variantAnnotationDiff.getVariantAnnotation().getChromosome());
+                    stringBuilder.append("\t");
+                    stringBuilder.append(variantAnnotationDiff.getVariantAnnotation().getStart());
+                    stringBuilder.append("\t");
+                    stringBuilder.append(variantAnnotationDiff.getVariantAnnotation().getReference());
+                    stringBuilder.append("\t");
+                    stringBuilder.append(variantAnnotationDiff.getVariantAnnotation().getAlternate());
+                    stringBuilder.append("\t");
+                    stringBuilder.append(comparisonObject.getTranscriptId() != null ? comparisonObject.getTranscriptId() : "");
                     stringBuilder.append("\t");
                     stringBuilder.append(comparisonObject.getName());
                     stringBuilder.append("\t");
@@ -145,6 +185,28 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
         if (list != null) {
             for (Pair<VariantAnnotationDiff, VariantAnnotationDiff> variantAnnotationDiffPair : list) {
                 write(variantAnnotationDiffPair);
+
+                if ((totalVariants % 3000) == 0) {
+                    logger.info("{} variants checked", totalVariants);
+                }
+                if ((totalVariants % 10000) == 0) {
+                    logger.info("Total number (%) of variants with conflicting annotation: {}/{} ({}% coincidence)",
+                            totalDiffVariants,
+                            totalVariants,
+                            100 - totalDiffVariants * 100.0 / totalVariants);
+                    logger.info("Total annotations provided by {} and not provided by {}: {}/{} ({}% coincidence)",
+                            annotator1Name,
+                            annotator2Name,
+                            totalDiff1SequenceOntologyTerms,
+                            totalAnnotations1,
+                            100 - totalDiff1SequenceOntologyTerms * 100.0 / totalAnnotations1);
+                    logger.info("Total annotations provided by {} and not provided by {}: {}/{} ({}% coincidence)",
+                            annotator2Name,
+                            annotator1Name,
+                            totalDiff2SequenceOntologyTerms,
+                            totalAnnotations2,
+                            100 - totalDiff2SequenceOntologyTerms * 100.0 / totalAnnotations2);
+                }
             }
             return true;
         } else {

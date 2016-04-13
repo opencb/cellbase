@@ -1,6 +1,5 @@
 package org.opencb.cellbase.app.cli.variant.annotation;
 
-import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 
 import java.util.List;
@@ -10,10 +9,14 @@ import java.util.List;
  */
 public class VariantAnnotationDiff {
 
-    private List<SequenceOntologyTermComparisonObject> sequenceOntology;
-    private VariantAnnotation variantAnnotation;
+    private List<SequenceOntologyTermComparisonObject> sequenceOntology = null;
+    private VariantAnnotation variantAnnotation = null;
 
     public VariantAnnotationDiff() {}
+
+    public boolean isEmpty() {
+        return (sequenceOntology == null);
+    }
 
     public List<SequenceOntologyTermComparisonObject> getSequenceOntology() {
         return sequenceOntology;

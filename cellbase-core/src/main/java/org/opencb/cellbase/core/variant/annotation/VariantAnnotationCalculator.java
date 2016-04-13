@@ -129,7 +129,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
 
-        logger.info("Annotating  batch");
+        logger.debug("Annotating  batch");
 
         if (variantList == null || variantList.isEmpty()) {
             return new ArrayList<>();

@@ -19,6 +19,7 @@ import java.util.Set;
  */
 public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> {
 
+    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
     private VariantAnnotator variantAnnotator;
 
     public BenchmarkTask(VariantAnnotator variantAnnotator) {
@@ -30,19 +31,44 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
     }
 
     public List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> apply(List<VariantAnnotation> batch) {
+        removeInvalidVariants(batch);
         List<Variant> cellBaseBatch = createEmptyVariantList(batch);
         variantAnnotator.run(cellBaseBatch);
         List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> comparisonResultList = new ArrayList<>();
         for (int i = 0; i < batch.size(); i++) {
             Pair<VariantAnnotationDiff, VariantAnnotationDiff> comparisonResult = compare(batch.get(i),
                     cellBaseBatch.get(i).getAnnotation());
-            if (comparisonResult != null) {
-                comparisonResult.getLeft().setVariantAnnotation(batch.get(i));
-                comparisonResult.getRight().setVariantAnnotation(cellBaseBatch.get(i).getAnnotation());
-                comparisonResultList.add(comparisonResult);
-            }
+            comparisonResult.getLeft().setVariantAnnotation(batch.get(i));
+            comparisonResult.getRight().setVariantAnnotation(cellBaseBatch.get(i).getAnnotation());
+            comparisonResultList.add(comparisonResult);
         }
         return comparisonResultList;
+    }
+
+    private void removeInvalidVariants(List<VariantAnnotation> variantAnnotationList) {
+        int i = 0;
+        while (i < variantAnnotationList.size()) {
+            if (isValid(variantAnnotationList.get(i))) {
+                i++;
+            } else {
+                variantAnnotationList.remove(i);
+            }
+        }
+    }
+
+    /**
+     * Checks whether a variant is valid.
+     *
+     * @param variantAnnotation Variant object to be checked.
+     * @return   true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
+     * reference/alternate attributes being strings of [A,C,G,T] of length >= 0 is performed to detect cases such as
+     * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Ref and alt alleles must be different
+     * as well for the variant to be valid. Functionality of the method may be improved in the future.
+     */
+    private boolean isValid(VariantAnnotation variantAnnotation) {
+        return (variantAnnotation.getAlternate().matches(VARIANT_STRING_PATTERN)
+//                && variantAnnotation.getReference().matches(VARIANT_STRING_PATTERN)
+                && !variantAnnotation.getAlternate().equals(variantAnnotation.getReference()));
     }
 
     private Pair<VariantAnnotationDiff, VariantAnnotationDiff> compare(VariantAnnotation variant1, VariantAnnotation variant2) {
@@ -59,10 +85,15 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
                                               List<ConsequenceType> consequenceTypeList2) {
         Set<SequenceOntologyTermComparisonObject> sequenceOntologySet1 = getSequenceOntologySet(consequenceTypeList1);
         Set<SequenceOntologyTermComparisonObject> sequenceOntologySet2 = getSequenceOntologySet(consequenceTypeList2);
+        Set<SequenceOntologyTermComparisonObject> sequenceOntologySet1bak = new HashSet<>(sequenceOntologySet1);
         sequenceOntologySet1.removeAll(sequenceOntologySet2);
-        sequenceOntologySet2.removeAll(sequenceOntologySet1);
-        result.getLeft().setSequenceOntology(new ArrayList(sequenceOntologySet1));
-        result.getRight().setSequenceOntology(new ArrayList(sequenceOntologySet2));
+        sequenceOntologySet2.removeAll(sequenceOntologySet1bak);
+        if (sequenceOntologySet1.size() > 0) {
+            result.getLeft().setSequenceOntology(new ArrayList(sequenceOntologySet1));
+        }
+        if (sequenceOntologySet2.size() > 0) {
+            result.getRight().setSequenceOntology(new ArrayList(sequenceOntologySet2));
+        }
     }
 
     private Set<SequenceOntologyTermComparisonObject> getSequenceOntologySet(List<ConsequenceType> consequenceTypeList) {
@@ -71,7 +102,8 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
             for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
                 // Expected many differences depending on the regulatory source databases used by the annotators.
                 // Better skip regulatory_region_variant annotations
-                if (!sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)) {
+                if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
+                        || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
                     set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
                             sequenceOntologyTerm));
                 }
