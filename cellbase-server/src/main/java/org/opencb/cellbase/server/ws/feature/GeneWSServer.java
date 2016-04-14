@@ -17,17 +17,13 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
+import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.api.ProteinDBAdaptor;
-import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
+
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -56,7 +52,13 @@ import java.util.List;
 public class GeneWSServer extends GenericRestWSServer {
 
 
-    public GeneWSServer(@PathParam("version") String version, @PathParam("species") String species,
+    public GeneWSServer(@PathParam("version")
+                        @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                defaultValue = "latest") String version,
+                        @PathParam("species")
+                        @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                + "of potentially available species ids, please refer to: "
+                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
@@ -333,24 +335,39 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/clinical")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get ClinVar records from a list of gene HGNC symbols")
-    public Response getAllClinvarByGene(@PathParam("geneId") String geneId, @DefaultValue("") @QueryParam("phenotype") String phenotype) {
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
+            + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
+            + "a look at "
+            + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
+            value = "Resource to get clinical variants from a list of gene HGNC symbols", response = Document.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "so",
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
+                            + "matches will be returned.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "phenotype",
+                    value = "String to indicate the phenotypes to query. A text search will be run.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "type",
+                    value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
+                            + "variants, e.g. \"single nucleotide variant\" ",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "review",
+                    value = "Comma separated list of review lables (only enabled for ClinVar variants), "
+                            + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "significance",
+                    value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
+                            + "for ClinVar variants), e.g.: Benign",
+                    required = false, dataType = "list of strings", paramType = "query"),
+    })
+    public Response getAllClinvarByGene(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-//            if(region != null && !region.equals("")) {
-//                queryOptions.add("region", Region.parseRegions(region));
-//            }
-//            if(id != null && !id.equals("")) {
-//                queryOptions.add("id", Arrays.asList(id.split(",")));
-//            }
-
-            queryOptions.add("source", "clinvar");
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
             queryOptions.add("gene", geneId);
-            if (phenotype != null && !phenotype.isEmpty()) {
-                queryOptions.add("phenotype", Arrays.asList(phenotype.split(",")));
-            }
-            return createOkResponse(clinicalDBAdaptor.getAll(queryOptions));
+            return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
