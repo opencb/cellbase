@@ -23,15 +23,28 @@
         <style is="custom-style" include="cellbase-shared-styles"></style>
         <div>
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#{{prefix}}variantAnnotationConsequenceTypes" role="tab" data-toggle="tab">Consequence Types</a></li>
-                <li role="presentation"><a href="#{{prefix}}variantAnnotationPopulationFrequencies" role="tab" data-toggle="tab">Population Frequencies</a></li>
-                <li role="presentation"><a href="#{{prefix}}variantAnnotationClinical" role="tab" data-toggle="tab">Gene Trait Association</a></li>
-                <li role="presentation"><a href="#{{prefix}}variantAnnotationConservation" role="tab" data-toggle="tab">Conservation</a></li>
-                <li role="presentation"><a href="#{{prefix}}variantAnnotationCadd" role="tab" data-toggle="tab">CADD</a></li>
+                <li role="presentation" class="active"><a href="#{{prefix}}VariantAnnotationConsequenceTypes" role="tab"
+                                                          data-toggle="tab">Consequence Types</a></li>
+                <li role="presentation"><a href="#{{prefix}}VariantAnnotationPopulationFrequencies" role="tab"
+                                           data-toggle="tab">Population Frequencies</a></li>
+                <li role="presentation"><a href="#{{prefix}}VariantAnnotationGTA" role="tab" data-toggle="tab">Gene
+                    Trait Association</a></li>
+                <li role="presentation"><a href="#{{prefix}}VariantAnnotationVTA" role="tab" data-toggle="tab">Variant
+                    Trait Association</a></li>
+                <li role="presentation"><a href="#{{prefix}}VariantAnnotationConservation" role="tab" data-toggle="tab">Conservation</a>
+                </li>
+                <li role="presentation"><a href="#{{prefix}}VariantAnnotationCadd" role="tab" data-toggle="tab">CADD</a>
+                </li>
             </ul>
 
             <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="{{prefix}}variantAnnotationConsequenceTypes">
+                <!--Consequence types Tab-->
+                <div role="tabpanel" class="tab-pane active" id="{{prefix}}VariantAnnotationConsequenceTypes">
+                    <!--<table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true" data-pagination="true"-->
+                           <!--data-page-list="[10, 25, 50]"-->
+                           <!--data-show-pagination-switch="true" data-show-export="true">-->
+
+                    <!--</table>-->
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -60,60 +73,89 @@
                     </table>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationPopulationFrequencies">
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>Study</th>
-                            <th>Population</th>
-                            <th>RefAllele</th>
-                            <th>AltAllele</th>
-                            <th>RefAlleleFreq</th>
-                            <th>AltAlleleFreq</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <template is="dom-repeat" items="{{variantAnnotation.populationFrequencies}}">
-                            <tr>
-                                <td>{{item.study}}</td>
-                                <td>{{item.population}}</td>
-                                <td>{{item.refAllele}}</td>
-                                <td>{{item.altAllele}}</td>
-                                <td>{{item.refAlleleFreq}}</td>
-                                <td>{{item.altAlleleFreq}}</td>
-                            </tr>
-                        </template>
-                        </tbody>
+                <!--Population frequency Tab-->
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationPopulationFrequencies">
+                    <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true" data-pagination="true"
+                           data-page-list="[10, 25, 50]"
+                           data-show-pagination-switch="true" data-show-export="true">
+
                     </table>
                     <div id="container"></div>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationClinical">
+                <!--Gene Trait Association Tab-->
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationGTA">
+                    <table id="{{prefix}}GTATable" data-search="true" data-show-columns="true" data-pagination="true"
+                           data-page-list="[10, 25, 50]"
+                           data-show-pagination-switch="true" data-show-export="true">
+
+                    </table>
+                </div>
+
+                <!--Variant Trait Association-->
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationVTA">
+                    <h4>Clinvar</h4>
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Score</th>
-                            <th>HPO</th>
-                            <th>Source</th>
+                            <th>Accession</th>
+                            <th>Clinical Significance</th>
+                            <th>Traits</th>
+                            <th>Gene Names</th>
+                            <th>Review Status</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <template is="dom-repeat" items="{{variantAnnotation.geneTraitAssociation}}">
+                        <template is="dom-repeat" items="{{variantAnnotation.variantTraitAssociation.clinvar}}">
                             <tr>
-                                <td>{{item.id}}</td>
-                                <td>{{item.name}}</td>
-                                <td>{{item.score}}</td>
-                                <td>{{item.hpo}}</td>
-                                <td>{{item.source}}</td>
+                                <td>{{item.accession}}</td>
+                                <td>{{item.clinicalSignificance}}</td>
+                                <td>
+                                    <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}} <br></template>
+                                </td>
+                                <td>
+                                    <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br> </template>
+                                </td>
+                                <td>{{item.reviewStatus}}</td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+                    <h4>Cosmic</h4>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Mutation Id</th>
+                            <th>Primary Site</th>
+                            <th>Site Subtype</th>
+                            <th>Primary Histology</th>
+                            <th>Histology Subtype</th>
+                            <th>Sample Source</th>
+                            <th>Tumour Origin</th>
+                            <th>Gene Name</th>
+                            <th>Mutation Somatic Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template is="dom-repeat" items="{{variantAnnotation.variantTraitAssociation.cosmic}}">
+                            <tr>
+                                <td>{{item.mutationId}}</td>
+                                <td>{{item.primarySite}}</td>
+                                <td>{{item.siteSubtype}}</td>
+                                <td>{{item.primaryHistology}}</td>
+                                <td>{{item.histologySubtype}}</td>
+                                <td>{{item.sampleSource}}</td>
+                                <td>{{item.tumourOrigin}}</td>
+                                <td>{{item.geneName}}</td>
+                                <td>{{item.mutationSomaticStatus}}</td>
                             </tr>
                         </template>
                         </tbody>
                     </table>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationConservation">
+                <!--Conservation Tab-->
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationConservation">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -132,7 +174,8 @@
                     </table>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="{{prefix}}variantAnnotationCadd">
+                <!--CADD Tab-->
+                <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationCadd">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -170,10 +213,10 @@
                     type: String
                 }
             },
-            ready: function() {
+            ready: function () {
                 this.cellBaseClient = CELLBASE_CLIENT;
             },
-            _variantChanged: function() {
+            _variantChanged: function () {
                 let _this = this;
                 var success = function (response) {
                     console.log(response)
@@ -241,8 +284,75 @@
                         }]
                     });
 
+                    // Consequence Type grid definition
+                    $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable('destroy');
+                    $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable({
+                        data: _this.variantAnnotation.consequenceTypes
+                    });
+
+                    // Population grid definition
+                    $('#' + _this.prefix + 'populationFreqTable').bootstrapTable('destroy');
+                    $('#' + _this.prefix + 'populationFreqTable').bootstrapTable({
+                        data: _this.variantAnnotation.populationFrequencies,
+                        columns: [
+                            [
+                                {
+                                    title: 'Study',
+                                    field: 'study'
+                                },
+                                {
+                                    title: 'Population',
+                                    field: 'population'
+                                },
+                                {
+                                    title: 'Ref/Alt',
+                                    formatter: _this.alleleFormatter
+                                },
+                                {
+                                    title: 'RefAlleleFreq',
+                                    field: 'refAlleleFreq'
+                                },
+                                {
+                                    title: 'AltAlleleFreq',
+                                    field: 'altAlleleFreq'
+                                }
+                            ]
+                        ]
+                    });
+
+                    // Gene Trait Association definition
+                    $('#' + _this.prefix + 'GTATable').bootstrapTable('destroy');
+                    $('#' + _this.prefix + 'GTATable').bootstrapTable({
+                        data: _this.variantAnnotation.geneTraitAssociation,
+                        columns: [
+                            [
+                                {
+                                    title: 'id',
+                                    field: 'id'
+                                },
+                                {
+                                    title: 'name',
+                                    field: 'name'
+                                },
+                                {
+                                    title: 'hpo',
+                                    field: 'hpo'
+                                },
+                                {
+                                    title: 'source',
+                                    field: 'source'
+                                }
+                            ]
+                        ]
+                    });
                 };
-                this.cellBaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {success: success, async: true});
+                this.cellBaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {
+                    success: success,
+                    async: true
+                });
+            },
+            alleleFormatter: function (value, row, index) {
+                return row.refAllele + "/" + row.altAllele;
             }
         });
     </script>

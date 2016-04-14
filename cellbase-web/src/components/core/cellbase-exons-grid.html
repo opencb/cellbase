@@ -1,0 +1,69 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-exons-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div style="padding: 10px; ">
+            <br>
+            <table id="ExonTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-exons-grid',
+            properties: {
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'render'
+                }
+            },
+            render: function () {
+                $('#ExonTable').bootstrapTable('destroy');
+                $('#ExonTable').bootstrapTable({
+                    data: this.data,
+                    detailView: true,
+                    detailFormatter: this.detailFormatter,
+                    columns: [
+                        [
+                            {
+                                title: 'ID',
+                                field: 'id'
+                            },
+                            {
+                                title: 'Location',
+                                formatter: this.locationFormatter
+                            },
+                            {
+                                title: 'Strand',
+                                field: 'strand'
+                            },
+                            {
+                                title: 'Phase',
+                                field: 'phase'
+                            },
+                            {
+                                title: 'Exon Number',
+                                field: 'exonNumber'
+                            }
+                        ]
+                    ]
+                });
+            },
+            locationFormatter: function (value, row, index) {
+                return row.chromosome + ":" + row.start + "-" + row.end;
+            },
+            detailFormatter: function (index, row) {
+                var html = [];
+                html.push('Sequence:<textarea class="form-control" rows="3" readonly>' + row.sequence + '</textarea>');
+                return html.join('');
+            }
+        });
+    </script>
+</dom-module>

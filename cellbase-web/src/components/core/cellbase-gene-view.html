@@ -34,9 +34,9 @@
         <div style="width: 90%">
 
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#geneViewInfo" role="tab" data-toggle="tab">{{geneId}} Info</a></li>
+                <li role="presentation" class="active"><a href="#geneViewInfo" role="tab" data-toggle="tab">{{geneId}} Summary</a></li>
                 <li role="presentation"><a href="#geneViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
-                <li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>
+                <!--<li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>-->
                 <li role="presentation"><a href="#geneViewVariation" role="tab" data-toggle="tab">Variation</a></li>
                 <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
                 <li role="presentation"><a href="#geneViewExpression" role="tab" data-toggle="tab">Expression</a></li>
@@ -49,13 +49,13 @@
 
             <div class="tab-content" style="width: 90%">
                 <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
-                    <h3>Summary</h3>
-                    Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>
-                    Biotype: {{geneObj.biotype}}<br>
-                    Location: {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   Strand: {{geneObj.strand}}<br>
-                    Source: {{geneObj.source}} - Status: {{geneObj.status}}<br>
-                    Description: {{geneObj.description}}<br>
-                    <h3>Transcripts ({{geneObj.transcripts.length}})</h3>
+                    <h4><a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a></h4>
+                    <!--Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>-->
+                    <b>Biotype:</b> {{geneObj.biotype}}<br>
+                    <b>Location:</b> {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   <b>Strand:</b> {{geneObj.strand}}<br>
+                    <b>Source:</b> {{geneObj.source}} - <b>Status:</b> {{geneObj.status}}<br>
+                    <b>Description:</b> {{geneObj.description}}<br>
+                    <h4>Transcripts ({{geneObj.transcripts.length}})</h4>
                     <cellbase-transcripts-view data="{{geneObj.transcripts}}" prefix="geneViewInfo"></cellbase-transcripts-view>
                 </div>
 
@@ -64,14 +64,14 @@
                     <div id="genomeviewer"></div>
                 </div>
 
-                <div id="geneViewTranscripts" role="tabpanel" class="tab-pane">
-                    <br>
-                    <cellbase-transcripts-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}" prefix="geneView"></cellbase-transcripts-view>
-                </div>
+                <!--<div id="geneViewTranscripts" role="tabpanel" class="tab-pane">-->
+                    <!--<br>-->
+                    <!--<cellbase-transcripts-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}" prefix="geneView"></cellbase-transcripts-view>-->
+                <!--</div>-->
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
                     <cellbase-variation-grid cellbase-client="{{cellBase}}" data="{{variations}}" on-selected="onVariantSelected"></cellbase-variation-grid>
-                    <br>
+                    <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
 
