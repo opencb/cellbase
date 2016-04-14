@@ -252,7 +252,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseParser buildVariation() {
         Path variationFolderPath = input.resolve("variation");
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, null, true, true, true);
         return new VariationParser(variationFolderPath, serializer);
     }
 

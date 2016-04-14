@@ -226,6 +226,7 @@ public class VariationParser extends CellBaseParser {
                                  List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
                                  String displayConsequenceType, List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
                                  String strand, String ancestralAllele, String minorAllele, Float minorAlleleFreq) {
+        end = fixEndForInsertions(start, end, type);
         Variant variant = new Variant(chromosome, start, end, reference, alternate);
         variant.setIds(ids);
         variant.setType(type);
@@ -243,6 +244,15 @@ public class VariationParser extends CellBaseParser {
         variant.setStrand(strand);
 
         return variant;
+    }
+
+    private int fixEndForInsertions(int start, int end, VariantType type) {
+        if (type == VariantType.INDEL || type == VariantType.INSERTION) {
+            if (end < start) {
+                end = start;
+            }
+        }
+        return end;
     }
 
     private String getDisplayConsequenceType(String[] variationFeatureFields) {
@@ -276,7 +286,7 @@ public class VariationParser extends CellBaseParser {
         if (reference.length() != alternate.length()) {
             return VariantType.INDEL;
         } else {
-            if (reference.equals('-') || alternate.equals('-')) {
+            if (reference.equals("-") || alternate.equals("-")) {
                 return VariantType.INDEL;
             } else if (reference.contains("(") || alternate.contains("(")) {
                 return checkSnv(reference, alternate);
