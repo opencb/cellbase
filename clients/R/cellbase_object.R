@@ -19,13 +19,13 @@ CellbaseQuery <- setClass("CellbaseQuery",
 )
 
 ##### Methods for CellbaseQuery objects
+# Improve this by querying the meta field
 #  The show method for cellbaseQuery class
 setMethod("show",signature = "CellbaseQuery",definition = function(object){
   cat("An object of class ", class(object), "\n", sep = "")
-  cat("| slot config containing the following:",paste(names(object@config),collapse = ","),"\n")
-  cat("| slot hosts containing the following:",object@hosts,"\n")
-  cat("| slot species containing the following:",paste(names(object@species),collapse = ","),"\n")
-  cat("| slot categories containing the following:",paste(object@categories,collapse = ","),"\n")
+  cat("| it holds the configuration for querying the Cellbase databases\n")
+  cat("| to get more information about the available species run cbSpecies()\n")
+  cat("| to change the default species from human to any other species use Species()\n")
 })
 # A general wrapper method
 setGeneric("getCellbase", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("getCellbase"))
@@ -38,158 +38,207 @@ setMethod("getCellbase", "CellbaseQuery",  definition = function(object,file=NUL
   subcateg<- subcateg
   ids <- ids
   resource <- resource
-  result <- fetchCellbase(file=NULL,host=host, version=version, species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
   data <- CellbaseResult(cellbaseData=result)
   return(data)
 })
-# A convienance method to get all snps in a specific gene or genes
-setGeneric("getSnpsByGene", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getSnpsByGene"))
-setMethod("getSnpsByGene", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+##############
+##############
+############## Not yet implemented
+# setGeneric("cbClinical", function(object,file=NULL,host=NULL, version=NULL,meta=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbClinical"))
+# setMethod("cbClinical", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, meta=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
+#   
+#   host <- object@config$host
+#   species <- object@config$species
+#   version <- object@config$version
+#   categ <- "feature"
+#   subcateg<- "clinical"
+#   ids <- ids
+#   resource <- resource
+#   result <- fetchCellbase(file=NULL,host=host, version=version, species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+#   data <- CellbaseResult(cellbaseData=result)
+#   return(data)
+# })
+
+###
+setGeneric("cbGene", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbGene"))
+setMethod("cbGene", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
   
   host <- object@config$host
-  version <- object@config$version
   species <- object@config$species
+  version <- object@config$version
   categ <- "feature"
   subcateg<- "gene"
   ids <- ids
-  resource <- "snp"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
   data <- CellbaseResult(cellbaseData=result)
   return(data)
-  
 })
-# A convienance method to get all snps that are associated withspecific disease or phenotype
-setGeneric("getSnpsByPhenotype", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getSnpsByPhenotype"))
-setMethod("getSnpsByPhenotype", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+
+
+###
+setGeneric("cbRegion", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbRegion"))
+setMethod("cbRegion", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
   
   host <- object@config$host
-  version <- object@config$version
   species <- object@config$species
+  version <- object@config$version
+  categ <- "genomic"
+  subcateg<- "region"
+  ids <- ids
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+})
+
+###
+setGeneric("cbSnp", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbSnp"))
+setMethod("cbSnp", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
+  
+  host <- object@config$host
+  species <- object@config$species
+  version <- object@config$version
+  categ <- "feature"
+  subcateg<- "snp"
+  ids <- ids
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+})
+
+###
+setGeneric("cbVariant", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbVariant"))
+setMethod("cbVariant", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
+  
+  host <- object@config$host
+  species <- object@config$species
+  version <- object@config$version
   categ <- "genomic"
   subcateg<- "variant"
   ids <- ids
-  resource <- "phenotype"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta =NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
   data <- CellbaseResult(cellbaseData=result)
   return(data)
-  
 })
-
-# A convienance method to get all gene that are associated with specific clinical condition
-setGeneric("getGenesByClinical", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getGenesByClinical"))
-setMethod("getGenesByClinical", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+###
+setGeneric("cbTfbs", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbTfbs"))
+setMethod("cbTfbs", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
   
   host <- object@config$host
-  version <- object@config$version
   species <- object@config$species
+  version <- object@config$version
+  categ <- "regulation"
+  subcateg<- "tf"
+  ids <- ids
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+})
+
+###
+setGeneric("cbTranscript", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbTranscript"))
+setMethod("cbTranscript", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
+  
+  host <- object@config$host
+  species <- object@config$species
+  version <- object@config$version
   categ <- "feature"
-  subcateg<- "gene"
+  subcateg<- "transcript"
   ids <- ids
-  resource <- "clinical"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
   data <- CellbaseResult(cellbaseData=result)
   return(data)
-  
 })
-# A convienance method to get all gene that are associated with specific clinical condition
-setGeneric("getProteinsByGene", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getProteinsByGene"))
-setMethod("getProteinsByGene", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+
+
+
+###
+setGeneric("cbXref", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbXref"))
+setMethod("cbXref", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
   
   host <- object@config$host
-  version <- object@config$version
   species <- object@config$species
+  version <- object@config$version
   categ <- "feature"
-  subcateg<- "gene"
-  ids <- ids
-  resource <- "protein"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  subcateg<- "id"
+  ids <- toupper(ids)
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
   data <- CellbaseResult(cellbaseData=result)
   return(data)
+})
+###
+###
+setGeneric("cbProtein", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbProtein"))
+setMethod("cbProtein", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
   
+  host <- object@config$host
+  species <- object@config$species
+  version <- object@config$version
+  categ <- "feature"
+  subcateg<- "protein"
+  ids <- ids
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
 })
 
-# A convienance method to get all clinical variants in a specific region
-setGeneric("getClinvarByRegion", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getClinvarByRegion"))
-setMethod("getClinvarByRegion", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
+
+###
+setGeneric("cbGenomeSequence", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbGenomeSequence"))
+setMethod("cbGenomeSequence", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, meta=NULL,species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
   
   host <- object@config$host
-  version <- object@config$version
   species <- object@config$species
+  version <- object@config$version
   categ <- "genomic"
-  subcateg<- "region"
+  subcateg<- "chromosome"
   ids <- ids
-  resource <- "clinical"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
+  resource <- resource
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
   data <- CellbaseResult(cellbaseData=result)
   return(data)
-  
 })
-# A convienance method to get all variants in a specific region
-setGeneric("getSnpsByRegion", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getSnpsByRegion"))
-setMethod("getSnpsByRegion", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
-  
+# setGeneric("cbMeta", function(object,file=NULL,host=NULL, version=NULL, species, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbMeta"))
+# setMethod("cbMeta", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL,meta=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
+#   
+#   host <- object@config$host
+#   species <- species
+#   version <- object@config$version
+#   meta <- paste0("meta","/",sep="")
+#   categ <- NULL
+#   subcateg<- NULL
+#   ids <- NULL
+#   resource <- NULL
+#   result <- fetchCellbase(file=NULL,host=host, version=version,meta = meta, species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+#   data <- lapply(result, function(x)as.data.frame(x))
+#   return(data)
+# })
+
+### Not working because of server
+setGeneric("cbSpecies", function(object,file=NULL,host=NULL, version=NULL,meta, species, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbSpecies"))
+setMethod("cbSpecies", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL,meta, species, categ=NULL, subcateg=NULL,ids=NULL,resource,filter=NULL,...) {
+
   host <- object@config$host
+  species <- "species"
   version <- object@config$version
-  species <- object@config$species
-  categ <- "genomic"
-  subcateg<- "region"
-  ids <- ids
-  resource <- "variation"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
-  data <- CellbaseResult(cellbaseData=result)
+  meta <- "meta/"
+  categ <- NULL
+  subcateg<- NULL
+  ids <- NULL
+  resource <- NULL
+  result <- fetchCellbase(file=NULL,host=host, version=version,meta = meta, species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
+  data <- lapply(result, function(x)as.data.frame(x))
   return(data)
-  
-})
-# A convienance method to get all transcripts in a specific region
-setGeneric("getSnpsByRegion", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getSnpsByRegion"))
-setMethod("getSnpsByRegion", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
-  
-  host <- object@config$host
-  version <- object@config$version
-  species <- object@config$species
-  categ <- "genomic"
-  subcateg<- "region"
-  ids <- ids
-  resource <- "variation"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
-  data <- CellbaseResult(cellbaseData=result)
-  return(data)
-  
 })
 
-# A convienance method to get all regulatory features in a specific region
-setGeneric("getRegulationByRegion", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getRegulationByRegion"))
-setMethod("getRegulationByRegion", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
-  
-  host <- object@config$host
-  version <- object@config$version
-  species <- object@config$species
-  categ <- "genomic"
-  subcateg<- "region"
-  ids <- ids
-  resource <- "regulatory"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
-  data <- CellbaseResult(cellbaseData=result)
-  return(data)
-  
-})
-
-# A convienance method to get all transcription factors binding sites in a specific region
-setGeneric("getTfbsByRegion", function(object, file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) standardGeneric("getTfbsByRegion"))
-setMethod("getTfbsByRegion", "CellbaseQuery",  definition = function(object,file=NULL,host, version, species, categ, subcateg,ids,resource,filter=NULL,...) {
-  
-  host <- object@config$host
-  version <- object@config$version
-  species <- object@config$species
-  categ <- "genomic"
-  subcateg<- "region"
-  ids <- ids
-  resource <- "tfbs"
-  result <- fetchCellbase(host, file=NULL,version, species, categ, subcateg,ids,resource,filter=NULL,...)
-  data <- CellbaseResult(cellbaseData=result)
-  return(data)
-  
-})
 #######################################################################
 # A method to allow for updating the species of the CellbaseQuery config
 setGeneric("species<-",

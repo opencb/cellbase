@@ -1,8 +1,17 @@
-fetchCellbase <- function(file=NULL,host=host, version=version, species=species, categ, subcateg,ids,resource,filter=NULL,...){
-  categ <- paste0(categ,"/",sep="")
-  subcateg <- paste0(subcateg,"/",sep="")
+fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,species=species, categ, subcateg,ids,resource,filter=NULL,...){
+  if(is.null(categ)){
+    categ <- ""
+  }else{
+    categ <- paste0(categ,"/",sep="")
+  }
+  if(is.null(subcateg)){
+    subcateg <- ""
+  }else{
+    subcateg <- paste0(subcateg,"/",sep="")
+  }
+  #categ <- paste0(categ,"/",sep="")
+  #subcateg <- paste0(subcateg,"/",sep="")
   if(is.null(file)){
-    ids <- toupper(ids)
     ids <- paste0(ids,collapse = ",")
     ids <- paste0(ids,"/",collapse = "")
   }else{
@@ -14,7 +23,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, species=species,
   num_results=1000
   container=list()
   while(is.null(file)&all(unlist(num_results)==server_limit)){
-    grls <- createURL(host=host, version=version, species=species, categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip = skip)
+    grls <- createURL(file=NULL,host=host, version=version, meta=meta, species=species, categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip = skip)
     skip=skip+1000
     content <- callREST(grls = grls)
     res_list <- parseResponse(content=content)
@@ -51,15 +60,15 @@ readIds <- function(file=file)
 }
   
   #create a list of character vectors of urls
-createURL <- function(file=NULL,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip=0)
+createURL <- function(file=NULL,host=host,version=version,meta=meta,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,filter=NULL,skip=0)
   {
   skip=paste0("?","skip=",skip)
   if(is.null(file)){
-    grls <- paste0(host,version,species,categ,subcateg,ids,resource,filter,skip,collapse = "")
+    grls <- paste0(host,version,meta,species,categ,subcateg,ids,resource,filter,skip,collapse = "")
     
   }else{
     grls <- list()
-    gcl <- paste0(host,version,species,categ,subcateg,collapse = "")
+    gcl <- paste0(host,version,meta,species,categ,subcateg,collapse = "")
     
     for(i in seq_along(ids)){
       hop <- paste(ids[[i]],collapse = ",")
