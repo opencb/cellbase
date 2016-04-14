@@ -238,8 +238,9 @@ public class VariationParser extends CellBaseParser {
         } catch (JsonProcessingException e) {
             logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
         }
-        VariantAnnotation variantAnnotation = new VariantAnnotation(null, null, null, null, ancestralAllele, null, null, null,
-                displayConsequenceType, null, null, minorAllele, minorAlleleFreq, null, null, null, null, null, null, additionalAttributes);
+        VariantAnnotation variantAnnotation = new VariantAnnotation(null, null, null, null, ancestralAllele, id, xrefs, hgvs,
+                displayConsequenceType, conseqTypes, null, minorAllele, minorAlleleFreq, null, null, null, null, null, null,
+                additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 
