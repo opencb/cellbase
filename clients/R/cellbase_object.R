@@ -6,7 +6,7 @@ CellbaseQuery <- setClass("CellbaseQuery",
                           slots = c(config="list",hosts="vector",species="list",categories="vector"),
                           prototype = prototype(
                             config=list(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
-                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=4),
+                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=4,genome="GRCh37"),
                             hosts=c("http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"),
                             species=list(human="hsapiens",mouse="mmusculus",rat="rnorvegicus",chimp="ptroglodytes",
                                          gorilla="ggorilla", orangutan="pabelii",macaque="mmulatta",pig="sscrofa",
@@ -44,24 +44,48 @@ setMethod("getCellbase", "CellbaseQuery",  definition = function(object,file=NUL
 })
 ##############
 ##############
-############## Not yet implemented
-# setGeneric("cbClinical", function(object,file=NULL,host=NULL, version=NULL,meta=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbClinical"))
-# setMethod("cbClinical", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, meta=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
-#   
-#   host <- object@config$host
-#   species <- object@config$species
-#   version <- object@config$version
-#   categ <- "feature"
-#   subcateg<- "clinical"
-#   ids <- ids
-#   resource <- resource
-#   result <- fetchCellbase(file=NULL,host=host, version=version, species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=NULL,...)
-#   data <- CellbaseResult(cellbaseData=result)
-#   return(data)
-# })
+############# Partially implemented
+setGeneric("cbClinical", function(object, genes=NULL,genome=NULL,region=NULL,so=NULL,rs=NULL,rcv=NULL,...) standardGeneric("cbClinical"))
+setMethod("cbClinical", "CellbaseQuery",  definition = function(object,genes=NULL,genome=NULL,region=NULL,so=NULL,rs=NULL,rcv=NULL,...) {
+
+  host <- object@config$host
+  species <- object@config$species
+  version <- object@config$version
+  categ <- "feature"
+  subcateg<- "clinical"
+  ids <- NULL
+  resource <- "all"
+  if(!is.null(genes)){
+    genes <- paste0(genes,collapse = ",")
+    genes <- paste("genes=",genes,sep = "")
+  }
+ 
+  #genome <- paste("genome=",genes,sep = "")
+  if(!is.null(so)){
+    so <- paste0(so,collapse = ",")
+    so <- paste("so=",so,sep = "")
+  }
+  if(!is.null(region)){
+    region <- paste0(region,collapse = ",")
+    region <- paste("region=",region,sep = "")
+  }
+  if(!is.null(rs)){
+    rs <- paste0(rs,collapse = ",")
+    rs <- paste("rs=",rs,sep = "") 
+  }
+ if(!is.null(rcv)){
+   rcv <- paste0(rcv,collapse = ",")
+   rcv <- paste("rcv=",rcv,sep = "")
+ }
+  filter <- c(genes=genes,so=so,region=region,rs=rs,rcv=rcv)
+  filter <- paste(filter,collapse = "&")
+  result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=filter,...)
+  data <- CellbaseResult(cellbaseData=result)
+  return(data)
+})
 
 ###
-setGeneric("cbGene", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL, ...) standardGeneric("cbGene"))
+setGeneric("cbGene", function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=filter, ...) standardGeneric("cbGene"))
 setMethod("cbGene", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL, species=NULL, categ, subcateg,ids,resource,filter=NULL,...) {
   
   host <- object@config$host
