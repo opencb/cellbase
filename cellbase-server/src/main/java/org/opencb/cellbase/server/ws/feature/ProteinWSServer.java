@@ -153,7 +153,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/gene")
-    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein")
+    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein", hidden = true)
     public Response getGene(@PathParam("proteinId") String query) {
         return null;
     }
