@@ -6,7 +6,7 @@ CellbaseQuery <- setClass("CellbaseQuery",
                           slots = c(config="list",hosts="vector",species="list",categories="vector"),
                           prototype = prototype(
                             config=list(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
-                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=4,genome="GRCh37"),
+                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=4),
                             hosts=c("http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"),
                             species=list(human="hsapiens",mouse="mmusculus",rat="rnorvegicus",chimp="ptroglodytes",
                                          gorilla="ggorilla", orangutan="pabelii",macaque="mmulatta",pig="sscrofa",
@@ -45,8 +45,8 @@ setMethod("getCellbase", "CellbaseQuery",  definition = function(object,file=NUL
 ##############
 ##############
 ############# Partially implemented
-setGeneric("cbClinical", function(object, genes=NULL,genome=NULL,region=NULL,so=NULL,rs=NULL,rcv=NULL,...) standardGeneric("cbClinical"))
-setMethod("cbClinical", "CellbaseQuery",  definition = function(object,genes=NULL,genome=NULL,region=NULL,so=NULL,rs=NULL,rcv=NULL,...) {
+setGeneric("cbClinical", function(object, genes=NULL,genome=NULL,region=NULL,so=NULL,rs=NULL,rcv=NULL,phenotype=NULL,...) standardGeneric("cbClinical"))
+setMethod("cbClinical", "CellbaseQuery",  definition = function(object,genes=NULL,genome=NULL,region=NULL,so=NULL,rs=NULL,rcv=NULL,phenotype=NULL,...) {
 
   host <- object@config$host
   species <- object@config$species
@@ -57,7 +57,7 @@ setMethod("cbClinical", "CellbaseQuery",  definition = function(object,genes=NUL
   resource <- "all"
   if(!is.null(genes)){
     genes <- paste0(genes,collapse = ",")
-    genes <- paste("genes=",genes,sep = "")
+    genes <- paste("gene=",genes,sep = "")
   }
  
   #genome <- paste("genome=",genes,sep = "")
@@ -77,7 +77,12 @@ setMethod("cbClinical", "CellbaseQuery",  definition = function(object,genes=NUL
    rcv <- paste0(rcv,collapse = ",")
    rcv <- paste("rcv=",rcv,sep = "")
  }
-  filter <- c(genes=genes,so=so,region=region,rs=rs,rcv=rcv)
+  if(!is.null(phenotype)){
+    phenotype <- paste0(phenotype,collapse = ",")
+    phenotype <- paste("phenotype=",phenotype,sep = "")
+  }
+  limit <- "limit=1000"
+  filter <- c(genes=genes,so=so,region=region,rs=rs,rcv=rcv,phenotype=phenotype,limit=limit)
   filter <- paste(filter,collapse = "&")
   result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL,species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource,filter=filter,...)
   data <- CellbaseResult(cellbaseData=result)
