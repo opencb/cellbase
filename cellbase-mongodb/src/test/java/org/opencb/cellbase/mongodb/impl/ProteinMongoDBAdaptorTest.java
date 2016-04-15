@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
  * Created by fjlopez on 14/04/16.
  */
 public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
-    @Ignore
+
     @Test
     public void get() throws Exception {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
@@ -28,6 +28,10 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("limit", 3);
         QueryResult<Entry> queryResult = proteinDBAdaptor.get(new Query(), queryOptions);
         assertEquals(queryResult.getResult().size(), 3);
+        assertEquals(queryResult.getNumTotalResults(), 20193);
+        assertEquals(queryResult.getResult().get(0).getAccession().get(1), "B2R8Q1");
+        assertEquals(queryResult.getResult().get(1).getAccession().get(0), "Q9UKT9");
+        assertEquals(queryResult.getResult().get(2).getName().get(0), "MKS1_HUMAN");
     }
 
     @Test
