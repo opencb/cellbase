@@ -80,7 +80,7 @@
                            data-show-pagination-switch="true" data-show-export="true">
 
                     </table>
-                    <div id="container"></div>
+                    <div id="{{prefix}}Container"></div>
                 </div>
 
                 <!--Gene Trait Association Tab-->
@@ -230,7 +230,7 @@
                     }
                     console.log(mafArray)
 
-                    $('#container').highcharts({
+                    $('#' + _this.prefix + 'Container').highcharts({
                         chart: {
                             type: 'bar'
                         },
