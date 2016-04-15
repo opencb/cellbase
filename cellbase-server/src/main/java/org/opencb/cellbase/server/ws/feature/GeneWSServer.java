@@ -366,7 +366,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
-            queryOptions.add("gene", geneId);
+            query.put("gene", geneId);
             return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
