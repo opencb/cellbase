@@ -144,14 +144,13 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 return entry.getFileName().toString().endsWith(".vep");
             });
 
+            DataWriter dataWriter = getDataWriter(output.toString());
+            ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+            List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>>
+                    variantAnnotatorTaskList = getBenchmarkTaskList();
             for (Path entry : stream) {
                 logger.info("Processing file '{}'", entry.toString());
                 DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
-                List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>>
-                        variantAnnotatorTaskList = getBenchmarkTaskList();
-                DataWriter dataWriter = getDataWriter(output.toString());
-
-                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
                 ParallelTaskRunner<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
                         = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
                 runner.run();

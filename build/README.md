@@ -27,7 +27,7 @@ CellBase is versioned following the rules from [Semantic versioning](http://semv
 ### Maintainers
 We recommend to contact CellBase developers by writing to OpenCB mailing list opencb@googlegroups.com. The main developers and maintainers are:
 * Ignacio Medina (im411@cam.ac.uk) (_Founder and Project Leader_)
-* Javier Lopez (fjlopez@ebi.ac.uk)
+* Javier Lopez (javier.lopez@genomicsengland.co.uk)
 * Pablo Arce (pablo.arce@bioinfomgp.org)
 
 ##### Other Contributors
@@ -70,7 +70,7 @@ Latest stable release at **_master_** branch can be downloaded executing:
 
 
 ### Build
-We use maven to inject the properties values, you need to add this maven configuration to the profiles section at your _~.m2/settings.xml_, you may need to change some values:
+In case the CellBase installation requires to access a self-maintained installation of the CellBase database, database connection credentials must be set. We use maven to inject the credential values, you need to add this maven configuration to the profiles section at your _~.m2/settings.xml_, you may need to change these values according to your particular installation:
 
     <profile>
      <id>localhost</id>
@@ -78,7 +78,7 @@ We use maven to inject the properties values, you need to add this maven configu
        <activeByDefault>true</activeByDefault>
      </activation>
      <properties>
-       <CELLBASE.DB.HOST>localhost</CELLBASE.DB.HOST>
+       <CELLBASE.DB.HOST>localhost:27017</CELLBASE.DB.HOST>
        <CELLBASE.DB.PORT>27017</CELLBASE.DB.PORT>
        <CELLBASE.DB.USER></CELLBASE.DB.USER>
        <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
@@ -86,6 +86,7 @@ We use maven to inject the properties values, you need to add this maven configu
        <CELLBASE.DB.MONGODB.READPREFERENCE>nearest</CELLBASE.DB.MONGODB.READPREFERENCE> 
        <CELLBASE.VERSION>v3</CELLBASE.VERSION> 
        <CELLBASE.ENSEMBL.LIBS>/home/imedina/apis/ensembl/api_79</CELLBASE.ENSEMBL.LIBS> 
+       <CELLBASE.DB.MONGODB.REPLICASET></CELLBASE.DB.MONGODB.REPLICASET>
      </properties>
      </profile>
 
@@ -95,7 +96,7 @@ Now you can build CellBase by executing the following command from the root of t
     
 Remember that **_develop_** branch dependencies are not ensured to be deployed at Maven Central, you may need to clone and install **_develop_** branches from OpenCB _biodata_ and _datastore_ repositories. After this you should have this file structure in **_cellbase-app/build_**:
 
-    cellbase-app/build/
+    cellbase/build/
     ├── bin
     ├── cellbase.war
     ├── configuration.json
@@ -104,7 +105,6 @@ Remember that **_develop_** branch dependencies are not ensured to be deployed a
     ├── LICENSE
     ├── mongodb-scripts
     └── README.md
-
 
 You can copy the content of the _build_ folder into any directory such as _/opt/cellbase_.
 
