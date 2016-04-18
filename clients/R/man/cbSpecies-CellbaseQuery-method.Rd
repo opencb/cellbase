@@ -17,4 +17,13 @@ A method for getting the avaiable species from the cellbase web services
 \details{
 A method for getting the avaiable species from the cellbase web services
 }
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ res <- cbSpecies(object=cb)
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
+}
 

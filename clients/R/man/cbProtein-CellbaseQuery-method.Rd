@@ -12,7 +12,7 @@
 \arguments{
 \item{object}{an object of class CellbaseQuery}
 
-\item{ids}{a charcter vector of the ids to be queried}
+\item{ids}{a charcter vector of uniprot ids to be queried}
 
 \item{resource}{a charcter vector to specify the ids to be queried}
 
@@ -23,5 +23,14 @@ an object of class CellbaseResult which holds a dataframe
 }
 \description{
 A method to query protein data from Cellbase web services
+}
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ res <- cbProtein(object=cb, ids="O15350", resource="sequence")
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
 }
 

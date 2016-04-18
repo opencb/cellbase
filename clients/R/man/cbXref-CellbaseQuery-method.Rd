@@ -13,7 +13,7 @@
 
 \item{ids}{a charcter vector of the ids to be queried}
 
-\item{resource}{a charcter vector to specify the ids to be queried}
+\item{resource}{a charcter vector to specify the ids to be queried can be any of "xref", "gene", "starts"with", or "contains"}
 
 \item{filters}{a object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
 }
@@ -26,7 +26,7 @@ A method to query cross reference data from Cellbase web services
 \examples{
 library(cellbaseR)
  cb <- CellbaseQuery()
- res <- cbTranscript(object=cb, ids="ENST00000373644", resource="info")
+ res <- cbXref(object=cb, ids="ENST00000373644", resource="xref")
 }
 \seealso{
 for more information about the cellbase webservices see 

@@ -1,3 +1,5 @@
+# we need to adjust the output for the protein and Genomesequence methods
+#
 fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,species=species, categ, subcateg,ids,resource,filters=NULL,batch_size=NULL,num_threads=NULL,...){
   batch_size <- batch_size
   num_threads <- num_threads

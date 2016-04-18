@@ -26,4 +26,13 @@ CellbaseParam(genome = character(), gene = character(),
 A constructor function for CellbaseParam
 use the CellbaseParam object to control what results are returned from the CellbaseQuery methods
 }
+\examples{
+library(cellbaseR)
+cbParam <- CellbaseParam(genome="GRCh38",gene=c("TP73","TET1"))
+print(cbParam)
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
+}
 
