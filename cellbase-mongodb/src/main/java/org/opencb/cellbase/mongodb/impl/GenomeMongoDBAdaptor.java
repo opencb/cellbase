@@ -55,7 +55,8 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     @Override
     public QueryResult getGenomeInfo(QueryOptions queryOptions) {
-        return genomeInfoMongoDBCollection.find(new Document(), new QueryOptions());
+        return genomeInfoMongoDBCollection.find(new Document(), queryOptions);
+//        return genomeInfoMongoDBCollection.find(new Document(), new QueryOptions());
     }
 
     @Override

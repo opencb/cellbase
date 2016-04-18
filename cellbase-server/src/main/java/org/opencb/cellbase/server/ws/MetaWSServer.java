@@ -17,6 +17,9 @@
 package org.opencb.cellbase.server.ws;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -49,12 +52,17 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/versions")
+    @ApiOperation(httpMethod = "GET", value = "Returns source urls used to build current CellBase installation",
+            response = CellBaseConfiguration.DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion() {
         return createOkResponse(cellBaseConfiguration.getDownload(), MediaType.APPLICATION_JSON_TYPE);
     }
 
     @GET
     @Path("/species")
+    @ApiOperation(httpMethod = "GET", value = "Returns all potentially available species. Please note that not all of "
+            + " them may be available in this particular CellBase installation.",
+            response = CellBaseConfiguration.SpeciesProperties.class, responseContainer = "QueryResponse")
     public Response getSpecies() {
         return getAllSpecies();
     }
@@ -64,7 +72,12 @@ public class MetaWSServer extends GenericRestWSServer {
      */
     @GET
     @Path("/{category}")
-    public Response getCategory(@PathParam("category") String category) {
+    @ApiOperation(httpMethod = "GET", value = "Returns available subcategories for a given category",
+            response = String.class, responseContainer = "QueryResponse")
+    public Response getCategory(@PathParam("category")
+                                @ApiParam(name = "category", value = "String containing the name of the caregory",
+                                            allowableValues = "feature,genomic,network,regulatory", required = true)
+                                            String category) {
         if ("feature".equalsIgnoreCase(category)) {
             return createOkResponse("exon\ngene\nkaryotype\nprotein\nsnp\ntranscript");
         }
@@ -82,6 +95,8 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{species}/{category}/{subcategory}")
+    @ApiOperation(httpMethod = "GET", value = "To be fixed",
+            response = CellBaseConfiguration.SpeciesProperties.class, responseContainer = "QueryResponse", hidden = true)
     public Response getSubcategory(@PathParam("species") String species, @PathParam("category") String category,
                                    @PathParam("subcategory") String subcategory) {
         return getCategory(category);
