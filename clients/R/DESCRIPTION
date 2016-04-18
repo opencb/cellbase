@@ -6,7 +6,7 @@ Version: 0.1.0
 Author: Mohammed OE Abdallah
 Maintainer: Mohammed OE Abdallah <mesiddieg@gmail.com>
 Description: Classes and methods for querying the cellbase web services
-License: GPL-3
+License: Apache Licence v2
 Depends:
     R(>= 3.2.2),
     RCurl,
