@@ -27,7 +27,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
 
   if(!is.null(file)){
     grls <- createURL(file = file,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,...)
-    content <- callREST <- function(grls,async=TRUE)
+    content <- callREST(grls = grls,async=TRUE)
     ds <- parseResponse(content=content,parallel = TRUE)
 
 

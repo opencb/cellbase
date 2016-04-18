@@ -1,4 +1,4 @@
-library(methods)
+require(methods)
 #' @include cellbase_functions.R
 source("/home/melsiddieg/appl/cellbase/clients/R/R/cellbase_functions.R")
 #' This is an S4 class which defines the CellbaseQuery object which holds the default
@@ -8,7 +8,7 @@ source("/home/melsiddieg/appl/cellbase/clients/R/R/cellbase_functions.R")
 #' configuration required by CellbaseQuery methods to connect to the
 #' cellbase web services. By defult it is configured to query human
 #' data based on the GRCh37 genome assembly
-#' @import methods
+#' @import methods RCurl 
 #' @slot config A list holding the default configuration values for connecting to the cellbase webservices
 #' @return An object of class CellbaseQuery
 #' @export CellbaseQuery
@@ -23,12 +23,6 @@ CellbaseQuery <- setClass("CellbaseQuery",
                             config=list(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
                                         version = "v4/",species="hsapiens/",batch_size=200,num_threads=4),
                             hosts=c("http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"),
-                            species=list(human="hsapiens",mouse="mmusculus",rat="rnorvegicus",chimp="ptroglodytes",
-                                         gorilla="ggorilla", orangutan="pabelii",macaque="mmulatta",pig="sscrofa",
-                                         dog="cfamiliaris",horse="ecaballus",rabbit="ocuniculus",chicken="ggallus",
-                                         cow="btaurus",cat="fcatus",zebrafish="drerio",fruitfly="dmelanogaster",
-                                         mosquito="agambiae",worm="celegans",yeast="scerevisiae",
-                                         malaria_parasite="pfalciparum"),
                             categories=c("Genomic","Feature","Regulatory","Network")
                           )
 )
@@ -211,7 +205,7 @@ setGeneric("cbRegion", function(object,ids,resource,filters, ...) standardGeneri
 #' @examples 
 #' library(cellbaseR)
 #'  cb <- CellbaseQuery()
-#'  res <- cbRegion(object=cb, ids="17-:1000000-1200000", resource="gene")
+#'  res <- cbRegion(object=cb, ids="17:1000000-1200000", resource="gene")
 #' @seealso for more information about the cellbase webservices see 
 #' \url{https://github.com/opencb/cellbase/wiki}
 #' @export
