@@ -2,14 +2,12 @@
 % Please edit documentation in R/cellbase_classes.R
 \name{getCellbase}
 \alias{getCellbase}
-\title{The generic method for getCellbase
-This method allows the user to query the cellbase web services without
-any predefined categories, subcategries, or resources}
+\title{The generic method for getCellbase}
 \usage{
-getCellbase(object, categ, subcateg, ids, resource, filters = NULL, ...)
+getCellbase(object, file = NULL, categ, subcateg, ids, resource,
+  filters = NULL, ...)
 }
 \description{
-The generic method for getCellbase
 This method allows the user to query the cellbase web services without
 any predefined categories, subcategries, or resources
 }

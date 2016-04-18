@@ -2,15 +2,34 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{getCellbase,CellbaseQuery-method}
+\alias{This}
+\alias{allows}
+\alias{any}
+\alias{categories,}
+\alias{cellbase}
+\alias{getCellbase}
 \alias{getCellbase,CellbaseQuery-method}
-\title{This method allows the user to query the cellbase web services without
-any predefined categories, subcategries, or resources}
+\alias{method}
+\alias{or}
+\alias{predefined}
+\alias{query}
+\alias{resources}
+\alias{services}
+\alias{subcategries,}
+\alias{the}
+\alias{to}
+\alias{user}
+\alias{web}
+\alias{without}
+\title{The generic method for getCellbase}
 \usage{
-\S4method{getCellbase}{CellbaseQuery}(object, categ, subcateg, ids, resource,
-  filters = NULL, ...)
+\S4method{getCellbase}{CellbaseQuery}(object, file = NULL, categ, subcateg,
+  ids, resource, filters = NULL, ...)
 }
 \arguments{
 \item{object}{an object of class CellbaseQuery}
+
+\item{file}{a path to a bgzipped and tabix indexed vcf file,}
 
 \item{categ}{charcter to specify the category to be queried
 this could be "feature", "genomic", "regulatory", or "network"}
@@ -19,19 +38,26 @@ this could be "feature", "genomic", "regulatory", or "network"}
 
 \item{ids}{a charcter vector of the ids to be queried}
 
-\item{resource}{a charcter vector to specify the ids to be queried}
+\item{resource}{a charcter to specify the resource to be queried}
 
 \item{filters}{an object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
 
 \item{...}{any extra arguments}
-
-\item{file}{a path to a bgzipped and tabix indexed vcf file,}
 }
 \value{
 an object of class CellbaseResult which holds a dataframe
 }
 \description{
-This method allows the user to query the cellbase web services without
-any predefined categories, subcategries, or resources
+The generic method for getCellbase
+}
+\examples{
+ library(cellbaseR)
+ cb <- CellbaseQuery
+ res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",resource="info")
+
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
 }
 

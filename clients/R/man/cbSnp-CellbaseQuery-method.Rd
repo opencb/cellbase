@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbSnp,CellbaseQuery-method}
+\alias{cbSnp}
 \alias{cbSnp,CellbaseQuery-method}
 \title{A method to query snp data from Cellbase web services}
 \usage{
@@ -23,5 +24,14 @@ an object of class CellbaseResult which holds a dataframe
 }
 \description{
 A method to query snp data from Cellbase web services
+}
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ res <- cbSnp(object=cb, ids="rs6025", resource="info")
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
 }
 

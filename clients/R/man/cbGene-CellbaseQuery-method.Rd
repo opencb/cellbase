@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbGene,CellbaseQuery-method}
+\alias{cbGene}
 \alias{cbGene,CellbaseQuery-method}
 \title{A method to query gene data from Cellbase web services}
 \usage{
@@ -23,5 +24,14 @@ an object of class CellbaseResult which holds a dataframe
 }
 \description{
 A method to query gene data from Cellbase web services
+}
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ res <- cbGene(object=cb, ids=c("TP73","TET1"), resource="clinical")
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
 }
 

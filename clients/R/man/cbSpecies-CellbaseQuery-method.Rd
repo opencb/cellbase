@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbSpecies,CellbaseQuery-method}
+\alias{cbSpecies}
 \alias{cbSpecies,CellbaseQuery-method}
 \title{A method for getting the avaiable species from the cellbase web services}
 \usage{

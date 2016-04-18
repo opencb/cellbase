@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbRegion,CellbaseQuery-method}
+\alias{cbRegion}
 \alias{cbRegion,CellbaseQuery-method}
 \title{A method to query region data from Cellbase web services}
 \usage{
@@ -23,5 +24,14 @@ an object of class CellbaseResult which holds a dataframe
 }
 \description{
 A method to query region data from Cellbase web services
+}
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ res <- cbRegion(object=cb, ids="17-:1000000-1200000", resource="gene")
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
 }
 

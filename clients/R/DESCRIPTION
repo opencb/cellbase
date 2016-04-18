@@ -11,7 +11,12 @@ Depends:
     R(>= 3.2.2),
     RCurl,
     jsonlite,methods,pbapply,R.utils,parallel,
-    Rsamtools, doMC
+    Rsamtools,
+    doMC
 RoxygenNote: 5.0.1
-Suggests: VariantAnnotation
+Suggests:
+    VariantAnnotation
 Lazy: TRUE
+Collate:
+    'cellbase_functions.R'
+    'cellbase_classes.R'

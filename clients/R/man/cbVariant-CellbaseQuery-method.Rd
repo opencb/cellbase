@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbVariant,CellbaseQuery-method}
+\alias{cbVariant}
 \alias{cbVariant,CellbaseQuery-method}
 \title{A method to query variant data from Cellbase web services}
 \usage{
@@ -24,5 +25,14 @@ an object of class CellbaseResult which holds a dataframe
 }
 \description{
 A method to query variant data from Cellbase web services
+}
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ res <- cbVariant(object=cb, ids="19:45411941:T:C", resource="annotation")
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
 }
 

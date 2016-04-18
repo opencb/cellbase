@@ -2,11 +2,11 @@
 
 export(CellbaseParam)
 export(CellbaseQuery)
-export(cbClinical)
 exportClasses(CellbaseQuery)
 exportClasses(CellbaseResult)
 exportMethods("[")
 exportMethods(annotateVcf)
+exportMethods(cbClinical)
 exportMethods(cbGene)
 exportMethods(cbGenomeSequence)
 exportMethods(cbProtein)

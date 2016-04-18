@@ -4,10 +4,13 @@
 \name{CellbaseQuery-class}
 \alias{CellbaseQuery}
 \alias{CellbaseQuery-class}
-\title{This class defines the CellbaseQuery object which holds the default
+\title{This is an S4 class which defines the CellbaseQuery object which holds the default
 configuration for connecting to the cellbase web services}
+\value{
+An object of class CellbaseQuery
+}
 \description{
-This class defines the CellbaseQuery object which holds the default
+This is an S4 class which defines the CellbaseQuery object which holds the default
 configuration for connecting to the cellbase web services
 }
 \details{
@@ -15,5 +18,15 @@ This class defines the CellbaseQuery object which holds the default
 configuration required by CellbaseQuery methods to connect to the
 cellbase web services. By defult it is configured to query human
 data based on the GRCh37 genome assembly
+}
+\section{Slots}{
+
+\describe{
+\item{\code{config}}{A list holding the default configuration values for connecting to the cellbase webservices}
+}}
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ print(cb)
 }
 

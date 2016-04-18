@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbProtein,CellbaseQuery-method}
+\alias{cbProtein}
 \alias{cbProtein,CellbaseQuery-method}
 \title{A method to query protein data from Cellbase web services}
 \usage{

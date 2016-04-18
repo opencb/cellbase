@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbXref,CellbaseQuery-method}
+\alias{cbXref}
 \alias{cbXref,CellbaseQuery-method}
 \title{A method to query cross reference data from Cellbase web services}
 \usage{
@@ -21,5 +22,14 @@ an object of class CellbaseResult which holds a dataframe
 }
 \description{
 A method to query cross reference data from Cellbase web services
+}
+\examples{
+library(cellbaseR)
+ cb <- CellbaseQuery()
+ res <- cbTranscript(object=cb, ids="ENST00000373644", resource="info")
+}
+\seealso{
+for more information about the cellbase webservices see 
+\url{https://github.com/opencb/cellbase/wiki}
 }
 

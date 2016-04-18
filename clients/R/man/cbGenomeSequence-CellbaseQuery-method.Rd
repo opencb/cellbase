@@ -2,6 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \docType{methods}
 \name{cbGenomeSequence,CellbaseQuery-method}
+\alias{cbGenomeSequence}
 \alias{cbGenomeSequence,CellbaseQuery-method}
 \title{A method to query sequence data from Cellbase web services}
 \usage{
