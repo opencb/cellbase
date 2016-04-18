@@ -20,7 +20,9 @@
 
 <dom-module id="cellbase-variantannotation-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+
+        </style>
         <div>
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#{{prefix}}VariantAnnotationConsequenceTypes" role="tab"
@@ -264,24 +266,73 @@
                             [
                                 {
                                     title: 'Gene',
-                                    field: 'geneName'
+                                    field: 'geneName',
+                                    colspan: 1,
+                                    rowspan: 2
+
                                 },
                                 {
                                     title: 'Ensembl Gene',
-                                    field: 'ensemblGeneId'
+                                    field: 'ensemblGeneId',
+                                    colspan: 1,
+                                    rowspan: 2
                                 },
                                 {
                                     title: 'Ensembl Transcript',
-                                    field: 'ensemblTranscriptId'
+                                    field: 'ensemblTranscriptId',
+                                    colspan: 1,
+                                    rowspan: 2
                                 },
                                 {
                                     title: 'Biotype',
-                                    field: 'biotype'
+                                    field: 'biotype',
+                                    colspan: 1,
+                                    rowspan: 2
                                 },
                                 {
                                     title: 'Sequence Ontology Term',
-                                    formatter: _this.seqOntologyFormatter
+                                    formatter: _this.seqOntologyFormatter,
+                                    colspan: 1,
+                                    rowspan: 2
+                                },
+                                {
+                                    title: 'Protein Variant Annotation',
+                                    colspan: 5,
+                                    rowspan: 1
                                 }
+                            ],
+                            [
+                                {
+                                    title: 'Uniprot Accession',
+                                    field: 'proteinVariantAnnotation.uniprotAccession',
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Position',
+                                    field: 'proteinVariantAnnotation.position',
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Ref/Alt',
+                                    formatter: _this.proteinAlleleFormatter,
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Sift',
+                                    formatter: _this.siftScoreFormatter,
+                                    cellStyle: _this.cellStyle,
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Polyphen',
+                                    formatter: _this.polyphenScoreFormatter,
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
                             ]
                         ]
                     });
@@ -351,7 +402,53 @@
                 let soTerm = row.sequenceOntologyTerms[0];
                 return soTerm.name + '(' + soTerm.accession + ')';
             },
-            alleleFormatter: function (value, row, index) {
+            proteinAlleleFormatter: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined){
+                    return row.proteinVariantAnnotation.reference + "/" + row.proteinVariantAnnotation.alternate;
+                } else {
+                    return '-';
+                }
+            },
+            siftScoreFormatter: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined){
+                    let sub = row.proteinVariantAnnotation.substitutionScores;
+                    for (let i in sub) {
+                        if (sub[i].source == "sift") {
+                            return sub[i].score;
+//                            break;
+                        }
+                    }
+                } else {
+                    return '-';
+                }
+            },
+            polyphenScoreFormatter: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined){
+                    let sub = row.proteinVariantAnnotation.substitutionScores;
+                    for (let i in sub) {
+                        if (sub[i].source == "polyphen") {
+                            return sub[i].score;
+//                            break;
+                        }
+                    }
+                } else {
+                    return '-';
+                }
+            },
+            cellStyle: function (value, row, index) {
+
+            var classes = ['active', 'success', 'info', 'warning', 'danger'];
+            if (index % 2 === 0 && index / 2 < classes.length) {
+                return {
+                    //classes: classes[index / 2]
+                    css: {
+                        "background-color": "red"
+                    }
+                };
+            }
+            return {};
+        },
+        alleleFormatter: function (value, row, index) {
                 return row.refAllele + "/" + row.altAllele;
             }
         });
