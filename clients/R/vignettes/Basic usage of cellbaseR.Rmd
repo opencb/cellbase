@@ -34,7 +34,9 @@ cb
 making a query through cbRegion to get all the clinically relevant variants in a specific region
 ```{r, eval=FALSE}
 
-res <- cbRegion(object = cb,ids = "17:1000000-1100000",resource = "clinical")
+res <- cellbaseR::cbRegion(object = cb,ids = "17:1000000-1100000",resource = "clinical")
+# to get the data 
+res <- cellbaseR::cellbaseData(res)
 
 ```
 Getting annotation for a specific variant
@@ -42,7 +44,8 @@ Getting annotation for a specific variant
 
 ```{r,eval=FALSE}
 res2 <- cbVariant(object =cb,ids = "1:169549811:A:G",resource = "annotation")
-
+# to get the data 
+res2 <- cellbaseR::cellbaseData(res2)
 ```
 
 
