@@ -28,7 +28,7 @@ A method to query region data from Cellbase web services
 \examples{
 library(cellbaseR)
  cb <- CellbaseQuery()
- res <- cbRegion(object=cb, ids="17-:1000000-1200000", resource="gene")
+ res <- cbRegion(object=cb, ids="17:1000000-1200000", resource="gene")
 }
 \seealso{
 for more information about the cellbase webservices see 
