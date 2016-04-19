@@ -21,6 +21,13 @@
 <dom-module id="cellbase-variantannotation-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles">
+            .tolerated {
+                background-color: grey;
+            }
+
+            .deleterious {
+                background-color: red;
+            }
 
         </style>
         <div>
@@ -42,7 +49,8 @@
             <div class="tab-content">
                 <!--Consequence types Tab-->
                 <div role="tabpanel" class="tab-pane active" id="{{prefix}}VariantAnnotationConsequenceTypes">
-                    <table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true" data-pagination="true"
+                    <table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true"
+                           data-pagination="true"
                            data-page-list="[10, 25, 50]"
                            data-show-pagination-switch="true" data-show-export="true">
 
@@ -51,7 +59,8 @@
 
                 <!--Population frequency Tab-->
                 <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationPopulationFrequencies">
-                    <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true" data-pagination="true"
+                    <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true"
+                           data-pagination="true"
                            data-page-list="[10, 25, 50]"
                            data-show-pagination-switch="true" data-show-export="true">
 
@@ -87,10 +96,12 @@
                                 <td>{{item.accession}}</td>
                                 <td>{{item.clinicalSignificance}}</td>
                                 <td>
-                                    <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}} <br></template>
+                                    <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}} <br>
+                                    </template>
                                 </td>
                                 <td>
-                                    <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br> </template>
+                                    <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br>
+                                    </template>
                                 </td>
                                 <td>{{item.reviewStatus}}</td>
                             </tr>
@@ -262,6 +273,8 @@
                     $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable('destroy');
                     $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable({
                         data: _this.variantAnnotation.consequenceTypes,
+                        detailView: true,
+                        detailFormatter: _this.detailFormatter,
                         columns: [
                             [
                                 {
@@ -323,13 +336,14 @@
                                 {
                                     title: 'Sift',
                                     formatter: _this.siftScoreFormatter,
-                                    cellStyle: _this.cellStyle,
+                                    cellStyle: _this.siftCellStyle,
                                     colspan: 1,
                                     rowspan: 1
                                 },
                                 {
                                     title: 'Polyphen',
                                     formatter: _this.polyphenScoreFormatter,
+                                    cellStyle: _this.polyphenCellStyle,
                                     colspan: 1,
                                     rowspan: 1
                                 },
@@ -403,19 +417,57 @@
                 return soTerm.name + '(' + soTerm.accession + ')';
             },
             proteinAlleleFormatter: function (value, row, index) {
-                if (row.proteinVariantAnnotation !== undefined){
+                if (row.proteinVariantAnnotation !== undefined) {
                     return row.proteinVariantAnnotation.reference + "/" + row.proteinVariantAnnotation.alternate;
                 } else {
                     return '-';
                 }
             },
+            detailFormatter: function (index, row) {
+                if (row.proteinVariantAnnotation !== undefined) {
+//                    if (row.proteinVariantAnnotation.uniprotVariantId !== undefined) {
+                        row.proteinVariantAnnotation.uniprotVariantId = row.proteinVariantAnnotation.uniprotVariantId || '-';
+                        row.proteinVariantAnnotation.functionalDescription = row.proteinVariantAnnotation.functionalDescription || '-';
+                        row.proteinVariantAnnotation.keywords = row.proteinVariantAnnotation.keywords || '-';
+                        var features = row.proteinVariantAnnotation.features || '-';
+                    var html = [];
+                    var result = "";
+                    if (features != '-') {
+                        var xxx = [];
+                        for (let i in features) {
+                            features[i].id = features[i].id || '-';
+                            features[i].type = features[i].type || '-';
+                            features[i].description = features[i].description || '-';
+                            xxx.push( '<span>{ ID: ' + features[i].id + ', Start:' + features[i].start  + ', End:' + features[i].end +
+                                    ', Type:' + features[i].type + ', Description:' + features[i].description + ' }</span> <br>');
+                        }
+                        result = xxx.join('');
+                    } else {
+                        result = '-';
+                    }
+
+                        html.push('<b>Uniprot Variant ID:</b> ' + row.proteinVariantAnnotation.uniprotVariantId +
+                                '<br> <b>Functional Description:</b> ' + row.proteinVariantAnnotation.functionalDescription +
+                                '<br> <b>Keywords:</b> ' + row.proteinVariantAnnotation.keywords +
+                                '<br> <b>Features:</b> ' + result);
+                        return html.join('');
+                    }
+//                else {
+//                        var html = [];
+//                        html.push('<b>Uniprot Variant ID:</b> - <br> <b>Functional Description:</b> - <br> <b>Keywords:</b> - <br> <b>Features:</b> -');
+//                        return html.join('');
+//                    }
+//                }
+            else {
+                    return "No Protein Variant Annotation";
+                }
+            },
             siftScoreFormatter: function (value, row, index) {
-                if (row.proteinVariantAnnotation !== undefined){
+                if (row.proteinVariantAnnotation !== undefined) {
                     let sub = row.proteinVariantAnnotation.substitutionScores;
                     for (let i in sub) {
                         if (sub[i].source == "sift") {
                             return sub[i].score;
-//                            break;
                         }
                     }
                 } else {
@@ -423,32 +475,71 @@
                 }
             },
             polyphenScoreFormatter: function (value, row, index) {
-                if (row.proteinVariantAnnotation !== undefined){
+                if (row.proteinVariantAnnotation !== undefined) {
                     let sub = row.proteinVariantAnnotation.substitutionScores;
                     for (let i in sub) {
                         if (sub[i].source == "polyphen") {
                             return sub[i].score;
-//                            break;
                         }
                     }
                 } else {
                     return '-';
                 }
             },
-            cellStyle: function (value, row, index) {
-
-            var classes = ['active', 'success', 'info', 'warning', 'danger'];
-            if (index % 2 === 0 && index / 2 < classes.length) {
-                return {
-                    //classes: classes[index / 2]
-                    css: {
-                        "background-color": "red"
+            siftCellStyle: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined) {
+                    let sift = row.proteinVariantAnnotation.substitutionScores[0];
+                    switch (sift.description) {
+                        case 'tolerated':
+                            return {
+                                css: {
+                                    "background-color": "green"
+                                }
+                            };
+                        case 'deleterious':
+                            return {
+                                css: {
+                                    "background-color": "red"
+                                }
+                            };
                     }
-                };
-            }
-            return {};
-        },
-        alleleFormatter: function (value, row, index) {
+                }
+                return {};
+            },
+            polyphenCellStyle: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined) {
+                    let polyphen = row.proteinVariantAnnotation.substitutionScores[1];
+                    switch (polyphen.description) {
+                        case 'probably damaging':
+                            return {
+                                css: {
+                                    "background-color": "red"
+                                }
+                            };
+                        case 'possibly damaging':
+                            return {
+                                css: {
+                                    "background-color": "orange"
+                                }
+                            };
+                        case 'benign':
+                            return {
+                                css: {
+                                    "background-color": "green"
+                                }
+                            };
+                        case 'unknown':
+                            return {
+                                css: {
+                                    "background-color": "blue"
+                                }
+                            };
+                    }
+                }
+                return {};
+            },
+
+            alleleFormatter: function (value, row, index) {
                 return row.refAllele + "/" + row.altAllele;
             }
         });
