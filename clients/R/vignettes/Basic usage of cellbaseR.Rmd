@@ -14,22 +14,36 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+Loading the library
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r, eval=FALSE }
+library(cellbaseR)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+## The CellbaseQuery class
 
-You can also embed plots, for example:
+Defining the CellbaseQuery object holding the config to connect to cellbase data
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r , eval=TRUE}
+cb <- cellbaseR::CellbaseQuery()
+cb
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+making a query through cbRegion to get all the clinically relevant variants in a specific region
+```{r, eval=FALSE}
+
+res <- cbRegion(object = cb,ids = "17:1000000-1100000",resource = "clinical")
+
+```
+Getting annotation for a specific variant
+
+
+```{r,eval=FALSE}
+res2 <- cbVariant(object =cb,ids = "1:169549811:A:G",resource = "annotation")
+
+```
+
+
+

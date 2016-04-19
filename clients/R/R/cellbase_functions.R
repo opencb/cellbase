@@ -26,9 +26,11 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
   }
 
   if(!is.null(file)){
+    container=list()
     grls <- createURL(file = file,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,...)
     content <- callREST(grls = grls,async=TRUE)
-    ds <- parseResponse(content=content,parallel = TRUE)
+    res_list <- parseResponse(content=content,parallel = TRUE, num_threads=num_threads)
+    ds <- res_list$result
 
 
   }else{
@@ -112,6 +114,7 @@ callREST <- function(grls,async=FALSE){
       gs <- pblapply(prp, function(x)unlist(x))
       cat("Getting the Data...............")
       content <- pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
+      content <- unlist(content)
 
     }else{
       content <- pbsapply(grls, function(x)getURI(x))
@@ -122,13 +125,13 @@ callREST <- function(grls,async=FALSE){
 
   return(content)
 }
-parseResponse <- function(content,parallel=FALSE){
+parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
 
   require(jsonlite)
   if(parallel==TRUE){
     require(parallel)
     require(doMC)
-    num_threads <- 4
+    num_threads <-num_threads
     registerDoMC(num_threads)
     ### Extracting the content in parallel
     js <- mclapply(content, function(x)fromJSON(x),mc.cores=num_threads)
@@ -137,6 +140,7 @@ parseResponse <- function(content,parallel=FALSE){
     ### Important to get correct merging of dataframe
     names(ds) <- NULL
     ds <- rbind.pages(ds)
+    nums <- NULL
     # js <- lapply(content, function(x)fromJSON(x))
     # ares <- lapply(js, function(x)x$response$result)
     # ds <- pblapply(ares,function(x)rbind.pages(x))
