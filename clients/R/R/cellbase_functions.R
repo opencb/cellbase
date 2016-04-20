@@ -29,7 +29,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
   if(!is.null(file)){
     container=list()
     grls <- createURL(file = file,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,...)
-    content <- callREST(grls = grls,async=TRUE)
+    content <- callREST(grls = grls,async=TRUE,num_threads)
     res_list <- parseResponse(content=content,parallel = TRUE, num_threads=num_threads)
     ds <- res_list$result
 
@@ -60,7 +60,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
 readIds <- function(file=file,batch_size,num_threads)
   {
   require(Rsamtools)
-  require(pbapply)
+  #require(pbapply)
   ids<- list()
   num_iter<- ceiling(R.utils::countLines(file)[[1]]/(batch_size*num_threads))
   #batchSize * numThreads
@@ -101,7 +101,7 @@ createURL <- function(file=NULL,host=host,version=version,meta=meta,species=spec
   }
   return(grls)
 }
-callREST <- function(grls,async=FALSE){
+callREST <- function(grls,async=FALSE,num_threads=num_threads){
   content <- list()
 
   require(RCurl)
@@ -110,7 +110,7 @@ callREST <- function(grls,async=FALSE){
   }else{
     require(pbapply)
     if(async==TRUE){
-      prp <- split(grls,ceiling(seq_along(grls)/4))
+      prp <- split(grls,ceiling(seq_along(grls)/num_threads))
       cat("Preparing The Asynchronus call.............")
       gs <- pblapply(prp, function(x)unlist(x))
       cat("Getting the Data...............")

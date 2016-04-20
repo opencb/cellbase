@@ -9,10 +9,6 @@ configuration for connecting to the cellbase web services}
 \value{
 An object of class CellbaseQuery
 }
-\description{
-This is an S4 class which defines the CellbaseQuery object which holds the default
-configuration for connecting to the cellbase web services
-}
 \details{
 This class defines the CellbaseQuery object which holds the default
 configuration required by CellbaseQuery methods to connect to the
