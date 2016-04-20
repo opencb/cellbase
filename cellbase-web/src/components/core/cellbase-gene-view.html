@@ -24,6 +24,8 @@
 <link rel="import" href="cellbase-drugs-view.html">
 <link rel="import" href="cellbase-phenotype-grid.html">
 <link rel="import" href="cellbase-expression-grid.html">
+<link rel="import" href="cellbase-clinvar-grid.html">
+<link rel="import" href="cellbase-cosmic-grid.html">
 <link rel="import" href="../variation/cellbase-variantannotation-view.html">
 
 
@@ -49,7 +51,7 @@
 
             <div class="tab-content" style="width: 90%">
                 <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
-                    <h4><a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a></h4>
+                    <h4>{{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)</a></h4>
                     <!--Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>-->
                     <b>Biotype:</b> {{geneObj.biotype}}<br>
                     <b>Location:</b> {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   <b>Strand:</b> {{geneObj.strand}}<br>
@@ -90,7 +92,23 @@
                 </div>
 
                 <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
-                    Clinical Variants
+                    <br>
+                    <p>
+                        <a class="btn btn-primary" data-toggle="collapse" href="#clinvarDiv" aria-expanded="false" aria-controls="clinvarDiv">
+                            Show/Hide Clinvar
+                        </a>
+                        <a class="btn btn-primary" data-toggle="collapse" href="#cosmicDiv" aria-expanded="false" aria-controls="cosmicDiv">
+                            Show/Hide Cosmic
+                        </a>
+                    </p>
+                    <div class="collapse in" id="clinvarDiv">
+                        <h4>Clinvar</h4>
+                        <cellbase-clinvar-grid data="{{clinvar}}"></cellbase-clinvar-grid>
+                    </div>
+                    <div class="collapse in" id="cosmicDiv">
+                        <h4>Cosmic</h4>
+                        <cellbase-cosmic-grid data="{{cosmic}}"></cellbase-cosmic-grid>
+                    </div>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
@@ -135,6 +153,14 @@
                 },
                 variant: {
                     type: String
+                },
+                clinvar: {
+                    type: Array,
+                    value: []
+                },
+                cosmic: {
+                    type: Array,
+                    value: []
                 }
             },
             _geneIdChanged: function(newValue, oldValue) {
@@ -162,7 +188,6 @@
                 // Variation
                 let success = function (response) {
                     let variations = response.response[0].result;
-                    console.log(variations)
                     _this.variations = variations;
                 };
                 let error = function (response) {
@@ -170,6 +195,45 @@
                 };
                 CELLBASE_CLIENT.getGeneClient(this.geneId, 'snp', {}, {success: success, error: error, async: true});
 
+                // Clinical
+//                let successClinical = function (response) {
+//                    let clinical = response.response[0].result;
+//                    let clinivarArray = [];
+//                    let cosmicArray = [];
+//                    for (let i in clinical) {
+//                        if (clinical[i].source == "clinvar") {
+//                            clinivarArray.push(clinical[i]);
+//                        }
+//                        if (clinical[i].source == "cosmic") {
+//                            cosmicArray.push(clinical[i]);
+//                        }
+//                    }
+//                    _this.clinvar = clinivarArray;
+//                    _this.cosmic = cosmicArray;
+//                };
+//                let errorClinical = function (response) {
+//                    alert("Gene ID not valid: " + _this.geneId)
+//                };
+//                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {}, {success: successClinical, error: errorClinical, async: true});
+
+                // Clinvar
+                let successClinvar = function (response) {
+                    let clinvar = response.response[0].result;
+                    _this.clinvar = clinvar;
+                };
+                let errorClinvar = function (response) {
+                    alert("Gene ID not valid: " + _this.geneId)
+                };
+                // Cosmic
+                let successCosmic = function (response) {
+                    let cosmic = response.response[0].result;
+                    _this.cosmic = cosmic;
+                };
+                let errorCosmic = function (response) {
+                    alert("Gene ID not valid: " + _this.geneId)
+                };
+                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {'source': 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
+                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {'source': 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
             },
             ready: function() {
                 this.cellbase = CELLBASE_CLIENT._config.version;
@@ -184,8 +248,6 @@
                 this.renderGenomeViewer();
             },
             onVariantSelected: function(e) {
-                console.log("onVariantSelected!")
-                console.log(e)
                 this.variant = e.detail.variant;
             },
             renderGenomeViewer: function() {

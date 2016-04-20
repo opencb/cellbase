@@ -1,0 +1,83 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-clinvar-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div style="padding: 10px; ">
+            <table id="clinvarTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-clinvar-grid',
+            properties: {
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'render'
+                }
+            },
+            render: function () {
+                $('#clinvarTable').bootstrapTable('destroy');
+                $('#clinvarTable').bootstrapTable({
+                    data: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'Accession',
+                                field: 'clinvarSet.referenceClinVarAssertion.clinVarAccession.acc'
+                            },
+                            {
+                                title: 'Clinical Significance',
+                                field: 'clinvarSet.referenceClinVarAssertion.clinicalSignificance.description'
+                            },
+                            {
+                                title: 'Traits',
+                                formatter: this.traitsFormatter
+                            },
+                            {
+                                title: 'Gene Names',
+                                formatter: this.geneNameFormatter
+                            },
+                            {
+                                title: 'Review Status',
+                                field: 'clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus'
+                            }
+                        ]
+                    ]
+                });
+            },
+            traitsFormatter: function (value, row, index) {
+                let result = [];
+                let traits = row.clinvarSet.referenceClinVarAssertion.traitSet.trait;
+                for (let trait in traits) {
+                    let names = traits[trait].name;
+                    for (let i in names) {
+                        result.push(names[i].elementValue.value);
+                    }
+                }
+                return result;
+            },
+            geneNameFormatter: function (value, row, index) {
+                let result = [];
+                let measures = row.clinvarSet.referenceClinVarAssertion.measureSet.measure;
+                for (let measure in measures) {
+                    let measureRelationships = measures[measure].measureRelationship;
+                    for (let i in measureRelationships) {
+                        let symbols = measureRelationships[i].symbol;
+                        for (let j in symbols) {
+                            result.push(symbols[j].elementValue.value);
+                        }
+                    }
+                }
+                return result;
+            }
+        });
+    </script>
+</dom-module>

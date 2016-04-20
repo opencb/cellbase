@@ -20,7 +20,16 @@
 
 <dom-module id="cellbase-variantannotation-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .tolerated {
+                background-color: grey;
+            }
+
+            .deleterious {
+                background-color: red;
+            }
+
+        </style>
         <div>
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#{{prefix}}VariantAnnotationConsequenceTypes" role="tab"
@@ -40,47 +49,23 @@
             <div class="tab-content">
                 <!--Consequence types Tab-->
                 <div role="tabpanel" class="tab-pane active" id="{{prefix}}VariantAnnotationConsequenceTypes">
-                    <!--<table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true" data-pagination="true"-->
-                           <!--data-page-list="[10, 25, 50]"-->
-                           <!--data-show-pagination-switch="true" data-show-export="true">-->
+                    <table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true"
+                           data-pagination="true"
+                           data-page-list="[10, 25, 50]"
+                           data-show-pagination-switch="true" data-show-export="true">
 
-                    <!--</table>-->
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>Gene</th>
-                            <th>Ensembl Gene</th>
-                            <th>Ensembl Transcript</th>
-                            <th>Biotype</th>
-                            <th>SO term</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <template is="dom-repeat" items="{{variantAnnotation.consequenceTypes}}" as="ct">
-                            <tr>
-                                <td>{{ct.geneName}}</td>
-                                <td>{{ct.ensemblGeneId}}</td>
-                                <td>{{ct.ensemblTranscriptId}}</td>
-                                <td>{{ct.biotype}}</td>
-                                <td>
-                                    <template is="dom-repeat" items="{{ct.sequenceOntologyTerms}}">
-                                        {{item.name}} ({{item.accession}})<br>
-                                    </template>
-                                </td>
-                            </tr>
-                        </template>
-                        </tbody>
                     </table>
                 </div>
 
                 <!--Population frequency Tab-->
                 <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationPopulationFrequencies">
-                    <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true" data-pagination="true"
+                    <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true"
+                           data-pagination="true"
                            data-page-list="[10, 25, 50]"
                            data-show-pagination-switch="true" data-show-export="true">
 
                     </table>
-                    <div id="container"></div>
+                    <div id="{{prefix}}Container"></div>
                 </div>
 
                 <!--Gene Trait Association Tab-->
@@ -111,10 +96,12 @@
                                 <td>{{item.accession}}</td>
                                 <td>{{item.clinicalSignificance}}</td>
                                 <td>
-                                    <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}} <br></template>
+                                    <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}} <br>
+                                    </template>
                                 </td>
                                 <td>
-                                    <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br> </template>
+                                    <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br>
+                                    </template>
                                 </td>
                                 <td>{{item.reviewStatus}}</td>
                             </tr>
@@ -219,7 +206,6 @@
             _variantChanged: function () {
                 let _this = this;
                 var success = function (response) {
-                    console.log(response)
                     _this.variantAnnotation = response.response[0].result[0];
 
                     let popArray = [];
@@ -228,9 +214,8 @@
                         popArray.push(_this.variantAnnotation.populationFrequencies[i].study + "-" + _this.variantAnnotation.populationFrequencies[i].population);
                         mafArray.push(Math.min(_this.variantAnnotation.populationFrequencies[i].refAlleleFreq, _this.variantAnnotation.populationFrequencies[i].altAlleleFreq))
                     }
-                    console.log(mafArray)
 
-                    $('#container').highcharts({
+                    $('#' + _this.prefix + 'Container').highcharts({
                         chart: {
                             type: 'bar'
                         },
@@ -287,7 +272,83 @@
                     // Consequence Type grid definition
                     $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable('destroy');
                     $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable({
-                        data: _this.variantAnnotation.consequenceTypes
+                        data: _this.variantAnnotation.consequenceTypes,
+                        detailView: true,
+                        detailFormatter: _this.detailFormatter,
+                        columns: [
+                            [
+                                {
+                                    title: 'Gene',
+                                    field: 'geneName',
+                                    colspan: 1,
+                                    rowspan: 2
+
+                                },
+                                {
+                                    title: 'Ensembl Gene',
+                                    field: 'ensemblGeneId',
+                                    colspan: 1,
+                                    rowspan: 2
+                                },
+                                {
+                                    title: 'Ensembl Transcript',
+                                    field: 'ensemblTranscriptId',
+                                    colspan: 1,
+                                    rowspan: 2
+                                },
+                                {
+                                    title: 'Biotype',
+                                    field: 'biotype',
+                                    colspan: 1,
+                                    rowspan: 2
+                                },
+                                {
+                                    title: 'Sequence Ontology Term',
+                                    formatter: _this.seqOntologyFormatter,
+                                    colspan: 1,
+                                    rowspan: 2
+                                },
+                                {
+                                    title: 'Protein Variant Annotation',
+                                    colspan: 5,
+                                    rowspan: 1
+                                }
+                            ],
+                            [
+                                {
+                                    title: 'Uniprot Accession',
+                                    field: 'proteinVariantAnnotation.uniprotAccession',
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Position',
+                                    field: 'proteinVariantAnnotation.position',
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Ref/Alt',
+                                    formatter: _this.proteinAlleleFormatter,
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Sift',
+                                    formatter: _this.siftScoreFormatter,
+                                    cellStyle: _this.siftCellStyle,
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                                {
+                                    title: 'Polyphen',
+                                    formatter: _this.polyphenScoreFormatter,
+                                    cellStyle: _this.polyphenCellStyle,
+                                    colspan: 1,
+                                    rowspan: 1
+                                },
+                            ]
+                        ]
                     });
 
                     // Population grid definition
@@ -351,6 +412,133 @@
                     async: true
                 });
             },
+            seqOntologyFormatter: function (value, row, index) {
+                let soTerm = row.sequenceOntologyTerms[0];
+                return soTerm.name + '(' + soTerm.accession + ')';
+            },
+            proteinAlleleFormatter: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined) {
+                    return row.proteinVariantAnnotation.reference + "/" + row.proteinVariantAnnotation.alternate;
+                } else {
+                    return '-';
+                }
+            },
+            detailFormatter: function (index, row) {
+                if (row.proteinVariantAnnotation !== undefined) {
+//                    if (row.proteinVariantAnnotation.uniprotVariantId !== undefined) {
+                        row.proteinVariantAnnotation.uniprotVariantId = row.proteinVariantAnnotation.uniprotVariantId || '-';
+                        row.proteinVariantAnnotation.functionalDescription = row.proteinVariantAnnotation.functionalDescription || '-';
+                        row.proteinVariantAnnotation.keywords = row.proteinVariantAnnotation.keywords || '-';
+                        var features = row.proteinVariantAnnotation.features || '-';
+                    var html = [];
+                    var result = "";
+                    if (features != '-') {
+                        var xxx = [];
+                        for (let i in features) {
+                            features[i].id = features[i].id || '-';
+                            features[i].type = features[i].type || '-';
+                            features[i].description = features[i].description || '-';
+                            xxx.push( '<span>{ ID: ' + features[i].id + ', Start:' + features[i].start  + ', End:' + features[i].end +
+                                    ', Type:' + features[i].type + ', Description:' + features[i].description + ' }</span> <br>');
+                        }
+                        result = xxx.join('');
+                    } else {
+                        result = '-';
+                    }
+
+                        html.push('<b>Uniprot Variant ID:</b> ' + row.proteinVariantAnnotation.uniprotVariantId +
+                                '<br> <b>Functional Description:</b> ' + row.proteinVariantAnnotation.functionalDescription +
+                                '<br> <b>Keywords:</b> ' + row.proteinVariantAnnotation.keywords +
+                                '<br> <b>Features:</b> ' + result);
+                        return html.join('');
+                    }
+//                else {
+//                        var html = [];
+//                        html.push('<b>Uniprot Variant ID:</b> - <br> <b>Functional Description:</b> - <br> <b>Keywords:</b> - <br> <b>Features:</b> -');
+//                        return html.join('');
+//                    }
+//                }
+            else {
+                    return "No Protein Variant Annotation";
+                }
+            },
+            siftScoreFormatter: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined) {
+                    let sub = row.proteinVariantAnnotation.substitutionScores;
+                    for (let i in sub) {
+                        if (sub[i].source == "sift") {
+                            return sub[i].score;
+                        }
+                    }
+                } else {
+                    return '-';
+                }
+            },
+            polyphenScoreFormatter: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined) {
+                    let sub = row.proteinVariantAnnotation.substitutionScores;
+                    for (let i in sub) {
+                        if (sub[i].source == "polyphen") {
+                            return sub[i].score;
+                        }
+                    }
+                } else {
+                    return '-';
+                }
+            },
+            siftCellStyle: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined) {
+                    let sift = row.proteinVariantAnnotation.substitutionScores[0];
+                    switch (sift.description) {
+                        case 'tolerated':
+                            return {
+                                css: {
+                                    "background-color": "green"
+                                }
+                            };
+                        case 'deleterious':
+                            return {
+                                css: {
+                                    "background-color": "red"
+                                }
+                            };
+                    }
+                }
+                return {};
+            },
+            polyphenCellStyle: function (value, row, index) {
+                if (row.proteinVariantAnnotation !== undefined) {
+                    let polyphen = row.proteinVariantAnnotation.substitutionScores[1];
+                    switch (polyphen.description) {
+                        case 'probably damaging':
+                            return {
+                                css: {
+                                    "background-color": "red"
+                                }
+                            };
+                        case 'possibly damaging':
+                            return {
+                                css: {
+                                    "background-color": "orange"
+                                }
+                            };
+                        case 'benign':
+                            return {
+                                css: {
+                                    "background-color": "green"
+                                }
+                            };
+                        case 'unknown':
+                            return {
+                                css: {
+                                    "background-color": "blue"
+                                }
+                            };
+                    }
+                }
+                return {};
+            },
+
             alleleFormatter: function (value, row, index) {
                 return row.refAllele + "/" + row.altAllele;
             }
