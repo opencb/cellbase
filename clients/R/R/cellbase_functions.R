@@ -1,5 +1,6 @@
 # we need to adjust the output for the protein and Genomesequence methods
 #
+require(BiocParallel)
 fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,species=species, categ, subcateg,ids,resource,filters=NULL,batch_size=NULL,num_threads=NULL,...){
   batch_size <- batch_size
   num_threads <- num_threads
@@ -129,14 +130,18 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
 
   require(jsonlite)
   if(parallel==TRUE){
-    require(parallel)
-    require(doMC)
-    num_threads <-num_threads
-    registerDoMC(num_threads)
+    # require(parallel)
+    # require(doMC)
+    # num_cores <-detectCores()/2
+    # registerDoMC(num_cores)
+    
     ### Extracting the content in parallel
-    js <- mclapply(content, function(x)fromJSON(x),mc.cores=num_threads)
-    res <- mclapply(js, function(x)x$response$result,mc.cores=num_threads)
-    ds <- mclapply(res, function(x)rbind.pages(x),mc.cores=num_threads)
+    # js <- mclapply(content, function(x)fromJSON(x),mc.cores=num_cores)
+    # res <- mclapply(js, function(x)x$response$result,mc.cores=num_cores)
+    # ds <- mclapply(res, function(x)rbind.pages(x),mc.cores=num_cores)
+    js <- bplapply(content, function(x)fromJSON(x))
+    res <- pblapply(js, function(x)x$response$result)
+    ds <- pblapply(res, function(x)rbind.pages(x))
     ### Important to get correct merging of dataframe
     names(ds) <- NULL
     ds <- rbind.pages(ds)
