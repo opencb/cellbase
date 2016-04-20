@@ -21,36 +21,30 @@
 
 <dom-module id="cellbase-variantannotation-panel">
     <template>
-        <style>
-            #filter {
-                float: left;
-                width:20%;
-                margin-right: 5px;
-            }
-            #view {
-                float: right;
-                width:75%;
-                margin-right: 5px;
-            }
-        </style>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
         <div class="panel">
-            {{cellbaseClient}}
-            <cellbase-variantannotation-filter id="filter" gene-id={{geneId}}></cellbase-variantannotation-filter>
-            <cellbase-variantannotation-view id="view" gene-id={{geneId}} cellbase="{{cellBaseClient}}"></cellbase-variantannotation-view>
+            <div class="col-md-2">
+                <cellbase-variantannotation-filter id="filter" variant={{variant}}></cellbase-variantannotation-filter>
+            </div>
+            <div class="col-md-10">
+                <cellbase-variantannotation-view id="view" data={{variant}} cellbase="{{cellBaseClient}}" prefix="variantPanel"></cellbase-variantannotation-view>
+            </div>
         </div>
     </template>
     <script>
         Polymer({
             is: 'cellbase-variantannotation-panel',
             properties: {
-                geneId: {
-                    type: String
+                variant: {
+                    type: String,
+                    notify: true
                 },
                 cellBaseClient: {
                     type: Object
                 }
             },
-            ready: function() {
+            ready: function () {
                 this.cellBaseClient = CELLBASE_CLIENT;
             }
         });

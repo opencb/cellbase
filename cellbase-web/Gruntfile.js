@@ -46,7 +46,7 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    '<%= build.path %>/vendors.min.js': ['<%= build.path %>/vendors.js'],
+                    '<%= build.path %>/vendors.min.js': ['<%= build.path %>/vendors.js']
                     // '<%= build.path %>/jsorolla.min.js': ['<%= build.path %>/jsorolla.js']
                 }
             }
@@ -56,18 +56,21 @@ module.exports = function(grunt) {
                 files: [
                     // {   expand: true, cwd: './bower_components', src: ['backbone/backbone-min.js'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['underscore/underscore-min.js'], dest: '<%= build.vendor %>' },
-                    // {   expand: true, cwd: './bower_components', src: ['fontawesome/**'], dest: '<%= build.vendor %>' },
+                    {   expand: true, cwd: './bower_components', src: ['fontawesome/**'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['jquery/dist/jquery.min.js'], dest: '<%= build.vendor %>' },
-                    // {   expand: true, cwd: './bower_components', src: ['qtip2/jquery.qtip.min.css'], dest: '<%= build.vendor %>' },
+                    {   expand: true, cwd: './bower_components', src: ['qtip2/jquery.qtip.min.css'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['qtip2/jquery.qtip.min.js'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['uri.js/src/URI.min.js'], dest: '<%= build.vendor %>' },
-                    // {   expand: true, cwd: './bower_components', src: ['polymer/polymer.html'], dest: '<%= build.vendor %>' },
+                    {   expand: true, cwd: './bower_components', src: ['polymer/polymer.html'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['iron-*/**'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['paper-*/**'], dest: '<%= build.vendor %>' },
                     // {   expand: true, cwd: './bower_components', src: ['webcomponentsjs/webcomponents-lite.min.js'], dest: '<%= build.vendor %>' },
                     {   expand: true, cwd: 'src', src: ['index.html'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: 'src', src: ['config.js'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: './', src: ['LICENSE'], dest: '<%= build.path %>/' },
+                    {   expand: true, cwd: 'src', src: ['components/**'], dest: '<%= build.path %>/' },
+                    {   expand: true, cwd: './lib', src: ['ChemDoodle/**'], dest: '<%= build.path %>/' },
+                    {   expand: true, cwd: './lib', src: ['jsorolla/**'], dest: '<%= build.path %>/' }
                 ]
             }
         },
@@ -89,7 +92,7 @@ module.exports = function(grunt) {
                 },
                 files: {
                     // Target-specific file lists and/or options go here.
-                    '<%= build.path %>/cellbase-web.html': 'src/cellbase-web.html'
+                    '<%= build.path %>/build.html': 'src/index.html'
                 }
             }
         },
@@ -102,14 +105,17 @@ module.exports = function(grunt) {
                 options: {
                     patterns: [
                         {
-                            match: /..\/bower_components/g,
+                            match: /\.\.\/bower_components/g,
                             replacement: 'vendor'
-                        }
+                        },
+                        {
+                            match: /\.\.\/lib\//g,
+                            replacement: ''
+                        },
                     ]
                 },
                 files: [
-                    // {expand: true, flatten: true, src: ['<%= build.path %>/index.html'], dest: '<%= build.path %>'},
-                    // {expand: true, flatten: true, src: ['<%= build.path %>/cellbase-web.html'], dest: '<%= build.path %>'}
+                    {expand: true, flatten: true, src: ['<%= build.path %>/index.html'], dest: '<%= build.path %>'}
                 ]
             }
         }
@@ -125,7 +131,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-replace');
 
-    grunt.registerTask('default', ['clean', 'jshint', 'copy', 'concat', 'uglify', 'processhtml', 'vulcanize']);
+    grunt.registerTask('default', ['clean', 'jshint', 'copy', 'concat'  , 'processhtml', 'replace', 'vulcanize']);
     grunt.registerTask('cl', ['clean']);
     // grunt.registerTask('test', ['clean']);
 };

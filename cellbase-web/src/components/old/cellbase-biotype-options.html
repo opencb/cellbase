@@ -36,7 +36,7 @@
                     type: String,
                     value: "Select biotypes"
                 },
-                cellbaseClient: {
+                cellbase: {
                     type: Object,
                     notify: true
                 },
@@ -56,7 +56,7 @@
                 var success = function (response) {
                     _this.data = response.response[0].result;
                 };
-                this.cellbaseClient.getGeneClient(null, 'biotype', {}, {success: success, async: true});
+                this.cellbase.getGeneClient(null, 'biotype', {}, {success: success, async: true});
             },
 
             add: function (event) {

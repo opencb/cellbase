@@ -17,39 +17,42 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="cellbase-variantannotation-view.html">
 
 <dom-module id="cellbase-variation-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div style="width: 90%">
-            <span>{{variationId}}</span>
-
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#variationViewInfo" role="tab" data-toggle="tab">{{variationId}} Info</a></li>
-                <li role="presentation" class="active"><a href="#variationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
+                <li role="presentation"><a href="#variationViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
                 <!--<li role="presentation" class="active"><a href="#variationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>-->
             </ul>
 
             <div class="tab-content" style="width: 90%">
                 <div id="variationViewInfo" role="tabpanel" class="tab-pane active">
-                    <br>
-                    Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>
-                    Biotype: {{geneObj.biotype}}<br>
-                    Location: {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   Strand: {{geneObj.strand}}<br>
-                    Source: {{geneObj.source}} - Status: {{geneObj.status}}<br>
-                    Description: {{geneObj.description}}<br>
+                    <h3>Summary</h3>
+                    ID: <a href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v={{variationObj.ids}}" target="_blank">{{variationObj.ids}}</a><br>
+                    Alleles: {{variationObj.reference}}/{{variationObj.alternate}}<br>
+                    Location: {{variationObj.chromosome}}:{{variationObj.start}}-{{variationObj.end}}<br>
+                    Type: {{variationObj.type}}<br>
+                    HGVS: {{variationObj.hgvs.genomic}}<br>
+                    Display Consequence Type: {{variationObj.annotation.displayConsequenceType}}<br>
+                    Ancestral Allele: {{variationObj.annotation.ancestralAllele}}<br>
+                    MAF: {{variationObj.annotation.minorAlleleFreq}} ({{variationObj.annotation.minorAllele}})<br>
 
-                    <!--<h3>Transcripts</h3>-->
-                    <!--<cellbase-variation-annotation-view data="{{geneObj.transcripts}}"></cellbase-transcripts-view>-->
+                    <h3>Annotation</h3>
+                    <cellbase-variantannotation-view data="{{variant}}" prefix="variation"></cellbase-variantannotation-view>
                 </div>
 
-                <div role="tabpanel" class="tab-pane active" id="variationGenomeContext">
-                    <div id="genomeviewer" style="width: 800px"></div>
+                <div role="tabpanel" class="tab-pane" id="variationViewGenomeContext">
+                    <br>
+                    <div id="genomeviewer"></div>
                 </div>
 
                 <!--<div role="tabpanel" class="tab-pane" id="variationTfbs">-->
-                    <!--<cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{geneObj.transcripts}}"></cellbase-tfbs-view>-->
+                    <!--<cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{variationObj.transcripts}}"></cellbase-tfbs-view>-->
                 <!--</div>-->
             </div>
         </div>
@@ -68,41 +71,44 @@
                     notify: true,
                     observer: '_variationIdChanged'
                 },
-                geneObj: {
+                variationObj: {
                     type: Object
+                },
+                variant: {
+                    type: String,
+                    notify: true
                 }
             },
             _variationIdChanged: function(newValue, oldValue) {
+                let _this = this;
                 if (typeof this.genomeViewer !== "undefined") {
-                    let _this = this;
                     let success = function (response) {
-                        let firstGene = response.response[0].result[0];
-                        if (typeof firstGene !== "undefined") {
-                            let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
+                        let firstVariation = response.response[0].result[0];
+                        if (typeof firstVariation !== "undefined") {
+                            let region = new Region({chromosome: firstVariation.chromosome, start: firstVariation.start, end: firstVariation.end});
                             _this.genomeViewer.setRegion(region);
                         } else {
-                            alert("Gene ID not valid: " + _this.variationId);
+                            alert("Variation ID not valid: " + _this.variationId);
                         }
-                        _this.geneObj = firstGene;
+                        _this.variationObj = firstVariation;
+                        _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
                     };
                     let error = function (response) {
-                        alert("Gene ID not valid: " + _this.variationId)
+                        alert("Variation ID not valid: " + _this.variationId)
                     };
-                    CELLBASE_CLIENT.getGeneClient(this.variationId, 'info', {}, {success: success, error: error, async: true});
+                    CELLBASE_CLIENT.getVariationClient(this.variationId, 'info', {}, {success: success, error: error, async: true});
                 }
             },
             ready: function() {
                 this.cellbase = CELLBASE_CLIENT._config.version;
-//                var success = function (response) {
-//                    console.log("Success from user:")
-//                    console.log(response)
-//                };
-//                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
-//
-//                this.genomeViewer;
-//                console.log(document.querySelector('#genomeviewer'))
-//                console.log(this.$$('#genomeviewer'))
-//                this.renderGenomeViewer();
+                var success = function (response) {
+                    console.log("Success from user:")
+                    console.log(response)
+                };
+                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
+
+                this.genomeViewer;
+                this.renderGenomeViewer();
             },
             renderGenomeViewer: function() {
                 var region = new Region({chromosome: "13", start: 32889611, end: 32889611});

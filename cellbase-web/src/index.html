@@ -17,11 +17,12 @@
     <link rel="stylesheet" href="../bower_components/fontawesome/css/font-awesome.css">
     <link rel="stylesheet" href="../bower_components/qtip2/jquery.qtip.min.css">
 
-    <!-- build:js vendors.min.js -->
+    <!-- build:js vendors.js -->
     <script type="text/javascript" src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
     <script type="text/javascript" src="../bower_components/underscore/underscore.js"></script>
     <script type="text/javascript" src="../bower_components/backbone/backbone.js"></script>
     <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="../bower_components/highcharts-release/highcharts.js"></script>
     <script type="text/javascript" src="../bower_components/qtip2/jquery.qtip.js"></script>
     <script type="text/javascript" src="../bower_components/uri.js/src/URI.js"></script>
     <!-- /build -->
@@ -40,10 +41,10 @@
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.css">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.js"></script>
 
-
     <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client.js"></script>
     <script type="text/javascript" src="../lib/jsorolla/src/lib/cache/indexeddb-cache.js"></script>
     <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/cellbase-client-config.js"></script>
+    <script type="text/javascript" src="../lib/jsorolla/src/lib/clients/rest-client.js"></script>
 
     <link rel="stylesheet" href="../lib/jsorolla/styles/css/style.css">
     <script type="text/javascript" src="../lib/jsorolla/build/1.1.9/genome-viewer/gv-config.js"></script>
@@ -64,11 +65,12 @@
 
 
     <!--custom-elements-->
+    <!-- build:section test -->
     <link rel="import" href="components/shared/cellbase-species-menu.html">
     <link rel="import" href="components/core/cellbase-gene-panel.html">
     <link rel="import" href="components/variation/cellbase-variation-panel.html">
     <link rel="import" href="components/variation/cellbase-variantannotation-panel.html">
-
+    <!-- /build -->
 
     <style>
         a.cellbase-species-menu {
@@ -244,14 +246,13 @@
                 </div>
                 <div class="collapse content" id="transcriptPanel">
                     Transcript
-                    <cellbase-species-menu></cellbase-species-menu>
                 </div>
                 <div class="collapse content" id="variationPanel">
-                    Variation
+                    <h2>Variation</h2>
                     <cellbase-variation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variation-panel>
                 </div>
                 <div class="collapse content" id="variationAnnotationPanel">
-                    Variant Annotation
+                    <h2>Variant Annotation</h2>
                     <cellbase-variantannotation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variantannotation-panel>
                 </div>
             </div>

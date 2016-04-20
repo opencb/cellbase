@@ -17,6 +17,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="cellbase-exons-grid.html">
+<link rel="import" href="cellbase-xref-grid.html">
 
 <dom-module id="cellbase-transcripts-view">
     <template>
@@ -31,12 +33,9 @@
                     <th>Ensembl ID</th>
                     <th>Biotype</th>
                     <th>Location</th>
-                    <!--<th>Strand</th>-->
                     <th>Coding</th>
                     <th>cDNA</th>
-                    <!--<th>cDNA Sequence</th>-->
                     <th>CDS Length</th>
-                    <!--<th>Protein ID</th>-->
                     <th>Annotation Flags</th>
                 </tr>
                 </thead>
@@ -45,26 +44,26 @@
                     <tr on-click="loadTabs">
                         <td>{{transcript.name}}</td>
                         <td>
-                            <a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;t={{transcript.id}}">{{transcript.id}}</a>
+                            <a target="_blank"
+                               href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;t={{transcript.id}}">{{transcript.id}}</a>
                         </td>
                         <td>{{transcript.biotype}}</td>
                         <td>
-                            <a target="_blank" href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}">
+                            <a target="_blank"
+                               href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}">
                                 {{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}
                             </a>
                         </td>
-                        <!--<td>{{transcript.strand}}</td>-->
                         <td>
-                            <a target="_blank" href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}">
+                            <a target="_blank"
+                               href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}">
                                 {{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}
                             </a>
                         </td>
                         <td>
                             {{transcript.cdnaCodingStart}}-{{transcript.cdnaCodingEnd}}
                         </td>
-                        <!--<td>{{transcript.cDnaSequence}}</td>-->
                         <td>{{transcript.cdsLength}}</td>
-                        <!--<td>{{transcript.proteinID}}</td>-->
                         <td>{{transcript.annotationFlags}}</td>
                     </tr>
                 </template>
@@ -73,54 +72,35 @@
 
             <array-selector id="selector" items="{{data}}" selected="{{selected}}"></array-selector>
 
-        <!--Tab representation for Exons, Xrefs, Sequence-->
+            <!--Tab representation for Exons, Xrefs, Sequence-->
             <div>
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#transcriptViewExons" role="tab" data-toggle="tab">Exons</a></li>
-                <li role="presentation"><a href="#transcriptViewXrefs" role="tab" data-toggle="tab">Xrefs</a></li>
-                <li role="presentation"><a href="#transcriptViewSequence" role="tab" data-toggle="tab">Sequence</a></li>
-            </ul>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#{{prefix}}TranscriptViewExons" role="tab"
+                                                              data-toggle="tab">Exons</a></li>
+                    <li role="presentation"><a href="#{{prefix}}TranscriptViewXrefs" role="tab"
+                                               data-toggle="tab">Xrefs</a></li>
+                    <li role="presentation"><a href="#{{prefix}}TranscriptViewSequence" role="tab" data-toggle="tab">Sequence</a>
+                    </li>
+                </ul>
 
-            <div class="tab-content">
-                <div id="transcriptViewExons" role="tabpanel" class="tab-pane active">
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Location</th>
-                            <th>strand</th>
-                            <th>cDNA</th>
-                            <th>phase</th>
-                            <th>exonNumber</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <template is="dom-repeat" items="{{selected.exons}}" as="exon">
-                            <tr>
-                                <td>{{exon.id}}</td>
-                                <td>{{exon.chromosome}}:{{exon.start}}-{{exon.end}}</td>
-                                <td>{{exon.strand}}</td>
-                                <td>{{exon.cDNA}}</td>
-                                <td>{{exon.phase}}</td>
-                                <td>{{exon.exonNumber}}</td>
-                            </tr>
+                <div class="tab-content">
+                    <div id="{{prefix}}TranscriptViewExons" role="tabpanel" class="tab-pane active">
+                        <cellbase-exons-grid data="{{selected.exons}}"></cellbase-exons-grid>
+                    </div>
+
+                    <div id="{{prefix}}TranscriptViewXrefs" role="tabpanel" class="tab-pane">
+                        <cellbase-xref-grid data="{{selected.xrefs}}"></cellbase-xref-grid>
+                    </div>
+
+                    <div id="{{prefix}}TranscriptViewSequence" role="tabpanel" class="tab-pane">
+                        <br>
+                        cDNA Sequence:<textarea class="form-control" rows="10" readonly>{{selected.cDnaSequence}}</textarea> <br>
+                        <template is="dom-if" if="{{selected.proteinSequence}}">
+                            Protein Sequence:<textarea class="form-control" rows="10" readonly>{{selected.proteinSequence}}</textarea>
+                            <br>
                         </template>
-                        </tbody>
-                    </table>
+                    </div>
                 </div>
-
-                <div id="transcriptViewXrefs" role="tabpanel" class="tab-pane">
-                    XRefs
-                </div>
-
-                <div id="transcriptViewSequence" role="tabpanel" class="tab-pane">
-                    <br>
-                        <template is="dom-repeat" items="{{selected.exons}}" as="exonObject">
-                            Exon ID: {{exonObject.id}} <br>
-                            Sequence:<textarea class="form-control" rows="3">{{exonObject.sequence}}</textarea>  <br>
-                        </template>
-                </div>
-            </div>
             </div>
         </div>
     </template>
@@ -136,12 +116,11 @@
                     type: Array,
                     value: []
                 },
-                exons: {
-                    type: Array,
-                    value: []
+                prefix: {
+                    type: String
                 }
             },
-            loadTabs: function (e){
+            loadTabs: function (e) {
                 var item = this.$.transcriptList.itemForElement(e.target);
                 this.$.selector.select(item);
             }
