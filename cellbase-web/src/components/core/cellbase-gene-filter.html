@@ -15,7 +15,6 @@
   -->
 
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../old/cellbase-biotype-options.html">
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
@@ -107,7 +106,7 @@
                             </div>
                             <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body biotype-scroll">
-                                    <cellbase-options-list cellbase-client={{cellBaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>
+                                    <cellbase-options-list id="biotypeOptions" cellbase-client={{cellBaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
