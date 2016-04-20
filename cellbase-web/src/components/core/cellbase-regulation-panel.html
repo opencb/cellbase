@@ -26,10 +26,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-regulation-filter></cellbase-regulation-filter>
+                <cellbase-regulation-filter region="{{region}}"></cellbase-regulation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-regulation-view cellbase="{{cellbaseClient}}"></cellbase-regulation-view>
+                <cellbase-regulation-view cellbase="{{cellbaseClient}}" region="{{region}}"></cellbase-regulation-view>
             </div>
         </div>
     </template>
@@ -39,6 +39,10 @@
             properties: {
                 cellBaseClient: {
                     type: Object
+                },
+                region: {
+                    type: String,
+                    notify: true
                 }
             },
             ready: function() {

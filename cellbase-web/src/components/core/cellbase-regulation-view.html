@@ -30,14 +30,19 @@
             <div class="tab-content" style="width: 90%">
                 <div id="regulationViewInfo" role="tabpanel" class="tab-pane active">
                     <h3>Summary</h3>
-                    <!--ID: <a href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v={{variationObj.ids}}" target="_blank">{{variationObj.ids}}</a><br>-->
-                    <!--Alleles: {{variationObj.reference}}/{{variationObj.alternate}}<br>-->
-                    <!--Location: {{variationObj.chromosome}}:{{variationObj.start}}-{{variationObj.end}}<br>-->
-                    <!--Type: {{variationObj.type}}<br>-->
-                    <!--HGVS: {{variationObj.hgvs.genomic}}<br>-->
-                    <!--Display Consequence Type: {{variationObj.annotation.displayConsequenceType}}<br>-->
-                    <!--Ancestral Allele: {{variationObj.annotation.ancestralAllele}}<br>-->
-                    <!--MAF: {{variationObj.annotation.minorAlleleFreq}} ({{variationObj.annotation.minorAllele}})<br>-->
+                    <b>Location:</b> {{region}}<br>
+                    <b>Source:</b> {{regObj.source}}</a><br>
+                    <b>Feature Type:</b> {{regObj.featureType}}<br>
+                    <b>Score:</b> {{regObj.score}}<br>
+                    <b>Strand:</b> {{regObj.strand}}<br>
+                    <b>Frame:</b> {{regObj.frame}}<br>
+                    <b>Name:</b> {{regObj.name}}<br>
+                    <b>Feature Class:</b> {{regObj.featureClass}} <br>
+                    <b>Alias:</b> {{regObj.alias}}<br>
+                    <b>Cell Types:</b>
+                    <template is="dom-repeat" items="{{regObj.cellTypes}}">
+                        {{item}}
+                    </template>
                 </div>
             </div>
         </div>
@@ -50,10 +55,24 @@
             properties: {
                 cellbase: {
                     type: Object
+                },
+                region: {
+                    type: String,
+                    observer: '_regionChanged'
+                },
+                regObj : {
+                    type: Object
                 }
             },
-            ready: function() {
-                this.cellbase = CELLBASE_CLIENT._config.version;
+            _regionChanged: function (newValue, oldValue) {
+                let _this = this;
+                let success = function (response) {
+                    _this.regObj = response.response[0].result[0];
+                };
+                let error = function (response) {
+                    alert("Regulatory Region not valid: " + _this.region)
+                };
+                CELLBASE_CLIENT.get('genomic', 'region', this.region, 'regulatory', {}, {success: success, error: error, async: true});
             }
         });
     </script>

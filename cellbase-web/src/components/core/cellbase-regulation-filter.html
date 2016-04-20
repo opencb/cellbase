@@ -103,10 +103,9 @@
                         <br>
                         <template is="dom-repeat" items="{{result}}">
                             <div>
-                                <b on-click="_updateGeneView" id="{{item.name}}"
-                                   style="cursor: pointer">{{item.name}}</b>
-                                <i>{{item.biotype}}</i><br>
-                                {{item.chromosome}}:{{item.start}}-{{item.end}}
+                                <b on-click="_updateRegulationView" id="{{item.chromosome}}:{{item.start}}-{{item.end}}"
+                                   style="cursor: pointer">{{item.chromosome}}:{{item.start}}-{{item.end}}</b><br>
+                                {{item.name}}
                                 <hr>
                             </div>
                         </template>
@@ -122,24 +121,31 @@
                 cellBaseClient: {
                     type: Object,
                     notify: true
+                },
+                region: {
+                    type: String,
+                    notify: true
+                },
+                result: {
+                    type: Array
                 }
             },
-            ready: function () {
-                this.cellBaseClient = CELLBASE_CLIENT;
-            },
-            clear: function (e) {
-                // we empty the textareas
-                this.$.regFilterRegionTextarea.value = "";
+                ready: function () {
+                    this.cellBaseClient = CELLBASE_CLIENT;
+                },
+                clear: function (e) {
+                    // we empty the textareas
+                    this.$.regFilterRegionTextarea.value = "";
 
-            },
-            loadExample: function (e) {
-                this.$.regFilterRegionTextarea.value = "3:444-55555";
-            },
-//            executeQuery: function (e) {
-//                // activate the GIF
-//                $('#spinImg').show();
-//
-//                // We first build the query params object
+                },
+                loadExample: function (e) {
+                    this.$.regFilterRegionTextarea.value = "3:555-66666";
+                },
+                executeQuery: function (e) {
+                    // activate the GIF
+                    $('#spinImg').show();
+
+                    // We first build the query params object
 //                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
 //                if (this.biotypes.length > 0) {
 //                    queryParams.biotype = this.biotypes.join(",");
@@ -147,35 +153,28 @@
 //                if (this.$.geneFilterDrugsTextarea.value != "") {
 //                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
 //                }
-//
-//                //
-//                this.result= [];
-//                let _this = this;
-//                let success = function (response) {
-//                    for(let i in response.response) {
-//                        for(let j in response.response[i].result) {
-//                            _this.push('result',response.response[i].result[j]);
-//                        }
-//                    }
-//                    // remove the GIF
-//                    $('#spinImg').hide();
-//                };
-//
-//                // Now we execute the query. Note that ID are preferred
-//                if (this.$.geneFilterIdsTextarea.value !== "") {
-//                    this.cellBaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
-////                    this.cellBaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams).then(success, error);
-//                } else {
-//                    if (this.$.geneFilterRegionTextarea.value !== "") {
-//                        this.cellBaseClient.get('genomic','region', this.$.geneFilterRegionTextarea.value, 'gene', queryParams, {success: success, async: true});
-//                    }
-//                }
-//                $('.nav-tabs a[href="#result1"]').tab('show');
-//            },
-//            _updateGeneView: function(e) {
-//                this.geneId = e.srcElement.id;
-//            },
 
-        });
+                    //
+                    this.result = [];
+                    let _this = this;
+                    let success = function (response) {
+                        for (let i in response.response) {
+                            for (let j in response.response[i].result) {
+                                _this.push('result', response.response[i].result[j]);
+                            }
+                        }
+                        // remove the GIF
+                        $('#spinImg').hide();
+                    };
+
+                    if (this.$.regFilterRegionTextarea.value !== "") {
+                        this.cellBaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', {}, {success: success, async: true});
+                    }
+                    $('.nav-tabs a[href="#regulationResult"]').tab('show');
+                },
+            _updateRegulationView: function(e) {
+                this.region = e.srcElement.id;
+            }
+            });
     </script>
 </dom-module>
