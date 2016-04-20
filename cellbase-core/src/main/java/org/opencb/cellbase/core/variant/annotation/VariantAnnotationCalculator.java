@@ -129,7 +129,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
 
-        logger.info("Annotating  batch");
+        logger.debug("Annotating  batch");
 
         if (variantList == null || variantList.isEmpty()) {
             return new ArrayList<>();
@@ -623,9 +623,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
 //                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
 
-        return geneDBAdaptor.getByRegion(
-                new Region(variant.getChromosome(), variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000),
-                queryOptions).getResult();
+        return geneDBAdaptor
+                .getByRegion(new Region(variant.getChromosome(), Math.max(1, variantStart - 5000),
+                        variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions).getResult();
 
 //        return geneDBAdaptor.get(new Query("region", variant.getChromosome()+":"+(variantStart - 5000)+":"
 //                +(variant.getStart() + variant.getReference().length() - 1 + 5000)), queryOptions)

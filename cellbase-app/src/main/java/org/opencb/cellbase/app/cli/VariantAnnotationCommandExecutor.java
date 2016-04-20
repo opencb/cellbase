@@ -27,8 +27,10 @@ import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
+import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
@@ -36,6 +38,9 @@ import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
+import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkDataWriter;
+import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkTask;
+import org.opencb.cellbase.app.cli.variant.annotation.VariantAnnotationDiff;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.client.CellBaseClient;
@@ -55,6 +60,7 @@ import org.rocksdb.RocksDBException;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -75,6 +81,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private String url;
     private boolean local;
     private boolean cellBaseAnnotation;
+    private boolean benchmark;
     private List<String> chromosomeList;
     private int port;
     private String species;
@@ -119,82 +126,125 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         try {
             checkParameters();
-            if (customFiles != null) {
-                getIndexes();
-            }
-
-            if (variantAnnotationCommandOptions.variant != null && !variantAnnotationCommandOptions.variant.isEmpty()) {
-                List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
-                if (local) {
-                    DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
-                    VariantAnnotationCalculator variantAnnotationCalculator =
-                            new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
-                    List<QueryResult<VariantAnnotation>> annotationByVariantList =
-                            variantAnnotationCalculator.getAnnotationByVariantList(variants, queryOptions);
-
-                    ObjectMapper jsonObjectMapper = new ObjectMapper();
-                    jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                    jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-                    ObjectWriter objectWriter = jsonObjectMapper.writer();
-
-                    Path outPath = Paths.get(variantAnnotationCommandOptions.output);
-                    FileUtils.checkDirectory(outPath.getParent());
-                    BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(outPath);
-                    for (QueryResult queryResult : annotationByVariantList) {
-                        bufferedWriter.write(objectWriter.writeValueAsString(queryResult.getResult()));
-                        bufferedWriter.newLine();
-                    }
-                    bufferedWriter.close();
-                }
-                return;
-            }
-
-            // If a variant file is provided then we annotate it. Lines in the input file can be computationally
-            // expensive to parse, i.e.: multisample vcf with thousands of samples. A specific task is created to enable
-            // parallel parsing of these lines
-            if (input != null) {
-                DataReader dataReader = new StringDataReader(input);
-                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList(false);
-                DataWriter dataWriter = getDataWriter(output.toString());
-
-                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-                ParallelTaskRunner<String, Variant> runner =
-                        new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
-                runner.run();
+            if (benchmark) {
+                runBenchmark();
             } else {
-                // This will annotate the CellBase Variation collection
-                if (cellBaseAnnotation) {
-                    // TODO: enable this query in the parseQuery method within VariantMongoDBAdaptor
-//                    Query query = new Query("$match",
-//                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
-//                    Query query = new Query();
-                    QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
-                    List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList(false);
-                    ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-
-                    for (String chromosome : chromosomeList) {
-                        logger.info("Annotating chromosome {}", chromosome);
-                        Query query = new Query("chromosome", chromosome);
-                        DataReader dataReader =
-                                new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
-                        DataWriter dataWriter = getDataWriter(output.toString() + "/"
-                                + VARIATION_ANNOTATION_FILE_PREFIX + chromosome + ".json.gz");
-                        ParallelTaskRunner<Variant, Variant> runner =
-                                new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
-                        runner.run();
-                    }
-                }
+                runAnnotation();
             }
-
-            if (customFiles != null) {
-                closeIndexes();
-            }
-
-            logger.info("Variant annotation finished.");
-
+            logger.info("Finished");
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void runBenchmark() {
+        try {
+
+            DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
+                return entry.getFileName().toString().endsWith(".vep");
+            });
+
+            DataWriter dataWriter = getDataWriter(output.toString());
+            ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+            List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>>
+                    variantAnnotatorTaskList = getBenchmarkTaskList();
+            for (Path entry : stream) {
+                logger.info("Processing file '{}'", entry.toString());
+                DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
+                ParallelTaskRunner<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
+                        = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                runner.run();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>> getBenchmarkTaskList()
+            throws IOException {
+        List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>> benchmarkTaskList
+                = new ArrayList<>(numThreads);
+        for (int i = 0; i < numThreads; i++) {
+            // Benchmark variants are read from a VEP file, must not normalize
+            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator(false)));
+        }
+        return benchmarkTaskList;
+    }
+
+    private boolean runAnnotation() throws Exception {
+        if (customFiles != null) {
+            getIndexes();
+        }
+
+        if (variantAnnotationCommandOptions.variant != null && !variantAnnotationCommandOptions.variant.isEmpty()) {
+            List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
+            if (local) {
+                DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+                VariantAnnotationCalculator variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
+                List<QueryResult<VariantAnnotation>> annotationByVariantList =
+                        variantAnnotationCalculator.getAnnotationByVariantList(variants, queryOptions);
+
+                ObjectMapper jsonObjectMapper = new ObjectMapper();
+                jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+                ObjectWriter objectWriter = jsonObjectMapper.writer();
+
+                Path outPath = Paths.get(variantAnnotationCommandOptions.output);
+                FileUtils.checkDirectory(outPath.getParent());
+                BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(outPath);
+                for (QueryResult queryResult : annotationByVariantList) {
+                    bufferedWriter.write(objectWriter.writeValueAsString(queryResult.getResult()));
+                    bufferedWriter.newLine();
+                }
+                bufferedWriter.close();
+            }
+            return true;
+        }
+
+        // If a variant file is provided then we annotate it. Lines in the input file can be computationally
+        // expensive to parse, i.e.: multisample vcf with thousands of samples. A specific task is created to enable
+        // parallel parsing of these lines
+        if (input != null) {
+            DataReader dataReader = new StringDataReader(input);
+            List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList(false);
+            DataWriter dataWriter = getDataWriter(output.toString());
+
+            ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+            ParallelTaskRunner<String, Variant> runner =
+                    new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+            runner.run();
+        } else {
+            // This will annotate the CellBase Variation collection
+            if (cellBaseAnnotation) {
+                // TODO: enable this query in the parseQuery method within VariantMongoDBAdaptor
+//                    Query query = new Query("$match",
+//                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
+//                    Query query = new Query();
+                QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
+                List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList(false);
+                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+
+                for (String chromosome : chromosomeList) {
+                    logger.info("Annotating chromosome {}", chromosome);
+                    Query query = new Query("chromosome", chromosome);
+                    DataReader dataReader =
+                            new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
+                    DataWriter dataWriter = getDataWriter(output.toString() + "/"
+                            + VARIATION_ANNOTATION_FILE_PREFIX + chromosome + ".json.gz");
+                    ParallelTaskRunner<Variant, Variant> runner =
+                            new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                    runner.run();
+                }
+            }
+        }
+
+        if (customFiles != null) {
+            closeIndexes();
+        }
+
+        logger.info("Variant annotation finished.");
+        return false;
     }
 
     private void setChromosomeList() {
@@ -222,10 +272,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private DataWriter getDataWriter(String filename) {
         DataWriter dataWriter = null;
-        if (outputFormat.equals(FileFormat.JSON)) {
-            dataWriter = new JsonAnnotationWriter(filename);
-        } else if (outputFormat.equals(FileFormat.VEP)) {
-            dataWriter = new VepFormatWriter(filename);
+        if (benchmark) {
+            dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
+        } else {
+            if (outputFormat.equals(FileFormat.JSON)) {
+                dataWriter = new JsonAnnotationWriter(filename);
+            } else if (outputFormat.equals(FileFormat.VEP)) {
+                dataWriter = new VepFormatWriter(filename);
+            }
         }
         return dataWriter;
     }
@@ -467,15 +521,23 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() throws IOException {
+
+        // Run benchmark
+        benchmark = variantAnnotationCommandOptions.benchmark;
+
         // input file
         if (variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
-            FileUtils.checkFile(input);
-            String fileName = input.toFile().getName();
-            if (!(fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz"))) {
-                throw new ParameterException("Only VCF format is currently accepted. Please provide a valid .vcf or .vcf.gz file");
+            if (benchmark) {
+                FileUtils.checkDirectory(input);
             } else {
-                inputFormat = FileFormat.VCF;
+                FileUtils.checkFile(input);
+                String fileName = input.toFile().getName();
+                if (!(fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz"))) {
+                    throw new ParameterException("Only VCF format is currently accepted. Please provide a valid .vcf or .vcf.gz file");
+                } else {
+                    inputFormat = FileFormat.VCF;
+                }
             }
         }
         // output file
