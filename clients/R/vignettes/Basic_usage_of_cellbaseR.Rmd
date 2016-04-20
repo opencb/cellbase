@@ -1,11 +1,11 @@
 ---
-title: "Basic usage of cellbaseR"
+title: "Basic_usage_of_cellbaseR"
 author: "Mohammed Omar Elsiddieg Abdallah"
 date: "19 April 2016"
 output: 
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{Basic usage of cellbaseR}
+  %\VignetteIndexEntry{"Basic_usage_of_cellbaseR"}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}  
 ---

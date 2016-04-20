@@ -21,7 +21,7 @@ CellbaseQuery <- setClass("CellbaseQuery",
                           slots = c(config="list",hosts="vector",species="list",categories="vector"),
                           prototype = prototype(
                             config=list(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
-                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=8),
+                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=4),
                             hosts=c("http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"),
                             categories=c("Genomic","Feature","Regulatory","Network")
                           )

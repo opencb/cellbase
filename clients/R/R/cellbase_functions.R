@@ -30,7 +30,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
     container=list()
     grls <- createURL(file = file,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,...)
     content <- callREST(grls = grls,async=TRUE,num_threads)
-    res_list <- parseResponse(content=content,parallel = TRUE, num_threads=num_threads)
+    res_list <- parseResponse(content=content,parallel=TRUE, num_threads=num_threads)
     ds <- res_list$result
 
 

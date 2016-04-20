@@ -6,7 +6,7 @@ bower_components
 private
 
 # General
-*.Rbuild
+*.Rbuildignore
 *.jar
 *.war
 *.o
