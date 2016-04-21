@@ -109,7 +109,11 @@
                 return '<a target="_blank" href="http://genomemaps.org/?region=' + location + '">' + location + '</a>'
             },
             mafFormatter: function (value, row, index) {
-                return row.annotation.minorAlleleFreq + " (" + row.annotation.minorAllele + ")";
+                if (row.annotation.minorAlleleFreq !== undefined) {
+                    return row.annotation.minorAlleleFreq + " (" + row.annotation.minorAllele + ")";
+                } else {
+                    return '-';
+                }
             }
         });
     </script>

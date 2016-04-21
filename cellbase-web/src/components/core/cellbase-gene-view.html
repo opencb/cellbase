@@ -232,8 +232,8 @@
                 let errorCosmic = function (response) {
                     alert("Gene ID not valid: " + _this.geneId)
                 };
-                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {'source': 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
-                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {'source': 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
+                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {source: 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
+                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {source: 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
             },
             ready: function() {
                 this.cellbase = CELLBASE_CLIENT._config.version;
