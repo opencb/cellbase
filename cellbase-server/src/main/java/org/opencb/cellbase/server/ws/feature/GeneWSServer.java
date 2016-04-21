@@ -324,7 +324,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAll() {
 //    public Response getAll(@ApiParam(value = "String with the list of biotypes to return")
