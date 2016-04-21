@@ -1,0 +1,185 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="../common/cellbase-options-list.html">
+<link rel="import" href="../common/cellbase-filter-toolbar.html">
+
+<dom-module id="cellbase-regulation-filter">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .result-display {
+                max-height: 800px;
+                overflow: auto;
+            }
+        </style>
+
+        <div>
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#regulationFilter" role="tab"
+                                                          data-toggle="tab">Filter</a></li>
+                <li role="presentation"><a href="#regulationResult" role="tab" data-toggle="tab">Result</a></li>
+            </ul>
+
+            <!--Filter tab content-->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="regulationFilter">
+                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample"
+                                             on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <br>
+
+                    <!--Regulatory region filter menu-->
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="hOne">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#regulatoryRegion" aria-expanded="true" aria-controls="regulatoryRegion">
+                                        Region
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="regulatoryRegion" class="panel-collapse collapse in" role="tabpanel"
+                                 aria-labelledby="hOne">
+                                <div class="panel-body">
+                                    <textarea id="regFilterRegionTextarea" class="form-control clearable"
+                                              rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Feature Type filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="hTwo">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#featureType" aria-expanded="false" aria-controls="featureType">
+                                        Feature Types
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="featureType" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="hTwo">
+                                <div class="panel-body">
+                                    <!--<cellbase-options-list cellbase-client={{cellBaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>-->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Feature Class filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="hThree">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#featureClass" aria-expanded="false" aria-controls="featureClass">
+                                        Feature Class
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="featureClass" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="hThree">
+                                <div class="panel-body">
+                                    <!--<textarea id="geneFilterDrugsTextarea" class="form-control clearable" rows="3"></textarea>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result tab content -->
+                <div role="tabpanel" class="tab-pane" id="regulationResult">
+                    <div class="result-display">
+                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <br>
+                        <template is="dom-repeat" items="{{result}}">
+                            <div>
+                                <b on-click="_updateRegulationView" id="{{item.chromosome}}:{{item.start}}-{{item.end}}"
+                                   style="cursor: pointer">{{item.chromosome}}:{{item.start}}-{{item.end}}</b><br>
+                                {{item.name}}
+                                <hr>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-regulation-filter',
+            properties: {
+                cellBaseClient: {
+                    type: Object,
+                    notify: true
+                },
+                region: {
+                    type: String,
+                    notify: true
+                },
+                result: {
+                    type: Array
+                }
+            },
+                ready: function () {
+                    this.cellBaseClient = CELLBASE_CLIENT;
+                },
+                clear: function (e) {
+                    // we empty the textareas
+                    this.$.regFilterRegionTextarea.value = "";
+
+                },
+                loadExample: function (e) {
+                    this.$.regFilterRegionTextarea.value = "3:555-66666";
+                },
+                executeQuery: function (e) {
+                    // activate the GIF
+                    $('#spinImg').show();
+
+                    // We first build the query params object
+//                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
+//                if (this.biotypes.length > 0) {
+//                    queryParams.biotype = this.biotypes.join(",");
+//                }
+//                if (this.$.geneFilterDrugsTextarea.value != "") {
+//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
+//                }
+
+                    //
+                    this.result = [];
+                    let _this = this;
+                    let success = function (response) {
+                        for (let i in response.response) {
+                            for (let j in response.response[i].result) {
+                                _this.push('result', response.response[i].result[j]);
+                            }
+                        }
+                        // remove the GIF
+                        $('#spinImg').hide();
+                    };
+
+                    if (this.$.regFilterRegionTextarea.value !== "") {
+                        this.cellBaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', {}, {success: success, async: true});
+                    }
+                    $('.nav-tabs a[href="#regulationResult"]').tab('show');
+                },
+            _updateRegulationView: function(e) {
+                this.region = e.srcElement.id;
+            }
+            });
+    </script>
+</dom-module>

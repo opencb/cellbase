@@ -27,6 +27,10 @@
                 max-height: 300px;
                 overflow-y: scroll;
             }
+            .variation-display {
+                max-height: 800px;
+                overflow: auto;
+            }
         </style>
 
         <div>
@@ -39,7 +43,7 @@
             <!--Variation Filter Tab Content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="variationFilter">
-                    <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -106,7 +110,6 @@
                             </div>
                             <div id="consequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body menu-scroll">
-                                    <!--<cellbase-consequence-types-options cellbase-client={{cellBaseClient}} biotypes={{biotype}}></cellbase-consequence-types-options>-->
                                     <cellbase-options-list cellbase-client={{cellBaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
                                 </div>
                             </div>
@@ -134,7 +137,7 @@
 
                 <!-- Result tab content -->
                 <div role="tabpanel" class="tab-pane" id="variationResult">
-                    <div class="gene-names-display">
+                    <div class="variation-display">
                         <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">

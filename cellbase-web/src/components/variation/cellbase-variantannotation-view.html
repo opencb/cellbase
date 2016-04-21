@@ -20,16 +20,7 @@
 
 <dom-module id="cellbase-variantannotation-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles">
-            .tolerated {
-                background-color: grey;
-            }
-
-            .deleterious {
-                background-color: red;
-            }
-
-        </style>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
         <div>
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#{{prefix}}VariantAnnotationConsequenceTypes" role="tab"
@@ -50,9 +41,8 @@
                 <!--Consequence types Tab-->
                 <div role="tabpanel" class="tab-pane active" id="{{prefix}}VariantAnnotationConsequenceTypes">
                     <table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true"
-                           data-pagination="true"
-                           data-page-list="[10, 25, 50]"
-                           data-show-pagination-switch="true" data-show-export="true">
+                           data-pagination="true" data-page-list="[10, 25, 50]" data-show-pagination-switch="true"
+                           data-show-export="true">
 
                     </table>
                 </div>
@@ -310,9 +300,10 @@
                                 },
                                 {
                                     title: 'Protein Variant Annotation',
-                                    colspan: 5,
+                                    colspan: 6,
                                     rowspan: 1
                                 }
+
                             ],
                             [
                                 {
@@ -347,6 +338,12 @@
                                     colspan: 1,
                                     rowspan: 1
                                 },
+                                {
+                                    title: 'Functional Description',
+                                    field: 'proteinVariantAnnotation.functionalDescription',
+                                    colspan: 1,
+                                    rowspan: 1
+                                }
                             ]
                         ]
                     });
@@ -425,11 +422,10 @@
             },
             detailFormatter: function (index, row) {
                 if (row.proteinVariantAnnotation !== undefined) {
-//                    if (row.proteinVariantAnnotation.uniprotVariantId !== undefined) {
-                        row.proteinVariantAnnotation.uniprotVariantId = row.proteinVariantAnnotation.uniprotVariantId || '-';
-                        row.proteinVariantAnnotation.functionalDescription = row.proteinVariantAnnotation.functionalDescription || '-';
-                        row.proteinVariantAnnotation.keywords = row.proteinVariantAnnotation.keywords || '-';
-                        var features = row.proteinVariantAnnotation.features || '-';
+                    row.proteinVariantAnnotation.uniprotVariantId = row.proteinVariantAnnotation.uniprotVariantId || '-';
+//                    row.proteinVariantAnnotation.functionalDescription = row.proteinVariantAnnotation.functionalDescription || '-';
+                    row.proteinVariantAnnotation.keywords = row.proteinVariantAnnotation.keywords || '-';
+                    var features = row.proteinVariantAnnotation.features || '-';
                     var html = [];
                     var result = "";
                     if (features != '-') {
@@ -438,7 +434,7 @@
                             features[i].id = features[i].id || '-';
                             features[i].type = features[i].type || '-';
                             features[i].description = features[i].description || '-';
-                            xxx.push( '<span>{ ID: ' + features[i].id + ', Start:' + features[i].start  + ', End:' + features[i].end +
+                            xxx.push('<span>{ ID: ' + features[i].id + ', Start:' + features[i].start + ', End:' + features[i].end +
                                     ', Type:' + features[i].type + ', Description:' + features[i].description + ' }</span> <br>');
                         }
                         result = xxx.join('');
@@ -446,19 +442,13 @@
                         result = '-';
                     }
 
-                        html.push('<b>Uniprot Variant ID:</b> ' + row.proteinVariantAnnotation.uniprotVariantId +
-                                '<br> <b>Functional Description:</b> ' + row.proteinVariantAnnotation.functionalDescription +
-                                '<br> <b>Keywords:</b> ' + row.proteinVariantAnnotation.keywords +
-                                '<br> <b>Features:</b> ' + result);
-                        return html.join('');
-                    }
-//                else {
-//                        var html = [];
-//                        html.push('<b>Uniprot Variant ID:</b> - <br> <b>Functional Description:</b> - <br> <b>Keywords:</b> - <br> <b>Features:</b> -');
-//                        return html.join('');
-//                    }
-//                }
-            else {
+                    html.push('<b>Uniprot Variant ID:</b> ' + row.proteinVariantAnnotation.uniprotVariantId +
+//                            '<br> <b>Functional Description:</b> ' + row.proteinVariantAnnotation.functionalDescription +
+                            '<br> <b>Keywords:</b> ' + row.proteinVariantAnnotation.keywords +
+                            '<br> <b>Features:</b><br> ' + result);
+                    return html.join('');
+                }
+                else {
                     return "No Protein Variant Annotation";
                 }
             },

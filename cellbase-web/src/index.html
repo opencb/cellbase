@@ -68,6 +68,7 @@
     <!-- build:section test -->
     <link rel="import" href="components/shared/cellbase-species-menu.html">
     <link rel="import" href="components/core/cellbase-gene-panel.html">
+    <link rel="import" href="components/core/cellbase-regulation-panel.html">
     <link rel="import" href="components/variation/cellbase-variation-panel.html">
     <link rel="import" href="components/variation/cellbase-variantannotation-panel.html">
     <!-- /build -->
@@ -157,7 +158,7 @@
                                         <li><a href="#genePanel">Gene</a></li>
                                         <li><a href="#transcriptPanel">Transcript</a></li>
                                         <li><a href="#">Protein</a></li>
-                                        <li><a href="#">Regulation</a></li>
+                                        <li><a href="#regulationPanel">Regulation</a></li>
                                         <li><a href="#">XRefs</a></li>
                                     </ul>
                                 </li>
@@ -246,6 +247,10 @@
                 </div>
                 <div class="collapse content" id="transcriptPanel">
                     Transcript
+                </div>
+                <div class="collapse content" id="regulationPanel">
+                    <h2>Regulation</h2>
+                    <cellbase-regulation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-regulation-panel>
                 </div>
                 <div class="collapse content" id="variationPanel">
                     <h2>Variation</h2>
