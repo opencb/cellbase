@@ -41,9 +41,8 @@
                 <!--Consequence types Tab-->
                 <div role="tabpanel" class="tab-pane active" id="{{prefix}}VariantAnnotationConsequenceTypes">
                     <table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true"
-                           data-pagination="true"
-                           data-page-list="[10, 25, 50]"
-                           data-show-pagination-switch="true" data-show-export="true">
+                           data-pagination="true" data-page-list="[10, 25, 50]" data-show-pagination-switch="true"
+                           data-show-export="true">
 
                     </table>
                 </div>
@@ -301,9 +300,10 @@
                                 },
                                 {
                                     title: 'Protein Variant Annotation',
-                                    colspan: 5,
+                                    colspan: 6,
                                     rowspan: 1
                                 }
+
                             ],
                             [
                                 {
@@ -338,6 +338,12 @@
                                     colspan: 1,
                                     rowspan: 1
                                 },
+                                {
+                                    title: 'Functional Description',
+                                    field: 'proteinVariantAnnotation.functionalDescription',
+                                    colspan: 1,
+                                    rowspan: 1
+                                }
                             ]
                         ]
                     });
@@ -417,7 +423,7 @@
             detailFormatter: function (index, row) {
                 if (row.proteinVariantAnnotation !== undefined) {
                     row.proteinVariantAnnotation.uniprotVariantId = row.proteinVariantAnnotation.uniprotVariantId || '-';
-                    row.proteinVariantAnnotation.functionalDescription = row.proteinVariantAnnotation.functionalDescription || '-';
+//                    row.proteinVariantAnnotation.functionalDescription = row.proteinVariantAnnotation.functionalDescription || '-';
                     row.proteinVariantAnnotation.keywords = row.proteinVariantAnnotation.keywords || '-';
                     var features = row.proteinVariantAnnotation.features || '-';
                     var html = [];
@@ -437,9 +443,9 @@
                     }
 
                     html.push('<b>Uniprot Variant ID:</b> ' + row.proteinVariantAnnotation.uniprotVariantId +
-                            '<br> <b>Functional Description:</b> ' + row.proteinVariantAnnotation.functionalDescription +
+//                            '<br> <b>Functional Description:</b> ' + row.proteinVariantAnnotation.functionalDescription +
                             '<br> <b>Keywords:</b> ' + row.proteinVariantAnnotation.keywords +
-                            '<br> <b>Features:</b> ' + result);
+                            '<br> <b>Features:</b><br> ' + result);
                     return html.join('');
                 }
                 else {

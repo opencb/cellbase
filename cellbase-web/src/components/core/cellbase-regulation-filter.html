@@ -22,7 +22,12 @@
 
 <dom-module id="cellbase-regulation-filter">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .result-display {
+                max-height: 800px;
+                overflow: auto;
+            }
+        </style>
 
         <div>
             <ul class="nav nav-tabs" role="tablist">
@@ -98,7 +103,7 @@
 
                 <!-- Result tab content -->
                 <div role="tabpanel" class="tab-pane" id="regulationResult">
-                    <div class="gene-names-display">
+                    <div class="result-display">
                         <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
