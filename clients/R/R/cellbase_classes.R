@@ -1,22 +1,5 @@
 require(methods)
 #' @include cellbase_functions.R
-#' @title 
-#' This is an S4 class which defines the CellbaseQuery object which holds the default
-#' configuration for connecting to the cellbase web services
-#' @details
-#' This class defines the CellbaseQuery object which holds the default
-#' configuration required by CellbaseQuery methods to connect to the
-#' cellbase web services. By defult it is configured to query human
-#' data based on the GRCh37 genome assembly
-#' @import methods RCurl 
-#' @slot config A list holding the default configuration values for connecting to the cellbase webservices
-#' @return An object of class CellbaseQuery
-#' @export CellbaseQuery
-#' @exportClass CellbaseQuery
-#' @examples 
-#' library(cellbaseR)
-#'  cb <- CellbaseQuery()
-#'  print(cb)
 CellbaseQuery <- setClass("CellbaseQuery",
                           slots = c(host="character", version="character", species="character",batch_size="numeric", num_threads="numeric"),
                           prototype = prototype(
@@ -40,7 +23,9 @@ CellbaseQuery <- setClass("CellbaseQuery",
 #' to see avaiable species and their corresponding data
 #' @import methods 
 #' @slot host A character the default host url for cellllbase webservices
-#' 
+#' @slot version A character the cellbae API version
+#' @slot species A charcter should be one of the species supported by cellbase
+#' @slot batch_size numeric a parameter for 
 #' @return An object of class CellbaseQuery
 #' @examples 
 #' library(cellbaseR)
