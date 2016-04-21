@@ -3,7 +3,7 @@ __author__ = 'fjlopez'
 import json
 import string
 
-class CellBaseConfiguration(dict):
+class CellBaseClientConfig(dict):
     def __init__(self, configFileName):
         fdw = open(configFileName)
         dictionaryString = str.join("", fdw.readlines())
