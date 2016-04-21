@@ -180,7 +180,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
         createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(), "consequenceTypes", andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

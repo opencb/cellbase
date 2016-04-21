@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.ws.genomic;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -49,7 +50,13 @@ import java.util.List;
 public class ChromosomeWSServer extends GenericRestWSServer {
 
 
-    public ChromosomeWSServer(@PathParam("version") String version, @PathParam("species") String species,
+    public ChromosomeWSServer(@PathParam("version")
+                              @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                      defaultValue = "latest") String version,
+                              @PathParam("species")
+                              @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                      + "of potentially available species ids, please refer to: "
+                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -57,13 +64,16 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = "Returns a JSON specification of the Chromosome data model",
+            response = Chromosome.class, responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Chromosome.class);
     }
 
     @GET
     @Path("/all")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = QueryResponse.class)
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = Chromosome.class,
+        responseContainer = "QueryResponse")
     public Response getChromosomesAll() {
         try {
             parseQueryParams();
@@ -91,7 +101,12 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chromosomeName}/info")
-    public Response getChromosomes(@PathParam("chromosomeName") String chromosomeId) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves chromosome data for specified chromosome names",
+            response = Chromosome.class, responseContainer = "QueryResponse")
+    public Response getChromosomes(@PathParam("chromosomeName")
+                                   @ApiParam(name = "chromosomeName", value = "Comma separated list of chromosome ids,"
+                                           + " e.g.: 1,2,X,MT. Exact text matches will be returned.",
+                                                required = true) String chromosomeId) {
         try {
             parseQueryParams();
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
@@ -109,11 +124,13 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chromosomeName}/size")
+    @ApiOperation(httpMethod = "GET", value = "Not properly implemented - to be fixed",
+            response = Chromosome.class, responseContainer = "QueryResponse", hidden = true)
     public Response getChromosomeSize(@PathParam("chromosomeName") String chromosomeId) {
         try {
             parseQueryParams();
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
-            QueryOptions options = new QueryOptions("include", "size");
+            QueryOptions options = new QueryOptions("include", "chromosomes.size");
 //            return createOkResponse(dbAdaptor.getChromosomeById(query, options));
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
             List<QueryResult> queryResults = new ArrayList<>(chromosomeList.size());
