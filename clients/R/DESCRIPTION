@@ -1,0 +1,22 @@
+Package: cellbaseR
+Type: Package
+Date: 2016-04-17
+Title: Querying annotation data from the rich cellbase web services
+Version: 0.2.0
+Author: Mohammed OE Abdallah
+Maintainer:  Mohammed OE Abdallah <melsiddieg@gmail.com>
+Description: Classes and methods for querying cellbase web services
+License: Apache Licence v2
+Depends:
+    R(>= 3.2.2),
+    RCurl,
+    jsonlite,methods,R.utils,BiocParallel, pbapply,
+    Rsamtools
+RoxygenNote: 5.0.1
+biocViews: Annotation Data
+Lazy: TRUE
+Collate:
+    'cellbase_functions.R'
+    'cellbase_classes.R'
+VignetteBuilder: knitr
+Suggests: BiocStyle, knitr, rmarkdown
