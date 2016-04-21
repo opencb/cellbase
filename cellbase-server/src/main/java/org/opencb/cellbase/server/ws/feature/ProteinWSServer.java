@@ -20,7 +20,6 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
-import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -40,6 +39,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Path("/{version}/{species}/feature/protein")
 @Produces(MediaType.APPLICATION_JSON)
@@ -60,15 +60,27 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
+    @ApiOperation(httpMethod = "GET", value = "Returns a JSON specification of the protein data model",
+            response = Map.class, responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Entry.class);
     }
 
     @GET
     @Path("/{proteinId}/info")
-    @ApiOperation(httpMethod = "GET", value = "Get the protein info")
-    public Response getInfoByEnsemblId(@PathParam("proteinId") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get the protein info", response = Entry.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "keyword",
+                    value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
+                            + "Transcription,Zinc. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+    })
+    public Response getInfoByEnsemblId(@PathParam("proteinId")
+                                       @ApiParam(name = "proteinId",
+                                               value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,"
+                                                       + " ENST00000278314. Exact text matches will be returned",
+                                               required = true) String id) {
         try {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
@@ -77,7 +89,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             for (String s : ids) {
                 queries.add(new Query(ProteinDBAdaptor.QueryParams.XREFS.key(), s));
             }
-            return createOkResponse(proteinDBAdaptor.get(queries, queryOptions));
+            return createOkResponse(proteinDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -121,15 +133,21 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/substitution_scores")
-    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein")
-    public Response getSubstitutionScores(@PathParam("proteinId") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
+        notes = "Output value will be a List of Score objects as defined at "
+                + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl",
+            response = List.class, responseContainer = "QueryResponse")
+    public Response getSubstitutionScores(@PathParam("proteinId")
+                                          @ApiParam(name = "proteinId",
+                                                  value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,"
+                                                          + " ENST00000278314. Exact text matches will be returned",
+                                                  required = true) String id) {
         try {
             parseQueryParams();
             query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
 
             // Fetch Ensembl transcriptId to query substiturion scores
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
-
+//            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
 
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(proteinDBAdaptor.getSubstitutionScores(query, queryOptions));
@@ -140,6 +158,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/name")
+    @ApiOperation(httpMethod = "GET", value = "Deprecated", hidden = true)
     @Deprecated
     public Response getproteinByName(@PathParam("proteinId") String id) {
         try {
@@ -160,7 +179,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "Get the transcript corresponding to the input protein")
+    @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = false)
     public Response getTranscript(@PathParam("proteinId") String query) {
         return null;
     }
@@ -218,6 +237,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     @Deprecated
     @GET
     @Path("/{proteinId}/reference")
+    @ApiOperation(httpMethod = "GET", value = "Deprecated", hidden = true)
     public Response getReference(@PathParam("proteinId") String query) {
         return null;
     }
@@ -243,8 +263,11 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/sequence")
-    @ApiOperation(httpMethod = "GET", value = "Get the sequence for the given protein")
-    public Response getSequence(@PathParam("proteinId") String proteinId) {
+    @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
+        responseContainer = "QueryResponse")
+    public Response getSequence(@PathParam("proteinId")
+                                @ApiParam (name = "proteinId", value = "UniProt accession id, e.g: Q9UL59",
+                                        required = true) String proteinId) {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
         query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteinId);
         queryOptions.put("include", "sequence.value");

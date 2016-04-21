@@ -91,7 +91,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                         + "for ClinVar variants), e.g.: Benign",
-                            required = false, dataType = "list of strings", paramType = "query"),
+                            required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAll() {
         try {
