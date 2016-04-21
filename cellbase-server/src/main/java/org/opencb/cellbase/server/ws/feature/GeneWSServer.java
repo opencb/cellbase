@@ -259,7 +259,8 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/all")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all gene objects", response = Gene.class,
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+        value = "Retrieves all gene objects", response = Gene.class,
         responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",

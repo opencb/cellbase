@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.ws.genomic;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -366,9 +367,10 @@ public class RegionWSServer extends GenericRestWSServer {
 
 
     @GET
-    @Path("/{chrRegionId}/regulatory")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the regulatory elements")
-    public Response getFeatureMap(@PathParam("chrRegionId") String region,
+    @Path("/{regionStr}/regulatory")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all regulatory elements in a region",
+            response = RegulatoryFeature.class, responseContainer = "QueryResponse")
+    public Response getFeatureMap(@PathParam("regionStr") String region,
                                   @DefaultValue("") @QueryParam("type") String featureType,
                                   @DefaultValue("") @QueryParam("class") String featureClass,
                                   @DefaultValue("") @QueryParam("name") String name) {
