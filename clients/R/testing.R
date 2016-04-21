@@ -1,5 +1,5 @@
-t1 <- CellbaseQuery()
-t1
+cb <- CellbaseQuery()
+cb
 # what argument is object
 library(RCurl)
 t2 <- fetchCellbase(host = t1@config$host,version = t1@config$version,species = t1@config$species,categ="feature",subcateg="gene",ids=c("TMEM27"),resource="snp")

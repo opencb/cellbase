@@ -76,7 +76,14 @@ readIds <- function(file=file,batch_size,num_threads)
     ids[[i]] <- hope
     i <- i+1
   }
-  ids <- pbsapply(ids, function(x)lapply(x, function(x)x))
+  #ids <- pbsapply(ids, function(x)lapply(x, function(x)x))
+  require(foreach)
+  ids <-foreach(k=1:length(ids)) %do% {
+                  foreach(j=1:length(ids[[k]]), .combine='c')%do%{
+                    ids[[k]][[j]]
+                  }
+  }
+  ids <- unlist(ids, recursive = FALSE)
   return(ids)
 }
 

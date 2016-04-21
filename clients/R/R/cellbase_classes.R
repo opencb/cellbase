@@ -18,14 +18,44 @@ require(methods)
 #'  cb <- CellbaseQuery()
 #'  print(cb)
 CellbaseQuery <- setClass("CellbaseQuery",
-                          slots = c(config="list",hosts="vector",species="list",categories="vector"),
+                          slots = c(host="character", version="character", species="character",batch_size="numeric", num_threads="numeric"),
                           prototype = prototype(
-                            config=list(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
-                                        version = "v4/",species="hsapiens/",batch_size=200,num_threads=4),
-                            hosts=c("http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"),
-                            categories=c("Genomic","Feature","Regulatory","Network")
+                            host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
+                            version = "v4/",
+                            species="hsapiens/",
+                            batch_size=200,
+                            num_threads=8
                           )
 )
+###
+#' @title 
+#' This is a constructor function for CellbaseQuery object which holds the default
+#' configuration for connecting to the cellbase web services
+#' @details
+#' This class defines the CellbaseQuery object which holds the default
+#' configuration required by CellbaseQuery methods to connect to the
+#' cellbase web services. By defult it is configured to query human
+#' data based on the GRCh37 genome assembly
+#' @param species A charcter should be one of the species supported by cellbase run cbSpecies
+#' to see avaiable species and their corresponding data
+#' @import methods 
+#' @slot host A character the default host url for cellllbase webservices
+#' 
+#' @return An object of class CellbaseQuery
+#' @examples 
+#' library(cellbaseR)
+#'  cb <- CellbaseQuery()
+#'  print(cb)
+#' @export CellbaseQuery
+#' @exportClass CellbaseQuery
+CellbaseQuery <- function(species=character()){
+  if(length(species)>0){
+    species<-paste0(species,"/",sep="")
+  }else{
+    species <-"hsapiens/" 
+  }
+  new("CellbaseQuery", species=species )
+}
 
 ##### Methods for CellbaseQuery objects
 #  The show method for cellbaseQuery class
@@ -68,9 +98,9 @@ setGeneric("getCellbase", function(object, file=NULL,categ, subcateg,ids,resourc
 #' @export
 setMethod("getCellbase", "CellbaseQuery",  definition = function(object,file=NULL, categ, subcateg,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- categ
   subcateg<- subcateg
   ids <- ids
@@ -103,9 +133,9 @@ setGeneric("cbClinical", function(object, filters,...) standardGeneric("cbClinic
 #' @export
 setMethod("cbClinical", "CellbaseQuery",  definition = function(object,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "feature"
   subcateg<- "clinical"
   ids <- NULL
@@ -178,9 +208,9 @@ setGeneric("cbGene", function(object,ids,resource,filter, ...) standardGeneric("
 #' @export
 setMethod("cbGene", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "feature"
   subcateg<- "gene"
   ids <- ids
@@ -211,9 +241,9 @@ setGeneric("cbRegion", function(object,ids,resource,filters, ...) standardGeneri
 #' @export
 setMethod("cbRegion", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "genomic"
   subcateg<- "region"
   ids <- ids
@@ -242,9 +272,9 @@ setGeneric("cbSnp", function(object,ids,resource,filters, ...) standardGeneric("
 #' @export
 setMethod("cbSnp", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "feature"
   subcateg<- "snp"
   ids <- ids
@@ -274,9 +304,9 @@ setGeneric("cbVariant", function(object,ids,resource,filters=NULL, ...) standard
 #' @export
 setMethod("cbVariant", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "genomic"
   subcateg<- "variant"
   ids <- ids
@@ -304,9 +334,9 @@ setGeneric("cbTfbs", function(object,ids,resource,filters=NULL, ...) standardGen
 #' @export
 setMethod("cbTfbs", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "regulation"
   subcateg<- "tf"
   ids <- ids
@@ -335,9 +365,9 @@ setGeneric("cbTranscript", function(object,ids,resource,filters=NULL, ...) stand
 #' @export
 setMethod("cbTranscript", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "feature"
   subcateg<- "transcript"
   ids <- ids
@@ -368,9 +398,9 @@ setGeneric("cbXref", function(object,ids,resource,filters=NULL, ...) standardGen
 #' @export
 setMethod("cbXref", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "feature"
   subcateg<- "id"
   ids <- toupper(ids)
@@ -399,9 +429,9 @@ setGeneric("cbProtein", function(object,ids,resource,filters=NULL, ...) standard
 #' @export
 setMethod("cbProtein", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "feature"
   subcateg<- "protein"
   ids <- ids
@@ -432,9 +462,9 @@ setGeneric("cbGenomeSequence", function(object,ids,resource,filters=NULL, ...) s
 #' @export
 setMethod("cbGenomeSequence", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
-  host <- object@config$host
-  species <- object@config$species
-  version <- object@config$version
+  host <- object@host
+  species <- object@species
+  version <- object@version
   categ <- "genomic"
   subcateg<- "chromosome"
   ids <- ids
@@ -446,9 +476,9 @@ setMethod("cbGenomeSequence", "CellbaseQuery",  definition = function(object,ids
 # setGeneric("cbMeta", function(object,file=NULL,host=NULL, version=NULL, species, categ, subcateg,ids,resource,filters=NULL, ...) standardGeneric("cbMeta"))
 # setMethod("cbMeta", "CellbaseQuery",  definition = function(object,file=NULL,host=NULL, version=NULL,meta=NULL, species=NULL, categ, subcateg,ids,resource,filters=NULL,...) {
 #
-#   host <- object@config$host
+#   host <- object@host
 #   species <- species
-#   version <- object@config$version
+#   version <- object@version
 #   meta <- paste0("meta","/",sep="")
 #   categ <- NULL
 #   subcateg<- NULL
@@ -475,9 +505,9 @@ setGeneric("cbSpecies", function(object, ...) standardGeneric("cbSpecies"))
 #' @export
 setMethod("cbSpecies", "CellbaseQuery",  definition = function(object,...) {
 
-  host <- object@config$host
+  host <- object@host
   species <- "species"
-  version <- object@config$version
+  version <- object@version
   meta <- "meta/"
   categ <- NULL
   subcateg<- NULL
@@ -497,7 +527,7 @@ setGeneric("species<-",
 #' @param value a character specifying the desired species
 setMethod("species<-","CellbaseQuery",function(object,value){
   value =paste0(value,"/",sep="")
-  object@config$species <- value
+  object@species <- value
   return(object)
 })
 
@@ -509,7 +539,7 @@ setGeneric("host<-",
            function(object, value) standardGeneric("host<-"))
 setMethod("host<-","CellbaseQuery",function(object,value){
   value =paste0(value,"/",sep="")
-  object@config$host <- value
+  object@host <- value
   return(object)
 })
 #Need more work
@@ -523,11 +553,11 @@ setGeneric("annotateVcf", function(object,file, ...) standardGeneric("annotateVc
 #' @return an annotated dataframe
 #' @export
 setMethod("annotateVcf", "CellbaseQuery",  definition = function(object,file,...) {
-  host <- object@config$host
-  version <- object@config$version
-  species <- object@config$species
-  batch_size <- object@config$batch_size
-  num_threads <- object@config$num_threads
+  host <- object@host
+  version <- object@version
+  species <- object@species
+  batch_size <- object@batch_size
+  num_threads <- object@num_threads
   categ <- "genomic"
   subcateg<- "variant"
   ids <- NULL
