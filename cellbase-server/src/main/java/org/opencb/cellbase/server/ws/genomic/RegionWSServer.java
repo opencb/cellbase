@@ -298,7 +298,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcripts objects", response = Transcript.class,
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "transcripts.biotype",
@@ -336,7 +336,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/variation")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects for the regions. If query param "
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the variant objects for the regions. If query param "
             + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
             + "histogram=false Variant objects will be returned "
             + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
@@ -369,15 +369,15 @@ public class RegionWSServer extends GenericRestWSServer {
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getVariationByRegion(@PathParam("chrRegionId")
-                                         @ApiParam(name = "region",
+                                         @ApiParam(name = "chrRegionId",
                                                  value = "Comma separated list of genomic regions to be queried, "
                                                          + "e.g.: 1:6635137-6635325",
-                                                 required = true) String region) {
+                                                 required = true) String chrRegionId) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
 
-            List<Region> regions = Region.parseRegions(region);
+            List<Region> regions = Region.parseRegions(chrRegionId);
             // remove regions bigger than 10Mb
             if (regions != null) {
                 for (Region r : regions) {
@@ -387,7 +387,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 }
             }
 
-            query.put(VariantDBAdaptor.QueryParams.REGION.key(), region);
+            query.put(VariantDBAdaptor.QueryParams.REGION.key(), chrRegionId);
 
             if (hasHistogramQueryParam()) {
 //                queryOptions.put("interval", getHistogramIntervalSize());
