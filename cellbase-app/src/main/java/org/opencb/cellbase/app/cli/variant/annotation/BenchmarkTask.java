@@ -36,11 +36,16 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
         variantAnnotator.run(cellBaseBatch);
         List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> comparisonResultList = new ArrayList<>();
         for (int i = 0; i < batch.size(); i++) {
-            Pair<VariantAnnotationDiff, VariantAnnotationDiff> comparisonResult = compare(batch.get(i),
-                    cellBaseBatch.get(i).getAnnotation());
-            comparisonResult.getLeft().setVariantAnnotation(batch.get(i));
-            comparisonResult.getRight().setVariantAnnotation(cellBaseBatch.get(i).getAnnotation());
-            comparisonResultList.add(comparisonResult);
+            // Variants such as MT:453:TTT:ATT are skipped for the benchmark - will not have CellBase annotation
+            // compatible with VEP annotation and therefore consequenceTypeList = null
+            if (batch.get(i).getConsequenceTypes() != null
+                    && cellBaseBatch.get(i).getAnnotation().getConsequenceTypes() != null) {
+                Pair<VariantAnnotationDiff, VariantAnnotationDiff> comparisonResult = compare(batch.get(i),
+                        cellBaseBatch.get(i).getAnnotation());
+                comparisonResult.getLeft().setVariantAnnotation(batch.get(i));
+                comparisonResult.getRight().setVariantAnnotation(cellBaseBatch.get(i).getAnnotation());
+                comparisonResultList.add(comparisonResult);
+            }
         }
         return comparisonResultList;
     }
@@ -97,20 +102,24 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
     }
 
     private Set<SequenceOntologyTermComparisonObject> getSequenceOntologySet(List<ConsequenceType> consequenceTypeList) {
-        Set<SequenceOntologyTermComparisonObject> set = new HashSet<>(consequenceTypeList.size());
-        for (ConsequenceType consequenceType : consequenceTypeList) {
-            for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
-                // Expected many differences depending on the regulatory source databases used by the annotators.
-                // Better skip regulatory_region_variant annotations
-                if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
-                        || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
-                    set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
-                            sequenceOntologyTerm));
+        if (consequenceTypeList != null) {
+            Set<SequenceOntologyTermComparisonObject> set = new HashSet<>(consequenceTypeList.size());
+            for (ConsequenceType consequenceType : consequenceTypeList) {
+                for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
+                    // Expected many differences depending on the regulatory source databases used by the annotators.
+                    // Better skip regulatory_region_variant annotations
+                    if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
+                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
+                        set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
+                                sequenceOntologyTerm));
+                    }
                 }
             }
-        }
 
-        return set;
+            return set;
+        } else {
+            return null;
+        }
     }
 
     private List<Variant> createEmptyVariantList(List<VariantAnnotation> variantAnnotationList) {

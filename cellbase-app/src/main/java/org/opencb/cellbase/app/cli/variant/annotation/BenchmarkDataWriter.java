@@ -19,6 +19,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
 /**
  * Created by fjlopez on 07/04/16.
  */
@@ -51,13 +54,17 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
     @Override
     public boolean open() {
         try {
-            OutputStream os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("diff_" + annotator1Name + ".tsv.gz")));
+            OutputStream os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("diff_" + annotator1Name + ".tsv.gz"),
+                    CREATE, APPEND));
             diff1Bw = new BufferedWriter(new OutputStreamWriter(os));
-            os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("diff_" + annotator2Name + ".tsv.gz")));
+            os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("diff_" + annotator2Name + ".tsv.gz"),
+                    CREATE, APPEND));
             diff2Bw = new BufferedWriter(new OutputStreamWriter(os));
-            os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("annotation_" + annotator1Name + ".json.gz")));
+            os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("annotation_" + annotator1Name + ".json.gz"),
+                    CREATE, APPEND));
             annotation1Bw = new BufferedWriter(new OutputStreamWriter(os));
-            os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("annotation_" + annotator2Name + ".json.gz")));
+            os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("annotation_" + annotator2Name + ".json.gz"),
+                    CREATE, APPEND));
             annotation2Bw = new BufferedWriter(new OutputStreamWriter(os));
         } catch (IOException e) {
             e.printStackTrace();

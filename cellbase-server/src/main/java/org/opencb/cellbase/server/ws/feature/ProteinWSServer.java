@@ -17,11 +17,9 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
-import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -48,7 +46,14 @@ import java.util.List;
 @Api(value = "Protein", description = "Protein RESTful Web Services API")
 public class ProteinWSServer extends GenericRestWSServer {
 
-    public ProteinWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+    public ProteinWSServer(@PathParam("version")
+                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                   defaultValue = "latest") String version,
+                           @PathParam("species")
+                           @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                   + "of potentially available species ids, please refer to: "
+                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                           @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
@@ -66,13 +71,13 @@ public class ProteinWSServer extends GenericRestWSServer {
     public Response getInfoByEnsemblId(@PathParam("proteinId") String id) {
         try {
             parseQueryParams();
-            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
             String[] ids = id.split(",");
             List<Query> queries = new ArrayList<>(ids.length);
             for (String s : ids) {
-                queries.add(new Query(VariantDBAdaptor.QueryParams.XREFS.key(), s));
+                queries.add(new Query(ProteinDBAdaptor.QueryParams.XREFS.key(), s));
             }
-            return createOkResponse(geneDBAdaptor.get(queries, queryOptions));
+            return createOkResponse(proteinDBAdaptor.get(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -80,12 +85,35 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/all")
-    @ApiOperation(httpMethod = "GET", value = "Get all proteins")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Get all proteins", response = Entry.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "accession",
+                    value = "Comma separated list of UniProt accession ids, e.g.: Q9UL59,B2R8Q1,Q9UKT9."
+                            + "Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "name",
+                    value = "Comma separated list of protein names, e.g.: ZN214_HUMAN,MKS1_HUMAN"
+                            + "Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list gene ids, e.g.: BRCA2."
+                            + "Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "xrefs",
+                    value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,ENST00000278314"
+                            + "Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "keyword",
+                    value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
+                            + "Transcription,Zinc. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+    })
     public Response getAll() {
         try {
             parseQueryParams();
-            ProteinDBAdaptor adaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-            return createOkResponse(adaptor.get(new Query(), queryOptions));
+            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            return createOkResponse(proteinDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -125,7 +153,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/gene")
-    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein")
+    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein", hidden = true)
     public Response getGene(@PathParam("proteinId") String query) {
         return null;
     }

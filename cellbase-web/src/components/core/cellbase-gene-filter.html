@@ -19,6 +19,7 @@
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
+<link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-gene-filter">
     <template>
@@ -42,10 +43,7 @@
             <!--Filter tab content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="filter1">
-                    <button type="button" class="btn btn-default" on-click="clear">Clear</button>
-                    <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
-                    <button type="button" id="submitButton" class="btn btn-default" on-click="executeQuery">
-                        Submit</button>
+                    <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
                     <!--GeneID filter menu-->
@@ -53,13 +51,13 @@
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingOne">
                                 <h4 class="panel-title">
-                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#geneId"
-                                       aria-expanded="true" aria-controls="geneId">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#geneIdView"
+                                       aria-expanded="true" aria-controls="geneIdView">
                                         Gene IDs
                                     </a>
                                 </h4>
                             </div>
-                            <div id="geneId" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                            <div id="geneIdView" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
                                 <div class="panel-body">
                                     <form class="form-inline">
                                         Search:
@@ -109,7 +107,6 @@
                             </div>
                             <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body biotype-scroll">
-                                    <!--<cellbase-biotype-options cellbase-client={{cellBaseClient}} biotypes={{biotype}}></cellbase-biotype-options>-->
                                     <cellbase-options-list cellbase-client={{cellBaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>
                                 </div>
                             </div>
@@ -198,7 +195,6 @@
                 biotypes: {
                     type: Array,
                     value: []
-//                    notify: true
                 },
                 geneId: {
                     type: String,
@@ -219,7 +215,6 @@
             },
             ready: function() {
                 this.cellBaseClient = CELLBASE_CLIENT;
-//                this.getBiotypes();
             },
             clear: function (e) {
                 // we empty the textareas
@@ -236,8 +231,8 @@
 
                 // We first build the query params object
                 let queryParams = {include: "id,name,biotype,chromosome,start,end"};
-                if (this.biotype.length > 0) {
-                    queryParams.biotype = this.biotype.join(",");
+                if (this.biotypes.length > 0) {
+                    queryParams.biotype = this.biotypes.join(",");
                 }
                 if (this.$.geneFilterDrugsTextarea.value != "") {
                     queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
@@ -288,15 +283,6 @@
                 }
 
             }
-//            ,
-//            getBiotypess: function () {
-//                console.log("em getBiotypes")
-//                var _this = this;
-//                var success = function (response) {
-//                    _this.biotypes = response.response[0].result;
-//                };
-//                this.cellBaseClient.getGeneClient(null, 'biotype', {}, {success: success, async: true});
-//            }
         });
     </script>
 </dom-module>

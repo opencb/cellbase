@@ -18,31 +18,33 @@
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
+<link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-variation-filter">
     <template>
         <style is="custom-style" include="cellbase-shared-styles">
-            .biotype-scroll{
+            .menu-scroll{
                 max-height: 300px;
                 overflow-y: scroll;
             }
         </style>
 
         <div>
+            <!--Variation Filter Tabs-->
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#variationFilter" role="tab" data-toggle="tab">Filter</a></li>
                 <li role="presentation"><a href="#variationResult" role="tab" data-toggle="tab">Result</a></li>
             </ul>
 
+            <!--Variation Filter Tab Content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="variationFilter">
-                    <button type="button" class="btn btn-default" on-click="clear">Clear</button>
-                    <button type="button" class="btn btn-default" on-click="loadExample">Example</button>
-                    <button type="button" class="btn btn-default" on-click="executeQuery">Submit</button>
+                    <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
 
+                        <!--Variation ID filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingOne">
                                 <h4 class="panel-title">
@@ -59,8 +61,10 @@
                                         <div style="float: right">
                                             <input id="variationIdText" type="text" class="form-control" list="variation-datalist" value="" on-keyup="callVariationAutocomplete">
                                             <datalist id="variation-datalist">
-                                                <template is="dom-repeat" items="{{autocompleteData}}">
-                                                    <option value="{{item.start}}">
+                                                <template is="dom-repeat" items="{{autocompleteData}}" as="object">
+                                                    <template is="dom-repeat" items="{{object.ids}}">
+                                                        <option value="{{item}}">
+                                                    </template>
                                                 </template>
                                             </datalist>
                                             <button type="button" class="btn btn-default btn-sm form-control" on-click="addVariationId">
@@ -73,22 +77,24 @@
                             </div>
                         </div>
 
+                        <!--Region filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingTwo">
                                 <h4 class="panel-title">
                                     <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
-                                       href="#variationRegion" aria-expanded="false" aria-controls="region">
+                                       href="#variationRegion" aria-expanded="false" aria-controls="variationRegion">
                                         Region
                                     </a>
                                 </h4>
                             </div>
                             <div id="variationRegion" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                 <div class="panel-body">
-                                    <textarea id="regionList" class="form-control clearable" rows="3"></textarea>
+                                    <textarea id="variationRegionList" class="form-control clearable" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
 
+                        <!--Consequence Types filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingThree">
                                 <h4 class="panel-title">
@@ -99,25 +105,26 @@
                                 </h4>
                             </div>
                             <div id="consequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                                <div class="panel-body biotype-scroll">
+                                <div class="panel-body menu-scroll">
                                     <!--<cellbase-consequence-types-options cellbase-client={{cellBaseClient}} biotypes={{biotype}}></cellbase-consequence-types-options>-->
                                     <cellbase-options-list cellbase-client={{cellBaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
 
+                        <!--Population frequency filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingFive">
                                 <h4 class="panel-title">
                                     <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
-                                       href="#variationPopulationFrequency" aria-expanded="false" aria-controls="phenotype">
+                                       href="#variationPopulationFrequency" aria-expanded="false" aria-controls="variationPopulationFrequency">
                                         Population Frequencies
                                     </a>
                                 </h4>
                             </div>
                             <div id="variationPopulationFrequency" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
                                 <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                    <textarea id="variationPopulationFrequencyText" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +139,7 @@
                         <br>
                         <template is="dom-repeat" items="{{result}}">
                             <div>
-                                <b on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.ids}}</b>
+                                <b on-click="_updateVariationView" id="{{item.ids}}" style="cursor: pointer">{{item.ids}}</b>
                                 <i>{{item.annotation.displayConsequenceType}}</i><br>
                                 {{item.chromosome}}:{{item.start}}-{{item.end}}
                                 <hr>
@@ -176,16 +183,21 @@
             clear: function (e) {
                 // we empty the textareas
                 this.$.variationFilterIdsTextarea.value = "";
-                this.$.geneFilterDrugsTextarea.value = "";
+                this.$.variationRegionList.value = "";
+                this.$.variationPopulationFrequencyText.value= "";
             },
             loadExample: function (e) {
                 this.$.variationFilterIdsTextarea.value = "rs666";
             },
             executeQuery: function (e) {
                 // activate the GIF
+                $('#spinImg').show();
 
                 // We first build the query params object
                 let queryParams = {include: "ids,chromosome,start,end,annotation.displayConsequenceType"};
+                if (this.consequenceTypes.length > 0) {
+                    queryParams.consequenceType = this.consequenceTypes.join(",");
+                }
 //                if (this.$.geneFilterDrugsTextarea.value != "") {
 //                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
 //                }
@@ -199,16 +211,16 @@
                             _this.push('result',response.response[i].result[j]);
                         }
                     }
-                    console.log(_this.result)
                     // remove the GIF
+                    $('#spinImg').hide();
                 };
 
                 // Now we execute the query. Note that ID are preferred
                 if (this.$.variationFilterIdsTextarea.value !== "") {
                     this.cellBaseClient.get('feature','snp', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
                 } else {
-                    if (this.$.regionList.value !== "") {
-                        this.cellBaseClient.get('genomic','region', this.$.regionList.value, 'variation', queryParams, {success: success, async: true});
+                    if (this.$.variationRegionList.value !== "") {
+                        this.cellBaseClient.get('genomic','region', this.$.variationRegionList.value, 'variation', queryParams, {success: success, async: true});
                     }
                 }
 
@@ -217,7 +229,7 @@
             ready: function() {
                 this.cellBaseClient = CELLBASE_CLIENT;
             },
-            _updateGeneView: function(e) {
+            _updateVariationView: function(e) {
                 this.variationId = e.srcElement.id;
             },
             addVariationId: function(e) {
@@ -236,7 +248,6 @@
                     };
                     _this.cellBaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
                 }
-
             }
         });
     </script>

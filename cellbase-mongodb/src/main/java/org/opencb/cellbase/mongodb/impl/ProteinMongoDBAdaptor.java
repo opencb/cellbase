@@ -354,9 +354,9 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
         createOrQuery(query, QueryParams.ACCESSION.key(), "accession", andBsonList);
         createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(query, QueryParams.GENE.key(), "gene", andBsonList);
+        createOrQuery(query, QueryParams.GENE.key(), "gene.name.value", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "dbReference.id", andBsonList);
-        createOrQuery(query, QueryParams.KEYWORD.key(), "keyword", andBsonList);
+        createOrQuery(query, QueryParams.KEYWORD.key(), "keyword.value", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
 
