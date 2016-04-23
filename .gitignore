@@ -60,3 +60,4 @@ local.properties
 
 # Python
 *.pyc
+.Rproj.user
