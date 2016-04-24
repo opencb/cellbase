@@ -12,3 +12,7 @@ t3
 cellbaseData(t3[1:5,1:5])
 
 fs <- system.file("extdata", "chr7-sub.vcf.gz",  package="VariantAnnotation")
+y1 <- annotateVcf(object = cb, file =fs )
+elav <- cbGene(object=cb, ids="ELAVL1",resource="info")
+cb@host
+cb@species

@@ -7,15 +7,15 @@ CellbaseQuery <- setClass("CellbaseQuery",
                             version = "v4/",
                             species="hsapiens/",
                             batch_size=200,
-                            num_threads=8
+                            num_threads=4
                           )
 )
 ###
+#' @aliases CellbaseQuery
 #' @title 
-#' This is a constructor function for CellbaseQuery object which holds the default
-#' configuration for connecting to the cellbase web services
+#' This is a constructor function for CellbaseQuery object
 #' @details
-#' This class defines the CellbaseQuery object which holds the default
+#' This class defines the CellbaseQuery object. It holds the default
 #' configuration required by CellbaseQuery methods to connect to the
 #' cellbase web services. By defult it is configured to query human
 #' data based on the GRCh37 genome assembly
@@ -48,7 +48,7 @@ setMethod("show",signature = "CellbaseQuery",definition = function(object){
   cat("An object of class ", class(object), "\n", sep = "")
   cat("| it holds the configuration for querying the Cellbase databases\n")
   cat("| to get more information about the available species run cbSpecies()\n")
-  cat("| to change the default species from human to any other species use Species()\n")
+  cat("| to change the default species from human use CellbaseQuery(species='')")
 })
 #' The generic method for getCellbase
 #' 
@@ -592,6 +592,8 @@ setMethod("[","CellbaseResult",definition = function(x,i,j,drop="missing")
 prototype = prototype(genome=character(0),gene=character(0),region=character(0),
         rs=character(0),so=character(0),phenotype=character(0)))
 #' A constructor function for CellbaseParam
+#' 
+#' @details 
 #'use the CellbaseParam object to control what results are returned from the CellbaseQuery methods
 #' @param genome A character denoting the genome build to query,eg, GRCh37(default),or GRCh38
 #' @param gene A charcter vector denoting the gene/s to be queried

@@ -2,8 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \name{CellbaseParam}
 \alias{CellbaseParam}
-\title{A constructor function for CellbaseParam
-use the CellbaseParam object to control what results are returned from the CellbaseQuery methods}
+\title{A constructor function for CellbaseParam}
 \usage{
 CellbaseParam(genome = character(), gene = character(),
   region = character(), rs = character(), so = character(),
@@ -24,6 +23,8 @@ CellbaseParam(genome = character(), gene = character(),
 }
 \description{
 A constructor function for CellbaseParam
+}
+\details{
 use the CellbaseParam object to control what results are returned from the CellbaseQuery methods
 }
 \examples{
