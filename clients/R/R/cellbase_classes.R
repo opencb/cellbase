@@ -69,6 +69,7 @@ setGeneric("getCellbase", function(object, file=NULL,categ, subcateg,ids,resourc
 #' @param subcateg charcter to specify the subcategory to be queried
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter to specify the resource to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters an object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' 
@@ -181,6 +182,7 @@ setGeneric("cbGene", function(object,ids,resource,filter, ...) standardGeneric("
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -214,6 +216,7 @@ setGeneric("cbRegion", function(object,ids,resource,filters, ...) standardGeneri
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -245,6 +248,7 @@ setGeneric("cbSnp", function(object,ids,resource,filters, ...) standardGeneric("
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -277,6 +281,7 @@ setGeneric("cbVariant", function(object,ids,resource,filters=NULL, ...) standard
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -308,6 +313,7 @@ setGeneric("cbTfbs", function(object,ids,resource,filters=NULL, ...) standardGen
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -337,8 +343,9 @@ setGeneric("cbTranscript", function(object,ids,resource,filters=NULL, ...) stand
 #' @aliases cbTranscript
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
-#' @param resource a charcter vector to specify the ids to be queried can be
+#' @param resource a charcter vector to specify the resource to be queried can be
 #' any of "info", "function_prediction", "gene", "sequence", "variation", or "protein"
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -371,7 +378,9 @@ setGeneric("cbXref", function(object,ids,resource,filters=NULL, ...) standardGen
 #' @aliases cbXref
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
-#' @param resource a charcter vector to specify the ids to be queried can be any of "xref", "gene", "starts"with", or "contains"
+#' @param resource a charcter vector to specify the ids to be queried can 
+#' be any of "xref", "gene", "starts"with", or "contains"
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -403,6 +412,7 @@ setGeneric("cbProtein", function(object,ids,resource,filters=NULL, ...) standard
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of uniprot ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -435,6 +445,7 @@ setGeneric("cbGenomeSequence", function(object,ids,resource,filters=NULL, ...) s
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -570,6 +581,7 @@ setGeneric("cellbaseData", function(object, ...) standardGeneric("cellbaseData")
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
+#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #'
