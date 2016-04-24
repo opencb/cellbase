@@ -24,10 +24,16 @@ cb
 ## ---- eval=FALSE---------------------------------------------------------
 #  cb <- CellbaseQuery()
 #  genes <- c("TP73","TET1")
-#  # the following query will fetch all the clinically relevant variants for these genes
-#  res <- cbGene(object = cb, ids = genes, resource = "info")
-#  res
 #  
+#  res <- cbGene(object = cb, ids = genes, resource = "transcript")
+#  # to get the resulting data.frame run cellbaseData()
+#  res <- cellbaseData(object = res)
+#  names(res)
+#  # as you can see the res dataframe also contains an exons column
+#  # which is in fact a list column of nested dataframes, to get the
+#  # exons data.frame for first transcript
+#  TET1_transcripts <- res$exons[[1]]
+#  names(TET1_transcripts)
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  

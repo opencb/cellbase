@@ -14,7 +14,7 @@
 
 \item{ids}{a charcter vector of the ids to be queried}
 
-\item{resource}{a charcter vector to specify the ids to be queried can be
+\item{resource}{a charcter vector to specify the resource to be queried can be
 any of "info", "function_prediction", "gene", "sequence", "variation", or "protein"}
 
 \item{filters}{a object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
@@ -32,6 +32,6 @@ library(cellbaseR)
 }
 \seealso{
 for more information about the cellbase webservices see 
-\url{https://github.com/opencb/cellbase/wiki}
+\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 }
 

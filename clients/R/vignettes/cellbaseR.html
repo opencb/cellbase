@@ -72,7 +72,7 @@ cb</code></pre>
 <pre><code>## An object of class CellbaseQuery
 ## | it holds the configuration for querying the Cellbase databases
 ## | to get more information about the available species run cbSpecies()
-## | to change the default species from human to any other species use Species()</code></pre>
+## | to change the default species from human use CellbaseQuery(species='')</code></pre>
 <p>This create a CellbaseQuery object which by default connect to the human cellbase database and GRCh37 genome assembly, you can see the avaiable species and data for each species by running the cbSpecies method passing the CellbaseQuery object you just created</p>
 <pre class="r"><code>sp &lt;- cbSpecies(object = cb) # This will give you a list of dataframes corresponding
 # to avaiable groups
@@ -106,9 +106,16 @@ head(vertebrates)
 <p>In all cases the user is expected to provide the ids for the query and the resource to be queried, in addition to the CellbaseQuery object they created.For example, a query through the cbGene will look something like this</p>
 <pre class="r"><code>cb &lt;- CellbaseQuery()
 genes &lt;- c(&quot;TP73&quot;,&quot;TET1&quot;)
-# the following query will fetch all the clinically relevant variants for these genes
-res &lt;- cbGene(object = cb, ids = genes, resource = &quot;info&quot;)
-res</code></pre>
+
+res &lt;- cbGene(object = cb, ids = genes, resource = &quot;transcript&quot;)
+# to get the resulting data.frame run cellbaseData()
+res &lt;- cellbaseData(object = res)
+names(res)
+# as you can see the res dataframe also contains an exons column 
+# which is in fact a list column of nested dataframes, to get the
+# exons data.frame for first transcript
+TET1_transcripts &lt;- res$exons[[1]]
+names(TET1_transcripts)</code></pre>
 <p>making a query through cbRegion to get all the clinically relevant variants in a specific region</p>
 <pre class="r"><code>res &lt;- cellbaseR::cbRegion(object = cb,ids = &quot;17:1000000-1100000&quot;,resource = &quot;clinical&quot;)
 # to get the data 

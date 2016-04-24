@@ -2,8 +2,7 @@
 % Please edit documentation in R/cellbase_classes.R
 \name{CellbaseQuery}
 \alias{CellbaseQuery}
-\title{This is a constructor function for CellbaseQuery object which holds the default
-configuration for connecting to the cellbase web services}
+\title{This is a constructor function for CellbaseQuery object}
 \usage{
 CellbaseQuery(species = character())
 }
@@ -15,7 +14,7 @@ to see avaiable species and their corresponding data}
 An object of class CellbaseQuery
 }
 \details{
-This class defines the CellbaseQuery object which holds the default
+This class defines the CellbaseQuery object. It holds the default
 configuration required by CellbaseQuery methods to connect to the
 cellbase web services. By defult it is configured to query human
 data based on the GRCh37 genome assembly

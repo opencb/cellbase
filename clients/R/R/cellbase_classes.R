@@ -69,7 +69,6 @@ setGeneric("getCellbase", function(object, file=NULL,categ, subcateg,ids,resourc
 #' @param subcateg charcter to specify the subcategory to be queried
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter to specify the resource to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters an object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' 
@@ -80,7 +79,7 @@ setGeneric("getCellbase", function(object, file=NULL,categ, subcateg,ids,resourc
 #'  res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",resource="info")
 #'
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("getCellbase", "CellbaseQuery",  definition = function(object,file=NULL, categ, subcateg,ids,resource,filters=NULL,...) {
 
@@ -115,7 +114,7 @@ setGeneric("cbClinical", function(object, filters,...) standardGeneric("cbClinic
 #' res <- cbClinical(object=cb,filters=cbParam)
 #' 
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbClinical", "CellbaseQuery",  definition = function(object,filters=NULL,...) {
 
@@ -182,7 +181,7 @@ setGeneric("cbGene", function(object,ids,resource,filter, ...) standardGeneric("
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -191,7 +190,7 @@ setGeneric("cbGene", function(object,ids,resource,filter, ...) standardGeneric("
 #'  cb <- CellbaseQuery()
 #'  res <- cbGene(object=cb, ids=c("TP73","TET1"), resource="clinical")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbGene", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -216,7 +215,6 @@ setGeneric("cbRegion", function(object,ids,resource,filters, ...) standardGeneri
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -225,7 +223,7 @@ setGeneric("cbRegion", function(object,ids,resource,filters, ...) standardGeneri
 #'  cb <- CellbaseQuery()
 #'  res <- cbRegion(object=cb, ids="17:1000000-1200000", resource="gene")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbRegion", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -248,7 +246,6 @@ setGeneric("cbSnp", function(object,ids,resource,filters, ...) standardGeneric("
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -257,7 +254,7 @@ setGeneric("cbSnp", function(object,ids,resource,filters, ...) standardGeneric("
 #'  cb <- CellbaseQuery()
 #'  res <- cbSnp(object=cb, ids="rs6025", resource="info")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbSnp", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -281,7 +278,6 @@ setGeneric("cbVariant", function(object,ids,resource,filters=NULL, ...) standard
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -290,7 +286,7 @@ setGeneric("cbVariant", function(object,ids,resource,filters=NULL, ...) standard
 #'  cb <- CellbaseQuery()
 #'  res <- cbVariant(object=cb, ids="19:45411941:T:C", resource="annotation")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbVariant", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -313,7 +309,7 @@ setGeneric("cbTfbs", function(object,ids,resource,filters=NULL, ...) standardGen
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -321,7 +317,7 @@ setGeneric("cbTfbs", function(object,ids,resource,filters=NULL, ...) standardGen
 #'  cb <- CellbaseQuery()
 #'  res <- cbTfbs(object=cb, ids="PAX1", resource="gene")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbTfbs", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -345,7 +341,7 @@ setGeneric("cbTranscript", function(object,ids,resource,filters=NULL, ...) stand
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the resource to be queried can be
 #' any of "info", "function_prediction", "gene", "sequence", "variation", or "protein"
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -353,7 +349,7 @@ setGeneric("cbTranscript", function(object,ids,resource,filters=NULL, ...) stand
 #'  cb <- CellbaseQuery()
 #'  res <- cbTranscript(object=cb, ids="ENST00000373644", resource="info")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbTranscript", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -380,7 +376,6 @@ setGeneric("cbXref", function(object,ids,resource,filters=NULL, ...) standardGen
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried can 
 #' be any of "xref", "gene", "starts"with", or "contains"
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -388,7 +383,7 @@ setGeneric("cbXref", function(object,ids,resource,filters=NULL, ...) standardGen
 #'  cb <- CellbaseQuery()
 #'  res <- cbXref(object=cb, ids="ENST00000373644", resource="xref")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbXref", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -412,7 +407,6 @@ setGeneric("cbProtein", function(object,ids,resource,filters=NULL, ...) standard
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of uniprot ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #' @examples 
@@ -420,7 +414,7 @@ setGeneric("cbProtein", function(object,ids,resource,filters=NULL, ...) standard
 #'  cb <- CellbaseQuery()
 #'  res <- cbProtein(object=cb, ids="O15350", resource="sequence")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbProtein", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -445,7 +439,6 @@ setGeneric("cbGenomeSequence", function(object,ids,resource,filters=NULL, ...) s
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @param ... any extra arguments
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -454,7 +447,7 @@ setGeneric("cbGenomeSequence", function(object,ids,resource,filters=NULL, ...) s
 #'  cb <- CellbaseQuery()
 #'  res <- cbGenomeSequence(object=cb, ids="22", resource="info")
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbGenomeSequence", "CellbaseQuery",  definition = function(object,ids,resource,filters=NULL,...) {
 
@@ -497,7 +490,7 @@ setGeneric("cbSpecies", function(object, ...) standardGeneric("cbSpecies"))
 #'  cb <- CellbaseQuery()
 #'  res <- cbSpecies(object=cb)
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("cbSpecies", "CellbaseQuery",  definition = function(object,...) {
 
@@ -581,7 +574,7 @@ setGeneric("cellbaseData", function(object, ...) standardGeneric("cellbaseData")
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the ids to be queried
-#' @seealso \url {http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+
 #' @param filters a object of class CellbaseParam specifying additional filterss for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
 #'
@@ -618,7 +611,7 @@ prototype = prototype(genome=character(0),gene=character(0),region=character(0),
 #' cbParam <- CellbaseParam(genome="GRCh38",gene=c("TP73","TET1"))
 #' print(cbParam)
 #' @seealso for more information about the cellbase webservices see 
-#' \url{https://github.com/opencb/cellbase/wiki}
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 CellbaseParam <- function(genome=character(),gene=character(),region=character(),rs=character(),so=character(),phenotype=character()){
   new("CellbaseParam",genome=genome,gene=gene,region=region,rs=rs,so=so,phenotype=phenotype)

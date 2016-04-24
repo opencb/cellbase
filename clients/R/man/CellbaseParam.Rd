@@ -34,6 +34,6 @@ print(cbParam)
 }
 \seealso{
 for more information about the cellbase webservices see 
-\url{https://github.com/opencb/cellbase/wiki}
+\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 }
 
