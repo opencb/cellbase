@@ -21,6 +21,7 @@
 <dom-module id="cellbase-variantannotation-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
+
         <div>
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#{{prefix}}VariantAnnotationConsequenceTypes" role="tab"
@@ -179,6 +180,9 @@
             is: 'cellbase-variantannotation-view',
 
             properties: {
+                cellbaseClient: {
+                    type: Object
+                },
                 data: {
                     type: String,
                     observer: '_variantChanged'
@@ -191,7 +195,7 @@
                 }
             },
             ready: function () {
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellbaseClient = CELLBASE_CLIENT;
             },
             _variantChanged: function () {
                 let _this = this;
@@ -404,7 +408,7 @@
                         ]
                     });
                 };
-                this.cellBaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {
+                this.cellbaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {
                     success: success,
                     async: true
                 });

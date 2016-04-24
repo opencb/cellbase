@@ -110,7 +110,7 @@
                             </div>
                             <div id="consequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellBaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -166,7 +166,7 @@
                     type: String,
                     notify: true
                 },
-                cellBaseClient: {
+                cellbaseClient: {
                     type: Object,
                     notify: true
                 },
@@ -220,17 +220,17 @@
 
                 // Now we execute the query. Note that ID are preferred
                 if (this.$.variationFilterIdsTextarea.value !== "") {
-                    this.cellBaseClient.get('feature','snp', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                    this.cellbaseClient.get('feature','snp', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
                 } else {
                     if (this.$.variationRegionList.value !== "") {
-                        this.cellBaseClient.get('genomic','region', this.$.variationRegionList.value, 'variation', queryParams, {success: success, async: true});
+                        this.cellbaseClient.get('genomic','region', this.$.variationRegionList.value, 'variation', queryParams, {success: success, async: true});
                     }
                 }
 
                 $('.nav-tabs a[href="#variationResult"]').tab('show');
             },
             ready: function() {
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellBaseClient = CELLBASE_CLIENT;
             },
             _updateVariationView: function(e) {
                 this.variationId = e.srcElement.id;
@@ -249,7 +249,7 @@
                     let success = function (response) {
                         _this.autocompleteData = response.response[0].result;
                     };
-                    _this.cellBaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
+                    _this.cellbaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
                 }
             }
         });

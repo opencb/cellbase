@@ -25,10 +25,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-variation-filter id="filter" variation-id={{variationId}}></cellbase-variation-filter>
+                <cellbase-variation-filter id="filter" cellbase-client="{{cellbaseClient}}" variation-id={{variationId}}></cellbase-variation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-variation-view id="view" variation-id={{variationId}} cellbase="{{cellBaseClient}}"></cellbase-variation-view>
+                <cellbase-variation-view id="view" cellbase-client="{{cellbaseClient}}" variation-id={{variationId}}></cellbase-variation-view>
             </div>
         </div>
     </template>
@@ -36,15 +36,15 @@
         Polymer({
             is: 'cellbase-variation-panel',
             properties: {
+                cellbaseClient: {
+                    type: Object
+                },
                 variationId: {
                     type: String
-                },
-                cellBaseClient: {
-                    type: Object
                 }
             },
             ready: function() {
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

@@ -31,16 +31,14 @@
 
         <div>
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#regulationFilter" role="tab"
-                                                          data-toggle="tab">Filter</a></li>
+                <li role="presentation" class="active"><a href="#regulationFilter" role="tab" data-toggle="tab">Filter</a></li>
                 <li role="presentation"><a href="#regulationResult" role="tab" data-toggle="tab">Result</a></li>
             </ul>
 
             <!--Filter tab content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="regulationFilter">
-                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample"
-                                             on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
                     <!--Regulatory region filter menu-->
@@ -123,9 +121,8 @@
         Polymer({
             is: 'cellbase-regulation-filter',
             properties: {
-                cellBaseClient: {
-                    type: Object,
-                    notify: true
+                cellbaseClient: {
+                    type: Object
                 },
                 region: {
                     type: String,
@@ -136,7 +133,7 @@
                 }
             },
                 ready: function () {
-                    this.cellBaseClient = CELLBASE_CLIENT;
+//                    this.cellBaseClient = CELLBASE_CLIENT;
                 },
                 clear: function (e) {
                     // we empty the textareas
@@ -173,7 +170,7 @@
                     };
 
                     if (this.$.regFilterRegionTextarea.value !== "") {
-                        this.cellBaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', {}, {success: success, async: true});
+                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', {}, {success: success, async: true});
                     }
                     $('.nav-tabs a[href="#regulationResult"]').tab('show');
                 },

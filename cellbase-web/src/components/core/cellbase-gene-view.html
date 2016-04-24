@@ -72,23 +72,23 @@
                 <!--</div>-->
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellBase}}" data="{{variations}}" on-selected="onVariantSelected"></cellbase-variation-grid>
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" on-selected="onVariantSelected"></cellbase-variation-grid>
                     <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
                     <br>
-                    <cellbase-transcritps-tfbs-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
+                    <cellbase-transcritps-tfbs-view cellbase="{{cellbaseClient}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
                 </div>
 
                 <div id="geneViewExpression" role="tabpanel" class="tab-pane">
                     <br>
-                    <cellbase-expression-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.expression}}"></cellbase-expression-grid>
+                    <cellbase-expression-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.expression}}"></cellbase-expression-grid>
                 </div>
 
                 <div id="geneViewPhenotype" role="tabpanel" class="tab-pane">
-                    <cellbase-phenotype-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-grid>
+                    <cellbase-phenotype-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-grid>
                 </div>
 
                 <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
@@ -113,7 +113,7 @@
 
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
                     <br>
-                    <cellbase-drugs-view cellbase="{{cellbase}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
+                    <cellbase-drugs-view cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
                 </div>
 
 
@@ -137,7 +137,7 @@
             is: 'cellbase-gene-view',
 
             properties: {
-                cellbase: {
+                cellbaseClient: {
                     type: Object
                 },
                 geneId: {
@@ -182,7 +182,7 @@
                     let error = function (response) {
                         alert("Gene ID not valid: " + _this.geneId)
                     };
-                    CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                    this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
                 }
 
                 // Variation
@@ -193,7 +193,7 @@
                 let error = function (response) {
                     alert("Gene ID not valid: " + _this.geneId)
                 };
-                CELLBASE_CLIENT.getGeneClient(this.geneId, 'snp', {}, {success: success, error: error, async: true});
+                this.cellbaseClient.getGeneClient(this.geneId, 'snp', {}, {success: success, error: error, async: true});
 
                 // Clinical
 //                let successClinical = function (response) {
@@ -214,7 +214,7 @@
 //                let errorClinical = function (response) {
 //                    alert("Gene ID not valid: " + _this.geneId)
 //                };
-//                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {}, {success: successClinical, error: errorClinical, async: true});
+//                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {}, {success: successClinical, error: errorClinical, async: true});
 
                 // Clinvar
                 let successClinvar = function (response) {
@@ -232,18 +232,18 @@
                 let errorCosmic = function (response) {
                     alert("Gene ID not valid: " + _this.geneId)
                 };
-                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {source: 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
-                CELLBASE_CLIENT.getGeneClient(this.geneId, 'clinical', {source: 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
+                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
+                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
             },
-            ready: function() {
-                this.cellbase = CELLBASE_CLIENT._config.version;
-                var success = function (response) {
-                    console.log("Success from user:")
-                    console.log(response)
-                };
-                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
+            attached: function() {
+//                this.cellbase = this.cellbaseClient._config.version;
+//                var success = function (response) {
+//                    console.log("Success from user:")
+//                    console.log(response)
+//                };
+//                this.cellbaseClient.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
 
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellBaseClient = CELLBASE_CLIENT;
                 this.genomeViewer;
                 this.renderGenomeViewer();
             },

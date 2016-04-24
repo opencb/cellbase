@@ -35,12 +35,11 @@
         Polymer({
             is: 'cellbase-variantannotation-filter',
             properties: {
-                variant: {
-                    type: String,
-                    notify: true
-                },
                 cellBaseClient: {
                     type: Object,
+                },
+                variant: {
+                    type: String,
                     notify: true
                 }
             },
@@ -62,7 +61,7 @@
                 if (this.$.variantAnnotationTextarea.value !== "") {
                     // Executes if the given value is variation ID
                     if (this.$.variantAnnotationTextarea.value.indexOf(':') == -1) {
-                            this.cellBaseClient.get('feature','snp', this.$.variantAnnotationTextarea.value, 'info', {}, {success: success, async: true});
+                            this.cellbaseClient.get('feature','snp', this.$.variantAnnotationTextarea.value, 'info', {}, {success: success, async: true});
                     } else {
                         // Assigns the input value directly to the variant (if given like 10:15097577:G:C)
                         _this.variant = this.$.variantAnnotationTextarea.value;
@@ -70,7 +69,7 @@
                 }
             },
             ready: function() {
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

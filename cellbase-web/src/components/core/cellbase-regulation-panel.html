@@ -26,10 +26,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-regulation-filter region="{{region}}"></cellbase-regulation-filter>
+                <cellbase-regulation-filter region="{{region}}" cellbase-client="{{cellbaseClient}}"></cellbase-regulation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-regulation-view cellbase="{{cellbaseClient}}" region="{{region}}"></cellbase-regulation-view>
+                <cellbase-regulation-view cellbase-client="{{cellbaseClient}}" region="{{region}}"></cellbase-regulation-view>
             </div>
         </div>
     </template>
@@ -37,7 +37,7 @@
         Polymer({
             is: 'cellbase-regulation-panel',
             properties: {
-                cellBaseClient: {
+                cellbaseClient: {
                     type: Object
                 },
                 region: {
@@ -46,7 +46,7 @@
                 }
             },
             ready: function() {
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

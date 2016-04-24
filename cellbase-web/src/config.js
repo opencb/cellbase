@@ -18,7 +18,7 @@ var CELLBASE_HOSTS = ["bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0", "localhost:8
 var CELLBASE_VERSION = "v4";
 var CELLBASE_SPECIES = "hsapiens";
 
-var CELLBASE_CLIENT;
+// var CELLBASE_CLIENT;
 
 var DEFAULT_SPECIES = {
     "vertebrates": [

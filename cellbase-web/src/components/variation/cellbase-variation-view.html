@@ -63,7 +63,7 @@
             is: 'cellbase-variation-view',
 
             properties: {
-                cellbase: {
+                cellbaseClient: {
                     type: Object
                 },
                 variationId: {
@@ -96,16 +96,16 @@
                     let error = function (response) {
                         alert("Variation ID not valid: " + _this.variationId)
                     };
-                    CELLBASE_CLIENT.getVariationClient(this.variationId, 'info', {}, {success: success, error: error, async: true});
+                    this.cellbaseClient.getVariationClient(this.variationId, 'info', {}, {success: success, error: error, async: true});
                 }
             },
-            ready: function() {
-                this.cellbase = CELLBASE_CLIENT._config.version;
-                var success = function (response) {
-                    console.log("Success from user:")
-                    console.log(response)
-                };
-                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
+            attached: function() {
+//                this.cellbase = CELLBASE_CLIENT._config.version;
+//                var success = function (response) {
+//                    console.log("Success from user:")
+//                    console.log(response)
+//                };
+//                this.cellbaseClient.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
 
                 this.genomeViewer;
                 this.renderGenomeViewer();

@@ -34,10 +34,6 @@
     <link rel="stylesheet" href="../lib/ChemDoodle/ChemDoodleWeb.css" type="text/css">
     <script type="text/javascript" src="../lib/ChemDoodle/ChemDoodleWeb.js"></script>
 
-
-    <!--<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,jszip-2.5.0,dt-1.10.11,af-2.1.1,b-1.1.2,b-colvis-1.1.2,b-html5-1.1.2,cr-1.3.1,fc-3.2.1,fh-3.1.1,kt-2.1.1,r-2.0.2,rr-1.1.1,sc-1.4.1,se-1.1.2/datatables.min.css"/>-->
-    <!--<script type="text/javascript" src="https://cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,jszip-2.5.0,dt-1.10.11,af-2.1.1,b-1.1.2,b-colvis-1.1.2,b-html5-1.1.2,cr-1.3.1,fc-3.2.1,fh-3.1.1,kt-2.1.1,r-2.0.2,rr-1.1.1,sc-1.4.1,se-1.1.2/datatables.min.js"></script>-->
-
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.css">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.js"></script>
 
@@ -66,12 +62,15 @@
 
     <!--custom-elements-->
     <!-- build:section test -->
-    <link rel="import" href="components/shared/cellbase-species-menu.html">
-    <link rel="import" href="components/core/cellbase-gene-panel.html">
-    <link rel="import" href="components/core/cellbase-regulation-panel.html">
-    <link rel="import" href="components/variation/cellbase-variation-panel.html">
-    <link rel="import" href="components/variation/cellbase-variantannotation-panel.html">
+    <link rel="import" href="../bower_components/polymer/polymer.html">
+    <!--<link rel="import" href="components/shared/cellbase-species-menu.html">-->
+    <!--<link rel="import" href="components/core/cellbase-gene-panel.html">-->
+    <!--<link rel="import" href="components/core/cellbase-regulation-panel.html">-->
+    <!--<link rel="import" href="components/variation/cellbase-variation-panel.html">-->
+    <!--<link rel="import" href="components/variation/cellbase-variantannotation-panel.html">-->
     <!-- /build -->
+
+    <link rel="import" href="components/cellbase-web.html">
 
     <style>
         a.cellbase-species-menu {
@@ -88,7 +87,7 @@
         }
     </style>
 </head>
-    <body onload="init()">
+    <body>
         <!--[if lt IE 8]>
         <p class="browserupgrade">
             You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
@@ -96,23 +95,15 @@
         <![endif]-->
 
 
-        <div id="datatable"></div>
         <script>
 
             function init() {
-                this.CELLBASE_CLIENT = new CellBaseClient();
-
-                this.CELLBASE_CLIENT.setHosts(CELLBASE_HOSTS);
-                this.CELLBASE_CLIENT.setVersion("v4");
-
-                $(".cellbase-menu a").on('click', function(e) {
-                    e.preventDefault(); // stops link form loading
-                    $('.content').hide(); // hides all content divs
-                    $( $(this).attr('href') ).show(); //get the href and use it find which div to show
-                });
-                $('#home1').show();
-
-
+//                $(".cellbase-menu a").on('click', function(e) {
+//                    e.preventDefault(); // stops link form loading
+//                    $('.content').hide(); // hides all content divs
+//                    $( $(this).attr('href') ).show(); //get the href and use it find which div to show
+//                });
+//                $('#home1').show();
 
 //                alchemy.begin({
 //                    dataSource: "actors.json",
@@ -128,170 +119,7 @@
             window.addEventListener("load", init());
         </script>
 
-        <div>
-            <div style="height: 60px;">
-                <nav class="navbar navbar-inverse navbar-fixed-top">
-                    <div class="container-fluid">
-                        <!-- Brand and toggle get grouped for better mobile display -->
-                        <div class="navbar-header">
-                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                                <span class="sr-only">Toggle navigation</span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                            </button>
-                            <a class="navbar-brand" href="#">CellBase Data Portal</a>
-                        </div>
-
-                        <!-- Collect the nav links, forms, and other content for toggling -->
-                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                            <ul class="nav navbar-nav">
-                                <li class="dropdown">
-                                    <a href="#home1"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
-                                </li>
-
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Core <span class="caret"></span></a>
-
-                                    <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#">Genomic Region</a></li>
-                                        <li><a href="#genePanel">Gene</a></li>
-                                        <li><a href="#transcriptPanel">Transcript</a></li>
-                                        <li><a href="#">Protein</a></li>
-                                        <li><a href="#regulationPanel">Regulation</a></li>
-                                        <li><a href="#">XRefs</a></li>
-                                    </ul>
-                                </li>
-
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Variation <span class="caret"></span></a>
-                                    <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#variationPanel">Variation (SNV)</a></li>
-                                        <li><a href="#">Clinical</a></li>
-                                        <li role="separator" class="divider"></li>
-                                        <li><a href="#variationAnnotationPanel">Variant Annotation</a></li>
-                                    </ul>
-                                </li>
-
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Networks <span class="caret"></span></a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="#">Protein Protein Interaction</a></li>
-                                    </ul>
-                                </li>
-
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualization <span class="caret"></span></a>
-                                    <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#">Genome Browser (Genome Maps)</a></li>
-                                        <li><a href="#">Network viewer (Cell Maps)</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-
-                            <!-- Controls aligned to the right: version, species, search, settings and about-->
-                            <ul class="nav navbar-nav navbar-right">
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Version <span class="caret"></span></a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="#">v3</a></li>
-                                        <li><a href="#">v4</a></li>
-                                    </ul>
-                                </li>
-
-                                <div class="navbar-form navbar-left" style="padding-top: 7px">
-                                    <cellbase-species-menu></cellbase-species-menu>
-                                </div>
-
-                                <form class="navbar-form navbar-left" role="search">
-                                    <div class="form-group">
-                                        <input type="text" class="form-control" placeholder="BRCA2,rs666,3:4444-6666">
-                                        <a href="#">
-                                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-                                        </a>
-                                    </div>
-                                    <!--<button type="submit" class="btn btn-default">Submit</button>-->
-                                </form>
-
-                                <li>
-                                    <a href="#" data-toggle="modal" role="button" data-placement="bottom" data-target="#myModal" title="Settings ...">
-                                        <i class="fa fa-cog"></i>
-                                        <!--<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>-->
-                                    </a>
-                                </li>
-
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About <span class="caret"></span></a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="https://github.com/opencb/cellbase/wiki/About" target="_blank">About</a></li>
-                                        <li><a href="https://github.com/opencb/cellbase" target="_blank">GitHub</a></li>
-                                        <li><a href="https://github.com/opencb/cellbase/wiki" target="_blank">Documentation</a></li>
-                                        <li><a href="#">Contact</a></li>
-                                        <li><a href="#">FAQ</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div><!-- /.navbar-collapse -->
-                    </div><!-- /.container-fluid -->
-                </nav>
-            </div>
-
-            <!-- This is where main application is rendered -->
-            <div class="center">
-                <div class="collapse content" id="home1">
-                    <h2>Welcome to CellBase data portal tool!</h2>
-                </div>
-                <div class="collapse content" id="genePanel">
-                    <h2>Gene</h2>
-                    <cellbase-gene-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-gene-panel>
-                </div>
-                <div class="collapse content" id="transcriptPanel">
-                    Transcript
-                </div>
-                <div class="collapse content" id="regulationPanel">
-                    <h2>Regulation</h2>
-                    <cellbase-regulation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-regulation-panel>
-                </div>
-                <div class="collapse content" id="variationPanel">
-                    <h2>Variation</h2>
-                    <cellbase-variation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variation-panel>
-                </div>
-                <div class="collapse content" id="variationAnnotationPanel">
-                    <h2>Variant Annotation</h2>
-                    <cellbase-variantannotation-panel cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variantannotation-panel>
-                </div>
-            </div>
-
-        </div>
-
-
-
-        <!-- Modal dialog for Settings -->
-        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="myModalLabel">Settings</h4>
-                    </div>
-                    <div class="modal-body">
-                        <!--<div class="input-group">-->
-                        <!--<span class="input-group-addon" id="basic-addon">Select Species</span>-->
-                        <!--<cellbase-species-menu class="btn btn-default"></cellbase-species-menu>-->
-                        <!--</div>-->
-                        <p></p>
-                        <div class="input-group">
-                            <span class="input-group-addon" id="basic-addon1">Hosts</span>
-                            <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1" value="bioinfo.hpc.cam.ac.uk/cellbase, www.ebi.ac.uk/cellbase">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">OK</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <cellbase-web cellbase-client=""></cellbase-web>
 
     </body>
 </html>

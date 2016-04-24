@@ -53,7 +53,7 @@
             is: 'cellbase-regulation-view',
 
             properties: {
-                cellbase: {
+                cellbaseClient: {
                     type: Object
                 },
                 region: {
@@ -72,7 +72,7 @@
                 let error = function (response) {
                     alert("Regulatory Region not valid: " + _this.region)
                 };
-                CELLBASE_CLIENT.get('genomic', 'region', this.region, 'regulatory', {}, {success: success, error: error, async: true});
+                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: success, error: error, async: true});
             }
         });
     </script>
