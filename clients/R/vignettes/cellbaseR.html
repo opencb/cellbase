@@ -117,9 +117,9 @@ names(res)
 TET1_transcripts &lt;- res$exons[[1]]
 names(TET1_transcripts)</code></pre>
 <p>making a query through cbRegion to get all the clinically relevant variants in a specific region</p>
-<pre class="r"><code>res &lt;- cellbaseR::cbRegion(object = cb,ids = &quot;17:1000000-1100000&quot;,resource = &quot;clinical&quot;)
+<pre class="r"><code>res &lt;- cbRegion(object = cb,ids = &quot;17:1000000-1100000&quot;,resource = &quot;clinical&quot;)
 # to get the data 
-res &lt;- cellbaseR::cellbaseData(res)</code></pre>
+res &lt;- cellbaseData(res)</code></pre>
 <p>Getting annotation for a specific variant</p>
 <pre class="r"><code>res2 &lt;- cbVariant(object =cb,ids = &quot;1:169549811:A:G&quot;,resource = &quot;annotation&quot;)
 # to get the data 

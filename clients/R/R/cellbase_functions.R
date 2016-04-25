@@ -123,7 +123,8 @@ createURL <- function(file=NULL, host=host, version=version, meta=meta,
     }
   return(grls)
     }
-callREST <- function(grls,async=FALSE,num_threads=num_threads, encoding="gzip"){
+callREST <- function(grls,async=FALSE,num_threads=num_threads, encoding="gzip")
+    {
     content <- list()
     require(RCurl)
     if(is.null(file)){

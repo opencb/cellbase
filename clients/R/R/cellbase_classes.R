@@ -90,8 +90,8 @@ setMethod("getCellbase", "CellbaseQuery", definition = function(object,
     ids <- ids
     resource <- resource
     result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL, 
-    species=species, categ=categ, subcateg=subcateg,ids=ids, resource=resource,
-    filters=NULL,...)
+    species=species, categ=categ, subcateg=subcateg,ids=ids, resource=resource
+    , filters=NULL,...)
     data <- CellbaseResult(cellbaseData=result)
     return(data)
 })
@@ -173,8 +173,8 @@ setMethod("cbClinical", "CellbaseQuery",    definition = function(object,
     phenotype=phenotype,limit=limit)
     filters <- paste(filters, collapse = "&")
     result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, 
-    species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource, 
-    filters=filters,...)
+    species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource
+    , filters=filters,...)
     data <- CellbaseResult(cellbaseData=result)
     return(data)
 })
@@ -200,8 +200,8 @@ setGeneric("cbGene", function(object,ids,resource,filter, ...)
 #' @seealso for more information about the cellbase webservices see 
 #' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
-setMethod("cbGene", "CellbaseQuery", definition = function(object,ids,resource,
-    filters=NULL,...) {
+setMethod("cbGene", "CellbaseQuery", definition = function(object,ids,resource
+    , filters=NULL,...) {
     host <- object@host
     species <- object@species
     version <- object@version
@@ -371,8 +371,8 @@ setGeneric("cbTranscript", function(object,ids,resource,filters=NULL, ...)
 #' @param object an object of class CellbaseQuery
 #' @param ids a charcter vector of the ids to be queried
 #' @param resource a charcter vector to specify the resource to be queried can
-#'    be any of "info", "function_prediction", "gene", "sequence", "variation",
-#'    or "protein"
+#'    be any of "info", "function_prediction", "gene", "sequence", "variation"
+#'    , or "protein"
 #' @param filters a object of class CellbaseParam specifying additional filters
 #' for the CellbaseQuery
 #' @return an object of class CellbaseResult which holds a dataframe
@@ -383,8 +383,8 @@ setGeneric("cbTranscript", function(object,ids,resource,filters=NULL, ...)
 #' @seealso for more information about the cellbase webservices see 
 #' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
-setMethod("cbTranscript", "CellbaseQuery",    definition = function(object, ids
-    , resource, filters=NULL,...) {
+setMethod("cbTranscript", "CellbaseQuery",    definition = function(object, 
+      ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species
     version <- object@version
@@ -502,7 +502,7 @@ setMethod("cbGenomeSequence", "CellbaseQuery",    definition = function(object
     subcateg<- "chromosome"
     ids <- ids
     resource <- resource
-    result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL, 
+    result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,
     species=species, categ=categ, subcateg=subcateg, ids=ids, resource=resource
     , filters=NULL,...)
     data <- CellbaseResult(cellbaseData=result)
@@ -523,7 +523,7 @@ setMethod("cbGenomeSequence", "CellbaseQuery",    definition = function(object
 #     ids <- NULL
 #     resource <- NULL
 #     result <- fetchCellbase(file=NULL,host=host, version=version,meta=meta, 
-# species=species, categ=categ, subcateg=subcateg, ids=ids, resource=resource, 
+# species=species, categ=categ, subcateg=subcateg, ids=ids, resource=resource,
 # filters=NULL,...)
 #     data <- lapply(result, function(x)as.data.frame(x))
 #     return(data)
@@ -544,8 +544,7 @@ setGeneric("cbSpecies", function(object, ...) standardGeneric("cbSpecies"))
 #' @seealso for more information about the cellbase webservices see 
 #' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
-setMethod("cbSpecies", "CellbaseQuery",    definition = function(object,...) {
-
+setMethod("cbSpecies", "CellbaseQuery",    definition = function(object,...){
     host <- object@host
     species <- "species"
     version <- object@version
@@ -561,7 +560,7 @@ setMethod("cbSpecies", "CellbaseQuery",    definition = function(object,...) {
     return(data)
 })
 
-###############################################################################
+##############################################################################
 setGeneric("annotateVcf", function(object,file, ...)
     standardGeneric("annotateVcf"))
 #' This method is a convience method to annoatate a vcf files
@@ -627,7 +626,7 @@ setMethod("[","CellbaseResult",definition = function(x,i,j,drop="missing")
     CellbaseResult(cellbaseData = .cellbaseData)
 })
 
-###############################################################################
+##############################################################################
 #'This Class defines a CellbaseParam object
 #'
  setClass("CellbaseParam",slots = c(genome="character", gene="character", 

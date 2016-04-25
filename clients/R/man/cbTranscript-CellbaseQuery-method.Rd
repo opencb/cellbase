@@ -15,8 +15,8 @@
 \item{ids}{a charcter vector of the ids to be queried}
 
 \item{resource}{a charcter vector to specify the resource to be queried can
-be any of "info", "function_prediction", "gene", "sequence", "variation",
-or "protein"}
+be any of "info", "function_prediction", "gene", "sequence", "variation"
+, or "protein"}
 
 \item{filters}{a object of class CellbaseParam specifying additional filters
 for the CellbaseQuery}

@@ -37,9 +37,9 @@ cb
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  
-#  res <- cellbaseR::cbRegion(object = cb,ids = "17:1000000-1100000",resource = "clinical")
+#  res <- cbRegion(object = cb,ids = "17:1000000-1100000",resource = "clinical")
 #  # to get the data
-#  res <- cellbaseR::cellbaseData(res)
+#  res <- cellbaseData(res)
 #  
 
 ## ----eval=FALSE----------------------------------------------------------
