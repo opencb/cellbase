@@ -4,7 +4,7 @@ CellbaseQuery <- setClass("CellbaseQuery",
     slots = c(host="character", version="character", species="character",
     batch_size="numeric", num_threads="numeric"), prototype = prototype(
     host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/"
-    , version = "v4/", species="hsapiens/", batch_size=200, num_threads=4)
+    , version = "v4/", species="hsapiens/", batch_size=200, num_threads=8)
     )
 ###
 #' @aliases CellbaseQuery

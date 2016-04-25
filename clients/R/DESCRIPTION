@@ -10,7 +10,7 @@ License: Apache Licence v2
 Depends:
     R(>= 3.2.2),
     RCurl,
-    jsonlite,methods,R.utils,BiocParallel, pbapply,
+    jsonlite,methods,R.utils,BiocParallel, pbapply, doMC, parallel,
     Rsamtools
 RoxygenNote: 5.0.1
 biocViews: Annotation Data

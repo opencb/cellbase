@@ -25,17 +25,22 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
     }
 
   }else{
+    cat("reading the file....")
     ids <- readIds(file,batch_size = batch_size,num_threads = num_threads)
   }
 
   if(!is.null(file)){
     container=list()
+    cat("getting the data....")
     grls <- createURL(file=file, host=host, version=version, species=species, 
     categ=categ, subcateg=subcateg, ids=ids, resource=resource,...)
-    content <- callREST(grls = grls,async=TRUE,num_threads)
+    cat("getting the data....")
+    content <- callREST(grls = grls,async=TRUE,num_threads, encoding = "gzip")
+    cat("parsing the data....")
     res_list <- parseResponse(content=content,parallel=TRUE, 
     num_threads=num_threads)
     ds <- res_list$result
+    cat("Done!")
 
 
   }else{
@@ -85,8 +90,8 @@ readIds <- function(file=file,batch_size,num_threads)
     }
     #ids <- pbsapply(ids, function(x)lapply(x, function(x)x))
     require(foreach)
-    ids <-foreach(k=1:length(ids)) %do% {
-        foreach(j=1:length(ids[[k]]), .combine='c')%do%{
+    ids <-foreach(k=1:length(ids))%do%{
+        foreach(j=1:length(ids[[k]]))%do%{
         ids[[k]][[j]]
         }
     }
@@ -118,7 +123,7 @@ createURL <- function(file=NULL, host=host, version=version, meta=meta,
     }
   return(grls)
     }
-callREST <- function(grls,async=FALSE,num_threads=num_threads){
+callREST <- function(grls,async=FALSE,num_threads=num_threads, encoding="gzip"){
     content <- list()
     require(RCurl)
     if(is.null(file)){
@@ -143,22 +148,30 @@ callREST <- function(grls,async=FALSE,num_threads=num_threads){
   return(content)
 }
 parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
-
+    require(BiocParallel)
     require(jsonlite)
     if(parallel==TRUE){
-    # require(parallel)
-    # require(doMC)
-    # num_cores <-detectCores()/2
-    # registerDoMC(num_cores)
-    
-    ### Extracting the content in parallel
-    # js <- mclapply(content, function(x)fromJSON(x),mc.cores=num_cores)
-    # res <- mclapply(js, function(x)x$response$result,mc.cores=num_cores)
-    # ds <- mclapply(res, function(x)rbind.pages(x),mc.cores=num_cores)
-    js <- bplapply(content, function(x)fromJSON(x))
-    res <- pblapply(js, function(x)x$response$result)
+    require(parallel)
+    require(doMC)
+    num_cores <-detectCores()/2
+    registerDoMC(num_cores)
+    # 
+    # ## Extracting the content in parallel
+    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
+    res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
+    names(res) <- NULL
+    ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
+    # js <- pblapply(content, function(x)fromJSON(x))
+    # res <- pblapply(js, function(x)x$response$result)
+    # names(res) <- NULL
+    # ds <- foreach(k=1:length(res),.options.multicore=list(preschedule=TRUE),
+    #               .combine=function(...)rbind.pages(list(...)),
+    #               .packages='jsonlite',.multicombine=TRUE) %dopar% {
+    #                 rbind.pages(res[[k]])
+    #               }
+   
     ds <- pblapply(res, function(x)rbind.pages(x))
-    ### Important to get correct merging of dataframe
+    ## Important to get correct merging of dataframe
     names(ds) <- NULL
     ds <- rbind.pages(ds)
     nums <- NULL

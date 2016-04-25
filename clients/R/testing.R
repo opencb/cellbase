@@ -12,10 +12,29 @@ t3
 cellbaseData(t3[1:5,1:5])
 
 fs <- system.file("extdata", "chr7-sub.vcf.gz",  package="VariantAnnotation")
-y1 <- annotateVcf(object = cb, file =fs )
+fl <- system.file("extdata", "chr22.vcf.gz", package="VariantAnnotation")
+system.time({
+  y1 <- annotateVcf(object = cb, file =fl )
+}) 
 elav <- cbGene(object=cb, ids=c("ELAVL1","TET1","TP73"),resource="clinical")
 elav
 elv <- cellbaseData(elav)
 
 cb@host
 cb@species
+
+A1 <- list(1:8,1:8)
+A2 <- list(1:8,1:8)
+A3 <- list(1:8,1:8)
+A4 <- list(1:8,1:8)
+A5 <- list(1:8,1:4)
+test <- list(A1,A2,A3,A4,A5)
+test
+require(foreach)
+ts <-foreach(k=1:length(test))%do%{
+  foreach(j=1:length(test[[k]]))%do%{
+    test[[k]][[j]]
+  }
+}
+tss <- unlist(ts, recursive = FALSE)
+return(ids)
