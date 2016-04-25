@@ -14,10 +14,12 @@
 
 \item{ids}{a charcter vector of the ids to be queried}
 
-\item{resource}{a charcter vector to specify the resource to be queried can be
-any of "info", "function_prediction", "gene", "sequence", "variation", or "protein"}
+\item{resource}{a charcter vector to specify the resource to be queried can
+be any of "info", "function_prediction", "gene", "sequence", "variation",
+or "protein"}
 
-\item{filters}{a object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
+\item{filters}{a object of class CellbaseParam specifying additional filters
+for the CellbaseQuery}
 }
 \value{
 an object of class CellbaseResult which holds a dataframe
@@ -27,8 +29,8 @@ A method to query transcript data from Cellbase web services
 }
 \examples{
 library(cellbaseR)
- cb <- CellbaseQuery()
- res <- cbTranscript(object=cb, ids="ENST00000373644", resource="info")
+   cb <- CellbaseQuery()
+   res <- cbTranscript(object=cb, ids="ENST00000373644", resource="info")
 }
 \seealso{
 for more information about the cellbase webservices see 

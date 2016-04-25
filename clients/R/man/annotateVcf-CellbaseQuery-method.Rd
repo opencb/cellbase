@@ -21,6 +21,7 @@ an annotated dataframe
 This method is a convience method to annoatate a vcf files
 }
 \details{
-This methods is ideal for annotating small to medium sized vcf files
+This methods is ideal for annotating small to medium sized vcf
+   files
 }
 

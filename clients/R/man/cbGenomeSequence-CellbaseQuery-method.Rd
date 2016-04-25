@@ -16,7 +16,8 @@
 
 \item{resource}{a charcter vector to specify the ids to be queried}
 
-\item{filters}{a object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
+\item{filters}{a object of class CellbaseParam specifying additional filters
+for the CellbaseQuery}
 
 \item{...}{any extra arguments}
 }
@@ -28,8 +29,8 @@ A method to query sequence data from Cellbase web services
 }
 \examples{
 library(cellbaseR)
- cb <- CellbaseQuery()
- res <- cbGenomeSequence(object=cb, ids="22", resource="info")
+   cb <- CellbaseQuery()
+   res <- cbGenomeSequence(object=cb, ids="22", resource="info")
 }
 \seealso{
 for more information about the cellbase webservices see 

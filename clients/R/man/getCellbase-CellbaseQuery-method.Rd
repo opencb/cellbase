@@ -40,7 +40,8 @@ this could be "feature", "genomic", "regulatory", or "network"}
 
 \item{resource}{a charcter to specify the resource to be queried}
 
-\item{filters}{an object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
+\item{filters}{an object of class CellbaseParam specifying additional 
+filterss for the CellbaseQuery}
 
 \item{...}{any extra arguments}
 }
@@ -51,9 +52,10 @@ an object of class CellbaseResult which holds a dataframe
 The generic method for getCellbase
 }
 \examples{
- library(cellbaseR)
- cb <- CellbaseQuery
- res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",resource="info")
+   library(cellbaseR)
+   cb <- CellbaseQuery
+   res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",
+   resource="info")
 
 }
 \seealso{

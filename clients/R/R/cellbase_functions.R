@@ -1,7 +1,9 @@
 # we need to adjust the output for the protein and Genomesequence methods
 #
 require(BiocParallel)
-fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,species=species, categ, subcateg,ids,resource,filters=NULL,batch_size=NULL,num_threads=NULL,...){
+fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta, 
+    species=species, categ, subcateg,ids, resource,filters=NULL, 
+    batch_size=NULL,num_threads=NULL,...){
   batch_size <- batch_size
   num_threads <- num_threads
   if(is.null(categ)){
@@ -28,9 +30,11 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
 
   if(!is.null(file)){
     container=list()
-    grls <- createURL(file = file,host=host,version=version,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,...)
+    grls <- createURL(file=file, host=host, version=version, species=species, 
+    categ=categ, subcateg=subcateg, ids=ids, resource=resource,...)
     content <- callREST(grls = grls,async=TRUE,num_threads)
-    res_list <- parseResponse(content=content,parallel=TRUE, num_threads=num_threads)
+    res_list <- parseResponse(content=content,parallel=TRUE, 
+    num_threads=num_threads)
     ds <- res_list$result
 
 
@@ -41,14 +45,16 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
     num_results=1000
     container=list()
     while(is.null(file)&all(unlist(num_results)==server_limit)){
-      grls <- createURL(file=NULL,host=host, version=version, meta=meta, species=species, categ=categ,subcateg=subcateg,ids=ids,resource=resource,filters=filters,skip = skip)
-      skip=skip+1000
-      content <- callREST(grls = grls)
-      res_list <- parseResponse(content=content)
-      num_results <- res_list$num_results
-      cell <- res_list$result
-      container[[i]] <- cell
-      i=i+1
+        grls <- createURL(file=NULL, host=host, version=version, meta=meta, 
+        species=species, categ=categ, subcateg=subcateg, ids=ids, 
+        resource=resource,filters=filters,skip = skip)
+        skip=skip+1000
+        content <- callREST(grls = grls)
+        res_list <- parseResponse(content=content)
+        num_results <- res_list$num_results
+        cell <- res_list$result
+        container[[i]] <- cell
+        i=i+1
     }
     ds <- rbind.pages(container)
   }
@@ -58,71 +64,74 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,specie
 }
 
 readIds <- function(file=file,batch_size,num_threads)
-  {
-  require(Rsamtools)
-  #require(pbapply)
-  ids<- list()
-  num_iter<- ceiling(R.utils::countLines(file)[[1]]/(batch_size*num_threads))
-  #batchSize * numThreads
-  demo <- TabixFile(file,yieldSize = batch_size*num_threads)
-  tbx <- open(demo)
-  i <- 1
-  while (i <=num_iter) {
+    {
+    require(Rsamtools)
+    #require(pbapply)
+    ids<- list()
+    num_iter<- ceiling(R.utils::countLines(file)[[1]]/(batch_size*num_threads))
+    #batchSize * numThreads
+    demo <- TabixFile(file,yieldSize = batch_size*num_threads)
+    tbx <- open(demo)
+    i <- 1
+    while (i <=num_iter) {
     inter <- scanTabix(tbx)[[1]]
     if(length(inter)==0)break
-    whim <- lapply(inter, function(x){strsplit(x[1],split = "\t")[[1]][c(1,2,4,5)]})
+    whim <- lapply(inter, function(x){
+        strsplit(x[1],split = "\t")[[1]][c(1,2,4,5)]})
     whish <- sapply(whim, function(x){paste(x,collapse =":")})
     hope <- split(whish, ceiling(seq_along(whish)/batch_size))
     ids[[i]] <- hope
     i <- i+1
-  }
-  #ids <- pbsapply(ids, function(x)lapply(x, function(x)x))
-  require(foreach)
-  ids <-foreach(k=1:length(ids)) %do% {
-                  foreach(j=1:length(ids[[k]]), .combine='c')%do%{
-                    ids[[k]][[j]]
-                  }
-  }
-  ids <- unlist(ids, recursive = FALSE)
-  return(ids)
+    }
+    #ids <- pbsapply(ids, function(x)lapply(x, function(x)x))
+    require(foreach)
+    ids <-foreach(k=1:length(ids)) %do% {
+        foreach(j=1:length(ids[[k]]), .combine='c')%do%{
+        ids[[k]][[j]]
+        }
+    }
+    ids <- unlist(ids, recursive = FALSE)
+    return(ids)
 }
 
   #create a list of character vectors of urls
-createURL <- function(file=NULL,host=host,version=version,meta=meta,species=species,categ=categ,subcateg=subcateg,ids=ids,resource=resource,filters=filters,skip=0)
-  {
+createURL <- function(file=NULL, host=host, version=version, meta=meta, 
+    species=species, categ=categ, subcateg=subcateg, ids=ids, 
+    resource=resource, filters=filters,skip=0)
+    {
 
-  if(is.null(file)){
+    if(is.null(file)){
     skip=paste0("?","skip=",skip)
     filters <- paste(skip,filters,sep = "&")
-    grls <- paste0(host,version,meta,species,categ,subcateg,ids,resource,filters,collapse = "")
+    grls <- paste0(host,version, meta, species, categ, subcateg, ids, 
+        resource,filters,collapse = "")
 
-  }else{
-    grls <- list()
-    gcl <- paste0(host,version,species,categ,subcateg,collapse = "")
+    }else{
+       grls <- list()
+       gcl <- paste0(host,version,species,categ,subcateg,collapse = "")
 
     for(i in seq_along(ids)){
-      hop <- paste(ids[[i]],collapse = ",")
-      tmp <- paste0(gcl,hop,resource,collapse = ",")
-      grls[[i]] <- gsub("chr","",tmp)
+       hop <- paste(ids[[i]],collapse = ",")
+       tmp <- paste0(gcl,hop,resource,collapse = ",")
+       grls[[i]] <- gsub("chr","",tmp)
+        }
     }
-  }
   return(grls)
-}
+    }
 callREST <- function(grls,async=FALSE,num_threads=num_threads){
-  content <- list()
-
-  require(RCurl)
-  if(is.null(file)){
+    content <- list()
+    require(RCurl)
+    if(is.null(file)){
     content <- getURI(grls)
-  }else{
+    }else{
     require(pbapply)
     if(async==TRUE){
-      prp <- split(grls,ceiling(seq_along(grls)/num_threads))
-      cat("Preparing The Asynchronus call.............")
-      gs <- pblapply(prp, function(x)unlist(x))
-      cat("Getting the Data...............")
-      content <- pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
-      content <- unlist(content)
+        prp <- split(grls,ceiling(seq_along(grls)/num_threads))
+        cat("Preparing The Asynchronus call.............")
+        gs <- pblapply(prp, function(x)unlist(x))
+        cat("Getting the Data...............")
+        content <- pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
+        content <- unlist(content)
 
     }else{
       content <- pbsapply(grls, function(x)getURI(x))
@@ -135,8 +144,8 @@ callREST <- function(grls,async=FALSE,num_threads=num_threads){
 }
 parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
 
-  require(jsonlite)
-  if(parallel==TRUE){
+    require(jsonlite)
+    if(parallel==TRUE){
     # require(parallel)
     # require(doMC)
     # num_cores <-detectCores()/2
@@ -156,14 +165,14 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     # js <- lapply(content, function(x)fromJSON(x))
     # ares <- lapply(js, function(x)x$response$result)
     # ds <- pblapply(ares,function(x)rbind.pages(x))
-  }else{
-  js <- lapply(content, function(x)fromJSON(x))
-  ares <- lapply(js, function(x)x$response$result)
-  nums <- lapply(js, function(x)x$response$numResults)
-  ds <- pblapply(ares,function(x)rbind.pages(x))
-  ### Important to get correct vertical binding of dataframes
-  names(ds) <- NULL
-  ds <- rbind.pages(ds)
-  }
-  return(list(result=ds,num_results=nums))
-}
+    }else{
+    js <- lapply(content, function(x)fromJSON(x))
+    ares <- lapply(js, function(x)x$response$result)
+    nums <- lapply(js, function(x)x$response$numResults)
+    ds <- pblapply(ares,function(x)rbind.pages(x))
+    ### Important to get correct vertical binding of dataframes
+    names(ds) <- NULL
+    ds <- rbind.pages(ds)
+    }
+    return(list(result=ds,num_results=nums))
+    }

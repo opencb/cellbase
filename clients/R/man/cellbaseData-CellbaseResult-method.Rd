@@ -14,7 +14,8 @@
 
 \item{resource}{a charcter vector to specify the ids to be queried}
 
-\item{filters}{a object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
+\item{filters}{a object of class CellbaseParam specifying additional filters
+for the CellbaseQuery}
 }
 \value{
 an object of class CellbaseResult which holds a dataframe

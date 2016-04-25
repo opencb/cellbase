@@ -11,7 +11,8 @@
 \arguments{
 \item{object}{an object of class CellbaseQuery}
 
-\item{filters}{a object of class CellbaseParam specifying the paramters limiting the CellbaseQuery}
+\item{filters}{a object of class CellbaseParam specifying the paramters 
+limiting the CellbaseQuery}
 
 \item{...}{any extra arguments}
 }

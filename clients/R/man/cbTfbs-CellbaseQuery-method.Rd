@@ -4,7 +4,8 @@
 \name{cbTfbs,CellbaseQuery-method}
 \alias{cbTfbs}
 \alias{cbTfbs,CellbaseQuery-method}
-\title{A method to query transcription factors binding sites data from Cellbase web services}
+\title{A method to query transcription factors binding sites data from Cellbase 
+web services}
 \usage{
 \S4method{cbTfbs}{CellbaseQuery}(object, ids, resource, filters = NULL, ...)
 }
@@ -15,18 +16,20 @@
 
 \item{resource}{a charcter vector to specify the ids to be queried}
 
-\item{filters}{a object of class CellbaseParam specifying additional filterss for the CellbaseQuery}
+\item{filters}{a object of class CellbaseParam specifying additional filters
+for the CellbaseQuery}
 }
 \value{
 an object of class CellbaseResult which holds a dataframe
 }
 \description{
-A method to query transcription factors binding sites data from Cellbase web services
+A method to query transcription factors binding sites data from Cellbase 
+web services
 }
 \examples{
 library(cellbaseR)
- cb <- CellbaseQuery()
- res <- cbTfbs(object=cb, ids="PAX1", resource="gene")
+   cb <- CellbaseQuery()
+   res <- cbTfbs(object=cb, ids="PAX1", resource="gene")
 }
 \seealso{
 for more information about the cellbase webservices see 
