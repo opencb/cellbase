@@ -92,7 +92,7 @@ module.exports = function(grunt) {
                 },
                 files: {
                     // Target-specific file lists and/or options go here.
-                    '<%= build.path %>/build.html': 'src/index.html'
+                    '<%= build.path %>/cellbase-web.html': 'src/components/cellbase-web.html'
                 }
             }
         },
@@ -112,6 +112,10 @@ module.exports = function(grunt) {
                             match: /\.\.\/lib\//g,
                             replacement: ''
                         },
+                        {
+                            match: /components\/cellbase-web\.html/g,
+                            replacement: ' cellbase-web.html'
+                        }
                     ]
                 },
                 files: [

@@ -74,7 +74,7 @@
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
                     <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" on-selected="onVariantSelected"></cellbase-variation-grid>
                     <h4>Annotation of {{variant}}</h4>
-                    <cellbase-variantannotation-view data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
+                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
