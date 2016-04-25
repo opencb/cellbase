@@ -2,8 +2,12 @@
 % Please edit documentation in R/cellbase_classes.R
 \name{CellbaseQuery}
 \alias{CellbaseQuery}
+<<<<<<< HEAD
 \title{This is a constructor function for CellbaseQuery object which holds the default
 configuration for connecting to the cellbase web services}
+=======
+\title{This is a constructor function for CellbaseQuery object}
+>>>>>>> d0cca60e610cc057049ce369d36a5605bac13f68
 \usage{
 CellbaseQuery(species = character())
 }
@@ -15,7 +19,11 @@ to see avaiable species and their corresponding data}
 An object of class CellbaseQuery
 }
 \details{
+<<<<<<< HEAD
 This class defines the CellbaseQuery object which holds the default
+=======
+This class defines the CellbaseQuery object. It holds the default
+>>>>>>> d0cca60e610cc057049ce369d36a5605bac13f68
 configuration required by CellbaseQuery methods to connect to the
 cellbase web services. By defult it is configured to query human
 data based on the GRCh37 genome assembly
@@ -24,6 +32,15 @@ data based on the GRCh37 genome assembly
 
 \describe{
 \item{\code{host}}{A character the default host url for cellllbase webservices}
+<<<<<<< HEAD
+=======
+
+\item{\code{version}}{A character the cellbae API version}
+
+\item{\code{species}}{A charcter should be one of the species supported by cellbase}
+
+\item{\code{batch_size}}{numeric a parameter for}
+>>>>>>> d0cca60e610cc057049ce369d36a5605bac13f68
 }}
 \examples{
 library(cellbaseR)
