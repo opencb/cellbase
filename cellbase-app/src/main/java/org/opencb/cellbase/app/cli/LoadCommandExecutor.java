@@ -41,6 +41,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
     private String database;
     private String field;
+    private String[] innerFields;
     private String loader;
     private int numThreads;
 
@@ -58,6 +59,9 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
         if (loadCommandOptions.field != null) {
             field = loadCommandOptions.field;
+        }
+        if (loadCommandOptions.innerFields != null) {
+            innerFields = loadCommandOptions.innerFields.split(",");
         }
         if (loadCommandOptions.loader != null) {
             loader = loadCommandOptions.loader;
@@ -193,7 +197,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             // Custom update required e.g. population freqs loading
         } else {
             logger.info("Loading file '{}'", input.toString());
-            loadRunner.load(input, "variation", field);
+            loadRunner.load(input, "variation", field, innerFields);
         }
     }
 

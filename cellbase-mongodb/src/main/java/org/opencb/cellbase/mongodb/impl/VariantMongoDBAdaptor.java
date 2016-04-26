@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAdaptor<Variant> {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
+    private static final String ANNOTATION_FIELD = "annotation";
     private static final float DECIMAL_RESOLUTION = 100f;
 
     private MongoDBCollection caddDBCollection;
@@ -85,11 +86,14 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field) {
+    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
         QueryResult<Long> nLoadedObjects = null;
         switch (field) {
             case POP_FREQUENCIES_FIELD:
                 nLoadedObjects = updatePopulationFrequencies((List<Document>) objectList);
+                break;
+            case ANNOTATION_FIELD:
+                nLoadedObjects = updateAnnotation((List<Document>) objectList, innerFields);
                 break;
             default:
                 logger.error("Invalid field {}: no action implemented for updating this field.", field);
@@ -191,6 +195,60 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         }
     }
 
+    private QueryResult<Long> updateAnnotation(List<Document> variantDocumentList, String[] innerFields) {
+        List<Bson> queries = new ArrayList<>(variantDocumentList.size());
+        List<Bson> updates = new ArrayList<>(variantDocumentList.size());
+
+        for (Document variantDBObject : variantDocumentList) {
+            Document annotationDBObject = (Document) variantDBObject.get(ANNOTATION_FIELD);
+            Document toOverwrite = new Document();
+            if (innerFields != null & innerFields.length > 0) {
+                for (String field : innerFields) {
+                    if (annotationDBObject.get(field) != null) {
+                        toOverwrite.put(ANNOTATION_FIELD + "." + field, annotationDBObject.get(field));
+                    }
+                }
+            } else {
+                toOverwrite.put(ANNOTATION_FIELD, annotationDBObject);
+            }
+
+            Document update = new Document().append("$set", toOverwrite);
+            updates.add(update);
+
+            String chunkId = getChunkIdPrefix((String) variantDBObject.get("chromosome"),
+                    (int) variantDBObject.get("start"), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE);
+            queries.add(new Document("_chunkIds", chunkId)
+                    .append("chromosome", variantDBObject.get("chromosome"))
+                    .append("start", variantDBObject.get("start"))
+                    .append("end", variantDBObject.get("end"))
+                    .append("reference", variantDBObject.get("reference"))
+                    .append("alternate", variantDBObject.get("alternate")));
+        }
+
+        QueryResult<BulkWriteResult> bulkWriteResult;
+        if (!queries.isEmpty()) {
+            logger.info("updating object");
+            QueryOptions options = new QueryOptions("upsert", false);
+            options.put("multi", false);
+            try {
+                bulkWriteResult = mongoDBCollection.update(queries, updates, options);
+            } catch (BulkWriteException e) {
+                throw e;
+            }
+            logger.info("{} object updated", bulkWriteResult.first().getUpserts().size() + bulkWriteResult.first().getModifiedCount());
+
+            QueryResult<Long> longQueryResult = new QueryResult<>(bulkWriteResult.getId(), bulkWriteResult.getDbTime(), bulkWriteResult
+                    .getNumResults(),
+                    bulkWriteResult.getNumTotalResults(), bulkWriteResult.getWarningMsg(), bulkWriteResult.getErrorMsg(),
+                    Collections.singletonList((long) (bulkWriteResult.first().getUpserts().size()
+                            + bulkWriteResult.first().getModifiedCount())));
+            return longQueryResult;
+        }
+        logger.info("no object updated");
+        return null;
+
+    }
+
     private QueryResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList) {
 
         List<Bson> queries = new ArrayList<>(variantDocumentList.size());
@@ -198,12 +256,12 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //        QueryResult<Long> longQueryResult = null;
 
         for (Document variantDBObject : variantDocumentList) {
-            Document annotationDBObject = (Document) variantDBObject.get("annotation");
+            Document annotationDBObject = (Document) variantDBObject.get(ANNOTATION_FIELD);
             Document push = new Document(POP_FREQUENCIES_FIELD, annotationDBObject.get("populationFrequencies"));
 
             // Remove annotation object from the DBObject so that push and setOnInsert do not update the same fields:
             // i.e. annotation.populationFrequencies and annotation
-            variantDBObject.remove("annotation");
+            variantDBObject.remove(ANNOTATION_FIELD);
             addChunkId(variantDBObject);
 
             Document update = new Document()

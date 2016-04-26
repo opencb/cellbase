@@ -66,12 +66,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String GWASVARIANTSOURCE = "gwas";
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
-        this(queue, data, database, null, null);
+        this(queue, data, database, null, null, null);
     }
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database, String field,
-                                 CellBaseConfiguration cellBaseConfiguration) {
-        super(queue, data, database, field, cellBaseConfiguration);
+                                 String[] innerFields, CellBaseConfiguration cellBaseConfiguration) {
+        super(queue, data, database, field, innerFields, cellBaseConfiguration);
         if (cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder") != null) {
             indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder"));
         }
@@ -299,7 +299,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         dbObjectsBatch.add(dbObject);
                     }
 
-                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field).first();
+                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     numLoadedObjects += numUpdates;
                 }
             } catch (InterruptedException e) {

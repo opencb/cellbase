@@ -67,7 +67,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field) {
+    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 

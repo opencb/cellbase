@@ -65,11 +65,12 @@ public class LoadRunner {
 
     public void load(Path filePath, String data) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
-        load(filePath, data, null);
+        load(filePath, data, null, null);
     }
 
-    public void load(Path filePath, String data, String field) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
-            IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
+    public void load(Path filePath, String data, String field, String[] innerFields) throws ClassNotFoundException,
+            NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException,
+            ExecutionException, InterruptedException, IOException {
         try {
 
             if (filePath == null || !Files.exists(filePath) || Files.isDirectory(filePath)) {
@@ -81,8 +82,9 @@ public class LoadRunner {
             for (int i = 0; i < numThreads; i++) {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                        .getConstructor(BlockingQueue.class, String.class, String.class, String.class, CellBaseConfiguration.class)
-                        .newInstance(blockingQueue, data, database, field, cellBaseConfiguration));
+                        .getConstructor(BlockingQueue.class, String.class, String.class, String.class, String[].class,
+                                CellBaseConfiguration.class)
+                        .newInstance(blockingQueue, data, database, field, innerFields, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
             }
 
