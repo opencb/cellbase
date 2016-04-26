@@ -147,7 +147,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response count() {
 //    public Response count(@DefaultValue("") @QueryParam("region") String region,
@@ -241,7 +241,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response groupBy(@DefaultValue("")
                             @QueryParam("fields")
@@ -400,7 +400,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAllIDs() {
 //    public Response getAllIDs(@ApiParam(value = "String with the list of biotypes to return. Not currently used.")
@@ -466,7 +466,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("geneId")
                                    @ApiParam(name = "geneId",
@@ -597,7 +597,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN"
                             + "Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAllBiotypes() {
         try {
@@ -626,7 +626,7 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "consequenceType",
                     value = "Comma separated list of possible SO names describing consequence types to be queried, "
                             + " e.g.: missense_variant,downstream_variant. Exact text matches will be retrieved.",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
 //    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes and offset")
     public Response getSNPByGeneId(@PathParam("geneId") String geneId) {
@@ -741,7 +741,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAllTfbs(@PathParam("geneId")
                                @ApiParam(name = "geneId",
@@ -801,7 +801,7 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "keyword",
                     value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
                             + "Transcription,Zinc. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getProteinById(@PathParam("geneId")
                                    @ApiParam(name = "xrefs",
@@ -861,7 +861,7 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAllClinvarByGene(@PathParam("geneId") String geneId) {
         try {
