@@ -117,22 +117,22 @@ public class MongoDBAdaptor {
         if (chunkSize <= 0) {
             // if chunkSize is not valid we call to the default method
             createRegionQuery(query, queryParam, andBsonList);
-        }
-
-        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            List<Region> regions = Region.parseRegions(query.getString(queryParam));
-            if (regions != null && regions.size() > 0) {
-                if (regions.size() == 1) {
-                    Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
-                    andBsonList.add(chunkQuery);
-                } else {
-                    // if multiple regions we add them first to a OR list
-                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                    for (Region region : regions) {
-                        Bson chunkQuery = createChunkQuery(region, chunkSize);
-                        orRegionBsonList.add(chunkQuery);
+        } else {
+            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+                List<Region> regions = Region.parseRegions(query.getString(queryParam));
+                if (regions != null && regions.size() > 0) {
+                    if (regions.size() == 1) {
+                        Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
+                        andBsonList.add(chunkQuery);
+                    } else {
+                        // if multiple regions we add them first to a OR list
+                        List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                        for (Region region : regions) {
+                            Bson chunkQuery = createChunkQuery(region, chunkSize);
+                            orRegionBsonList.add(chunkQuery);
+                        }
+                        andBsonList.add(Filters.or(orRegionBsonList));
                     }
-                    andBsonList.add(Filters.or(orRegionBsonList));
                 }
             }
         }

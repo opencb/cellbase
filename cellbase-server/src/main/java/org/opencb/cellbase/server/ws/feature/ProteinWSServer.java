@@ -20,10 +20,12 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -144,13 +146,27 @@ public class ProteinWSServer extends GenericRestWSServer {
                                                   required = true) String id) {
         try {
             parseQueryParams();
-            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
+//            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
 
             // Fetch Ensembl transcriptId to query substiturion scores
-//            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            logger.info("Searching transcripts for protein {}", id);
+            Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
+            QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
+            QueryResult queryResult = transcriptDBAdaptor.nativeGet(transcriptQuery, transcriptQueryOptions);
+            logger.info("{} transcripts found", queryResult.getNumResults());
+            logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResult()));
 
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-            return createOkResponse(proteinDBAdaptor.getSubstitutionScores(query, queryOptions));
+            // Get substitution scores for fetched transcript
+            if (queryResult.getNumResults() > 0) {
+                query.put("transcript", ((Map) queryResult.getResult().get(0)).get("id"));
+                logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
+                logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
+                ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+                return createOkResponse(proteinDBAdaptor.getSubstitutionScores(query, queryOptions));
+            } else {
+                return createOkResponse(queryResult);
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -179,7 +195,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = false)
+    @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = true)
     public Response getTranscript(@PathParam("proteinId") String query) {
         return null;
     }

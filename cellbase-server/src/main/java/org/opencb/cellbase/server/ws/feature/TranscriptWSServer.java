@@ -17,8 +17,8 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
@@ -40,6 +40,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author imedina
@@ -49,7 +50,13 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class TranscriptWSServer extends GenericRestWSServer {
 
-    public TranscriptWSServer(@PathParam("version") String version, @PathParam("species") String species,
+    public TranscriptWSServer(@PathParam("version")
+                              @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                defaultValue = "latest") String version,
+                              @PathParam("species")
+                              @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                      + "of potentially available species ids, please refer to: "
+                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
                               @DefaultValue("") @QueryParam("exclude") String exclude,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
@@ -58,7 +65,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
+    @ApiOperation(httpMethod = "GET", value = "Get JSON specification of transcript data model", response = Map.class,
+            responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Transcript.class);
     }
@@ -66,7 +74,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
-    @ApiOperation(httpMethod = "GET", value = "Get the first object in the database")
+    @ApiOperation(httpMethod = "GET", value = "Get the first transcript in the database", response = Transcript.class,
+        responseContainer = "QueryResponse")
     public Response first() {
         parseQueryParams();
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
@@ -95,6 +104,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/info")
+    @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
     public Response getByEnsemblId(@PathParam("transcriptId") String id) {
         try {
             parseQueryParams();
@@ -108,7 +118,54 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/gene")
-    public Response getGeneById(@PathParam("transcriptId") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all gene objects for given ENSEMBL transcript ids.",
+            response = Gene.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "biotype",
+                    value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.biotype",
+                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.tfbs.name",
+                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.id",
+                    value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
+                            + "OMIM:613390. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.name",
+                    value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
+                            + "kidney disease. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.gene",
+                    value = "Comma separated list of ENSEMBL gene ids for which expression values are available, "
+                            + "e.g.: ENSG00000139618,ENSG00000155657. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.tissue",
+                    value = "Comma separated list of tissues for which expression values are available, "
+                            + "e.g.: adipose tissue,heart atrium,tongue."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.name",
+                    value = "Comma separated list of drug names, "
+                            + "e.g.: BMN673,OLAPARIB,VELIPARIB."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.gene",
+                    value = "Comma separated list of gene names for which drug data is available, "
+                            + "e.g.: BRCA2,TTN."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
+    public Response getGeneById(@PathParam("transcriptId")
+                                @ApiParam(name = "transcriptId", value = "Comma separated list of ENSEMBL "
+                                        + "transcript ids, e.g.: ENST00000342992,ENST00000380152,ENST00000544455. Exact "
+                                        + "text matches will be returned",
+                                        required = true) String id) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
@@ -174,6 +231,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/function_prediction")
+    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
     public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId") String id,
                                                                @DefaultValue("") @QueryParam("aaPosition") String aaPosition,
                                                                @DefaultValue("") @QueryParam("aaChange") String aaChange) {
