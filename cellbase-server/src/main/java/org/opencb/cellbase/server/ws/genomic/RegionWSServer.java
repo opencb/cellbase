@@ -708,7 +708,9 @@ public class RegionWSServer extends GenericRestWSServer {
                 return createOkResponse(intervalFrequencies);
             } else {
                 List<Query> queries = createQueries(regionId, RegulationDBAdaptor.QueryParams.REGION.key(),
-                        RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), "TF_binding_site_motif");
+                        RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
+                        RegulationDBAdaptor.FeatureType.TF_binding_site + ","
+                                + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
 //                        RegulationDBAdaptor.QueryParams.NAME.key(), name);
                 List<QueryResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
                 return createOkResponse(queryResults);
