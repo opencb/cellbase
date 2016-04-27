@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
 import com.google.common.base.Splitter;
+import io.swagger.annotations.Api;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -33,6 +34,7 @@ import java.util.List;
 
 @Path("/{version}/{species}/regulatory/mirna_mature")
 @Produces("text/plain")
+@Api(value = "Mature miRNA", description = "miRNA RESTful Web Services API", hidden = true)
 public class MiRnaMatureWSServer extends RegulatoryWSServer {
 
     public MiRnaMatureWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
