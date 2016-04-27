@@ -17,7 +17,9 @@ def main():
     parser.add_argument('--id', nargs='+', type=str, required=False, help='String indicating the id(s) to be queried (if needed)', metavar='I', dest='id')
     parser.add_argument('--species', default="hsapiens", type=str, required=False, help='String indicating the species to query', metavar='S', dest='species')
     parser.add_argument('--conf', default=None, type=str, required=False, help='Path to a .json file containing CellBase client configuration (if needed)', metavar='I', dest='conf')
-    parser.add_argument('--options', nargs='+', type=str, required=False, help='String with a list of &-separated filtering options. For example: source=clinvar&skip=10&limit=200', metavar='O', dest='options')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--include', nargs='+', type=str, required=False, help='String indicating the field to be returned', metavar='F', dest='include')
+    group.add_argument('--exclude', nargs='+', type=str, required=False, help='String indicating the field to be excluded', metavar='X', dest='exclude')
 
     args = parser.parse_args()
 

@@ -28,13 +28,14 @@ class CellBaseCLIExecutor():
         self.__queryCommandOptions = queryCommandOptions
         self.__configFile = queryCommandOptions.conf
         self.__configuration = None
+        self.__options = {}
+
 
     def run(self):
         self.__checkParameters()
         self.loadCellBaseClientConfiguration()
         cellBaseClient = CellBaseClient.CellBaseClient(self.__configuration)
         queryResponse = cellBaseClient.get(self.__species, self.__type, self.__method, self.__id, self.__options)
-        print(queryResponse)
 
     def loadCellBaseClientConfiguration(self):
         if (self.__configFile != None):
@@ -66,11 +67,18 @@ class CellBaseCLIExecutor():
                 string.join(CellBaseCLIExecutor.ENABLEDQUERYSPECIES, sep=", ")+"}")
         else:
             self.__species = self.__queryCommandOptions.species.lower()
-        if(self.__validQueryOptions(self.__queryCommandOptions.options)):
-            self.__options = self.__queryCommandOptions.options
-        else:
-            raise InvalidQueryOptionsException.InvalidQueryOptionsException(
-                "Incorrect format provided for query options. Please, provide a list of filter pairs. For example: source=clinvar skip=10 limit=200")
+
+        # if(self.__validQueryOptions(self.__queryCommandOptions.options)):
+        #     self.__options = self.__queryCommandOptions.options
+        # else:
+        #     raise InvalidQueryOptionsException.InvalidQueryOptionsException(
+        #         "Incorrect format provided for query options. Please, provide a list of filter pairs. For example: source=clinvar skip=10 limit=200")
+
+        # self.__include = self.__queryCommandOptions.include
+        if (self.__queryCommandOptions.include != None):
+            self.__options['include'] = self.__queryCommandOptions.include
+        if (self.__queryCommandOptions.exclude != None):
+            self.__options['exclude'] = self.__queryCommandOptions.exclude
 
     def __validQueryOptions(self,options):
         if (options != None):

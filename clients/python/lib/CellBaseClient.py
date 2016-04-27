@@ -5,6 +5,7 @@ import json
 import string
 import zlib
 import urllib.request
+#import requests
 
 class CellBaseClient:
 
@@ -19,19 +20,21 @@ class CellBaseClient:
     def get(self, species, subtype, method, id, options):
         # Prepare the call to the server
         url = self.__createUrl(species, subtype, method, id, options)
+        print(url)
         req = urllib.request.Request(url)
 
         # Inform to the server we accept gzip compression
         req.add_header("Accept-Encoding", "gzip")
 
-        # Execute the call and read the result
+        # Excute the call and read the result
         response = urllib.request.urlopen(req)
         json_data = response.read()
 
         # Uncompress the gzip result
-        data = zlib.decompress(json_data, 16+zlib.MAX_WBITS)
+        data = zlib.decompress(json_data, 16 + zlib.MAX_WBITS)
+        #print(data)
 
-        return json.loads(data.decode())
+        return json.loads(data)
 
     def __createUrl(self, species, subtype, method, id, options):
         url = "http://" + self.__configuration.getHost() + ":" + str(self.__configuration.getPort()) + \
@@ -43,5 +46,7 @@ class CellBaseClient:
             url += "/"+str.join(",", id)
         url += "/"+method
         if (options != None):
-            url += "?"+str.join("&", options)
+            for k, v in options.items():
+                url += "?" + k + "=" + str.join(",", v) + "&"
+
         return url

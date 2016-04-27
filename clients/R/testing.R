@@ -38,3 +38,11 @@ ts <-foreach(k=1:length(test))%do%{
 }
 tss <- unlist(ts, recursive = FALSE)
 return(ids)
+
+
+#
+cb <- CellbaseQuery()
+cb
+g1 <- cbGene(object = cb, ids = c("TET1","TP73"), resource = "info")
+g1
+g2 <- cellbaseData(g1)
