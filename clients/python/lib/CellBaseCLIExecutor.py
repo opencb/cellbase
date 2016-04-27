@@ -4,7 +4,7 @@ import string
 import os
 import sys
 from .exceptions import InvalidQueryTypeException,InvalidQueryMethodException,InvalidQuerySpeciesException,InvalidQueryOptionsException
-from . import CellBaseConfiguration
+from . import CellBaseClientConfig
 from . import CellBaseClient
 
 class CellBaseCLIExecutor():
@@ -31,17 +31,17 @@ class CellBaseCLIExecutor():
 
     def run(self):
         self.__checkParameters()
-        self.loadCellBaseConfiguration()
+        self.loadCellBaseClientConfiguration()
         cellBaseClient = CellBaseClient.CellBaseClient(self.__configuration)
         queryResponse = cellBaseClient.get(self.__species, self.__type, self.__method, self.__id, self.__options)
         print(queryResponse)
 
-    def loadCellBaseConfiguration(self):
-        if(self.__configFile!=None):
-            self.__configuration = CellBaseConfiguration.CellBaseConfiguration(self.__configFile)
+    def loadCellBaseClientConfiguration(self):
+        if (self.__configFile != None):
+            self.__configuration = CellBaseClientConfig.CellBaseClientConfig(self.__configFile)
         else:
-            self.__configuration = CellBaseConfiguration.CellBaseConfiguration(
-                os.path.dirname(CellBaseConfiguration.__file__)+"/resources/configuration.json")
+            self.__configuration = CellBaseClientConfig.CellBaseClientConfig(
+                os.path.dirname(CellBaseClientConfig.__file__) + "/../configuration.json")
 
     def __checkParameters(self):
         if(self.__queryCommandOptions.type!=None and
