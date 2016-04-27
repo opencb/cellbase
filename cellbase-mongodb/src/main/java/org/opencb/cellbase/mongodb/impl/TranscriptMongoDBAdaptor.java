@@ -141,7 +141,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         document.put("annotationFlags", "$transcripts.annotationFlags");
         Bson project = Aggregates.project(document);
 
-        Bson match2 = Aggregates.match(parseQueryUnwindTranscripts(query));
+        Bson match2 = Aggregates.match(bson);
 
         return mongoDBCollection.aggregate(Arrays.asList(match, unwind, match2, excludeAndInclude, project), options);
 //        return mongoDBCollection.aggregate(Arrays.asList(match, excludeAndInclude, unwind, project, match2), options);

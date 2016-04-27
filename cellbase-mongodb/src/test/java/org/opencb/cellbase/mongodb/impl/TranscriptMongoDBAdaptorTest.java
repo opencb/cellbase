@@ -23,9 +23,14 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(queryResult.getNumResults(), 1);
         assertEquals(((Document) queryResult.getResult().get(0)).get("id"), "ENST00000594233");
 
+        query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:31851-44817");
+        queryResult = transcriptDBAdaptor.nativeGet(query, new QueryOptions());
+        assertEquals(queryResult.getNumResults(), 2);
+
         query = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), "Q9UL59");
         QueryOptions queryOptions = new QueryOptions("include", "transcripts.id");
         queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
+        assertEquals(queryResult.getNumResults(), 2);
 
         int a = 1;
     }
