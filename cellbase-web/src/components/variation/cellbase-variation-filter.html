@@ -220,7 +220,7 @@
 
                 // Now we execute the query. Note that ID are preferred
                 if (this.$.variationFilterIdsTextarea.value !== "") {
-                    this.cellbaseClient.get('feature','snp', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                    this.cellbaseClient.get('genomic','variant', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
                 } else {
                     if (this.$.variationRegionList.value !== "") {
                         this.cellbaseClient.get('genomic','region', this.$.variationRegionList.value, 'variation', queryParams, {success: success, async: true});

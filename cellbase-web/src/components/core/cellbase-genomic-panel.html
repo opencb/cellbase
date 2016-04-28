@@ -16,30 +16,30 @@
 
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<link rel="import" href="cellbase-gene-filter.html">
-<link rel="import" href="cellbase-gene-view.html">
+<link rel="import" href="cellbase-genomic-filter.html">
+<link rel="import" href="cellbase-genomic-view.html">
 
-<dom-module id="cellbase-gene-panel">
+<dom-module id="cellbase-genomic-panel">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-gene-filter gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-filter>
+                <cellbase-genomic-filter region={{region}} cellbase-client="{{cellbaseClient}}"></cellbase-genomic-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-gene-view gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-view>
+                <cellbase-genomic-view region={{region}} cellbase-client="{{cellbaseClient}}"></cellbase-genomic-view>
             </div>
         </div>
     </template>
     <script>
         Polymer({
-            is: 'cellbase-gene-panel',
+            is: 'cellbase-genomic-panel',
             properties: {
                 cellbaseClient: {
                     type: Object
                 },
-                geneId: {
+                region: {
                     type: String
                 }
             },

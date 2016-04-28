@@ -16,6 +16,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="shared/cellbase-species-menu.html">
+<link rel="import" href="core/cellbase-genomic-panel.html">
 <link rel="import" href="core/cellbase-gene-panel.html">
 <link rel="import" href="core/cellbase-regulation-panel.html">
 <link rel="import" href="variation/cellbase-variation-panel.html">
@@ -54,9 +55,9 @@
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Core <span class="caret"></span></a>
 
                                     <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#">Genomic Region</a></li>
-                                        <li><a href="#genePanel">Gene</a></li>
-                                        <li><a href="#transcriptPanel">Transcript</a></li>
+                                        <li><a href="#genomicPanel">Genomic Region</a></li>
+                                        <li><a href="#genePanel">Gene/Transcript</a></li>
+                                        <!--<li><a href="#transcriptPanel">Transcript</a></li>-->
                                         <li><a href="#">Protein</a></li>
                                         <li><a href="#regulationPanel">Regulation</a></li>
                                         <li><a href="#">XRefs</a></li>
@@ -141,13 +142,17 @@
                 <div class="collapse content" id="home1">
                     <h2>Welcome to CellBase data portal tool!</h2>
                 </div>
+                <div class="collapse content" id="genomicPanel">
+                    <h2>Genomic Region</h2>
+                    <cellbase-genomic-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-genomic-panel>
+                </div>
                 <div class="collapse content" id="genePanel">
-                    <h2>Gene</h2>
+                    <h2>Gene/Transcript</h2>
                     <cellbase-gene-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-gene-panel>
                 </div>
-                <div class="collapse content" id="transcriptPanel">
-                    Transcript
-                </div>
+                <!--<div class="collapse content" id="transcriptPanel">-->
+                    <!--Transcript-->
+                <!--</div>-->
                 <div class="collapse content" id="regulationPanel">
                     <h2>Regulation</h2>
                     <cellbase-regulation-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-regulation-panel>
