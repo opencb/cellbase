@@ -23,7 +23,6 @@ def main():
     group.add_argument('--exclude', nargs='+', type=str, required=False, help='String indicating the field to be excluded', metavar='X', dest='exclude')
 =======
     parser.add_argument('--options', nargs='+', type=str, required=False, help='String with a list of &-separated filtering options. For example: source=clinvar&skip=10&limit=200', metavar='O', dest='options')
-
     args = parser.parse_args()
 
     # print(args)
