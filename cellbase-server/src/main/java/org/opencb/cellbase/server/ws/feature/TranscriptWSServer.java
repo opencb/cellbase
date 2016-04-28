@@ -18,6 +18,7 @@ package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
@@ -84,10 +85,25 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/count")
-    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
-    public Response count(@DefaultValue("") @QueryParam("region") String region,
-                          @DefaultValue("") @QueryParam("biotype") String biotype,
-                          @DefaultValue("") @QueryParam("xrefs") String xrefs) throws Exception {
+    @ApiOperation(httpMethod = "GET", value = "Get the number of transcripts in the database", response = Integer.class,
+        responseContainer = "QueryResponse")
+    public Response count(@DefaultValue("")
+                          @QueryParam("region")
+                          @ApiParam(name = "region",
+                                  value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                                  required = false) String region,
+                          @DefaultValue("")
+                          @QueryParam("biotype")
+                          @ApiParam(name = "biotype",
+                                  value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                                          + " Exact text matches will be returned",
+                                  required = false) String biotype,
+                          @DefaultValue("")
+                          @QueryParam("xrefs")
+                          @ApiParam(name = "xrefs",
+                                  value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                                          + " Exact text matches will be returned",
+                                  required = false) String xrefs) throws Exception {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
         query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
         query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
@@ -98,6 +114,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/stats")
     @Override
+    @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
     public Response stats() {
         return super.stats();
     }
@@ -176,8 +193,11 @@ public class TranscriptWSServer extends GenericRestWSServer {
         }
     }
 
+    // FIXME: 28/04/16 must look for the transcript id within the consequence type object. Requires previous loading of
+    // the annoation into th evariation collection
     @GET
     @Path("/{transcriptId}/variation")
+    @ApiOperation(httpMethod = "GET", value = "To be fixed", hidden = true)
     public Response getVariationsByTranscriptId(@PathParam("transcriptId") String id) {
         try {
             parseQueryParams();
@@ -191,7 +211,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/sequence")
-    public Response getSequencesByIdList(@PathParam("transcriptId") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieve transcript cDNA sequence", response = String.class,
+        responseContainer = "QueryResponse")
+    public Response getSequencesByIdList(@PathParam("transcriptId")
+                                         @ApiParam(name = "transcriptId", value = "String indicating one transcript ID,"
+                                                 + " e.g:  ENST00000342992. Other transcript symbols such as HGNC symbols"
+                                                 + " are allowed as well, e.g.: BRCA2-001", required = true) String id) {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
@@ -203,6 +228,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/mutation")
+    @Deprecated
+    @ApiOperation(httpMethod = "GET", value = "To be removed", hidden = true)
     public Response getMutationByTranscriptId(@PathParam("transcriptId") String query) {
         try {
             parseQueryParams();
@@ -218,6 +245,14 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/protein")
+    @ApiOperation(httpMethod = "GET", value = "Get the protein info for this transcript", response = Entry.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "keyword",
+                    value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
+                            + "Transcription,Zinc. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
     public Response getProtein(@PathParam("transcriptId") String transcriptId) {
         try {
             parseQueryParams();
@@ -231,16 +266,35 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/function_prediction")
-    @ApiOperation(httpMethod = "GET", value = "Get the number of objects in the database")
-    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId") String id,
-                                                               @DefaultValue("") @QueryParam("aaPosition") String aaPosition,
-                                                               @DefaultValue("") @QueryParam("aaChange") String aaChange) {
+    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the protein of a"
+            + " certain transcript",
+            notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
+                    + " position is provided, all scores will be returned for every possible amino acid"
+                    + " change occurring at that position. If the alternate aminoacid is provided as well, Score objects as"
+                    + " specified at "
+                    + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl"
+                    + " shall be returned. If none of these parameters are provided, the whole list of scores for every"
+                    + " possible amino acid change in the protein shall be returned.",
+            response = List.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "position",
+                    value = "Integer indicating the aminoacid position to check",
+                    required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "aa",
+                    value = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding"
+                            + " of aminoacid names, e.g.: CYS",
+                    required = false, dataType = "String", paramType = "query")
+    })
+    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId")
+                                                               @ApiParam(name = "transcriptId",
+                                                                value = "String indicating one ENSEMBL transcript id"
+                                                                        + " e.g.: ENST00000536068. Exact text matches "
+                                                                        + "will be returned",
+                                                                required = true) String id) {
         try {
             parseQueryParams();
             ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
             query.put("transcript", id);
-            query.put("position", aaPosition);
-            query.put("aa", aaChange);
             QueryResult queryResults = mutationAdaptor.getSubstitutionScores(query, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {

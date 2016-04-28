@@ -76,7 +76,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "keyword",
                     value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
                             + "Transcription,Zinc. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getInfoByEnsemblId(@PathParam("proteinId")
                                        @ApiParam(name = "proteinId",
@@ -121,7 +121,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "keyword",
                     value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
                             + "Transcription,Zinc. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAll() {
         try {
@@ -136,13 +136,27 @@ public class ProteinWSServer extends GenericRestWSServer {
     @GET
     @Path("/{proteinId}/substitution_scores")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
-        notes = "Output value will be a List of Score objects as defined at "
-                + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl",
+        notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
+                + " position is provided, all scores will be returned for every possible amino acid"
+                + " change occurring at that position. If the alternate aminoacid is provided as well, Score objects as"
+                + " specified at "
+                + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl"
+                + " shall be returned. If none of these parameters are provided, the whole list of scores for every"
+                + " possible amino acid change in the protein shall be returned.",
             response = List.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "position",
+                    value = "Integer indicating the aminoacid position to check",
+                    required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "aa",
+                    value = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding"
+                            + " of aminoacid names, e.g.: CYS",
+                    required = false, dataType = "String", paramType = "query")
+    })
     public Response getSubstitutionScores(@PathParam("proteinId")
                                           @ApiParam(name = "proteinId",
-                                                  value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,"
-                                                          + " ENST00000278314. Exact text matches will be returned",
+                                                  value = "String indicating one xref id, e.g.: Q9UL59, Exact text "
+                                                          + "matches will be returned",
                                                   required = true) String id) {
         try {
             parseQueryParams();
