@@ -20,6 +20,10 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
+<<<<<<< HEAD
+=======
+import org.opencb.cellbase.core.api.XRefDBAdaptor;
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -89,7 +93,11 @@ public class ProteinWSServer extends GenericRestWSServer {
             for (String s : ids) {
                 queries.add(new Query(ProteinDBAdaptor.QueryParams.XREFS.key(), s));
             }
+<<<<<<< HEAD
             return createOkResponse(proteinDBAdaptor.nativeGet(queries, queryOptions));
+=======
+            return createOkResponse(proteinDBAdaptor.get(queries, queryOptions));
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
         } catch (Exception e) {
             return createErrorResponse(e);
         }

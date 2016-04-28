@@ -20,13 +20,15 @@ class CellBaseClient:
     def get(self, species, subtype, method, id, options):
         # Prepare the call to the server
         url = self.__createUrl(species, subtype, method, id, options)
+
         print(url)
+
         req = urllib.request.Request(url)
 
         # Inform to the server we accept gzip compression
         req.add_header("Accept-Encoding", "gzip")
 
-        # Excute the call and read the result
+        # Execute the call and read the result
         response = urllib.request.urlopen(req)
         json_data = response.read()
 
@@ -38,15 +40,17 @@ class CellBaseClient:
 
     def __createUrl(self, species, subtype, method, id, options):
         url = "http://" + self.__configuration.getHost() + ":" + str(self.__configuration.getPort()) + \
-                   CellBaseClient.PATH + self.__configuration.getVersion() + "/"+species
+              CellBaseClient.PATH + self.__configuration.getVersion() + "/" + species
         if (CellBaseClient.ENABLEDQUERYTYPES[subtype] != None):
-            url += "/"+CellBaseClient.ENABLEDQUERYTYPES[subtype]
-        url += "/"+subtype
+            url += "/" + CellBaseClient.ENABLEDQUERYTYPES[subtype]
+        url += "/" + subtype
         if (id != None):
-            url += "/"+str.join(",", id)
-        url += "/"+method
+            url += "/" + str.join(",", id)
+        url += "/" + method
         if (options != None):
-            for k, v in options.items():
-                url += "?" + k + "=" + str.join(",", v) + "&"
+            k, v in options.items():
+            url += "?" + k + "=" + str.join(",", v) + "&"
 
-        return url
+    url += "?" + str.join("&", options)
+
+    return url

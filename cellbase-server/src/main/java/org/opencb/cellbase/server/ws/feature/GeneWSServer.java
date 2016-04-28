@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.bson.Document;
+<<<<<<< HEAD
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.RegulatoryFeature;
@@ -28,6 +29,13 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
+=======
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
+import org.opencb.cellbase.core.db.api.systems.ProteinProteinInteractionDBAdaptor;
+
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -86,9 +94,12 @@ public class GeneWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the number of genes in the database", response = Integer.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
+<<<<<<< HEAD
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     required = false, dataType = "list of strings", paramType = "query"),
+=======
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
             @ApiImplicitParam(name = "id",
                     value = "Comma separated list of ENSEMBL gene ids, e.g.: ENST00000380152,ENSG00000155657."
                             + " Exact text matches will be returned",
@@ -147,7 +158,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
+<<<<<<< HEAD
                     required = false, dataType = "list of strings", paramType = "query")
+=======
+                    required = false, dataType = "list of strings", paramType = "query"),
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
     })
     public Response count() {
 //    public Response count(@DefaultValue("") @QueryParam("region") String region,
@@ -177,6 +192,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/group")
+<<<<<<< HEAD
     @ApiOperation(httpMethod = "GET", value = "Groups gene HGNC symbols by a field(s). ", response = Integer.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -248,6 +264,10 @@ public class GeneWSServer extends GenericRestWSServer {
                             @ApiParam(name = "fields",
                                     value = "Comma separated list of field(s) to group by, e.g.: biotype.",
                                     required = true) String fields) {
+=======
+    @ApiOperation(httpMethod = "GET", value = "Query gene objects and return results", response = QueryResponse.class)
+    public Response groupBy(@DefaultValue("") @QueryParam("fields") String fields) {
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
@@ -543,9 +563,12 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/biotype")
     @ApiOperation(httpMethod = "GET", value = "Get the list of existing biotypes")
     @ApiImplicitParams({
+<<<<<<< HEAD
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     required = false, dataType = "list of strings", paramType = "query"),
+=======
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
             @ApiImplicitParam(name = "id",
                     value = "Comma separated list of ENSEMBL gene ids, e.g.: ENST00000380152,ENSG00000155657."
                             + "Exact text matches will be returned",
@@ -597,7 +620,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN"
                             + "Exact text matches will be returned",
+<<<<<<< HEAD
                     required = false, dataType = "list of strings", paramType = "query")
+=======
+                    required = false, dataType = "list of strings", paramType = "query"),
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
     })
     public Response getAllBiotypes() {
         try {
@@ -861,7 +888,11 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
+<<<<<<< HEAD
                     required = false, dataType = "list of strings", paramType = "query")
+=======
+                    required = false, dataType = "list of strings", paramType = "query"),
+>>>>>>> 7e8754758b7d438888bb404714aabfc994205976
     })
     public Response getAllClinvarByGene(@PathParam("geneId") String geneId) {
         try {
