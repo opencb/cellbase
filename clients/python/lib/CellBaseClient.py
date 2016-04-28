@@ -5,11 +5,11 @@ import json
 import string
 import zlib
 import urllib.request
-#import requests
+import requests
 
 class CellBaseClient:
 
-    PATH = "/cellbase/webservices/rest/"
+    PATH = "/cellbase-dev-v4.0/webservices/rest/"
     ENABLEDQUERYTYPES = {"clinical":"feature","exon":"feature","gene":"feature","chromosome":"genomic","meta":None,
                          "protein":"feature","region":"genomic","snp":"feature","species":None,"tf":"regulatory",
                          "id":"feature"}
@@ -21,22 +21,14 @@ class CellBaseClient:
         # Prepare the call to the server
         url = self.__createUrl(species, subtype, method, id, options)
 
-        print(url)
+        # print(url)
 
-        req = urllib.request.Request(url)
-
-        # Inform to the server we accept gzip compression
-        req.add_header("Accept-Encoding", "gzip")
-
-        # Execute the call and read the result
-        response = urllib.request.urlopen(req)
-        json_data = response.read()
-
-        # Uncompress the gzip result
-        data = zlib.decompress(json_data, 16 + zlib.MAX_WBITS)
-        #print(data)
-
-        return json.loads(data)
+        # headers = {"Accept-Encoding": "gzip"}
+        # response = requests.get(url, headers=headers)
+        response = requests.get(url)
+        # print(response.request.headers)
+        # print(response.headers)
+        return response.json()
 
     def __createUrl(self, species, subtype, method, id, options):
         url = "http://" + self.__configuration.getHost() + ":" + str(self.__configuration.getPort()) + \
@@ -47,10 +39,15 @@ class CellBaseClient:
         if (id != None):
             url += "/" + str.join(",", id)
         url += "/" + method
+        filter = list()
         if (options != None):
-            k, v in options.items():
-            url += "?" + k + "=" + str.join(",", v) + "&"
+            for k, v in options.items():
+                if (type(v)!=int):
+                    filter.append(k + "=" + str.join(",", v) )
+                else:
+                    #url += "?" + k + "=" + str(v) + "&"
+                    filter.append(k + "=" + str(v))
+            url += "?" + str.join("&", filter)
 
-    url += "?" + str.join("&", options)
 
-    return url
+        return url
