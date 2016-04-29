@@ -23,6 +23,10 @@
 <dom-module id="cellbase-regulation-filter">
     <template>
         <style is="custom-style" include="cellbase-shared-styles">
+            .menu-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
+            }
             .result-display {
                 max-height: 800px;
                 overflow: auto;
@@ -73,8 +77,8 @@
                             </div>
                             <div id="featureType" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hTwo">
-                                <div class="panel-body">
-                                    <!--<cellbase-options-list cellbase-client={{cellBaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>-->
+                                <div class="panel-body menu-scroll">
+                                    <!--<cellbase-options-list cellbase-client={{cellBaseClient}} data-type="featureType" selected={{featureTypes}}></cellbase-options-list>-->
                                 </div>
                             </div>
                         </div>
@@ -130,6 +134,10 @@
                 },
                 result: {
                     type: Array
+                },
+                featureTypes: {
+                    type: Array,
+                    value: []
                 }
             },
                 ready: function () {

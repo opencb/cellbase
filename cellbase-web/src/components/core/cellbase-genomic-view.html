@@ -18,6 +18,9 @@
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="cellbase-transcripts-view.html">
+<link rel="import" href="cellbase-expression-grid.html">
+<link rel="import" href="cellbase-phenotype-grid.html">
+<link rel="import" href="cellbase-drugs-view.html">
 
 <dom-module id="cellbase-genomic-view">
     <template>
@@ -48,9 +51,28 @@
 
                     </table>
 
-                    <h4><b>Transcripts for {{selectedGene}}</b></h4>
-                    <cellbase-transcripts-view data="{{transcripts}}" prefix="genomicViewTranscript"></cellbase-transcripts-view>
+                    <h4><b>Gene: {{selectedGene}}</b></h4> <br>
+                    <ul id="genomicViewGeneTabs" class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#genomicViewGeneTranscript" role="tab" data-toggle="tab">Transcript</a></li>
+                        <li role="presentation"><a href="#genomicViewGeneExpression" role="tab" data-toggle="tab">Expression</a></li>
+                        <li role="presentation"><a href="#genomicViewGenePhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
+                        <li role="presentation"><a href="#genomicViewGeneDrugs" role="tab" data-toggle="tab">Drugs</a></li>
+                    </ul>
 
+                    <div class="tab-content">
+                        <div id="genomicViewGeneTranscript" role="tabpanel" class="tab-pane active">
+                            <cellbase-transcripts-view data="{{transcripts}}" prefix="genomicViewTranscript"></cellbase-transcripts-view>
+                        </div>
+                        <div id="genomicViewGeneExpression" role="tabpanel" class="tab-pane">
+                            <cellbase-expression-grid data="{{expression}}" cellbase="{{cellbaseClient}}"></cellbase-expression-grid>
+                        </div>
+                        <div id="genomicViewGenePhenotype" role="tabpanel" class="tab-pane">
+                            <cellbase-phenotype-grid cellbase="{{cellbaseClient}}" data="{{phenotype}}"></cellbase-phenotype-grid>
+                        </div>
+                        <div id="genomicViewGeneDrugs" role="tabpanel" class="tab-pane">
+                            <cellbase-drugs-view cellbase="{{cellbaseClient}}" data="{{drugs}}"></cellbase-drugs-view>
+                        </div>
+                    </div>
                 </div>
                 <div id="genomicViewRegulation" role="tabpanel" class="tab-pane">
                     Regulation
@@ -82,9 +104,6 @@
                     observer: '_regionChanged'
                 },
                 genes : {
-                    type: Array
-                },
-                transcripts : {
                     type: Array
                 }
             },
@@ -130,6 +149,9 @@
                         onClickRow: function (row, $element) {
                             _this.selectedGene = row.name;
                             _this.transcripts = row.transcripts;
+                            _this.expression = row.annotation.expression;
+                            _this.phenotype = row.annotation.diseases;
+                            _this.drugs = row.annotation.drugs;
                         }
                     });
                 };
