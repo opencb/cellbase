@@ -178,6 +178,7 @@ public class CellBaseConfiguration {
         private URLProperties clinvarEfoTerms;
         private URLProperties hpo;
         private URLProperties disgenet;
+        private URLProperties disgenetReadme;
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
         private URLProperties dbsnp;
@@ -246,6 +247,14 @@ public class CellBaseConfiguration {
 
         public void setDisgenet(URLProperties disgenet) {
             this.disgenet = disgenet;
+        }
+
+        public URLProperties getDisgenetReadme() {
+            return disgenetReadme;
+        }
+
+        public void setDisgenetReadme(URLProperties disgenetReadme) {
+            this.disgenetReadme = disgenetReadme;
         }
 
         public URLProperties getDgidb() {

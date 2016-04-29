@@ -90,6 +90,9 @@
 		"disgenet": {
 			"host": "http://www.disgenet.org/ds/DisGeNET/results/all_gene_disease_associations.txt.gz"
 		},
+		"disgenetReadme": {
+			"host": "http://www.disgenet.org/ds/DisGeNET/results/readme.txt"
+		},
 		"dgidb": {
 			"host": "http://dgidb.genome.wustl.edu/downloads/interactions.tsv"
 		},

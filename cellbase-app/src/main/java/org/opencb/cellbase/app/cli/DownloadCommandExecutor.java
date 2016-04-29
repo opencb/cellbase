@@ -79,6 +79,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String UNIPROT_NAME = "DGIdb";
     private static final String GENOME_DATA = "genome";
     private static final String GENE_DATA = "gene";
+    private static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -198,7 +199,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case GENE_DATA:
                         downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         break;
-                    case "gene_disease_association":
+                    case GENE_DISEASE_ASSOCIATION_DATA:
                         if (speciesHasInfoToDownload(sp, "gene_disease_association")) {
                             downloadGeneDiseaseAssociation(sp, spFolder);
                         }
@@ -457,12 +458,32 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 geneFolder.resolve("hpoVersion.json"));
 
         host = configuration.getDownload().getDisgenet().getHost();
+        String readme = configuration.getDownload().getDisgenetReadme().getHost();
         fileName = StringUtils.substringAfterLast(host, "/");
         downloadFile(host, geneFolder.resolve(fileName).toString());
-        saveVersionData(GENE_DATA, DISGENET_NAME, null, getTimeStamp(), Collections.singletonList(host),
-                geneFolder.resolve("disgenetVersion.json"));
+        downloadFile(readme, geneFolder.resolve("disgenetReadme.txt").toString());
+        saveVersionData(GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
+                getDisgenetVersion(geneFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
+                Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
+    private String getDisgenetVersion(Path path) {
+        Files.exists(path);
+        try {
+            BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
+            String line = reader.readLine();
+            // There shall be a line at the README.txt containing the version.
+            // e.g. The files in the current directory contain the data corresponding to the latest release (version 4.0, April 2016). ...
+            while (line != null) {
+                if (line.matches("\\(version")) {
+                    return line.split("\\(")[1].split("\\)")[0];
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     private void runGeneExtraInfo(Species sp, String assembly, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
@@ -758,11 +779,18 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             // Downloads DisGeNET
             String url = configuration.getDownload().getDisgenet().getHost();
+            String readmeUrl = configuration.getDownload().getDisgenetReadme().getHost();
             downloadFile(url, gene2diseaseFolder.resolve("all_gene_disease_associations.txt.gz").toString());
+            downloadFile(readmeUrl, gene2diseaseFolder.resolve("disgenetReadme.txt").toString());
+            saveVersionData(GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
+                    getDisgenetVersion(gene2diseaseFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
+                    Collections.singletonList(url), gene2diseaseFolder.resolve("disgenetVersion.json"));
 
             // Downloads HPO
             url = configuration.getDownload().getHpo().getHost();
             downloadFile(url, gene2diseaseFolder.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").toString());
+            saveVersionData(GENE_DISEASE_ASSOCIATION_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    gene2diseaseFolder.resolve("hpoVersion.json"));
         }
     }
 
