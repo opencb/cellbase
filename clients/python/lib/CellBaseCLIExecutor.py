@@ -3,6 +3,7 @@ __author__ = 'fjlopez'
 import string
 import os
 import sys
+import json
 from .exceptions import InvalidQueryTypeException,InvalidQueryMethodException,InvalidQuerySpeciesException,InvalidQueryOptionsException
 from . import CellBaseClientConfig
 from . import CellBaseClient
@@ -39,8 +40,9 @@ class CellBaseCLIExecutor():
         queryResponse = cellBaseClient.get(self.__species, self.__type, self.__method, self.__id, self.__options)
         if (self.__file):
             f = open("result.json", 'w')
-            print("The result file has been written to result.json")
-            f.write(str(queryResponse))
+            test = json.dumps(queryResponse)
+            print("The result file has been written to result.json file")
+            f.write(str(test))
         else:
             print(queryResponse)
 
