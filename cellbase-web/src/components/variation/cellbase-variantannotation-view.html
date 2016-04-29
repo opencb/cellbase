@@ -425,36 +425,41 @@
                 }
             },
             detailFormatter: function (index, row) {
-                if (row.proteinVariantAnnotation !== undefined) {
-                    row.proteinVariantAnnotation.uniprotVariantId = row.proteinVariantAnnotation.uniprotVariantId || '-';
-//                    row.proteinVariantAnnotation.functionalDescription = row.proteinVariantAnnotation.functionalDescription || '-';
-                    row.proteinVariantAnnotation.keywords = row.proteinVariantAnnotation.keywords || '-';
-                    var features = row.proteinVariantAnnotation.features || '-';
-                    var html = [];
-                    var result = "";
-                    if (features != '-') {
-                        var xxx = [];
-                        for (let i in features) {
-                            features[i].id = features[i].id || '-';
-                            features[i].type = features[i].type || '-';
-                            features[i].description = features[i].description || '-';
-                            xxx.push('<span>{ ID: ' + features[i].id + ', Start:' + features[i].start + ', End:' + features[i].end +
-                                    ', Type:' + features[i].type + ', Description:' + features[i].description + ' }</span> <br>');
-                        }
-                        result = xxx.join('');
-                    } else {
-                        result = '-';
-                    }
+                if (row.biotype == "protein_coding") {
+                    if (row.proteinVariantAnnotation !== undefined) {
+                        if (row.proteinVariantAnnotation.uniprotVariantId !== undefined) {
+                            var html = [];
+                            var result = "";
+                            if (row.proteinVariantAnnotation.features !== undefined) {
+                                let features = row.proteinVariantAnnotation.features;
+                                var xxx = [];
+                                for (let i in features) {
+                                    features[i].id = features[i].id || '-';
+                                    features[i].type = features[i].type || '-';
+                                    features[i].description = features[i].description || '-';
+                                    xxx.push('<span> ID: ' + features[i].id + ', Start:' + features[i].start + ', End:' + features[i].end +
+                                            ', Type:' + features[i].type + ', Description:' + features[i].description + ' </span> <br>');
+                                }
+                                result = xxx.join('');
+                            } else {
+                                result = '-';
+                            }
 
-                    html.push('<b>Uniprot Variant ID:</b> ' + row.proteinVariantAnnotation.uniprotVariantId +
-//                            '<br> <b>Functional Description:</b> ' + row.proteinVariantAnnotation.functionalDescription +
-                            '<br> <b>Keywords:</b> ' + row.proteinVariantAnnotation.keywords +
-                            '<br> <b>Features:</b><br> ' + result);
-                    return html.join('');
+                            html.push('<b>Uniprot Variant ID:</b> ' + row.proteinVariantAnnotation.uniprotVariantId +
+                                    '<br> <b>Keywords:</b> ' + row.proteinVariantAnnotation.keywords +
+                                    '<br> <b>Features:</b><br> ' + result);
+                            return html.join('');
+                        } else {
+                            return "No Uniprot Data Available";
+                        }
+                    }
+                    else {
+                        return "No Uniprot Data Available";
+                    }
+                } else {
+                    return '-';
                 }
-                else {
-                    return "No Protein Variant Annotation";
-                }
+
             },
             siftScoreFormatter: function (value, row, index) {
                 if (row.proteinVariantAnnotation !== undefined) {
@@ -482,52 +487,56 @@
             },
             siftCellStyle: function (value, row, index) {
                 if (row.proteinVariantAnnotation !== undefined) {
-                    let sift = row.proteinVariantAnnotation.substitutionScores[0];
-                    switch (sift.description) {
-                        case 'tolerated':
-                            return {
-                                css: {
-                                    "background-color": "green"
-                                }
-                            };
-                        case 'deleterious':
-                            return {
-                                css: {
-                                    "background-color": "red"
-                                }
-                            };
+                    if (row.proteinVariantAnnotation.substitutionScores !== undefined) {
+                        let sift = row.proteinVariantAnnotation.substitutionScores[0];
+                        switch (sift.description) {
+                            case 'tolerated':
+                                return {
+                                    css: {
+                                        "background-color": "green"
+                                    }
+                                };
+                            case 'deleterious':
+                                return {
+                                    css: {
+                                        "background-color": "red"
+                                    }
+                                };
+                        }
                     }
                 }
                 return {};
             },
             polyphenCellStyle: function (value, row, index) {
                 if (row.proteinVariantAnnotation !== undefined) {
-                    let polyphen = row.proteinVariantAnnotation.substitutionScores[1];
-                    switch (polyphen.description) {
-                        case 'probably damaging':
-                            return {
-                                css: {
-                                    "background-color": "red"
-                                }
-                            };
-                        case 'possibly damaging':
-                            return {
-                                css: {
-                                    "background-color": "orange"
-                                }
-                            };
-                        case 'benign':
-                            return {
-                                css: {
-                                    "background-color": "green"
-                                }
-                            };
-                        case 'unknown':
-                            return {
-                                css: {
-                                    "background-color": "blue"
-                                }
-                            };
+                    if (row.proteinVariantAnnotation.substitutionScores !== undefined) {
+                        let polyphen = row.proteinVariantAnnotation.substitutionScores[1];
+                        switch (polyphen.description) {
+                            case 'probably damaging':
+                                return {
+                                    css: {
+                                        "background-color": "red"
+                                    }
+                                };
+                            case 'possibly damaging':
+                                return {
+                                    css: {
+                                        "background-color": "orange"
+                                    }
+                                };
+                            case 'benign':
+                                return {
+                                    css: {
+                                        "background-color": "green"
+                                    }
+                                };
+                            case 'unknown':
+                                return {
+                                    css: {
+                                        "background-color": "blue"
+                                    }
+                                };
+                        }
                     }
                 }
                 return {};

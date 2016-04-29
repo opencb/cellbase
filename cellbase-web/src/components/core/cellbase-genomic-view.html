@@ -144,6 +144,175 @@
             locationFormatter: function (value, row, index) {
                 let location = row.chromosome + ":" + row.start + "-" + row.end;
                 return '<a target="_blank" href="http://genomemaps.org/?region=' + location + '">' + location + '</a>'
+            },
+            renderGenomeViewer: function() {
+                var region = new Region({chromosome: "13", start: 32889611, end: 32889611});
+                this.genomeViewer = new GenomeViewer({
+                    cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
+                    cellBaseVersion: 'v3',
+                    target: this.$$('#genomeviewer'),
+//                    width: this.$$('#genomeviewer').getBoundingClientRect().width,
+                    width: 1200,
+                    region: region,
+                    availableSpecies: DEFAULT_SPECIES.vertebrates,
+                    species: DEFAULT_SPECIES.vertebrates[0],
+                    sidePanel: false,
+                    autoRender: true,
+                    resizable: true,
+//        quickSearchResultFn:quickSearchResultFn,
+//        quickSearchDisplayKey:,
+                    karyotypePanelConfig: {
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    chromosomePanelConfig: {
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    navigationBarConfig: {
+                        componentsConfig: {
+//                restoreDefaultRegionButton:false,
+//                regionHistoryButton:false,
+//                speciesButton:false,
+//                chromosomesButton:false,
+//                karyotypeButton:false,
+//                chromosomeButton:false,
+//                regionButton:false,
+//                zoomControl:false,
+//                windowSizeControl:false,
+//                positionControl:false,
+//                moveControl:false,
+//                autoheightButton:false,
+//                compactButton:false,
+//                searchControl:false
+                        }
+                    },
+                    handlers: {
+                        'region:change': function(e) {
+                            console.log(e)
+                        }
+                    }
+//        chromosomeList:[]
+//            trackListTitle: ''
+//            drawNavigationBar = true;
+//            drawKaryotypePanel: false,
+//            drawChromosomePanel: false,
+//            drawOverviewTrackListPanel: false
+                });
+                var tracks = [];
+                this.sequence = new FeatureTrack({
+                    title: 'Sequence',
+                    height: 25,
+                    visibleRegionSize: 200,
+                    renderer: new SequenceRenderer(),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "sequence",
+                        params: {},
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 100
+                        }
+                    })
+                });
+                tracks.push(this.sequence);
+                this.gene = new GeneTrack({
+                    title: 'Gene',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    minTranscriptRegionSize: 200000,
+                    height: 100,
+                    renderer: new GeneRenderer({
+                        handlers: {
+                            'feature:click': function(e) {
+                                console.log(e)
+                            }
+                        }
+                    }),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        species: this.genomeViewer.species,
+                        params: {
+                            exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
+                        },
+                        cacheConfig: {
+                            chunkSize: 100000
+                        }
+                    })
+                });
+                tracks.push(this.gene);
+                var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
+                renderer.on({
+                    'feature:click': function(event) {
+                        // feature click event example
+                        console.log(event)
+                    }
+                });
+                var gene = new FeatureTrack({
+//        title: 'Gene overview',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    height: 100,
+                    renderer: renderer,
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        params: {
+                            exclude: 'transcripts,chunkIds'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 100000
+                        }
+                    })
+                });
+                this.genomeViewer.addOverviewTrack(gene);
+                this.snp = new FeatureTrack({
+                    title: 'SNP',
+                    featureType: 'SNP',
+                    minHistogramRegionSize: 12000,
+                    maxLabelRegionSize: 3000,
+                    height: 120,
+                    renderer: new FeatureRenderer(FEATURE_TYPES.snp),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "snp",
+                        params: {
+                            exclude: 'transcriptVariations,xrefs,samples'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 10000
+                        }
+                    })
+                });
+                tracks.push(this.snp);
+                /*************************/
+//                var customTrack = new FeatureTrack({
+//                    title: 'custom track',
+//                    minHistogramRegionSize: 12000,
+//                    maxLabelRegionSize: 3000,
+//                    height: 120,
+//                    renderer: new FeatureRenderer(),
+//                    dataAdapter: new FeatureTemplateAdapter({
+//                        multiRegions: true,
+//                        histogramMultiRegions: false,
+//                        uriTemplate: 'https://dcc.icgc.org/api/browser/gene?segment={region}&resource=gene',
+//                        cacheConfig: {
+//                            chunkSize: 100000
+//                        }
+//                    })
+//                });
+//                tracks.push(customTrack);
+                /*************************/
+                this.genomeViewer.addTrack(tracks);
+                this.genomeViewer.draw();
+
             }
         });
     </script>
