@@ -66,7 +66,7 @@ public class GenericRestWSServer implements IWSServer {
     @QueryParam("assembly")
     protected String assembly;
 
-    @ApiParam(name = "excluded fields", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. "
+    @ApiParam(name = "exclude", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. "
             + " Please note that this option may not be enabled for all web services.")
     @DefaultValue("")
     @QueryParam("exclude")
@@ -74,7 +74,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @DefaultValue("")
     @QueryParam("include")
-    @ApiParam(name = "included fields", value = "Set which fields are included in the response, e.g.: transcripts.id. "
+    @ApiParam(name = "include", value = "Set which fields are included in the response, e.g.: transcripts.id. "
             + " Please note that this parameter may not be enabled for all web services.")
     protected String include;
 
@@ -161,6 +161,7 @@ public class GenericRestWSServer implements IWSServer {
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//        jsonObjectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
@@ -272,7 +273,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @GET
     @Path("/help")
-    @ApiOperation(httpMethod = "GET", value = "To be implemented", response = QueryResponse.class)
+    @ApiOperation(httpMethod = "GET", value = "To be implemented", response = QueryResponse.class, hidden = true)
     public Response help() {
         return createOkResponse("No help available");
     }

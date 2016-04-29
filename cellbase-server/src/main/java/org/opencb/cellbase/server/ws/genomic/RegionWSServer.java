@@ -16,9 +16,9 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.opencb.biodata.models.core.Region;
+import io.swagger.annotations.*;
+import org.bson.Document;
+import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -32,6 +32,7 @@ import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Path("/{version}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
@@ -40,14 +41,22 @@ public class RegionWSServer extends GenericRestWSServer {
 
     private int histogramIntervalSize = 200000;
 
-    public RegionWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+    public RegionWSServer(@PathParam("version")
+                          @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                  defaultValue = "latest") String version,
+                          @PathParam("species")
+                          @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                  + "of potentially available species ids, please refer to: "
+                                  + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                          @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
+    @ApiOperation(httpMethod = "GET", value = "Returns a JSON specification of the region data model",
+            response = Map.class, responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Region.class);
     }
@@ -83,36 +92,200 @@ public class RegionWSServer extends GenericRestWSServer {
     @POST
     @Consumes("application/x-www-form-urlencoded")
     @Path("/gene")
-    @ApiOperation(httpMethod = "POST", value = "Retrieves all the gene objects for the regions")
-    public Response getGenesByRegionPost(@FormParam("region") String region) {
+    @ApiOperation(httpMethod = "POST", value = "Retrieves all the gene objects for the regions. If query param "
+            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
+            + "histogram=false Gene objects will be returned "
+            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
+            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "histogram",
+                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
+                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
+            @ApiImplicitParam(name = "interval",
+                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
+                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "biotype",
+                    value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.biotype",
+                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.xrefs",
+                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.tfbs.name",
+                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.id",
+                    value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
+                            + "OMIM:613390. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.name",
+                    value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
+                            + "kidney disease. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.gene",
+                    value = "Comma separated list of ENSEMBL gene ids for which expression values are available, "
+                            + "e.g.: ENSG00000139618,ENSG00000155657. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.tissue",
+                    value = "Comma separated list of tissues for which expression values are available, "
+                            + "e.g.: adipose tissue,heart atrium,tongue."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.name",
+                    value = "Comma separated list of drug names, "
+                            + "e.g.: BMN673,OLAPARIB,VELIPARIB."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+    })
+    public Response getGenesByRegionPost(@FormParam("region")
+                                         @ApiParam(name = "region",
+                                                 value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                                                 required = true) String region) {
 //                                     @DefaultValue("true") @QueryParam("transcript") String transcripts,
 //                                     @DefaultValue("") @QueryParam("biotype") String biotype) {
-        return getGenesByRegion(region, "true", "");
+        return getGenesByRegion(region);
+//        return getGenesByRegion(region, "true");
     }
 
-    @POST
-    @Path("/{chrRegionId}/gene")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects")
-    public Response getGenesByRegionPost(@PathParam("chrRegionId") String chregionId,
-                                         @DefaultValue("true") @QueryParam("transcript") String transcripts,
-                                         @DefaultValue("") @QueryParam("biotype") String biotype) {
-        return getGenesByRegion(chregionId, transcripts, biotype);
-    }
+//    @POST
+//    @Path("/{chrRegionId}/gene")
+//    @ApiOperation(httpMethod = "POST", value = "Retrieves all the gene objects for the regions. If query param "
+//            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
+//            + "histogram=false Gene objects will be returned "
+//            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
+//            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
+//            responseContainer = "QueryResponse")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(name = "histogram",
+//                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
+//                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
+//            @ApiImplicitParam(name = "interval",
+//                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
+//                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
+//            @ApiImplicitParam(name = "biotype",
+//                    value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+//                            + " Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "transcripts.biotype",
+//                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+//                            + " Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "transcripts.xrefs",
+//                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+//                            + " Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "transcripts.tfbs.name",
+//                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+//                            + " Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "annotation.diseases.id",
+//                    value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
+//                            + "OMIM:613390. Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "annotation.diseases.name",
+//                    value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
+//                            + "kidney disease. Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "annotation.expression.gene",
+//                    value = "Comma separated list of ENSEMBL gene ids for which expression values are available, "
+//                            + "e.g.: ENSG00000139618,ENSG00000155657. Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "annotation.expression.tissue",
+//                    value = "Comma separated list of tissues for which expression values are available, "
+//                            + "e.g.: adipose tissue,heart atrium,tongue."
+//                            + " Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//            @ApiImplicitParam(name = "annotation.drugs.name",
+//                    value = "Comma separated list of drug names, "
+//                            + "e.g.: BMN673,OLAPARIB,VELIPARIB."
+//                            + " Exact text matches will be returned",
+//                    required = false, dataType = "list of strings", paramType = "query"),
+//    })
+//    public Response getGenesByRegionPost(@PathParam("chrRegionId")
+//                                         @ApiParam(name = "chregionId",
+//                                                 value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+//                                                 required = true) String chregionId,
+//                                         @DefaultValue("true")
+//                                         @QueryParam("transcript")
+//                                         @ApiParam(name = "transcript",
+//                                                 value = "Boolean indicating if transcript data shall be returned",
+//                                                 allowableValues = "true,false", required = true) String transcripts) {
+//        return getGenesByRegion(chregionId);
+//    }
 
     @GET
     @Path("/{chrRegionId}/gene")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects for the regions")
-    public Response getGenesByRegion(@PathParam("chrRegionId") String region,
-                                     @DefaultValue("true") @QueryParam("transcript") String transcripts,
-                                     @DefaultValue("") @QueryParam("biotype") String biotype) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects for the regions. If query param "
+            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
+            + "histogram=false Gene objects will be returned "
+            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
+            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "histogram",
+                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
+                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
+            @ApiImplicitParam(name = "interval",
+                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
+                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "biotype",
+                    value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.biotype",
+                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.xrefs",
+                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.tfbs.name",
+                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.id",
+                    value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
+                            + "OMIM:613390. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.name",
+                    value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
+                            + "kidney disease. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.gene",
+                    value = "Comma separated list of ENSEMBL gene ids for which expression values are available, "
+                            + "e.g.: ENSG00000139618,ENSG00000155657. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.tissue",
+                    value = "Comma separated list of tissues for which expression values are available, "
+                            + "e.g.: adipose tissue,heart atrium,tongue."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.name",
+                    value = "Comma separated list of drug names, "
+                            + "e.g.: BMN673,OLAPARIB,VELIPARIB."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+    })
+    public Response getGenesByRegion(@PathParam("chrRegionId")
+                                     @ApiParam(name = "chrRegionId",
+                                             value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                                             required = true) String region) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
             query.put(GeneDBAdaptor.QueryParams.REGION.key(), region);
 
             if (hasHistogramQueryParam()) {
-                queryOptions.put("interval", getHistogramIntervalSize());
-                QueryResult res = geneDBAdaptor.getIntervalFrequencies(query, histogramIntervalSize, queryOptions);
+//                queryOptions.put("interval", getHistogramIntervalSize());
+                QueryResult res = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
                 return createOkResponse(res);
             } else {
                 return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
@@ -125,7 +298,30 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the transcripts objects")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects", response = Transcript.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "transcripts.biotype",
+                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.xrefs",
+                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.id",
+                    value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992,ENST00000380152,"
+                            + "ENST00000544455. Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.name",
+                    value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.tfbs.name",
+                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
     public Response getTranscriptByRegion(@PathParam("chrRegionId") String region, @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
@@ -140,14 +336,48 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/variation")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects")
-    public Response getVariationByRegion(@PathParam("chrRegionId") String region,
-                                         @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the variant objects for the regions. If query param "
+            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
+            + "histogram=false Variant objects will be returned "
+            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
+            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned."
+            + "Please NOTE that regions must be smaller than 10Mb",
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "histogram",
+                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
+                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
+            @ApiImplicitParam(name = "interval",
+                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
+                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "consequenceType",
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
+                            + "matches will be returned.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
+                            + " ENSEMBL gene ids. Exact text matches will be returned.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "id",
+                    value = "Comma separated list of rs ids, e.g.: rs6025",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "reference",
+                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "alternate",
+                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
+    public Response getVariationByRegion(@PathParam("chrRegionId")
+                                         @ApiParam(name = "chrRegionId",
+                                                 value = "Comma separated list of genomic regions to be queried, "
+                                                         + "e.g.: 1:6635137-6635325",
+                                                 required = true) String chrRegionId) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
 
-            List<Region> regions = Region.parseRegions(region);
+            List<Region> regions = Region.parseRegions(chrRegionId);
             // remove regions bigger than 10Mb
             if (regions != null) {
                 for (Region r : regions) {
@@ -157,14 +387,15 @@ public class RegionWSServer extends GenericRestWSServer {
                 }
             }
 
-            query.put(VariantDBAdaptor.QueryParams.REGION.key(), region);
+            query.put(VariantDBAdaptor.QueryParams.REGION.key(), chrRegionId);
 
             if (hasHistogramQueryParam()) {
-                queryOptions.put("interval", getHistogramIntervalSize());
-                return createOkResponse(variationDBAdaptor.getIntervalFrequencies(query, histogramIntervalSize, queryOptions));
+//                queryOptions.put("interval", getHistogramIntervalSize());
+                return createOkResponse(variationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(),
+                        queryOptions));
             } else {
-                System.out.println("query = " + query.toJson());
-                System.out.println("queryOptions = " + queryOptions.toJson());
+                logger.debug("query = " + query.toJson());
+                logger.debug("queryOptions = " + queryOptions.toJson());
                 return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
             }
         } catch (Exception e) {
@@ -175,11 +406,12 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Deprecated
     @Path("/{chrRegionId}/snp")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects", hidden = true)
     public Response getSnpByRegion(@PathParam("chrRegionId") String region,
                                    @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
                                    @DefaultValue("") @QueryParam("phenotype") String phenotype) {
-        return getVariationByRegion(region, consequenceTypes);
+//        return getVariationByRegion(region, consequenceTypes);
+        return getVariationByRegion(region);
 //        try {
 //            parseQueryParams();
 //            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
@@ -212,8 +444,15 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/sequence")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinical variants")
-    public Response getSequenceByRegion(@PathParam("chrRegionId") String region, @DefaultValue("1") @QueryParam("strand") String strand) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves genomic sequence", response = String.class,
+            responseContainer = "QueryResponse")
+    public Response getSequenceByRegion(@PathParam("chrRegionId")
+                                        @ApiParam(name = "region", value = "Comma separated list of genomic coordinates, "
+                                                + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String region,
+                                        @DefaultValue("1")
+                                        @QueryParam("strand")
+                                        @ApiParam(name = "strand", value = "Strand to query, either 1 or -1",
+                                            allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
             parseQueryParams();
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
@@ -240,11 +479,48 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/clinical")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinical variants")
-    public Response getClinicalByRegion(@PathParam("chrRegionId") String region,
-                                        @DefaultValue("") @QueryParam("gene") String gene,
-                                        @DefaultValue("") @QueryParam("id") String id,
-                                        @DefaultValue("") @QueryParam("phenotype") String phenotype) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinical variants",
+            notes = "No more than 1000 objects are allowed to be returned at a time. "
+            + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
+            + "a look at "
+            + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
+            response = Document.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "so",
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
+                            + "matches will be returned.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
+                            + " ENSEMBL gene ids. Exact text matches will be returned.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "phenotype",
+                    value = "String to indicate the phenotypes to query. A text search will be run.",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "rcv",
+                    value = "Comma separated list of rcv ids, e.g.: RCV000033215",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "rs",
+                    value = "Comma separated list of rs ids, e.g.: rs6025",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "type",
+                    value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
+                            + "variants, e.g. \"single nucleotide variant\" ",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "review",
+                    value = "Comma separated list of review lables (only enabled for ClinVar variants), "
+                            + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "significance",
+                    value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
+                            + "for ClinVar variants), e.g.: Benign",
+                    required = false, dataType = "list of strings", paramType = "query"),
+    })
+    public Response getClinicalByRegion(@PathParam("chrRegionId") String region) {
+//    public Response getClinicalByRegion(@PathParam("chrRegionId") String region,
+//                                        @DefaultValue("") @QueryParam("gene") String gene,
+//                                        @DefaultValue("") @QueryParam("id") String id,
+//                                        @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
@@ -366,19 +642,32 @@ public class RegionWSServer extends GenericRestWSServer {
 
 
     @GET
-    @Path("/{chrRegionId}/regulatory")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the regulatory elements")
-    public Response getFeatureMap(@PathParam("chrRegionId") String region,
-                                  @DefaultValue("") @QueryParam("type") String featureType,
-                                  @DefaultValue("") @QueryParam("class") String featureClass,
-                                  @DefaultValue("") @QueryParam("name") String name) {
+    @Path("/{regionStr}/regulatory")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all regulatory elements in a region", notes = "An independent"
+            + " database query will be issued for each region in regionStr, meaning that results for each region will be"
+            + " returned in independent QueryResult objects within the QueryResponse object.",
+            response = RegulatoryFeature.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "featureType",
+                    value = "Comma separated list of regulatory region types, e.g.: "
+                            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
+                            + "list of available regulatory types: "
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
+                    required = false, dataType = "list of strings", paramType = "query"),
+    })
+    public Response getFeatureMap(@PathParam("regionStr")
+                                  @ApiParam(name = "region", value = "Comma separated list of genomic coordinates, "
+                                          + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String region) {
+//                                  @DefaultValue("") @QueryParam("type") String featureType,
+//                                  @DefaultValue("") @QueryParam("class") String featureClass,
+//                                  @DefaultValue("") @QueryParam("name") String name) {
         try {
             parseQueryParams();
             RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(region, RegulationDBAdaptor.QueryParams.REGION.key(),
-                    RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType,
-                    RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass,
-                    RegulationDBAdaptor.QueryParams.NAME.key(), name);
+            List<Query> queries = createQueries(region, RegulationDBAdaptor.QueryParams.REGION.key());
+//                    RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType,
+//                    RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass,
+//                    RegulationDBAdaptor.QueryParams.NAME.key(), name);
             List<QueryResult> queryResults = regRegionDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
 //            query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
@@ -393,9 +682,21 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/tfbs")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the TFBS")
-    public Response getTfByRegion(@PathParam("chrRegionId") String regionId,
-                                  @DefaultValue("") @QueryParam("name") String name) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. "
+            + "If query param "
+            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
+            + "histogram=false TranscriptTfbs objects will be returned "
+            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
+            + "An independent database query will be issued for each region in regionStr, meaning that results for each "
+            + "region will be returned in independent QueryResult objects within the QueryResponse object."
+            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
+            responseContainer = "QueryResponse")
+    public Response getTfByRegion(@PathParam("chrRegionId")
+                                  @ApiParam(name = "region",
+                                          value = "Comma separated list of genomic regions to be queried, e.g.: "
+                                                  + "1:6635137-6635325",
+                                          required = false) String regionId) {
+//                                  @DefaultValue("") @QueryParam("name") String name) {
         try {
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
@@ -407,8 +708,10 @@ public class RegionWSServer extends GenericRestWSServer {
                 return createOkResponse(intervalFrequencies);
             } else {
                 List<Query> queries = createQueries(regionId, RegulationDBAdaptor.QueryParams.REGION.key(),
-                        RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), "TF_binding_site_motif",
-                        RegulationDBAdaptor.QueryParams.NAME.key(), name);
+                        RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
+                        RegulationDBAdaptor.FeatureType.TF_binding_site + ","
+                                + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
+//                        RegulationDBAdaptor.QueryParams.NAME.key(), name);
                 List<QueryResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
                 return createOkResponse(queryResults);
 //                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), regionId);
@@ -485,8 +788,11 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/conservation")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores")
-    public Response conservation(@PathParam("chrRegionId") String region) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores", response = GenomicScoreRegion.class,
+        responseContainer = "QueryResponse")
+    public Response conservation(@PathParam("chrRegionId")
+                                 @ApiParam(name = "region", value = "Comma separated list of genomic coordinates, "
+                                         + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String region) {
         try {
             parseQueryParams();
             GenomeDBAdaptor conservationDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
