@@ -3,8 +3,8 @@ __author__ = 'fjlopez'
 import os
 import json
 import string
-import zlib
-import urllib.request
+# import zlib
+# import urllib.request
 import requests
 
 class CellBaseClient:
@@ -23,9 +23,9 @@ class CellBaseClient:
 
         # print(url)
 
-        # headers = {"Accept-Encoding": "gzip"}
-        # response = requests.get(url, headers=headers)
-        response = requests.get(url)
+        headers = {"Accept-Encoding": "gzip"}
+        response = requests.get(url, headers=headers)
+        # response = requests.get(url)
         # print(response.request.headers)
         # print(response.headers)
         return response.json()
@@ -43,7 +43,7 @@ class CellBaseClient:
         if (options != None):
             for k, v in options.items():
                 if (type(v)!=int):
-                    filter.append(k + "=" + str.join(",", v) )
+                    filter.append(k + "=" + str.join(",", v))
                 else:
                     #url += "?" + k + "=" + str(v) + "&"
                     filter.append(k + "=" + str(v))

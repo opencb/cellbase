@@ -63,29 +63,40 @@ the CellbaseQuery object they created.For example, a query through the cbGene wi
 cb <- CellbaseQuery()
 genes <- c("TP73","TET1")
 
-res <- cbGene(object = cb, ids = genes, resource = "transcript")
+res <- cbGene(object=cb, ids=genes, resource="transcript")
 # to get the resulting data.frame run cellbaseData()
-res <- cellbaseData(object = res)
+res <- cellbaseData(object=res)
 names(res)
 # as you can see the res dataframe also contains an exons column 
 # which is in fact a list column of nested dataframes, to get the
 # exons data.frame for first transcript
 TET1_transcripts <- res$exons[[1]]
 names(TET1_transcripts)
+# what if you want all the transcription factors bound to those genes
+res <- cbGene(object=cb, ids=genes, resource="tfbs")
+# to get the data
+res <- cellbaseData(res)
 ```
 
 
-
-making a query through cbRegion to get all the clinically relevant variants in a specific region
+**cbRegion**
 ```{r, eval=FALSE}
-
-res <- cbRegion(object = cb,ids = "17:1000000-1100000",resource = "clinical")
+# making a query through cbRegion to get all the clinically relevant variants 
+in a specific region
+res <- cbRegion(object=cb,ids="17:1000000-1100000",
+resource="clinical")
 # to get the data 
 res <- cellbaseData(res)
+# to get all conservation data in this region
+res <- cbRegion(object=cb,ids="17:1000000-1100000",
+resource="conservation")
+#likewise to get all the regulatory data for the same region
+res <- cbRegion(object=cb,ids="17:1000000-1100000",
+resource="regulatory")
 
 ```
-Getting annotation for a specific variant
-
+Getting annotation for a specific variant/s is just as easy
+cbVariant
 
 ```{r,eval=FALSE}
 res2 <- cbVariant(object =cb,ids = "1:169549811:A:G",resource = "annotation")
@@ -93,5 +104,16 @@ res2 <- cbVariant(object =cb,ids = "1:169549811:A:G",resource = "annotation")
 res2 <- cellbaseR::cellbaseData(res2)
 ```
 
+A very powerfull feature of cellbaseR is ability to fetch a wealth of clinical data, as well as abiliy to fiter these data by gene, phenotype, rs, etc…  
+**cbClinical**
+```{r, eval=FALSE}
+# First we have to specify aour filters, we do that by creating an object of
+# class CellbaseParam
+cbparam <- CellbaseParam(gene=c("TP73","TET1"), genome="GRCh38")
+cbparam
+# Note that cbClinical does NOT require any Ids to be passed, only the filters
+# and of course the CellbaseQuery object
+res <- cbClinical(object=cb,filters=cbparam)
+```
 
 

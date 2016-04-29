@@ -29,6 +29,7 @@ class CellBaseCLIExecutor():
         self.__configFile = queryCommandOptions.conf
         self.__configuration = None
         self.__options = {}
+        self.__file = None
 
 
     def run(self):
@@ -36,7 +37,14 @@ class CellBaseCLIExecutor():
         self.loadCellBaseClientConfiguration()
         cellBaseClient = CellBaseClient.CellBaseClient(self.__configuration)
         queryResponse = cellBaseClient.get(self.__species, self.__type, self.__method, self.__id, self.__options)
-        print(queryResponse)
+        if (self.__file):
+            f = open("result.json", 'w')
+            print("The result file has been written to result.json")
+            f.write(str(queryResponse))
+        else:
+            print(queryResponse)
+
+
 
     def loadCellBaseClientConfiguration(self):
         if (self.__configFile != None):
@@ -77,6 +85,10 @@ class CellBaseCLIExecutor():
             self.__options['limit'] =self.__queryCommandOptions.limit
         if (self.__queryCommandOptions.skip!=None):
             self.__options['skip'] = self.__queryCommandOptions.skip
+
+
+        if (self.__queryCommandOptions.output != None):
+            self.__file = self.__queryCommandOptions.output
 
     def __validQueryOptions(self,options):
         if (options != None):

@@ -13,6 +13,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='CellBase client 1.0')
     parser.add_argument('--type', type=str, required=True, help='String indicating the subcategory of the IDs to be queried', metavar='T', dest='type')
+    parser.add_argument('-o' , '--output',  help='store the results to a json file', action='store_true', dest="output")
     parser.add_argument('--resource', type=str, required=True, help='String indicating the method to be queried', metavar='M', dest='method')
     parser.add_argument('--id', nargs='+', type=str, required=False, help='String indicating the id(s) to be queried (if needed)', metavar='I', dest='id')
     parser.add_argument('--species', default="hsapiens", type=str, required=False, help='String indicating the species to query', metavar='S', dest='species')
