@@ -48,10 +48,10 @@
                 this.$.genomicRegionTextarea.value = "";
             },
             loadExample: function (e) {
-                this.$.genomicRegionTextarea.value = "19:45411941:T:C";
+                this.$.genomicRegionTextarea.value = "1:6635137-6835325";
             },
             executeQuery: function (e) {
-                let _this = this;
+                this.region = this.$.genomicRegionTextarea.value;
 //                let success = function (response) {
 //                    let firstVariation = response.response[0].result[0];
 //                    _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
@@ -67,9 +67,6 @@
 //                        _this.variant = this.$.variantAnnotationTextarea.value;
 //                    }
 //                }
-            },
-            ready: function() {
-//                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

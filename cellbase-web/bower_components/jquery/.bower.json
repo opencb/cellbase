@@ -1,0 +1,25 @@
+{
+  "name": "jquery",
+  "main": "dist/jquery.js",
+  "license": "MIT",
+  "ignore": [
+    "package.json"
+  ],
+  "keywords": [
+    "jquery",
+    "javascript",
+    "browser",
+    "library"
+  ],
+  "homepage": "https://github.com/jquery/jquery-dist",
+  "version": "1.12.2",
+  "_release": "1.12.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.12.2",
+    "commit": "a9b5f8ac96f6aa7bfc7b0795cb16d65c4f15b64e"
+  },
+  "_source": "git://github.com/jquery/jquery-dist.git",
+  "_target": "~1.12.2",
+  "_originalSource": "jquery"
+}

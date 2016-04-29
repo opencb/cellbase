@@ -17,19 +17,53 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="cellbase-transcripts-view.html">
 
 <dom-module id="cellbase-genomic-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
-        <div style="width: 90%">
-            <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#genomicViewInfo" role="tab" data-toggle="tab">Info</a></li>
+        <div>
+            <!--List of Tabs-->
+            <ul id="genomicViewTabs" class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#genomicViewInfo" role="tab" data-toggle="tab">Summary</a></li>
+                <li role="presentation"><a href="#genomicViewGene" role="tab" data-toggle="tab">Gene</a></li>
+                <li role="presentation"><a href="#genomicViewRegulation" role="tab" data-toggle="tab">Regulation</a></li>
+                <li role="presentation"><a href="#genomicViewVariation" role="tab" data-toggle="tab">Variation</a></li>
+                <li role="presentation"><a href="#genomicViewIClinical" role="tab" data-toggle="tab">Clinical Variants</a></li>
+                <li role="presentation"><a href="#genomicViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
             </ul>
 
-            <div class="tab-content" style="width: 90%">
+            <div class="tab-content">
                 <div id="genomicViewInfo" role="tabpanel" class="tab-pane active">
-                    Genomic Region View
+                    <h4>{{region}}</h4>
+                </div>
+                <div id="genomicViewGene" role="tabpanel" class="tab-pane">
+                    <br>
+                    <!--Gene Table-->
+                    <h4><b>List of genes in {{region}}</b></h4>
+                    <table id="geneTable" data-search="true" data-show-columns="true"
+                           data-pagination="true" data-page-list="[10, 25, 50]" data-show-pagination-switch="true"
+                           data-show-export="true">
+
+                    </table>
+
+                    <h4><b>Transcripts for {{selectedGene}}</b></h4>
+                    <cellbase-transcripts-view data="{{transcripts}}" prefix="genomicViewTranscript"></cellbase-transcripts-view>
+
+                </div>
+                <div id="genomicViewRegulation" role="tabpanel" class="tab-pane">
+                    Regulation
+                </div>
+                <div id="genomicViewVariation" role="tabpanel" class="tab-pane">
+                    Variation
+                </div>
+                <div id="genomicViewIClinical" role="tabpanel" class="tab-pane">
+                    Clinical Variants
+                </div>
+                <div id="genomicViewGenomeContext" role="tabpanel" class="tab-pane">
+                    <br>
+                    <div id="genomeviewer"></div>
                 </div>
             </div>
         </div>
@@ -44,23 +78,73 @@
                     type: Object
                 },
                 region: {
-                    type: String
-//                    observer: '_regionChanged'
+                    type: String,
+                    observer: '_regionChanged'
+                },
+                genes : {
+                    type: Array
+                },
+                transcripts : {
+                    type: Array
                 }
-//                regObj : {
-//                    type: Object
-//                }
+            },
+            _regionChanged: function (newValue, oldValue) {
+                let _this = this;
+                let success = function (response) {
+                    _this.genes = response.response[0].result;
+
+                    // Gene grid definition
+                    $('#geneTable').bootstrapTable('destroy');
+                    $('#geneTable').bootstrapTable({
+                        data: _this.genes,
+                        columns: [
+                            [
+                                {
+                                    title: 'Name',
+                                    field: 'name',
+                                    sortable: true
+                                },
+                                {
+                                    title: 'Ensembl ID',
+                                    formatter: _this.idFormatter
+                                },
+                                {
+                                    title: 'Biotype',
+                                    field: 'biotype',
+                                    sortable: true
+                                },
+                                {
+                                    title: 'Location',
+                                    formatter: _this.locationFormatter
+                                },
+                                {
+                                    title: 'Strand',
+                                    field: 'strand'
+                                },
+                                {
+                                    title: 'Description',
+                                    field: 'description'
+                                }
+                            ]
+                        ],
+                        onClickRow: function (row, $element) {
+                            _this.selectedGene = row.name;
+                            _this.transcripts = row.transcripts;
+                        }
+                    });
+                };
+                let error = function (response) {
+                    alert("Genomic Region not valid: " + _this.region)
+                };
+                this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {success: success, error: error, async: true});
+            },
+            idFormatter: function (value, row, index) {
+                return '<a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=' + row.id + '">' + row.id + '</a>'
+            },
+            locationFormatter: function (value, row, index) {
+                let location = row.chromosome + ":" + row.start + "-" + row.end;
+                return '<a target="_blank" href="http://genomemaps.org/?region=' + location + '">' + location + '</a>'
             }
-//            _regionChanged: function (newValue, oldValue) {
-//                let _this = this;
-//                let success = function (response) {
-//                    _this.regObj = response.response[0].result[0];
-//                };
-//                let error = function (response) {
-//                    alert("Regulatory Region not valid: " + _this.region)
-//                };
-//                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: success, error: error, async: true});
-//            }
         });
     </script>
 </dom-module>
