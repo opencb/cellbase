@@ -7,7 +7,7 @@
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div style="padding: 10px; ">
-            <table id="cosmicTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+            <table id="{{prefix}}CosmicTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
 
             </table>
@@ -21,11 +21,14 @@
                     type: Array,
                     value: [],
                     observer: 'render'
+                },
+                prefix: {
+                    type: String
                 }
             },
             render: function () {
-                $('#cosmicTable').bootstrapTable('destroy');
-                $('#cosmicTable').bootstrapTable({
+                $('#' + this.prefix + 'CosmicTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'CosmicTable').bootstrapTable({
                     data: this.data,
                     columns: [
                         [

@@ -3,14 +3,14 @@
 	"apiVersion": "v4.0",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"database": {
-		"host": "localhost:27017",
-		"port": "27017",
-		"user": "",
-		"password": "",
+		"host": "mongodb-rs3:27017",
+		"port": "${CELLBASE.DB.PORT}",
+		"user": "biouser",
+		"password": "biopass",
 		"options": {
-			"authenticationDatabase": "",
+			"authenticationDatabase": "admin",
 			"readPreference": "nearest",
-			"replicaSet": ""
+			"replicaSet": "rs0"
 		}
 	},
 	"defaultOutdir": "/tmp",
@@ -22,7 +22,7 @@
 				"user": "anonymous",
 				"password": ""
 			},
-			"libs": "/usr/local/ensemblapisrc/",
+			"libs": "/home/imedina/apis/ensembl/api_79",
 			"url": {
 				"host": "ftp://ftp.ensembl.org/pub"
 			}
@@ -34,7 +34,7 @@
 				"user": "anonymous",
 				"password": ""
 			},
-			"libs": "/usr/local/ensemblapisrc/",
+			"libs": "/home/imedina/apis/ensembl/api_79",
 			"url":{
 				"host":"ftp://ftp.ensemblgenomes.org/pub"
 			}

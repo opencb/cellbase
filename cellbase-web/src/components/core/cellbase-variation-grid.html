@@ -24,7 +24,7 @@
 
         <div style="padding: 10px; ">
             <br>
-            <table id="table" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+            <table id="{{prefix}}VariationTable" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
                 <!--data-detail-view="true" data-detail-formatter="detailFormatter">-->
                 <!--<thead>-->
@@ -47,12 +47,15 @@
                     type: Array,
                     value: [],
                     observer: 'render'
+                },
+                prefix: {
+                    type: String
                 }
             },
             render: function() {
                 let _this = this;
-                $('#table').bootstrapTable('destroy');
-                $('#table').bootstrapTable({
+                $('#' + this.prefix + 'VariationTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'VariationTable').bootstrapTable({
                     data: this.data,
                     columns: [
                         [

@@ -72,7 +72,7 @@
                 <!--</div>-->
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" on-selected="onVariantSelected"></cellbase-variation-grid>
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" on-selected="onVariantSelected" prefix="geneView"></cellbase-variation-grid>
                     <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
@@ -84,11 +84,11 @@
 
                 <div id="geneViewExpression" role="tabpanel" class="tab-pane">
                     <br>
-                    <cellbase-expression-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.expression}}"></cellbase-expression-grid>
+                    <cellbase-expression-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.expression}}" prefix="geneView"></cellbase-expression-grid>
                 </div>
 
                 <div id="geneViewPhenotype" role="tabpanel" class="tab-pane">
-                    <cellbase-phenotype-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-grid>
+                    <cellbase-phenotype-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.diseases}}" prefix="geneView"></cellbase-phenotype-grid>
                 </div>
 
                 <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
@@ -103,11 +103,11 @@
                     </p>
                     <div class="collapse in" id="clinvarDiv">
                         <h4>Clinvar</h4>
-                        <cellbase-clinvar-grid data="{{clinvar}}"></cellbase-clinvar-grid>
+                        <cellbase-clinvar-grid data="{{clinvar}}" prefix="geneView"></cellbase-clinvar-grid>
                     </div>
                     <div class="collapse in" id="cosmicDiv">
                         <h4>Cosmic</h4>
-                        <cellbase-cosmic-grid data="{{cosmic}}"></cellbase-cosmic-grid>
+                        <cellbase-cosmic-grid data="{{cosmic}}" prefix="geneView"></cellbase-cosmic-grid>
                     </div>
                 </div>
 

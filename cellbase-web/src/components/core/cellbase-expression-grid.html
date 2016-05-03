@@ -8,7 +8,7 @@
 
         <div>
             <br>
-            <table id="expressionTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+            <table id="{{prefix}}ExpressionTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
                 <thead>
                 <tr>
@@ -35,11 +35,14 @@
                     type: Array,
                     value: [],
                     observer: 'expressionChanged'
+                },
+                prefix: {
+                    type: String
                 }
             },
             expressionChanged: function() {
-                $('#expressionTable').bootstrapTable('destroy');
-                $('#expressionTable').bootstrapTable({
+                $('#' + this.prefix + 'ExpressionTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'ExpressionTable').bootstrapTable({
                     data: this.data
                 });
             }

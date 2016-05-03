@@ -21,6 +21,13 @@
 <link rel="import" href="cellbase-expression-grid.html">
 <link rel="import" href="cellbase-phenotype-grid.html">
 <link rel="import" href="cellbase-drugs-view.html">
+<link rel="import" href="cellbase-regulation-grid.html">
+<link rel="import" href="cellbase-variation-grid.html">
+<link rel="import" href="../variation/cellbase-variantannotation-view.html">
+<link rel="import" href="cellbase-clinvar-grid.html">
+<link rel="import" href="cellbase-cosmic-grid.html">
+
+
 
 <dom-module id="cellbase-genomic-view">
     <template>
@@ -39,7 +46,11 @@
 
             <div class="tab-content">
                 <div id="genomicViewInfo" role="tabpanel" class="tab-pane active">
-                    <h4>{{region}}</h4>
+                    <h4>{{region}}</h4> <br>
+                    Number of Genes: {{geneCount}}<br>
+                    Number of Variants: {{variationCount}}<br>
+                    Number of Regulatory Elements: {{regulationCount}}<br>
+                    Number of Clinical Variants: {{clinicalCount}}<br>
                 </div>
                 <div id="genomicViewGene" role="tabpanel" class="tab-pane">
                     <br>
@@ -61,13 +72,13 @@
 
                     <div class="tab-content">
                         <div id="genomicViewGeneTranscript" role="tabpanel" class="tab-pane active">
-                            <cellbase-transcripts-view data="{{transcripts}}" prefix="genomicViewTranscript"></cellbase-transcripts-view>
+                            <cellbase-transcripts-view data="{{transcripts}}" prefix="genomicView"></cellbase-transcripts-view>
                         </div>
                         <div id="genomicViewGeneExpression" role="tabpanel" class="tab-pane">
-                            <cellbase-expression-grid data="{{expression}}" cellbase="{{cellbaseClient}}"></cellbase-expression-grid>
+                            <cellbase-expression-grid data="{{expression}}" cellbase="{{cellbaseClient}}" prefix="genomicView"></cellbase-expression-grid>
                         </div>
                         <div id="genomicViewGenePhenotype" role="tabpanel" class="tab-pane">
-                            <cellbase-phenotype-grid cellbase="{{cellbaseClient}}" data="{{phenotype}}"></cellbase-phenotype-grid>
+                            <cellbase-phenotype-grid cellbase="{{cellbaseClient}}" data="{{phenotype}}" prefix="genomicView"></cellbase-phenotype-grid>
                         </div>
                         <div id="genomicViewGeneDrugs" role="tabpanel" class="tab-pane">
                             <cellbase-drugs-view cellbase="{{cellbaseClient}}" data="{{drugs}}"></cellbase-drugs-view>
@@ -75,13 +86,32 @@
                     </div>
                 </div>
                 <div id="genomicViewRegulation" role="tabpanel" class="tab-pane">
-                    Regulation
+                    <cellbase-regulation-grid data="{{regulatory}}" prefix="genomicRegion"></cellbase-regulation-grid>
                 </div>
                 <div id="genomicViewVariation" role="tabpanel" class="tab-pane">
-                    Variation
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>
+                    <h4>Annotation of {{variant}}</h4>
+                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="genomicView"></cellbase-variantannotation-view>
                 </div>
                 <div id="genomicViewIClinical" role="tabpanel" class="tab-pane">
-                    Clinical Variants
+                        <br>
+                        <p>
+                            <a class="btn btn-primary" data-toggle="collapse" href="#genomicClinvarDiv" aria-expanded="false" aria-controls="genomicClinvarDiv">
+                                Show/Hide Clinvar
+                            </a>
+                            <a class="btn btn-primary" data-toggle="collapse" href="#genomicCosmicDiv" aria-expanded="false" aria-controls="genomicCosmicDiv">
+                                Show/Hide Cosmic
+                            </a>
+                        </p>
+                        <div class="collapse in" id="genomicClinvarDiv">
+                            <h4>Clinvar</h4>
+                            <cellbase-clinvar-grid data="{{clinvar}}" prefix="genomicView"></cellbase-clinvar-grid>
+                        </div>
+                        <div class="collapse in" id="genomicCosmicDiv">
+                            <h4>Cosmic</h4>
+                            <cellbase-cosmic-grid data="{{cosmic}}" prefix="genomicView"></cellbase-cosmic-grid>
+                        </div>
+
                 </div>
                 <div id="genomicViewGenomeContext" role="tabpanel" class="tab-pane">
                     <br>
@@ -105,12 +135,35 @@
                 },
                 genes : {
                     type: Array
+                },
+                regulatory: {
+                    type: Array
+                },
+                variations: {
+                    type: Array
+                },
+                variant: {
+                    type: String
+                },
+                clinvar: {
+                    type: Array,
+                    value: []
+                },
+                cosmic: {
+                    type: Array,
+                    value: []
                 }
             },
+            attached: function() {
+                this.genomeViewer;
+                this.renderGenomeViewer();
+            },
             _regionChanged: function (newValue, oldValue) {
+                this.genomeViewer.setRegion(this.region);
                 let _this = this;
-                let success = function (response) {
+                let geneSuccess = function (response) {
                     _this.genes = response.response[0].result;
+                    _this.geneCount = _this.genes.length;
 
                     // Gene grid definition
                     $('#geneTable').bootstrapTable('destroy');
@@ -155,10 +208,48 @@
                         }
                     });
                 };
+                let regSuccess = function (response) {
+                    let reg = [];
+                    for (let i in response.response) {
+                        for (let j in response.response[i].result) {
+                            reg.push(response.response[i].result[j]);
+                        }
+                    }
+                    _this.regulatory = reg;
+                    _this.regulationCount = reg.length;
+                };
+                let varSuccess = function (response) {
+                    let variations = response.response[0].result;
+                    _this.variations = variations;
+                    _this.variationCount = variations.length;
+                };
+                let clinicalSuccess = function (response) {
+                    let clinical = response.response[0].result;
+                    _this.clinicalCount = clinical.length;
+                    let clinivarArray = [];
+                    let cosmicArray = [];
+                    for (let i in clinical) {
+                        if (clinical[i].source == "clinvar") {
+                            clinivarArray.push(clinical[i]);
+                        }
+                        if (clinical[i].source == "cosmic") {
+                            cosmicArray.push(clinical[i]);
+                        }
+                    }
+                    _this.clinvar = clinivarArray;
+                    _this.cosmic = cosmicArray;
+                };
                 let error = function (response) {
                     alert("Genomic Region not valid: " + _this.region)
                 };
-                this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {success: success, error: error, async: true});
+
+                this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {success: geneSuccess, error: error, async: true});
+                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: regSuccess, error: error, async: true});
+                this.cellbaseClient.get('genomic', 'region', this.region, 'variation', {}, {success: varSuccess, error: error, async: true});
+                this.cellbaseClient.get('genomic', 'region', this.region, 'clinical', {}, {success: clinicalSuccess, error: error, async: true});
+            },
+            onVariantSelected: function(e) {
+                this.variant = e.detail.variant;
             },
             idFormatter: function (value, row, index) {
                 return '<a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=' + row.id + '">' + row.id + '</a>'
