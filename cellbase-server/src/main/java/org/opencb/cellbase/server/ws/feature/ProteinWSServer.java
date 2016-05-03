@@ -20,10 +20,12 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
+import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,7 +76,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "keyword",
                     value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
                             + "Transcription,Zinc. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getInfoByEnsemblId(@PathParam("proteinId")
                                        @ApiParam(name = "proteinId",
@@ -119,7 +121,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "keyword",
                     value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
                             + "Transcription,Zinc. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAll() {
         try {
@@ -134,23 +136,51 @@ public class ProteinWSServer extends GenericRestWSServer {
     @GET
     @Path("/{proteinId}/substitution_scores")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
-        notes = "Output value will be a List of Score objects as defined at "
-                + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl",
+        notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
+                + " position is provided, all scores will be returned for every possible amino acid"
+                + " change occurring at that position. If the alternate aminoacid is provided as well, Score objects as"
+                + " specified at "
+                + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl"
+                + " shall be returned. If none of these parameters are provided, the whole list of scores for every"
+                + " possible amino acid change in the protein shall be returned.",
             response = List.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "position",
+                    value = "Integer indicating the aminoacid position to check",
+                    required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "aa",
+                    value = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding"
+                            + " of aminoacid names, e.g.: CYS",
+                    required = false, dataType = "String", paramType = "query")
+    })
     public Response getSubstitutionScores(@PathParam("proteinId")
                                           @ApiParam(name = "proteinId",
-                                                  value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,"
-                                                          + " ENST00000278314. Exact text matches will be returned",
+                                                  value = "String indicating one xref id, e.g.: Q9UL59, Exact text "
+                                                          + "matches will be returned",
                                                   required = true) String id) {
         try {
             parseQueryParams();
-            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
+//            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
 
             // Fetch Ensembl transcriptId to query substiturion scores
-//            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            logger.info("Searching transcripts for protein {}", id);
+            Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
+            QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
+            QueryResult queryResult = transcriptDBAdaptor.nativeGet(transcriptQuery, transcriptQueryOptions);
+            logger.info("{} transcripts found", queryResult.getNumResults());
+            logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResult()));
 
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-            return createOkResponse(proteinDBAdaptor.getSubstitutionScores(query, queryOptions));
+            // Get substitution scores for fetched transcript
+            if (queryResult.getNumResults() > 0) {
+                query.put("transcript", ((Map) queryResult.getResult().get(0)).get("id"));
+                logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
+                logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
+                ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+                return createOkResponse(proteinDBAdaptor.getSubstitutionScores(query, queryOptions));
+            } else {
+                return createOkResponse(queryResult);
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -179,7 +209,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{proteinId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = false)
+    @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = true)
     public Response getTranscript(@PathParam("proteinId") String query) {
         return null;
     }
