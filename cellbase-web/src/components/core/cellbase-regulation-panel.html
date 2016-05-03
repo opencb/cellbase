@@ -18,7 +18,7 @@
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="cellbase-regulation-filter.html">
-<link rel="import" href="cellbase-regulation-view.html">
+<link rel="import" href="cellbase-regulation-grid.html">
 
 <dom-module id="cellbase-regulation-panel">
     <template>
@@ -26,10 +26,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-regulation-filter region="{{region}}" cellbase-client="{{cellbaseClient}}"></cellbase-regulation-filter>
+                <cellbase-regulation-filter data="{{data}}" cellbase-client="{{cellbaseClient}}"></cellbase-regulation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-regulation-view cellbase-client="{{cellbaseClient}}" region="{{region}}"></cellbase-regulation-view>
+                <cellbase-regulation-grid data="{{data}}"></cellbase-regulation-grid>
             </div>
         </div>
     </template>
@@ -40,8 +40,8 @@
                 cellbaseClient: {
                     type: Object
                 },
-                region: {
-                    type: String,
+                data: {
+                    type: Array,
                     notify: true
                 }
             },

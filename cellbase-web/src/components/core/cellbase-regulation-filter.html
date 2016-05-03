@@ -27,23 +27,13 @@
                 max-height: 300px;
                 overflow-y: scroll;
             }
-            .result-display {
-                max-height: 800px;
-                overflow: auto;
-            }
         </style>
 
         <div>
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#regulationFilter" role="tab" data-toggle="tab">Filter</a></li>
-                <li role="presentation"><a href="#regulationResult" role="tab" data-toggle="tab">Result</a></li>
-            </ul>
-
-            <!--Filter tab content-->
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="regulationFilter">
-                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
-                    <br>
+            <div>
+                <br>
+                <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <br> <br>
 
                     <!--Regulatory region filter menu-->
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -103,22 +93,6 @@
                     </div>
                 </div>
 
-                <!-- Result tab content -->
-                <div role="tabpanel" class="tab-pane" id="regulationResult">
-                    <div class="result-display">
-                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
-                        <br>
-                        <template is="dom-repeat" items="{{result}}">
-                            <div>
-                                <b on-click="_updateRegulationView" id="{{item.chromosome}}:{{item.start}}-{{item.end}}"
-                                   style="cursor: pointer">{{item.chromosome}}:{{item.start}}-{{item.end}}</b><br>
-                                {{item.name}}
-                                <hr>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
         </div>
     </template>
     <script>
@@ -128,21 +102,16 @@
                 cellbaseClient: {
                     type: Object
                 },
-                region: {
-                    type: String,
+                data: {
+                    type: Array,
                     notify: true
-                },
-                result: {
-                    type: Array
                 },
                 featureTypes: {
                     type: Array,
                     value: []
                 }
             },
-                ready: function () {
-//                    this.cellBaseClient = CELLBASE_CLIENT;
-                },
+
                 clear: function (e) {
                     // we empty the textareas
                     this.$.regFilterRegionTextarea.value = "";
@@ -152,9 +121,6 @@
                     this.$.regFilterRegionTextarea.value = "3:555-66666";
                 },
                 executeQuery: function (e) {
-                    // activate the GIF
-                    $('#spinImg').show();
-
                     // We first build the query params object
 //                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
 //                if (this.biotypes.length > 0) {
@@ -164,27 +130,22 @@
 //                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
 //                }
 
-                    //
-                    this.result = [];
+                    let result = [];
                     let _this = this;
                     let success = function (response) {
                         for (let i in response.response) {
                             for (let j in response.response[i].result) {
-                                _this.push('result', response.response[i].result[j]);
+                                result.push(response.response[i].result[j]);
+//                                _this.push('result', response.response[i].result[j]);
                             }
                         }
-                        // remove the GIF
-                        $('#spinImg').hide();
+                        _this.data = result;
                     };
 
                     if (this.$.regFilterRegionTextarea.value !== "") {
                         this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', {}, {success: success, async: true});
                     }
-                    $('.nav-tabs a[href="#regulationResult"]').tab('show');
-                },
-            _updateRegulationView: function(e) {
-                this.region = e.srcElement.id;
-            }
+                }
             });
     </script>
 </dom-module>
