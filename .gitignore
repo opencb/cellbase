@@ -1,6 +1,6 @@
 
 build
-
+bower_components
 node_modules
 bower_components
 private

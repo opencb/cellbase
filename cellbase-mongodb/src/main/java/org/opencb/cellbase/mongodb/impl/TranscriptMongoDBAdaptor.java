@@ -126,7 +126,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         }
         Bson excludeAndInclude = Aggregates.project(Projections.fields(Projections.excludeId(), include));
         Bson unwind = Aggregates.unwind("$transcripts");
-        Bson match2 = Aggregates.match(bson);
 
         // This project the three fields of Xref to the top of the object
         Document document = new Document("id", "$transcripts.id");
@@ -142,7 +141,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         document.put("annotationFlags", "$transcripts.annotationFlags");
         Bson project = Aggregates.project(document);
 
-        return mongoDBCollection.aggregate(Arrays.asList(match, excludeAndInclude, unwind, match2, project), options);
+        Bson match2 = Aggregates.match(bson);
+
+        return mongoDBCollection.aggregate(Arrays.asList(match, unwind, match2, excludeAndInclude, project), options);
+//        return mongoDBCollection.aggregate(Arrays.asList(match, excludeAndInclude, unwind, project, match2), options);
     }
 
     @Override
@@ -208,6 +210,23 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         createOrQuery(query, QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
         createOrQuery(query, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
+    }
+
+    private Bson parseQueryUnwindTranscripts(Query query) {
+        List<Bson> andBsonList = new ArrayList<>();
+
+        createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
+        createOrQuery(query, QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(query, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
+        createOrQuery(query, QueryParams.XREFS.key(), "xrefs.id", andBsonList);
+        createOrQuery(query, QueryParams.TFBS_NAME.key(), "tfbs.name", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

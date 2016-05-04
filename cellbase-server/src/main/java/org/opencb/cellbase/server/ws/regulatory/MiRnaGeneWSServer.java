@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
 import com.google.common.base.Splitter;
+import io.swagger.annotations.Api;
 import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -30,6 +31,7 @@ import java.io.IOException;
 
 @Path("/{version}/{species}/regulatory/mirna_gene")
 @Produces("text/plain")
+@Api(value = "miRNA gene", description = "miRNA RESTful Web Services API", hidden = true)
 public class MiRnaGeneWSServer extends RegulatoryWSServer {
 
 

@@ -18,10 +18,11 @@ package org.opencb.cellbase.server.ws;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
+import io.swagger.annotations.ApiParam;
+import org.opencb.biodata.models.core.Chromosome;
+import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.commons.datastore.core.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -41,17 +42,26 @@ import java.io.IOException;
 @Api(value = "Species", description = "Species RESTful Web Services API")
 public class SpeciesWSServer extends GenericRestWSServer {
 
-    public SpeciesWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+    public SpeciesWSServer(@PathParam("version")
+                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                   defaultValue = "latest") String version,
+                           @PathParam("species")
+                           @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                   + "of potentially available species ids, please refer to: "
+                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                           @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
     @GET
     @Path("/info")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves genome info for current species", response = QueryResponse.class)
+    @ApiOperation(httpMethod = "GET",
+            value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
+            responseContainer = "QueryResponse")
     public Response getSpeciesInfo() {
         try {
-            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(species, this.assembly);
             return createOkResponse(genomeDBAdaptor.getGenomeInfo(queryOptions));
         } catch (com.mongodb.MongoException e) {
             e.printStackTrace();
