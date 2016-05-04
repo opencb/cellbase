@@ -68,7 +68,7 @@
                             <div id="featureType" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hTwo">
                                 <div class="panel-body menu-scroll">
-                                    <!--<cellbase-options-list cellbase-client={{cellBaseClient}} data-type="featureType" selected={{featureTypes}}></cellbase-options-list>-->
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureType" selected={{featureTypes}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -106,6 +106,10 @@
                     type: Array,
                     notify: true
                 },
+//                data: {
+//                    type: Object,
+//                    notify: true
+//                },
                 featureTypes: {
                     type: Array,
                     value: []
@@ -118,7 +122,7 @@
 
                 },
                 loadExample: function (e) {
-                    this.$.regFilterRegionTextarea.value = "3:555-66666";
+                    this.$.regFilterRegionTextarea.value = "10:555-66666";
                 },
                 executeQuery: function (e) {
                     // We first build the query params object
@@ -139,6 +143,7 @@
                             }
                         }
                         _this.data = result;
+//                        _this.data = { "total":result.length, "rows":result };
                     };
 
                     if (this.$.regFilterRegionTextarea.value !== "") {

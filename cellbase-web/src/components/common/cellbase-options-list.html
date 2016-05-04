@@ -39,7 +39,7 @@
                     value: ""
                 },
                 cellbaseClient: {
-                    type: Object,
+                    type: Object
 //                    value: null
                 },
                 data: {
@@ -64,7 +64,6 @@
                         var _this = this;
                         var success = function (response) {
                             _this.data = response.response[0].result;
-                            console.log(_this.data)
                         };
 
                         // we used the dataType param to fill the options
@@ -76,9 +75,9 @@
                             case "consequence-types":
                                 this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {success: success, async: true});
                                 break;
-//                            case "featureType":
-//                                this.cellbaseClient.get('regulatory', 'featureType', null, null, {}, {success: success, async: true});
-//                                break;
+                            case "featureType":
+                                this.cellbaseClient.get('regulatory', 'featureType', null, "", {}, {success: success, async: true});
+                                break;
                             default:
                                 console.error("No valid 'dataType'provided, select one of: biotype, consequence_type, ...")
                         }
