@@ -140,7 +140,8 @@
                     type: Array
                 },
                 variations: {
-                    type: Array
+                    type: Array,
+                    value: []
                 },
                 variant: {
                     type: String
@@ -219,9 +220,8 @@
                     _this.regulationCount = reg.length;
                 };
                 let varSuccess = function (response) {
-                    let variations = response.response[0].result;
-                    _this.variations = variations;
-                    _this.variationCount = variations.length;
+                    _this.variations = response.response[0].result;
+                    _this.variationCount = _this.variations.length;
                 };
                 let clinicalSuccess = function (response) {
                     let clinical = response.response[0].result;

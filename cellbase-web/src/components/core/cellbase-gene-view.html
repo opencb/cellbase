@@ -193,7 +193,7 @@
                 let error = function (response) {
                     alert("Gene ID not valid: " + _this.geneId)
                 };
-                this.cellbaseClient.getGeneClient(this.geneId, 'snp', {}, {success: success, error: error, async: true});
+                this.cellbaseClient.getGeneClient(this.geneId, 'snp', {exclude: 'annotation.additionalAttributes,annotation.populationFrequencies'}, {success: success, error: error, async: true});
 
                 // Clinical
 //                let successClinical = function (response) {
