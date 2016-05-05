@@ -89,7 +89,10 @@
                     <cellbase-regulation-grid data="{{regulatory}}" prefix="genomicRegion"></cellbase-regulation-grid>
                 </div>
                 <div id="genomicViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}"
+                                             on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>
+                    <!--<cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{url}}"-->
+                                             <!--on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>-->
                     <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="genomicView"></cellbase-variantannotation-view>
                 </div>
@@ -143,6 +146,9 @@
                     type: Array,
                     value: []
                 },
+                url: {
+                    type: String
+                },
                 variant: {
                     type: String
                 },
@@ -161,6 +167,7 @@
             },
             _regionChanged: function (newValue, oldValue) {
                 this.genomeViewer.setRegion(this.region);
+                this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/variation';
                 let _this = this;
                 let geneSuccess = function (response) {
                     _this.genes = response.response[0].result;

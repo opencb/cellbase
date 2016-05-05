@@ -47,14 +47,14 @@
                 cellbaseClient: {
                     type: Object
                 },
-                geneId: {
+                url: {
                     type: String,
                     observer: 'render'
                 },
                 data: {
                     type: Array,
                     value: [],
-                    observer: 'render'
+                    observer: 'renderFromData'
                 },
                 prefix: {
                     type: String
@@ -63,10 +63,11 @@
             render: function() {
                 let _this = this;
                 $('#' + this.prefix + 'VariationTable').bootstrapTable('destroy');
-                this._numTotal = -1;
+                let _numTotal = -1;
 
                 $('#' + this.prefix + 'VariationTable').bootstrapTable({
-                    url: 'http://localhost:8080/cellbase-dev-v4.0/webservices/rest/v4/hsapiens/feature/gene/' + _this.geneId + '/snp',
+//                    url: 'http://localhost:8080/cellbase-dev-v4.0/webservices/rest/v4/hsapiens/feature/gene/' + _this.geneId + '/snp',
+                    url: this.url,
                     method: 'get',
                     sidePagination: 'server',
                     queryParams: function (params) {
@@ -79,11 +80,11 @@
                     responseHandler: function(res) {
                         console.log("In responseHandler")
                         console.log(res)
-                        if (_this._numTotal == -1) {
-//                            this._numTotal = res.response[0].numTotalResults;
-                            _this._numTotal = 1000;
+                        if (_numTotal == -1) {
+//                            _numTotal = res.response[0].numTotalResults;
+                            _numTotal = 1000;
                         }
-                        return {total: _this._numTotal, rows: res.response[0].result}
+                        return {total: _numTotal, rows: res.response[0].result}
                     },
                     columns: [
                         [
@@ -129,6 +130,54 @@
                     }
                 });
                 $('#' + this.prefix + 'VariationTable').bootstrapTable('showLoading');
+            },
+            renderFromData: function () {
+                $('#' + this.prefix + 'VariationTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'VariationTable').bootstrapTable({
+                    data: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'ID',
+//                                field: 'ids',
+                                formatter: this.idFormatter,
+                                sortable: true
+                            },
+                            {
+                                title: 'Alleles',
+                                formatter: this.refAltFormatter
+                            },
+                            {
+                                title: 'Location',
+                                formatter: this.locationFormatter
+                            },
+                            {
+                                title: 'Type',
+                                field: 'type'
+                            },
+                            {
+                                title: 'HGVS',
+                                field: 'hgvs.genomic'
+                            },
+                            {
+                                title: 'Display Consequence Type',
+                                field: 'annotation.displayConsequenceType',
+                                sortable: true
+                            },
+                            {
+                                title: 'Ancestral Allele',
+                                field: 'annotation.ancestralAllele'
+                            },
+                            {
+                                title: 'MAF',
+                                formatter: this.mafFormatter
+                            }
+                        ]
+                    ],
+                    onClickRow: function (row, $element) {
+                        _this.fire('selected', {variant: row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate});
+                    }
+                });
             },
             idFormatter: function (value, row, index) {
                 if (typeof row.ids !== 'undefined' && row.ids.length > 0) {

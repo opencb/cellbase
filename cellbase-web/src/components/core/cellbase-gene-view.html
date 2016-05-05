@@ -72,7 +72,10 @@
                 <!--</div>-->
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" gene-id="{{geneId}}" on-selected="onVariantSelected" prefix="geneView"></cellbase-variation-grid>
+                    <!--<cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}"->
+                                             <!--on-selected="onVariantSelected" prefix="geneView"></cellbase-variation-grid>-->
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{url}}"
+                                             on-selected="onVariantSelected" prefix="geneView"></cellbase-variation-grid>
                     <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
@@ -145,6 +148,9 @@
                     notify: true,
                     observer: '_geneIdChanged'
                 },
+                url: {
+                    type: String
+                },
                 geneObj: {
                     type: Object
                 },
@@ -164,26 +170,27 @@
                 }
             },
             _geneIdChanged: function(newValue, oldValue) {
+                this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/snp';
                 let _this = this;
-//                if (typeof this.genomeViewer !== "undefined") {
-//                    let success = function (response) {
-//                        let firstGene = response.response[0].result[0];
-//                        if (typeof firstGene !== "undefined") {
-//                            let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
-//                            _this.genomeViewer.setRegion(region);
-//                        } else {
-//                            alert("Gene ID not valid: " + _this.geneId);
-//                        }
-//                        _this.geneObj = firstGene;
-//                        // testing 3D
-//                        _this.display3D();
-//                        _this.displayNetworkViewer();
-//                    };
-//                    let error = function (response) {
-//                        alert("Gene ID not valid: " + _this.geneId)
-//                    };
-//                    this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
-//                }
+                if (typeof this.genomeViewer !== "undefined") {
+                    let success = function (response) {
+                        let firstGene = response.response[0].result[0];
+                        if (typeof firstGene !== "undefined") {
+                            let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
+                            _this.genomeViewer.setRegion(region);
+                        } else {
+                            alert("Gene ID not valid: " + _this.geneId);
+                        }
+                        _this.geneObj = firstGene;
+                        // testing 3D
+                        _this.display3D();
+                        _this.displayNetworkViewer();
+                    };
+                    let error = function (response) {
+                        alert("Gene ID not valid: " + _this.geneId)
+                    };
+                    this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                }
 //
 //                // Variation
 //                let success = function (response) {

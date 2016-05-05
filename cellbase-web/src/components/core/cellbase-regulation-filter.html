@@ -85,8 +85,8 @@
                             </div>
                             <div id="featureClass" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hThree">
-                                <div class="panel-body">
-                                    <!--<textarea id="geneFilterDrugsTextarea" class="form-control clearable" rows="3"></textarea>-->
+                                <div class="panel-body menu-scroll">
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureClass" selected={{featureClasses}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -109,6 +109,10 @@
                 featureTypes: {
                     type: Array,
                     value: []
+                },
+                featureClasses: {
+                    type: Array,
+                    value: []
                 }
             },
 
@@ -126,9 +130,9 @@
                 if (this.featureTypes.length > 0) {
                     queryParams.featureType = this.featureTypes.join(",");
                 }
-//                if (this.$.geneFilterDrugsTextarea.value != "") {
-//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
-//                }
+                if (this.featureClasses.length > 0) {
+                    queryParams.featureClass = this.featureClasses.join(",");
+                }
 
                     let result = [];
                     let _this = this;
