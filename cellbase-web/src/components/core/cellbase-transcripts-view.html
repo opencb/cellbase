@@ -72,6 +72,8 @@
 
             <array-selector id="selector" items="{{data}}" selected="{{selected}}"></array-selector>
 
+            <b>Transcript: {{selected.name}}({{selected.id}})</b> <br><br>
+
             <!--Tab representation for Exons, Xrefs, Sequence-->
             <div>
                 <ul class="nav nav-tabs" role="tablist">
@@ -85,11 +87,11 @@
 
                 <div class="tab-content">
                     <div id="{{prefix}}TranscriptViewExons" role="tabpanel" class="tab-pane active">
-                        <cellbase-exons-grid data="{{selected.exons}}"></cellbase-exons-grid>
+                        <cellbase-exons-grid data="{{selected.exons}}" prefix="{{prefix}}"></cellbase-exons-grid>
                     </div>
 
                     <div id="{{prefix}}TranscriptViewXrefs" role="tabpanel" class="tab-pane">
-                        <cellbase-xref-grid data="{{selected.xrefs}}"></cellbase-xref-grid>
+                        <cellbase-xref-grid data="{{selected.xrefs}}" prefix="{{prefix}}"></cellbase-xref-grid>
                     </div>
 
                     <div id="{{prefix}}TranscriptViewSequence" role="tabpanel" class="tab-pane">

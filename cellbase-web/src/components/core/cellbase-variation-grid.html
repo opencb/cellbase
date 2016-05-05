@@ -24,7 +24,7 @@
 
         <div style="padding: 10px; ">
             <br>
-            <table id="table" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+            <table id="{{prefix}}VariationTable" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
                 <!--data-detail-view="true" data-detail-formatter="detailFormatter">-->
                 <!--<thead>-->
@@ -47,12 +47,15 @@
                     type: Array,
                     value: [],
                     observer: 'render'
+                },
+                prefix: {
+                    type: String
                 }
             },
             render: function() {
                 let _this = this;
-                $('#table').bootstrapTable('destroy');
-                $('#table').bootstrapTable({
+                $('#' + this.prefix + 'VariationTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'VariationTable').bootstrapTable({
                     data: this.data,
                     columns: [
                         [
@@ -99,7 +102,11 @@
                 });
             },
             idFormatter: function (value, row, index) {
-                return '<a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + row.ids[0] + '">' + row.ids + '</a>'
+                if (typeof row.ids !== 'undefined' && row.ids.length > 0) {
+                    return '<a target="_blank" href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + row.ids[0] + '">' + row.ids + '</a>';
+                } else {
+                    return '-';
+                }
             },
             refAltFormatter: function (value, row, index) {
                 return row.reference + "/" + row.alternate;
@@ -109,7 +116,11 @@
                 return '<a target="_blank" href="http://genomemaps.org/?region=' + location + '">' + location + '</a>'
             },
             mafFormatter: function (value, row, index) {
-                return row.annotation.minorAlleleFreq + " (" + row.annotation.minorAllele + ")";
+                if (row.annotation.minorAlleleFreq !== undefined) {
+                    return row.annotation.minorAlleleFreq + " (" + row.annotation.minorAllele + ")";
+                } else {
+                    return '-';
+                }
             }
         });
     </script>

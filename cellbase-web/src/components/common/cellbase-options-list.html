@@ -39,8 +39,8 @@
                     value: ""
                 },
                 cellbaseClient: {
-                    type: Object,
-                    value: null
+                    type: Object
+//                    value: null
                 },
                 data: {
                     type: Array,
@@ -75,11 +75,15 @@
                             case "consequence-types":
                                 this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {success: success, async: true});
                                 break;
+                            case "featureType":
+                                this.cellbaseClient.get('regulatory', 'featureType', null, "", {}, {success: success, async: true});
+                                break;
                             default:
                                 console.error("No valid 'dataType'provided, select one of: biotype, consequence_type, ...")
                         }
                     } else {
                         console.error("Both 'data' and 'cellbaseClient' are not defined or null")
+                        console.log(this.cellbaseClient)
                     }
                 }
             },

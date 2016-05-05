@@ -1,0 +1,92 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-regulation-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div style="padding: 10px; ">
+            <table id="{{prefix}}RegulationTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-regulation-grid',
+            properties: {
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'render'
+                },
+//                data: {
+//                    type: Object,
+//                    observer: 'render'
+//                },
+                prefix: {
+                    type: String
+                }
+            },
+            render: function () {
+                console.log(this.data)
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable({
+                    data: this.data,
+//                    url: "http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/v4/hsapiens/genomic/region/10:555-66666/regulatory",
+//                    url: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'Location',
+                                formatter: this.locationFormatter
+                            },
+                            {
+                                title: 'Source',
+                                field: 'source'
+                            },
+                            {
+                                title: 'Feature Type',
+                                field: 'featureType'
+                            },
+                            {
+                                title: 'Score',
+                                field: 'score'
+                            },
+                            {
+                                title: 'Strand',
+                                field: 'strand'
+                            },
+                            {
+                                title: 'Frame',
+                                field: 'frame'
+                            },
+                            {
+                                title: 'Name',
+                                field: 'name'
+                            },
+                            {
+                                title: 'Feature Class',
+                                field: 'featureClass'
+                            },
+                            {
+                                title: 'Alias',
+                                field: 'alias'
+                            },
+                            {
+                                title: 'Cell Types',
+                                field: 'cellTypes'
+                            }
+                        ]
+                    ]
+                });
+            },
+
+            locationFormatter: function (value, row, index) {
+                return row.chromosome + ":" + row.start + "-" + row.end;
+            }
+        });
+    </script>
+</dom-module>

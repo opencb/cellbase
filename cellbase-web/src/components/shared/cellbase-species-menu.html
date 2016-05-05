@@ -46,6 +46,9 @@
             is: 'cellbase-species-menu',
 
             properties: {
+                cellbaseClient: {
+                    type: Object
+                },
                 title: {
                     type: String,
                     value: "Select species"
@@ -63,10 +66,7 @@
                     value: []
                 }
             },
-            ready: function () {
-
-//                this.speciesList = SPECIES;
-//                this.keys = Object.keys(SPECIES);
+            attached: function () {
                 let _this = this;
                 var success = function (response) {
                     console.log("OMG!!!!")
@@ -74,14 +74,11 @@
                     _this.keys = Object.keys(_this.speciesList);
                 };
 
-//                CELLBASE_CLIENT.getMeta("species", {success: success, async: true});
-                CELLBASE_CLIENT.getMeta("species", {async: true}).then(success);
+                this.cellbaseClient.getMeta("species", {async: true}).then(success);
 
-//                let _this = this;
                 $(document).on('click', '.cellbase-species-menu li a', function() {
                     console.log("event")
                     _this.title = $(this).text();
-//                    $(this).parents(".dropdown").find('.btn').html($(this).text() + ' <span class="caret"></span>');
                 });
             },
             _getSpeciesArrayByTaxon: function(taxon) {
