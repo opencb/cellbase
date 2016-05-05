@@ -106,10 +106,6 @@
                     type: Array,
                     notify: true
                 },
-//                data: {
-//                    type: Object,
-//                    notify: true
-//                },
                 featureTypes: {
                     type: Array,
                     value: []
@@ -126,10 +122,10 @@
                 },
                 executeQuery: function (e) {
                     // We first build the query params object
-//                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
-//                if (this.biotypes.length > 0) {
-//                    queryParams.biotype = this.biotypes.join(",");
-//                }
+                    let queryParams = {};
+                if (this.featureTypes.length > 0) {
+                    queryParams.featureType = this.featureTypes.join(",");
+                }
 //                if (this.$.geneFilterDrugsTextarea.value != "") {
 //                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
 //                }
@@ -143,11 +139,10 @@
                             }
                         }
                         _this.data = result;
-//                        _this.data = { "total":result.length, "rows":result };
                     };
 
                     if (this.$.regFilterRegionTextarea.value !== "") {
-                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', {}, {success: success, async: true});
+                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', queryParams, {success: success, async: true});
                     }
                 }
             });

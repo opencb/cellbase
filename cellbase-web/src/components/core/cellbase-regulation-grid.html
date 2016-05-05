@@ -22,21 +22,14 @@
                     value: [],
                     observer: 'render'
                 },
-//                data: {
-//                    type: Object,
-//                    observer: 'render'
-//                },
                 prefix: {
                     type: String
                 }
             },
             render: function () {
-                console.log(this.data)
                 $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
                 $('#' + this.prefix + 'RegulationTable').bootstrapTable({
                     data: this.data,
-//                    url: "http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/v4/hsapiens/genomic/region/10:555-66666/regulatory",
-//                    url: this.data,
                     columns: [
                         [
                             {
