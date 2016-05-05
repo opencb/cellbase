@@ -92,7 +92,7 @@ class CellBaseCLIExecutor():
         if (self.__queryCommandOptions.output != None):
             self.__file = self.__queryCommandOptions.output
 
-    def __validQueryOptions(self,options):
+    def __validQueryOptions(self, options):
         if (options != None):
             i = 0
             while(i<len(options) and len(options[i].split("="))==2):
