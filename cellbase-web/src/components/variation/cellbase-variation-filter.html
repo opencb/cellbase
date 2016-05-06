@@ -158,10 +158,6 @@
         Polymer({
             is: 'cellbase-variation-filter',
             properties: {
-                allIds: {
-                    type: Array,
-                    value: []
-                },
                 variationId: {
                     type: String,
                     notify: true
@@ -236,15 +232,16 @@
                 this.variationId = e.srcElement.id;
             },
             addVariationId: function(e) {
-                var temp = this.$$('#variationIdText').value;
-                if (this.allIds.indexOf(temp) == -1){
-                    this.push('allIds', temp);
+                let allIds = this.$.variationFilterIdsTextarea.value.split(',');
+                var temp = this.$.variationIdText.value;
+                if (allIds.indexOf(temp) == -1){
+                    allIds.push(temp);
                 }
-                this.$$('#variationIdText').value = '';
-                this.$.variationFilterIdsTextarea.value = this.allIds;
+                this.$.variationIdText.value = '';
+                this.$.variationFilterIdsTextarea.value = allIds;
             },
             callVariationAutocomplete: function(e) {
-                if (this.$$('#variationIdText').value.length > 6) {
+                if (this.$.variationIdText.value.length > 6) {
                     let _this = this;
                     let success = function (response) {
                         _this.autocompleteData = response.response[0].result;
