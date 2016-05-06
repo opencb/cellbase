@@ -86,13 +86,11 @@
                     </div>
                 </div>
                 <div id="genomicViewRegulation" role="tabpanel" class="tab-pane">
-                    <cellbase-regulation-grid data="{{regulatory}}" prefix="genomicRegion"></cellbase-regulation-grid>
+                    <cellbase-regulation-grid url="{{regUrl}}" prefix="genomicRegion"></cellbase-regulation-grid>
                 </div>
                 <div id="genomicViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}"
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{variationUrl}}"
                                              on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>
-                    <!--<cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{url}}"-->
-                                             <!--on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>-->
                     <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="genomicView"></cellbase-variantannotation-view>
                 </div>
@@ -108,11 +106,11 @@
                         </p>
                         <div class="collapse in" id="genomicClinvarDiv">
                             <h4>Clinvar</h4>
-                            <cellbase-clinvar-grid data="{{clinvar}}" prefix="genomicView"></cellbase-clinvar-grid>
+                            <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="genomicView"></cellbase-clinvar-grid>
                         </div>
                         <div class="collapse in" id="genomicCosmicDiv">
                             <h4>Cosmic</h4>
-                            <cellbase-cosmic-grid data="{{cosmic}}" prefix="genomicView"></cellbase-cosmic-grid>
+                            <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="genomicView"></cellbase-cosmic-grid>
                         </div>
 
                 </div>
@@ -139,26 +137,8 @@
                 genes : {
                     type: Array
                 },
-                regulatory: {
-                    type: Array
-                },
-                variations: {
-                    type: Array,
-                    value: []
-                },
-                url: {
-                    type: String
-                },
                 variant: {
                     type: String
-                },
-                clinvar: {
-                    type: Array,
-                    value: []
-                },
-                cosmic: {
-                    type: Array,
-                    value: []
                 }
             },
             attached: function() {
@@ -167,7 +147,10 @@
             },
             _regionChanged: function (newValue, oldValue) {
                 this.genomeViewer.setRegion(this.region);
-                this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/variation';
+                this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/variation';
+                this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=clinvar';
+                this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=cosmic';
+                this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/regulatory';
                 let _this = this;
                 let geneSuccess = function (response) {
                     _this.genes = response.response[0].result;
@@ -216,44 +199,39 @@
                         }
                     });
                 };
-                let regSuccess = function (response) {
-                    let reg = [];
-                    for (let i in response.response) {
-                        for (let j in response.response[i].result) {
-                            reg.push(response.response[i].result[j]);
-                        }
-                    }
-                    _this.regulatory = reg;
-                    _this.regulationCount = reg.length;
-                };
-                let varSuccess = function (response) {
-                    _this.variations = response.response[0].result;
-                    _this.variationCount = _this.variations.length;
-                };
-                let clinicalSuccess = function (response) {
-                    let clinical = response.response[0].result;
-                    _this.clinicalCount = clinical.length;
-                    let clinivarArray = [];
-                    let cosmicArray = [];
-                    for (let i in clinical) {
-                        if (clinical[i].source == "clinvar") {
-                            clinivarArray.push(clinical[i]);
-                        }
-                        if (clinical[i].source == "cosmic") {
-                            cosmicArray.push(clinical[i]);
-                        }
-                    }
-                    _this.clinvar = clinivarArray;
-                    _this.cosmic = cosmicArray;
-                };
+//                let regSuccess = function (response) {
+//                    let reg = [];
+//                    for (let i in response.response) {
+//                        for (let j in response.response[i].result) {
+//                            reg.push(response.response[i].result[j]);
+//                        }
+//                    }
+//                    _this.regulatory = reg;
+//                    _this.regulationCount = reg.length;
+//                };
+//                let clinicalSuccess = function (response) {
+//                    let clinical = response.response[0].result;
+//                    _this.clinicalCount = clinical.length;
+//                    let clinivarArray = [];
+//                    let cosmicArray = [];
+//                    for (let i in clinical) {
+//                        if (clinical[i].source == "clinvar") {
+//                            clinivarArray.push(clinical[i]);
+//                        }
+//                        if (clinical[i].source == "cosmic") {
+//                            cosmicArray.push(clinical[i]);
+//                        }
+//                    }
+//                    _this.clinvar = clinivarArray;
+//                    _this.cosmic = cosmicArray;
+//                };
                 let error = function (response) {
                     alert("Genomic Region not valid: " + _this.region)
                 };
 
                 this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {success: geneSuccess, error: error, async: true});
-                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: regSuccess, error: error, async: true});
-                this.cellbaseClient.get('genomic', 'region', this.region, 'variation', {}, {success: varSuccess, error: error, async: true});
-                this.cellbaseClient.get('genomic', 'region', this.region, 'clinical', {}, {success: clinicalSuccess, error: error, async: true});
+//                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: regSuccess, error: error, async: true});
+//                this.cellbaseClient.get('genomic', 'region', this.region, 'clinical', {}, {success: clinicalSuccess, error: error, async: true});
             },
             onVariantSelected: function(e) {
                 this.variant = e.detail.variant;

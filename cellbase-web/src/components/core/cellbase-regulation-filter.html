@@ -102,8 +102,8 @@
                 cellbaseClient: {
                     type: Object
                 },
-                data: {
-                    type: Array,
+                url: {
+                    type: String,
                     notify: true
                 },
                 featureTypes: {
@@ -126,27 +126,34 @@
                 },
                 executeQuery: function (e) {
                     // We first build the query params object
-                    let queryParams = {};
+//                    let queryParams = {};
+                    let featureType = [];
+                    let featureClass = [];
                 if (this.featureTypes.length > 0) {
-                    queryParams.featureType = this.featureTypes.join(",");
+                    featureType = this.featureTypes.join(",");
                 }
                 if (this.featureClasses.length > 0) {
-                    queryParams.featureClass = this.featureClasses.join(",");
+                    featureClass = this.featureClasses.join(",");
                 }
 
-                    let result = [];
-                    let _this = this;
-                    let success = function (response) {
-                        for (let i in response.response) {
-                            for (let j in response.response[i].result) {
-                                result.push(response.response[i].result[j]);
-                            }
-                        }
-                        _this.data = result;
-                    };
+//                    let result = [];
+//                    let _this = this;
+//                    let success = function (response) {
+//                        for (let i in response.response) {
+//                            for (let j in response.response[i].result) {
+//                                result.push(response.response[i].result[j]);
+//                            }
+//                        }
+//                        _this.data = result;
+//                    };
+
+                    //TODO add queryParams to the url
 
                     if (this.$.regFilterRegionTextarea.value !== "") {
-                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', queryParams, {success: success, async: true});
+                        this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.$.regFilterRegionTextarea.value
+                                + '/regulatory?featureType=' + featureType + '&featureClass=' + featureClass;
+//                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', queryParams, {success: success, async: true});
+                        console.log(this.url)
                     }
                 }
             });

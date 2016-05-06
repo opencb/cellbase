@@ -20,60 +20,92 @@
                 data: {
                     type: Array,
                     value: [],
-                    observer: 'render'
+                    observer: 'renderFromLocal'
+                },
+                url: {
+                    type: String,
+                    observer: 'renderFromServer'
                 },
                 prefix: {
                     type: String
                 }
             },
-            render: function () {
+            ready: function () {
+                this.cols = [
+                    [
+                        {
+                            title: 'Location',
+                            formatter: this.locationFormatter
+                        },
+                        {
+                            title: 'Source',
+                            field: 'source'
+                        },
+                        {
+                            title: 'Feature Type',
+                            field: 'featureType'
+                        },
+                        {
+                            title: 'Score',
+                            field: 'score'
+                        },
+                        {
+                            title: 'Strand',
+                            field: 'strand'
+                        },
+                        {
+                            title: 'Frame',
+                            field: 'frame'
+                        },
+                        {
+                            title: 'Name',
+                            field: 'name'
+                        },
+                        {
+                            title: 'Feature Class',
+                            field: 'featureClass'
+                        },
+                        {
+                            title: 'Alias',
+                            field: 'alias'
+                        },
+                        {
+                            title: 'Cell Types',
+                            field: 'cellTypes'
+                        }
+                    ]
+                ]
+            },
+            renderFromServer: function () {
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
+                let _numTotal = -1;
+
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable({
+                    url: this.url,
+                    method: 'get',
+                    sidePagination: 'server',
+                    queryParams: function (params) {
+                        return {
+                            limit: params.limit,
+                            skip: params.offset
+                        };
+                    },
+                    responseHandler: function (res) {
+                        if (_numTotal == -1) {
+//                            _numTotal = res.response[0].numTotalResults;
+                            _numTotal = 30;
+                        }
+                        return {total: _numTotal, rows: res.response[0].result}
+                    },
+                    columns: this.cols
+                });
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('showLoading');
+            },
+            renderFromLocal: function () {
                 $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
                 $('#' + this.prefix + 'RegulationTable').bootstrapTable({
                     data: this.data,
-                    columns: [
-                        [
-                            {
-                                title: 'Location',
-                                formatter: this.locationFormatter
-                            },
-                            {
-                                title: 'Source',
-                                field: 'source'
-                            },
-                            {
-                                title: 'Feature Type',
-                                field: 'featureType'
-                            },
-                            {
-                                title: 'Score',
-                                field: 'score'
-                            },
-                            {
-                                title: 'Strand',
-                                field: 'strand'
-                            },
-                            {
-                                title: 'Frame',
-                                field: 'frame'
-                            },
-                            {
-                                title: 'Name',
-                                field: 'name'
-                            },
-                            {
-                                title: 'Feature Class',
-                                field: 'featureClass'
-                            },
-                            {
-                                title: 'Alias',
-                                field: 'alias'
-                            },
-                            {
-                                title: 'Cell Types',
-                                field: 'cellTypes'
-                            }
-                        ]
-                    ]
+                    columns: this.cols
                 });
             },
 

@@ -44,7 +44,43 @@
             phenotypeChanged: function() {
                 $('#' + this.prefix + 'PhenotypeTable').bootstrapTable('destroy');
                 $('#' + this.prefix + 'PhenotypeTable').bootstrapTable({
-                    data: this.data
+                    data: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'ID',
+                                field: 'id'
+                            },
+                            {
+                                title: 'Name',
+                                field: 'name'
+                            },
+                            {
+                                title: 'HPO',
+                                field: 'hpo'
+                            },
+                            {
+                                title: 'Score',
+                                field: 'score'
+                            },
+                            {
+                                title: 'Source',
+                                field: 'source'
+                            },
+                            {
+                                title: 'Number of Pubmeds',
+                                field: 'numberOfPubmeds'
+                            },
+                            {
+                                title: 'Association Types',
+                                field: 'associationTypes'
+                            },
+                            {
+                                title: 'Sources',
+                                field: 'sources'
+                            }
+                        ]
+                    ]
                 });
             }
         });

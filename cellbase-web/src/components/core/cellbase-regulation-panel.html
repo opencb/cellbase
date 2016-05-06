@@ -26,10 +26,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-regulation-filter data="{{data}}" cellbase-client="{{cellbaseClient}}"></cellbase-regulation-filter>
+                <cellbase-regulation-filter url="{{url}}" cellbase-client="{{cellbaseClient}}"></cellbase-regulation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-regulation-grid data="{{data}}" prefix="regulationPanel"></cellbase-regulation-grid>
+                <cellbase-regulation-grid url="{{url}}" prefix="regulationPanel"></cellbase-regulation-grid>
             </div>
         </div>
     </template>
@@ -40,9 +40,8 @@
                 cellbaseClient: {
                     type: Object
                 },
-                data: {
-                    type: Array,
-                    notify: true
+                url: {
+                    type: String
                 }
             },
             ready: function() {
