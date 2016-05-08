@@ -56,7 +56,7 @@ public class CellBaseClientTest extends TestCase {
     @Test
     public void testGetGene() throws URISyntaxException, IOException {
         //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/region/3:1000-200000/gene?of=json
-        QueryResponse<QueryResult<Gene>> gene =
+        QueryResponse<Gene> gene =
                 cellBaseClient.getGene(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.region, Arrays.asList(new Region("3", 1000, 200000)), null);
         assertEquals(gene.getResponse().get(0).getResult().get(0).getName(), "AY269186.1");
     }
@@ -74,14 +74,14 @@ public class CellBaseClientTest extends TestCase {
     @Test
     public void testGetSequence() throws URISyntaxException, IOException {
         //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/region/3:1000-200000/gene?of=json
-        QueryResponse<QueryResult<GenomeSequenceFeature>> sequence =
+        QueryResponse<GenomeSequenceFeature> sequence =
                 cellBaseClient.getSequence(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.region, Collections.singletonList(new Region("20", 60522, 60622)), null);
         assertEquals(sequence.getResponse().get(0).getResult().get(0).getSequence(), "TCCCCCCTGGCACAAATGGTGCTGGACCACGAGGGGCCAGAGAACAAAGCCTTGGGCGTGGTCCCAACTCCCAAATGTTTGAACACACAAGTTGGAATATT");
     }
 
     @Test
     public void testGetChromosome() throws URISyntaxException, IOException {
-        QueryResponse<QueryResult<InfoStats>> response =
+        QueryResponse<InfoStats> response =
                 cellBaseClient.getInfo(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.chromosome, "2", null);
         assertEquals(cellBaseClient.getLastQuery().toString(), "2", response.getResponse().get(0).getResult().get(0).getChromosomes().get(0).getName());
     }
@@ -89,10 +89,10 @@ public class CellBaseClientTest extends TestCase {
     @Test
     public void testPost() throws URISyntaxException, IOException {
         //http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/22:10000000:A:T/gene?of=json
-        QueryResponse<QueryResult<VariantAnnotation>> fullAnnotationPost =
+        QueryResponse<VariantAnnotation> fullAnnotationPost =
                 cellBaseClient.getAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
                         new QueryOptions("post", true));
-        QueryResponse<QueryResult<VariantAnnotation>> fullAnnotationGet =
+        QueryResponse<VariantAnnotation> fullAnnotationGet =
                 cellBaseClient.getAnnotation(CellBaseClient.Category.genomic, CellBaseClient.SubCategory.variant, Arrays.asList(new Variant("22", 10000000, "A", "T")),
                         new QueryOptions("post", false));
         Assert.assertEquals(fullAnnotationGet.getResponse().iterator().next().first().toString(),
