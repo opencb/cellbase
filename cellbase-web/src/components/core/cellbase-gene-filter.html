@@ -190,10 +190,6 @@
                 cellbaseClient: {
                     type: Object
                 },
-                allIds: {
-                    type: Array,
-                    value: []
-                },
                 biotypes: {
                     type: Array,
                     value: []
@@ -264,12 +260,13 @@
                 this.geneId = e.srcElement.id;
             },
             addGeneId: function(e) {
+                let allIds = this.$.geneFilterIdsTextarea.value.split(',');
                 var temp = this.$.geneIDText.value;
-                if (this.allIds.indexOf(temp) == -1){
-                    this.push('allIds', temp);
+                if (allIds.indexOf(temp) == -1){
+                    allIds.push(temp);
                 }
                 this.$.geneIDText.value = '';
-                this.$.geneFilterIdsTextarea.value = this.allIds;
+                this.$.geneFilterIdsTextarea.value = allIds;
             },
             callAutocomplete: function(e) {
                 if (this.$.geneIDText.value.length > 2) {

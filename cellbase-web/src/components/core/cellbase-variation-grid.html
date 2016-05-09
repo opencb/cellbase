@@ -15,27 +15,22 @@
   -->
 
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-
 <link rel="import" href="../shared/cellbase-shared-styles.html">
 
 <dom-module id="cellbase-variation-grid">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .highlight {
+                background-color: lightgreen;
+            }
+        </style>
 
         <div style="padding: 10px; ">
             <br>
-            <table id="{{prefix}}VariationTable" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+            <table id="{{prefix}}VariationTable" data-search="true" data-show-columns="true" data-pagination="true"
+                   data-height="520" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
-                <!--data-detail-view="true" data-detail-formatter="detailFormatter">-->
-                <!--<thead>-->
-                <!--<tr>-->
-                <!--<th data-field="detail-view"></th>-->
-                <!--<th data-field="chromosome" data-sortable="true">chromosome</th>-->
-                <!--<th data-field="start" data-sortable="true" width="200">start</th>-->
-                <!--<th data-field="ends" data-sortable="true">end</th>-->
-                <!--<th data-field="ids" data-sortable="true">ids</th>-->
-                <!--</tr>-->
-                <!--</thead>-->
+
             </table>
         </div>
     </template>
@@ -43,59 +38,106 @@
         Polymer({
             is: 'cellbase-variation-grid',
             properties: {
+                cellbaseClient: {
+                    type: Object
+                },
+                url: {
+                    type: String,
+                    observer: 'renderFromServer'
+                },
                 data: {
                     type: Array,
                     value: [],
-                    observer: 'render'
+                    observer: 'renderFromLocal'
                 },
                 prefix: {
                     type: String
                 }
             },
-            render: function() {
+            ready: function () {
+                this.cols = [
+                    [
+                        {
+                            title: 'ID',
+                            formatter: this.idFormatter,
+                            sortable: true
+                        },
+                        {
+                            title: 'Alleles',
+                            formatter: this.refAltFormatter
+                        },
+                        {
+                            title: 'Location',
+                            formatter: this.locationFormatter
+                        },
+                        {
+                            title: 'Type',
+                            field: 'type'
+                        },
+                        {
+                            title: 'HGVS',
+                            field: 'hgvs.genomic'
+                        },
+                        {
+                            title: 'Display Consequence Type',
+                            field: 'annotation.displayConsequenceType',
+                            sortable: true
+                        },
+                        {
+                            title: 'Ancestral Allele',
+                            field: 'annotation.ancestralAllele'
+                        },
+                        {
+                            title: 'MAF',
+                            formatter: this.mafFormatter
+                        }
+                    ]
+                ]
+            },
+            renderFromServer: function () {
                 let _this = this;
+                $('#' + this.prefix + 'VariationTable').bootstrapTable('destroy');
+                let _numTotal = -1;
+
+                $('#' + this.prefix + 'VariationTable').bootstrapTable({
+                    url: this.url,
+                    method: 'get',
+                    sidePagination: 'server',
+                    queryParams: function (params) {
+                        return {
+                            limit: params.limit,
+                            skip: params.offset
+                        };
+                    },
+                    responseHandler: function (res) {
+                        if (_numTotal == -1) {
+//                            _numTotal = res.response[0].numTotalResults;
+                            _numTotal = 1000;
+                        }
+                        return {total: _numTotal, rows: res.response[0].result}
+                    },
+                    columns: this.cols,
+                    onClickRow: function (row, $element) {
+                        _this.fire('selected', {variant: row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate});
+                        $('#' + _this.prefix + 'VariationTable' + ' tr').removeClass("highlight");
+                        $element.addClass("highlight");
+                    },
+                    onSearch: function (text) {
+                        $.each($('#' + _this.prefix + 'VariationTable' + ' tbody tr'), function() {
+                            if($(this).text().toLowerCase().indexOf(text.toLowerCase()) === -1)
+                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('hideRow', $(this).attr('data-index'));
+                            else
+                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('showRow', $(this).attr('data-index'));
+                        });
+                    }
+                });
+                $('#' + this.prefix + 'VariationTable').bootstrapTable('showLoading');
+            },
+            renderFromLocal: function () {
                 $('#' + this.prefix + 'VariationTable').bootstrapTable('destroy');
                 $('#' + this.prefix + 'VariationTable').bootstrapTable({
                     data: this.data,
-                    columns: [
-                        [
-                            {
-                                title: 'ID',
-//                                field: 'ids',
-                                formatter: this.idFormatter,
-                                sortable: true
-                            },
-                            {
-                                title: 'Alleles',
-                                formatter: this.refAltFormatter
-                            },
-                            {
-                                title: 'Location',
-                                formatter: this.locationFormatter
-                            },
-                            {
-                                title: 'Type',
-                                field: 'type'
-                            },
-                            {
-                                title: 'HGVS',
-                                field: 'hgvs.genomic'
-                            },
-                            {
-                                title: 'Display Consequence Type',
-                                field: 'annotation.displayConsequenceType',
-                                sortable: true
-                            },
-                            {
-                                title: 'Ancestral Allele',
-                                field: 'annotation.ancestralAllele'
-                            },
-                            {
-                                title: 'MAF',
-                                formatter: this.mafFormatter
-                            }
-                        ]
-                    ],
+                    columns: this.cols,
                     onClickRow: function (row, $element) {
                         _this.fire('selected', {variant: row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate});
                     }
