@@ -57,3 +57,5 @@ local.properties
 
 # Python
 *.pyc
+os
+sys
