@@ -22,11 +22,15 @@
 
 <dom-module id="cellbase-transcripts-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .highlight {
+                background-color: lightgreen;
+            }
+        </style>
 
         <!--Transcripts table-->
         <div>
-            <table class="table table-hover">
+            <table class="table table-hover" id="{{prefix}}Transcripts">
                 <thead>
                 <tr>
                     <th>Name</th>
@@ -123,6 +127,8 @@
                 }
             },
             loadTabs: function (e) {
+                $('#' + this.prefix + 'Transcripts' + ' tbody tr').removeClass("highlight");
+                $(e.currentTarget).addClass("highlight");
                 var item = this.$.transcriptList.itemForElement(e.target);
                 this.$.selector.select(item);
             }

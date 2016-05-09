@@ -19,7 +19,11 @@
 
 <dom-module id="cellbase-variation-grid">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .highlight {
+                background-color: lightgreen;
+            }
+        </style>
 
         <div style="padding: 10px; ">
             <br>
@@ -115,6 +119,16 @@
                     columns: this.cols,
                     onClickRow: function (row, $element) {
                         _this.fire('selected', {variant: row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate});
+                        $('#' + _this.prefix + 'VariationTable' + ' tr').removeClass("highlight");
+                        $element.addClass("highlight");
+                    },
+                    onSearch: function (text) {
+                        $.each($('#' + _this.prefix + 'VariationTable' + ' tbody tr'), function() {
+                            if($(this).text().toLowerCase().indexOf(text.toLowerCase()) === -1)
+                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('hideRow', $(this).attr('data-index'));
+                            else
+                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('showRow', $(this).attr('data-index'));
+                        });
                     }
                 });
                 $('#' + this.prefix + 'VariationTable').bootstrapTable('showLoading');
