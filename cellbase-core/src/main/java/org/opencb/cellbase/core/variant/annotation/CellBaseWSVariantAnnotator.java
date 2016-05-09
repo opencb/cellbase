@@ -57,7 +57,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
     public void run(List<Variant> variantList) {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
-        QueryResponse<QueryResult<VariantAnnotation>> response;
+        QueryResponse<VariantAnnotation> response;
         try {
             response = cellBaseClient.getAnnotation(CellBaseClient.Category.genomic,
                     CellBaseClient.SubCategory.variant, variantList, queryOptions);
@@ -68,6 +68,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
         //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
 //        variantAnnotationList = new ArrayList<>(variantList.size());
+//        List<QueryResult<QueryResult<VariantAnnotation>>> response1 = response.getResponse();
         List<QueryResult<VariantAnnotation>> queryResultList = response.getResponse();
         for (int i = 0; i < queryResultList.size(); i++) {
             if (queryResultList.get(i).getResult().size() > 0) {
