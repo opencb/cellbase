@@ -18,7 +18,10 @@ package org.opencb.cellbase.server.ws.genomic;
 
 import io.swagger.annotations.*;
 import org.bson.Document;
-import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;

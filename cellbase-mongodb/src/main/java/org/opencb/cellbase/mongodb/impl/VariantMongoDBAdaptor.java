@@ -118,7 +118,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     @Override
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options.put(MongoDBCollection.SKIP_COUNT, true);
+//        options.put(MongoDBCollection.SKIP_COUNT, true);
         options = addPrivateExcludeOptions(options);
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
@@ -126,7 +126,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options.put(MongoDBCollection.SKIP_COUNT, true);
+//        options.put(MongoDBCollection.SKIP_COUNT, true);
         return mongoDBCollection.find(bson, options);
     }
 
