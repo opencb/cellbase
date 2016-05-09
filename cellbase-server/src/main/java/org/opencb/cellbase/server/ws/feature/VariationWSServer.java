@@ -113,7 +113,7 @@ public class VariationWSServer extends GenericRestWSServer {
     @GET
     @Path("/{id}/info")
     @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) SNPs", notes = "An independent"
-            + " database query will be issued for each region in regionStr, meaning that results for each region will be"
+            + " database query will be issued for each region in id, meaning that results for each region will be"
             + " returned in independent QueryResult objects within the QueryResponse object.",
             response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
