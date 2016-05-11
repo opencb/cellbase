@@ -843,6 +843,10 @@ public class GeneWSServer extends GenericRestWSServer {
             value = "Resource to get clinical variants from a list of gene HGNC symbols", response = Document.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "source",
+                    value = "Comma separated list of database sources of the documents to be returned. Possible values "
+                            + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
+                    required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "so",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
                             + "matches will be returned.",
@@ -863,7 +867,9 @@ public class GeneWSServer extends GenericRestWSServer {
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query")
     })
-    public Response getAllClinvarByGene(@PathParam("geneId") String geneId) {
+    public Response getAllClinvarByGene(@PathParam("geneId")
+                                        @ApiParam(name = "geneId", value = "String containing one gene symbol, e.g:"
+                                                + " BRCA2", required = true) String geneId) {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
