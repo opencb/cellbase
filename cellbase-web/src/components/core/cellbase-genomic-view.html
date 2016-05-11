@@ -33,7 +33,7 @@
     <template>
         <style is="custom-style" include="cellbase-shared-styles">
             .highlight {
-                background-color: lightgreen;
+                background-color: darkgray;
             }
         </style>
 
@@ -54,7 +54,8 @@
                     Number of Genes: {{geneCount}}<br>
                     Number of Variants: {{variationCount}}<br>
                     Number of Regulatory Elements: {{regulationCount}}<br>
-                    Number of Clinical Variants: {{clinicalCount}}<br>
+                    Number of Clinical Variants by source - Clinvar : {{clinvarCount}}<br>
+                    Number of Clinical Variants by source - Cosmic: {{cosmicCount}}<br>
                 </div>
                 <div id="genomicViewGene" role="tabpanel" class="tab-pane">
                     <br>
@@ -90,11 +91,11 @@
                     </div>
                 </div>
                 <div id="genomicViewRegulation" role="tabpanel" class="tab-pane">
-                    <cellbase-regulation-grid url="{{regUrl}}" prefix="genomicRegion"></cellbase-regulation-grid>
+                    <cellbase-regulation-grid url="{{regUrl}}" prefix="genomicRegion" count="{{regulationCount}}"></cellbase-regulation-grid>
                 </div>
                 <div id="genomicViewVariation" role="tabpanel" class="tab-pane">
                     <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{variationUrl}}"
-                                             on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>
+                                             on-selected="onVariantSelected" prefix="genomicView" count="{{variationCount}}"></cellbase-variation-grid>
                     <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="genomicView"></cellbase-variantannotation-view>
                 </div>
@@ -110,11 +111,11 @@
                         </p>
                         <div class="collapse in" id="genomicClinvarDiv">
                             <h4>Clinvar</h4>
-                            <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="genomicView"></cellbase-clinvar-grid>
+                            <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="genomicView" count="{{clinvarCount}}"></cellbase-clinvar-grid>
                         </div>
                         <div class="collapse in" id="genomicCosmicDiv">
                             <h4>Cosmic</h4>
-                            <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="genomicView"></cellbase-cosmic-grid>
+                            <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="genomicView" count="{{cosmicCount}}"></cellbase-cosmic-grid>
                         </div>
 
                 </div>

@@ -28,6 +28,10 @@
                 },
                 prefix: {
                     type: String
+                },
+                count: {
+                    type: Number,
+                    notify: true
                 }
             },
             ready: function () {
@@ -77,6 +81,7 @@
                 ]
             },
             renderFromServer: function () {
+                let _this = this;
                 $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
                 let _numTotal = -1;
 
@@ -92,8 +97,8 @@
                     },
                     responseHandler: function (res) {
                         if (_numTotal == -1) {
-//                            _numTotal = res.response[0].numTotalResults;
-                            _numTotal = 30;
+                            _numTotal = res.response[0].numTotalResults;
+                            _this.count = _numTotal;
                         }
                         return {total: _numTotal, rows: res.response[0].result}
                     },

@@ -16,32 +16,31 @@
 
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<link rel="import" href="cellbase-variantannotation-filter.html">
-<link rel="import" href="cellbase-variantannotation-view.html">
+<link rel="import" href="cellbase-clinical-filter.html">
+<link rel="import" href="cellbase-clinical-view.html">
 
-<dom-module id="cellbase-variantannotation-panel">
+<dom-module id="cellbase-clinical-panel">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-variantannotation-filter id="filter" variant={{variant}} cellbase-client="{{cellbaseClient}}"></cellbase-variantannotation-filter>
+                <cellbase-clinical-filter id="filter" region="{{region}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-variantannotation-view id="view" data={{variant}} cellbase-client="{{cellbaseClient}}" prefix="variantPanel"></cellbase-variantannotation-view>
+                <cellbase-clinical-view id="view" region="{{region}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-view>
             </div>
         </div>
     </template>
     <script>
         Polymer({
-            is: 'cellbase-variantannotation-panel',
+            is: 'cellbase-clinical-panel',
             properties: {
                 cellbaseClient: {
                     type: Object
                 },
-                variant: {
-                    type: String,
-                    notify: true
+                region: {
+                    type: String
                 }
             },
             ready: function () {

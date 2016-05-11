@@ -21,7 +21,7 @@
     <template>
         <style is="custom-style" include="cellbase-shared-styles">
             .highlight {
-                background-color: lightgreen;
+                background-color: darkgray;
             }
         </style>
 
@@ -52,6 +52,10 @@
                 },
                 prefix: {
                     type: String
+                },
+                count: {
+                    type: Number,
+                    notify: true
                 }
             },
             ready: function () {
@@ -111,8 +115,8 @@
                     },
                     responseHandler: function (res) {
                         if (_numTotal == -1) {
-//                            _numTotal = res.response[0].numTotalResults;
-                            _numTotal = 1000;
+                            _numTotal = res.response[0].numTotalResults;
+                            _this.count = _numTotal;
                         }
                         return {total: _numTotal, rows: res.response[0].result}
                     },
@@ -125,9 +129,9 @@
                     onSearch: function (text) {
                         $.each($('#' + _this.prefix + 'VariationTable' + ' tbody tr'), function() {
                             if($(this).text().toLowerCase().indexOf(text.toLowerCase()) === -1)
-                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('hideRow', $(this).attr('data-index'));
+                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('hideRow', {index: Number($(this).attr('data-index'))});
                             else
-                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('showRow', $(this).attr('data-index'));
+                                $('#' + _this.prefix + 'VariationTable').bootstrapTable('showRow', {index: Number($(this).attr('data-index'))});
                         });
                     }
                 });

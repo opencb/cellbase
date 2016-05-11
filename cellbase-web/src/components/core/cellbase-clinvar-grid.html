@@ -28,6 +28,11 @@
                 },
                 prefix: {
                     type: String
+                },
+                count: {
+                    type: Number,
+                    value: 0,
+                    notify: true
                 }
             },
             ready: function () {
@@ -74,8 +79,8 @@
                     },
                     responseHandler: function (res) {
                         if (_numTotal == -1) {
-//                            _numTotal = res.response[0].numTotalResults;
-                            _numTotal = 1000;
+                            _numTotal = res.response[0].numTotalResults;
+                            _this.count = _numTotal;
                         }
                         return {total: _numTotal, rows: res.response[0].result}
                     },
