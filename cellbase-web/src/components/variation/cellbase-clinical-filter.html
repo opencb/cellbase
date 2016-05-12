@@ -141,10 +141,25 @@
                         <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
-                            <div>
-                                <b on-click="_updateClinicalView" id="{{item.mutationID}}" style="cursor: pointer">{{item.chromosome}}:{{item.start}}-{{item.end}}</b><br>
-                                <hr>
-                            </div>
+                            <template is="dom-if" if="{{checkCosmic(item)}}">
+                                <div>
+                                    <b on-click="_updateClinicalView" style="cursor: pointer">{{item.mutationID}}</b><br>
+                                    {{item.chromosome}}:{{item.start}}-{{item.end}}<br>
+                                    Phenotypes:
+                                    <template is="dom-repeat" items="{{item._phenotypes}}" as="phenotype">
+                                        {{phenotype}},
+                                    </template>
+                                    <hr>
+                                </div>
+                            </template>
+                            <template is="dom-if" if="{{checkClinvar(item)}}">
+                                <div>
+                                    <b on-click="_updateClinicalView" style="cursor: pointer">{{item.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc}}</b><br>
+                                    {{item.chromosome}}:{{item.start}}-{{item.end}}
+                                    <hr>
+                                </div>
+                            </template>
+
                         </template>
                     </div>
                 </div>
@@ -162,7 +177,7 @@
                 result: {
                     type: Array
                 },
-                region: {
+                clinicalId: {
                     type: String,
                     notify: true
                 }
@@ -174,14 +189,16 @@
                 this.$.clinicalTraitTextArea.value= "";
             },
             loadExample: function (e) {
-                this.$.clinicalRegionList.value = "1:6635137-6635325";
+//                this.$.clinicalRegionList.value = "1:6635137-6635325";
+                this.$.clinicalRegionList.value = "13:32889611-32890000";
             },
             executeQuery: function (e) {
                 // activate the GIF
                 $('#spinImg').show();
 
                 // We first build the query params object
-                let queryParams = {include: "chromosome,start,end"};
+//                let queryParams = {include: "chromosome,start,end"};
+                let queryParams = {};
 //                if (this.consequenceTypes.length > 0) {
 //                    queryParams.consequenceType = this.consequenceTypes.join(",");
 //                }
@@ -215,11 +232,17 @@
 
                 $('.nav-tabs a[href="#clinicalResult"]').tab('show');
             },
+            checkCosmic: function(item) {
+                return item.source === "cosmic";
+            },
+            checkClinvar: function(item) {
+                return item.source === "clinvar";
+            },
             ready: function() {
 //                this.cellBaseClient = CELLBASE_CLIENT;
             },
             _updateClinicalView: function(e) {
-                this.region = e.target.innerText;
+                this.clinicalId = e.target.innerText;
             }
         });
     </script>
