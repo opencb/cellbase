@@ -77,9 +77,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String DISGENET_NAME = "DisGeNET";
     private static final String DGIDB_NAME = "DGIdb";
     private static final String UNIPROT_NAME = "DGIdb";
+    private static final String CADD_NAME = "CADD";
     private static final String GENOME_DATA = "genome";
     private static final String GENE_DATA = "gene";
     private static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
+    private static final String VARIATION_DATA = "variation";
+    private static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -204,12 +207,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadGeneDiseaseAssociation(sp, spFolder);
                         }
                         break;
-                    case "variation":
+                    case VARIATION_DATA:
                         if (speciesHasInfoToDownload(sp, "variation")) {
                             downloadVariation(sp, spShortName, spFolder, ensemblHostUrl);
                         }
                         break;
-                    case "variation_functional_score":
+                    case VARIATION_FUNCTIONAL_SCORE_DATA:
                         if (speciesHasInfoToDownload(sp, "variation_functional_score")) {
                             downloadCaddScores(sp, assembly.getName(), spFolder);
                         }
@@ -531,11 +534,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
             variationUrl = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
         variationUrl = variationUrl + "/mysql/" + shortName + "_variation_" + ensemblVersion;
+        List<String> downloadedUrls = new ArrayList<>(VARIATION_FILES.length);
 
         for (String variationFile : VARIATION_FILES) {
             Path outputFile = variationFolder.resolve(variationFile);
             downloadFile(variationUrl + "/" + variationFile, outputFile.toString());
+            downloadedUrls.add(variationUrl + "/" + variationFile);
         }
+
+        saveVersionData(VARIATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+                variationFolder.resolve("ensemblVersion.json"));
+
     }
 
 
@@ -804,6 +813,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
             // Downloads CADD scores
             String url = configuration.getDownload().getCadd().getHost();
             downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
+            saveVersionData(VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
+                    Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
         }
     }
 
