@@ -32,7 +32,6 @@ import org.opencb.biodata.models.variation.*;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -495,8 +494,8 @@ public class CellBaseClient {
             c = ObjectMap.class;
         }
         if (!readers.containsKey(c.getName())) {
-            readers.put(c.getName(), mapper.reader(mapper.getTypeFactory().constructParametricType(
-                    QueryResponse.class, mapper.getTypeFactory().constructParametricType(QueryResult.class, c))));
+            readers.put(c.getName(), mapper.readerFor(mapper.getTypeFactory()
+                    .constructParametrizedType(QueryResponse.class, QueryResponse.class, c)));
         }
         return readers.get(c.getName());
     }

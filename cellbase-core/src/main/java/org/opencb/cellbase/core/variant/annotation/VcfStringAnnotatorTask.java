@@ -37,12 +37,19 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, V
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
     private static VariantNormalizer normalizer = new VariantNormalizer(false, false, true);
+    private boolean normalize;
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version, List<VariantAnnotator> variantAnnotatorList) {
+        this(header, version, variantAnnotatorList, true);
+    }
+
+    public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
+                                  List<VariantAnnotator> variantAnnotatorList, boolean normalize) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
         this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
+        this.normalize = normalize;
     }
 
     public void pre() {
@@ -53,7 +60,12 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, V
 
     public List<Variant> apply(List<String> batch) {
         List<Variant> variantList = parseVariantList(batch);
-        List<Variant> normalizedVariantList = normalizer.apply(variantList);
+        List<Variant> normalizedVariantList;
+        if (normalize) {
+            normalizedVariantList = normalizer.apply(variantList);
+        } else {
+            normalizedVariantList = variantList;
+        }
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             variantAnnotator.run(normalizedVariantList);
         }
