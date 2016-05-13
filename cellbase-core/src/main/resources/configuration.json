@@ -48,6 +48,9 @@
 		"mirbase": {
 			"host": "ftp://mirbase.org/pub/mirbase/CURRENT/"
 		},
+		"mirbaseReadme": {
+			"host": "ftp://mirbase.org/pub/mirbase/CURRENT/README"
+		},
 		"targetScan": {
 			"host": "http://hgdownload.cse.ucsc.edu/goldenPath/"
 		},

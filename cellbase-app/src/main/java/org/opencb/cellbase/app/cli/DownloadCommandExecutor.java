@@ -83,6 +83,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     private static final String VARIATION_DATA = "variation";
     private static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
+    private static final String REGULATION_DATA = "regulation";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -217,7 +218,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadCaddScores(sp, assembly.getName(), spFolder);
                         }
                         break;
-                    case "regulation":
+                    case REGULATION_DATA:
                         if (speciesHasInfoToDownload(sp, "regulation")) {
                             downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         }
@@ -392,7 +393,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadedUrls.add(url);
 
         saveVersionData(GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
-                geneFolder.resolve("ensemblVersion.json"));
+                geneFolder.resolve("ensemblCoreVersion.json"));
     }
 
     private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
@@ -543,7 +544,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
 
         saveVersionData(VARIATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
-                variationFolder.resolve("ensemblVersion.json"));
+                variationFolder.resolve("ensemblVariationVersion.json"));
 
     }
 
@@ -562,22 +563,35 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
         regulationUrl = regulationUrl + "/regulation/" + shortName;
 
+        List<String> downloadedUrls = new ArrayList<>(REGULATION_FILES.length);
         for (String regulationFile : REGULATION_FILES) {
             Path outputFile = regulationFolder.resolve(regulationFile);
             downloadFile(regulationUrl + "/" + regulationFile, outputFile.toString());
+            downloadedUrls.add(regulationUrl + "/" + regulationFile);
         }
+        saveVersionData(REGULATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+                regulationFolder.resolve("ensemblRegulationVersion.json"));
 
         // Downloading miRNA info
         String url;
         Path mirbaseFolder = common.resolve("mirbase");
         if (!Files.exists(mirbaseFolder)) {
             makeDir(mirbaseFolder);
+            downloadedUrls = new ArrayList<>(2);
 
             url = configuration.getDownload().getMirbase().getHost() + "/miRNA.xls.gz";
             downloadFile(url, mirbaseFolder.resolve("miRNA.xls.gz").toString());
+            downloadedUrls.add(url);
 
             url = configuration.getDownload().getMirbase().getHost() + "/aliases.txt.gz";
             downloadFile(url, mirbaseFolder.resolve("aliases.txt.gz").toString());
+            downloadedUrls.add(url);
+
+            String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
+            downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
+            saveVersionData(REGULATION_DATA, MIRBASE_NAME,
+                    getMirbaseVersion(mirbaseFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
+                    Collections.singletonList(url), mirbaseFolder.resolve("disgenetVersion.json"));
         }
 
         if (species.getScientificName().equals("Homo sapiens")) {
@@ -587,6 +601,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
                 url = configuration.getDownload().getMiRTarBase().getHost() + "/hsa_MTI.xls";
                 downloadFile(url, regulationFolder.resolve("hsa_MTI.xls").toString());
+
+                saveVersionData(REGULATION_DATA, xxxx, ensemblVersion, getTimeStamp(), downloadedUrls,
+                        regulationFolder.resolve("ensemblRegulationVersion.json"));
             }
         }
         if (species.getScientificName().equals("Mus musculus")) {

@@ -166,6 +166,7 @@ public class CellBaseConfiguration {
         private URLProperties geneUniprotXref;
         private URLProperties geneExpressionAtlas;
         private URLProperties mirbase;
+        private URLProperties mirbaseReadme;
         private URLProperties targetScan;
         private URLProperties miRTarBase;
         private URLProperties uniprot;
@@ -336,6 +337,10 @@ public class CellBaseConfiguration {
         public void setMirbase(URLProperties mirbase) {
             this.mirbase = mirbase;
         }
+
+        public URLProperties getMirbaseReadme() { return mirbaseReadme; }
+
+        public void setMirbaseReadme(URLProperties mirbaseReadme) { this.mirbaseReadme = mirbaseReadme; }
 
         public URLProperties getTargetScan() {
             return targetScan;
