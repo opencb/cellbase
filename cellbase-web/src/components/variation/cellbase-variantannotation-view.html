@@ -52,7 +52,7 @@
                 <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationPopulationFrequencies">
                     <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true"
                            data-pagination="true"
-                           data-page-list="[10, 25, 50]"
+                           data-page-list="[5, 15, 30]"
                            data-show-pagination-switch="true" data-show-export="true">
 
                     </table>
@@ -70,6 +70,7 @@
 
                 <!--Variant Trait Association-->
                 <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationVTA">
+                    <template is="dom-if" if="{{check(variantAnnotation)}}">
                     <h4>Clinvar</h4>
                     <table class="table table-hover">
                         <thead>
@@ -130,6 +131,11 @@
                         </template>
                         </tbody>
                     </table>
+                    </template>
+
+                    <template is="dom-if" if="{{checkEmpty(variantAnnotation)}}">
+                        No ClinVar and Cosmic data available
+                    </template>
                 </div>
 
                 <!--Conservation Tab-->
@@ -196,6 +202,16 @@
             },
             ready: function () {
 //                this.cellbaseClient = CELLBASE_CLIENT;
+            },
+            check: function (data) {
+                if (data.variantTraitAssociation != null) {
+                    return true;
+                }
+            },
+            checkEmpty: function (data) {
+                if (data.variantTraitAssociation == null) {
+                    return true;
+                }
             },
             _variantChanged: function () {
                 let _this = this;
@@ -356,6 +372,7 @@
                     $('#' + _this.prefix + 'populationFreqTable').bootstrapTable('destroy');
                     $('#' + _this.prefix + 'populationFreqTable').bootstrapTable({
                         data: _this.variantAnnotation.populationFrequencies,
+                        pageSize: 5,
                         columns: [
                             [
                                 {

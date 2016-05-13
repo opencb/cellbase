@@ -38,19 +38,20 @@
                     <b>Alternate:</b> {{clinicalObj.alternate}} <br>
                     <template is="dom-if" if="{{checkClinvar(clinicalObj)}}">
                         <b>Review status:</b> {{clinicalObj.clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus}} <br>
-                        <b>Last Evaluated:</b> {{clinicalObj.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated}} <br>
-                        <b>HGVS(s):</b>
+                        <b>Last Evaluated:</b> {{updatedDate}} <br>
+                        <b>HGVS(s):</b><br>
                         <template is="dom-repeat" items="{{clinicalObj.annot.hgvs}}">
                             {{item}} <br>
                         </template>
-                         <br>
-                        <b>SO Terms(s):</b>
+                        <b>SO Terms(s):</b><br>
                         <template is="dom-repeat" items="{{soterms}}">
                             {{item.name}} ({{item.total}}) <br>
                         </template>
-                        <br>
-                        <b>Submitted Gene:</b> {{clinicalObj.alternate}} <br>
-                        <b>Publications:</b> {{clinicalObj.alternate}} <br>
+                        <b>Submitted Gene:</b> {{submittedGene}} <br>
+                        <b>Publications:</b> <br>
+                        <template is="dom-repeat" items="{{publication}}">
+                            {{item}} (PubMed) <br>
+                        </template>
                     </template>
 
                     <h3>Annotation</h3>
@@ -89,12 +90,17 @@
                         let success = function (response) {
                             let clinicalResult = response.response[0].result[0];
                             if (typeof clinicalResult !== "undefined") {
+                                // Setting the region for genome viewer
                                 let region = new Region({
                                     chromosome: clinicalResult.chromosome,
                                     start: clinicalResult.start,
                                     end: clinicalResult.end
                                 });
                                 _this.genomeViewer.setRegion(region);
+                                // Converting the timestamp to UTC format
+                                _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
+
+                                // Getting the SOTerms and counting how many times each SOterm occurs
                                 let names = [];
                                 for (let i in clinicalResult.annot.consequenceTypes) {
                                     let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
@@ -111,6 +117,52 @@
                                     soterms.push({name: x, total: count[x]});
                                 }
                                 _this.soterms = soterms;
+
+                                //Getting the submitted Gene which is enclosed in array of arrays
+                                let geneName = [];
+                                let measures = clinicalResult.clinvarSet.referenceClinVarAssertion.measureSet.measure;
+                                for (let measure in measures) {
+                                    let measureRelationships = measures[measure].measureRelationship;
+                                    for (let i in measureRelationships) {
+                                        let symbols = measureRelationships[i].symbol;
+                                        for (let j in symbols) {
+                                            geneName.push(symbols[j].elementValue.value);
+                                        }
+                                    }
+                                }
+                                _this.submittedGene = geneName;
+
+                                // Getting the Publication IDs that are from source PubMed
+                                let pubIds = [];
+                                let traits = clinicalResult.clinvarSet.referenceClinVarAssertion.traitSet.trait;
+                                for (let i in traits) {
+                                    let citations = traits[i].citation;
+                                    for (let j in citations) {
+                                        let ids = citations[j].id;
+                                        for(let k in ids) {
+                                            if (ids[k].source == "PubMed") {
+                                                pubIds.push(ids[k].value);
+                                            }
+                                        }
+                                    }
+                                }
+                                let observedIns = clinicalResult.clinvarSet.referenceClinVarAssertion.observedIn;
+                                for (let i in observedIns) {
+                                    let observedData = observedIns[i].observedData;
+                                    for (let j in observedData) {
+                                        let citations = observedData[j].citation;
+                                        for(let k in citations) {
+                                            let ids = citations[k].id;
+                                            for ( let l in ids) {
+                                                if (ids[l].source == "PubMed") {
+                                                    pubIds.push(ids[l].value);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                _this.publication = pubIds
+
                             } else {
                                 alert("Clinical ID not valid: " + _this.clinicalId);
                             }
