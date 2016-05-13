@@ -16,10 +16,14 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.bson.Document;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.TranscriptTfbs;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
@@ -38,17 +42,48 @@ public class GeneClient extends ParentRestClient {
         this.subcategory = "gene";
     }
 
-    public QueryResponse<String> distinct(Query query) throws IOException {
-        return execute("biotype", query, null, String.class);
+    public QueryResponse<String> getBiotypes(Query query) throws IOException {
+        return execute("biotype", query, String.class);
     }
 
-    public QueryResponse<Gene> get(String id, Map<String, Object> params, QueryOptions options) throws IOException {
-        return execute(id, "info", params, options, Gene.class);
+    public QueryResponse<Gene> first() throws IOException {
+        return execute("first", null, Gene.class);
     }
 
-    public QueryResponse<Gene> search(Query query, QueryOptions options) throws IOException {
-        return execute("all", query, options, Gene.class);
+    public QueryResponse<Gene> list(Query query) throws IOException {
+        return execute("list", query, Gene.class);
     }
 
+    public QueryResponse<Gene> group(Query query) throws IOException {
+        return execute("group", query, Gene.class);
+    }
+
+    public QueryResponse<Gene> get(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "info", params, Gene.class);
+    }
+
+    public QueryResponse<Transcript> getTranscript(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "transcript", params, Transcript.class);
+    }
+
+    public QueryResponse<TranscriptTfbs> getTfbs(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "tfbs", params, TranscriptTfbs.class);
+    }
+
+    public QueryResponse<Gene> search(Query query) throws IOException {
+        return execute("all", query, Gene.class);
+    }
+
+    public QueryResponse<Variant> getSnp(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "snp", params, Variant.class);
+    }
+
+    public QueryResponse<Entry> getProtein(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "protein", params, Entry.class);
+    }
+
+    public QueryResponse<Document> getClinical(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "clinical", params, Document.class);
+    }
 
 }

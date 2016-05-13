@@ -16,22 +16,22 @@
 
 package org.opencb.cellbase.client.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.BeforeClass;
+import org.bson.Document;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
+import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.TranscriptTfbs;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
-import org.opencb.cellbase.client.config.RestConfig;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,8 +43,8 @@ public class GeneClientTest {
 
     private CellBaseClient cellBaseClient;
 
-    @Rule
-    public TestRule globalTimeout = new Timeout(1000);
+//    @Rule
+//    public TestRule globalTimeout = new Timeout(2000);
 
     public GeneClientTest() {
         ClientConfiguration clientConfiguration;
@@ -66,28 +66,94 @@ public class GeneClientTest {
     }
 
     @Test
-    public void distinct() throws Exception {
-        QueryResponse<String> distinct = cellBaseClient.getGeneClient().distinct(new Query(GeneDBAdaptor.QueryParams.BIOTYPE.key()));
-        System.out.println(distinct.getResponse().get(0).getResult());
+    public void first() throws Exception {
+        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().first();
+        assertNotNull("First gene in the collection must be returned", gene);
+    }
+
+    @Test
+    public void getBiotypes() throws Exception {
+        QueryResponse<String> biotypes = cellBaseClient.getGeneClient().getBiotypes(null);
+        assertNotNull("List of biotypes should be returned", biotypes.firstResult());
+
+        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(GeneDBAdaptor.QueryParams.REGION.key(), "1:65342-66500"));
+        assertNull("List of biotypes in the given region is empty", biotypes.firstResult());
+
+        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(GeneDBAdaptor.QueryParams.REGION.key(), "1:20000-70000"));
+        assertNotNull("List of biotypes in the given region", biotypes.firstResult());
     }
 
     @Test
     public void get() throws Exception {
-        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().get("BRCA2", null, null);
+        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().get("BRCA2", null);
         assertNotNull("This gene should exist", gene.firstResult());
 
         Map<String, Object> params = new HashMap<>();
         params.put("exclude", "transcripts");
-        gene = cellBaseClient.getGeneClient().get("BRCA2", params, null);
+        gene = cellBaseClient.getGeneClient().get("BRCA2", params);
         assertNull("This gene should not have transcritps", gene.firstResult().getTranscripts());
 
-        gene = cellBaseClient.getGeneClient().get("NotExistingGene", null, null);
+        gene = cellBaseClient.getGeneClient().get("NotExistingGene", null);
         assertNull("This gene should not exist", gene.firstResult());
     }
 
     @Test
+    public void list() throws Exception {
+        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().list(new Query("limit", 10));
+        assertNotNull("List of gene Ids", gene);
+    }
+
+    @Test
     public void search() throws Exception {
-        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "miRNA"), new QueryOptions("limit", 1));
-        System.out.println(gene.getResponse().get(0).getResult());
+        Map<String, Object> params = new HashMap<>();
+        params.put(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "miRNA");
+        params.put("limit", 1);
+        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(params));
+        System.out.println(gene.firstResult());
+    }
+
+    @Test
+    public void getProtein() throws Exception {
+        QueryResponse<Entry> protein = cellBaseClient.getGeneClient().getProtein("BRCA2", null);
+        assertNotNull(protein.firstResult());
+    }
+
+    @Test
+    public void getSnp() throws Exception {
+        QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getSnp("BRCA2", null);
+        assertNotNull(variantQueryResponse.firstResult());
+    }
+
+    @Test
+    public void getTfbs() throws Exception {
+        QueryResponse<TranscriptTfbs> tfbs = cellBaseClient.getGeneClient().getTfbs("BRCA2", null);
+        assertNotNull("Tfbs of the given gene must be returned", tfbs.firstResult());
+    }
+
+    @Test
+    public void getTranscript() throws Exception {
+        QueryResponse<Transcript> transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", null);
+        assertNotNull("Transcripts of the given gene must be returned", transcript.firstResult());
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("transcripts.biotype", "protein_coding");
+        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", params);
+        assertNotNull(transcript.firstResult());
+        assertEquals("Number of transcripts with biotype protein_coding", 3, transcript.getResponse().get(0).getNumTotalResults());
+    }
+
+
+    @Test
+    public void getClinical() throws Exception {
+
+        QueryResponse<Document> clinical = cellBaseClient.getGeneClient().getClinical("BRCA2", null);
+        assertNotNull(clinical.firstResult());
+
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("source", "cosmic");
+        params.put("limit", 2);
+        clinical = cellBaseClient.getGeneClient().getClinical("BRCA2", params);
+        assertNotNull(clinical.firstResult());
     }
 }
