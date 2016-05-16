@@ -94,20 +94,20 @@
 
                 <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
                     <br>
-                    <p>
-                        <a class="btn btn-primary" data-toggle="collapse" href="#clinvarDiv" aria-expanded="false" aria-controls="clinvarDiv">
-                            Show/Hide Clinvar
-                        </a>
-                        <a class="btn btn-primary" data-toggle="collapse" href="#cosmicDiv" aria-expanded="false" aria-controls="cosmicDiv">
-                            Show/Hide Cosmic
-                        </a>
-                    </p>
-                    <div class="collapse in" id="clinvarDiv">
-                        <h4>Clinvar</h4>
+                    <div>
+                        Clinvar <a data-toggle="collapse" href="#geneClinvarDiv" aria-expanded="false" aria-controls="geneClinvarDiv">
+                        <i id="geneClinvarToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeClinvar"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="geneClinvarDiv">
                         <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="geneView"></cellbase-clinvar-grid>
                     </div>
-                    <div class="collapse in" id="cosmicDiv">
-                        <h4>Cosmic</h4>
+                    <div>
+                        Cosmic <a data-toggle="collapse" href="#geneCosmicDiv" aria-expanded="false" aria-controls="geneCosmicDiv">
+                        <i id="geneCosmicToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeCosmic"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="geneCosmicDiv">
                         <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="geneView"></cellbase-cosmic-grid>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
 
 
                 <div id="geneViewPpi" role="tabpanel" class="tab-pane">
-                    PPI
+                    NOT YET READY FOR BETA VERSION
                     <!--<cell-maps-element></cell-maps-element>-->
                 </div>
 
@@ -149,20 +149,15 @@
                 geneObj: {
                     type: Object
                 },
-                variations: {
-                    type: Array
-                },
                 variant: {
                     type: String
-                },
-                clinvar: {
-                    type: Array,
-                    value: []
-                },
-                cosmic: {
-                    type: Array,
-                    value: []
                 }
+            },
+            iconChangeClinvar: function () {
+                $('#geneClinvarToggle').toggleClass('fa-minus-circle fa-plus-circle');
+            },
+            iconChangeCosmic: function () {
+                $('#geneCosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
             _geneIdChanged: function(newValue, oldValue) {
                 this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/'

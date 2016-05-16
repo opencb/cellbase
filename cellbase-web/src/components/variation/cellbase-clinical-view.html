@@ -17,6 +17,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="cellbase-annotation-consequencetype-grid.html">
 
 <dom-module id="cellbase-clinical-view">
     <template>
@@ -55,8 +56,48 @@
                     </template>
 
                     <h3>Annotation</h3>
-                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}"
-                                                     prefix="variation"></cellbase-variantannotation-view>
+                    <ul id="annotationTabs" class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#clinicalConsequenceType" role="tab" data-toggle="tab">Consequence Types</a></li>
+                        <li role="presentation"><a href="#clinicalAssertion" role="tab" data-toggle="tab">Clinical Assertion</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div id="clinicalConsequenceType" role="tabpanel" class="tab-pane active">
+                            <cellbase-annotation-consequencetype-grid data="{{variantAnnotation.consequenceTypes}}" prefix="clinicalView"></cellbase-annotation-consequencetype-grid>
+                        </div>
+                        <div id="clinicalAssertion" role="tabpanel" class="tab-pane">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Submission Accession</th>
+                                    <th>Clinical Significance</th>
+                                    <th>Review status</th>
+                                    <th>Date of Submission</th>
+                                    <th>Submitter</th>
+                                    <th>Method Type</th>
+                                    <th>Allele origin</th>
+                                    <th>Assertion Method</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <template is="dom-repeat" items="{{clinicalAssertion}}">
+                                    <tr>
+                                        <td>{{item.SubAccession}}</td>
+                                        <td>{{item.clinicalSignificance}}</td>
+                                        <td>{{item.reviewStatus}}</td>
+                                        <td>{{item.submittedDate}}</td>
+                                        <td>{{item.submitter}}</td>
+                                        <td>{{item.methodType}}</td>
+                                        <td>{{item.alleleOrigin}}</td>
+                                        <td>{{item.type}}</td>
+                                    </tr>
+                                </template>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="clinicalViewGenomeContext">
@@ -78,6 +119,10 @@
                     type: String,
                     observer: '_clinicalIdChanged'
                 },
+                variant: {
+                    type: String,
+                    observer: '_variantChanged'
+                },
                 clinicalObj: {
                     type: Object
                 }
@@ -85,6 +130,7 @@
             _clinicalIdChanged: function (newValue, oldValue) {
                 let _this = this;
                 let soterms = [];
+                let clinicalAssertion = [];
                 if (this.clinicalId.startsWith('RCV')) {
                     if (typeof this.genomeViewer !== "undefined") {
                         let success = function (response) {
@@ -97,6 +143,8 @@
                                     end: clinicalResult.end
                                 });
                                 _this.genomeViewer.setRegion(region);
+                                _this.clinicalObj = clinicalResult;
+                                _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
                                 // Converting the timestamp to UTC format
                                 _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
 
@@ -161,12 +209,42 @@
                                         }
                                     }
                                 }
-                                _this.publication = pubIds
+                                _this.publication = pubIds;
+
+                                //Clinical Assertion
+                                let clinVarAssertion = clinicalResult.clinvarSet.clinVarAssertion;
+                                for (let i in clinVarAssertion) {
+                                    let assertionObj = {};
+                                    assertionObj.SubAccession = clinVarAssertion[i].clinVarAccession.acc;
+                                    let significance = clinVarAssertion[i].clinicalSignificance.description;
+                                    let description = [];
+                                    for (let j in significance) {
+                                        description.push(significance[j]);
+                                    }
+                                    assertionObj.clinicalSignificance = description.join();
+                                    assertionObj.reviewStatus = clinVarAssertion[i].clinicalSignificance.reviewStatus;
+                                    assertionObj.submittedDate = (new Date(clinVarAssertion[i].submitterDate)).toUTCString();
+                                    assertionObj.submitter = clinVarAssertion[i].clinVarSubmissionID.submitter;
+                                    let observedIns = clinVarAssertion[i].observedIn;
+                                    let methodTypes = [];
+                                    let origins = [];
+                                    for (let k in observedIns) {
+                                        let methods = observedIns[k].method;
+                                        for (let l in methods) {
+                                            methodTypes.push(methods[l].methodType);
+                                        }
+                                        origins.push(observedIns[k].sample.origin)
+                                    }
+                                    assertionObj.methodType = methodTypes.join();
+                                    assertionObj.alleleOrigin = origins.join();
+                                    assertionObj.type = clinVarAssertion[i].assertion.type;
+                                    clinicalAssertion.push(assertionObj);
+                                }
+                                _this.clinicalAssertion = clinicalAssertion;
 
                             } else {
                                 alert("Clinical ID not valid: " + _this.clinicalId);
                             }
-                            _this.clinicalObj = clinicalResult;
                         };
                         let error = function (response) {
                             alert("Clinical ID not valid: " + _this.clinicalId)
@@ -178,6 +256,16 @@
                         });
                     }
                 }
+            },
+            _variantChanged: function (newValue, oldValue) {
+                let _this = this;
+                let variationSuccess = function (response) {
+                    _this.variantAnnotation = response.response[0].result[0];
+                };
+                this.cellbaseClient.get('genomic', 'variant', this.variant, 'annotation', {}, {
+                    success: variationSuccess,
+                    async: true
+                });
             },
             checkClinvar: function (clinicalObj) {
                 return clinicalObj.source === 'clinvar';
