@@ -48,7 +48,7 @@
                 <li role="presentation"><a href="#genomicViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
             </ul>
 
-            <div class="tab-content">
+            <div class="tab-content" style="width: 90%">
                 <div id="genomicViewInfo" role="tabpanel" class="tab-pane active">
                     <h4>{{region}}</h4> <br>
                     Number of Genes: {{geneCount}}<br>
@@ -100,24 +100,23 @@
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="genomicView"></cellbase-variantannotation-view>
                 </div>
                 <div id="genomicViewIClinical" role="tabpanel" class="tab-pane">
-                        <br>
-                        <p>
-                            <a class="btn btn-primary" data-toggle="collapse" href="#genomicClinvarDiv" aria-expanded="false" aria-controls="genomicClinvarDiv">
-                                Show/Hide Clinvar
-                            </a>
-                            <a class="btn btn-primary" data-toggle="collapse" href="#genomicCosmicDiv" aria-expanded="false" aria-controls="genomicCosmicDiv">
-                                Show/Hide Cosmic
-                            </a>
-                        </p>
-                        <div class="collapse in" id="genomicClinvarDiv">
-                            <h4>Clinvar</h4>
-                            <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="genomicView" count="{{clinvarCount}}"></cellbase-clinvar-grid>
-                        </div>
-                        <div class="collapse in" id="genomicCosmicDiv">
-                            <h4>Cosmic</h4>
-                            <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="genomicView" count="{{cosmicCount}}"></cellbase-cosmic-grid>
-                        </div>
-
+                    <br>
+                    <div>
+                        Clinvar <a data-toggle="collapse" href="#genomicClinvarDiv" aria-expanded="false" aria-controls="genomicClinvarDiv">
+                        <i id="clinvarToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeClinvar"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="genomicClinvarDiv">
+                        <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="genomicView" count="{{clinvarCount}}"></cellbase-clinvar-grid>
+                    </div>
+                    <div>
+                        Cosmic <a data-toggle="collapse" href="#genomicCosmicDiv" aria-expanded="false" aria-controls="genomicCosmicDiv">
+                        <i id="cosmicToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeCosmic"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="genomicCosmicDiv">
+                        <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="genomicView" count="{{cosmicCount}}"></cellbase-cosmic-grid>
+                    </div>
                 </div>
                 <div id="genomicViewGenomeContext" role="tabpanel" class="tab-pane">
                     <br>
@@ -149,6 +148,12 @@
             attached: function() {
                 this.genomeViewer;
                 this.renderGenomeViewer();
+            },
+            iconChangeClinvar: function () {
+                $('#clinvarToggle').toggleClass('fa-minus-circle fa-plus-circle');
+            },
+            iconChangeCosmic: function () {
+                $('#cosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
             _regionChanged: function (newValue, oldValue) {
                 this.genomeViewer.setRegion(this.region);

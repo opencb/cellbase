@@ -22,7 +22,7 @@
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
         <div>
-            <template is="dom-if" if="{{data}}">
+            <template is="dom-if" if="{{check(data)}}">
             <table class="table table-hover">
                 <thead>
                 <tr>
@@ -45,7 +45,7 @@
             </table>
             </template>
 
-            <template is="dom-if" if="{{!data}}">
+            <template is="dom-if" if="{{checkEmpty(data)}}">
                 No Drugs
                 <br/>
             </template>
@@ -62,6 +62,16 @@
                 data: {
                     type: Array,
                     value: []
+                }
+            },
+            check: function (data) {
+                if (data.length > 0) {
+                    return true;
+                }
+            },
+            checkEmpty: function (data) {
+                if (data.length == 0) {
+                    return true;
                 }
             }
         });
