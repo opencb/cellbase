@@ -149,22 +149,22 @@
                                 _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
 
                                 // Getting the SOTerms and counting how many times each SOterm occurs
-                                let names = [];
-                                for (let i in clinicalResult.annot.consequenceTypes) {
-                                    let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
-                                    for(let j in terms) {
-                                        names.push(terms[j].name);
-                                    }
-                                }
-                                var count = {};
-                                for (let i in names) {
-                                    let x = names[i];
-                                    count[x] = count[x]? count[x]+1 : 1;
-                                }
-                                for(let x in count) {
-                                    soterms.push({name: x, total: count[x]});
-                                }
-                                _this.soterms = soterms;
+//                                let names = [];
+//                                for (let i in clinicalResult.annot.consequenceTypes) {
+//                                    let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
+//                                    for(let j in terms) {
+//                                        names.push(terms[j].name);
+//                                    }
+//                                }
+//                                var count = {};
+//                                for (let i in names) {
+//                                    let x = names[i];
+//                                    count[x] = count[x]? count[x]+1 : 1;
+//                                }
+//                                for(let x in count) {
+//                                    soterms.push({name: x, total: count[x]});
+//                                }
+//                                _this.soterms = soterms;
 
                                 //Getting the submitted Gene which is enclosed in array of arrays
                                 let geneName = [];
