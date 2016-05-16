@@ -152,6 +152,7 @@
                     if (this.$.regFilterRegionTextarea.value !== "") {
                         this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.$.regFilterRegionTextarea.value
                                 + '/regulatory?featureType=' + featureType + '&featureClass=' + featureClass;
+
 //                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', queryParams, {success: success, async: true});
                         console.log(this.url)
                     }

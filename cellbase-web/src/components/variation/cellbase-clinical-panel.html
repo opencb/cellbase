@@ -25,10 +25,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-clinical-filter id="filter" region="{{region}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-filter>
+                <cellbase-clinical-filter id="filter" clinical-id="{{clinicalId}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-clinical-view id="view" region="{{region}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-view>
+                <cellbase-clinical-view id="view" clinical-id="{{clinicalId}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-view>
             </div>
         </div>
     </template>
@@ -39,7 +39,7 @@
                 cellbaseClient: {
                     type: Object
                 },
-                region: {
+                clinicalId: {
                     type: String
                 }
             },
