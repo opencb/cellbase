@@ -32,6 +32,7 @@ import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -631,16 +632,41 @@ public class GeneWSServer extends GenericRestWSServer {
 //    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes and offset")
     public Response getSNPByGeneId(@PathParam("geneId") String geneId) {
 //    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
+
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            query.put("gene", geneId);
-//            queryOptions.put("offset", offset);
-            QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+            QueryResult queryResult = null;
+
+            // TODO Weare fectching the gene region before querying the variation collection until genes are loaded
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
+            QueryResult<Gene> geneQueryResult = geneDBAdaptor.get(query, new QueryOptions("include", "chromosome,start,end"));
+            if (geneQueryResult != null && geneQueryResult.getResult().size() > 0) {
+                Gene gene = geneQueryResult.first();
+                query.clear();
+                query.put(VariantDBAdaptor.QueryParams.REGION.key(),
+                        gene.getChromosome() + ":" + (gene.getStart() - 5000) + "-" + (gene.getEnd() + 5000));
+
+                VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+                queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+            }
+
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+
+
+        // FIXME: replace the above try/catch by this block below as soon as annotation is ready at variation collection.
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//            query.put("gene", geneId);
+//            QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+//            return createOkResponse(queryResult);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
     }
 
 
