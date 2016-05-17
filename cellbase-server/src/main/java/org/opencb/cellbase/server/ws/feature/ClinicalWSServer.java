@@ -80,6 +80,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "rs",
                     value = "Comma separated list of rs ids, e.g.: rs6025",
                             required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cosmicId",
+                    value = "Comma separated list of cosmic ids, e.g.: COSM306824",
+                    required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "type",
                     value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
                         + "variants, e.g. \"single nucleotide variant\" ",
