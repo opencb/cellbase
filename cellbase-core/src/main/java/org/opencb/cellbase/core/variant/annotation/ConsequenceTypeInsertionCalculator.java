@@ -400,7 +400,6 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     // Paste alternative nt in the corresponding codon position
                      (modifiedCodonPosition < 3 && i < variant.getAlternate().length()); modifiedCodonPosition++) {
                     modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(altArray[i]);
-                    i++;
 
                     // Edit modified nt to make it upper-case in the formatted strings
                     formattedReferenceCodonArray[modifiedCodonPosition]
@@ -408,6 +407,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     formattedModifiedCodonArray[modifiedCodonPosition]
                             = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
 
+                    i++;
                 }
                 for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
                     if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
@@ -715,7 +715,6 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     // Paste alternative nt in the corresponding codon position
                      (modifiedCodonPosition < 3 && i < variant.getAlternate().length()); modifiedCodonPosition++) {
                     modifiedCodonArray[modifiedCodonPosition] = variant.getAlternate().toCharArray()[i];
-                    i++;
 
                     // Edit modified nt to make it upper-case in the formatted strings
                     formattedReferenceCodonArray[modifiedCodonPosition]
@@ -723,6 +722,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     formattedModifiedCodonArray[modifiedCodonPosition]
                             = Character.toUpperCase(variant.getAlternate().toCharArray()[i]);
 
+                    i++;
                 }
                 for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
                     if (transcriptSequencePosition >= transcriptSequence.length()) {
