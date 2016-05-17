@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.ws.feature;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
@@ -38,6 +39,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author imedina
@@ -47,22 +49,34 @@ import java.util.List;
 @Api(value = "Xref", description = "External References RESTful Web Services API")
 public class IdWSServer extends GenericRestWSServer {
 
-    public IdWSServer(@PathParam("version") String version, @PathParam("species") String species,
+    public IdWSServer(@PathParam("version")
+                      @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                              defaultValue = "latest") String version,
+                      @PathParam("species")
+                      @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                              + "of potentially available species ids, please refer to: "
+                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
+    @ApiOperation(httpMethod = "GET", value = "Get JSON specification of Xref data model", response = Map.class,
+            responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Xref.class);
     }
 
     @GET
     @Path("/{id}/info")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves the external reference info for the ID")
-    public Response getByFeatureIdInfo(@PathParam("id") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves the external reference(s) info for the ID(s)",
+            notes = "An independent database query will be issued for each id, meaning that results for each id will be"
+            + " returned in independent QueryResult objects within the QueryResponse object.", response = Xref.class,
+            responseContainer = "QueryResponse")
+    public Response getByFeatureIdInfo(@PathParam("id")
+                                       @ApiParam(name = "id", value = "Comma separated list of ids, e.g.: BRCA2. Exact "
+                                               + "text matches will be returned.", required = true) String id) {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
@@ -93,8 +107,18 @@ public class IdWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/xref")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references for the ID")
-    public Response getAllXrefsByFeatureId(@PathParam("id") String ids, @DefaultValue("") @QueryParam("dbname") String dbname) {
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references related with given ID(s)",
+        response = Xref.class, responseContainer = "QueryResponse")
+    public Response getAllXrefsByFeatureId(@PathParam("id")
+                                           @ApiParam(name = "id", value = "Comma separated list of ids, e.g.: BRCA2."
+                                                   + "Exact text matches will be searched.", required = true) String ids,
+                                           @DefaultValue("")
+                                           @QueryParam("dbname")
+                                           @ApiParam(name = "dbname", value = "Comma separated list of source DB names"
+                                                   + " to include in the search, e.g.: ensembl_gene,vega_gene,havana_gene."
+                                                   + " Available db names are shown by this web service: "
+                                                   + " http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Xref/"
+                                                   + "getDBNames", required = false) String dbname) {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
@@ -112,8 +136,11 @@ public class IdWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/starts_with")
-    @ApiOperation(httpMethod = "GET", value = "Get the genes that match the beginning of the given string")
-    public Response getByLikeQuery(@PathParam("id") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get the gene HGNC symbols of genes for which there is an Xref id that "
+            + "matches the beginning of the given string", response = Map.class, responseContainer = "QueryResponse")
+    public Response getByLikeQuery(@PathParam("id")
+                                   @ApiParam(name = "id", value = "One single string to be matched at the beginning of"
+                                           + " the Xref id", required = true) String id) {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
@@ -125,8 +152,11 @@ public class IdWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/contains")
-    @ApiOperation(httpMethod = "GET", value = "Get the IDs that contain the given string")
-    public Response getByContainsQuery(@PathParam("id") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get gene HGNC symbols for which there is an Xref id containing the given "
+            + "string", response = Map.class, responseContainer = "QueryResponse")
+    public Response getByContainsQuery(@PathParam("id")
+                                       @ApiParam(name = "id", value = "Comma separated list of strings to "
+                                               + "be contained within the xref id, e.g.: BRCA2", required = true) String id) {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
@@ -140,8 +170,13 @@ public class IdWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/gene")
-    @ApiOperation(httpMethod = "GET", value = "Get the gene for the given ID")
-    public Response getGeneByEnsemblId(@PathParam("id") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get the gene(s) for the given ID(s)", notes = "An independent"
+            + " database query will be issued for each id, meaning that results for each id will be"
+            + " returned in independent QueryResult objects within the QueryResponse object.",
+            responseContainer = "QueryResponse")
+    public Response getGeneByEnsemblId(@PathParam("id")
+                                       @ApiParam(name = "id", value = "Comma separated list of ids to look"
+                                               + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
@@ -160,8 +195,9 @@ public class IdWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/dbnames")
-    @ApiOperation(httpMethod = "GET", value = "Get the SNP for the given ID")
-    public Response getSnpByFeatureId() {
+    @ApiOperation(httpMethod = "GET", value = "Get list of distinct source DB names from which xref ids were collected ",
+        response = String.class, responseContainer = "QueryResponse")
+    public Response getDBNames() {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);

@@ -122,7 +122,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     @Override
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options.put(MongoDBCollection.SKIP_COUNT, true);
+//        options.put(MongoDBCollection.SKIP_COUNT, true);
         options = addPrivateExcludeOptions(options);
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
@@ -130,7 +130,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options.put(MongoDBCollection.SKIP_COUNT, true);
+//        options.put(MongoDBCollection.SKIP_COUNT, true);
         return mongoDBCollection.find(bson, options);
     }
 
@@ -178,7 +178,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
         createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "ids", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
                 andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);

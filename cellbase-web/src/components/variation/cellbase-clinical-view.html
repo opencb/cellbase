@@ -17,100 +17,82 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
-<link rel="import" href="cellbase-variantannotation-view.html">
 
-<dom-module id="cellbase-variation-view">
+<dom-module id="cellbase-clinical-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
 
         <div style="width: 90%">
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#variationViewInfo" role="tab" data-toggle="tab">{{variationId}} Info</a></li>
-                <li role="presentation"><a href="#variationViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
-                <!--<li role="presentation" class="active"><a href="#variationGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>-->
+                <li role="presentation" class="active"><a href="#clinicalViewInfo" role="tab" data-toggle="tab">{{region}}
+                    Info</a></li>
+                <li role="presentation"><a href="#clinicalViewGenomeContext" role="tab" data-toggle="tab">Genome
+                    Context</a></li>
             </ul>
 
             <div class="tab-content" style="width: 90%">
-                <div id="variationViewInfo" role="tabpanel" class="tab-pane active">
+                <div id="clinicalViewInfo" role="tabpanel" class="tab-pane active">
                     <h3>Summary</h3>
-                    ID: <a href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v={{variationObj.ids}}" target="_blank">{{variationObj.ids}}</a><br>
-                    Alleles: {{variationObj.reference}}/{{variationObj.alternate}}<br>
-                    Location: {{variationObj.chromosome}}:{{variationObj.start}}-{{variationObj.end}}<br>
-                    Type: {{variationObj.type}}<br>
-                    HGVS: {{variationObj.hgvs.genomic}}<br>
-                    Display Consequence Type: {{variationObj.annotation.displayConsequenceType}}<br>
-                    Ancestral Allele: {{variationObj.annotation.ancestralAllele}}<br>
-                    MAF: {{variationObj.annotation.minorAlleleFreq}} ({{variationObj.annotation.minorAllele}})<br>
+                    {{region}}
 
                     <h3>Annotation</h3>
-                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="variation"></cellbase-variantannotation-view>
+                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}"
+                                                     prefix="variation"></cellbase-variantannotation-view>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="variationViewGenomeContext">
+                <div role="tabpanel" class="tab-pane" id="clinicalViewGenomeContext">
                     <br>
                     <div id="genomeviewer"></div>
                 </div>
-
-                <!--<div role="tabpanel" class="tab-pane" id="variationTfbs">-->
-                    <!--<cellbase-tfbs-view cellbase="{{cellbase}}" transcripts="{{variationObj.transcripts}}"></cellbase-tfbs-view>-->
-                <!--</div>-->
             </div>
         </div>
-
     </template>
     <script>
         Polymer({
-            is: 'cellbase-variation-view',
+            is: 'cellbase-clinical-view',
 
             properties: {
                 cellbaseClient: {
                     type: Object
                 },
-                variationId: {
+                region: {
                     type: String,
-                    notify: true,
-                    observer: '_variationIdChanged'
-                },
-                variationObj: {
-                    type: Object
-                },
-                variant: {
-                    type: String,
-                    notify: true
+                    observer: '_regionChanged'
                 }
             },
-            _variationIdChanged: function(newValue, oldValue) {
-                let _this = this;
-                if (typeof this.genomeViewer !== "undefined") {
-                    let success = function (response) {
-                        let firstVariation = response.response[0].result[0];
-                        if (typeof firstVariation !== "undefined") {
-                            let region = new Region({chromosome: firstVariation.chromosome, start: firstVariation.start, end: firstVariation.end});
-                            _this.genomeViewer.setRegion(region);
-                        } else {
-                            alert("Variation ID not valid: " + _this.variationId);
-                        }
-                        _this.variationObj = firstVariation;
-                        _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
-                    };
-                    let error = function (response) {
-                        alert("Variation ID not valid: " + _this.variationId)
-                    };
-                    this.cellbaseClient.getVariationClient(this.variationId, 'info', {}, {success: success, error: error, async: true});
-                }
+            _regionChanged: function (newValue, oldValue) {
+//                let _this = this;
+//                if (typeof this.genomeViewer !== "undefined") {
+//                    let success = function (response) {
+//                        let firstVariation = response.response[0].result[0];
+//                        if (typeof firstVariation !== "undefined") {
+//                            let region = new Region({
+//                                chromosome: firstVariation.chromosome,
+//                                start: firstVariation.start,
+//                                end: firstVariation.end
+//                            });
+//                            _this.genomeViewer.setRegion(region);
+//                        } else {
+//                            alert("Variation ID not valid: " + _this.variationId);
+//                        }
+//                        _this.variationObj = firstVariation;
+//                        _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
+//                    };
+//                    let error = function (response) {
+//                        alert("Variation ID not valid: " + _this.variationId)
+//                    };
+//                    this.cellbaseClient.getVariationClient(this.variationId, 'info', {}, {
+//                        success: success,
+//                        error: error,
+//                        async: true
+//                    });
+//                }
             },
-            attached: function() {
-//                this.cellbase = CELLBASE_CLIENT._config.version;
-//                var success = function (response) {
-//                    console.log("Success from user:")
-//                    console.log(response)
-//                };
-//                this.cellbaseClient.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
-
-                this.genomeViewer;
-                this.renderGenomeViewer();
-            },
-            renderGenomeViewer: function() {
+//            attached: function () {
+//                this.genomeViewer;
+//                this.renderGenomeViewer();
+//            },
+            renderGenomeViewer: function () {
                 var region = new Region({chromosome: "13", start: 32889611, end: 32889611});
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
@@ -153,7 +135,7 @@
                         }
                     },
                     handlers: {
-                        'region:change': function(e) {
+                        'region:change': function (e) {
                             console.log(e)
                         }
                     }
@@ -190,7 +172,7 @@
                     height: 100,
                     renderer: new GeneRenderer({
                         handlers: {
-                            'feature:click': function(e) {
+                            'feature:click': function (e) {
                                 console.log(e)
                             }
                         }
@@ -211,7 +193,7 @@
                 tracks.push(this.gene);
                 var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
                 renderer.on({
-                    'feature:click': function(event) {
+                    'feature:click': function (event) {
                         // feature click event example
                         console.log(event)
                     }

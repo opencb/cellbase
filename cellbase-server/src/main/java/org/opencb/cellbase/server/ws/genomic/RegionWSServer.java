@@ -18,7 +18,10 @@ package org.opencb.cellbase.server.ws.genomic;
 
 import io.swagger.annotations.*;
 import org.bson.Document;
-import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -708,7 +711,9 @@ public class RegionWSServer extends GenericRestWSServer {
                 return createOkResponse(intervalFrequencies);
             } else {
                 List<Query> queries = createQueries(regionId, RegulationDBAdaptor.QueryParams.REGION.key(),
-                        RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), "TF_binding_site_motif");
+                        RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
+                        RegulationDBAdaptor.FeatureType.TF_binding_site + ","
+                                + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
 //                        RegulationDBAdaptor.QueryParams.NAME.key(), name);
                 List<QueryResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
                 return createOkResponse(queryResults);

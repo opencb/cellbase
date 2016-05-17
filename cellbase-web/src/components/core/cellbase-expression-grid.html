@@ -8,19 +8,9 @@
 
         <div>
             <br>
-            <table id="expressionTable" data-search="true" data-show-columns="true" data-pagination="true" data-height="520" data-page-list="[10, 25, 50]"
+            <table id="{{prefix}}ExpressionTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
-                <thead>
-                <tr>
-                    <th data-field="experimentalFactor" data-sortable="true">Experimental Factor</th>
-                    <th data-field="factorValue" data-sortable="true">Factor Value</th>
-                    <th data-field="experimentId" data-sortable="true">Experiment ID</th>
-                    <th data-field="technologyPlatform">Technology Platform</th>
-                    <th data-field="expression" data-sortable="true">Expression</th>
-                    <th data-field="associationTypes">Association Types</th>
-                    <th data-field="pvalue">Pvalue</th>
-                </tr>
-                </thead>
+
             </table>
         </div>
     </template>
@@ -29,19 +19,53 @@
             is: 'cellbase-expression-grid',
             properties: {
                 cellbase: {
-                    type: Object,
-                    notify: true
+                    type: Object
                 },
                 data: {
                     type: Array,
                     value: [],
                     observer: 'expressionChanged'
+                },
+                prefix: {
+                    type: String
                 }
             },
             expressionChanged: function() {
-                $('#expressionTable').bootstrapTable('destroy');
-                $('#expressionTable').bootstrapTable({
-                    data: this.data
+                $('#' + this.prefix + 'ExpressionTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'ExpressionTable').bootstrapTable({
+                    data: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'Experimental Factor',
+                                field: 'experimentalFactor'
+                            },
+                            {
+                                title: 'Factor Value',
+                                field: 'factorValue'
+                            },
+                            {
+                                title: 'Experiment ID',
+                                field: 'experimentId'
+                            },
+                            {
+                                title: 'Technology Platform',
+                                field: 'technologyPlatform'
+                            },
+                            {
+                                title: 'Expression',
+                                field: 'expression'
+                            },
+                            {
+                                title: 'Association Types',
+                                field: 'associationTypes'
+                            },
+                            {
+                                title: 'Pvalue',
+                                field: 'pvalue'
+                            }
+                        ]
+                    ]
                 });
             }
         });

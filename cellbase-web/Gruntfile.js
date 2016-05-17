@@ -68,7 +68,7 @@ module.exports = function(grunt) {
                     {   expand: true, cwd: 'src', src: ['index.html'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: 'src', src: ['config.js'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: './', src: ['LICENSE'], dest: '<%= build.path %>/' },
-                    {   expand: true, cwd: 'src', src: ['components/**'], dest: '<%= build.path %>/' },
+                    // {   expand: true, cwd: 'src', src: ['components/**'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: './lib', src: ['ChemDoodle/**'], dest: '<%= build.path %>/' },
                     {   expand: true, cwd: './lib', src: ['jsorolla/**'], dest: '<%= build.path %>/' }
                 ]
@@ -92,7 +92,7 @@ module.exports = function(grunt) {
                 },
                 files: {
                     // Target-specific file lists and/or options go here.
-                    '<%= build.path %>/build.html': 'src/index.html'
+                    '<%= build.path %>/cellbase-web.html': 'src/components/cellbase-web.html'
                 }
             }
         },
@@ -112,6 +112,10 @@ module.exports = function(grunt) {
                             match: /\.\.\/lib\//g,
                             replacement: ''
                         },
+                        {
+                            match: /components\/cellbase-web\.html/g,
+                            replacement: ' cellbase-web.html'
+                        }
                     ]
                 },
                 files: [
