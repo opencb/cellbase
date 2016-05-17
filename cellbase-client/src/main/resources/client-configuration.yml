@@ -1,0 +1,13 @@
+---
+version: "v4"
+logLevel: "info"
+logFile: ""
+
+## These are the RESTful configurations parameters
+rest:
+  hosts:
+  - "bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0"
+  - "bioinfodev.hpc.cam.ac.uk/cellbase"
+  timeout: 2000
+grpc:
+  host: "localhost:9091"
