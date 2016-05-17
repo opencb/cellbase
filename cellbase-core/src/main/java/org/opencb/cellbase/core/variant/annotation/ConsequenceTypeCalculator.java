@@ -2,13 +2,13 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,7 @@ public abstract class ConsequenceTypeCalculator {
     }
 
     protected void decideStopCodonModificationAnnotation(Set<String> soNames, String referenceCodon,
-                                                         char[] modifiedCodonArray, boolean useMitochondrialCode) {
+                                                         String modifiedCodon, boolean useMitochondrialCode) {
 
         Map<String, Boolean> replacementMap;
         if (useMitochondrialCode) {
@@ -63,7 +63,7 @@ public abstract class ConsequenceTypeCalculator {
             replacementMap = VariantAnnotationUtils.IS_SYNONYMOUS_CODON.get(referenceCodon);
         }
         if (replacementMap != null) {
-            Boolean isSynonymous = replacementMap.get(String.valueOf(modifiedCodonArray));
+            Boolean isSynonymous = replacementMap.get(modifiedCodon);
             if (isSynonymous != null) {
                 if (isSynonymous) {
                     if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon)) {
@@ -72,7 +72,7 @@ public abstract class ConsequenceTypeCalculator {
                 } else {
                     if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, String.valueOf(referenceCodon))) {
                         soNames.add(VariantAnnotationUtils.STOP_LOST);
-                    } else if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, String.valueOf(modifiedCodonArray))) {
+                    } else if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, modifiedCodon)) {
                         soNames.add(VariantAnnotationUtils.STOP_GAINED);
                     }
                 }
@@ -129,5 +129,6 @@ public abstract class ConsequenceTypeCalculator {
     private SequenceOntologyTerm newSequenceOntologyTerm(String name) {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
+
 
 }
