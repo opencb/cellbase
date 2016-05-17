@@ -78,6 +78,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String DGIDB_NAME = "DGIdb";
     private static final String UNIPROT_NAME = "DGIdb";
     private static final String CADD_NAME = "CADD";
+    private static final String MIRBASE_NAME = "miRBase";
+    private static final String MIRTARBASE_NAME = "miRTarBase";
+    private static final String TARGETSCAN_NAME = "TargetScan";
     private static final String GENOME_DATA = "genome";
     private static final String GENE_DATA = "gene";
     private static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
@@ -480,7 +483,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
             // e.g. The files in the current directory contain the data corresponding to the latest release (version 4.0, April 2016). ...
             while (line != null) {
                 if (line.matches("\\(version")) {
-                    return line.split("\\(")[1].split("\\)")[0];
+                    String version = line.split("\\(")[1].split("\\)")[0];
+                    reader.close();
+                    return version;
                 }
             }
         } catch (IOException e) {
@@ -590,7 +595,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
             downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
             saveVersionData(REGULATION_DATA, MIRBASE_NAME,
-                    getMirbaseVersion(mirbaseFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
+                    getMirbaseVersion(mirbaseFolder.resolve("mirbaseReadme.txt")), getTimeStamp(),
                     Collections.singletonList(url), mirbaseFolder.resolve("disgenetVersion.json"));
         }
 
@@ -599,22 +604,47 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 url = configuration.getDownload().getTargetScan().getHost() + "/hg19/database/targetScanS.txt.gz";
                 downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
 
+                String readmeUrl = configuration.getDownload().getTargetScan().getHost() + "/hg19/database/README.txt";
+                downloadFile(readmeUrl, regulationFolder.resolve("targetScanReadme.txt").toString());
+                saveVersionData(REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
+                        Collections.singletonList(url), regulationFolder.resolve("targetScanVersion.json"));
+
                 url = configuration.getDownload().getMiRTarBase().getHost() + "/hsa_MTI.xls";
                 downloadFile(url, regulationFolder.resolve("hsa_MTI.xls").toString());
-
-                saveVersionData(REGULATION_DATA, xxxx, ensemblVersion, getTimeStamp(), downloadedUrls,
-                        regulationFolder.resolve("ensemblRegulationVersion.json"));
+                saveVersionData(REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
+                        Collections.singletonList(url), regulationFolder.resolve("miRTarBaseVersion.json"));
             }
         }
         if (species.getScientificName().equals("Mus musculus")) {
             url = configuration.getDownload().getTargetScan().getHost() + "/mm9/database/targetScanS.txt.gz";
             downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
 
+            String readmeUrl = configuration.getDownload().getTargetScan().getHost() + "/mm9/database/README.txt";
+            downloadFile(readmeUrl, regulationFolder.resolve("targetScanReadme.txt").toString());
+            saveVersionData(REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
+                    Collections.singletonList(url), regulationFolder.resolve("targetScanVersion.json"));
+
             url = configuration.getDownload().getMiRTarBase().getHost() + "/mmu_MTI.xls";
             downloadFile(url, regulationFolder.resolve("mmu_MTI.xls").toString());
+            saveVersionData(REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
+                    Collections.singletonList(url),
+                    regulationFolder.resolve("ensemblRegulationVersion.json"));
         }
     }
 
+    private String getMirbaseVersion(Path readmePath) {
+        Files.exists(readmePath);
+        try {
+            BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset());
+            // First line shall be something like: The miRBase Sequence Database -- Release 21
+            String line = reader.readLine();
+            reader.close();
+            return line;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     /**
      * This method downloads UniProt, IntAct and Interpro data from EMBL-EBI.
