@@ -297,7 +297,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <cellbase.war.name>cellbase-dev-v4.0</cellbase.war.name>
+                <cellbase.war.name>cellbase-${cellbase.version}</cellbase.war.name>
             </properties>
         </profile>
         <profile>
