@@ -71,7 +71,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/all")
+    @Path("/search")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = Chromosome.class,
         responseContainer = "QueryResponse")
     public Response getChromosomesAll() {

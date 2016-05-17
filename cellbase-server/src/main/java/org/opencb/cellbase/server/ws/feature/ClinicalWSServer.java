@@ -53,7 +53,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/all")
+    @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
             + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
             + "a look at "
