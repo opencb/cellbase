@@ -23,10 +23,10 @@
         <style is="custom-style" include="cellbase-shared-styles"></style>
         <div>
             <template is="dom-repeat" items="{{data}}" as="transcript">
-                <h3>{{transcript.id}} ({{transcript.name}})</h3>
-
+                <h3>{{transcript.id}} ({{transcript.name}})</h3> <i id={{transcript.name}} class="fa fa-minus-circle" aria-hidden="true" on-click="iconChange"></i>
+        
                 <template is="dom-if" if="{{transcript.tfbs}}">
-                    <table class="table table-hover">
+                    <table id="{{transcript.id}}" class="table table-hover">
                         <thead>
                         <tr>
                             <th>TfName</th>
@@ -70,7 +70,14 @@
                     type: Array,
                     value: []
                 }
+            },
+            iconChange: function (e) {
+                let name = e.model.__data__.transcript.name;
+                $('#' + name).toggleClass('fa-minus-circle fa-plus-circle');
+                var id = e.model.__data__.transcript.id;
+                $('#' + id).toggleClass('collapse collapse-in');
             }
+            
         });
     </script>
 </dom-module>

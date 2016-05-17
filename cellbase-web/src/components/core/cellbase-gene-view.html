@@ -63,7 +63,7 @@
 
                 <div id="geneViewGenomeContext" role="tabpanel" class="tab-pane">
                     <br>
-                    <div id="genomeviewer"></div>
+                    <div id="geneGenomeViewer"></div>
                 </div>
 
                 <!--<div id="geneViewTranscripts" role="tabpanel" class="tab-pane">-->
@@ -226,8 +226,8 @@
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
                     cellBaseVersion: 'v3',
-                    target: this.$$('#genomeviewer'),
-//                    width: this.$$('#genomeviewer').getBoundingClientRect().width,
+                    target: this.$$('#geneGenomeViewer'),
+//                    width: this.$$('#geneGenomeViewer').getBoundingClientRect().width,
                     width: 1200,
                     region: region,
                     availableSpecies: DEFAULT_SPECIES.vertebrates,

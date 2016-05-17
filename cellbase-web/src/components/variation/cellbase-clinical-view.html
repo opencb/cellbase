@@ -102,7 +102,7 @@
 
                 <div role="tabpanel" class="tab-pane" id="clinicalViewGenomeContext">
                     <br>
-                    <div id="genomeviewer"></div>
+                    <div id="clinicalGenomeViewer"></div>
                 </div>
             </div>
         </div>
@@ -135,6 +135,7 @@
                     if (typeof this.genomeViewer !== "undefined") {
                         let success = function (response) {
                             let clinicalResult = response.response[0].result[0];
+                            debugger
                             if (typeof clinicalResult !== "undefined") {
                                 // Setting the region for genome viewer
                                 let region = new Region({
@@ -249,7 +250,7 @@
                         let error = function (response) {
                             alert("Clinical ID not valid: " + _this.clinicalId)
                         };
-                        this.cellbaseClient.get('feature', 'clinical', null, 'all', {rcv: _this.clinicalId}, {
+                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {rcv: _this.clinicalId}, {
                             success: success,
                             error: error,
                             async: true
@@ -279,8 +280,8 @@
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
                     cellBaseVersion: 'v3',
-                    target: this.$$('#genomeviewer'),
-//                    width: this.$$('#genomeviewer').getBoundingClientRect().width,
+                    target: this.$$('#clinicalGenomeViewer'),
+//                    width: this.$$('#clinicalGenomeViewer').getBoundingClientRect().width,
                     width: 1200,
                     region: region,
                     availableSpecies: DEFAULT_SPECIES.vertebrates,
