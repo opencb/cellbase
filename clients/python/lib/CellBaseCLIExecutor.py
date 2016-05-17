@@ -38,11 +38,19 @@ class CellBaseCLIExecutor():
         self.loadCellBaseClientConfiguration()
         cellBaseClient = CellBaseClient.CellBaseClient(self.__configuration)
         queryResponse = cellBaseClient.get(self.__species, self.__type, self.__method, self.__id, self.__options)
+        # print(len(queryResponse["response"]))
         if (self.__file):
             f = open("result.json", 'w')
-            test = json.dumps(queryResponse)
-            print("The result file has been written to result.json file")
-            f.write(str(test))
+            f.write("data=[\n")
+            count = len(queryResponse["response"])
+            for i in range(len(queryResponse["response"])):
+                output = json.dumps(queryResponse["response"][i]["result"][0], sort_keys=True)
+                f.write(output)
+                if count > 1:
+                    f.write(",\n")
+                    count = count - 1
+            f.write("\n];")
+            print("Results has been written to result.json file")
         else:
             print(queryResponse)
 
