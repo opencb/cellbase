@@ -98,7 +98,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/all")
+    @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Get all proteins", response = Entry.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({

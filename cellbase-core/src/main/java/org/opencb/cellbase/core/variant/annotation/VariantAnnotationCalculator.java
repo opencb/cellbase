@@ -732,9 +732,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
-        for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
-                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+        if (variant.getType() == VariantType.SNV
+                || Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()) == VariantType.SNV) {
+            for (ConsequenceType consequenceType : consequenceTypeList) {
+                if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
+                    consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+                }
             }
         }
         return consequenceTypeList;
