@@ -17,6 +17,7 @@
         <module>cellbase-app</module>
         <module>cellbase-core</module>
         <module>cellbase-mongodb</module>
+        <module>cellbase-client</module>
         <module>cellbase-server</module>
         <module>cellbase-grpc</module>
     </modules>
@@ -172,6 +173,11 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet</artifactId>
                 <version>${jersey.version}</version>
@@ -291,7 +297,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <cellbase.war.name>cellbase-dev-v4.0</cellbase.war.name>
+                <cellbase.war.name>cellbase-${cellbase.version}</cellbase.war.name>
             </properties>
         </profile>
         <profile>
