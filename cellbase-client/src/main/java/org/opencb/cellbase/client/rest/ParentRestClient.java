@@ -22,6 +22,8 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -44,11 +46,15 @@ public class ParentRestClient {
 
     protected static ObjectMapper jsonObjectMapper;
 
+    protected static Logger logger;
+
     public ParentRestClient(ClientConfiguration configuration) {
         this.configuration = configuration;
 
         this.client = ClientBuilder.newClient();
         jsonObjectMapper = new ObjectMapper();
+
+        logger = LoggerFactory.getLogger(this.getClass().toString());
     }
 
     protected QueryResponse<Long> count(Query query) throws IOException {
@@ -87,11 +93,11 @@ public class ParentRestClient {
             }
         }
 
-        System.out.println("REST URL: " + path.getUri().toURL());
+        logger.debug("REST URL: " + path.getUri().toURL());
         String jsonString = path.request().get(String.class);
-        System.out.println("jsonString = " + jsonString);
+        logger.debug("jsonString = " + jsonString);
         QueryResponse<T> queryResponse = parseResult(jsonString, clazz);
-        System.out.println("queryResponse = " + queryResponse);
+        logger.debug("queryResponse = " + queryResponse);
         return queryResponse;
     }
 
