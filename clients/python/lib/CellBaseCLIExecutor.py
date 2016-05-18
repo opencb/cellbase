@@ -3,6 +3,7 @@ __author__ = 'fjlopez'
 import string
 import os
 import sys
+import json
 from .exceptions import InvalidQueryTypeException,InvalidQueryMethodException,InvalidQuerySpeciesException,InvalidQueryOptionsException
 from . import CellBaseClientConfig
 from . import CellBaseClient
@@ -28,13 +29,32 @@ class CellBaseCLIExecutor():
         self.__queryCommandOptions = queryCommandOptions
         self.__configFile = queryCommandOptions.conf
         self.__configuration = None
+        self.__options = {}
+        self.__file = None
+
 
     def run(self):
         self.__checkParameters()
         self.loadCellBaseClientConfiguration()
         cellBaseClient = CellBaseClient.CellBaseClient(self.__configuration)
         queryResponse = cellBaseClient.get(self.__species, self.__type, self.__method, self.__id, self.__options)
-        print(queryResponse)
+        # print(len(queryResponse["response"]))
+        if (self.__file):
+            f = open("result.json", 'w')
+            f.write("data=[\n")
+            count = len(queryResponse["response"])
+            for i in range(len(queryResponse["response"])):
+                output = json.dumps(queryResponse["response"][i]["result"][0], sort_keys=True)
+                f.write(output)
+                if count > 1:
+                    f.write(",\n")
+                    count = count - 1
+            f.write("\n];")
+            print("Results has been written to result.json file")
+        else:
+            print(queryResponse)
+
+
 
     def loadCellBaseClientConfiguration(self):
         if (self.__configFile != None):
@@ -66,13 +86,21 @@ class CellBaseCLIExecutor():
                 string.join(CellBaseCLIExecutor.ENABLEDQUERYSPECIES, sep=", ")+"}")
         else:
             self.__species = self.__queryCommandOptions.species.lower()
-        if(self.__validQueryOptions(self.__queryCommandOptions.options)):
-            self.__options = self.__queryCommandOptions.options
-        else:
-            raise InvalidQueryOptionsException.InvalidQueryOptionsException(
-                "Incorrect format provided for query options. Please, provide a list of filter pairs. For example: source=clinvar skip=10 limit=200")
 
-    def __validQueryOptions(self,options):
+        if (self.__queryCommandOptions.include != None):
+            self.__options['include'] = self.__queryCommandOptions.include
+        if (self.__queryCommandOptions.exclude != None):
+            self.__options['exclude'] = self.__queryCommandOptions.exclude
+        if (self.__queryCommandOptions.limit!=None):
+            self.__options['limit'] =self.__queryCommandOptions.limit
+        if (self.__queryCommandOptions.skip!=None):
+            self.__options['skip'] = self.__queryCommandOptions.skip
+
+
+        if (self.__queryCommandOptions.output != None):
+            self.__file = self.__queryCommandOptions.output
+
+    def __validQueryOptions(self, options):
         if (options != None):
             i = 0
             while(i<len(options) and len(options[i].split("="))==2):

@@ -6,6 +6,7 @@ bower_components
 private
 
 # General
+*.Rbuildignore
 *.jar
 *.war
 *.o
@@ -15,6 +16,10 @@ private
 *.so.*
 *.out
 *.log
+*.Rproj
+*.RData
+*.Rhistory
+cellbaseR*
 sonar-project.properties
 
 # Maven
@@ -57,5 +62,7 @@ local.properties
 
 # Python
 *.pyc
-os
-sys
+<<<<<<< HEAD
+.Rproj.user
+=======
+
