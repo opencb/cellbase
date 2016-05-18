@@ -53,13 +53,17 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/all")
+    @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
             + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
             + "a look at "
             + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
             value = "Retrieves all the clinical objects", response = Document.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "source",
+                    value = "Comma separated list of database sources of the documents to be returned. Possible values "
+                            + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
+                    required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     required = false, dataType = "list of strings", paramType = "query"),
@@ -148,7 +152,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "list of strings", paramType = "query")
     })
     public Response groupBy(@DefaultValue("")
                             @QueryParam("fields")
